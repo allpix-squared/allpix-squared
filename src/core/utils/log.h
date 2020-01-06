@@ -262,7 +262,7 @@ namespace allpix {
  * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged
  * @param level The log level of the stream
  */
-#define LOG_ONCE(level) LOG_X(level, 1)
+#define LOG_ONCE(level) LOG_N(level, 1)
 
 /**
  * @brief Generator for a local variable to hold the logging count of a message
@@ -278,7 +278,7 @@ namespace allpix {
  * @param level The log level of the stream
  * @param max_log_count Maximum number of times this message is allowed to be logged
  */
-#define LOG_X(level, max_log_count)                                                                                         \
+#define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
     if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
