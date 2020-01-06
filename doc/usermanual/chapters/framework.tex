@@ -590,7 +590,7 @@ The following commands are available for sending messages to the logging system 
     LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
     \end{minted}
     This can be used to log warnings or messages e.g.\ from the \command{run()} function of a module without flooding the log output with the same message for every event.
-    \item[\command{LOG_N(LEVEL, NUMBER)}] Same as \command{LOG_ONE} but allows to specify the number of times the message will be logged via the additional parameter \parameter{NUMBER}.
+    \item[\command{LOG_N(LEVEL, NUMBER)}] Same as \command{LOG_ONCE} but allows to specify the number of times the message will be logged via the additional parameter \parameter{NUMBER}.
     \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
     LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
     \end{minted}
