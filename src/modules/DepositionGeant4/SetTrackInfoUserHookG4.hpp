@@ -13,6 +13,7 @@
 
 #include "G4Track.hh"
 #include "G4UserTrackingAction.hh"
+#include "core/config/Configuration.hpp"
 
 #include "TrackInfoManager.hpp"
 
@@ -26,7 +27,8 @@ namespace allpix {
          * @brief Constructor taking a TrackInfoManager*
          * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
          */
-        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
+        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr, Configuration& config)
+            : track_info_mgr_ptr_(track_info_mgr_ptr), config_(config){};
 
         /**
          * @brief Default destructor
@@ -48,6 +50,7 @@ namespace allpix {
     private:
         // Raw ptr to track info manager to create instances of TrackInfoG4
         TrackInfoManager* track_info_mgr_ptr_;
+        Configuration& config_;
     };
 
 } // namespace allpix

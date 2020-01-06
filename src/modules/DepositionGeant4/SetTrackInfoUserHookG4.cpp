@@ -6,9 +6,17 @@ using namespace allpix;
 void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
     auto theTrack = const_cast<G4Track*>(aTrack); // NOLINT
     auto particle = aTrack->GetDefinition();
+    auto particle_lifetime = particle->GetPDGLifeTime();
+    auto lifetime_cut = Units::convert(config_.get<double>("decay_cutoff_time", 0), "ns");
 
-    // Unstable particles which are not the primary particle should be killed to stop the decay chain:
-    if(!particle->GetPDGStable() && aTrack->GetTrackID() > 1) {
+    // Unstable particles which are not the primary particle and have a lifetime longer than the lifetime_cut
+    // should be killed to stop the decay chain:
+    if(particle_lifetime > lifetime_cut && aTrack->GetTrackID() > 1) {
+        // Only give the warning once to prevent too many errors given per event
+        LOG_ONCE(WARNING) << "The track of " << particle->GetParticleName() << ", with a lifetime of " << particle_lifetime
+                          << "ns, will not be propagated for this simulation because its lifetime is too long!\n"
+                          << "If you do want to propagate this particle, set the decay_cutoff_time to a value larger than "
+                          << particle_lifetime << "ns.";
         theTrack->SetTrackStatus(fStopAndKill);
     }
 

@@ -207,7 +207,7 @@ void DepositionGeant4Module::init() {
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get(), config_);
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
