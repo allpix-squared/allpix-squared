@@ -27,8 +27,8 @@ namespace allpix {
          * @brief Constructor taking a TrackInfoManager*
          * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
          */
-        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr, Configuration& config)
-            : track_info_mgr_ptr_(track_info_mgr_ptr), config_(config){};
+        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr, double decay_cutoff_time)
+            : track_info_mgr_ptr_(track_info_mgr_ptr), decay_cutoff_time_(decay_cutoff_time){};
 
         /**
          * @brief Default destructor
@@ -50,7 +50,7 @@ namespace allpix {
     private:
         // Raw ptr to track info manager to create instances of TrackInfoG4
         TrackInfoManager* track_info_mgr_ptr_;
-        Configuration& config_;
+        double decay_cutoff_time_;
     };
 
 } // namespace allpix
