@@ -206,8 +206,10 @@ void DepositionGeant4Module::init() {
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
+    // Default value chosen to ensure proper gamma generation for Cs137 decay
+    auto decay_cutoff_time = config_.get<double>("decay_cutoff_time", 2.21e+11);
+
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto decay_cutoff_time = Units::convert(config_.get<double>("decay_cutoff_time", 0), "ns");
     auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get(), decay_cutoff_time);
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
