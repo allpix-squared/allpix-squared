@@ -1,7 +1,7 @@
 AllpixSquared_version="@ALLPIX_VERSION@"
 
 # Dependencies
-@SETUP_FILE_DEPS@
+@SETUP_FILE_DEPS_SH@
 
 THIS_BASH=$BASH
 if [[ $THIS_BASH == "" ]]; then
