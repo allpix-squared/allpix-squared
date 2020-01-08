@@ -247,8 +247,8 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRE
 # Add compiler if necessary:
 GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
 GET_FILENAME_COMPONENT(PARENT_PATH ${CMP_PATH} DIRECTORY)
-IF(EXISTS ${PARENT_PATH}/setup.csh)
-  LIST(APPEND ALLPIX_RUNTIME_DEPS "${PARENT_PATH}/setup.csh")
+IF(EXISTS ${PARENT_PATH}/setup.zsh)
+  LIST(APPEND ALLPIX_RUNTIME_DEPS "${PARENT_PATH}/setup.zsh")
 ENDIF()
 
 # Build configuration string with commands
@@ -263,7 +263,7 @@ FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
     SET(SETUP_FILE_DEPS_ZSH "${SETUP_FILE_DEPS_ZSH}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
 ENDFOREACH()
 # Create setup file
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.csh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.csh" @ONLY)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.zsh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.zsh" @ONLY)
 
 
 #######################################
