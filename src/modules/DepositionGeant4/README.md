@@ -79,8 +79,8 @@ This module requires an installation Geant4.
 * `source_position` : Position of the particle source in the world geometry.
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
 * `file_name` : Name of the macro file (if source_type=**macro**).
-* `decay_cutoff_time` : Maximum lifetime of secondary particles that will be propagated in the simulation. Defaults to 221s (to ensure proper gamma crehation for te Cs137 decay).
-Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default decay_cutoff_time.
+* `decay_cutoff_time` : Maximum lifetime of secondary particles that will be propagated in the simulation. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
+Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `decay_cutoff_time`.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.

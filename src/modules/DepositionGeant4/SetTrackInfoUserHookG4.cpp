@@ -21,7 +21,7 @@ void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
         LOG_ONCE(WARNING)
             << "The track of " << particle->GetParticleName() << ", with a lifetime of "
             << Units::display(particle_lifetime, {"us", "ns"})
-            << "ns, will not be propagated for this simulation because its lifetime is too long!\n"
+            << "ns, will not be propagated for this simulation because its lifetime is too long!" << std::endl
             << "If you do want to propagate this particle, set the decay_cutoff_time to a value larger than its lifetime.";
         theTrack->SetTrackStatus(fStopAndKill);
     }
