@@ -1,6 +1,6 @@
 AllpixSquared_version="@ALLPIX_VERSION@"
 
-# Dependencies
+# Dependencies - directory changes required for zsh compatibility
 @SETUP_FILE_DEPS@
 
 THIS_BASH=$BASH

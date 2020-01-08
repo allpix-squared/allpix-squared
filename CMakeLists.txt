@@ -221,9 +221,9 @@ ADD_SUBDIRECTORY(examples)
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
 
-#############################
-# Create a local setup file #
-#############################
+############################
+# Create local setup files #
+############################
 
 # Add compiler if necessary:
 GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
@@ -234,7 +234,11 @@ ENDIF()
 
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
-    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
+    GET_FILENAME_COMPONENT(DEP_PATH ${dep} DIRECTORY)
+    GET_FILENAME_COMPONENT(DEP_NAME ${dep} NAME)
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd ${DEP_PATH}\n")
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${DEP_NAME}\n")
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd -\n\n")
 ENDFOREACH()
 FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
