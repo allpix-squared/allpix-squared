@@ -138,8 +138,16 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(NOT ROOT_cxx17_FOUND)
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+    IF(NOT SUPPORT_STD_CXX17)
+        MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
+    ENDIF()
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
     SET(CMAKE_CXX_STANDARD 14)
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
+    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
+ELSE()
+    MESSAGE(FATAL_ERROR "Could not deduce ROOT's C++ version from build flags: ${ROOT_CXX_FLAGS}")
 ENDIF()
 
 # Check ROOT version

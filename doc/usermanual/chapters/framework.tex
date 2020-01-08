@@ -576,16 +576,32 @@ These utilities are used internally in the framework and are only shortly discus
 The logging system is built to handle input/output in the same way as \texttt{std::cin} and \texttt{std::cout} do.
 This approach is both very flexible and easy to read.
 The system is globally configured, thus only one logger instance exists.
-In order to send a message to the logging system at a level of \parameter{LEVEL}, the following can be used:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
-\end{minted}
-A new line and carriage return is added at the end of every log message.
-Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
+The following commands are available for sending messages to the logging system at a level of \parameter{LEVEL}:
 
-The system also allows messages to be updated on the same line, for simple progressbar-like functionality.
-It is enabled using the \parameter{LOG_PROCESS(LEVEL, IDENTIFIER)} command.
-Here, the \parameter{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
+\begin{description}
+    \item[\command{LOG(LEVEL)}] Send a message with severity level \parameter{LEVEL} to the logging system.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
+    \end{minted}
+    A new line and carriage return is added at the end of every log message.
+    Multi-line log messages can be used by adding new line commands to the stream. The logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
+    \item[\command{LOG_ONCE(LEVEL)}] Same as \command{LOG}, but will only log this message once over the full run, even if the logging function is called multiple times.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
+    \end{minted}
+    This can be used to log warnings or messages e.g.\ from the \command{run()} function of a module without flooding the log output with the same message for every event.
+    The message is preceded by the information that further messages will be suppressed.
+    \item[\command{LOG_N(LEVEL, NUMBER)}] Same as \command{LOG_ONCE} but allows to specify the number of times the message will be logged via the additional parameter \parameter{NUMBER}.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
+    \end{minted}
+    The last message is preceded by the information that further messages will be suppressed.
+    \item[\command{LOG_PROGRESS(LEVEL, IDENTIFIER)}] This function allows to update the message to be updated on the same line for simple progressbar-like functionality.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << n << " of " << number_of_events;
+    \end{minted}
+    Here, the \parameter{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
+\end{description}
 
 If the output is a terminal screen the logging output will be coloured to make it easier to identify warnings and error messages.
 This is disabled automatically for all non-terminal outputs.
