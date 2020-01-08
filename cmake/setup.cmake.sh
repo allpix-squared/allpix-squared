@@ -1,7 +1,7 @@
 AllpixSquared_version="@ALLPIX_VERSION@"
 
-# Dependencies
-@SETUP_FILE_DEPS_SH@
+# Dependencies - directory changes required for zsh compatibility
+@SETUP_FILE_DEPS@
 
 THIS_BASH=$BASH
 if [[ $THIS_BASH == "" ]]; then

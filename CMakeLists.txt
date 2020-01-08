@@ -221,11 +221,10 @@ ADD_SUBDIRECTORY(examples)
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
 
-#############################################
-# Create local setup files for bash and zsh #
-#############################################
+############################
+# Create local setup files #
+############################
 
-# bash
 # Add compiler if necessary:
 GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
 GET_FILENAME_COMPONENT(PARENT_PATH ${CMP_PATH} DIRECTORY)
@@ -235,35 +234,17 @@ ENDIF()
 
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
-    SET(SETUP_FILE_DEPS_SH "${SETUP_FILE_DEPS_SH}source ${dep}\n")
+    GET_FILENAME_COMPONENT(DEP_PATH ${dep} DIRECTORY)
+    GET_FILENAME_COMPONENT(DEP_NAME ${dep} NAME)
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd ${DEP_PATH}\n")
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${DEP_NAME}\n")
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd -\n\n")
 ENDFOREACH()
 FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
-    SET(SETUP_FILE_DEPS_SH "${SETUP_FILE_DEPS_SH}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
+    SET(SETUP_FILE_DEPS_SH "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
 ENDFOREACH()
 # Create setup file
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
-
-# zsh
-# Add compiler if necessary:
-GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
-GET_FILENAME_COMPONENT(PARENT_PATH ${CMP_PATH} DIRECTORY)
-IF(EXISTS ${PARENT_PATH}/setup.zsh)
-  LIST(APPEND ALLPIX_RUNTIME_DEPS "${PARENT_PATH}/setup.zsh")
-ENDIF()
-
-# Build configuration string with commands
-FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
-    GET_FILENAME_COMPONENT(DEP_PATH ${dep} DIRECTORY)
-    GET_FILENAME_COMPONENT(DEP_NAME ${dep} NAME)
-    SET(SETUP_FILE_DEPS_ZSH "${SETUP_FILE_DEPS_ZSH}cd ${DEP_PATH}\n")
-    SET(SETUP_FILE_DEPS_ZSH "${SETUP_FILE_DEPS_ZSH}source ${DEP_NAME}\n")
-    SET(SETUP_FILE_DEPS_ZSH "${SETUP_FILE_DEPS_ZSH}cd -\n\n")
-ENDFOREACH()
-FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
-    SET(SETUP_FILE_DEPS_ZSH "${SETUP_FILE_DEPS_ZSH}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
-ENDFOREACH()
-# Create setup file
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.zsh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.zsh" @ONLY)
 
 
 #######################################
