@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <atomic>
 #include <exception>
+#include <functional>
 #include <future>
 #include <memory>
 #include <queue>
@@ -21,8 +22,6 @@ namespace allpix {
      * @brief Pool of threads where event tasks can be submitted to
      */
     class ThreadPool {
-        friend class ModuleManager;
-
     public:
         /**
          * @brief Internal thread-safe queue
@@ -94,8 +93,8 @@ namespace allpix {
          */
         explicit ThreadPool(unsigned int num_threads,
                             unsigned int max_queue_size,
-                            std::function<void()> worker_init_function,
-                            std::function<void()> worker_finalize_function);
+                            std::function<void()> worker_init_function = nullptr,
+                            std::function<void()> worker_finalize_function = nullptr);
 
         /// @{
         /**
@@ -106,29 +105,25 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Destroy and wait for all threads to finish on destruction
+         * @brief Submit a job to be run by the thread pool. In case no workers, the function will be immediately executed.
+         * @param func Function to execute by the pool
+         * @param args Parameters to pass to the function
+         * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
+         *          there are no threads available
          */
-        ~ThreadPool();
-
-    private:
-        /**
-         * @brief Submit wrapped event function for worker execution. In case no workers, the
-         * event_function will be immediatly executed on the caller thread.
-         * @param event_function Function to execute (should call the run-method of the event)
-         */
-        void submit_event_function(std::function<void()> event_function);
+        template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
 
         /**
          * @brief Return the number of enqueued events
          * @return The number of enqueued events
          */
-        size_t queue_size() const;
+        size_t queueSize() const;
 
         /**
          * @brief Check if any worker thread has thrown an exception
          * @throw Exception thrown by worker thread, if any
          */
-        void check_exception();
+        void checkException();
 
         /**
          * @brief Waits for the worker threads to finish
@@ -136,21 +131,28 @@ namespace allpix {
         void wait();
 
         /**
-         * @brief Constantly running internal function each thread uses to acquire work items from the queue.
-         * @param init_function Function to initialize the relevant thread_local variables
-         */
-        void worker(const std::function<void()>& init_function);
-
-        /**
          * @brief Invalidate all queues and joins all running threads when the pool is destroyed.
          */
         void destroy();
+
+        /**
+         * @brief Destroy and wait for all threads to finish on destruction
+         */
+        ~ThreadPool();
+
+    private:
+        /**
+         * @brief Constantly running internal function each thread uses to acquire work items from the queue.
+         * @param init_function Function to initialize the thread
+         * @param init_function Function to finalize the thread
+         */
+        void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
 
         using Task = std::unique_ptr<std::packaged_task<void()>>;
 
         std::atomic_bool done_{false};
 
-        SafeQueue<Task> event_queue_;
+        SafeQueue<Task> queue_;
 
         std::atomic<unsigned int> run_cnt_;
         mutable std::mutex run_mutex_;
@@ -159,8 +161,6 @@ namespace allpix {
 
         std::atomic_flag has_exception_;
         std::exception_ptr exception_ptr_{nullptr};
-
-        std::function<void()> worker_finalize_function_;
     };
 } // namespace allpix
 

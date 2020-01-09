@@ -101,6 +101,9 @@ namespace allpix {
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
 
+        // Configuration of decay cut-off time
+        double decay_cutoff_time_{};
+
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
         G4RunManager* run_manager_g4_;
 
