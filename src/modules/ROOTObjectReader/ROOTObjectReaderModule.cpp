@@ -20,6 +20,7 @@
 #include <TTree.h>
 
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/type.h"
@@ -115,7 +116,11 @@ void ROOTObjectReaderModule::init() {
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
     // Open the file with the objects
-    input_file_ = std::make_unique<TFile>(config_.getPath("file_name", true).c_str());
+    input_file_name_ = allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root");
+    if(!allpix::path_is_file(input_file_name_)) {
+        throw InvalidValueError(config_, "file_name", "path " + input_file_name_ + " not found");
+    }
+    input_file_ = std::make_unique<TFile>(input_file_name_.c_str());
 
     // Read all the trees in the file
     TList* keys = input_file_->GetListOfKeys();
