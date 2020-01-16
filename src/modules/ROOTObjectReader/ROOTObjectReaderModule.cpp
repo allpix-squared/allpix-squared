@@ -116,7 +116,7 @@ void ROOTObjectReaderModule::init() {
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
     // Open the file with the objects
-    std::string input_file_name = allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root");
+    auto input_file_name = allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root");
     if(!allpix::path_is_file(input_file_name)) {
         throw InvalidValueError(config_, "file_name", "path " + input_file_name + " not found");
     }
