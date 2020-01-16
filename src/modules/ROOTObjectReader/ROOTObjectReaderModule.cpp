@@ -116,10 +116,7 @@ void ROOTObjectReaderModule::init() {
     message_creator_map_ = gen_creator_map<allpix::OBJECTS>();
 
     // Open the file with the objects
-    auto input_file_name = allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root");
-    if(!allpix::path_is_file(input_file_name)) {
-        throw InvalidValueError(config_, "file_name", "path " + input_file_name + " not found");
-    }
+    auto input_file_name = config_.getPathWithExtension("file_name", "root", true);
     input_file_ = std::make_unique<TFile>(input_file_name.c_str());
 
     // Read all the trees in the file
