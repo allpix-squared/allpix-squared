@@ -82,6 +82,7 @@ namespace allpix {
 
         // File containing the objects
         std::unique_ptr<TFile> input_file_;
+        std::string input_file_name_{};
 
         // Object trees in the file
         std::vector<TTree*> trees_;
