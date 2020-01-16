@@ -78,6 +78,19 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
+ * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
+ */
+std::string
+Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
+    try {
+        return path_to_absolute(allpix::add_file_extension(get<std::string>(key), extension), check_exists);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(*this, key, e.what());
+    }
+}
+/**
+ * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ *
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
