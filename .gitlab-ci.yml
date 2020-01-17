@@ -44,7 +44,7 @@ cmp:slc6-gcc:
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
     extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="gcc"
         - source etc/scripts/setup_lxplus.sh
@@ -192,7 +192,7 @@ mod:lxplus-gcc:
     extends: .testmod
     dependencies:
         - cmp:lxplus-gcc
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
@@ -200,7 +200,7 @@ core:lxplus-gcc:
     extends: .testcore
     dependencies:
         - cmp:lxplus-gcc
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
