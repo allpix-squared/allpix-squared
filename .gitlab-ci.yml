@@ -41,13 +41,6 @@ cmp:slc6-gcc:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
-cmp:slc6-llvm:
-    extends: .compile
-    image: clicdp/slc6-lcg
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
     extends: .compile
@@ -118,28 +111,6 @@ cmp:mac1014-clang:
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
-
-# SLC 6
-
-fmt:slc6-llvm-format:
-    extends: .format
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-lcg
-    script:
-        - cd build/
-        - ninja check-format
-
-fmt:slc6-llvm-lint:
-    extends: .format
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-lcg
-    script:
-        - cd build/
-        - ninja check-lint
-
-# CentOS 7
 
 fmt:cc7-llvm-format:
     extends: .format
@@ -232,27 +203,6 @@ core:lxplus-gcc:
     image: clicdp/slc6-lcg
     before_script:
         - source etc/scripts/setup_lxplus.sh
-
-mod:slc6-llvm:
-    extends: .testmod
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-lcg
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
-
-core:slc6-llvm:
-    extends: .testcore
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-lcg
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
-
 
 # CentOS 7
 
