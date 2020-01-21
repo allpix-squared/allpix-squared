@@ -14,7 +14,7 @@ void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
      * Note: Stable particles have a lifetime of either -1 or 0. Geant4 has exited states which also have a lifetime of 0.
      *       The ">" sign was chosen to prevent stable particles or instantly decaying exited states
      *       from being killed if the decay_cutoff_time would be set to 0.
-    */
+     */
     if(particle_lifetime > decay_cutoff_time_ && aTrack->GetTrackID() > 1) {
 
         // Only give the warning once to prevent too many errors given per event

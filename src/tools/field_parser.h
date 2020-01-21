@@ -133,7 +133,7 @@ namespace allpix {
             archive(data_);
         }
     };
-}
+} // namespace allpix
 
 // Enable versioning for the FieldData class template
 namespace cereal {
@@ -149,8 +149,8 @@ namespace cereal {
         };                                          /* end Version */
         template <class T>
         const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
-    }
-}
+    } // namespace detail
+} // namespace cereal
 
 namespace allpix {
 
@@ -463,9 +463,10 @@ namespace allpix {
 
                         // Vector or scalar field:
                         for(size_t j = 0; j < N_; j++) {
-                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
-                                                                   yind * dimensions[2] * N_ + zind * N_ + j),
-                                                          units);
+                            file << " "
+                                 << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
+                                                            yind * dimensions[2] * N_ + zind * N_ + j),
+                                                   units);
                         }
                         // End this line
                         file << std::endl;
