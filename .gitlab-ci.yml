@@ -23,7 +23,7 @@ stages:
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - ninja
         - ninja install
     artifacts:
@@ -58,9 +58,23 @@ cmp:lxplus-gcc:
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja
         - ninja install
+
+cmp:cc7-docker:
+    extends: .compile
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
+    script:
+        - mkdir build
+        - cd build
+        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make
+        - make install
 
 cmp:cc7-gcc:
     extends: .compile
@@ -87,7 +101,7 @@ cmp:mac1014-clang:
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja
         - ninja install
 
@@ -192,6 +206,7 @@ mod:slc6-gcc:
     image: clicdp/slc6-base
     before_script:
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:slc6-gcc:
     extends: .testcore
@@ -200,6 +215,7 @@ core:slc6-gcc:
     image: clicdp/slc6-base
     before_script:
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 mod:lxplus-gcc:
     extends: .testmod
@@ -225,6 +241,7 @@ mod:slc6-llvm:
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:slc6-llvm:
     extends: .testcore
@@ -234,9 +251,20 @@ core:slc6-llvm:
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 # CentOS 7
+
+core:cc7-docker:
+    extends: .testcore
+    dependencies:
+        - cmp:cc7-docker
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
 
 mod:cc7-gcc:
     extends: .testmod
@@ -264,6 +292,7 @@ mod:cc7-llvm:
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:cc7-llvm:
     extends: .testcore
@@ -273,6 +302,7 @@ core:cc7-llvm:
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 # Mac OS X

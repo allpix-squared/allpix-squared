@@ -11,12 +11,12 @@ IF(NOT ALLPIX_VERSION)
 ENDIF()
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED)
+FIND_PACKAGE(ROOT REQUIRED NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
-INCLUDE_DIRECTORIES(SYSTEM ${ROOT_INCLUDE_DIRS})
+ALLPIX_SETUP_ROOT_TARGETS()
 
 # Find Threading library
 FIND_PACKAGE(Threads REQUIRED)
@@ -37,12 +37,12 @@ ADD_EXECUTABLE(generate_potential
     ${ALLPIX_SRC}/core/geometry/DetectorModel.cpp
 )
 
-# Link the dependency libraries
-TARGET_LINK_LIBRARIES(generate_potential ${ROOT_LIBRARIES} ${ROOT_COMPONENT_LIBRARIES} Threads::Threads)
-
 # Include Eigen dependency
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(SYSTEM ${EIGEN3_INCLUDE_DIR})
+FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
+ALLPIX_SETUP_EIGEN_TARGETS()
+
+# Link the dependency libraries
+TARGET_LINK_LIBRARIES(generate_potential ROOT::Core Threads::Threads Eigen3::Eigen)
 
 # Create install target
 INSTALL(TARGETS generate_potential

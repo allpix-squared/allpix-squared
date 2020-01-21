@@ -97,7 +97,7 @@ INCLUDE("cmake/AllpixMacros.cmake")
 ###################################
 
 # Set standard build flags
-SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene -Wno-overloaded-virtual)
+SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion -Wuseless-cast -Wctor-dtor-privacy -Wzero-as-null-pointer-constant -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Wredundant-decls -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wshadow -Wformat-security -Wdeprecated -fdiagnostics-color=auto -Wheader-hygiene -Wno-overloaded-virtual)
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
@@ -131,15 +131,23 @@ FIND_PACKAGE(Threads REQUIRED)
 SET(ALLPIX_LIBRARIES "")
 
 # ROOT is required for vector and persistency etc
-FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO)
+FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
     "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(NOT ROOT_cxx17_FOUND)
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+    IF(NOT SUPPORT_STD_CXX17)
+        MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
+    ENDIF()
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
     SET(CMAKE_CXX_STANDARD 14)
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
+    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
+ELSE()
+    MESSAGE(FATAL_ERROR "Could not deduce ROOT's C++ version from build flags: ${ROOT_CXX_FLAGS}")
 ENDIF()
 
 # Check ROOT version
@@ -213,9 +221,9 @@ ADD_SUBDIRECTORY(examples)
 # Include all tests
 ADD_SUBDIRECTORY(etc/unittests)
 
-#############################
-# Create a local setup file #
-#############################
+############################
+# Create local setup files #
+############################
 
 # Add compiler if necessary:
 GET_FILENAME_COMPONENT(CMP_PATH ${CMAKE_CXX_COMPILER} DIRECTORY)
@@ -226,7 +234,10 @@ ENDIF()
 
 # Build configuration string with commands
 FOREACH(dep ${ALLPIX_RUNTIME_DEPS})
+    GET_FILENAME_COMPONENT(DEP_PATH ${dep} DIRECTORY)
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd ${DEP_PATH}\n")
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}source ${dep}\n")
+    SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}cd -\n\n")
 ENDFOREACH()
 FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")

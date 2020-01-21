@@ -239,8 +239,9 @@ void DetectorHistogrammerModule::run(unsigned int) {
     using namespace ROOT::Math;
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
+    LOG(DEBUG) << "Received " << (pixels_message_ != nullptr ? std::to_string(pixels_message_->getData().size()) : "no")
+               << " pixel hits";
     if(pixels_message_ != nullptr) {
-        LOG(DEBUG) << "Received " << pixels_message_->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
         for(auto& pixel_hit : pixels_message_->getData()) {

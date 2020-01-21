@@ -173,6 +173,13 @@ namespace allpix {
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
 
         /**
+         * @brief Set matrix of values for a key in a given type
+         * @param key Key to set values of
+         * @param val List of values to assign to the key
+         */
+        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val);
+
+        /**
          * @brief Set default value for a key only if it is not defined yet
          * @param key Key to possible set value of
          * @param val Value to assign if the key is not defined yet
@@ -196,8 +203,9 @@ namespace allpix {
          * @brief Set alias name for an already existing key
          * @param new_key New alias to be created
          * @param old_key Key the alias is created for
+         * @param warn Optionally print a warning message to notify of deprecation
          */
-        void setAlias(const std::string& new_key, const std::string& old_key);
+        void setAlias(const std::string& new_key, const std::string& old_key, bool warn = false);
 
         /**
          * @brief Return total number of key / value pairs
