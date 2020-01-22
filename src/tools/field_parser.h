@@ -144,8 +144,8 @@ namespace cereal {
                     std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
                 return 3;
             }
-            static void unused() { (void)version; }
-        }; /* end Version */
+            static void unused() { (void)version; } // NOLINT
+        };                                          /* end Version */
         template <class T>
         const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
     }
