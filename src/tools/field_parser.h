@@ -181,7 +181,7 @@ namespace allpix {
          *
          * The type of the field data file to be read is deducted automatically from the file content
          */
-        FieldData<T> getByFileName(const std::string& file_name, const std::string units = std::string()) {
+        FieldData<T> getByFileName(const std::string& file_name, const std::string& units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
@@ -277,7 +277,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the input file to be parsed
          * @param units      Units to convert the values of the field data from
          */
-        FieldData<T> parse_init_file(const std::string& file_name, const std::string units) {
+        FieldData<T> parse_init_file(const std::string& file_name, const std::string& units) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -366,7 +366,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldWriter(const FieldQuantity quantity) {
+        explicit FieldWriter(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -382,7 +382,7 @@ namespace allpix {
         void writeFile(const FieldData<T>& field_data,
                        const std::string& file_name,
                        const FileType& file_type,
-                       const std::string units = std::string()) {
+                       const std::string& units = std::string()) {
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
@@ -430,7 +430,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the output file to be created
          * @param units      Units to convert the values of the field data to.
          */
-        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string units) {
+        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string& units) {
             std::ofstream file(file_name);
 
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
