@@ -181,7 +181,7 @@ namespace allpix {
          *
          * The type of the field data file to be read is deducted automatically from the file content
          */
-        FieldData<T> get_by_file_name(const std::string& file_name, const std::string units = std::string()) {
+        FieldData<T> getByFileName(const std::string& file_name, const std::string units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
