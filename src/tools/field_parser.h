@@ -73,7 +73,7 @@ namespace allpix {
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data)
-            : header_(header), dimensions_(dimensions), size_(size), data_(data){};
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(data){};
 
         /**
          * @brief Function to obtain the header (human readbale content description) of the field data
@@ -167,7 +167,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldParser(const FieldQuantity quantity) {
+        explicit FieldParser(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
