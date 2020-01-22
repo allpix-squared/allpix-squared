@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
-    std::string format = config.get<std::string>("model", "apf");
+    auto format = config.get<std::string>("model", "apf");
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
