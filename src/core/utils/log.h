@@ -11,7 +11,7 @@
 #define ALLPIX_LOG_H
 
 #ifdef WIN32
-#define __func__ __FUNCTION__
+#define __PRETTY_FUNCTION__ __FUNCTION__
 #endif
 
 #include <cstring>
@@ -246,7 +246,7 @@ namespace allpix {
 #define LOG(level)                                                                                                          \
     if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \
     allpix::Log().getStream(                                                                                                \
-        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__PRETTY_FUNCTION__)), __LINE__)
 
 /**
  * @brief Create a logging stream that overwrites the line if the previous message has the same identifier
@@ -255,8 +255,11 @@ namespace allpix {
  */
 #define LOG_PROGRESS(level, identifier)                                                                                     \
     if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \
-    allpix::Log().getProcessStream(                                                                                         \
-        identifier, allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+    allpix::Log().getProcessStream(identifier,                                                                              \
+                                   allpix::LogLevel::level,                                                                 \
+                                   __FILE_NAME__,                                                                           \
+                                   std::string(static_cast<const char*>(__PRETTY_FUNCTION__)),                              \
+                                   __LINE__)
 
 /**
  * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged
@@ -283,7 +286,7 @@ namespace allpix {
     if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
     allpix::Log().getStream(                                                                                                \
-        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
+        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__PRETTY_FUNCTION__), __LINE__)                  \
         << (GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
 
     /**
