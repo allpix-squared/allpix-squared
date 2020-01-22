@@ -44,16 +44,16 @@ namespace allpix {
         /**
          * @brief Use default copy behaviour
          */
-        Object(const Object&);
-        Object& operator=(const Object&);
+        Object(const Object&) = default;
+        Object& operator=(const Object&) = default;
         /// @}
 
         /// @{
         /**
          * @brief Use default move behaviour
          */
-        Object(Object&&);
-        Object& operator=(Object&&);
+        Object(Object&&) = default;
+        Object& operator=(Object&&) = default;
         /// @}
 
         /**
