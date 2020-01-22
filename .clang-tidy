@@ -9,7 +9,8 @@ Checks : '-*,
           cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-special-member-functions,-cppcoreguidelines-pro-type-static-cast-downcast,-cppcoreguidelines-pro-bounds-constant-array-index,
           cert-*,-cert-err58-cpp,-cert-err34-c,
           misc-*,-misc-noexcept-move-constructor,
-          clang-analyzer-*,-clang-analyzer-alpha*,-clang-analyzer-core*,-clang-analyzer-cplusplus*'
+          clang-analyzer-*,-clang-analyzer-alpha*,-clang-analyzer-core*,-clang-analyzer-cplusplus*,
+          -cppcoreguidelines-owning-memory'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:
