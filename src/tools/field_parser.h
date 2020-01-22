@@ -379,10 +379,10 @@ namespace allpix {
          * @param file_type  Type of file (file format) to be produced
          * @param units      Optional units to convert the field into before writing. Only used by some formats.
          */
-        void write_file(const FieldData<T>& field_data,
-                        const std::string& file_name,
-                        const FileType& file_type,
-                        const std::string units = std::string()) {
+        void writeFile(const FieldData<T>& field_data,
+                       const std::string& file_name,
+                       const FileType& file_type,
+                       const std::string units = std::string()) {
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
