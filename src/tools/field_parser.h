@@ -25,6 +25,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <utility>
 
 // Mime type version for APF files
 #define APF_MIME_TYPE_VERSION 1
