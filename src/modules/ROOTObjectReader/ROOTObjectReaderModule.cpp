@@ -50,6 +50,8 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
         std::vector<T> data;
+        data.reserve(objects.size());
+
         // Copy the objects to data vector
         for(auto& object : objects) {
             data.emplace_back(*static_cast<T*>(object));
