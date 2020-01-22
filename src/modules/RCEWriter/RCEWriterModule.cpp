@@ -381,8 +381,8 @@ void RCEWriterModule::run(unsigned int event_id) {
 
         // Loop over all the hits
         for(const auto& hit : hit_msg->getData()) {
-            if(sensor.kMaxHits <= sensor.nhits_) {
-                LOG(ERROR) << "More than " << sensor.kMaxHits << " in detector " << detector_name;
+            if(sensor_data::kMaxHits <= sensor.nhits_) {
+                LOG(ERROR) << "More than " << sensor_data::kMaxHits << " in detector " << detector_name;
                 continue;
             }
 
