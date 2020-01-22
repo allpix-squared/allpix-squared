@@ -533,7 +533,7 @@ int main(int argc, char** argv) {
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
     allpix::FieldWriter<double> field_writer(quantity);
-    field_writer.write_file(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
+    field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
     LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
 
     end = std::chrono::system_clock::now();
