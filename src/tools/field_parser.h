@@ -73,7 +73,7 @@ namespace allpix {
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data)
-            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(data){};
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)){};
 
         /**
          * @brief Function to obtain the header (human readbale content description) of the field data

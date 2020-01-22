@@ -19,8 +19,8 @@ namespace corryvreckan {
                    ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint local_end_point,
                    double timestamp)
-            : Object(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
-              m_local_end_point(local_end_point) {}
+            : Object(std::move(detectorID), timestamp), m_particle_id(particle_id),
+              m_local_start_point(std::move(local_start_point)), m_local_end_point(std::move(local_end_point)) {}
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.
