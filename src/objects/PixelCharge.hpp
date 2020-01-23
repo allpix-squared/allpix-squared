@@ -47,7 +47,7 @@ namespace allpix {
          */
         PixelCharge(Pixel pixel,
                     Pulse pulse,
-                    std::vector<const PropagatedCharge*> propagated_charges = std::vector<const PropagatedCharge*>());
+                    const std::vector<const PropagatedCharge*>& propagated_charges = std::vector<const PropagatedCharge*>());
 
         /**
          * @brief Get the pixel containing the charges

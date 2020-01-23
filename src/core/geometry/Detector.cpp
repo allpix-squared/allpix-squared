@@ -189,7 +189,7 @@ void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    electric_field_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
+    electric_field_.setGrid(field, dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -234,7 +234,7 @@ void Detector::setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> po
                                          std::array<double, 2> scales,
                                          std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
-    weighting_potential_.setGrid(std::move(potential), dimensions, scales, offset, thickness_domain);
+    weighting_potential_.setGrid(potential, dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
