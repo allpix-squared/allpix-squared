@@ -61,7 +61,7 @@ namespace allpix {
          * @brief Construct a general message bound to a detector
          * @param detector Linked detector
          */
-        explicit BaseMessage(const std::shared_ptr<const Detector>& detector);
+        explicit BaseMessage(std::shared_ptr<const Detector> detector);
 
     private:
         std::shared_ptr<const Detector> detector_;
