@@ -48,7 +48,7 @@ namespace allpix {
         /**
          * @brief Use default move behaviour
          */
-        OptionParser(OptionParser&&) noexcept = default;
+        OptionParser(OptionParser&&) noexcept = default; // NOLINT
         OptionParser& operator=(OptionParser&&) = default;
         /// @}
 
