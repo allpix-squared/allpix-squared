@@ -38,7 +38,7 @@ ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
  */
 ROOTObjectReaderModule::~ROOTObjectReaderModule() {
-    for(auto message_inf : message_info_array_) {
+    for(const auto& message_inf : message_info_array_) {
         delete message_inf.objects;
     }
 }
@@ -263,7 +263,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     LOG(TRACE) << "Building messages from stored objects";
 
     // Loop through all branches
-    for(auto message_inf : message_info_array_) {
+    for(const auto& message_inf : message_info_array_) {
         auto objects = message_inf.objects;
 
         // Skip empty objects in current event
