@@ -61,7 +61,7 @@ namespace allpix {
          * @brief Construct a general message bound to a detector
          * @param detector Linked detector
          */
-        explicit BaseMessage(std::shared_ptr<const Detector> detector);
+        explicit BaseMessage(const std::shared_ptr<const Detector>& detector);
 
     private:
         std::shared_ptr<const Detector> detector_;
@@ -84,7 +84,7 @@ namespace allpix {
          * @param data List of data objects
          * @param detector Linked detector
          */
-        Message(std::vector<T> data, std::shared_ptr<const Detector> detector);
+        Message(std::vector<T> data, const std::shared_ptr<const Detector>& detector);
 
         /**
          * @brief Get a reference to the data in this message

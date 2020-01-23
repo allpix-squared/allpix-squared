@@ -18,7 +18,7 @@
 using namespace allpix;
 
 BaseMessage::BaseMessage() = default;
-BaseMessage::BaseMessage(std::shared_ptr<const Detector> detector) : detector_(std::move(detector)) {}
+BaseMessage::BaseMessage(const std::shared_ptr<const Detector>& detector) : detector_(detector) {}
 BaseMessage::~BaseMessage() = default;
 
 std::shared_ptr<const Detector> BaseMessage::getDetector() const {
