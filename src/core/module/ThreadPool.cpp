@@ -18,7 +18,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
                        const std::function<void()>& worker_init_function) {
     // Create threads
     try {
-        for(unsigned int i = 0u; i < num_threads; ++i) {
+        for(unsigned int i = 0U; i < num_threads; ++i) {
             threads_.emplace_back(&ThreadPool::worker, this, worker_init_function);
         }
     } catch(...) {

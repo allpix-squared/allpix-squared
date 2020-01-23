@@ -82,7 +82,8 @@ namespace allpix {
         std::vector<T> elems;
 
         // Loop through the string
-        std::size_t prev = 0, pos;
+        std::size_t prev = 0;
+        std::size_t pos;
         while((pos = str.find_first_of(delims, prev)) != std::string::npos) {
             if(pos > prev) {
                 elems.push_back(from_string<T>(str.substr(prev, pos - prev)));
