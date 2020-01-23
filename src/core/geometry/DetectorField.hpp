@@ -103,7 +103,7 @@ namespace allpix {
          * @param offset Offset of the field in x and y, given in physical units
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setGrid(std::shared_ptr<std::vector<double>> field,
+        void setGrid(const std::shared_ptr<std::vector<double>>& field,
                      std::array<size_t, 3> dimensions,
                      std::array<double, 2> scales,
                      std::array<double, 2> offset,
@@ -125,9 +125,9 @@ namespace allpix {
          * @param sensor_size The extend of the sensor
          * @param pixel_pitch the pitch in X and Y of a single pixel
          */
-        void set_model_parameters(ROOT::Math::XYZPoint sensor_center,
-                                  ROOT::Math::XYZVector sensor_size,
-                                  ROOT::Math::XYVector pixel_pitch) {
+        void set_model_parameters(const ROOT::Math::XYZPoint& sensor_center,
+                                  const ROOT::Math::XYZVector& sensor_size,
+                                  const ROOT::Math::XYVector& pixel_pitch) {
             sensor_center_ = sensor_center;
             sensor_size_ = sensor_size;
             pixel_size_ = pixel_pitch;
