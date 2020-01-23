@@ -72,7 +72,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-6.0" "clang-tidy-5.0" "clang-tidy-4.0" "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-8" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy
