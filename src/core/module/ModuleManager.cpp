@@ -584,7 +584,7 @@ void ModuleManager::run() {
 
     if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
-        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1U));
+        threads_num = global_config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
         if(threads_num == 0) {
             throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
         }
@@ -613,7 +613,7 @@ void ModuleManager::run() {
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
-    global_config.setDefault<unsigned int>("number_of_events", 1U);
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
     auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
@@ -787,7 +787,7 @@ void ModuleManager::finalize() {
         }
     }
     LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time_) << ", spending "
-                << std::round((100 * slowest_time) / std::max(1.0L, total_time_)) << "% of time in slowest instantiation "
+                << std::round((100 * slowest_time) / std::max(1.0l, total_time_)) << "% of time in slowest instantiation "
                 << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
