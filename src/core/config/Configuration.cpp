@@ -182,9 +182,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1;
-    size_t lst = 1;
-    int in_dpt = 0;
+    size_t beg = 1, lst = 1, in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

@@ -39,7 +39,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                        type,
                        std::accumulate(pulses.begin(),
                                        pulses.end(),
-                                       0U,
+                                       0u,
                                        [](const unsigned int prev, const auto& elem) {
                                            return prev + static_cast<unsigned int>(std::abs(elem.second.getCharge()));
                                        }),

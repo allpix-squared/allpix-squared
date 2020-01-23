@@ -99,8 +99,7 @@ DefaultLogger::~DefaultLogger() {
 
     // Create a version without any special terminal characters
     std::string out_no_special;
-    size_t prev = 0;
-    size_t pos = 0;
+    size_t prev = 0, pos = 0;
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         out_no_special += out.substr(prev, pos - prev);
         prev = out.find('m', pos) + 1;
@@ -217,8 +216,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Save the indent count to fix with newlines
-    size_t prev = 0;
-    size_t pos = 0;
+    size_t prev = 0, pos = 0;
     std::string out = os.str();
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         indent_count_ += static_cast<unsigned int>(pos - prev);
