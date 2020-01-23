@@ -51,7 +51,7 @@ namespace allpix {
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&&) = default;
+        Configuration(Configuration&&) noexcept = default;
         Configuration& operator=(Configuration&&) = default;
         /// @}
 
