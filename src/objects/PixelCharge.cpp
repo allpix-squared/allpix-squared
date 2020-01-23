@@ -14,7 +14,7 @@
 
 using namespace allpix;
 
-PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
+PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<const PropagatedCharge*>& propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
     std::set<TRef> unique_particles;

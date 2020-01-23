@@ -158,7 +158,7 @@ unsigned int Configuration::countSettings() const {
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
-    for(auto config_pair : other.config_) {
+    for(const auto& config_pair : other.config_) {
         // Only merge values that do not yet exist
         if(!has(config_pair.first)) {
             setText(config_pair.first, config_pair.second);

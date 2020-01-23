@@ -37,7 +37,7 @@ namespace allpix {
          */
         PixelCharge(Pixel pixel,
                     unsigned int charge,
-                    std::vector<const PropagatedCharge*> propagated_charges = std::vector<const PropagatedCharge*>());
+                    const std::vector<const PropagatedCharge*>& propagated_charges = std::vector<const PropagatedCharge*>());
 
         /**
          * @brief Construct a set of charges at a pixel
@@ -91,7 +91,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 5);
+        ClassDefOverride(PixelCharge, 6);
         /**
          * @brief Default constructor for ROOT I/O
          */
