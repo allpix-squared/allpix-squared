@@ -10,7 +10,7 @@ Checks : '-*,
           cert-*,-cert-err58-cpp,-cert-err34-c,
           misc-*,-misc-noexcept-move-constructor,
           clang-analyzer-*,-clang-analyzer-alpha*,-clang-analyzer-core*,-clang-analyzer-cplusplus*,
-          -cppcoreguidelines-owning-memory,readability-magic-numbers'
+          -cppcoreguidelines-owning-memory,-readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-macro-usage,-modernize-use-nodiscard,-misc-non-private-member-variables-in-classes'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
 CheckOptions:
