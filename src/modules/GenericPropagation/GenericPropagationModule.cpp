@@ -329,7 +329,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
 
         // Create color table
-        TColor* colors[80];
+        TColor* colors[80]; // NOLINT
         for(int i = 20; i < 100; ++i) {
             auto color_idx = TColor::GetFreeColorIndex();
             colors[i - 20] = new TColor(color_idx,
