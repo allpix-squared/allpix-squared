@@ -166,7 +166,7 @@ namespace allpix {
             throw std::invalid_argument("end of thickness domain is before begin");
         }
 
-        field_ = std::move(field);
+        field_ = field;
         dimensions_ = dimensions;
         scales_ = scales;
         offset_ = offset;
