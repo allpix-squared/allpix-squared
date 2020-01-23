@@ -78,7 +78,7 @@ namespace allpix {
          * @warning Conversions should not be done with the result of this function. The \ref get(std::string) version should
          *          be used for that purpose instead.
          */
-        static UnitType get(std::string str);
+        static UnitType get(const std::string& str);
         /**
          * @brief Get input parameter in the base units
          * @param inp Value in a particular unit
