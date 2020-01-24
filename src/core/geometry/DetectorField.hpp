@@ -103,7 +103,7 @@ namespace allpix {
          * @param offset Offset of the field in x and y, given in physical units
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setGrid(const std::shared_ptr<std::vector<double>>& field,
+        void setGrid(std::shared_ptr<std::vector<double>> field,
                      std::array<size_t, 3> dimensions,
                      std::array<double, 2> scales,
                      std::array<double, 2> offset,
