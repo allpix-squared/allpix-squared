@@ -140,6 +140,15 @@ namespace allpix {
          * @return Absolute path to a file
          */
         std::string getPath(const std::string& key, bool check_exists = false) const;
+
+        /**
+         * @brief Get absolute path to file with paths relative to the configuration
+         * @param key Key to get path of
+         * @param extension File extension to be added to path if not present
+         * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
+         * @return Absolute path to a file
+         */
+        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
