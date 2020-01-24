@@ -147,7 +147,7 @@ namespace allpix {
      * @throws std::invalid_argument If the field dimensions are incorrect or the thickness domain is outside the sensor
      */
     template <typename T, size_t N>
-    void DetectorField<T, N>::setGrid(const std::shared_ptr<std::vector<double>>& field,
+    void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field, // NOLINT
                                       std::array<size_t, 3> dimensions,
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
@@ -166,7 +166,7 @@ namespace allpix {
             throw std::invalid_argument("end of thickness domain is before begin");
         }
 
-        field_ = field;
+        field_ = std::move(field);
         dimensions_ = dimensions;
         scales_ = scales;
         offset_ = offset;
