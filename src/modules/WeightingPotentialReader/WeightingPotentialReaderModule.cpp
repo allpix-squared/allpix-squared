@@ -194,7 +194,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
 /**
  * The field data read from files are shared between module instantiations
- * using the static WeightingPotentialReaderModule::get_by_file_name method.
+ * using the static FieldParser's getByFileName method.
  */
 FieldParser<double> WeightingPotentialReaderModule::field_parser_(FieldQuantity::SCALAR);
 FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, double> thickness_domain) {
@@ -204,7 +204,7 @@ FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, d
         LOG(TRACE) << "Fetching weighting potential from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true));
 
         // Check maximum/minimum values of the potential:
         auto elements = std::minmax_element(field_data.getData()->begin(), field_data.getData()->end());

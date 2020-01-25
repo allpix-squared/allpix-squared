@@ -75,7 +75,7 @@ public:
      * @param num_threads Number of threads in the pool
      * @param worker_init_function Function run by all the workers to initialize
      */
-    explicit ThreadPool(const unsigned int num_threads, std::function<void()> worker_init_function) {
+    explicit ThreadPool(const unsigned int num_threads, const std::function<void()>& worker_init_function) {
         // Create threads
         try {
             for(unsigned int i = 0u; i < num_threads; ++i) {

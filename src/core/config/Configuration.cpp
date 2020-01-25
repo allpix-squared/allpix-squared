@@ -158,7 +158,7 @@ unsigned int Configuration::countSettings() const {
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
-    for(auto config_pair : other.config_) {
+    for(const auto& config_pair : other.config_) {
         // Only merge values that do not yet exist
         if(!has(config_pair.first)) {
             setText(config_pair.first, config_pair.second);
@@ -195,8 +195,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1, lst = 1;
-    int in_dpt = 0;
+    size_t beg = 1, lst = 1, in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

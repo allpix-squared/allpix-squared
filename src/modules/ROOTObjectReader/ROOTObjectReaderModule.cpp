@@ -39,7 +39,7 @@ ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger*
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
  */
 ROOTObjectReaderModule::~ROOTObjectReaderModule() {
-    for(auto message_inf : message_info_array_) {
+    for(const auto& message_inf : message_info_array_) {
         delete message_inf.objects;
     }
 }
@@ -51,6 +51,8 @@ ROOTObjectReaderModule::~ROOTObjectReaderModule() {
 template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCreatorMap& map) {
     map[typeid(T)] = [&](std::vector<Object*> objects, std::shared_ptr<Detector> detector) {
         std::vector<T> data;
+        data.reserve(objects.size());
+
         // Copy the objects to data vector
         for(auto& object : objects) {
             data.emplace_back(*static_cast<T*>(object));
@@ -263,7 +265,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     LOG(TRACE) << "Building messages from stored objects";
 
     // Loop through all branches
-    for(auto message_inf : message_info_array_) {
+    for(const auto& message_inf : message_info_array_) {
         auto objects = message_inf.objects;
 
         // Skip empty objects in current event
