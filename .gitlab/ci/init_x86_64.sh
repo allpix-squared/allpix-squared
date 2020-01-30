@@ -25,6 +25,10 @@ if [ ! -d "/cvmfs/sft.cern.ch" ]; then
     echo "No SFT CVMFS repository detected, please make sure it is available."
     exit 1
 fi
+if [ ! -d "/cvmfs/geant4.cern.ch" ]; then
+    echo "No Geant4 CVMFS repository detected, please make sure it is available."
+    exit 1
+fi
 
 
 # Determine which LCG version to use
