@@ -18,9 +18,9 @@ For more details about the project please have a look at the website at https://
 Ready-to-run installations of Allpix<sup>2</sup> are provided via the CERN Virtual Machine File System (CVMFS) for use on SLC6 and CentOS7 machines supported by CERN. In order to use Allpix<sup>2</sup>, the respective environment has to be set up by sourcing the appropriate file:
 
 ```
-$ source /cvmfs/clicdp.cern.ch/software/allpix-squared/<version>/x86_64-<system>-gcc7-opt/setup.sh
+$ source /cvmfs/clicdp.cern.ch/software/allpix-squared/<version>/x86_64-<system>-<compiler>-opt/setup.sh
 ```
-where `<version>` should be replaced with the desired Allpix<sup>2</sup> version and `<system>` with the operating system of the executing machine (either `slc6` or `centos7`).
+where `<version>` should be replaced with the desired Allpix<sup>2</sup> version and `<system>` with the operating system of the executing machine (either `slc6` or `centos7`). The compiler versions available via the `<compiler>` tag depend on the selected operating system.
 
 After this, the `allpix` executable is in the `$PATH` environment variable and can be used.
 It should be noted that the CVMFS cache of the executing machine has to be populated with all dependencies when running the program for the first time.
