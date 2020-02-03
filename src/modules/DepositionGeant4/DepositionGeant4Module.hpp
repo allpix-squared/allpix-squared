@@ -112,6 +112,8 @@ namespace allpix {
 
         std::atomic_size_t number_of_sensors_{0};
 
+        double decay_cutoff_time_{};
+
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;
     };

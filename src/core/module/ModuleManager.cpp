@@ -470,7 +470,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
     // Set new log level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
-        std::string log_level_string = config.get<std::string>("log_level");
+        auto log_level_string = config.get<std::string>("log_level");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
             LogLevel log_level = Log::getLevelFromString(log_level_string);
@@ -486,7 +486,7 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
     // Set new log format if necessary
     LogFormat prev_format = Log::getFormat();
     if(config.has("log_format")) {
-        std::string log_format_string = config.get<std::string>("log_format");
+        auto log_format_string = config.get<std::string>("log_format");
         std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
         try {
             LogFormat log_format = Log::getFormatFromString(log_format_string);
@@ -688,7 +688,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [ this, number_of_events, event_num = i, event_seed = seed, &finished_events ]() mutable {
+        auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
             // The RNG to be used by all events running on this thread
             static thread_local std::mt19937_64 random_engine;
 

@@ -71,7 +71,7 @@ allpix::Units::UnitType Units::getSingle(std::string str) {
  * always multiplied, following common sense. Grouping units together within brackets or parentheses is not supported. Thus
  * any other character then a name of a unit, * or \ should lead to an error
  */
-allpix::Units::UnitType Units::get(std::string str) {
+allpix::Units::UnitType Units::get(const std::string& str) {
     UnitType ret_value = 1;
     if(allpix::trim(str).empty()) {
         return ret_value;

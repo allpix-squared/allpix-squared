@@ -52,7 +52,7 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Mess
     config_.setDefault("simple_view", true);
 
     // Check mode
-    std::string mode = config_.get<std::string>("mode");
+    auto mode = config_.get<std::string>("mode");
     if(mode != "gui" && mode != "terminal" && mode != "none") {
         throw InvalidValueError(config_, "mode", "viewing mode should be 'gui', 'terminal' or 'none'");
     }
@@ -164,7 +164,7 @@ void VisualizationGeant4Module::init() {
     set_visualization_settings();
 
     // Reset the default displayListLimit
-    std::string display_limit = config_.get<std::string>("display_limit", "1000000");
+    auto display_limit = config_.get<std::string>("display_limit", "1000000");
     UI->ApplyCommand("/vis/ogl/set/displayListLimit " + display_limit);
 
     // Release the stream early in debugging mode
@@ -187,7 +187,7 @@ void VisualizationGeant4Module::set_visualization_settings() {
     G4UImanager* UI = G4UImanager::GetUIpointer();
 
     // Set the background to white
-    std::string bkg_color = config_.get<std::string>("background_color", "white");
+    auto bkg_color = config_.get<std::string>("background_color", "white");
     auto ret_code = UI->ApplyCommand("/vis/viewer/set/background " + bkg_color);
     if(ret_code != 0) {
         throw InvalidValueError(config_, "background_color", "background color not defined");

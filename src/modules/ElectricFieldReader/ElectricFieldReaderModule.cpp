@@ -143,7 +143,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
     LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
     LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
     return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
-        const ROOT::Math::XYZPoint& pos) {
+               const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
         double field_z = std::max(0.0,
                                   (bias_voltage - depletion_voltage) / eff_thickness +
@@ -155,7 +155,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
 
 /**
  * The field data read from files are shared between module instantiations using the static
- * FieldParser's get_by_file_name method.
+ * FieldParser's getByFileName method.
  */
 FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
 FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
@@ -165,7 +165,7 @@ FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double
         LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), "V/cm");
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "V/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);

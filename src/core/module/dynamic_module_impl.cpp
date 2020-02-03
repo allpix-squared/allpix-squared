@@ -71,8 +71,9 @@ namespace allpix {
      * returns an instantiation
      */
     Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
-    Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector) {
-        auto module = new ALLPIX_MODULE_NAME(config, messenger, std::move(detector)); // NOLINT
+    Module*
+    allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector) { // NOLINT
+        auto module = new ALLPIX_MODULE_NAME(config, messenger, std::move(detector));                          // NOLINT
         return static_cast<Module*>(module);
     }
 

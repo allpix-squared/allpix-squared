@@ -62,7 +62,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     init_materials();
 
     // Set world material
-    std::string world_material = config_.get<std::string>("world_material", "air");
+    auto world_material = config_.get<std::string>("world_material", "air");
     std::transform(world_material.begin(), world_material.end(), world_material.begin(), ::tolower);
     if(materials_.find(world_material) == materials_.end()) {
         throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");

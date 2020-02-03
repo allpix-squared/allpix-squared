@@ -251,16 +251,16 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     };
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
-    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_noB =
-        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
+        [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
-    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_withB =
-        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
+        [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 

@@ -91,6 +91,9 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
         }
     }
 
+    // Default value chosen to ensure proper gamma generation for Cs137 decay
+    decay_cutoff_time_ = config_.get<double>("decay_cutoff_time", 2.21e+11);
+
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }

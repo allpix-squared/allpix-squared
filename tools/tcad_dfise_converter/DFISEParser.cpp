@@ -369,6 +369,7 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         region_vertices.erase(iter, region_vertices.end());
 
         std::vector<Point> ret_vector;
+        ret_vector.reserve(region_vertices.size());
         for(auto& vertex_idx : region_vertices) {
             ret_vector.push_back(vertices[vertex_idx]);
         }

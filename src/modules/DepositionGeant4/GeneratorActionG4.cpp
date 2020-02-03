@@ -116,7 +116,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetAngDistType("beam2d");
 
             // Align the -z axis of the system with the direction vector
-            G4ThreeVector direction = config_.get<G4ThreeVector>("beam_direction");
+            auto direction = config_.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
@@ -133,7 +133,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
             single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
-            G4TwoVector divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+            auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
             single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
             single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
 

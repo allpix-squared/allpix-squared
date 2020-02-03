@@ -3,7 +3,7 @@
 namespace allpix {
     template <typename T> Message<T>::Message(std::vector<T> data) : BaseMessage(), data_(std::move(data)) {}
     template <typename T>
-    Message<T>::Message(std::vector<T> data, std::shared_ptr<const Detector> detector)
+    Message<T>::Message(std::vector<T> data, const std::shared_ptr<const Detector>& detector)
         : BaseMessage(detector), data_(std::move(data)) {}
 
     template <typename T> const std::vector<T>& Message<T>::getData() const { return data_; }

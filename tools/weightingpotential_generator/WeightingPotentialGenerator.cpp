@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
 
     allpix::FieldData<double> field_data(header, gridsize, size, weighting_potential);
     allpix::FieldWriter<double> field_writer(allpix::FieldQuantity::SCALAR);
-    field_writer.write_file(field_data, output_file_name, file_type);
+    field_writer.writeFile(field_data, output_file_name, file_type);
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
