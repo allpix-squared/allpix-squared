@@ -72,3 +72,27 @@ RUN source scl_source enable devtoolset-7 && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${ROOTSYS}/{src,build}
+
+
+# Add layer for LCIO
+
+ENV LCIO_VERSION 02-13-01
+
+ENV LCIODIR="/opt/lcio"
+ENV PATH="$LCIODIR/bin:$PATH"
+ENV LD_LIBRARY_PATH="$LCIODIR/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$LCIODIR/lib:$LIBPATH"
+ENV CMAKE_PREFIX_PATH="$LCIODIR:$CMAKE_PREFIX_PATH"
+
+RUN source scl_source enable devtoolset-7 && \
+    mkdir -p ${LCIODIR}/{src,build} && \
+    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
+            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
+    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
+    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
+    cd ${LCIODIR}/build && \
+    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
+           ../src/LCIO-${LCIO_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${LCIODIR}/{src,build}

@@ -173,6 +173,9 @@ ADD_RUNTIME_DEP(thisroot.sh)
 # Load cpp format and check tools #
 ###################################
 
+# Set the clang-format version required by the CI for correct formatting:
+SET(CLANG_FORMAT_VERSION "8")
+
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
      CHECK_CXX_SOURCE_FILES
