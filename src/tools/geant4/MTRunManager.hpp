@@ -115,9 +115,9 @@ namespace allpix {
         void NewActionRequest(WorkerActionRequest) override {}
 
         /**
-        * @brief Initialize the workers seeds for the given number of events.
-        * @param nevts Number of events
-        */
+         * @brief Initialize the workers seeds for the given number of events.
+         * @param nevts Number of events
+         */
         G4bool InitializeSeeds(G4int nevts) override;
 
         /**

@@ -381,7 +381,8 @@ unsigned int& DefaultLogger::get_event_num() {
 
     // Make sure event_num is initialized to zero.
     thread_local std::once_flag flag;
-    std::call_once(flag, []() noexcept { event_num = 0; });
+    std::call_once(
+        flag, []() noexcept { event_num = 0; });
 
     return event_num;
 }

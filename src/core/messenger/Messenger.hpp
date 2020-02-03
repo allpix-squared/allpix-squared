@@ -182,11 +182,11 @@ namespace allpix {
     };
 
     /**
-    * @brief Responsible for the actual handling of messages between Modules.
-    *
-    * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
-    * and fetching messages between Modules.
-    */
+     * @brief Responsible for the actual handling of messages between Modules.
+     *
+     * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
+     * and fetching messages between Modules.
+     */
     class LocalMessenger {
     public:
         explicit LocalMessenger(Messenger& global_messenger);
@@ -198,27 +198,27 @@ namespace allpix {
                              const std::string& id);
 
         /**
-        * @brief Check if a delegate has recieved its message
-        * @return True if satisfied, false otherwise
-        */
+         * @brief Check if a delegate has recieved its message
+         * @return True if satisfied, false otherwise
+         */
         bool isSatisfied(BaseDelegate* delegate) const;
 
         /**
-        * @brief Fetches a single message of specified type meant for the calling module
-        * @return Shared pointer to message
-        */
+         * @brief Fetches a single message of specified type meant for the calling module
+         * @return Shared pointer to message
+         */
         template <typename T> std::shared_ptr<T> fetchMessage(Module* module);
 
         /**
-        * @brief Fetches multiple messages of specified type meant for the calling module
-        * @return Vector of shared pointers to messages
-        */
+         * @brief Fetches multiple messages of specified type meant for the calling module
+         * @return Vector of shared pointers to messages
+         */
         template <typename T> std::vector<std::shared_ptr<T>> fetchMultiMessage(Module* module);
 
         /**
-        * @brief Fetches filtered messages meant for the calling module
-        * @return Vector of pairs containing shared pointer to and name of message
-        */
+         * @brief Fetches filtered messages meant for the calling module
+         * @return Vector of pairs containing shared pointer to and name of message
+         */
         std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module);
 
     private:
