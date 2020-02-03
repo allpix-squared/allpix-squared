@@ -101,6 +101,9 @@ namespace allpix {
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
 
+        // Configuration of decay cut-off time
+        double decay_cutoff_time_{};
+
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
         G4RunManager* run_manager_g4_;
 
@@ -111,8 +114,6 @@ namespace allpix {
         std::atomic_uint total_charges_{0};
 
         std::atomic_size_t number_of_sensors_{0};
-
-        double decay_cutoff_time_{};
 
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;

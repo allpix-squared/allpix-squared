@@ -752,8 +752,8 @@ void ModuleManager::run(std::mt19937_64& seeder) {
             finished_events++;
             LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
         };
-        thread_pool->submit_event_function(event_function);
-        thread_pool->check_exception();
+        thread_pool->submit(event_function);
+        thread_pool->checkException();
     }
 
     LOG(TRACE) << "All events have been initialized. Waiting for thread pool to finish...";
@@ -762,7 +762,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     thread_pool->wait();
 
     // Check exception for last events
-    thread_pool->check_exception();
+    thread_pool->checkException();
 
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
