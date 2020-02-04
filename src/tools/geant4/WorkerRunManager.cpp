@@ -139,7 +139,7 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
             seedsQueue.pop();
 
             // Seed RNG for this run only once
-            long seeds[3] = {s1, s2, 0};
+            long seeds[3] = {s1, s2, 0}; // NOLINT
             G4Random::setTheSeeds(seeds, -1);
             runIsSeeded = true;
         }
