@@ -57,11 +57,11 @@ FieldParser<double> MyVectorFieldModule::field_parser_(FieldQuantity::VECTOR);
 
 void MyVectorFieldModule::some_function(std::string canonical_path) {
     // Get vector field from file:
-    auto field_data = field_parser_.get_by_file_name(canonical_path, "V/cm");
+    auto field_data = field_parser_.getByFileName(canonical_path, "V/cm");
 }
 \end{minted}
 
-For the INIT format, the \command{get_by_file_name()} function of the parser takes the units in which the field data should be interpreted, and they are automatically converted to the framework base units described in Section~\ref{sec:config_values}. Fields in the APF format are always stored in framework base units and do not require conversion.
+For the INIT format, the \command{getByFileName()} function of the parser takes the units in which the field data should be interpreted, and they are automatically converted to the framework base units described in Section~\ref{sec:config_values}. Fields in the APF format are always stored in framework base units and do not require conversion.
 The file path provided to the field parser should always be canonical, if the file is not found or cannot be parsed, a \command{std::runtime_error} exception is thrown.
 
 The type of field data to be parsed is automatically deduced from the file content by checking for binary or ASCII text

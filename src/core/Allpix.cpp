@@ -73,7 +73,7 @@ Allpix::Allpix(std::string config_file_name,
     }
 
     // Set the log format from config
-    std::string log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
+    auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
     std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
         LogFormat log_format = Log::getFormatFromString(log_format_string);

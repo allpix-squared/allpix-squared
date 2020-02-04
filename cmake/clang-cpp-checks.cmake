@@ -21,17 +21,17 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-4.0" "clang-format")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-8" "clang-format")
 IF(CLANG_FORMAT)
     EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
     STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    # We currently require version 4 - which is not available on OSX...
-    IF(${CLANG_MAJOR_VERSION} EQUAL "4" OR DEFINED ${APPLE})
+    # We currently require version 8 - which is not available on OSX...
+    IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED ${APPLE})
         IF(DEFINED ${APPLE})
             MESSAGE(WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
-            MESSAGE(STATUS "Found ${CLANG_FORMAT} version 4, adding formatting targets")
+            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")
         ENDIF()
 
         ADD_CUSTOM_TARGET(
@@ -60,7 +60,7 @@ IF(CLANG_FORMAT)
             COMMENT "Checking format compliance"
         )
     ELSE()
-        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version 4 is required.")
+        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version ${CLANG_FORMAT_VERSION} is required.")
     ENDIF()
 ELSE()
     MESSAGE(STATUS "Could NOT find clang-format")
@@ -72,7 +72,7 @@ IF(${CMAKE_CXX_STANDARD})
     SET(CXX_STD ${CMAKE_CXX_STANDARD})
 ENDIF()
 
-FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-6.0" "clang-tidy-5.0" "clang-tidy-4.0" "clang-tidy")
+FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-8" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # If debug build enabled do automatic clang tidy

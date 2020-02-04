@@ -51,7 +51,7 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     std::type_index type_idx = typeid(*inst);
 
     // Get the name of the output message
-    std::string name = source->get_configuration().get<std::string>("output");
+    auto name = source->get_configuration().get<std::string>("output");
 
     // Check if a normal specific listener exists
     for(auto& delegate : delegates_[type_idx][name]) {

@@ -13,7 +13,9 @@ using namespace allpix;
 /**
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
  */
-ThreadPool::ThreadPool(unsigned int num_threads, std::vector<Module*> modules, std::function<void()> worker_init_function) {
+ThreadPool::ThreadPool(unsigned int num_threads,
+                       const std::vector<Module*>& modules,
+                       const std::function<void()>& worker_init_function) {
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {

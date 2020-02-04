@@ -29,9 +29,10 @@ The particle type can be set via a string (`particle_type`) or by the respective
 
 Radioactive sources can be simulated simply by setting their isotope name in the `particle_type` parameter, and optionally by setting the source energy to zero for a decay in rest.
 The `G4RadioactiveDecay` package [@g4radioactive] is used to simulate the decay of the radioactive nuclei.
-Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated.
+Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated. The full decay chain can be simulated if the `decay_cutoff_time` is set to the appropriate value for this chain.
 Radioactive isotopes are forced to decay immediately in order to allow sensible measurements of arrival and deposition times.
 Currently, the following radioactive isotopes are supported: `Fe55`, `Am241`, `Sr90`, `Co60`, `Cs137`.
+Note that for `Cs137` the `decay_cutoff_time` has to be set to 221 seconds for the decay to work properly.
 
 Ions can be used as particles by setting their atomic properties, i.e. the atomic number Z, the atomic mass A, their charge Q and the excitation energy E via the following syntax:
 
@@ -78,6 +79,8 @@ This module requires an installation Geant4.
 * `source_position` : Position of the particle source in the world geometry.
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
 * `file_name` : Name of the macro file (if source_type=**macro**).
+* `decay_cutoff_time` : Maximum lifetime of secondary particles that will be propagated in the simulation. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
+Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `decay_cutoff_time`.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.

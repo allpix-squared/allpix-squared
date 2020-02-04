@@ -22,9 +22,3 @@ bool operator<(const TRef& ref1, const TRef& ref2) {
     }
     return ref1.GetPID() < ref2.GetPID();
 }
-
-Object::Object(const Object&) = default;
-Object& Object::operator=(const Object&) = default;
-
-Object::Object(Object&&) = default;
-Object& Object::operator=(Object&&) = default;
