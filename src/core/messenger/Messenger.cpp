@@ -135,7 +135,7 @@ std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fet
 
 LocalMessenger::LocalMessenger(Messenger& global_messenger) : global_messenger_(global_messenger) {}
 
-void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) {
+void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage> message, std::string name) { // NOLINT
     // Get the name of the output message
     if(name == "-") {
         name = source->get_configuration().get<std::string>("output");

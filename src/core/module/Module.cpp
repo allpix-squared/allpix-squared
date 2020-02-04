@@ -201,7 +201,7 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
 
 size_t BufferedModule::max_buffer_size_ = 128;
 
-void BufferedModule::run_in_order(std::shared_ptr<Event> event) {
+void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
     auto event_number = event->number;
 
     {
