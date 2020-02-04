@@ -95,8 +95,8 @@ namespace allpix {
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
          */
         explicit ThreadPool(unsigned int num_threads,
-                            std::vector<Module*> modules,
-                            std::function<void()> worker_init_function);
+                            const std::vector<Module*>& modules,
+                            const std::function<void()>& worker_init_function);
 
         /// @{
         /**

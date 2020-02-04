@@ -78,6 +78,19 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
+ * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
+ */
+std::string
+Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
+    try {
+        return path_to_absolute(allpix::add_file_extension(get<std::string>(key), extension), check_exists);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(*this, key, e.what());
+    }
+}
+/**
+ * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ *
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
@@ -145,7 +158,7 @@ unsigned int Configuration::countSettings() const {
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
-    for(auto config_pair : other.config_) {
+    for(const auto& config_pair : other.config_) {
         // Only merge values that do not yet exist
         if(!has(config_pair.first)) {
             setText(config_pair.first, config_pair.second);
@@ -182,8 +195,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1, lst = 1;
-    int in_dpt = 0;
+    size_t beg = 1, lst = 1, in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

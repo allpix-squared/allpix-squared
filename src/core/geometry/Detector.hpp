@@ -138,7 +138,7 @@ namespace allpix {
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
+        void setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                   std::array<size_t, 3> sizes,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
@@ -213,7 +213,7 @@ namespace allpix {
          * @param sizes The dimensions of the flat weighting potential array
          * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */
-        void setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> potential,
+        void setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
                                        std::array<size_t, 3> sizes,
                                        std::array<double, 2> scales,
                                        std::array<double, 2> offset,

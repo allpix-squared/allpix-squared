@@ -1,2 +1,2 @@
 source $ROOTSYS/bin/thisroot.sh
-source $G4ENV_INIT
+source $G4INSTALL/bin/geant4.sh

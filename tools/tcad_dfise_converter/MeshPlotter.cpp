@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
         FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
 
         FieldParser<double> field_parser(quantity);
-        auto field_data = field_parser.get_by_file_name(file_name, units);
+        auto field_data = field_parser.getByFileName(file_name, units);
         size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1],
                zdiv = field_data.getDimensions()[2];
 
