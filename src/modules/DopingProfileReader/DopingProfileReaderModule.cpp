@@ -72,8 +72,8 @@ void DopingProfileReaderModule::init() {
             LOG(INFO) << "Set constant doping concentration of " << Units::display(region.back(), {"/cm/cm/cm"})
                       << " at sensor depth " << Units::display(region.front(), {"um", "mm"});
         }
-        FieldFunction<double> function = [ concentration_map, thickness = detector_->getModel()->getSensorSize().z() ](
-            const ROOT::Math::XYZPoint& position) {
+        FieldFunction<double> function = [concentration_map, thickness = detector_->getModel()->getSensorSize().z()](
+                                             const ROOT::Math::XYZPoint& position) {
             // Lower bound returns the first element that is *not less* than the given key - in this case, the z position
             // should always be *before* the region boundary set in the vector
             auto item = concentration_map.lower_bound(thickness / 2 - position.z());
@@ -100,7 +100,7 @@ FieldData<double> DopingProfileReaderModule::read_field(std::array<double, 2> fi
         LOG(TRACE) << "Fetching doping concentration map from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), "/cm/cm/cm");
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "/cm/cm/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), field_scale);
