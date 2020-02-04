@@ -46,8 +46,8 @@ void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_sele
 
     // G4Comment: Execute UI commands stored in the master UI manager
     std::vector<G4String> cmds = mrm->GetCommandStack();
-    G4UImanager* uimgr = G4UImanager::GetUIpointer(); // TLS instance
-    std::vector<G4String>::const_iterator it = cmds.begin();
+    G4UImanager* uimgr = G4UImanager::GetUIpointer();        // TLS instance
+    std::vector<G4String>::const_iterator it = cmds.begin(); // NOLINT
     for(; it != cmds.end(); it++) {
         uimgr->ApplyCommand(*it);
     }
@@ -212,8 +212,8 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
 
     // Execute UI commands stored in the masther UI manager
     std::vector<G4String> cmds = master_run_manager->GetCommandStack();
-    G4UImanager* uimgr = G4UImanager::GetUIpointer(); // TLS instance
-    std::vector<G4String>::const_iterator it = cmds.begin();
+    G4UImanager* uimgr = G4UImanager::GetUIpointer();        // TLS instance
+    std::vector<G4String>::const_iterator it = cmds.begin(); // NOLINT
     for(; it != cmds.end(); it++) {
         uimgr->ApplyCommand(*it);
     }
