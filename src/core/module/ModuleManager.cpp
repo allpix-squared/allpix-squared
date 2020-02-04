@@ -629,12 +629,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        for(auto& module : modules_) {
-            if(module->is_buffered()) {
-                auto buffered_module = static_cast<BufferedModule*>(module.get());
-                buffered_module->set_max_buffer_size(128 * threads_num);
-            }
-        }
+        BufferedModule::set_max_buffer_size(128 * threads_num);
     } else {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
