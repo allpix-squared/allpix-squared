@@ -93,8 +93,8 @@ namespace allpix {
          */
         explicit ThreadPool(unsigned int num_threads,
                             unsigned int max_queue_size,
-                            std::function<void()> worker_init_function = nullptr,
-                            std::function<void()> worker_finalize_function = nullptr);
+                            const std::function<void()>& worker_init_function = nullptr,
+                            const std::function<void()>& worker_finalize_function = nullptr);
 
         /// @{
         /**

@@ -14,8 +14,8 @@ using namespace allpix;
  */
 ThreadPool::ThreadPool(unsigned int num_threads,
                        unsigned int max_queue_size,
-                       std::function<void()> worker_init_function,
-                       std::function<void()> worker_finalize_function)
+                       const std::function<void()>& worker_init_function,
+                       const std::function<void()>& worker_finalize_function)
     : queue_(max_queue_size) {
     // Create threads
     try {
