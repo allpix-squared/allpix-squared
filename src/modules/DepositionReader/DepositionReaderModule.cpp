@@ -154,7 +154,7 @@ void DepositionReaderModule::run(unsigned int event) {
         // Deposit hole
         deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, time);
         particles_to_deposits[detector].push_back(track_id);
-    } while(1);
+    } while(true);
 
     LOG(INFO) << "Finished reading event " << event;
 
