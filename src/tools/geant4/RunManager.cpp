@@ -63,7 +63,7 @@ void RunManager::BeamOn(G4int n_event, const char* macro_file, G4int n_select) {
 
         long s1 = helper->GetSeed(0);
         long s2 = helper->GetSeed(1);
-        long seeds[3] = {s1, s2, 0};
+        long seeds[3] = {s1, s2, 0}; // NOLINT
         G4Random::setTheSeeds(seeds, -1);
     }
 
