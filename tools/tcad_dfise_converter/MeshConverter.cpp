@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     auto observable = config.get<std::string>("observable", "ElectricField");
 
     const auto radius_step = config.get<double>("radius_step", 0.5);
-    const auto max_radius = config.get<double>("max_radius", 10);
+    const auto max_radius = config.get<double>("max_radius", 50);
 
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
@@ -441,7 +441,8 @@ int main(int argc, char** argv) {
             }
 
             if(!valid) {
-                throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
+                throw std::runtime_error("Could not find valid volume element. Consider to increase max_radius to include "
+                                         "more mesh points in the search");
             }
 
             new_mesh.push_back(e);
