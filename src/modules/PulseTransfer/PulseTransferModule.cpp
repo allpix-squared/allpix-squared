@@ -62,7 +62,14 @@ void PulseTransferModule::run(unsigned int event_num) {
 
     LOG(DEBUG) << "Received " << message_->getData().size() << " propagated charge objects.";
     for(const auto& propagated_charge : message_->getData()) {
-        for(auto& pulse : propagated_charge.getPulses()) {
+        auto pulses = propagated_charge.getPulses();
+
+        if(pulses.empty()) {
+            LOG_N(WARNING, 10) << "Propagated charge object does not contain any pulses. "
+                               << "Ensure that you are using a matching propagation module.";
+        }
+
+        for(auto& pulse : pulses) {
             auto pixel_index = pulse.first;
 
             // Accumulate all pulses from input message data:
