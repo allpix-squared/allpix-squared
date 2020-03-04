@@ -207,33 +207,33 @@ void CapacitiveTransferModule::init() {
             auto pixel_grid = model_->getNPixels();
             gap_map = new TH2D("gap_map",
                                "Gap;pixel x;pixel y",
-                               pixel_grid.x(),
+                               static_cast<int>(pixel_grid.x()),
                                -0.5,
-                               pixel_grid.x() - 0.5,
-                               pixel_grid.y(),
+                               static_cast<int>(pixel_grid.x()) - 0.5,
+                               static_cast<int>(pixel_grid.y()),
                                -0.5,
-                               pixel_grid.y() - 0.5);
+                               static_cast<int>(pixel_grid.y()) - 0.5);
 
             capacitance_map = new TH2D("capacitance_map",
                                        "Capacitance;pixel x;pixel y",
-                                       pixel_grid.x(),
+                                       static_cast<int>(pixel_grid.x()),
                                        -0.5,
-                                       pixel_grid.x() - 0.5,
-                                       pixel_grid.y(),
+                                       static_cast<int>(pixel_grid.x()) - 0.5,
+                                       static_cast<int>(pixel_grid.y()),
                                        -0.5,
-                                       pixel_grid.y() - 0.5);
+                                       static_cast<int>(pixel_grid.y()) - 0.5);
 
             relative_capacitance_map = new TH2D("relative_capacitance_map",
                                                 "Relative Capacitance;pixel x;pixel y",
-                                                pixel_grid.x(),
+                                                static_cast<int>(pixel_grid.x()),
                                                 -0.5,
-                                                pixel_grid.x() - 0.5,
-                                                pixel_grid.y(),
+                                                static_cast<int>(pixel_grid.x()) - 0.5,
+                                                static_cast<int>(pixel_grid.y()),
                                                 -0.5,
-                                                pixel_grid.y() - 0.5);
+                                                static_cast<int>(pixel_grid.y()) - 0.5);
 
-            for(int col = 0; col < pixel_grid.x(); col++) {
-                for(int row = 0; row < pixel_grid.y(); row++) {
+            for(int col = 0; col < static_cast<int>(pixel_grid.x()); col++) {
+                for(int row = 0; row < static_cast<int>(pixel_grid.y()); row++) {
                     auto local_x = col * model_->getPixelSize().x();
                     auto local_y = row * model_->getPixelSize().y();
 
@@ -297,22 +297,18 @@ void CapacitiveTransferModule::run(unsigned int) {
                     row = static_cast<size_t>(std::floor(matrix_rows / 2));
                 }
 
+                auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)));
+                auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)));
+
                 // Ignore if out of pixel grid
-                if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
-                   (xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) >=
-                       model_->getNPixels().x() ||
-                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
-                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >=
-                       model_->getNPixels().y()) {
+                if(!detector_->isWithinPixelGrid(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";
                     continue;
                 }
 
-                pixel_index =
-                    Pixel::Index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
-                                 static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
+                pixel_index = Pixel::Index(static_cast<unsigned int>(xcoord), static_cast<unsigned int>(ycoord));
 
                 if(config_.has("coupling_scan_file")) {
                     double local_x = pixel_index.x() * model_->getPixelSize().x();
