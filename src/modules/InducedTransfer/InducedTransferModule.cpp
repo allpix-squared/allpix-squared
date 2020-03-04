@@ -78,12 +78,12 @@ void InducedTransferModule::run(unsigned int) {
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
             for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
                 // Ignore if out of pixel grid
-                Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
-                if(x < 0 || y < 0 || !detector_->isWithinPixelGrid(pixel_index)) {
+                if(!detector_->isWithinPixelGrid(x, y)) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
 
+                Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
                 auto ramo_end = detector_->getWeightingPotential(position_end, pixel_index);
                 auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);
 
