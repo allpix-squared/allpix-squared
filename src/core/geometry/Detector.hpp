@@ -103,6 +103,12 @@ namespace allpix {
         bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Returns if a pixel index is within the grid of pixels defined for the device
+         * @return True if a pixel coordinate is within the pixel grid, false otherwise
+         */
+        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+
+        /**
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
