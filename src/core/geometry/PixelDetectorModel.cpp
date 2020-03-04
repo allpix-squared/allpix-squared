@@ -71,7 +71,8 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
 
     return (std::fabs(inPixelPos.x()) <= std::fabs(getImplantSize().x() / 2) &&
-            std::fabs(inPixelPos.y()) <= std::fabs(getImplantSize().y() / 2));
+            std::fabs(inPixelPos.y()) <= std::fabs(getImplantSize().y() / 2) &&
+            local_pos.z() >= model_->getSensorSize().z() / 2 - model_->getImplantSize().z());
 }
 
 /**
