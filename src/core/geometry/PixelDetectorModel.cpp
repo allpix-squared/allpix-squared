@@ -29,10 +29,22 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
     setPixelSize(pixel_size);
-    // Size of the collection diode implant on each pixel, defaults to the full pixel size when not specified
-    auto implant_size = config.get<XYVector>("implant_size", pixel_size);
+
+    // Size of the collection diode implant on each pixels, defaults to the full pixel size when not specified
+    XYZVector implant_size;
+    try {
+        // Attempt to read a three-dimensional implant definition:
+        implant_size = config.get<XYZVector>("implant_size");
+    } catch(InvalidKeyError& e) {
+        // If 3D fails, attempt to read a (flat) 2D implant definition:
+        auto implant_area = config.get<XYVector>("implant_size", pixel_size);
+        implant_size = XYZVector(implant_area.x(), implant_area.y(), 0);
+    }
     if(implant_size.x() > pixel_size.x() || implant_size.y() > pixel_size.y()) {
         throw InvalidValueError(config, "implant_size", "implant size cannot be larger than pixel pitch");
+    }
+    if(implant_size.z() > getSensorSize().z()) {
+        throw InvalidValueError(config, "implant_size", "implant depth cannot be larger than sensor thickness");
     }
     setImplantSize(implant_size);
 }
