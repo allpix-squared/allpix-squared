@@ -27,6 +27,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     enable_parallelization();
 
     // Set default value for config variables
+    config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
@@ -69,12 +70,32 @@ void PulseTransferModule::run(unsigned int event_num) {
 
         if(pulses.empty()) {
             LOG(TRACE) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
+
             auto model = detector_->getModel();
             auto position = propagated_charge.getLocalPosition();
 
+            // Ignore if outside depth range of implant
+            if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
+               config_.get<double>("max_depth_distance")) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their local position is not in implant range";
+                continue;
+            }
+
             // Find the nearest pixel
-            Pixel::Index pixel_index(static_cast<unsigned int>(std::round(position.x() / model->getPixelSize().x())),
-                                     static_cast<unsigned int>(std::round(position.y() / model->getPixelSize().y())));
+            auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
+            auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
+
+            // Ignore if out of pixel grid
+            if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
+                continue;
+            }
+
+            Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
