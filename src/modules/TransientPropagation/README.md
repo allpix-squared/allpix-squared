@@ -2,7 +2,7 @@
 **Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
 **Status**: Immature  
 **Input**: DepositedCharge  
-**Output**: PixelCharge
+**Output**: PropagatedCharge
 
 ### Description
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
@@ -20,7 +20,7 @@ For each step, the induced charge on the neighboring pixel implants is calculate
 
 $` Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} = q \left( \phi (x_1) - \phi(x_0) \right)`$
 
-and multiplying it with the charge. The resulting pulses are stored for every pixel individually.
+and multiplying it with the charge. The resulting pulses are stored for every set of charge carriers individually and need to be combined for each pixel using a transfer module.
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
