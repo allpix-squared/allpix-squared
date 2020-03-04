@@ -26,6 +26,8 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
+    // Set default value for config variables
+    config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
@@ -33,6 +35,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
+    timestep_ = config_.get<double>("timestep");
 
     messenger_->bindSingle(this, &PulseTransferModule::message_, MsgFlags::REQUIRED);
 }
@@ -65,11 +68,28 @@ void PulseTransferModule::run(unsigned int event_num) {
         auto pulses = propagated_charge.getPulses();
 
         if(pulses.empty()) {
-            LOG_N(WARNING, 10) << "Propagated charge object does not contain any pulses. "
-                               << "Ensure that you are using a matching propagation module.";
+            LOG(TRACE) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
+            auto model = detector_->getModel();
+            auto position = propagated_charge.getLocalPosition();
+
+            // Find the nearest pixel
+            Pixel::Index pixel_index(static_cast<unsigned int>(std::round(position.x() / model->getPixelSize().x())),
+                                     static_cast<unsigned int>(std::round(position.y() / model->getPixelSize().y())));
+
+            // Generate pseudo-pulse:
+            Pulse pulse(timestep_);
+            pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getEventTime());
+            pixel_pulse_map[pixel_index] += pulse;
+
+            auto px = pixel_charge_map[pixel_index];
+            // For each pulse, store the corresponding propagated charges to preserve history:
+            if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
+                pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+            }
         }
 
         for(auto& pulse : pulses) {
+            LOG(TRACE) << "Found pulse information";
             auto pixel_index = pulse.first;
 
             // Accumulate all pulses from input message data:
