@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of detector fields
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -125,9 +125,9 @@ namespace allpix {
          * @param sensor_size The extend of the sensor
          * @param pixel_pitch the pitch in X and Y of a single pixel
          */
-        void set_model_parameters(ROOT::Math::XYZPoint sensor_center,
-                                  ROOT::Math::XYZVector sensor_size,
-                                  ROOT::Math::XYVector pixel_pitch) {
+        void set_model_parameters(const ROOT::Math::XYZPoint& sensor_center,
+                                  const ROOT::Math::XYZVector& sensor_size,
+                                  const ROOT::Math::XYVector& pixel_pitch) {
             sensor_center_ = sensor_center;
             sensor_size_ = sensor_size;
             pixel_size_ = pixel_pitch;

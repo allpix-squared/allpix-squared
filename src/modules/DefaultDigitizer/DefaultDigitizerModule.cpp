@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of default digitization module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -82,7 +82,7 @@ void DefaultDigitizerModule::init() {
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("adc_resolution") > 0) {
-            int adcbins = ((1 << config_.get<int>("adc_resolution")) - 1);
+            int adcbins = (1 << config_.get<int>("adc_resolution"));
             h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
             h_calibration = new TH2D("charge_adc_calibration",
                                      "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",

@@ -7,7 +7,7 @@
  * - ALLPIX_MODULE_HEADER: name of the header defining the module
  * - ALLPIX_MODULE_UNIQUE: true if the module is unique, false otherwise
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -71,8 +71,9 @@ namespace allpix {
      * returns an instantiation
      */
     Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
-    Module* allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector) {
-        auto module = new ALLPIX_MODULE_NAME(config, messenger, std::move(detector)); // NOLINT
+    Module*
+    allpix_module_generator(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector) { // NOLINT
+        auto module = new ALLPIX_MODULE_NAME(config, messenger, std::move(detector));                          // NOLINT
         return static_cast<Module*>(module);
     }
 

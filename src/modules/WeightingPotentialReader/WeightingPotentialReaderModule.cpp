@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of module to read weighting fields
- * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -194,7 +194,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
 /**
  * The field data read from files are shared between module instantiations
- * using the static WeightingPotentialReaderModule::get_by_file_name method.
+ * using the static FieldParser's getByFileName method.
  */
 FieldParser<double> WeightingPotentialReaderModule::field_parser_(FieldQuantity::SCALAR);
 FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, double> thickness_domain) {
@@ -204,7 +204,7 @@ FieldData<double> WeightingPotentialReaderModule::read_field(std::pair<double, d
         LOG(TRACE) << "Fetching weighting potential from init file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true));
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true));
 
         // Check maximum/minimum values of the potential:
         auto elements = std::minmax_element(field_data.getData()->begin(), field_data.getData()->end());
@@ -275,6 +275,11 @@ void WeightingPotentialReaderModule::check_detector_match(std::array<double, 3> 
                          << Units::display(ypixsz, {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
                          << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", "
                          << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
+        } else {
+            LOG(INFO) << "Potential map size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
+                      << Units::display(ypixsz, {"um", "mm"}) << "), matching detector model with pixel pitch ("
+                      << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", "
+                      << Units::display(model->getPixelSize().y(), {"um", "mm"}) << ")";
         }
     }
 }

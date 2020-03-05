@@ -1,5 +1,15 @@
-#ifndef MCPARTICLE_H
-#define MCPARTICLE_H 1
+/**
+ * @file
+ * @brief Definition of MCParticle object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_MCPARTICLE_H
+#define CORRYVRECKAN_MCPARTICLE_H 1
 
 #include <Math/Point3D.h>
 #include "Object.hpp"
@@ -19,8 +29,18 @@ namespace corryvreckan {
                    ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint local_end_point,
                    double timestamp)
-            : Object(detectorID, timestamp), m_particle_id(particle_id), m_local_start_point(local_start_point),
-              m_local_end_point(local_end_point) {}
+            : Object(std::move(detectorID), timestamp), m_particle_id(particle_id),
+              m_local_start_point(std::move(local_start_point)), m_local_end_point(std::move(local_end_point)) {}
+
+        /**
+         * @brief Static member function to obtain base class for storage on the clipboard.
+         * This method is used to store objects from derived classes under the typeid of their base classes
+         *
+         * @warning This function should not be implemented for derived object classes
+         *
+         * @return Class type of the base object
+         */
+        static std::type_index getBaseType() { return typeid(MCParticle); }
 
         // Member functions
         int getID() const { return m_particle_id; }
@@ -40,4 +60,4 @@ namespace corryvreckan {
     using MCParticleVector = std::vector<MCParticle*>;
 } // namespace corryvreckan
 
-#endif // MCPARTICLE_H
+#endif // CORRYVRECKAN_MCPARTICLE_H

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Utility to parse INIT-format field files
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -25,6 +25,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <utility>
 
 // Mime type version for APF files
 #define APF_MIME_TYPE_VERSION 1
@@ -73,7 +74,7 @@ namespace allpix {
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data)
-            : header_(header), dimensions_(dimensions), size_(size), data_(data){};
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)){};
 
         /**
          * @brief Function to obtain the header (human readbale content description) of the field data
@@ -132,7 +133,7 @@ namespace allpix {
             archive(data_);
         }
     };
-}
+} // namespace allpix
 
 // Enable versioning for the FieldData class template
 namespace cereal {
@@ -144,12 +145,12 @@ namespace cereal {
                     std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
                 return 3;
             }
-            static void unused() { (void)version; }
-        }; /* end Version */
+            static void unused() { (void)version; } // NOLINT
+        };                                          /* end Version */
         template <class T>
         const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
-    }
-}
+    } // namespace detail
+} // namespace cereal
 
 namespace allpix {
 
@@ -167,7 +168,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldParser(const FieldQuantity quantity) {
+        explicit FieldParser(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -181,7 +182,7 @@ namespace allpix {
          *
          * The type of the field data file to be read is deducted automatically from the file content
          */
-        FieldData<T> get_by_file_name(const std::string& file_name, const std::string units = std::string()) {
+        FieldData<T> getByFileName(const std::string& file_name, const std::string& units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
@@ -277,7 +278,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the input file to be parsed
          * @param units      Units to convert the values of the field data from
          */
-        FieldData<T> parse_init_file(const std::string& file_name, const std::string units) {
+        FieldData<T> parse_init_file(const std::string& file_name, const std::string& units) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -366,7 +367,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldWriter(const FieldQuantity quantity) {
+        explicit FieldWriter(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -379,10 +380,10 @@ namespace allpix {
          * @param file_type  Type of file (file format) to be produced
          * @param units      Optional units to convert the field into before writing. Only used by some formats.
          */
-        void write_file(const FieldData<T>& field_data,
-                        const std::string& file_name,
-                        const FileType& file_type,
-                        const std::string units = std::string()) {
+        void writeFile(const FieldData<T>& field_data,
+                       const std::string& file_name,
+                       const FileType& file_type,
+                       const std::string& units = std::string()) {
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
@@ -430,7 +431,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the output file to be created
          * @param units      Units to convert the values of the field data to.
          */
-        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string units) {
+        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string& units) {
             std::ofstream file(file_name);
 
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
@@ -462,9 +463,10 @@ namespace allpix {
 
                         // Vector or scalar field:
                         for(size_t j = 0; j < N_; j++) {
-                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
-                                                                   yind * dimensions[2] * N_ + zind * N_ + j),
-                                                          units);
+                            file << " "
+                                 << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
+                                                            yind * dimensions[2] * N_ + zind * N_ + j),
+                                                   units);
                         }
                         // End this line
                         file << std::endl;

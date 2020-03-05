@@ -2,7 +2,7 @@
  * @file
  * @brief Implements the particle generator
  * @remark Based on code from John Idarraga
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -88,7 +88,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetAngDistType("beam2d");
 
             // Align the -z axis of the system with the direction vector
-            G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
+            auto direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
@@ -105,7 +105,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
             single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
-            G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+            auto divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
             single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
             single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
 

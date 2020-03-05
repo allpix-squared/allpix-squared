@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
-    std::string format = config.get<std::string>("model", "apf");
+    auto format = config.get<std::string>("model", "apf");
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
     auto observable = config.get<std::string>("observable", "ElectricField");
 
     const auto radius_step = config.get<double>("radius_step", 0.5);
-    const auto max_radius = config.get<double>("max_radius", 10);
+    const auto max_radius = config.get<double>("max_radius", 50);
 
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
@@ -440,7 +440,8 @@ int main(int argc, char** argv) {
             }
 
             if(!valid) {
-                throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
+                throw std::runtime_error("Could not find valid volume element. Consider to increase max_radius to include "
+                                         "more mesh points in the search");
             }
 
             new_mesh.push_back(e);
@@ -533,7 +534,7 @@ int main(int argc, char** argv) {
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
     allpix::FieldWriter<double> field_writer(quantity);
-    field_writer.write_file(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
+    field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
     LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
 
     end = std::chrono::system_clock::now();

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of Geant4 geometry construction module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -77,13 +77,15 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
 static void check_dataset_g4(const std::string& env_name) {
     const char* file_name = std::getenv(env_name.c_str());
     if(file_name == nullptr) {
-        throw ModuleError("Geant4 environment variable " + env_name + " is not set, make sure to source a Geant4 "
-                                                                      "environment with all datasets");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " is not set, make sure to source a Geant4 "
+                          "environment with all datasets");
     }
     std::ifstream file(file_name);
     if(!file.good()) {
-        throw ModuleError("Geant4 environment variable " + env_name + " does not point to existing dataset, the Geant4 "
-                                                                      "environment is invalid");
+        throw ModuleError("Geant4 environment variable " + env_name +
+                          " does not point to existing dataset, the Geant4 "
+                          "environment is invalid");
     }
     // FIXME: check if file does actually contain a correct dataset
 }

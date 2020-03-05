@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of object with set of particles at pixel
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -14,7 +14,7 @@
 
 using namespace allpix;
 
-PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const PropagatedCharge*> propagated_charges)
+PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<const PropagatedCharge*>& propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
     std::set<TRef> unique_particles;
@@ -33,8 +33,8 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, std::vector<const Pro
 }
 
 // WARNING PixelCharge always returns a positive "collected" charge...
-PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, std::vector<const PropagatedCharge*> propagated_charges)
-    : PixelCharge(std::move(pixel), static_cast<unsigned int>(std::abs(pulse.getCharge())), std::move(propagated_charges)) {
+PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, const std::vector<const PropagatedCharge*>& propagated_charges)
+    : PixelCharge(std::move(pixel), static_cast<unsigned int>(std::abs(pulse.getCharge())), propagated_charges) {
     pulse_ = std::move(pulse);
 }
 

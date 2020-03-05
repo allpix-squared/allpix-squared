@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of a module to deposit charges at a specific point
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -130,9 +130,9 @@ void DepositionPointChargeModule::run(unsigned int event) {
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
-        auto ref =
-            model->getGridSize() / 2.0 -
-            ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z() / 2.0);
+        auto ref = config_.get<ROOT::Math::XYZVector>("position") + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+                   ROOT::Math::XYZVector(
+                       model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
         position = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
                                         voxel_.y() * (((event - 1) / root_) % root_),

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Collection of simple file system utilities
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -176,10 +176,11 @@ namespace allpix {
      * All the required directories are deleted recursively from the top-directory (use this with caution).
      */
     inline void remove_path(const std::string& path) {
-        int status = nftw(path.c_str(),
-                          [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
-                          64,
-                          FTW_DEPTH);
+        int status = nftw(
+            path.c_str(),
+            [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
+            64,
+            FTW_DEPTH);
 
         if(status != 0) {
             throw std::invalid_argument("path cannot be completely deleted");

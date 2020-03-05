@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of detector
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -193,12 +193,12 @@ FieldType Detector::getElectricFieldType() const {
 /**
  * @throws std::invalid_argument If the electric field dimensions are incorrect or the thickness domain is outside the sensor
  */
-void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
+void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                     std::array<size_t, 3> dimensions,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    electric_field_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
+    electric_field_.setGrid(field, dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -238,12 +238,12 @@ FieldType Detector::getWeightingPotentialType() const {
  * @throws std::invalid_argument If the weighting potential dimensions are incorrect or the thickness domain is outside the
  * sensor
  */
-void Detector::setWeightingPotentialGrid(std::shared_ptr<std::vector<double>> potential,
+void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
                                          std::array<size_t, 3> dimensions,
                                          std::array<double, 2> scales,
                                          std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
-    weighting_potential_.setGrid(std::move(potential), dimensions, scales, offset, thickness_domain);
+    weighting_potential_.setGrid(potential, dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setWeightingPotentialFunction(FieldFunction<double> function,

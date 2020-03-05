@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of detector histogramming module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -239,8 +239,9 @@ void DetectorHistogrammerModule::run(unsigned int) {
     using namespace ROOT::Math;
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
+    LOG(DEBUG) << "Received " << (pixels_message_ != nullptr ? std::to_string(pixels_message_->getData().size()) : "no")
+               << " pixel hits";
     if(pixels_message_ != nullptr) {
-        LOG(DEBUG) << "Received " << pixels_message_->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
         for(auto& pixel_hit : pixels_message_->getData()) {
