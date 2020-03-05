@@ -241,11 +241,19 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                         implant_union->AddNode(*implant_box.get(), implant_transform);
                     }
                 }
+
+                // Finalize the construction of the multi-union solid:
                 implant_union->Voxelize();
+
+                // Obtain implant material from model:
+                auto implant_material_iter = materials_.find(model->getImplantMaterial());
+                if(implant_material_iter == materials_.end()) {
+                    throw ModuleError("Cannot construct implants of material '" + model->getImplantMaterial() + "'");
+                }
 
                 // Place physical instance of implant extrusion in model (conductor):
                 auto implant_log = make_shared_no_delete<G4LogicalVolume>(
-                    implant_union.get(), materials_["aluminum"], "implants_" + name + "_log");
+                    implant_union.get(), implant_material_iter->second, "implants_" + name + "_log");
                 detector->setExternalObject("implants_log", implant_log);
 
                 // Place the implants box

@@ -389,7 +389,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
         set_vis_attribute("bumps_cell_log", BumpVisAtt);
         set_vis_attribute("chip_log", ChipVisAtt);
         set_vis_attribute("passive_material_log", PassiveMaterialVisAtt);
-	set_vis_attribute("implants_log", ConductorVisAtt);
+        set_vis_attribute("implants_log", ConductorVisAtt);
 
         auto supports_log =
             geo_manager_->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>(name, "supports_log");
