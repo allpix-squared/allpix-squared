@@ -188,6 +188,16 @@ namespace allpix {
          */
         void setImplantSize(ROOT::Math::XYZVector val) { implant_size_ = std::move(val); }
         /**
+         * @brief Get the material of the implants (collection electrodes)
+         * @return Implant material
+         */
+        virtual std::string getImplantMaterial() const { return implant_material_; }
+        /**
+         * @brief Set the material of the implants (collection electrodes)
+         * @param Implant material
+         */
+        void setImplantMaterial(std::string material) { implant_material_ = std::move(material); }
+        /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
          *
@@ -430,6 +440,7 @@ namespace allpix {
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYZVector implant_size_;
         Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
+        std::string implant_material_;
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};

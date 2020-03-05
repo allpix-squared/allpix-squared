@@ -47,6 +47,7 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
         throw InvalidValueError(config, "implant_size", "implant depth cannot be larger than sensor thickness");
     }
     setImplantSize(implant_size);
+    setImplantMaterial(config.get<std::string>("implant_material", "aluminum"));
 }
 
 /**
