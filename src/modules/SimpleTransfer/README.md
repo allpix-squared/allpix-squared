@@ -13,6 +13,9 @@ module_output: "PixelCharge"
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. The module does a simple direct mapping to the nearest pixel, ignoring propagated charges that are too far away from the implants or outside the pixel grid. Timing information for the pixel charges is currently not yet produced, but can be fetched from the linked propagated charges.
 
 When a collection diode size is specified for the respective detector via its `implant_size` parameter, the `collect_from_implant` option can be turned on in order to only pick charge carriers from the implant region and ignore everything outside this region.
+If the implant is provided as 3D volume, only charge carriers from within this volume are accepted.
+If only the area is know, the `max_depth_distance` parameter is used as third dimension.
+
 Since this will lead to unexpected and undesired behavior when using linear electric fields, this option can only be used when using fields with an x/y dependence (i.e. field maps imported from TCAD).
 
 A histogram of charge carrier arrival times is generated if `output_plots` is enabled. The range and granularity of this plot can be configured.
