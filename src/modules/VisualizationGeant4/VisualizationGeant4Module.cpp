@@ -339,6 +339,11 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     G4VisAttributes SensorVisAtt = G4VisAttributes(sensorColor);
     SensorVisAtt.SetForceSolid(false);
 
+    // Conductor (metal stack, implants)
+    auto conductorColor = G4Color(0.8, 0.16, 0.16, alpha); // Red-ish
+    G4VisAttributes ConductorVisAtt = G4VisAttributes(conductorColor);
+    ConductorVisAtt.SetForceSolid(false);
+
     // Passive Materials
     auto passivematerialColor = G4Color(0., 0., 1, alpha); // Blue
     G4VisAttributes PassiveMaterialVisAtt = G4VisAttributes(passivematerialColor);
@@ -354,11 +359,13 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     auto simple_view = config_.get<bool>("simple_view");
     if(simple_view) {
         SensorVisAtt.SetVisibility(false);
+        ConductorVisAtt.SetVisibility(true);
         BoxVisAtt.SetVisibility(true);
         BumpVisAtt.SetVisibility(false);
         BumpBoxVisAtt.SetVisibility(true);
     } else {
         SensorVisAtt.SetVisibility(true);
+        ConductorVisAtt.SetVisibility(true);
         BoxVisAtt.SetVisibility(true);
         BumpVisAtt.SetVisibility(true);
         BumpBoxVisAtt.SetVisibility(false);
@@ -382,6 +389,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
         set_vis_attribute("bumps_cell_log", BumpVisAtt);
         set_vis_attribute("chip_log", ChipVisAtt);
         set_vis_attribute("passive_material_log", PassiveMaterialVisAtt);
+	set_vis_attribute("implants_log", ConductorVisAtt);
 
         auto supports_log =
             geo_manager_->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>(name, "supports_log");
