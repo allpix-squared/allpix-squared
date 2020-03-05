@@ -37,10 +37,10 @@
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
-#include "BoxModel.hpp"
-#include "CylinderModel.hpp"
 #include "PassiveMaterialModel.hpp"
-#include "SphereModel.hpp"
+#include "Passive_Material_Models/BoxModel.hpp"
+#include "Passive_Material_Models/CylinderModel.hpp"
+#include "Passive_Material_Models/SphereModel.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -82,7 +82,7 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
     /*
     Get the information for the passive materials
     */
-    auto mother_volume = config_.get<std::string>("mother_volume", "World");
+    auto mother_volume = config_.get<std::string>("mother_volume", "World").append("_log");
     G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
     mother_log_volume_ = log_volume_store->GetVolume(mother_volume);
     if(mother_log_volume_ == nullptr) {
@@ -118,7 +118,7 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
     }
     // Set VisAttribute to white if material = world_material
     else if(materials_[passive_material] == materials_["world_material"]) {
-        auto white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.1));
+        auto white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.4));
         log_volume->SetVisAttributes(white_vol);
     }
 

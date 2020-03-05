@@ -20,7 +20,7 @@
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
-#include "GeometryBuilder.hpp"
+//#include "GeometryBuilder.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
@@ -205,9 +205,11 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-        void addBuilder(const std::shared_ptr<BaseBuilder>& builder);
-
-        std::vector<std::shared_ptr<BaseBuilder>> getBuilders();
+        /**
+        * @brief Get the orientation of an object
+        * @param config Configuration that defines in the object
+        * @return Position and rotation vector of the object
+        */
 
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
 
@@ -224,9 +226,8 @@ namespace allpix {
          */
         template <typename T>
         void setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name);
-        std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
-        bool getGeometryClosed() { return static_cast<bool>(closed_); };
+        std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
     private:
         /**
@@ -260,7 +261,7 @@ namespace allpix {
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
 
-        std::vector<std::shared_ptr<BaseBuilder>> builders_;
+        // std::vector<std::shared_ptr<BaseBuilder>> builders_;
 
         std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
         std::vector<std::string> external_object_names_;

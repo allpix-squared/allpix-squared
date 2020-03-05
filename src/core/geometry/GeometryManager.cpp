@@ -51,7 +51,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
         // Get the position and orientation of the detector
         auto orientation = getOrientation(detector_section);
         // Get the mother volume of the detector
-        auto mother_volume = detector_section.get<std::string>("mother_volume", "World");
+        auto mother_volume = detector_section.get<std::string>("mother_volume", "World").append("_log");
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
@@ -511,12 +511,4 @@ MagneticFieldType GeometryManager::getMagneticFieldType() const {
 
 ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
     return magnetic_field_function_(position);
-}
-
-void GeometryManager::addBuilder(const std::shared_ptr<BaseBuilder>& builder) {
-    builders_.push_back(builder);
-}
-
-std::vector<std::shared_ptr<BaseBuilder>> GeometryManager::getBuilders() {
-    return builders_;
 }

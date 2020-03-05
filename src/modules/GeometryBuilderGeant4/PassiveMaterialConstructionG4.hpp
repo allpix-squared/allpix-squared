@@ -18,14 +18,13 @@
 #include "G4Material.hh"
 #include "PassiveMaterialModel.hpp"
 #include "core/config/Configuration.hpp"
-#include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/GeometryManager.hpp"
 
 namespace allpix {
     /**
      * @brief Constructs passive materials during Geant4 initialization
      */
-    class PassiveMaterialConstructionG4 : public GeometryBuilder<G4Material> {
+    class PassiveMaterialConstructionG4 {
     public:
         /**
          * @brief Constructs passive material construction module
@@ -37,7 +36,7 @@ namespace allpix {
          * @brief Constructs the passive materials
          * @return Physical volume representing the passive materials
          */
-        void build(std::map<std::string, G4Material*> materials_) override;
+        void build(std::map<std::string, G4Material*> materials_);
         /**
          * @brief Defines the points which represent the outer corners of the passive material
          * @return Vector of all XYZ points of the corners

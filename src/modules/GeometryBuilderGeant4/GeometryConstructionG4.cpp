@@ -29,7 +29,6 @@
 #include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
-#include "core/geometry/GeometryBuilder.hpp"
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
@@ -38,11 +37,14 @@
 
 #include "DetectorConstructionG4.hpp"
 #include "Parameterization2DG4.hpp"
+#include "PassiveMaterialConstructionG4.hpp"
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
-    : geo_manager_(geo_manager), config_(config) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager,
+                                               Configuration& config,
+                                               std::vector<Configuration> pm_config)
+    : geo_manager_(geo_manager), config_(config), pm_config_(pm_config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -107,25 +109,23 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build the world
     auto world_box = std::make_shared<G4Box>("World", half_world_size.x(), half_world_size.y(), half_world_size.z());
     solids_.push_back(world_box);
-    world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World", nullptr, nullptr, nullptr);
+    world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World_log", nullptr, nullptr, nullptr);
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
 
     // Place the world at the center
-    world_phys_ =
-        std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
+    world_phys_ = std::make_unique<G4PVPlacement>(
+        nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
 
-    // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Targets
-
-    auto builders = geo_manager_->getBuilders();
-
-    for(const auto& builder : builders) {
-        auto g4_builder = std::dynamic_pointer_cast<GeometryBuilder<G4Material>>(builder);
-        if(g4_builder != nullptr) {
-            g4_builder->build(materials_);
-        }
+    // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
+    LOG(TRACE) << "Building " << pm_config_.size() << " passive material(s).";
+    for(auto& pm_conf : pm_config_) {
+        const auto& pmBuilder = new PassiveMaterialConstructionG4(pm_conf, geo_manager_);
+        pmBuilder->build(materials_);
     }
+    const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
+    detBuilder->build(materials_);
 
     // Check for overlaps:
     check_overlaps();

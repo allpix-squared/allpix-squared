@@ -126,9 +126,7 @@ namespace allpix {
 
         // Helper function for delayed parsing of detectors file
         void parse_detectors();
-        void parse_passive_materials();
         std::list<Configuration> detector_configs_;
-        std::list<Configuration> passive_material_configs_;
 
         std::list<Configuration> instance_configs_;
         std::map<std::string, std::list<Configuration>::iterator> instance_name_to_config_;

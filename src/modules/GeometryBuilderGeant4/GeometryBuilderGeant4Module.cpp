@@ -28,6 +28,8 @@
 #include "tools/geant4.h"
 
 #include "DetectorConstructionG4.hpp"
+#include "PassiveMaterialConstructionG4.hpp"
+
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
@@ -37,7 +39,36 @@ using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {}
+    : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // Check for passive materials
+    bool passive_materials = config_.get<bool>("passive_materials", false);
+
+    if(passive_materials) {
+        // Reading passive material file
+        std::string passive_material_file_name = config_.getPath("passive_materials_file", true);
+        LOG(TRACE) << "Reading passive material configuration";
+
+        std::ifstream passive_material_file(passive_material_file_name);
+        ConfigReader passive_material_reader(passive_material_file, passive_material_file_name);
+        passive_material_configs_ = passive_material_reader.getConfigurations();
+
+        std::set<std::string> passive_material_names;
+        for(auto& passive_material_section : passive_material_configs_) {
+            auto name = passive_material_section.getName();
+            if(passive_material_names.find(name) != passive_material_names.end()) {
+                throw ModuleError("Passive Material with name '" + name +
+                                  "' is already registered, Passive Material names should be unique");
+            }
+            passive_material_names.insert(name);
+
+            // Add the min and max points to the world volume
+            for(auto& point : PassiveMaterialConstructionG4(passive_material_section, geo_manager_).addPoints()) {
+                LOG(TRACE) << "adding point " << Units::display(point, {"mm", "um"}) << "to the geometry";
+                geo_manager_->addPoint(point);
+            }
+        }
+    }
+}
 
 /**
  * @brief Checks if a particular Geant4 dataset is available in the environment
@@ -86,11 +117,7 @@ void GeometryBuilderGeant4Module::init() {
     RELEASE_STREAM(std::cout);
 
     // Set the geometry construction to use
-    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
-
-    std::shared_ptr<DetectorConstructionG4> detBuilder = std::make_shared<DetectorConstructionG4>(geo_manager_);
-
-    geo_manager_->addBuilder(detBuilder);
+    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_, passive_material_configs_);
     run_manager_g4_->SetUserInitialization(geometry_construction);
 
     // Run the geometry construct function in GeometryConstructionG4
