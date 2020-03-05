@@ -162,10 +162,10 @@ std::shared_ptr<TTree> constructComparisonTree(TFile* file, std::string dut) {
         output_track_x = 0;
         output_track_y = 0;
 
-        // FIXME: guess the truth position from the average of start and end points
+        // FIXME: Get truth position as averaged reference point of the particle on the sensor center plane
         for(auto& particle : input_particles) {
-            output_track_x += (particle->getLocalStartPoint().x() + particle->getLocalEndPoint().x()) / 2.0;
-            output_track_y += (particle->getLocalStartPoint().y() + particle->getLocalEndPoint().y()) / 2.0;
+            output_track_x += particle->getLocalReferencePoint().x();
+            output_track_y += particle->getLocalReferencePoint().y();
         }
         if(!input_particles.empty()) {
             output_track_x /= input_particles.size();
