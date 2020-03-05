@@ -67,6 +67,12 @@ void SimpleTransferModule::initialize() {
             auto model = detector_->getModel();
             LOG(INFO) << "Collecting charges from implants with size " << Units::display(model->getImplantSize(), {"um"});
         }
+
+        // Check if we have a 3D or 2D implant defined:
+        if(detector_->getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
+            LOG(INFO) << "Implant is defined in three dimension - using its volume as collection criterion";
+            implant_is_volume_ = true;
+        }
     }
 
     if(output_plots_) {
