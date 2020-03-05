@@ -225,10 +225,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 for(int npix_x = 0; npix_x < model->getNPixels().x(); npix_x++) {
                     for(int npix_y = 0; npix_y < model->getNPixels().y(); npix_y++) {
                         // FIXME: We should extend the implant and shift it to avoid fake surfaces
-                        auto implant_box = std::make_shared<G4Box>("sensor_implant_trench",
-                                                                   implants.x() / 2.0,
-                                                                   implants.y() / 2.0,
-                                                                   implants.z() / 2.0 + 0.05 / 1000);
+                        auto implant_box = std::make_shared<G4Box>(
+                            "implant_box", implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
                         solids_.push_back(implant_box);
 
                         // Calculate transformation for the solid
@@ -244,6 +242,24 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                     }
                 }
                 implant_union->Voxelize();
+
+                // Place physical instance of implant extrusion in model (conductor):
+                auto implant_log = make_shared_no_delete<G4LogicalVolume>(
+                    implant_union.get(), materials_["aluminum"], "implants_" + name + "_log");
+                detector->setExternalObject("implants_log", implant_log);
+
+                // Place the implants box
+                auto implant_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
+                LOG(DEBUG) << "  - Implants\t\t:\t" << Units::display(implant_pos, {"mm", "um"});
+                auto implant_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
+                                                                         implant_pos,
+                                                                         implant_log.get(),
+                                                                         "implants_" + name + "_phys",
+                                                                         wrapper_log.get(),
+                                                                         false,
+                                                                         0,
+                                                                         true);
+                detector->setExternalObject("implants_phys", implant_phys);
 
                 G4Transform3D transform(G4RotationMatrix(), G4ThreeVector(0, 0, 0));
                 auto subtraction_solid = std::make_shared<G4SubtractionSolid>(
