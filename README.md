@@ -95,6 +95,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
+* Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
 * Paul Schütze, DESY, @pschutze
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner

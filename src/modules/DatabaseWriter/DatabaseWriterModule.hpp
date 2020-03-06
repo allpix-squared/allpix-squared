@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief Definition of ASCII text file writer module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @brief Definition of database writer module
+ * @copyright Copyright (c) 2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -17,7 +17,6 @@
 #include "core/module/Module.hpp"
 
 #include <pqxx/pqxx>
-using namespace pqxx;
 
 namespace allpix {
     /**
@@ -69,8 +68,8 @@ namespace allpix {
         std::set<std::string> exclude_;
 
         // postgreSQL objects
-        connection* conn_;
-        nontransaction* W_;
+        std::shared_ptr<pqxx::connection> conn_;
+        std::shared_ptr<pqxx::nontransaction> W_;
         std::string host_;
         std::string port_;
         std::string dbname_;

@@ -29,6 +29,14 @@ using namespace allpix;
 DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : Module(config) {
     // Bind to all messages
     messenger->registerListener(this, &DatabaseWriterModule::receive);
+
+    // retrieving configuration parameters
+    host_ = config_.get<std::string>("host");
+    port_ = config_.get<std::string>("port");
+    dbname_ = config_.get<std::string>("dbname");
+    user_ = config_.get<std::string>("user");
+    password_ = config_.get<std::string>("password");
+    runID_ = config_.get<std::string>("runID", "none");
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -42,26 +50,17 @@ DatabaseWriterModule::~DatabaseWriterModule() {
 
 void DatabaseWriterModule::init() {
 
-    // retrieving configuration parameters
-    host_ = config_.get<std::string>("host", "");
-    port_ = config_.get<std::string>("port", "");
-    dbname_ = config_.get<std::string>("dbname", "");
-    user_ = config_.get<std::string>("user", "");
-    password_ = config_.get<std::string>("password", "");
-    runID_ = config_.get<std::string>("runID", "");
-
     // establishing connection to the database
-    conn_ = new connection("host=" + host_ + " port=" + port_ + " dbname=" + dbname_ + " user=" + user_ +
-                           " password=" + password_);
+    conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + dbname_ + " user=" + user_ +
+                                               " password=" + password_);
     if(!conn_->is_open()) {
-        std::cout << __PRETTY_FUNCTION__ << ": ERROR!!! - could not connect to database" << std::endl;
-        return;
+        throw ModuleError("Could not connect to database " + dbname_ + " at host " + host_);
     }
 
-    W_ = new nontransaction(*conn_);
+    W_ = std::make_shared<pqxx::nontransaction>(*conn_);
 
     // inserting run entry in the database
-    result runR = W_->exec("INSERT INTO Run (runID) VALUES ('" + runID_ + "') RETURNING run_nr;");
+    pqxx::result runR = W_->exec("INSERT INTO Run (runID) VALUES ('" + runID_ + "') RETURNING run_nr;");
     run_nr_ = atoi(runR[0][0].c_str());
 
     // Read include and exclude list
@@ -125,10 +124,10 @@ void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::st
 }
 
 void DatabaseWriterModule::run(unsigned int event_num) {
-    LOG(TRACE) << "Writing new objects to text file";
+    LOG(TRACE) << "Writing new objects to database";
 
     char insertionLine[1000];
-    result insertionResult;
+    pqxx::result insertionResult;
 
     // Writing entry to event table
     sprintf(insertionLine, "INSERT INTO Event (run_nr, eventID) VALUES (currval('run_run_nr_seq'), %d)", event_num);
@@ -278,7 +277,6 @@ void DatabaseWriterModule::run(unsigned int event_num) {
 void DatabaseWriterModule::finalize() {
 
     // disconnecting from database
-    delete W_;
     conn_->disconnect();
 
     // Print statistics
