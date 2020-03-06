@@ -220,7 +220,21 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                         track.getKineticEnergyFinal());
                 insertionResult = W_->exec(insertionLine);
             } else if(class_name == "DepositedCharge") {
-
+                DepositedCharge charge = static_cast<DepositedCharge&>(current_object);
+                sprintf(insertionLine,
+                        "INSERT INTO DepositedCharge (run_nr, event_nr, detector, carriertype, charge, localx, localy, "
+                        "localz, globalx, globaly, globalz) VALUES (currval('run_run_nr_seq'), "
+                        "currval('event_event_nr_seq'), '%s', %d, %d, %lf, %lf, %lf, %lf, %lf, %lf)",
+                        detectorName.c_str(),
+                        static_cast<int>(charge.getType()),
+                        charge.getCharge(),
+                        charge.getLocalPosition().X(),
+                        charge.getLocalPosition().Y(),
+                        charge.getLocalPosition().Z(),
+                        charge.getGlobalPosition().X(),
+                        charge.getGlobalPosition().Y(),
+                        charge.getGlobalPosition().Z());
+                insertionResult = W_->exec(insertionLine);
             } else if(class_name == "MCParticle") {
 
             } else {
