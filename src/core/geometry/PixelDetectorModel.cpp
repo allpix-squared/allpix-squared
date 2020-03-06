@@ -51,8 +51,8 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
 
     // Offset of the collection diode implant from the pixel center, defaults to zero.
     auto implant_offset = config.get<XYVector>("implant_offset", {0, 0});
-    if(implant_offset.x() + implant_size.x() / 2 > pixel_size.x() / 2 ||
-       implant_offset.y() + implant_size.y() / 2 > pixel_size.y() / 2) {
+    if(std::fabs(implant_offset.x()) + implant_size.x() / 2 > pixel_size.x() / 2 ||
+       std::fabs(implant_offset.y()) + implant_size.y() / 2 > pixel_size.y() / 2) {
         throw InvalidValueError(config, "implant_offset", "implant exceeds pixel cell. Reduce implant size or offset");
     }
     setImplantOffset(implant_offset);
