@@ -197,7 +197,28 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                         charge.getGlobalPosition().Z());
                 insertionResult = W_->exec(insertionLine);
             } else if(class_name == "MCTrack") {
-
+                MCTrack track = static_cast<MCTrack&>(current_object);
+                sprintf(insertionLine,
+                        "INSERT INTO MCTrack (run_nr, event_nr, detector, address, parentAddress, particleID, "
+                        "productionProcess, productionVolume, initialPositionX, initialPositionY, initialPositionZ, "
+                        "finalPositionX, finalPositionY, finalPositionZ, initialKineticEnergy, finalKineticEnergy) VALUES "
+                        "(currval('run_run_nr_seq'), currval('event_event_nr_seq'), '%s', %ld, %ld, %d, '%s', '%s', %lf, "
+                        "%lf, %lf, %lf, %lf, %lf, %lf, %lf)",
+                        detectorName.c_str(),
+                        reinterpret_cast<uintptr_t>(&current_object),
+                        reinterpret_cast<uintptr_t>(track.getParent()),
+                        track.getParticleID(),
+                        track.getCreationProcessName().c_str(),
+                        track.getOriginatingVolumeName().c_str(),
+                        track.getStartPoint().X(),
+                        track.getStartPoint().Y(),
+                        track.getStartPoint().Z(),
+                        track.getEndPoint().X(),
+                        track.getEndPoint().Y(),
+                        track.getEndPoint().Z(),
+                        track.getKineticEnergyInitial(),
+                        track.getKineticEnergyFinal());
+                insertionResult = W_->exec(insertionLine);
             } else if(class_name == "DepositedCharge") {
 
             } else if(class_name == "MCParticle") {
