@@ -99,7 +99,6 @@ void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::st
 
             // Remove the allpix prefix
             std::string class_name = cls->GetName();
-            //	    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA class_name = " << class_name << std::endl;
             std::string apx_namespace = "allpix::";
             size_t ap_idx = class_name.find(apx_namespace);
             if(ap_idx != std::string::npos) {
@@ -128,25 +127,85 @@ void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::st
 void DatabaseWriterModule::run(unsigned int event_num) {
     LOG(TRACE) << "Writing new objects to text file";
 
+    char insertionLine[1000];
+    result insertionResult;
+
     // Writing entry to event table
-    char eventLine[1000];
-    sprintf(eventLine, "INSERT INTO Event (run_nr, eventID) VALUES (currval('run_run_nr_seq'), %d)", event_num);
-    result binR = W_->exec(eventLine);
+    sprintf(insertionLine, "INSERT INTO Event (run_nr, eventID) VALUES (currval('run_run_nr_seq'), %d)", event_num);
+    insertionResult = W_->exec(insertionLine);
 
     // Looping through messages
     for(auto& message : keep_messages_) {
-        // Save detector's name
+        // Storing detector's name
         std::string detectorName = "";
         if(message->getDetector() != nullptr) {
-            //	std::cout << "--- " << message->getDetector()->getName() << " ---" << std::endl;
             detectorName = message->getDetector()->getName();
         } else {
-            //	std::cout << "--- <global> ---" << std::endl;
             detectorName = "global";
         }
         for(auto& object : message->getObjectArray()) {
-            // Print the object's ASCII representation:
-            //	*output_file_ << object << std::endl;
+            // Retrieving object type
+            Object& current_object = object;
+            auto* cls = TClass::GetClass(typeid(current_object));
+            std::string class_name = cls->GetName();
+            std::string apx_namespace = "allpix::";
+            size_t ap_idx = class_name.find(apx_namespace);
+            if(ap_idx != std::string::npos) {
+                class_name.replace(ap_idx, apx_namespace.size(), "");
+            }
+            // Writing objects to corresponding database tables
+            if(class_name == "PixelHit") {
+                PixelHit hit = static_cast<PixelHit&>(current_object);
+                sprintf(insertionLine,
+                        "INSERT INTO PixelHit (run_nr, event_nr, detector, x, y, signal, hittime) VALUES "
+                        "(currval('run_run_nr_seq'), currval('event_event_nr_seq'), '%s', %d, %d, %lf, %lf)",
+                        detectorName.c_str(),
+                        hit.getIndex().X(),
+                        hit.getIndex().Y(),
+                        hit.getSignal(),
+                        hit.getTime());
+                insertionResult = W_->exec(insertionLine);
+            } else if(class_name == "PixelCharge") {
+                PixelCharge charge = static_cast<PixelCharge&>(current_object);
+                sprintf(insertionLine,
+                        "INSERT INTO PixelCharge (run_nr, event_nr, detector, charge, x, y, localx, localy, globalx, "
+                        "globaly) VALUES (currval('run_run_nr_seq'), currval('event_event_nr_seq'), '%s', %d, %d, %d, %lf, "
+                        "%lf, %lf, %lf)",
+                        detectorName.c_str(),
+                        charge.getCharge(),
+                        charge.getIndex().X(),
+                        charge.getIndex().Y(),
+                        charge.getPixel().getLocalCenter().X(),
+                        charge.getPixel().getLocalCenter().Y(),
+                        charge.getPixel().getGlobalCenter().X(),
+                        charge.getPixel().getGlobalCenter().Y());
+                insertionResult = W_->exec(insertionLine);
+            } else if(class_name == "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
+                PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
+                sprintf(insertionLine,
+                        "INSERT INTO PropagatedCharge (run_nr, event_nr, detector, carriertype, charge, localx, localy, "
+                        "localz, globalx, globaly, globalz) VALUES (currval('run_run_nr_seq'), "
+                        "currval('event_event_nr_seq'), '%s', %d, %d, %lf, %lf, %lf, %lf, %lf, %lf)",
+                        detectorName.c_str(),
+                        static_cast<int>(charge.getType()),
+                        charge.getCharge(),
+                        charge.getLocalPosition().X(),
+                        charge.getLocalPosition().Y(),
+                        charge.getLocalPosition().Z(),
+                        charge.getGlobalPosition().X(),
+                        charge.getGlobalPosition().Y(),
+                        charge.getGlobalPosition().Z());
+                insertionResult = W_->exec(insertionLine);
+            } else if(class_name == "MCTrack") {
+
+            } else if(class_name == "DepositedCharge") {
+
+            } else if(class_name == "MCParticle") {
+
+            } else {
+                LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name
+                             << std::endl;
+            }
             write_cnt_++;
         }
         msg_cnt_++;
