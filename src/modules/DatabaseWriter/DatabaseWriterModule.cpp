@@ -236,7 +236,32 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                         charge.getGlobalPosition().Z());
                 insertionResult = W_->exec(insertionLine);
             } else if(class_name == "MCParticle") {
-
+                MCParticle particle = static_cast<MCParticle&>(current_object);
+                sprintf(
+                    insertionLine,
+                    "INSERT INTO MCParticle (run_nr, event_nr, detector, address, parentAddress, trackAddress, particleID, "
+                    "localStartPointX, localStartPointY, localStartPointZ, localEndPointX, localEndPointY, localEndPointZ, "
+                    "globalStartPointX, globalStartPointY, globalStartPointZ, globalEndPointX, globalEndPointY, "
+                    "globalEndPointZ) VALUES (currval('run_run_nr_seq'), currval('event_event_nr_seq'), '%s', %ld, %ld, "
+                    "%ld, %d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf)",
+                    detectorName.c_str(),
+                    reinterpret_cast<uintptr_t>(&current_object),
+                    reinterpret_cast<uintptr_t>(particle.getParent()),
+                    reinterpret_cast<uintptr_t>(particle.getTrack()),
+                    particle.getParticleID(),
+                    particle.getLocalStartPoint().X(),
+                    particle.getLocalStartPoint().Y(),
+                    particle.getLocalStartPoint().Z(),
+                    particle.getLocalEndPoint().X(),
+                    particle.getLocalEndPoint().Y(),
+                    particle.getLocalEndPoint().Z(),
+                    particle.getGlobalStartPoint().X(),
+                    particle.getGlobalStartPoint().Y(),
+                    particle.getGlobalStartPoint().Z(),
+                    particle.getGlobalEndPoint().X(),
+                    particle.getGlobalEndPoint().Y(),
+                    particle.getGlobalEndPoint().Z());
+                insertionResult = W_->exec(insertionLine);
             } else {
                 LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name
                              << std::endl;

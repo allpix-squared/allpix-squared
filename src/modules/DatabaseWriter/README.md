@@ -28,7 +28,7 @@ The `include` and `exclude` parameters can be used to restrict the objects writt
 # postgres=# create database mydb;
 # postgres=# create user myuser with encrypted password 'mypass';
 # postgres=# grant all privileges on database mydb to myuser;
-# exclude PropagatedCharge, this is going to slow down the simulation considerably
+# exclude PropagatedCharge and DepositedCharge, these are going to slow down the simulation considerably
 To create the default file (with the name *data.txt*) containing entries only for PixelHit objects, the following configuration can be placed at the end of the main configuration:
 
 ```ini
