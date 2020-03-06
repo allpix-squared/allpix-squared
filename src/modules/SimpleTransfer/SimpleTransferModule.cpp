@@ -60,16 +60,16 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
 
 void SimpleTransferModule::initialize() {
 
+     auto model = detector_->getModel();
     if(collect_from_implant_) {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         } else {
-            auto model = detector_->getModel();
             LOG(INFO) << "Collecting charges from implants with size " << Units::display(model->getImplantSize(), {"um"});
         }
 
         // Check if we have a 3D or 2D implant defined:
-        if(detector_->getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
+        if(model->getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
             LOG(INFO) << "Implant is defined in three dimension - using its volume as collection criterion";
             implant_is_volume_ = true;
         }
