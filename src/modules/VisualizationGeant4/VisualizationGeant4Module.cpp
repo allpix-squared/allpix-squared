@@ -359,7 +359,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     auto simple_view = config_.get<bool>("simple_view");
     if(simple_view) {
         SensorVisAtt.SetVisibility(false);
-        ConductorVisAtt.SetVisibility(true);
+        ConductorVisAtt.SetVisibility(false);
         BoxVisAtt.SetVisibility(true);
         BumpVisAtt.SetVisibility(false);
         BumpBoxVisAtt.SetVisibility(true);
