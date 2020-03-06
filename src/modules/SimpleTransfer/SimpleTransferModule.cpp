@@ -100,7 +100,7 @@ void SimpleTransferModule::run(Event* event) {
         if(collect_from_implant_ && !model_->isWithinImplant(position)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                       << " because it is outside the pixel implant.";
+                       << " because their local position is outside the pixel implant";
             continue;
         }
 
