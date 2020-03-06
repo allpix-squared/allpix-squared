@@ -55,7 +55,7 @@ namespace allpix {
          */
         ROOT::Math::XYZPoint getLocalEndPoint() const;
         /**
-         * @brief Get the entry point of the particle in global coordinates
+         * @brief Get the exit point of the particle in global coordinates
          * @return Particle exit point
          */
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
