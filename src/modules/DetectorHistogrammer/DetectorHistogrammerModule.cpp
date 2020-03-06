@@ -299,8 +299,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         for(const auto& particle : intersection) {
             auto pitch = detector_->getModel()->getPixelSize();
 
-            auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
-            particlePos += track_smearing(track_resolution_);
+            auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
             auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
@@ -350,8 +349,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         auto pitch = detector_->getModel()->getPixelSize();
 
         // Calculate 2D local position of particle:
-        auto particlePos = (static_cast<XYZVector>(particle->getLocalStartPoint()) + particle->getLocalEndPoint()) / 2.0;
-        particlePos += track_smearing(track_resolution_);
+        auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
         auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
                                    std::fmod(particlePos.y() + pitch.y() / 2, pitch.y()));
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
