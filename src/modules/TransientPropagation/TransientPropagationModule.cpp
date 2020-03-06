@@ -54,6 +54,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<bool>("enable_charge_multiplication", false);
+    config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -62,6 +64,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
+    enable_multiplication_ = config_.get<bool>("enable_charge_multiplication");
+    threshold_field_ = config_.get<double>("charge_multiplication_threshold");
 
     output_plots_ = config_.get<bool>("output_plots");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
@@ -206,7 +210,7 @@ void TransientPropagationModule::run(Event* event) {
             std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto [local_position, time, state] = propagate(
+            auto [local_position, time, gain, state] = propagate(
                 event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
@@ -260,7 +264,7 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, CarrierState>
+std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
 TransientPropagationModule::propagate(Event* event,
                                       const ROOT::Math::XYZPoint& pos,
                                       const CarrierType& type,
@@ -268,6 +272,9 @@ TransientPropagationModule::propagate(Event* event,
                                       const double initial_time,
                                       std::map<Pixel::Index, Pulse>& pixel_map) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
+
+    // Initialise gain
+    double gain = 1;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
@@ -281,6 +288,33 @@ TransientPropagationModule::propagate(Event* event,
             diffusion[i] = gauss_distribution(event->getRandomEngine());
         }
         return diffusion;
+    };
+
+    // Define a function to compute the charge carrier multiplcation
+    auto carrier_multiplication = [&](double efield_mag, double step_length) -> double {
+        // experimental parameters from Massey model
+        double a_n = 4.43e4;  // in mm^-1
+        double a_p = 1.13e5;  // in mm^-1
+        double c_n = 9.66e-2; // in MV mm^-1
+        double c_p = 1.71e-1; // in MV mm^-1
+        double d_n = 4.99e-5; // in MV mm^-1 K^-1
+        double d_p = 1.09e-4; // in MV mm^-1 K^-1
+
+        // Compute the gain
+        if(abs(efield_mag) > threshold_field_) {
+
+            // ionisation coefficient for electrons
+            double b_n = c_n + d_n * temperature_;
+            double alpha_ = a_n * std::exp(-(b_n / efield_mag));
+
+            // ionisation coefficient for holes
+            double b_p = c_p + d_p * temperature_;
+            double beta_ = a_p * std::exp(-(b_p / efield_mag));
+
+            return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
+        } else {
+            return 1.0;
+        }
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
@@ -368,6 +402,12 @@ TransientPropagationModule::propagate(Event* event,
             }
         }
 
+        // Apply multiplication step, fully deterministic from local efield and step length
+        double step_length = step.value.norm();
+        if(enable_multiplication_) {
+            gain *= carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
+        }
+
         // Update step length histogram
         if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
@@ -436,7 +476,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), state);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), gain, state);
 }
 
 void TransientPropagationModule::finalize() {
