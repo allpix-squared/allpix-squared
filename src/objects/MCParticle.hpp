@@ -133,4 +133,4 @@ namespace allpix {
     using MCParticleMessage = Message<MCParticle>;
 } // namespace allpix
 
-#endif /* ALLPIX_MC_TRACK_H */
+#endif /* ALLPIX_MC_PARTICLE_H */
