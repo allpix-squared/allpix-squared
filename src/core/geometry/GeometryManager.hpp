@@ -20,7 +20,6 @@
 
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
-//#include "GeometryBuilder.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
 
@@ -87,6 +86,11 @@ namespace allpix {
          */
         std::vector<std::string> getModelsPath();
 
+        /**
+         * @brief Returns the position and orientation from a config rile
+         * @return Pair of position and orientation
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
         /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame
@@ -205,13 +209,6 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-        /**
-        * @brief Get the orientation of an object
-        * @param config Configuration that defines in the object
-        * @return Position and rotation vector of the object
-        */
-
-        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
 
         /**
          * @brief Fetch an external object linked to this detector
@@ -244,12 +241,22 @@ namespace allpix {
         std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
 
         /**
+        * @brief Get the orientation of an object
+        * @param config Configuration that defines in the object
+        * @return Position and rotation vector of the object
+        */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> calculate_orientation(const Configuration& config);
+
+        /**
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
          */
         void close_geometry();
         std::atomic_bool closed_;
 
+        std::mt19937_64 random_generator_;
+
         std::vector<ROOT::Math::XYZPoint> points_;
+
         std::vector<std::string> model_paths_;
         std::vector<std::shared_ptr<DetectorModel>> models_;
         std::set<std::string> model_names_;
@@ -261,12 +268,8 @@ namespace allpix {
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
 
-        // std::vector<std::shared_ptr<BaseBuilder>> builders_;
-
         std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
         std::vector<std::string> external_object_names_;
-
-        std::mt19937_64 random_generator_;
     };
     /**
      * If the returned object is not a null pointer it is guaranteed to be of the correct type

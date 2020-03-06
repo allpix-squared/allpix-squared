@@ -77,11 +77,11 @@ namespace allpix {
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
          * created
-         * @return The total energy in MeV of the particle at the beginning of the track
-         */
-        double getTotalEnergyInitial() const;
-
-        /**
+         * @return The total ene#endif /* ALLPIX_MC_PARTICLE_H */rgy in MeV of the particle at the beginning of the track
+         */#endif /* ALLPIX_MC_PARTICLE_H */
+        double getTotalEnergyIni#endif /* ALLPIX_MC_PARTICLE_H */tial() const;
+#endif /* ALLPIX_MC_PARTICLE_H */
+        /**#endif /* ALLPIX_MC_PARTICLE_H */
          * @brief Getter for the kinetic energy the particle had when the track terminated
          * @return The kinetic energy in MeV of the particle at the end of the track
          */

@@ -103,12 +103,6 @@ namespace allpix {
         std::list<Configuration>& getDetectorConfigurations();
 
         /**
-         * @brief Get all the passive material configurations
-         * @return Reference to list of passive material configurations
-         */
-        std::list<Configuration>& getPassiveMaterialConfigurations();
-
-        /**
          * @brief Load detector specific options
          * @param options List of options to load and apply
          * @return True if any actual options where applied

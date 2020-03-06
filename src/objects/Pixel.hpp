@@ -78,6 +78,7 @@ namespace allpix {
         ROOT::Math::XYZPoint global_center_;
         ROOT::Math::XYVector size_;
     };
+
 } // namespace allpix
 
 #endif /* ALLPIX_PIXEL_H */
