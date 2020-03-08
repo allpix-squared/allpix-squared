@@ -27,6 +27,10 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     fano_factor_ = config_.get<double>("fano_factor", 0.115);
     volume_chars_ = config_.get<size_t>("detector_name_chars", 0);
+
+    unit_length_ = config_.get<std::string>("unit_length", "mm");
+    unit_time_ = config_.get<std::string>("unit_time", "ns");
+    unit_energy_ = config_.get<std::string>("unit_energy", "MeV");
 }
 
 void DepositionReaderModule::init() {
@@ -219,9 +223,10 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
     auto length = (volume_chars_ != 0 ? std::min(volume_chars_, volume_->GetSize()) : volume_->GetSize());
     volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
-    position = XYZPoint(Units::get(*px_->Get(), "m"), Units::get(*py_->Get(), "m"), Units::get(*pz_->Get(), "m"));
-    time = Units::get(*time_->Get(), "ns");
-    energy = Units::get(*edep_->Get(), "MeV");
+    position = XYZPoint(
+        Units::get(*px_->Get(), unit_length_), Units::get(*py_->Get(), unit_length_), Units::get(*pz_->Get(), unit_length_));
+    time = Units::get(*time_->Get(), unit_time_);
+    energy = Units::get(*edep_->Get(), unit_energy_);
     pdg_code = (*pdg_code_->Get());
     track_id = (*track_id_->Get());
     parent_id = (*parent_id_->Get());
@@ -268,10 +273,11 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
         volume = volume.substr(0, std::min(volume_chars_, volume.size()));
     }
 
-    // Calculate the charge deposit at a global position
-    position = ROOT::Math::XYZPoint(px, py, pz);
-    time = Units::get(time, "s");
-    energy = Units::get(edep, "keV");
+    // Calculate the charge deposit at a global position and convert the proper units
+    position =
+        ROOT::Math::XYZPoint(Units::get(px, unit_length_), Units::get(py, unit_length_), Units::get(pz, unit_length_));
+    time = Units::get(time, unit_time_);
+    energy = Units::get(edep, unit_energy_);
 
     return true;
 }

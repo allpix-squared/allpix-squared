@@ -54,9 +54,12 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 * `detector_name_chars`: Parameter which allows selecting only a substring of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parameterized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
 * `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
+* `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
+* `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
+* `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
 
 ### Usage
-A example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier, is the following:
+A example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
 
 ```toml
 [DepositionReader]
@@ -64,6 +67,7 @@ model = "root"
 file_name = "g4_energy_deposits.root"
 tree_name = "hitTree"
 detector_name_chars = 5
+unit_length = "m"
 ```
 
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
