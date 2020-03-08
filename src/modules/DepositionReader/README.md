@@ -1,6 +1,6 @@
 # DepositionReader
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
-**Status**: Immature
+**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
+**Status**: Functional  
 **Output**: DepositedCharge
 
 ### Description
