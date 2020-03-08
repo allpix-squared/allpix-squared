@@ -34,14 +34,15 @@ void DepositionReaderModule::init() {
     // Check which file type we want to read:
     file_model_ = config_.get<std::string>("model");
     std::transform(file_model_.begin(), file_model_.end(), file_model_.begin(), ::tolower);
-    auto file_path = config_.getPath("file_name", true);
     if(file_model_ == "csv") {
         // Open the file with the objects
+        auto file_path = config_.getPathWithExtension("file_name", "csv", true);
         input_file_ = std::make_unique<std::ifstream>(file_path);
         if(!input_file_->is_open()) {
             throw InvalidValueError(config_, "file_name", "could not open input file");
         }
     } else if(file_model_ == "root") {
+        auto file_path = config_.getPathWithExtension("file_name", "root", true);
         input_file_root_ = std::make_unique<TFile>(file_path.c_str(), "READ");
         if(!input_file_root_->IsOpen()) {
             throw InvalidValueError(config_, "file_name", "could not open input file");

@@ -45,11 +45,21 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 
 ### Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
+* `file_name`: Location of the input data file. The appropriate file extension will be appended if not present, depending on the `model` chosen either `.csv` or `.root`.
+* `tree_name`: Name of the input tree to be read from the ROOT file. Only used for the `root` model.
 * `detector_name_chars`: Parameter which allows selecting only a substring of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parameterized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
 * `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
 
 ### Usage
-*Example how to use this module*
+A example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier, is the following:
+
+```toml
+[DepositionReader]
+model = "root"
+file_name = "g4_energy_deposits.root"
+tree_name = "hitTree"
+detector_name_chars = 5
+```
 
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
