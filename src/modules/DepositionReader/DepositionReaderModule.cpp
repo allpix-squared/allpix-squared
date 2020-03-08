@@ -234,8 +234,8 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
                                       double& time,
                                       double& energy,
                                       int& pdg_code,
-                                      int&,
-                                      int&) {
+                                      int& track_id,
+                                      int& parent_id) {
 
     std::string line, tmp;
     do {
@@ -260,7 +260,8 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
 
     std::stringstream ls(line);
     double t, edep, px, py, pz;
-    ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
+    ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume >> tmp >> track_id >>
+        tmp >> parent_id;
 
     // Select the detector name from this:
     if(volume_chars_ != 0) {

@@ -16,6 +16,9 @@ The global coordinates are then translated to local coordinates of the given det
 If these are outside the sensor, the energy deposit is discarded and a warning is printed.
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
 
+Track and parent ids of the individual particles which created the energy depositions allow to carry on some of the Monte Carlo particle information from the original simulation.
+A parent id of zero should be used for the primary particle of the simulation, and all track ids have to be recorded before they can be used as parent id.
+
 Currently two data sources are supported, ROOT trees and CSV text files.
 Their expected formats are explained in detail in the following.
 
@@ -29,19 +32,20 @@ Empty lines as well as lines starting with a hash (`#`) are ignored, all other l
 
 ```csv
 Event: <N>
-<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>
-<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>
+<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
+<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
 # ...
 # For example:
-211, 3.234674e+01, 1.091620e-02, -2.515335e+00, 4.427924e+00, -2.497500e-01, MyDetector
+211, 3.234674e+01, 1.091620e-02, -2.515335e+00, 4.427924e+00, -2.497500e-01, MyDetector, 1, 0
+211, 3.234843e+01, 1.184756e-02, -2.528475e+00, 4.453544e+00, -2.445500e-01, MyDetector, 2, 1
 
 Event: <N+1>
-<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>
+<PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
 # ...
 ```
 
 where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy in units of `keV`m `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the the detector name (volume) the energy deposit should be assigned to.
-
+`<TRK>` represents the track id of the prticle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
 ### Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
