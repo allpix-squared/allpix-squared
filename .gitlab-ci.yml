@@ -148,12 +148,6 @@ fmt:coverage:
         - ninja
         - ninja install
         - ninja coverage_gcovr
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 24 hour
 
 
 ##############
