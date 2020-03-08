@@ -4,12 +4,13 @@
 **Output**: DepositedCharge
 
 ### Description
-This module allows to read in energy depositions in a sensor volume produced with a different program, e.g. with GEant4 in a standalone simulation of the respective experiment.
+This module allows to read in energy depositions in a sensor volume produced with a different program, e.g. with Geant4 in a standalone simulation of the respective experiment.
 The detector geometry for Allpix Squared should resemble the global positions of the detectors of interest in the original simulation.
 
 The assignment of energy deposits to a specific detector in the Allpix Squared simulation is performed using the volume name of the detector element in the original simulation.
 Hence, the naming of the detector in the geometry file has to match its name in the input data file.
-In order to simplify the aggregation of individual detector element volumes from the original simulation into a single detector, this modules provides the `detector_name_chars` parameter which allows matching of the detector name to be performed on a substring of the original volume name.
+In order to simplify the aggregation of individual detector element volumes from the original simulation into a single detector, this modules provides the `detector_name_chars` parameter.
+It allows matching of the detector name to be performed on a substring of the original volume name.
 
 Only energy deposits with a valid volume are considered, i.e. where a matching detector with the same name can be found in the geometry setup.
 The global coordinates are then translated to local coordinates of the given detector.
@@ -68,6 +69,7 @@ Event: <N+1>
 where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy in units of `keV`m `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the the detector name (volume) the energy deposit should be assigned to.
 `<TRK>` represents the track id of the prticle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
+
 ### Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
 * `file_name`: Location of the input data file. The appropriate file extension will be appended if not present, depending on the `model` chosen either `.csv` or `.root`.
@@ -94,3 +96,5 @@ branch_names = ["event", "energy.Edep", "time", "position.x", "position.y", "pos
 ```
 
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
+[@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
+[@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
