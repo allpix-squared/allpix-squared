@@ -180,8 +180,8 @@ void DepositionReaderModule::run(unsigned int event) {
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
 
-            LOG(DEBUG) << "Detector " << detector->getName() << " has " << deposits[detector].size() << " deposits";
             // Create a new charge deposit message
+            LOG(DEBUG) << "Detector " << detector->getName() << " has " << deposits[detector].size() << " deposits";
             auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
 
             // Dispatch the message
@@ -198,10 +198,8 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
                                        int& pdg_code,
                                        int& track_id,
                                        int& parent_id) {
-    using namespace ROOT::Math;
 
     auto status = tree_reader_->GetEntryStatus();
-
 #ifdef ROOT_TTREEREADER_VERBOSE
     auto status_message = std::string(tree_reader_->fgEntryStatusText[status]);
 #else
@@ -223,13 +221,19 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
     auto length = (volume_chars_ != 0 ? std::min(volume_chars_, volume_->GetSize()) : volume_->GetSize());
     volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
-    position = XYZPoint(
+
+    // Read other information, interpret in framework units:
+    position = ROOT::Math::XYZPoint(
         Units::get(*px_->Get(), unit_length_), Units::get(*py_->Get(), unit_length_), Units::get(*pz_->Get(), unit_length_));
     time = Units::get(*time_->Get(), unit_time_);
     energy = Units::get(*edep_->Get(), unit_energy_);
+
+    // Read PDG code and track ids
     pdg_code = (*pdg_code_->Get());
     track_id = (*track_id_->Get());
     parent_id = (*parent_id_->Get());
+
+    // Return and advance to next tree entry:
     return (tree_reader_->Next());
 }
 
@@ -244,11 +248,10 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
 
     std::string line, tmp;
     do {
-        LOG(DEBUG) << "here1";
         // Read input file line-by-line and trim whitespaces at beginning and end:
         std::getline(*input_file_, line);
         line = allpix::trim(line);
-        LOG(DEBUG) << "Input: " << line;
+        LOG(TRACE) << "Line read: " << line;
 
         // Check for event header:
         if(line.front() == 'E') {
@@ -258,7 +261,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
             if(event_read + 1 > event_num) {
                 return false;
             }
-            LOG(DEBUG) << "Parsed event, continuing";
+            LOG(DEBUG) << "Parsed header of event " << event_read << ", continuing";
             continue;
         }
     } while(line.empty() || line.front() == '#' || line.front() == 'E');
@@ -271,6 +274,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     // Select the detector name from this:
     if(volume_chars_ != 0) {
         volume = volume.substr(0, std::min(volume_chars_, volume.size()));
+        LOG(TRACE) << "Truncated detector name: " << volume;
     }
 
     // Calculate the charge deposit at a global position and convert the proper units
