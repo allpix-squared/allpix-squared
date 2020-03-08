@@ -23,6 +23,9 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
 
+    // Get the creation energy for charge (default is silicon electron hole pair energy)
+    charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    fano_factor_ = config_.get<double>("fano_factor", 0.115);
     volume_chars_ = config_.get<size_t>("detector_name_chars", 0);
 }
 
@@ -68,10 +71,6 @@ void DepositionReaderModule::init() {
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
-
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    fano_factor_ = config_.get<double>("fano_factor", 0.115);
 }
 
 void DepositionReaderModule::run(unsigned int event) {
