@@ -133,6 +133,8 @@ The documentation is distributed under the terms of the CC-BY-4.0 license. This 
 
 The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
+The CodeCoverage CMake module is copyright 2012 - 2017 by Lars Bilke, the full license can be found in the [module file](cmake/CodeCoverage.cmake).
+
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
 
 The cereal C++11 serialization library used by Allpix<sup>2</sup> is published under the BSD 3-Clause License, the original source code can be found [here](https://github.com/USCiLab/cereal).
