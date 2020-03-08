@@ -131,6 +131,30 @@ fmt:cc7-llvm-lint:
         - ninja check-lint
 
 
+fmt:coverage:
+    extends: .format
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - export PATH=$PATH:/home/sftnight/.local/bin
+    script:
+        - source .gitlab/ci/load_deps.sh
+        - pip install --trusted-host=pypi.org --user gcovr
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
+        - ninja
+        - ninja install
+        - ninja coverage_gcovr
+    artifacts:
+        paths:
+            - build
+            - bin
+            - lib
+        expire_in: 24 hour
+
 
 ##############
 # Unit tests #
@@ -167,33 +191,6 @@ examples:
     script:
         - cd build/
         - ctest -R examples --output-on-failure -j4
-
-# Test coverage report:
-
-core:coverage:
-    stage: testing
-    tags:
-        - docker
-    image: clicdp/cc7-base
-    dependencies: []
-    script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab-ci.d/init_x86_64.sh
-        - source .gitlab-ci.d/load_deps.sh
-        - pip install --trusted-host=pypi.org --user gcovr
-        - mkdir build
-        - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
-        - ninja install
-        - ninja coverage_gcovr
-    artifacts:
-        paths:
-            - build
-            - bin
-            - lib
-        expire_in: 24 hour
-
 
 # SLC 6
 
