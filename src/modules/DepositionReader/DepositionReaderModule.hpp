@@ -80,6 +80,7 @@ namespace allpix {
         double fano_factor_;
 
         std::string file_model_;
+        szie_t volume_chars_{};
 
         bool read_csv(unsigned int event_num,
                       std::string& volume,

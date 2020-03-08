@@ -22,6 +22,8 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
 
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
+
+    volume_chars_ = config_.get<size_t>("detector_name_chars", 0);
 }
 
 void DepositionReaderModule::init() {
@@ -214,8 +216,9 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     }
 
     // Read detector name
-    // NOTE volume_->GetSize() is the full length, but we only need five characters:
-    volume = std::string(static_cast<char*>(volume_->GetAddress()), 5);
+    // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
+    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, volume_->GetSize()) : volume_->GetSize());
+    volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
     position = XYZPoint(Units::get(*px_->Get(), "m"), Units::get(*py_->Get(), "m"), Units::get(*pz_->Get(), "m"));
     time = Units::get(*time_->Get(), "ns");
     energy = Units::get(*edep_->Get(), "MeV");
@@ -260,7 +263,9 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume;
 
     // Select the detector name from this:
-    volume = volume.substr(0, 5);
+    if(volume_chars_ != 0) {
+        volume = volume.substr(0, std::min(volume_chars_, volume.size()));
+    }
 
     // Calculate the charge deposit at a global position
     position = ROOT::Math::XYZPoint(px, py, pz);

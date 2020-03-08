@@ -33,6 +33,7 @@ If these are outside the sensor, the energy deposit is discarded.
 
 ### Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
+* `detector_name_chars`: Parameter which allows selecting only a substring of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parametrized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
 
 ### Usage
 *Example how to use this module*
