@@ -60,17 +60,37 @@ void DepositionReaderModule::init() {
         LOG(INFO) << "Initialized tree reader for tree " << tree << ", found " << tree_reader_->GetEntries(false)
                   << " entries";
 
-        event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "event");
-        edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "energy.Edep");
-        time_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "time");
-        px_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.x");
-        py_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.y");
-        pz_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, "position.z");
-        volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, "detector");
-        pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "PDG_code");
+        // Check if we have branch names configured and use the default values otherwise:
+        std::vector<std::string> branches({"event",
+                                           "energy",
+                                           "time",
+                                           "position.x",
+                                           "position.y",
+                                           "position.z",
+                                           "detector",
+                                           "pdg_code",
+                                           "track_id",
+                                           "parent_id"});
+        if(config_.has("branch_names")) {
+            branches = config_.getArray<std::string>("branch_names");
+            if(branches.size() != 10) {
+                throw InvalidValueError(
+                    config_, "branch_names", "Branch names require exactly ten entries, one for each branch to be read");
+            }
+        }
 
-        track_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "track_id");
-        parent_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, "parent_id");
+        // Set up branch pointers
+        event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(0).c_str());
+        edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(1).c_str());
+        time_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(2).c_str());
+        px_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(3).c_str());
+        py_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(4).c_str());
+        pz_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(5).c_str());
+        volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, branches.at(6).c_str());
+        pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(7).c_str());
+
+        track_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(8).c_str());
+        parent_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(9).c_str());
 
         tree_reader_->Next();
     } else {
