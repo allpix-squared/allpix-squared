@@ -24,6 +24,27 @@ Their expected formats are explained in detail in the following.
 
 #### ROOT Trees
 
+Data in ROOT trees are interpreted as follows.
+The tree with name `tree_name` is opened from the provided ROOT file, and information of energy deposits is read from its individual branches.
+By default the expected branch names and types are:
+
+* `event` (integer): Branch for the event number.
+* `energy` (double): Branch for the energy deposition information.
+* `time` (double): Branch for the time information when the energy deposition took place, calculated from the start of the event.
+* `position.x` (double): Leaf of the branch for the `x` position of the energy deposit in global coordinates.
+* `position.y` (double): Leaf of the branch for the `y` position of the energy deposit in global coordinates.
+* `position.z` (double): Leaf of the branch for the `z` position of the energy deposit in global coordinates.
+* `detector` (char array): Branch for the detector or volume name in which the energy was deposited.
+* `pdg_code` (integer): Branch for the PDG code particle id if the Monte Carlo particle producing this energy deposition.
+* `track_id` (integer): Branch for the track id of the current Monte Carlo particle.
+* `parent_id` (integer): Branch for the id of the parent Monte Carlo particle which created the current one.
+
+Entries are read from all branches synchronously and accumulated in the same event until the event id read from the `event` branch changes.
+
+Different branch names can be configured using the `branch_names` parameter.
+It should be noted that new names have to be provided for all branches, i.e. ten names, and that the order of the names has to reflect the order of the branches as listed here to allow for correct assignment.
+Individual leafs of branches can be assigned using the dot notation, e.g. `energy.Edep` to access a leaf of the branch `energy` to retrieve the energy deposit information.
+
 
 #### CSV Files
 
@@ -51,6 +72,7 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
 * `file_name`: Location of the input data file. The appropriate file extension will be appended if not present, depending on the `model` chosen either `.csv` or `.root`.
 * `tree_name`: Name of the input tree to be read from the ROOT file. Only used for the `root` model.
+* `branch_names`: List of names of the ten branches to be read from the input ROOT file. Only used for the `root` model.
 * `detector_name_chars`: Parameter which allows selecting only a substring of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parameterized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
 * `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
@@ -68,6 +90,7 @@ file_name = "g4_energy_deposits.root"
 tree_name = "hitTree"
 detector_name_chars = 5
 unit_length = "m"
+branch_names = ["event", "energy.Edep", "time", "position.x", "position.y", "position.z", "detector", "PDG_code", "track_id", "parent_id"]
 ```
 
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
