@@ -107,6 +107,8 @@ void DepositionReaderModule::run(unsigned int event) {
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
     LOG(DEBUG) << "Start reading event " << event;
+    bool end_of_run = false;
+    std::string eof_message;
 
     do {
         bool read_status = false;
@@ -115,13 +117,18 @@ void DepositionReaderModule::run(unsigned int event) {
         double energy, time;
         int pdg_code, track_id, parent_id;
 
-        if(file_model_ == "csv") {
-            read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
-        } else if(file_model_ == "root") {
-            read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+        try {
+            if(file_model_ == "csv") {
+                read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+            } else if(file_model_ == "root") {
+                read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+            }
+        } catch(EndOfRunException& e) {
+            end_of_run = true;
+            eof_message = e.what();
         }
 
-        if(!read_status) {
+        if(!read_status || end_of_run) {
             break;
         }
 
@@ -208,6 +215,11 @@ void DepositionReaderModule::run(unsigned int event) {
             messenger_->dispatchMessage(this, deposit_message);
         }
     }
+
+    // Request end-of-run since we don't have events anymore
+    if(end_of_run) {
+        throw EndOfRunException(eof_message);
+    }
 }
 
 bool DepositionReaderModule::read_root(unsigned int event_num,
@@ -275,8 +287,8 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
 
         // Request end of run if we reached end of file:
         if(input_file_->eof()) {
-            throw EndOfRunException("Requesting end of run because CSV file only contains data for " +
-                                    std::to_string(event_num - 1) + " events");
+            throw EndOfRunException("Requesting end of run, CSV file only contains data for " + std::to_string(event_num) +
+                                    " events");
         }
 
         // Check for event header:
