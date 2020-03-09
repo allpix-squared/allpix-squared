@@ -286,10 +286,32 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
         }
     } while(line.empty() || line.front() == '#' || line.front() == 'E');
 
-    std::stringstream ls(line);
+    std::istringstream ls(line);
     double t, edep, px, py, pz;
-    ls >> pdg_code >> tmp >> t >> tmp >> edep >> tmp >> px >> tmp >> py >> tmp >> pz >> tmp >> volume >> tmp >> track_id >>
-        tmp >> parent_id;
+
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> pdg_code;
+
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> t;
+
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> edep;
+
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> px;
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> py;
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> pz;
+
+    std::getline(ls, volume, ',');
+    volume = allpix::trim(volume);
+
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> track_id;
+    std::getline(ls, tmp, ',');
+    std::istringstream(tmp) >> parent_id;
 
     // Select the detector name from this:
     if(volume_chars_ != 0) {
