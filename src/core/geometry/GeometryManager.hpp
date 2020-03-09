@@ -209,7 +209,6 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
-
         /**
          * @brief Fetch an external object linked to this detector
          * @param name Name of the external object
@@ -241,10 +240,10 @@ namespace allpix {
         std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
 
         /**
-        * @brief Get the orientation of an object
-        * @param config Configuration that defines in the object
-        * @return Position and rotation vector of the object
-        */
+         * @brief Get the orientation of an object
+         * @param config Configuration that defines in the object
+         * @return Position and rotation vector of the object
+         */
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> calculate_orientation(const Configuration& config);
 
         /**

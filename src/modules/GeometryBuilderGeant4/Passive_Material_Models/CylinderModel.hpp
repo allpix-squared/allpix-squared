@@ -33,9 +33,9 @@ namespace allpix {
     class CylinderModel : public PassiveMaterialModel {
     public:
         /**
-        * @brief Constructs the cylinder passive material model
-        * @param config Configuration with description of the model
-        */
+         * @brief Constructs the cylinder passive material model
+         * @param config Configuration with description of the model
+         */
         explicit CylinderModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
 
             // Set the cylinder specifications

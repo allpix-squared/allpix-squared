@@ -138,7 +138,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
-    
+
     return optionsApplied;
 }
 
