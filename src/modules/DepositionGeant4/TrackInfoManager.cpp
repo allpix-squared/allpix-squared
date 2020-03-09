@@ -65,7 +65,7 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
     auto it = id_to_track_.find(track_id);
-    return (it == id_to_track_.end()) ? nullptr : &stored_tracks_.at(it->second);
+    return (it == id_to_track_.end()) ? nullptr : it->second;
 }
 
 void TrackInfoManager::createMCTracks() {
@@ -81,7 +81,7 @@ void TrackInfoManager::createMCTracks() {
                                     track_info->getTotalEnergyInitial(),
                                     track_info->getTotalEnergyFinal());
 
-        id_to_track_[track_info->getID()] = stored_tracks_.size() - 1;
+        id_to_track_[track_info->getID()] = &stored_tracks_.back();
         stored_track_ids_.emplace_back(track_info->getID());
     }
 }
