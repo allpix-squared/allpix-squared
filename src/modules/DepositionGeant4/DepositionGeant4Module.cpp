@@ -319,6 +319,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     track_info_manager_->createMCTracks();
 
     // Dispatch the necessary messages
+    track_info_manager_->dispatchMessage(this, messenger_);
+
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
 
@@ -329,7 +331,6 @@ void DepositionGeant4Module::run(unsigned int event_num) {
         }
     }
 
-    track_info_manager_->dispatchMessage(this, messenger_);
     track_info_manager_->resetTrackInfoManager();
 }
 
