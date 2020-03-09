@@ -93,7 +93,7 @@ namespace allpix {
          * @warning This must only be called once all the tracks are created (@see #createMCTracks) and no reallocation of
          * the back-end vector is guranteed
          */
-        void setAllTrackParents();
+        void set_all_track_parents();
 
         // Counter to store highest assigned track id
         int counter_{};

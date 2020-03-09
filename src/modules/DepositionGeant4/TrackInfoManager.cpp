@@ -51,7 +51,7 @@ void TrackInfoManager::resetTrackInfoManager() {
 }
 
 void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
-    setAllTrackParents();
+    set_all_track_parents();
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
         for(auto const& mc_track : stored_tracks_) {
@@ -86,7 +86,7 @@ void TrackInfoManager::createMCTracks() {
     }
 }
 
-void TrackInfoManager::setAllTrackParents() {
+void TrackInfoManager::set_all_track_parents() {
     for(size_t ix = 0; ix < stored_track_ids_.size(); ++ix) {
         auto track_id = stored_track_ids_[ix];
         auto parent_id = track_id_to_parent_id_[track_id];
