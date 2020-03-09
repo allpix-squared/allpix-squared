@@ -273,6 +273,12 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
         line = allpix::trim(line);
         LOG(TRACE) << "Line read: " << line;
 
+        // Request end of run if we reached end of file:
+        if(input_file_->eof()) {
+            throw EndOfRunException("Requesting end of run because CSV file only contains data for " +
+                                    std::to_string(event_num - 1) + " events");
+        }
+
         // Check for event header:
         if(line.front() == 'E') {
             std::stringstream lse(line);
