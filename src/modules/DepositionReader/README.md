@@ -32,9 +32,9 @@ By default the expected branch names and types are:
 * `event` (integer): Branch for the event number.
 * `energy` (double): Branch for the energy deposition information.
 * `time` (double): Branch for the time information when the energy deposition took place, calculated from the start of the event.
-* `position.x` (double): Leaf of the branch for the `x` position of the energy deposit in global coordinates.
-* `position.y` (double): Leaf of the branch for the `y` position of the energy deposit in global coordinates.
-* `position.z` (double): Leaf of the branch for the `z` position of the energy deposit in global coordinates.
+* `position.x` (double): Leaf of the branch for the `x` position of the energy deposit in global coordinates of the setup.
+* `position.y` (double): Leaf of the branch for the `y` position of the energy deposit in global coordinates of the setup.
+* `position.z` (double): Leaf of the branch for the `z` position of the energy deposit in global coordinates of the setup.
 * `detector` (char array): Branch for the detector or volume name in which the energy was deposited.
 * `pdg_code` (integer): Branch for the PDG code particle id if the Monte Carlo particle producing this energy deposition.
 * `track_id` (integer): Branch for the track id of the current Monte Carlo particle.
@@ -66,7 +66,8 @@ Event: <N+1>
 # ...
 ```
 
-where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy in units of `keV`m `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the the detector name (volume) the energy deposit should be assigned to.
+where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy, `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the detector name (volume) the energy deposit should be assigned to.
+The values are interpreted in the default framework units unless specified otherwise via the configuration parameters of this module.
 `<TRK>` represents the track id of the prticle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
 
@@ -83,7 +84,7 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
 
 ### Usage
-A example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
+An example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
 
 ```toml
 [DepositionReader]
