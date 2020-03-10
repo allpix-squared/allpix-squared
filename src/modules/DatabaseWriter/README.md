@@ -56,7 +56,47 @@ The database is structured so that the data are referenced according to the sequ
 Run -> Event -> MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
 ```
 
-This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost. However, the chain is not broken, as variables from parent objects are repeated down the chain.
+This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost. However, the chain is not broken, as variables from parent objects are repeated down the chain. As an example, the following is the table corresponding to the PixelHit objects for two runs. In the first run, the MCTrack, DepositedCharge and PropagatedCharge object were excluded:
+
+```
+ pixelhit_nr | run_nr | event_nr | mctrack_nr | mcparticle_nr | depositedcharge_nr | propagatedcharge_nr | pixelcharge_nr | detector  | x | y | signal  | hittime 
+-------------+--------+----------+------------+---------------+--------------------+---------------------+----------------+-----------+---+---+---------+---------
+           1 |     15 |       17 |            |             8 |                    |                     |              2 | detector1 | 2 | 2 |   33086 |       0
+           2 |     15 |       17 |            |             8 |                    |                     |              2 | detector2 | 2 | 2 | 41169.8 |       0
+           3 |     15 |       18 |            |            10 |                    |                     |              4 | detector1 | 2 | 2 | 32975.9 |       0
+           4 |     15 |       18 |            |            10 |                    |                     |              4 | detector2 | 2 | 2 | 51000.1 |       0
+           5 |     15 |       19 |            |            12 |                    |                     |              6 | detector1 | 2 | 2 | 27643.9 |       0
+           6 |     15 |       19 |            |            12 |                    |                     |              6 | detector2 | 2 | 2 | 36635.8 |       0
+           7 |     15 |       20 |            |            15 |                    |                     |              8 | detector1 | 2 | 2 | 84205.4 |       0
+           8 |     15 |       20 |            |            15 |                    |                     |              8 | detector2 | 2 | 2 |   29397 |       0
+           9 |     15 |       21 |            |            17 |                    |                     |             10 | detector1 | 2 | 2 | 31162.2 |       0
+          10 |     15 |       21 |            |            17 |                    |                     |             10 | detector2 | 2 | 2 | 40265.2 |       0
+          11 |     15 |       22 |            |            19 |                    |                     |             12 | detector1 | 2 | 2 | 35163.8 |       0
+          12 |     15 |       22 |            |            19 |                    |                     |             12 | detector2 | 2 | 2 | 35073.5 |       0
+          13 |     15 |       23 |            |            21 |                    |                     |             14 | detector1 | 2 | 2 | 46394.8 |       0
+          14 |     15 |       23 |            |            21 |                    |                     |             14 | detector2 | 2 | 2 | 27625.7 |       0
+          15 |     15 |       24 |            |            23 |                    |                     |             16 | detector1 | 2 | 2 | 41677.1 |       0
+          16 |     15 |       24 |            |            23 |                    |                     |             16 | detector2 | 2 | 2 | 25725.8 |       0
+          17 |     15 |       25 |            |            25 |                    |                     |             18 | detector1 | 2 | 2 |   38990 |       0
+          18 |     15 |       25 |            |            25 |                    |                     |             18 | detector2 | 2 | 2 | 36419.7 |       0
+          19 |     15 |       26 |            |            27 |                    |                     |             20 | detector1 | 2 | 2 | 45989.8 |       0
+          20 |     15 |       26 |            |            27 |                    |                     |             20 | detector2 | 2 | 2 | 26912.7 |       0
+          21 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector1 | 2 | 2 | 32616.2 |       0
+          22 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 0 | 2 | 6808.33 |       0
+          23 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 1 | 2 | 25265.5 |       0
+          24 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 2 | 2 | 78604.9 |       0
+          25 |     17 |       29 |          4 |            35 |               5784 |                3324 |             26 | detector1 | 2 | 2 | 26531.5 |       0
+          26 |     17 |       29 |          4 |            35 |               5784 |                3324 |             26 | detector2 | 2 | 2 | 37189.6 |       0
+          27 |     17 |       30 |          6 |            38 |               7508 |                4753 |             28 | detector1 | 2 | 2 | 32983.8 |       0
+          28 |     17 |       30 |          6 |            38 |               7508 |                4753 |             28 | detector2 | 2 | 2 |   60854 |       0
+          29 |     17 |       31 |          8 |            41 |               9276 |                6260 |             30 | detector1 | 2 | 2 | 34785.8 |       0
+          30 |     17 |       31 |          8 |            41 |               9276 |                6260 |             30 | detector2 | 2 | 2 | 64764.6 |       0
+          31 |     17 |       32 |          9 |            43 |              10822 |                7450 |             32 | detector1 | 2 | 2 | 32901.3 |       0
+          32 |     17 |       32 |          9 |            43 |              10822 |                7450 |             32 | detector2 | 2 | 2 | 41381.4 |       0
+          33 |     17 |       33 |         10 |            45 |              12364 |                8563 |             34 | detector1 | 2 | 2 | 34940.1 |       0
+          34 |     17 |       33 |         10 |            45 |              12364 |                8563 |             34 | detector2 | 2 | 2 | 30685.5 |       0
+
+```
 
 ### Parameters
 * `host` : hostname of the machine holding the database, e.g. localhost
