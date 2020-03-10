@@ -240,10 +240,12 @@ namespace allpix {
 
     using Log = DefaultLogger;
 
+#ifndef __FILE_NAME__
 /**
  *  @brief Base name of the file without the directory
  */
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
 
 /**
  * @brief Execute a block only if the reporting level is high enough

@@ -55,10 +55,16 @@ namespace allpix {
          */
         ROOT::Math::XYZPoint getLocalEndPoint() const;
         /**
-         * @brief Get the entry point of the particle in global coordinates
-         * @return Particle entry point
+         * @brief Get the exit point of the particle in global coordinates
+         * @return Particle exit point
          */
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
+
+        /**
+         * @brief Get the reference point of the particle in the sensor center plane in local coordinates
+         * @return Particle reference point on the center plane of the sensor
+         */
+        ROOT::Math::XYZPoint getLocalReferencePoint() const;
 
         /**
          * @brief Get PDG particle id for the particle
