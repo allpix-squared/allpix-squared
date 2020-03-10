@@ -19,65 +19,6 @@ CREATE TABLE Event(
     PRIMARY KEY (event_nr)
 );
 
-CREATE TABLE PixelHit(
-    pixelHit_nr SERIAL,
-    run_nr INT REFERENCES Run (run_nr),
-    event_nr INT REFERENCES Event (event_nr),
-    detector VARCHAR (100) NOT NULL,
-    x INT NOT NULL,	  
-    y INT NOT NULL,
-    signal FLOAT NOT NULL,
-    hitTime INT NOT NULL,
-    PRIMARY KEY (pixelHit_nr)
-);
-
-CREATE TABLE PixelCharge(
-    pixelCharge_nr SERIAL,
-    run_nr INT REFERENCES Run (run_nr),
-    event_nr INT REFERENCES Event (event_nr),
-    detector VARCHAR (100) NOT NULL,
-    charge INT NOT NULL,
-    x INT NOT NULL,	  
-    y INT NOT NULL,
-    localx FLOAT NOT NULL,	  
-    localy FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
-    globaly FLOAT NOT NULL,
-    PRIMARY KEY (pixelCharge_nr)
-);
-
-CREATE TABLE Propagatedcharge(
-    propagatedcharge_nr SERIAL,
-    run_nr INT REFERENCES Run (run_nr),
-    event_nr INT REFERENCES Event (event_nr),
-    detector VARCHAR (100) NOT NULL,
-    carriertype INT NOT NULL,
-    charge INT NOT NULL,
-    localx FLOAT NOT NULL,	  
-    localy FLOAT NOT NULL,
-    localz FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
-    globaly FLOAT NOT NULL,
-    globalz FLOAT NOT NULL,
-    PRIMARY KEY (propagatedcharge_nr)
-);
-
-CREATE TABLE Depositedcharge(
-    depositedcharge_nr SERIAL,
-    run_nr INT REFERENCES Run (run_nr),
-    event_nr INT REFERENCES Event (event_nr),
-    detector VARCHAR (100) NOT NULL,
-    carriertype INT NOT NULL,
-    charge INT NOT NULL,
-    localx FLOAT NOT NULL,	  
-    localy FLOAT NOT NULL,
-    localz FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
-    globaly FLOAT NOT NULL,
-    globalz FLOAT NOT NULL,
-    PRIMARY KEY (depositedcharge_nr)
-);
-
 CREATE TABLE MCTrack(
     mctrack_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
@@ -103,6 +44,7 @@ CREATE TABLE MCParticle(
     mcparticle_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
     event_nr INT REFERENCES Event (event_nr),
+    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
     detector VARCHAR (100) NOT NULL,
     address BIGINT NOT NULL,
     parentAddress BIGINT NOT NULL,
@@ -121,6 +63,79 @@ CREATE TABLE MCParticle(
     globalEndPointY FLOAT NOT NULL,	
     globalEndPointZ FLOAT NOT NULL,	
     PRIMARY KEY (mcparticle_nr)
+);
+
+CREATE TABLE Depositedcharge(
+    depositedcharge_nr SERIAL,
+    run_nr INT REFERENCES Run (run_nr),
+    event_nr INT REFERENCES Event (event_nr),
+    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
+    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
+    detector VARCHAR (100) NOT NULL,
+    carriertype INT NOT NULL,
+    charge INT NOT NULL,
+    localx FLOAT NOT NULL,	  
+    localy FLOAT NOT NULL,
+    localz FLOAT NOT NULL,
+    globalx FLOAT NOT NULL,	  
+    globaly FLOAT NOT NULL,
+    globalz FLOAT NOT NULL,
+    PRIMARY KEY (depositedcharge_nr)
+);
+
+CREATE TABLE Propagatedcharge(
+    propagatedcharge_nr SERIAL,
+    run_nr INT REFERENCES Run (run_nr),
+    event_nr INT REFERENCES Event (event_nr),
+    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
+    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
+    depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
+    detector VARCHAR (100) NOT NULL,
+    carriertype INT NOT NULL,
+    charge INT NOT NULL,
+    localx FLOAT NOT NULL,	  
+    localy FLOAT NOT NULL,
+    localz FLOAT NOT NULL,
+    globalx FLOAT NOT NULL,	  
+    globaly FLOAT NOT NULL,
+    globalz FLOAT NOT NULL,
+    PRIMARY KEY (propagatedcharge_nr)
+);
+
+CREATE TABLE PixelCharge(
+    pixelCharge_nr SERIAL,
+    run_nr INT REFERENCES Run (run_nr),
+    event_nr INT REFERENCES Event (event_nr),
+    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
+    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
+    depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
+    propagatedcharge_nr INT REFERENCES Propagatedcharge (propagatedcharge_nr),
+    detector VARCHAR (100) NOT NULL,
+    charge INT NOT NULL,
+    x INT NOT NULL,	  
+    y INT NOT NULL,
+    localx FLOAT NOT NULL,	  
+    localy FLOAT NOT NULL,
+    globalx FLOAT NOT NULL,	  
+    globaly FLOAT NOT NULL,
+    PRIMARY KEY (pixelCharge_nr)
+);
+
+CREATE TABLE PixelHit(
+    pixelHit_nr SERIAL,
+    run_nr INT REFERENCES Run (run_nr),
+    event_nr INT REFERENCES Event (event_nr),
+    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
+    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
+    depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
+    propagatedcharge_nr INT REFERENCES Propagatedcharge (propagatedcharge_nr),
+    pixelcharge_nr INT REFERENCES Pixelcharge (pixelcharge_nr),
+    detector VARCHAR (100) NOT NULL,
+    x INT NOT NULL,	  
+    y INT NOT NULL,
+    signal FLOAT NOT NULL,
+    hitTime INT NOT NULL,
+    PRIMARY KEY (pixelHit_nr)
 );
 
 GRANT ALL PRIVILEGES ON TABLE Run TO myuser;

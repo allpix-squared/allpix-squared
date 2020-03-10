@@ -5,7 +5,7 @@
 
 ### Description
 This module enables writing the simulation output into a postgreSQL database. This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).
-By default, all object types (DepositedCharge, MCParticle, MCTrack, PixelCharge, PixelHit, PropagatedCharge) are written. However, bear in mind that PropagatedCharge and DepositedCharge data will slow down the simulation significantly. It is thus recommended to exclude these objects. This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
+By default, all object types (MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit) are written. However, bear in mind that PropagatedCharge and DepositedCharge data will slow down the simulation significantly. It is thus recommended to exclude these objects. This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
 In order to use this module, one is required to install postgreSQL and generate the database using the create-db.sql script in /etc/scripts. On Linux, this can be done as
 
 ```
@@ -50,6 +50,14 @@ postgres=# create user myuser with encrypted password 'mypass';
 postgres=# grant all privileges on database mydb to myuser;
 ```
 
+The database is structured so that the data are referenced according to the sequence
+
+```
+Run -> Event -> MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
+```
+
+This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost. However, the chain is not broken, as variables from parent objects are repeated down the chain.
+
 ### Parameters
 * `host` : hostname of the machine holding the database, e.g. localhost
 * `port` : port number (postgreSQL default is 5432)
@@ -67,7 +75,7 @@ Place the following configuration at the end of the main configuration file:
 [DatabaseWriter]
 ```
 
-The following parameters are mandatory: `host`, `port`, `dbname`, `user`, `password`. Again, it is recommended to exclude PropagatedCharge and DepositedCharge. A full example is thus
+The following parameters are mandatory: `host`, `port`, `dbname`, `user`, `password`. Again, it is recommended to exclude PropagatedCharge and DepositedCharge using the `include` and `exclude` parameters. A full example is thus
 
 ```ini
 [DatabaseWriter]
