@@ -69,6 +69,9 @@ MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
 }
 
 void TrackInfoManager::createMCTracks() {
+    // Reserve size so we don't move the vector around and change addresses:
+    stored_tracks_.reserve(stored_track_infos_.size());
+
     for(auto& track_info : stored_track_infos_) {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
