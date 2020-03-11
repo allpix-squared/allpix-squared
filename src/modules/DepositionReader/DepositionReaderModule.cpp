@@ -61,22 +61,20 @@ void DepositionReaderModule::init() {
                   << " entries";
 
         // Check if we have branch names configured and use the default values otherwise:
-        std::vector<std::string> branches({"event",
-                                           "energy",
-                                           "time",
-                                           "position.x",
-                                           "position.y",
-                                           "position.z",
-                                           "detector",
-                                           "pdg_code",
-                                           "track_id",
-                                           "parent_id"});
-        if(config_.has("branch_names")) {
-            branches = config_.getArray<std::string>("branch_names");
-            if(branches.size() != 10) {
-                throw InvalidValueError(
-                    config_, "branch_names", "Branch names require exactly ten entries, one for each branch to be read");
-            }
+        auto branches = config_.getArray<std::string>("branch_names",
+                                                      {"event",
+                                                       "energy",
+                                                       "time",
+                                                       "position.x",
+                                                       "position.y",
+                                                       "position.z",
+                                                       "detector",
+                                                       "pdg_code",
+                                                       "track_id",
+                                                       "parent_id"});
+        if(branches.size() != 10) {
+            throw InvalidValueError(
+                config_, "branch_names", "Branch names require exactly ten entries, one for each branch to be read");
         }
 
         // Set up branch pointers
