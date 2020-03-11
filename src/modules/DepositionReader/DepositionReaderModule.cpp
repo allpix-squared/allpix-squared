@@ -80,21 +80,30 @@ void DepositionReaderModule::init() {
         }
 
         // Set up branch pointers
-        event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(0).c_str());
-        edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(1).c_str());
-        time_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(2).c_str());
-        px_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(3).c_str());
-        py_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(4).c_str());
-        pz_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(5).c_str());
-        volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, branches.at(6).c_str());
-        pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(7).c_str());
+        create_tree_reader(event_, branches.at(0));
+        create_tree_reader(edep_, branches.at(1));
+        create_tree_reader(time_, branches.at(2));
+        create_tree_reader(px_, branches.at(3));
+        create_tree_reader(py_, branches.at(4));
+        create_tree_reader(pz_, branches.at(5));
+        create_tree_reader(volume_, branches.at(6));
+        create_tree_reader(pdg_code_, branches.at(7));
 
-        track_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(8).c_str());
-        parent_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(9).c_str());
+        create_tree_reader(track_id_, branches.at(8));
+        create_tree_reader(parent_id_, branches.at(9));
 
+        // Advance to first entry of the tree:
         tree_reader_->Next();
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
+    }
+}
+
+template <typename T>
+void DepositionReaderModule::create_tree_reader(std::shared_ptr<T>& branch_ptr, const std::string& name) {
+    branch_ptr = std::make_shared<T>(*tree_reader_, name.c_str());
+    if(!branch_ptr->IsValid()) {
+        throw InvalidValueError(config_, "branch_names", "Could not read branch " + name);
     }
 }
 
