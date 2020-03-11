@@ -266,7 +266,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     if(status == TTreeReader::kEntryNotFound || status == TTreeReader::kEntryBeyondEnd) {
         throw EndOfRunException("Requesting end of run: end of tree reached");
     } else if(status != TTreeReader::kEntryValid) {
-        throw EndOfRunException("Problem reading from tree, error: " + std::to_string(status));
+        throw EndOfRunException("Problem reading from tree, error: " + std::to_string(static_cast<int>(status)));
     }
 
     // Separate individual events
