@@ -70,6 +70,7 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 The values are interpreted in the default framework units unless specified otherwise via the configuration parameters of this module.
 `<TRK>` represents the track id of the prticle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
+The file should have its end-of-file marker (EOF) in a new line, otherwise the last entry will be ignored.
 
 ### Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
