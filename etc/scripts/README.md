@@ -79,3 +79,17 @@ source etc/scripts/setup_lxplus.sh
 
 will setup all required build dependencies.
 
+
+
+## create_deposition_file.py
+
+Python program to generate input files for the DepositionReader module. It will generate energy depositions along a linear track through an exemplary sensor based on some input of the user, with the particle position and the amount of energy deposited being drawn from Gaussian distributions.
+
+Requirements: python3, ROOT built with python option.
+
+Usage:
+```
+python create_deposition_file.py
+```
+
+This will create files called `deposition.csv` and/or `deposition.root`. If asking for `TTree`s, an inspection of the `TTree` is possible within the script. 
