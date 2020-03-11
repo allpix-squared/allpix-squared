@@ -245,7 +245,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     }
 
     // Separate individual events
-    if(static_cast<unsigned int>(*event_->Get()) > event_num) {
+    if(static_cast<unsigned int>(*event_->Get()) > event_num - 1) {
         return false;
     }
 
@@ -266,7 +266,8 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     parent_id = (*parent_id_->Get());
 
     // Return and advance to next tree entry:
-    return (tree_reader_->Next());
+    tree_reader_->Next();
+    return true;
 }
 
 bool DepositionReaderModule::read_csv(unsigned int event_num,
