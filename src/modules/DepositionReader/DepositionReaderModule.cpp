@@ -23,14 +23,33 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
 
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    fano_factor_ = config_.get<double>("fano_factor", 0.115);
-    volume_chars_ = config_.get<size_t>("detector_name_chars", 0);
+    config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    config_.setDefault<double>("fano_factor", 0.115);
+    config_.setDefault<size_t>("detector_name_chars", 0);
+    config_.setDefault<std::string>("unit_length", "mm");
+    config_.setDefault<std::string>("unit_time", "ns");
+    config_.setDefault<std::string>("unit_energy", "MeV");
 
-    unit_length_ = config_.get<std::string>("unit_length", "mm");
-    unit_time_ = config_.get<std::string>("unit_time", "ns");
-    unit_energy_ = config_.get<std::string>("unit_energy", "MeV");
+    config_.setDefaultArray<std::string>("branch_names",
+                                         {"event",
+                                          "energy",
+                                          "time",
+                                          "position.x",
+                                          "position.y",
+                                          "position.z",
+                                          "detector",
+                                          "pdg_code",
+                                          "track_id",
+                                          "parent_id"});
+
+    // Get the creation energy for charge (default is silicon electron hole pair energy)
+    charge_creation_energy_ = config_.get<double>("charge_creation_energy");
+    fano_factor_ = config_.get<double>("fano_factor");
+    volume_chars_ = config_.get<size_t>("detector_name_chars");
+
+    unit_length_ = config_.get<std::string>("unit_length");
+    unit_time_ = config_.get<std::string>("unit_time");
+    unit_energy_ = config_.get<std::string>("unit_energy");
 }
 
 void DepositionReaderModule::init() {
@@ -61,20 +80,10 @@ void DepositionReaderModule::init() {
                   << " entries";
 
         // Check if we have branch names configured and use the default values otherwise:
-        auto branches = config_.getArray<std::string>("branch_names",
-                                                      {"event",
-                                                       "energy",
-                                                       "time",
-                                                       "position.x",
-                                                       "position.y",
-                                                       "position.z",
-                                                       "detector",
-                                                       "pdg_code",
-                                                       "track_id",
-                                                       "parent_id"});
+        auto branches = config_.getArray<std::string>("branch_names");
         if(branches.size() != 10) {
             throw InvalidValueError(
-                config_, "branch_names", "Branch names require exactly ten entries, one for each branch to be read");
+                config_, "branch_names", "Parameter requires exactly 10 entries, one for each branch to be read");
         }
 
         // Set up branch pointers
