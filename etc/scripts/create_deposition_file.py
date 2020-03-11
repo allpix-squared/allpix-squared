@@ -83,7 +83,7 @@ class depositedCharge:
         
 
 # Calculation of straight particle trajectories in the sensor
-def createParticle():
+def createParticle(nsteps):
 
     pdgCode = 11
 
@@ -98,18 +98,15 @@ def createParticle():
     entryPoint = np.array([entryX, entryY, -0.1420])
     exitPoint = np.array([exitX, exitY, 0.1420])
 
-    # Number of deposits along the line
-    pointsAlongTrack = 100
-
     distVect = exitPoint - entryPoint
     totalDist = np.sqrt(distVect.dot(distVect))
 
     # Calculate mean energy deposition
     eVPermm = 390/0.001
-    eVPerStep = eVPermm * (totalDist/pointsAlongTrack)
+    eVPerStep = eVPermm * (totalDist/nsteps)
 
     # Track parametrization
-    zPositions = np.linspace(entryPoint[2],exitPoint[2],pointsAlongTrack, endpoint=True)
+    zPositions = np.linspace(entryPoint[2],exitPoint[2],nsteps, endpoint=True)
     slope = np.array([(exitPoint[0]-entryPoint[0])/(exitPoint[2]-entryPoint[2]), (exitPoint[1]-entryPoint[1])/(exitPoint[2]-entryPoint[2])])
     offset = np.array([entryPoint[0]-slope[0]*entryPoint[2], entryPoint[1]-slope[1]*entryPoint[2]])
 
@@ -146,21 +143,35 @@ def createParticle():
 
 if __name__ == '__main__':
 
-    # Pick one (or two)
-    writeROOT = True
-    writeCSV = True
+    # Ask whether to use TTrees or CSV files
+    writeOption = input("Generate TTrees (a), a CSV file (b) or both (c)? ")
+    writeROOT = False
+    writeCSV = False
+    if writeOption=="a":
+        writeROOT = True
+    elif writeOption=="b":
+        writeCSV = True
+    elif writeOption=="c":
+        writeROOT = True
+        writeCSV = True
+    else:
+        print("Use one of the three options.")
+        exit(1)
     
     filenamePrefix = "deposition"
     
     rootfilename = filenamePrefix + ".root"
     csvFilename = filenamePrefix + ".csv"
     
-    events = 100
-
     # Define detector name
-    detectorName = "myDetector"
+    detectorName = input("Name of your detector: ")
     detectorArr.push_back(detectorName)
 
+    # Ask for the number of events
+    events = int(input("Number of events to process: "))
+
+    # Ask for the number of steps along the track:
+    nsteps = int(input("Number of steps along the track in the sensor: "))
 
     if writeROOT:
         # Open the file and create the tree
@@ -189,7 +200,7 @@ if __name__ == '__main__':
         print("Processing event " + str(eventNr))
 
         # Get the depositions for the particle created
-        deposits = createParticle()
+        deposits = createParticle(nsteps)
 
         if writeCSV:
             # Write the event number
