@@ -66,6 +66,7 @@ namespace allpix {
 
         // Helper to create and check tree branches
         template <typename T> void create_tree_reader(std::shared_ptr<T>& branch_ptr, const std::string& name);
+        template <typename T> void check_tree_reader(std::shared_ptr<T> branch_ptr);
 
         // Set up branches:
         std::shared_ptr<TTreeReader> tree_reader_;

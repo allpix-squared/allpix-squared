@@ -86,12 +86,23 @@ void DepositionReaderModule::init() {
         create_tree_reader(pz_, branches.at(5));
         create_tree_reader(volume_, branches.at(6));
         create_tree_reader(pdg_code_, branches.at(7));
-
         create_tree_reader(track_id_, branches.at(8));
         create_tree_reader(parent_id_, branches.at(9));
 
         // Advance to first entry of the tree:
         tree_reader_->Next();
+
+        // Only after loading the first entry we can actually check the branch status:
+        check_tree_reader(event_);
+        check_tree_reader(edep_);
+        check_tree_reader(time_);
+        check_tree_reader(px_);
+        check_tree_reader(py_);
+        check_tree_reader(pz_);
+        check_tree_reader(volume_);
+        check_tree_reader(pdg_code_);
+        check_tree_reader(track_id_);
+        check_tree_reader(parent_id_);
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
@@ -100,8 +111,12 @@ void DepositionReaderModule::init() {
 template <typename T>
 void DepositionReaderModule::create_tree_reader(std::shared_ptr<T>& branch_ptr, const std::string& name) {
     branch_ptr = std::make_shared<T>(*tree_reader_, name.c_str());
-    if(!branch_ptr->IsValid()) {
-        throw InvalidValueError(config_, "branch_names", "Could not read branch " + name);
+}
+
+template <typename T> void DepositionReaderModule::check_tree_reader(std::shared_ptr<T> branch_ptr) {
+    if(branch_ptr->GetSetupStatus() < 0) {
+        throw InvalidValueError(
+            config_, "branch_names", "Could not read branch \"" + std::string(branch_ptr->GetBranchName()) + "\"");
     }
 }
 
