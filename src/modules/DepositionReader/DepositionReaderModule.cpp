@@ -23,14 +23,33 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
 
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    charge_creation_energy_ = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    fano_factor_ = config_.get<double>("fano_factor", 0.115);
-    volume_chars_ = config_.get<size_t>("detector_name_chars", 0);
+    config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    config_.setDefault<double>("fano_factor", 0.115);
+    config_.setDefault<size_t>("detector_name_chars", 0);
+    config_.setDefault<std::string>("unit_length", "mm");
+    config_.setDefault<std::string>("unit_time", "ns");
+    config_.setDefault<std::string>("unit_energy", "MeV");
 
-    unit_length_ = config_.get<std::string>("unit_length", "mm");
-    unit_time_ = config_.get<std::string>("unit_time", "ns");
-    unit_energy_ = config_.get<std::string>("unit_energy", "MeV");
+    config_.setDefaultArray<std::string>("branch_names",
+                                         {"event",
+                                          "energy",
+                                          "time",
+                                          "position.x",
+                                          "position.y",
+                                          "position.z",
+                                          "detector",
+                                          "pdg_code",
+                                          "track_id",
+                                          "parent_id"});
+
+    // Get the creation energy for charge (default is silicon electron hole pair energy)
+    charge_creation_energy_ = config_.get<double>("charge_creation_energy");
+    fano_factor_ = config_.get<double>("fano_factor");
+    volume_chars_ = config_.get<size_t>("detector_name_chars");
+
+    unit_length_ = config_.get<std::string>("unit_length");
+    unit_time_ = config_.get<std::string>("unit_time");
+    unit_energy_ = config_.get<std::string>("unit_energy");
 }
 
 void DepositionReaderModule::init() {
@@ -61,40 +80,52 @@ void DepositionReaderModule::init() {
                   << " entries";
 
         // Check if we have branch names configured and use the default values otherwise:
-        std::vector<std::string> branches({"event",
-                                           "energy",
-                                           "time",
-                                           "position.x",
-                                           "position.y",
-                                           "position.z",
-                                           "detector",
-                                           "pdg_code",
-                                           "track_id",
-                                           "parent_id"});
-        if(config_.has("branch_names")) {
-            branches = config_.getArray<std::string>("branch_names");
-            if(branches.size() != 10) {
-                throw InvalidValueError(
-                    config_, "branch_names", "Branch names require exactly ten entries, one for each branch to be read");
-            }
+        auto branches = config_.getArray<std::string>("branch_names");
+        if(branches.size() != 10) {
+            throw InvalidValueError(
+                config_, "branch_names", "Parameter requires exactly 10 entries, one for each branch to be read");
         }
 
         // Set up branch pointers
-        event_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(0).c_str());
-        edep_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(1).c_str());
-        time_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(2).c_str());
-        px_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(3).c_str());
-        py_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(4).c_str());
-        pz_ = std::make_shared<TTreeReaderValue<double>>(*tree_reader_, branches.at(5).c_str());
-        volume_ = std::make_shared<TTreeReaderArray<char>>(*tree_reader_, branches.at(6).c_str());
-        pdg_code_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(7).c_str());
+        create_tree_reader(event_, branches.at(0));
+        create_tree_reader(edep_, branches.at(1));
+        create_tree_reader(time_, branches.at(2));
+        create_tree_reader(px_, branches.at(3));
+        create_tree_reader(py_, branches.at(4));
+        create_tree_reader(pz_, branches.at(5));
+        create_tree_reader(volume_, branches.at(6));
+        create_tree_reader(pdg_code_, branches.at(7));
+        create_tree_reader(track_id_, branches.at(8));
+        create_tree_reader(parent_id_, branches.at(9));
 
-        track_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(8).c_str());
-        parent_id_ = std::make_shared<TTreeReaderValue<int>>(*tree_reader_, branches.at(9).c_str());
-
+        // Advance to first entry of the tree:
         tree_reader_->Next();
+
+        // Only after loading the first entry we can actually check the branch status:
+        check_tree_reader(event_);
+        check_tree_reader(edep_);
+        check_tree_reader(time_);
+        check_tree_reader(px_);
+        check_tree_reader(py_);
+        check_tree_reader(pz_);
+        check_tree_reader(volume_);
+        check_tree_reader(pdg_code_);
+        check_tree_reader(track_id_);
+        check_tree_reader(parent_id_);
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
+    }
+}
+
+template <typename T>
+void DepositionReaderModule::create_tree_reader(std::shared_ptr<T>& branch_ptr, const std::string& name) {
+    branch_ptr = std::make_shared<T>(*tree_reader_, name.c_str());
+}
+
+template <typename T> void DepositionReaderModule::check_tree_reader(std::shared_ptr<T> branch_ptr) {
+    if(branch_ptr->GetSetupStatus() < 0) {
+        throw InvalidValueError(
+            config_, "branch_names", "Could not read branch \"" + std::string(branch_ptr->GetBranchName()) + "\"");
     }
 }
 
