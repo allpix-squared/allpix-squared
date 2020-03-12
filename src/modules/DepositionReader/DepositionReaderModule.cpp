@@ -331,16 +331,16 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     } while(line.empty() || line.front() == '#' || line.front() == 'E');
 
     std::istringstream ls(line);
-    double t, edep, px, py, pz;
+    double px, py, pz;
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> pdg_code;
 
     std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> t;
+    std::istringstream(tmp) >> time;
 
     std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> edep;
+    std::istringstream(tmp) >> energy;
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> px;
@@ -367,7 +367,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     position =
         ROOT::Math::XYZPoint(Units::get(px, unit_length_), Units::get(py, unit_length_), Units::get(pz, unit_length_));
     time = Units::get(time, unit_time_);
-    energy = Units::get(edep, unit_energy_);
+    energy = Units::get(energy, unit_energy_);
 
     return true;
 }
