@@ -129,8 +129,8 @@ void DepositionReaderModule::init() {
             int nbins = 5 * maximum;
 
             // Create histograms if needed
-            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-            charge_per_event_[sensitive_detector_action->getName()] =
+            std::string plot_name = "deposited_charge_" + detector->getName();
+            charge_per_event_[detector->getName()] =
                 new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
     }
@@ -255,7 +255,7 @@ void DepositionReaderModule::run(unsigned int event) {
 
             // Assign MCParticles:
             for(size_t i = 0; i < deposits[detector].size(); ++i) {
-                total_deposits += deposits[detector].at(i);
+                total_deposits += deposits[detector].at(i).getCharge();
                 deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
@@ -270,7 +270,7 @@ void DepositionReaderModule::run(unsigned int event) {
             // Fill output plots if requested:
             if(config_.get<bool>("output_plots")) {
                 double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
-                charge_per_event_[sensor->getName()]->Fill(charge);
+                charge_per_event_[detector->getName()]->Fill(charge);
             }
         }
     }
@@ -281,7 +281,7 @@ void DepositionReaderModule::run(unsigned int event) {
     }
 }
 
-void DepositionReader::finalize() {
+void DepositionReaderModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
