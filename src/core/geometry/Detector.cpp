@@ -134,6 +134,21 @@ bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 }
 
 /**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+    return !(pixel_index.x() >= model_->getNPixels().x() || pixel_index.y() >= model_->getNPixels().y());
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const int x, const int y) const {
+    return !(x < 0 || x >= static_cast<int>(model_->getNPixels().x()) || y < 0 ||
+             y >= static_cast<int>(model_->getNPixels().y()));
+}
+
+/**
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(unsigned int x, unsigned int y) const {

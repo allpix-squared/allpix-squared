@@ -200,7 +200,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         model->setSensorExcessBottom(0);
         model->setSensorExcessLeft(0);
         model->setSensorExcessRight(0);
-        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1));
+        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>(1, 1));
     }
     // Use either full sensor axis or only depleted region
     double z_min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
