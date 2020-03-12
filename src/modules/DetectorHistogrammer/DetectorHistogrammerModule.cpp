@@ -47,38 +47,22 @@ void DetectorHistogrammerModule::init() {
     auto pitch_x = static_cast<double>(Units::convert(model->getPixelSize().x(), "um"));
     auto pitch_y = static_cast<double>(Units::convert(model->getPixelSize().y(), "um"));
 
+    auto xpixels = static_cast<int>(model->getNPixels().x());
+    auto ypixels = static_cast<int>(model->getNPixels().y());
+
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
     std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels);hits";
-    hit_map = new TH2D("hit_map",
-                       hit_map_title.c_str(),
-                       model->getNPixels().x(),
-                       -0.5,
-                       model->getNPixels().x() - 0.5,
-                       model->getNPixels().y(),
-                       -0.5,
-                       model->getNPixels().y() - 0.5);
+    hit_map = new TH2D("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     std::string charge_map_title = "Charge map for " + detector_->getName() + ";x (pixels);y (pixels); charge [ke]";
-    charge_map = new TH2D("charge_map",
-                          charge_map_title.c_str(),
-                          model->getNPixels().x(),
-                          -0.5,
-                          model->getNPixels().x() - 0.5,
-                          model->getNPixels().y(),
-                          -0.5,
-                          model->getNPixels().y() - 0.5);
+    charge_map =
+        new TH2D("charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Create histogram of cluster map
     std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels); clusters";
-    cluster_map = new TH2D("cluster_map",
-                           cluster_map_title.c_str(),
-                           model->getNPixels().x(),
-                           -0.5,
-                           model->getNPixels().x() - 0.5,
-                           model->getNPixels().y(),
-                           -0.5,
-                           model->getNPixels().y() - 0.5);
+    cluster_map =
+        new TH2D("cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Calculate the granularity of in-pixel maps:
     auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>(
@@ -137,27 +121,18 @@ void DetectorHistogrammerModule::init() {
 
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
-    cluster_size = new TH1D("cluster_size",
-                            cluster_size_title.c_str(),
-                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10,
-                            0.5,
-                            (model->getNPixels().x() * model->getNPixels().y() + 9) / 10 + 0.5);
+    cluster_size = new TH1D(
+        "cluster_size", cluster_size_title.c_str(), (xpixels * ypixels + 9) / 10, 0.5, (xpixels * ypixels + 9) / 10 + 0.5);
 
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
-    cluster_size_x = new TH1D(
-        "cluster_size_x", cluster_size_x_title.c_str(), model->getNPixels().x(), 0.5, model->getNPixels().x() + 0.5);
+    cluster_size_x = new TH1D("cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
 
     std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
-    cluster_size_y = new TH1D(
-        "cluster_size_y", cluster_size_y_title.c_str(), model->getNPixels().y(), 0.5, model->getNPixels().y() + 0.5);
+    cluster_size_y = new TH1D("cluster_size_y", cluster_size_y_title.c_str(), ypixels, 0.5, ypixels + 0.5);
 
     // Create event size plot
     std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
-    event_size = new TH1D("event_size",
-                          event_size_title.c_str(),
-                          model->getNPixels().x() * model->getNPixels().y(),
-                          0.5,
-                          model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    event_size = new TH1D("event_size", event_size_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
 
     // Create residual plots
     std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
@@ -204,12 +179,12 @@ void DetectorHistogrammerModule::init() {
     std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
     efficiency_detector = new TProfile2D("efficiency_detector",
                                          efficiency_detector_title.c_str(),
-                                         model->getNPixels().x(),
+                                         xpixels,
                                          -0.5,
-                                         model->getNPixels().x() - 0.5,
-                                         model->getNPixels().y(),
+                                         xpixels - 0.5,
+                                         ypixels,
                                          -0.5,
-                                         model->getNPixels().y() - 0.5,
+                                         ypixels - 0.5,
                                          0,
                                          1);
     // Efficiency projections
@@ -222,11 +197,7 @@ void DetectorHistogrammerModule::init() {
 
     // Create number of clusters plot
     std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
-    n_cluster = new TH1D("n_cluster",
-                         n_cluster_title.c_str(),
-                         model->getNPixels().x() * model->getNPixels().y(),
-                         0.5,
-                         model->getNPixels().x() * model->getNPixels().y() + 0.5);
+    n_cluster = new TH1D("n_cluster", n_cluster_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
 
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", Units::get(50., "ke")), "ke");
