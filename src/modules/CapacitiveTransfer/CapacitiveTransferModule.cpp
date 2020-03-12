@@ -204,36 +204,25 @@ void CapacitiveTransferModule::init() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            auto pixel_grid = model_->getNPixels();
-            gap_map = new TH2D("gap_map",
-                               "Gap;pixel x;pixel y",
-                               static_cast<int>(pixel_grid.x()),
-                               -0.5,
-                               static_cast<int>(pixel_grid.x()) - 0.5,
-                               static_cast<int>(pixel_grid.y()),
-                               -0.5,
-                               static_cast<int>(pixel_grid.y()) - 0.5);
+            auto xpixels = static_cast<int>(model_->getNPixels().x());
+            auto ypixels = static_cast<int>(model_->getNPixels().y());
 
-            capacitance_map = new TH2D("capacitance_map",
-                                       "Capacitance;pixel x;pixel y",
-                                       static_cast<int>(pixel_grid.x()),
-                                       -0.5,
-                                       static_cast<int>(pixel_grid.x()) - 0.5,
-                                       static_cast<int>(pixel_grid.y()),
-                                       -0.5,
-                                       static_cast<int>(pixel_grid.y()) - 0.5);
+            gap_map = new TH2D("gap_map", "Gap;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
+
+            capacitance_map = new TH2D(
+                "capacitance_map", "Capacitance;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
             relative_capacitance_map = new TH2D("relative_capacitance_map",
                                                 "Relative Capacitance;pixel x;pixel y",
-                                                static_cast<int>(pixel_grid.x()),
+                                                xpixels,
                                                 -0.5,
-                                                static_cast<int>(pixel_grid.x()) - 0.5,
-                                                static_cast<int>(pixel_grid.y()),
+                                                xpixels,
+                                                ypixels,
                                                 -0.5,
-                                                static_cast<int>(pixel_grid.y()) - 0.5);
+                                                ypixels - 0.5);
 
-            for(int col = 0; col < static_cast<int>(pixel_grid.x()); col++) {
-                for(int row = 0; row < static_cast<int>(pixel_grid.y()); row++) {
+            for(int col = 0; col < xpixels; col++) {
+                for(int row = 0; row < ypixels; row++) {
                     auto local_x = col * model_->getPixelSize().x();
                     auto local_y = row * model_->getPixelSize().y();
 
