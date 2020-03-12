@@ -42,6 +42,9 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
                                           "track_id",
                                           "parent_id"});
 
+    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
+
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     charge_creation_energy_ = config_.get<double>("charge_creation_energy");
     fano_factor_ = config_.get<double>("fano_factor");
@@ -114,6 +117,22 @@ void DepositionReaderModule::init() {
         check_tree_reader(parent_id_);
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
+    }
+
+    for(auto& detector : geo_manager_->getDetectors()) {
+        // If requested, prepare output plots
+        if(config_.get<bool>("output_plots")) {
+            LOG(TRACE) << "Creating output plots";
+
+            // Plot axis are in kilo electrons - convert from framework units!
+            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            int nbins = 5 * maximum;
+
+            // Create histograms if needed
+            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
+            charge_per_event_[sensitive_detector_action->getName()] =
+                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+        }
     }
 }
 
@@ -232,8 +251,11 @@ void DepositionReaderModule::run(unsigned int event) {
         messenger_->dispatchMessage(this, mc_particle_message);
 
         if(!deposits[detector].empty()) {
+            double total_deposits = 0;
+
             // Assign MCParticles:
             for(size_t i = 0; i < deposits[detector].size(); ++i) {
+                total_deposits += deposits[detector].at(i);
                 deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
@@ -244,6 +266,12 @@ void DepositionReaderModule::run(unsigned int event) {
 
             // Dispatch the message
             messenger_->dispatchMessage(this, deposit_message);
+
+            // Fill output plots if requested:
+            if(config_.get<bool>("output_plots")) {
+                double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
+                charge_per_event_[sensor->getName()]->Fill(charge);
+            }
         }
     }
 
@@ -253,6 +281,15 @@ void DepositionReaderModule::run(unsigned int event) {
     }
 }
 
+void DepositionReader::finalize() {
+    if(config_.get<bool>("output_plots")) {
+        // Write histograms
+        LOG(TRACE) << "Writing output plots to file";
+        for(auto& plot : charge_per_event_) {
+            plot.second->Write();
+        }
+    }
+}
 bool DepositionReaderModule::read_root(unsigned int event_num,
                                        std::string& volume,
                                        ROOT::Math::XYZPoint& position,

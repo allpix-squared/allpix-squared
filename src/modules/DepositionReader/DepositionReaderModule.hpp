@@ -17,6 +17,7 @@
 #include <string>
 
 #include <TFile.h>
+#include <TH1D.h>
 #include <TTreeReader.h>
 #include <TTreeReaderArray.h>
 
@@ -54,6 +55,11 @@ namespace allpix {
          * @brief Read the deposited energy for a given event and create a corresponding DepositedCharge message
          */
         void run(unsigned int) override;
+
+        /**
+         * @brief Finalize and write histograms
+         */
+        void finalize() override;
 
     private:
         // General module members
@@ -106,5 +112,8 @@ namespace allpix {
 
         // Random number generator for e/h pair creation fluctuation
         std::mt19937_64 random_generator_;
+
+        // Vector of histogram pointers for debugging plots
+        std::map<std::string, TH1D*> charge_per_event_;
     };
 } // namespace allpix
