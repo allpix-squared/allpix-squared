@@ -194,7 +194,7 @@ void DepositionReaderModule::run(unsigned int event) {
 
         // MCParticle:
         if(track_id_to_mcparticle[detector].find(track_id) == track_id_to_mcparticle[detector].end()) {
-            // We have not yet seen this MCParticle, let's store it and meep track of the track id
+            // We have not yet seen this MCParticle, let's store it and keep track of the track id
             LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
             mc_particles[detector].emplace_back(
                 deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
