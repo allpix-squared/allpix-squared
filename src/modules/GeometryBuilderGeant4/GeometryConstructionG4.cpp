@@ -413,13 +413,15 @@ void GeometryConstructionG4::build_detectors() {
             detector->setExternalObject("bumps_cell_log", bumps_cell_log);
 
             // Place the bump bonds grid
+            auto xpixels = static_cast<int>(hybrid_model->getNPixels().x());
+            auto ypixels = static_cast<int>(hybrid_model->getNPixels().y());
             std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
-                hybrid_model->getNPixels().x(),
+                xpixels,
                 hybrid_model->getPixelSize().x(),
                 hybrid_model->getPixelSize().y(),
-                -(hybrid_model->getNPixels().x() * hybrid_model->getPixelSize().x()) / 2.0 +
+                -(xpixels * hybrid_model->getPixelSize().x()) / 2.0 +
                     (hybrid_model->getBumpsCenter().x() - hybrid_model->getCenter().x()),
-                -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
+                -(ypixels * hybrid_model->getPixelSize().y()) / 2.0 +
                     (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
                 0);
             detector->setExternalObject("bumps_param", bumps_param);
@@ -429,7 +431,7 @@ void GeometryConstructionG4::build_detectors() {
                                                        bumps_cell_log.get(),
                                                        bumps_wrapper_log.get(),
                                                        kUndefined,
-                                                       hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
+                                                       xpixels * ypixels,
                                                        bumps_param.get(),
                                                        false);
             detector->setExternalObject("bumps_param_phys", bumps_param_phys);
