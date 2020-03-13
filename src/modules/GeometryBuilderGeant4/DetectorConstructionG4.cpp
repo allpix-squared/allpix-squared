@@ -222,8 +222,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 auto implant_union = std::make_shared<G4MultiUnion>();
                 solids_.push_back(implant_union);
 
-                for(int npix_x = 0; npix_x < model->getNPixels().x(); npix_x++) {
-                    for(int npix_y = 0; npix_y < model->getNPixels().y(); npix_y++) {
+                for(unsigned int npix_x = 0; npix_x < model->getNPixels().x(); npix_x++) {
+                    for(unsigned int npix_y = 0; npix_y < model->getNPixels().y(); npix_y++) {
                         // FIXME: We should extend the implant and shift it to avoid fake surfaces
                         auto implant_box = std::make_shared<G4Box>(
                             "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
