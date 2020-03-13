@@ -142,7 +142,7 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()

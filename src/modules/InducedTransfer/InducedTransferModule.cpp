@@ -82,7 +82,7 @@ void InducedTransferModule::run(Event* event) {
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
             for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
                 // Ignore if out of pixel grid
-                if(x < 0 || x >= model_->getNPixels().x() || y < 0 || y >= model_->getNPixels().y()) {
+                if(!detector_->isWithinPixelGrid(x, y)) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
