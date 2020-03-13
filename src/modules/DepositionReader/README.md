@@ -20,6 +20,9 @@ The number of electron/hole pairs created by a given energy deposition is calcul
 Track and parent ids of the individual particles which created the energy depositions allow to carry on some of the Monte Carlo particle information from the original simulation.
 A parent id of zero should be used for the primary particle of the simulation, and all track ids have to be recorded before they can be used as parent id.
 
+With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
+The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
+
 Currently two data sources are supported, ROOT trees and CSV text files.
 Their expected formats are explained in detail in the following.
 
@@ -83,6 +86,8 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
 * `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
+* `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
+* `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ### Usage
 An example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
