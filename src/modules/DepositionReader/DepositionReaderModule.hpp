@@ -14,6 +14,7 @@
  */
 
 #include <fstream>
+#include <functional>
 #include <string>
 
 #include <TFile.h>
@@ -54,7 +55,7 @@ namespace allpix {
         /**
          * @brief Read the deposited energy for a given event and create a corresponding DepositedCharge message
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Finalize and write histograms
@@ -115,5 +116,7 @@ namespace allpix {
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, TH1D*> charge_per_event_;
+
+        std::mutex mutex_;
     };
 } // namespace allpix

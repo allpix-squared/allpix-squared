@@ -148,7 +148,10 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
     }
 }
 
-void DepositionReaderModule::run(unsigned int event) {
+void DepositionReaderModule::run(Event* event) {
+    // We can not read multiple events at the same time so we need to synchronize access
+    std::lock_guard<std::mutex> lock{mutex_};
+    unsigned int event_num = event->number;
 
     // Set of deposited charges in this event
     std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
@@ -156,7 +159,7 @@ void DepositionReaderModule::run(unsigned int event) {
     std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
-    LOG(DEBUG) << "Start reading event " << event;
+    LOG(DEBUG) << "Start reading event " << event_num;
     bool end_of_run = false;
     std::string eof_message;
 
@@ -169,9 +172,11 @@ void DepositionReaderModule::run(unsigned int event) {
 
         try {
             if(file_model_ == "csv") {
-                read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+                read_status =
+                    read_csv(event_num, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
             } else if(file_model_ == "root") {
-                read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+                read_status =
+                    read_root(event_num, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
             }
         } catch(EndOfRunException& e) {
             end_of_run = true;
@@ -248,7 +253,7 @@ void DepositionReaderModule::run(unsigned int event) {
 
         // Send the mc particle information
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
-        messenger_->dispatchMessage(this, mc_particle_message);
+        messenger_->dispatchMessage(this, mc_particle_message, event);
 
         if(!deposits[detector].empty()) {
             double total_deposits = 0;
@@ -265,7 +270,7 @@ void DepositionReaderModule::run(unsigned int event) {
             auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
 
             // Dispatch the message
-            messenger_->dispatchMessage(this, deposit_message);
+            messenger_->dispatchMessage(this, deposit_message, event);
 
             // Fill output plots if requested:
             if(config_.get<bool>("output_plots")) {
