@@ -64,7 +64,8 @@ export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #     Source full LCG view
 #--------------------------------------------------------------------------------
 
-source ${SFTREPO}/lcg/views/${LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+export LCG_VIEW=${SFTREPO}/lcg/views/${LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+source ${LCG_VIEW}
 
 # Fix LCIO path for LCG_96, cmake configs are not properly placed:
 export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))

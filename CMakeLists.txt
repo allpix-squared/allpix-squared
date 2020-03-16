@@ -162,6 +162,11 @@ ALLPIX_SETUP_ROOT_TARGETS()
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES Threads::Threads ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
 
+# Add the LCG view as dependency if set:
+IF(DEFINED ENV{LCG_VIEW})
+    ADD_RUNTIME_DEP($ENV{LCG_VIEW})
+ENDIF()
+
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)
 
