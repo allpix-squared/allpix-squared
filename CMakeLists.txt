@@ -111,6 +111,9 @@ ENDIF()
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+# Check if compiler version supports all features:
+INCLUDE("cmake/compiler-version-checks.cmake")
+
 # Options for debug builds:
 OPTION(SANITIZER "Build with sanitizer flags" OFF)
 OPTION(COVERAGE "Create code coverage report" OFF)
@@ -161,7 +164,7 @@ IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
-ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14y].*")
     SET(CMAKE_CXX_STANDARD 14)
 ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
     MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
