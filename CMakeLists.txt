@@ -114,13 +114,32 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # Check if compiler version supports all features:
 INCLUDE("cmake/compiler-version-checks.cmake")
 
-# Set some debug flags
+# Options for debug builds:
+OPTION(SANITIZER "Build with sanitizer flags" OFF)
+OPTION(COVERAGE "Create code coverage report" OFF)
+
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
 IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
-    MESSAGE(STATUS "Running debug build, adding extra sanitizer flags")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
-    # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
-    SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
+    # Sanitizer libraries:
+    IF(SANITIZER)
+        MESSAGE(STATUS "Running debug build, adding extra sanitizer flags")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+        # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
+        SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
+    ENDIF()
+
+    # Create code coverage report for central library
+    IF(COVERAGE)
+        INCLUDE("cmake/CodeCoverage.cmake")
+        APPEND_COVERAGE_COMPILER_FLAGS()
+        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools")
+        SETUP_TARGET_FOR_COVERAGE_GCOVR(NAME coverage_gcovr
+                                        EXECUTABLE ctest -L coverage
+                                        DEPENDENCIES allpix AllpixCore)
+        SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML(NAME coverage_gcovr_html
+                                             EXECUTABLE ctest -L coverage
+                                             DEPENDENCIES allpix AllpixCore)
+    ENDIF()
 ENDIF()
 
 # Include Threads
