@@ -168,6 +168,7 @@ if __name__ == '__main__':
     else:
         print("Will just write a CSV file.")
         writeCSV = True
+        writeROOT = False
     
 
     filenamePrefix = "deposition"
