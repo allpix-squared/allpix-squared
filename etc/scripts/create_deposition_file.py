@@ -5,7 +5,6 @@ import numpy as np
 
 from array import array
 
-import ROOT
 
 
 eventArr = array('i', [0])
@@ -14,7 +13,6 @@ timeArr = array('d', [0])
 positionxArr = array('d', [0])
 positionyArr = array('d', [0])
 positionzArr = array('d', [0])
-detectorArr = ROOT.vector('string')()
 pdg_codeArr = array('i', [0])
 track_idArr = array('i', [0])
 parent_idArr = array('i', [0])
@@ -138,45 +136,70 @@ def createParticle(nsteps):
 
     return deposits
     
-
+def user_input(question):
+    if sys.version_info.major == 3:
+        return input(question)
+    elif sys.version_info.major == 2:
+        return raw_input(question)
+    else:
+        print("Python version could not be determined.")
+        exit(1)
+    
 
 
 if __name__ == '__main__':
 
-    # Ask whether to use TTrees or CSV files
-    writeOption = input("Generate TTrees (a), a CSV file (b) or both (c)? ")
-    writeROOT = False
-    writeCSV = False
-    if writeOption=="a":
-        writeROOT = True
-    elif writeOption=="b":
-        writeCSV = True
-    elif writeOption=="c":
-        writeROOT = True
-        writeCSV = True
-    else:
-        print("Use one of the three options.")
-        exit(1)
+    # Check for availability of ROOT
+    rootAvailable = True
+    try:
+        import ROOT
+    except:
+        print("ROOT unavailable. Install ROOT with python option if you are interested in writing TTrees.")
+        rootAvailable = False
+
     
+    # Ask whether to use TTrees or CSV files
+    if rootAvailable:
+        writeOption = user_input("Generate TTrees (a), a CSV file (b) or both (c)? ")
+        writeROOT = False
+        writeCSV = False
+        if writeOption=="a":
+            writeROOT = True
+        elif writeOption=="b":
+            writeCSV = True
+        elif writeOption=="c":
+            writeROOT = True
+            writeCSV = True
+        else:
+            print("Use one of the three options.")
+            exit(1)
+    else:
+        print("Will just write a CSV file.")
+        writeCSV = True
+        writeROOT = False
+    
+
     filenamePrefix = "deposition"
     
     rootfilename = filenamePrefix + ".root"
     csvFilename = filenamePrefix + ".csv"
     
     # Define detector name
-    detectorName = input("Name of your detector: ")
-    detectorArr.push_back(detectorName)
+    detectorName = user_input("Name of your detector: ")
 
     # Ask for the number of events
-    events = int(input("Number of events to process: "))
+    events = int(user_input("Number of events to process: "))
 
     # Ask for the number of steps along the track:
-    nsteps = int(input("Number of steps along the track in the sensor: "))
+    nsteps = int(user_input("Number of steps along the track in the sensor: "))
 
     if writeROOT:
         # Open the file and create the tree
         rootfile = ROOT.TFile(rootfilename,"RECREATE")
         tree = ROOT.TTree("treeName","treeTitle")
+
+        detectorArr = ROOT.vector('string')()
+        detectorArr.push_back(detectorName)
 
         # Create the branches
         eventBranch = tree.Branch("event", eventArr, "event/I")
