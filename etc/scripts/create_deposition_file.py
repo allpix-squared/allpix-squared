@@ -136,7 +136,15 @@ def createParticle(nsteps):
 
     return deposits
     
-
+def user_input(question):
+    if sys.version_info.major == 3:
+        return input(question)
+    elif sys.version_info.major == 2:
+        return raw_input(question)
+    else:
+        print("Python version could not be determined.")
+        exit(1)
+    
 
 
 if __name__ == '__main__':
@@ -152,7 +160,7 @@ if __name__ == '__main__':
     
     # Ask whether to use TTrees or CSV files
     if rootAvailable:
-        writeOption = input("Generate TTrees (a), a CSV file (b) or both (c)? ")
+        writeOption = user_input("Generate TTrees (a), a CSV file (b) or both (c)? ")
         writeROOT = False
         writeCSV = False
         if writeOption=="a":
@@ -177,13 +185,13 @@ if __name__ == '__main__':
     csvFilename = filenamePrefix + ".csv"
     
     # Define detector name
-    detectorName = input("Name of your detector: ")
+    detectorName = user_input("Name of your detector: ")
 
     # Ask for the number of events
-    events = int(input("Number of events to process: "))
+    events = int(user_input("Number of events to process: "))
 
     # Ask for the number of steps along the track:
-    nsteps = int(input("Number of steps along the track in the sensor: "))
+    nsteps = int(user_input("Number of steps along the track in the sensor: "))
 
     if writeROOT:
         # Open the file and create the tree
