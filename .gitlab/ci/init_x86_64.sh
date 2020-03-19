@@ -40,7 +40,7 @@ fi
 
 # Determine which LCG version to use
 if [ "$(uname)" == "Darwin" ]; then
-    DEFAULT_LCG="LCG_97rc3python3"
+    DEFAULT_LCG="LCG_97python3"
 else
     DEFAULT_LCG="LCG_96b"
 fi
