@@ -79,3 +79,7 @@ source etc/scripts/setup_lxplus.sh
 
 will setup all required build dependencies.
 
+
+## create-db.sql
+
+Generates the postgreSQL database for the DatabaseWriter module. For instructions on how to use this script, please refer to the README of the DatabaseWriter module.
