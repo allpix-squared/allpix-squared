@@ -93,14 +93,7 @@ mydb=# SELECT * FROM pixelhit;
 ```
 
 ### Parameters
-* `host` : hostname of the machine holding the database, e.g. localhost
-* `port` : port number (postgreSQL default is 5432)
-* `dbname` : name of the database (mydb in the examples above)
-* `user` : username (myuser in the examples above)
-* `password` : password associated with the username (mypass in the examples above)
-* `runID` : user-defined string identifying the simulation
-* `include` : Array of object names (without `allpix::` prefix) to write to the database, all other object names are ignored (cannot be used together simultaneously with the *exclude* parameter).
-* `exclude`: Array of object names (without `allpix::` prefix) that are not written to the database (cannot be used together simultaneously with the *include* parameter).
+See example in usage section, below.
 
 ### Usage
 Place the following configuration at the end of the main configuration file:
