@@ -1,3 +1,4 @@
+TEST
 # DatabaseWriter
 **Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>)  
 **Status**: Functional  
