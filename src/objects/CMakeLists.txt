@@ -35,18 +35,11 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     AllpixObjects
 )
 
-# Explicitly add all the dependent include dirs to the manual command
-FOREACH(dir IN ITEMS ${ALLPIX_DEPS_INCLUDE_DIRS})
-    IF(NOT INCLUDE_DIR_ARGS)
-        SET(INCLUDE_DIR_ARGS "-I${dir}")
-    ELSE()
-        SET(INCLUDE_DIR_ARGS "${INCLUDE_DIR_ARGS} -I${dir}")
-    ENDIF()
-ENDFOREACH()
-
-# Compile the dictionary through a special target
-# WARNING This hack is necessary to prevent standard warnings and those in clang-tidy for use in the CI
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++${CMAKE_CXX_STANDARD} -I${CMAKE_SOURCE_DIR}/src ${INCLUDE_DIR_ARGS} -o ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o -c ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
+  PROPERTIES
+  GENERATED TRUE
+  COMPILE_FLAGS "-Wno-unused-function -Wno-overlength-strings" # or whatever ?
+  )
 
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
@@ -60,7 +53,7 @@ ADD_LIBRARY(AllpixObjects SHARED
     PixelHit.cpp
     MCParticle.cpp
     MCTrack.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx.o
+    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
 )
 
 # Link the standard dependencies
