@@ -35,11 +35,11 @@ ROOT_GENERATE_DICTIONARY(AllpixObjectsDictionary
     AllpixObjects
 )
 
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
   PROPERTIES
   GENERATED TRUE
   COMPILE_FLAGS "-Wno-unused-function -Wno-overlength-strings -Wno-zero-as-null-pointer-constant -w" # or whatever ?
-  )
+)
 
 # Define the library adding the object file created above
 ADD_LIBRARY(AllpixObjects SHARED
