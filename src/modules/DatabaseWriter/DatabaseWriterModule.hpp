@@ -72,10 +72,10 @@ namespace allpix {
         std::shared_ptr<pqxx::nontransaction> W_;
         std::string host_;
         std::string port_;
-        std::string dbname_;
+        std::string database_name_;
         std::string user_;
         std::string password_;
-        std::string runID_;
+        std::string run_id_;
         int run_nr_;
         int event_nr_;
         int mctrack_nr_;

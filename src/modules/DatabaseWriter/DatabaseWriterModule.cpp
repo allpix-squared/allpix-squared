@@ -33,10 +33,10 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     // retrieving configuration parameters
     host_ = config_.get<std::string>("host");
     port_ = config_.get<std::string>("port");
-    dbname_ = config_.get<std::string>("dbname");
+    database_name_ = config_.get<std::string>("database_name");
     user_ = config_.get<std::string>("user");
     password_ = config_.get<std::string>("password");
-    runID_ = config_.get<std::string>("runID", "none");
+    run_id_ = config_.get<std::string>("run_id", "none");
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -63,16 +63,16 @@ void DatabaseWriterModule::init() {
     pixelhit_nr_ = -1;
 
     // establishing connection to the database
-    conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + dbname_ + " user=" + user_ +
+    conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ + " user=" + user_ +
                                                " password=" + password_);
     if(!conn_->is_open()) {
-        throw ModuleError("Could not connect to database " + dbname_ + " at host " + host_);
+        throw ModuleError("Could not connect to database " + database_name_ + " at host " + host_);
     }
 
     W_ = std::make_shared<pqxx::nontransaction>(*conn_);
 
     // inserting run entry in the database
-    pqxx::result runR = W_->exec("INSERT INTO Run (runID) VALUES ('" + runID_ + "') RETURNING run_nr;");
+    pqxx::result runR = W_->exec("INSERT INTO Run (run_id) VALUES ('" + run_id_ + "') RETURNING run_nr;");
     run_nr_ = atoi(runR[0][0].c_str());
 
     // Read include and exclude list
@@ -179,25 +179,13 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                 PixelHit hit = static_cast<PixelHit&>(current_object);
                 insertionLine.str(std::string());
                 insertionLine << "INSERT INTO PixelHit (run_nr, event_nr, ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << "mctrack_nr, ";
                 if(mcparticle_nr_ >= 0)
                     insertionLine << "mcparticle_nr, ";
-                if(depositedcharge_nr_ >= 0)
-                    insertionLine << "depositedcharge_nr, ";
-                if(propagatedcharge_nr_ >= 0)
-                    insertionLine << "propagatedcharge_nr, ";
                 if(pixelcharge_nr_ >= 0)
                     insertionLine << "pixelcharge_nr, ";
                 insertionLine << "detector, x, y, signal, hittime) VALUES (" << run_nr_ << ", " << event_nr_ << ", ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << mctrack_nr_ << ", ";
                 if(mcparticle_nr_ >= 0)
                     insertionLine << mcparticle_nr_ << ", ";
-                if(depositedcharge_nr_ >= 0)
-                    insertionLine << depositedcharge_nr_ << ", ";
-                if(propagatedcharge_nr_ >= 0)
-                    insertionLine << propagatedcharge_nr_ << ", ";
                 if(pixelcharge_nr_ >= 0)
                     insertionLine << pixelcharge_nr_ << ", ";
                 insertionLine << "'" << detectorName << "', " << hit.getIndex().X() << ", " << hit.getIndex().Y() << ", "
@@ -209,22 +197,10 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                 PixelCharge charge = static_cast<PixelCharge&>(current_object);
                 insertionLine.str(std::string());
                 insertionLine << "INSERT INTO PixelCharge (run_nr, event_nr, ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << "mctrack_nr, ";
-                if(mcparticle_nr_ >= 0)
-                    insertionLine << "mcparticle_nr, ";
-                if(depositedcharge_nr_ >= 0)
-                    insertionLine << "depositedcharge_nr, ";
                 if(propagatedcharge_nr_ >= 0)
                     insertionLine << "propagatedcharge_nr, ";
                 insertionLine << "detector, charge, x, y, localx, localy, globalx, globaly) VALUES (" << run_nr_ << ", "
                               << event_nr_ << ", ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << mctrack_nr_ << ", ";
-                if(mcparticle_nr_ >= 0)
-                    insertionLine << mcparticle_nr_ << ", ";
-                if(depositedcharge_nr_ >= 0)
-                    insertionLine << depositedcharge_nr_ << ", ";
                 if(propagatedcharge_nr_ >= 0)
                     insertionLine << propagatedcharge_nr_ << ", ";
                 insertionLine << "'" << detectorName << "', " << charge.getCharge() << ", " << charge.getIndex().X() << ", "
@@ -238,18 +214,10 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                 PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
                 insertionLine.str(std::string());
                 insertionLine << "INSERT INTO PropagatedCharge (run_nr, event_nr, ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << "mctrack_nr, ";
-                if(mcparticle_nr_ >= 0)
-                    insertionLine << "mcparticle_nr, ";
                 if(depositedcharge_nr_ >= 0)
                     insertionLine << "depositedcharge_nr, ";
                 insertionLine << "detector, carriertype, charge, localx, localy, localz, globalx, globaly, globalz) VALUES ("
                               << run_nr_ << ", " << event_nr_ << ", ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << mctrack_nr_ << ", ";
-                if(mcparticle_nr_ >= 0)
-                    insertionLine << mcparticle_nr_ << ", ";
                 if(depositedcharge_nr_ >= 0)
                     insertionLine << depositedcharge_nr_ << ", ";
                 insertionLine << "'" << detectorName << "', " << static_cast<int>(charge.getType()) << ", "
@@ -283,14 +251,10 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                 DepositedCharge charge = static_cast<DepositedCharge&>(current_object);
                 insertionLine.str(std::string());
                 insertionLine << "INSERT INTO DepositedCharge (run_nr, event_nr, ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << "mctrack_nr, ";
                 if(mcparticle_nr_ >= 0)
                     insertionLine << "mcparticle_nr, ";
                 insertionLine << "detector, carriertype, charge, localx, localy, localz, globalx, globaly, globalz) VALUES ("
                               << run_nr_ << ", " << event_nr_ << ", ";
-                if(mctrack_nr_ >= 0)
-                    insertionLine << mctrack_nr_ << ", ";
                 if(mcparticle_nr_ >= 0)
                     insertionLine << mcparticle_nr_ << ", ";
                 insertionLine << "'" << detectorName << "', " << static_cast<int>(charge.getType()) << ", "

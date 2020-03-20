@@ -10,7 +10,7 @@ In order to use this module, one is required to install postgreSQL and generate 
 
 ```
 $ sudo -u postgres psql
-postgres=# create database mydb;
+postgres=# CREATE DATABASE mydb;
 postgres=# \q
 $ sudo -u postgres psql mydb
 postgres=# \i create-db.sql
@@ -46,56 +46,50 @@ To write into the database, a username and password are required. To create a ne
 
 
 ```
-postgres=# create user myuser with encrypted password 'mypass';
-postgres=# grant all privileges on database mydb to myuser;
+$ sudo -u postgres createuser myuser
+$ sudo -u postgres psql mydb
+postgres=# CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
+postgres=# GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+```
+
+If an authentication failure error is issued, try
+
+```
+$ sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
 ```
 
 The database is structured so that the data are referenced according to the sequence
 
 ```
-Run -> Event -> MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
+MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
 ```
 
-This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost. However, the chain is not broken, as variables from parent objects are repeated down the chain. As an example, the following is the table corresponding to the PixelHit objects for two runs. In the first run, the MCTrack, DepositedCharge and PropagatedCharge object were excluded:
+This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost and the chain is broken. The only exception to this chain rule is the direct reference MCParticle -> PixelHit. By default, each module always refers to the run and event numbers. As an example, the following is the table corresponding to the PixelHit objects for a single run:
 
 ```
- pixelhit_nr | run_nr | event_nr | mctrack_nr | mcparticle_nr | depositedcharge_nr | propagatedcharge_nr | pixelcharge_nr | detector  | x | y | signal  | hittime 
--------------+--------+----------+------------+---------------+--------------------+---------------------+----------------+-----------+---+---+---------+---------
-           1 |     15 |       17 |            |             8 |                    |                     |              2 | detector1 | 2 | 2 |   33086 |       0
-           2 |     15 |       17 |            |             8 |                    |                     |              2 | detector2 | 2 | 2 | 41169.8 |       0
-           3 |     15 |       18 |            |            10 |                    |                     |              4 | detector1 | 2 | 2 | 32975.9 |       0
-           4 |     15 |       18 |            |            10 |                    |                     |              4 | detector2 | 2 | 2 | 51000.1 |       0
-           5 |     15 |       19 |            |            12 |                    |                     |              6 | detector1 | 2 | 2 | 27643.9 |       0
-           6 |     15 |       19 |            |            12 |                    |                     |              6 | detector2 | 2 | 2 | 36635.8 |       0
-           7 |     15 |       20 |            |            15 |                    |                     |              8 | detector1 | 2 | 2 | 84205.4 |       0
-           8 |     15 |       20 |            |            15 |                    |                     |              8 | detector2 | 2 | 2 |   29397 |       0
-           9 |     15 |       21 |            |            17 |                    |                     |             10 | detector1 | 2 | 2 | 31162.2 |       0
-          10 |     15 |       21 |            |            17 |                    |                     |             10 | detector2 | 2 | 2 | 40265.2 |       0
-          11 |     15 |       22 |            |            19 |                    |                     |             12 | detector1 | 2 | 2 | 35163.8 |       0
-          12 |     15 |       22 |            |            19 |                    |                     |             12 | detector2 | 2 | 2 | 35073.5 |       0
-          13 |     15 |       23 |            |            21 |                    |                     |             14 | detector1 | 2 | 2 | 46394.8 |       0
-          14 |     15 |       23 |            |            21 |                    |                     |             14 | detector2 | 2 | 2 | 27625.7 |       0
-          15 |     15 |       24 |            |            23 |                    |                     |             16 | detector1 | 2 | 2 | 41677.1 |       0
-          16 |     15 |       24 |            |            23 |                    |                     |             16 | detector2 | 2 | 2 | 25725.8 |       0
-          17 |     15 |       25 |            |            25 |                    |                     |             18 | detector1 | 2 | 2 |   38990 |       0
-          18 |     15 |       25 |            |            25 |                    |                     |             18 | detector2 | 2 | 2 | 36419.7 |       0
-          19 |     15 |       26 |            |            27 |                    |                     |             20 | detector1 | 2 | 2 | 45989.8 |       0
-          20 |     15 |       26 |            |            27 |                    |                     |             20 | detector2 | 2 | 2 | 26912.7 |       0
-          21 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector1 | 2 | 2 | 32616.2 |       0
-          22 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 0 | 2 | 6808.33 |       0
-          23 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 1 | 2 | 25265.5 |       0
-          24 |     17 |       28 |          3 |            33 |               4266 |                2254 |             24 | detector2 | 2 | 2 | 78604.9 |       0
-          25 |     17 |       29 |          4 |            35 |               5784 |                3324 |             26 | detector1 | 2 | 2 | 26531.5 |       0
-          26 |     17 |       29 |          4 |            35 |               5784 |                3324 |             26 | detector2 | 2 | 2 | 37189.6 |       0
-          27 |     17 |       30 |          6 |            38 |               7508 |                4753 |             28 | detector1 | 2 | 2 | 32983.8 |       0
-          28 |     17 |       30 |          6 |            38 |               7508 |                4753 |             28 | detector2 | 2 | 2 |   60854 |       0
-          29 |     17 |       31 |          8 |            41 |               9276 |                6260 |             30 | detector1 | 2 | 2 | 34785.8 |       0
-          30 |     17 |       31 |          8 |            41 |               9276 |                6260 |             30 | detector2 | 2 | 2 | 64764.6 |       0
-          31 |     17 |       32 |          9 |            43 |              10822 |                7450 |             32 | detector1 | 2 | 2 | 32901.3 |       0
-          32 |     17 |       32 |          9 |            43 |              10822 |                7450 |             32 | detector2 | 2 | 2 | 41381.4 |       0
-          33 |     17 |       33 |         10 |            45 |              12364 |                8563 |             34 | detector1 | 2 | 2 | 34940.1 |       0
-          34 |     17 |       33 |         10 |            45 |              12364 |                8563 |             34 | detector2 | 2 | 2 | 30685.5 |       0
-
+mydb=# SELECT * FROM pixelhit;
+ pixelhit_nr | run_nr | event_nr | mcparticle_nr | pixelcharge_nr | detector  | x | y | signal  | hittime 
+-------------+--------+----------+---------------+----------------+-----------+---+---+---------+---------
+           1 |      1 |        1 |             2 |              2 | detector1 | 2 | 2 | 46447.9 |       0
+           2 |      1 |        1 |             2 |              2 | detector2 | 2 | 2 | 34847.5 |       0
+           3 |      1 |        2 |             4 |              4 | detector1 | 2 | 2 | 27788.1 |       0
+           4 |      1 |        2 |             4 |              4 | detector2 | 2 | 2 | 38011.6 |       0
+           5 |      1 |        3 |             6 |              6 | detector1 | 2 | 2 | 30154.8 |       0
+           6 |      1 |        3 |             6 |              6 | detector2 | 2 | 2 | 45947.4 |       0
+           7 |      1 |        4 |             8 |              8 | detector1 | 2 | 2 | 51504.7 |       0
+           8 |      1 |        4 |             8 |              8 | detector2 | 2 | 2 | 53500.9 |       0
+           9 |      1 |        5 |            11 |             10 | detector1 | 2 | 2 | 29432.6 |       0
+          10 |      1 |        5 |            11 |             10 | detector2 | 2 | 2 | 32942.5 |       0
+          11 |      1 |        6 |            13 |             12 | detector1 | 2 | 2 | 50173.8 |       0
+          12 |      1 |        6 |            13 |             12 | detector2 | 2 | 2 | 42945.5 |       0
+          13 |      1 |        7 |            15 |             14 | detector1 | 2 | 2 | 33263.4 |       0
+          14 |      1 |        7 |            15 |             14 | detector2 | 2 | 2 | 30430.5 |       0
+          15 |      1 |        8 |            17 |             16 | detector1 | 2 | 2 | 33353.4 |       0
+          16 |      1 |        8 |            17 |             16 | detector2 | 2 | 2 | 38631.7 |       0
+          17 |      1 |        9 |            19 |             18 | detector1 | 2 | 2 | 30899.5 |       0
+          18 |      1 |        9 |            19 |             18 | detector2 | 2 | 2 | 24996.9 |       0
+          19 |      1 |       10 |            21 |             20 | detector1 | 2 | 2 | 29509.3 |       0
+          20 |      1 |       10 |            21 |             20 | detector2 | 2 | 2 | 28590.8 |       0
 ```
 
 ### Parameters
@@ -122,8 +116,8 @@ The following parameters are mandatory: `host`, `port`, `dbname`, `user`, `passw
 exclude = "PropagatedCharge" "DepositedCharge"
 host = "localhost"
 port = "5432"
-dbname = "mydb"
+database_name = "mydb"
 user = "myuser"
 password = "mypass"
-runID = "myRun"
+run_id = "myRun"
 ```

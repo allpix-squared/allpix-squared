@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS Run;
 
 CREATE TABLE Run(
     run_nr SERIAL PRIMARY KEY,
-    RunID VARCHAR (100)
+    run_id VARCHAR (100)
 );
 
 CREATE TABLE Event(
@@ -69,7 +69,6 @@ CREATE TABLE Depositedcharge(
     depositedcharge_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
     event_nr INT REFERENCES Event (event_nr),
-    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
     mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
     detector VARCHAR (100) NOT NULL,
     carriertype INT NOT NULL,
@@ -87,8 +86,6 @@ CREATE TABLE Propagatedcharge(
     propagatedcharge_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
     event_nr INT REFERENCES Event (event_nr),
-    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
-    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
     depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
     detector VARCHAR (100) NOT NULL,
     carriertype INT NOT NULL,
@@ -106,9 +103,6 @@ CREATE TABLE PixelCharge(
     pixelCharge_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
     event_nr INT REFERENCES Event (event_nr),
-    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
-    mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
-    depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
     propagatedcharge_nr INT REFERENCES Propagatedcharge (propagatedcharge_nr),
     detector VARCHAR (100) NOT NULL,
     charge INT NOT NULL,
@@ -125,10 +119,7 @@ CREATE TABLE PixelHit(
     pixelHit_nr SERIAL,
     run_nr INT REFERENCES Run (run_nr),
     event_nr INT REFERENCES Event (event_nr),
-    mctrack_nr INT REFERENCES MCtrack (mctrack_nr),
     mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
-    depositedcharge_nr INT REFERENCES Depositedcharge (depositedcharge_nr),
-    propagatedcharge_nr INT REFERENCES Propagatedcharge (propagatedcharge_nr),
     pixelcharge_nr INT REFERENCES Pixelcharge (pixelcharge_nr),
     detector VARCHAR (100) NOT NULL,
     x INT NOT NULL,	  
