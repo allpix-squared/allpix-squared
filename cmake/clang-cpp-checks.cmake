@@ -87,6 +87,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+	# write a .clang-tidy file in the binary dir to disable checks for created files
+	FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
 
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
