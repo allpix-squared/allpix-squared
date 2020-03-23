@@ -124,19 +124,22 @@ void PulseTransferModule::run(unsigned int event_num) {
             if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
                 pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
             }
-        }
-
-        for(auto& pulse : pulses) {
+        } else {
             LOG(TRACE) << "Found pulse information";
-            auto pixel_index = pulse.first;
+            LOG_ONCE(INFO) << "Pulses available - settings \"timestep\", \"max_depth_distance\" and "
+                              "\"collect_from_implant\" have no effect";
 
-            // Accumulate all pulses from input message data:
-            pixel_pulse_map[pixel_index] += pulse.second;
+            for(auto& pulse : pulses) {
+                auto pixel_index = pulse.first;
 
-            auto px = pixel_charge_map[pixel_index];
-            // For each pulse, store the corresponding propagated charges to preserve history:
-            if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
-                pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+                // Accumulate all pulses from input message data:
+                pixel_pulse_map[pixel_index] += pulse.second;
+
+                auto px = pixel_charge_map[pixel_index];
+                // For each pulse, store the corresponding propagated charges to preserve history:
+                if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
+                    pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+                }
             }
         }
     }
