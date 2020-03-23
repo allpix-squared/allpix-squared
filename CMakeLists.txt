@@ -73,7 +73,9 @@ ENDIF()
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_SKIP_INSTALL_RPATH FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 
 # Add the automatically determined parts of the RPATH which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -83,6 +85,11 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
+
+IF(APPLE)
+  SET(CMAKE_INSTALL_NAME_DIR "@rpath")
+  SET(CMAKE_INSTALL_RPATH "@loader_path/../lib") # self relative LIBDIR
+ENDIF()
 
 # If available, use CMake's link-what-you-use feature, not on APPLE
 IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
