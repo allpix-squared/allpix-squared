@@ -75,6 +75,7 @@ Allpix<sup>2</sup> has been developed and is maintained by
 
 * Koen Wolters, CERN, @kwolters
 * Daniel Hynds, CERN, @dhynds
+* Paul Schütze, DESY, @pschutze
 * Simon Spannagel, CERN, @simonspa
 
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
@@ -95,10 +96,10 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
-* Paul Schütze, DESY, @pschutze
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
+* Andy Wharton, Lancaster University, @awharton
 * Morag Williams, University of Glasgow, @williamm
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).

@@ -131,6 +131,24 @@ fmt:cc7-llvm-lint:
         - ninja check-lint
 
 
+fmt:coverage:
+    extends: .format
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - export PATH=$PATH:/home/sftnight/.local/bin
+    script:
+        - source .gitlab/ci/load_deps.sh
+        - pip install --trusted-host=pypi.org --user gcovr
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
+        - ninja
+        - ninja install
+        - ninja coverage_gcovr
+
 
 ##############
 # Unit tests #
