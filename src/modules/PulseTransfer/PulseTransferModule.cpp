@@ -90,7 +90,7 @@ void PulseTransferModule::run(unsigned int event_num) {
             auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
 
             // Ignore if out of pixel grid
-            if(xpixel < 0 || xpixel >= model->getNPixels().x() || ypixel < 0 || ypixel >= model->getNPixels().y()) {
+            if(!detector_->isWithinPixelGrid(xpixel, ypixel)) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
