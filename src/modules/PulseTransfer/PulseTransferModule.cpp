@@ -28,6 +28,8 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
 
     // Set default value for config variables
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
+    config_.setDefault("collect_from_implant", false);
+
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
@@ -92,6 +94,14 @@ void PulseTransferModule::run(unsigned int event_num) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
+                continue;
+            }
+
+            // Ignore if outside the implant region:
+            if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because it is outside the pixel implant.";
                 continue;
             }
 
