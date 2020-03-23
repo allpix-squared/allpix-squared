@@ -139,7 +139,7 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") 
     IF(COVERAGE)
         INCLUDE("cmake/CodeCoverage.cmake")
         APPEND_COVERAGE_COMPILER_FLAGS()
-        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools")
+        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools" "${PROJECT_SOURCE_DIR}/3rdparty")
         SETUP_TARGET_FOR_COVERAGE_GCOVR(NAME coverage_gcovr
                                         EXECUTABLE ctest -L coverage
                                         DEPENDENCIES allpix AllpixCore)
