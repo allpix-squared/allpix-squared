@@ -98,11 +98,18 @@ void PulseTransferModule::run(unsigned int event_num) {
             }
 
             // Ignore if outside the implant region:
-            if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
-                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                           << " because it is outside the pixel implant.";
-                continue;
+            if(config_.get<bool>("collect_from_implant")) {
+                if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+                    throw ModuleError(
+                        "Charge collection from implant region should not be used with linear electric fields.");
+                }
+
+                if(!detector_->isWithinImplant(position)) {
+                    LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                               << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                               << " because it is outside the pixel implant.";
+                    continue;
+                }
             }
 
             Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
