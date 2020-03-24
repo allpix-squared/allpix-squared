@@ -91,9 +91,3 @@ source ${LCG_VIEW} || echo "yes"
 
 # Fix LCIO path for LCG_96, cmake configs are not properly placed:
 export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))
-
-# Fix issue with wrongly picked-up compiler:
-if [ "$(uname)" == "Darwin" ]; then
-    unset CXX
-    unset FC
-fi
