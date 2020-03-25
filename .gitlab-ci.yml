@@ -229,7 +229,7 @@ core:cc7-docker:
     dependencies:
         - cmp:cc7-docker
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps-mt
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
