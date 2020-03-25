@@ -96,7 +96,7 @@ namespace allpix {
          * @warning This must only be called once all the tracks are created (@see #createMCTracks) and no reallocation of
          * the back-end vector is guranteed
          */
-        void setAllTrackParents();
+        void set_all_track_parents();
 
         // Counter to store highest assigned track id
         int counter_{};
@@ -113,7 +113,7 @@ namespace allpix {
         // Ids ins same order as tracks stored in #stored_tracks_
         std::vector<int> stored_track_ids_;
         // Id to index in #stored_tracks_ for easier handling
-        std::map<int, size_t> id_to_track_;
+        std::map<int, MCTrack const*> id_to_track_;
     };
 } // namespace allpix
 #endif /* TrackInfoManager_H */

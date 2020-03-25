@@ -308,6 +308,7 @@ void DepositionGeant4Module::run(Event* event) {
     RELEASE_STREAM(G4cout);
 
     track_info_manager_->createMCTracks();
+    track_info_manager_->dispatchMessage(this, messenger_, event);
 
     // Dispatch the necessary messages
     for(auto& sensor : sensors_) {
@@ -321,7 +322,6 @@ void DepositionGeant4Module::run(Event* event) {
         }
     }
 
-    track_info_manager_->dispatchMessage(this, messenger_, event);
     track_info_manager_->resetTrackInfoManager();
 }
 

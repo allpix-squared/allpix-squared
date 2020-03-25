@@ -24,7 +24,7 @@ stages:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
@@ -52,7 +52,7 @@ cmp:lxplus-gcc:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
 
 cmp:cc7-docker:
@@ -84,18 +84,18 @@ cmp:cc7-llvm:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
 
-cmp:mac1014-clang:
+cmp:mac1015-clang:
     extends: .compile
     tags:
         - mac
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
-        - ninja
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
+        - ninja -k0
         - ninja install
 
 
@@ -145,7 +145,7 @@ fmt:coverage:
         - mkdir build
         - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
-        - ninja
+        - ninja -k0
         - ninja install
         - ninja coverage_gcovr
 
@@ -275,24 +275,24 @@ core:cc7-llvm:
 
 # Mac OS X
 
-mod:mac1014-clang:
+mod:mac1015-clang:
     extends: .testmod
     tags:
         - mac
     dependencies:
-        - cmp:mac1014-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
-core:mac1014-clang:
+core:mac1015-clang:
     extends: .testcore
     tags:
         - mac
     dependencies:
-        - cmp:mac1014-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
 
@@ -336,12 +336,12 @@ perf:cc7-gcc:
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:mac1014-clang:
+.perf:mac1015-clang:
     extends: .testperf
     dependencies:
-        - cmp:mac1014-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
 
