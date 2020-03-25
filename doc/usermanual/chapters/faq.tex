@@ -179,6 +179,24 @@ void readTree(TFile* file, std::string detector) {
 A more elaborate example for a data analysis script can be found in the \dir{tools} directory of the repository and in Section~\ref{sec:root_analysis_macros} of this user manual.
 Scripts written in both \CPP and in Python are provided.
 
+\item[How can I convert data from the ROOTObject format to other formats?]
+Since the ROOTObject format is the native format of \apsq, the stored data can be read into the framework again.
+To convert it to another format, a simple pseudo-simulation setup can be used, which reads in data with one module and stores it with another.
+
+In order to convert for example from ROOTObjects to the data format used by the Corryvreckan reconstruction framework, the following configuration could be used:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Allpix]
+number_of_events = 999999999
+detectors_file = "telescope.conf"
+random_seed_core = 0
+
+[ROOTObjectReader]
+file_name = "input_data_rootobjects.root"
+
+[CorryvreckanWriter]
+file_name = "output_data_corryvreckan.root"
+reference = "mydetector0"
+\end{minted}
 \end{description}
 
 \section{Development}

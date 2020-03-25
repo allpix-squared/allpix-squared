@@ -27,6 +27,11 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
+    // Set default value for config variables
+    config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
+    config_.setDefault("collect_from_implant", false);
+
+    config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
@@ -34,6 +39,7 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
+    timestep_ = config_.get<double>("timestep");
 
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
@@ -63,17 +69,79 @@ void PulseTransferModule::run(Event* event) {
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
 
     LOG(DEBUG) << "Received " << propagated_message->getData().size() << " propagated charge objects.";
-    for(auto& propagated_charge : propagated_message->getData()) {
-        for(auto& pulse : propagated_charge.getPulses()) {
-            auto pixel_index = pulse.first;
+    for(const auto& propagated_charge : propagated_message->getData()) {
+        auto pulses = propagated_charge.getPulses();
 
-            // Accumulate all pulses from input message data:
-            pixel_pulse_map[pixel_index] += pulse.second;
+        if(pulses.empty()) {
+            LOG(TRACE) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
+
+            auto model = detector_->getModel();
+            auto position = propagated_charge.getLocalPosition();
+
+            // Ignore if outside depth range of implant
+            if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
+               config_.get<double>("max_depth_distance")) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their local position is not in implant range";
+                continue;
+            }
+
+            // Find the nearest pixel
+            auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
+            auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
+
+            // Ignore if out of pixel grid
+            if(!detector_->isWithinPixelGrid(xpixel, ypixel)) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
+                continue;
+            }
+
+            // Ignore if outside the implant region:
+            if(config_.get<bool>("collect_from_implant")) {
+                if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+                    throw ModuleError(
+                        "Charge collection from implant region should not be used with linear electric fields.");
+                }
+
+                if(!detector_->isWithinImplant(position)) {
+                    LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                               << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                               << " because it is outside the pixel implant.";
+                    continue;
+                }
+            }
+
+            Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+
+            // Generate pseudo-pulse:
+            Pulse pulse(timestep_);
+            pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getEventTime());
+            pixel_pulse_map[pixel_index] += pulse;
 
             auto px = pixel_charge_map[pixel_index];
             // For each pulse, store the corresponding propagated charges to preserve history:
             if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
                 pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+            }
+        } else {
+            LOG(TRACE) << "Found pulse information";
+            LOG_ONCE(INFO) << "Pulses available - settings \"timestep\", \"max_depth_distance\" and "
+                              "\"collect_from_implant\" have no effect";
+
+            for(auto& pulse : pulses) {
+                auto pixel_index = pulse.first;
+
+                // Accumulate all pulses from input message data:
+                pixel_pulse_map[pixel_index] += pulse.second;
+
+                auto px = pixel_charge_map[pixel_index];
+                // For each pulse, store the corresponding propagated charges to preserve history:
+                if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
+                    pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
+                }
             }
         }
     }

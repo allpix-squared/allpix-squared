@@ -55,6 +55,7 @@ namespace allpix {
 
     private:
         bool output_plots_{}, output_pulsegraphs_{};
+        double timestep_{};
 
         Messenger* messenger_;
 
