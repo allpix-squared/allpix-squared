@@ -97,7 +97,6 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
-* Paul Schütze, DESY, @pschutze
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
 * Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
