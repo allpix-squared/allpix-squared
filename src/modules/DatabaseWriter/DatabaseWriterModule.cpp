@@ -63,8 +63,8 @@ void DatabaseWriterModule::init() {
     pixelhit_nr_ = -1;
 
     // establishing connection to the database
-    conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ + " user=" + user_ +
-                                               " password=" + password_);
+    conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ +
+                                               " user=" + user_ + " password=" + password_);
     if(!conn_->is_open()) {
         throw ModuleError("Could not connect to database " + database_name_ + " at host " + host_);
     }
