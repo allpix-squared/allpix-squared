@@ -10,6 +10,8 @@
 #include "MCParticle.hpp"
 #include <sstream>
 
+#include <Math/Vector3D.h>
+
 using namespace allpix;
 
 MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
@@ -37,6 +39,22 @@ ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const {
 }
 ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
     return global_end_point_;
+}
+
+ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
+    // Direction for parametric equation of line through start/end points
+    auto direction =
+        static_cast<ROOT::Math::XYZVector>(local_end_point_) - static_cast<ROOT::Math::XYZVector>(local_start_point_);
+
+    if(direction.z() != 0) {
+        // Calculate parameter for line intersection with plane at z = 0, local coordinates
+        auto t = -1 * local_start_point_.z() / direction.z();
+        // Calculate reference point at z = 0 from parametric line equation
+        return (direction * t + local_start_point_);
+    } else {
+        // Both points are coplanar with x-y plane. SImply return their center:
+        return (static_cast<ROOT::Math::XYZVector>(local_end_point_) + local_start_point_) / 2.0;
+    }
 }
 
 int MCParticle::getParticleID() const {

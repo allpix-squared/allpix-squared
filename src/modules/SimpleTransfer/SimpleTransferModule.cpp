@@ -86,7 +86,7 @@ void SimpleTransferModule::run(unsigned int) {
         // FIXME This logic should be improved
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
            config_.get<double>("max_depth_distance")) {
-            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their local position is not in implant range";
             continue;
@@ -97,8 +97,8 @@ void SimpleTransferModule::run(unsigned int) {
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
 
         // Ignore if out of pixel grid
-        if(xpixel < 0 || xpixel >= model_->getNPixels().x() || ypixel < 0 || ypixel >= model_->getNPixels().y()) {
-            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+        if(!detector_->isWithinPixelGrid(xpixel, ypixel)) {
+            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
             continue;
@@ -106,7 +106,7 @@ void SimpleTransferModule::run(unsigned int) {
 
         // Ignore if outside the implant region:
         if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
-            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because it is outside the pixel implant.";
             continue;
@@ -122,7 +122,7 @@ void SimpleTransferModule::run(unsigned int) {
             drift_time_histo->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
         }
 
-        LOG(DEBUG) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
+        LOG(TRACE) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
                    << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"}) << " brought to pixel "
                    << pixel_index;
 
