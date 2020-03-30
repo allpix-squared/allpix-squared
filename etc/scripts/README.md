@@ -93,3 +93,8 @@ python create_deposition_file.py
 ```
 
 This will create files called `deposition.csv` and/or `deposition.root`. If asking for `TTree`s, an inspection of the `TTree` is possible within the script. 
+
+
+## create-db.sql                                                                                                                                                                                  
+                                                                                                                                                                                                    
+Generates the postgreSQL database for the DatabaseWriter module. For instructions on how to use this script, please refer to the README of the DatabaseWriter module.
