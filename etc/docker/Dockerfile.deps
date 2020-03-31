@@ -43,7 +43,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for ROOT6
 
-ENV ROOT6_VERSION 6.18.04
+ENV ROOT6_VERSION 6.20.00
 
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
@@ -76,7 +76,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for LCIO
 
-ENV LCIO_VERSION 02-13-01
+ENV LCIO_VERSION 02-13-02
 
 ENV LCIODIR="/opt/lcio"
 ENV PATH="$LCIODIR/bin:$PATH"
