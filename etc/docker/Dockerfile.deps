@@ -67,6 +67,8 @@ RUN source scl_source enable devtoolset-7 && \
            -Dthread=ON \
            -Dx11=OFF \
            -Dopengl=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
            -DCMAKE_INSTALL_PREFIX=../ \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
