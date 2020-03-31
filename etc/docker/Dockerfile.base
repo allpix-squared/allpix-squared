@@ -2,6 +2,8 @@ FROM clicdp/cc7-base
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
 # Add layer for development tools
+RUN yum makecache fast
+
 RUN yum -y install \
     devtoolset-7 \
     cmake3 cmake \
@@ -21,6 +23,8 @@ RUN yum -y install \
     git && \
     pip install --upgrade pip && \
     pip install numpy matplotlib scipy pandas
+
+RUN yum -y update
 
 ENTRYPOINT ["scl", "enable", "devtoolset-7"]
 CMD ["bash"]
