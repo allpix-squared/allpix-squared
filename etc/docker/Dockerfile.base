@@ -13,6 +13,7 @@ RUN yum -y install \
     qt qt-devel \
     eigen3-devel \
     openssl-devel pcre-devel \
+    libpqxx libpqxx-devel \
     fftw-devel cfitsio-devel graphviz-devel \
     avahi-compat-libdns_sd-devel \
     libxml2-devel gsl-devel \
