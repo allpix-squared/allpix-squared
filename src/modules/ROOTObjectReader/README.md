@@ -12,8 +12,8 @@ Currently it is not yet possible to exclude objects from being read. In case not
 
 ### Parameters
 * `file_name` : Location of the ROOT file containing the trees with the object data. The file extension `.root` will be appended if not present.
-* `include` : Array of object names (without `allpix::` prefix) to be read from the ROOT trees, all other object names are ignored (cannot be used simulateneously with the *exclude* parameter).
-* `exclude`: Array of object names (without `allpix::` prefix) not to be read from the ROOT trees (cannot be used simulateneously with the *include* parameter).
+* `include` : Array of object names (without `allpix::` prefix) to be read from the ROOT trees, all other object names are ignored (cannot be used simultaneously with the *exclude* parameter).
+* `exclude`: Array of object names (without `allpix::` prefix) not to be read from the ROOT trees (cannot be used simultaneously with the *include* parameter).
 * `ignore_seed_mismatch`: If set to true, a mismatch between the core random seed in the configuration file and the input data is ignored, otherwise an exception is thrown. This also covers the case when the core random seed in the configuration file is missing. Default is set to false. 
 
 ### Usage
