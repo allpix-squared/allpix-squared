@@ -19,13 +19,15 @@ RUN yum -y install \
     libxml2-devel gsl-devel \
     libX11-devel libXpm-devel \
     libXft-devel libXext-devel \
-    python python-devel python-pip tkinter \
+    python3 python3-devel python3-pip python3-tkinter \
     redhat-lsb-core \
-    git && \
-    pip install --upgrade pip && \
-    pip install numpy matplotlib scipy pandas
+    git
 
 RUN yum -y update
+
+RUN pip3 install --upgrade pip && \
+    pip3 install numpy matplotlib scipy pandas
+
 
 ENTRYPOINT ["scl", "enable", "devtoolset-7"]
 CMD ["bash"]
