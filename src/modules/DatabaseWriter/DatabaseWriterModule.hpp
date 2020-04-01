@@ -77,13 +77,6 @@ namespace allpix {
         std::string password_;
         std::string run_id_;
         int run_nr_;
-        int event_nr_;
-        int mctrack_nr_;
-        int mcparticle_nr_;
-        int depositedcharge_nr_;
-        int propagatedcharge_nr_;
-        int pixelcharge_nr_;
-        int pixelhit_nr_;
 
         // List of messages to keep so they can be stored in the tree
         std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
