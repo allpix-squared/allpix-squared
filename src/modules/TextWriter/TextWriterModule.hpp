@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <atomic>
 #include <fstream>
 #include <map>
 #include <string>
@@ -69,8 +70,7 @@ namespace allpix {
         std::unique_ptr<std::ofstream> output_file_;
 
         // Statistical information about number of objects
-        unsigned long write_cnt_{};
-        unsigned long msg_cnt_{};
-        std::mutex stats_mutex_;
+        std::atomic<unsigned long> write_cnt_{};
+        std::atomic<unsigned long> msg_cnt_{};
     };
 } // namespace allpix
