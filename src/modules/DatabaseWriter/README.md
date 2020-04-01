@@ -4,23 +4,26 @@
 **Input**: *all objects in simulation*
 
 ### Description
-This module enables writing the simulation output into a postgreSQL database. This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).
-By default, all object types (MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit) are written. However, bear in mind that PropagatedCharge and DepositedCharge data will slow down the simulation significantly. It is thus recommended to exclude these objects. This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
-In order to use this module, one is required to install postgreSQL and generate the database using the create-db.sql script in /etc/scripts. On Linux, this can be done as
+This module enables writing the simulation output into a postgreSQL database.
+This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).
+By default, all object types (MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit) are written.
+However, it should be kept in mind that PropagatedCharge and DepositedCharge data will slow down the simulation significantly and will lead to a large database.
+Unless really required for the analysis of the simulation, it is recommended to exclude these objects.
+This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
+In order to use this module, one is required to install PostgreSQL and generate a database using the `create-db.sql` script in `/etc/scripts`. On Linux, this can be done as
 
 ```
 $ sudo -u postgres psql
 postgres=# CREATE DATABASE mydb;
 postgres=# \q
 $ sudo -u postgres psql mydb
-postgres=# \i create-db.sql
+postgres=# \i etc/scripts/create-db.sql
 ```
 
 This generates a database with the following structure:
 
 ```
-                            List of relations
- Schema |                   Name                   |   Type   |  Owner   
+ Schema |                   Name                   |   Type   |  Owner
 --------+------------------------------------------+----------+----------
  public | depositedcharge                          | table    | postgres
  public | depositedcharge_depositedcharge_nr_seq   | sequence | postgres
@@ -39,11 +42,10 @@ This generates a database with the following structure:
  public | run                                      | table    | postgres
  public | run_run_nr_seq                           | sequence | postgres
 (16 rows)
-
 ```
 
-To write into the database, a username and password are required. To create a new user/password pair and grant him/her privileges to edit the database, type
-
+Host, username and password are required to write into the database.
+A new user/password pair can be created and relevant privileges to edit the database can be created via
 
 ```
 $ sudo -u postgres createuser myuser
@@ -52,7 +54,7 @@ postgres=# CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
 postgres=# GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
 ```
 
-If an authentication failure error is issued, try
+In case of an authentication failure error being issues, the password of the user can be changed using
 
 ```
 $ sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
@@ -64,45 +66,30 @@ The database is structured so that the data are referenced according to the sequ
 MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
 ```
 
-This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost and the chain is broken. The only exception to this chain rule is the direct reference MCParticle -> PixelHit. By default, each module always refers to the run and event numbers. As an example, the following is the table corresponding to the PixelHit objects for a single run:
+This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost and the chain is broken. The only exception to this chain rule is the direct reference MCParticle -> PixelHit. By default, each module always refers to the run and event numbers. As an example, the following is the table corresponding to the PixelHit objects for a single run of four events:
 
 ```
 mydb=# SELECT * FROM pixelhit;
- pixelhit_nr | run_nr | event_nr | mcparticle_nr | pixelcharge_nr | detector  | x | y | signal  | hittime 
+ pixelhit_nr | run_nr | event_nr | mcparticle_nr | pixelcharge_nr | detector  | x | y | signal  | hittime
 -------------+--------+----------+---------------+----------------+-----------+---+---+---------+---------
            1 |      1 |        1 |             2 |              2 | detector1 | 2 | 2 | 46447.9 |       0
            2 |      1 |        1 |             2 |              2 | detector2 | 2 | 2 | 34847.5 |       0
            3 |      1 |        2 |             4 |              4 | detector1 | 2 | 2 | 27788.1 |       0
            4 |      1 |        2 |             4 |              4 | detector2 | 2 | 2 | 38011.6 |       0
-           5 |      1 |        3 |             6 |              6 | detector1 | 2 | 2 | 30154.8 |       0
-           6 |      1 |        3 |             6 |              6 | detector2 | 2 | 2 | 45947.4 |       0
-           7 |      1 |        4 |             8 |              8 | detector1 | 2 | 2 | 51504.7 |       0
-           8 |      1 |        4 |             8 |              8 | detector2 | 2 | 2 | 53500.9 |       0
-           9 |      1 |        5 |            11 |             10 | detector1 | 2 | 2 | 29432.6 |       0
-          10 |      1 |        5 |            11 |             10 | detector2 | 2 | 2 | 32942.5 |       0
-          11 |      1 |        6 |            13 |             12 | detector1 | 2 | 2 | 50173.8 |       0
-          12 |      1 |        6 |            13 |             12 | detector2 | 2 | 2 | 42945.5 |       0
-          13 |      1 |        7 |            15 |             14 | detector1 | 2 | 2 | 33263.4 |       0
-          14 |      1 |        7 |            15 |             14 | detector2 | 2 | 2 | 30430.5 |       0
-          15 |      1 |        8 |            17 |             16 | detector1 | 2 | 2 | 33353.4 |       0
-          16 |      1 |        8 |            17 |             16 | detector2 | 2 | 2 | 38631.7 |       0
-          17 |      1 |        9 |            19 |             18 | detector1 | 2 | 2 | 30899.5 |       0
-          18 |      1 |        9 |            19 |             18 | detector2 | 2 | 2 | 24996.9 |       0
-          19 |      1 |       10 |            21 |             20 | detector1 | 2 | 2 | 29509.3 |       0
-          20 |      1 |       10 |            21 |             20 | detector2 | 2 | 2 | 28590.8 |       0
 ```
 
 ### Parameters
-See example in usage section, below.
+* `host`: Host address on which the database server runs, can be an IP address or host name. Mandatory parameter.
+* `port`: Port the database server listens on. Mandatory parameter.
+* `database_name`: Name of the database to store data in. The database needs to exist and has to be created before starting the simulation. Mandatory parameter.
+* `user`: User name of the SQL user with access rights to the relevant database. mandatory parameter.
+* `password`: Password of the user account with database write access. Mandatory parameter.
+* `run_id`: Arbitrary run identifier assigned to this simulation in the database. This parameter is a string and defaults to `none`.
+* `include`: Array of object names (without `allpix::` prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simultaneously with the *exclude* parameter).
+* `exclude`: Array of object names (without `allpix::` prefix) that are not written to the ROOT trees (cannot be used together simultaneously with the *include* parameter).
 
 ### Usage
-Place the following configuration at the end of the main configuration file:
-
-```ini
-[DatabaseWriter]
-```
-
-The following parameters are mandatory: `host`, `port`, `dbname`, `user`, `password`. Again, it is recommended to exclude PropagatedCharge and DepositedCharge using the `include` and `exclude` parameters. A full example is thus
+To write objects excluding PropagatedCharge and DepositedCharge to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
 
 ```ini
 [DatabaseWriter]

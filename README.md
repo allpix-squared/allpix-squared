@@ -133,12 +133,10 @@ This software is distributed under the terms of the MIT license. A copy of this 
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
 
-The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
+The LaTeX, Pandoc and PostgreSQL CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
 
 The cereal C++11 serialization library used by Allpix<sup>2</sup> is published under the BSD 3-Clause License, the original source code can be found [here](https://github.com/USCiLab/cereal).
 
 The combination algorithms by Howard Hinnant are published under the Boost Software License Version 1.0, the code can be found [here](https://github.com/HowardHinnant/combinations) and the documentation of the class is published [here](https://howardhinnant.github.io/combinations/combinations.html).
-
-The PostgreSQL CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.

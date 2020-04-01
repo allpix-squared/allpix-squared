@@ -58,7 +58,7 @@ cmp:lxplus-gcc:
 cmp:cc7-docker:
     extends: .compile
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
@@ -94,7 +94,7 @@ cmp:mac1015-clang:
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja -k0
         - ninja install
 
@@ -229,7 +229,7 @@ core:cc7-docker:
     dependencies:
         - cmp:cc7-docker
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
