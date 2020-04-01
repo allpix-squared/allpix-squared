@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <atomic>
 #include <map>
 #include <string>
 
@@ -87,7 +88,6 @@ namespace allpix {
         std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
-        unsigned long write_cnt_{};
-        std::mutex stats_mutex_;
+        std::atomic<unsigned long> write_cnt_{};
     };
 } // namespace allpix
