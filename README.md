@@ -96,6 +96,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
+* Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
 * Ondrej Theiner, Charles University, @otheiner
@@ -133,7 +134,7 @@ This software is distributed under the terms of the MIT license. A copy of this 
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
 
-The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
+The LaTeX, Pandoc and PostgreSQL CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
 

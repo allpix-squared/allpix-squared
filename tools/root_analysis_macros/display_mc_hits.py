@@ -51,14 +51,14 @@ args = parser.parse_args()
 
 root_file_name = (str(args.f))
 detector_name = (str(args.d))
-print_all = args.a
+print_all = args.all
 print_1d = args.onedim
 print_2d = args.twodim
 print_3d = args.threedim
-print_gauss = args.g
-print_cauch = args.c
+print_gauss = args.gaussian
+print_cauch = args.cauchy
 save_pdf = args.pdf
-verbose = args.v
+verbose = args.verbose
 outDir = os.path.dirname(root_file_name)
 
 if not (print_1d or print_2d or print_3d or print_gauss or print_cauch):
