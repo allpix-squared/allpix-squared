@@ -58,7 +58,7 @@ cmp:lxplus-gcc:
 cmp:cc7-docker:
     extends: .compile
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
@@ -229,7 +229,7 @@ core:cc7-docker:
     dependencies:
         - cmp:cc7-docker
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
