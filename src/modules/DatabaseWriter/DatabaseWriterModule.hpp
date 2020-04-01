@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <atomic>
 #include <fstream>
 #include <map>
 #include <string>
@@ -21,11 +22,11 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief Module to write object data to simple ASCII text files
+     * @brief Module to write object data to PostgreSQL databases
      *
      * Listens to all objects dispatched in the framework and stores an ASCII representation of every object to file.
      */
-    class DatabaseWriterModule : public Module {
+    class DatabaseWriterModule : public BufferedModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -34,27 +35,23 @@ namespace allpix {
          * @param geo_mgr Pointer to the geometry manager, containing the detectors
          */
         DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr);
-        /**
-         * @brief Destructor deletes the internal objects used to build the ROOT Tree
-         */
-        ~DatabaseWriterModule() override;
 
         /**
          * @brief Receive a single message containing objects of arbitrary type
          * @param message Message dispatched in the framework
          * @param name Name of the message
          */
-        void receive(std::shared_ptr<BaseMessage> message, std::string name);
+        bool filter(const std::shared_ptr<BaseMessage>& message, const std::string& name) const;
 
         /**
-         * @brief Opens the file to write the objects to
+         * @brief Opens the database to write the objects to
          */
         void init() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
-        void run(unsigned int) override;
+        void run(Event* event) override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -63,6 +60,8 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
+
         // Object names to include or exclude from writing
         std::set<std::string> include_;
         std::set<std::string> exclude_;
@@ -78,13 +77,8 @@ namespace allpix {
         std::string run_id_;
         int run_nr_;
 
-        // List of messages to keep so they can be stored in the tree
-        std::vector<std::shared_ptr<BaseMessage>> keep_messages_;
-        // List of objects of a particular type, bound to a specific detector and having a particular name
-        std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
-
         // Statistical information about number of objects
-        unsigned long write_cnt_{};
-        unsigned long msg_cnt_{};
+        std::atomic<unsigned long> write_cnt_{};
+        std::atomic<unsigned long> msg_cnt_{};
     };
 } // namespace allpix
