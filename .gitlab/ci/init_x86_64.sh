@@ -45,9 +45,9 @@ else
     DEFAULT_LCG="LCG_96b"
 fi
 
-if [ -z ${LCG_VERSION} ]; then
+if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
-    LCG_VERSION=${DEFAULT_LCG}
+    ALLPIX_LCG_VERSION=${DEFAULT_LCG}
 fi
 
 # Determine which compiler to use
@@ -86,7 +86,7 @@ export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #     Source full LCG view
 #--------------------------------------------------------------------------------
 
-export LCG_VIEW=${SFTREPO}/lcg/views/${LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+export LCG_VIEW=${SFTREPO}/lcg/views/${ALLPIX_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
 source ${LCG_VIEW} || echo "yes"
 
 # Fix LCIO path for LCG_96, cmake configs are not properly placed:
