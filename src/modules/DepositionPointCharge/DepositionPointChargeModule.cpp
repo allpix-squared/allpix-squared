@@ -70,11 +70,11 @@ void DepositionPointChargeModule::init() {
     if(type_ == SourceType::MIP) {
         // Calculate voxel size:
         auto granularity = config_.get<unsigned int>("number_of_steps");
-        voxel_ = ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / granularity);
+        step_size_z_ = model->getSensorSize().z() / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
-        carriers_ = static_cast<unsigned int>(80000 * voxel_.z());
-        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(voxel_.z(), {"um", "mm"}) << ", depositing "
+        carriers_ = static_cast<unsigned int>(80000 * step_size_z_);
+        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step";
     } else {
         carriers_ = config_.get<unsigned int>("number_of_charges");
@@ -217,7 +217,7 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
     // Deposit the charge carriers:
     auto position_local = start_local;
     while(position_local.z() < model->getSensorSize().z() / 2.0) {
-        position_local += voxel_;
+        position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 
         charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
