@@ -244,6 +244,9 @@ All supported rotations are extrinsic active rotations, i.e. the vector itself i
 \item A \parameter{type} parameter describing the detector model, for example \emph{timepix} or \emph{mimosa26}.
 These models define the geometry and parameters of the detector.
 Multiple detectors can share the same model, several of which are shipped ready-to-use with the framework.
+\item An optional parameter \parameter{mother_volume} to specify the mother volume of the detector. The mother volume can be chosen from the passive materials defined in Section~\ref{sec:passive_material_config}.
+Note: the position that is given will be relative to the center of the mother volume chosen. An error will be given if the specified mother volume is too small for the specified size or position of the passive material. Defaults to the world frame.
+Note: if the \parameter{mother_volume} is a hollow material, only the non-hollow part of the material is considered part of the material. Placing a volume in the hollow part requires a different \parameter{mother_volume}.
 \item An optional parameter \parameter{alignment_precision_position} to specify the alignment precision along the three global axes as described in Section~\ref{sec:detector_config}.
 \item An optional parameter \parameter{alignment_precision_orientation} for the alignment precision in the three rotation angles as described in Section~\ref{sec:detector_config}.
 \item An optional \textbf{electric field} in the sensitive device.

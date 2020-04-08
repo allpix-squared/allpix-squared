@@ -19,6 +19,8 @@ All available detector models are fully supported. This builder can create extra
 * Silicon
 * Solder (a mixture of tin and lead)
 * Tungsten
+* Lithium
+* Beryllium
 
 ### Dependencies
 

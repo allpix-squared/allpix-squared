@@ -67,9 +67,7 @@ The internal base units of the framework are not chosen for user convenience but
   \toprule
 \textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\
  \midrule
- \textit{Unity}                   & 1                                       & ---                      \\
- \midrule
- \multirow{6}{*}{\textit{Length}} & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
+\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
                                   &                                         & um (micrometer)          \\
                                   &                                         & cm (centimeter)          \\
                                   &                                         & dm (decimeter)           \\
@@ -94,7 +92,7 @@ The internal base units of the framework are not chosen for user convenience but
 \multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
                                   &                                         & kV (kilovolt)            \\
 \midrule
-\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)          \\
+\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)                 \\
 \midrule
 \multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
                                   &                                         & mrad (milliradian)       \\
@@ -244,12 +242,94 @@ An example configuration file describing a setup with one CLICpix2 detector and 
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
 
+\subsection{Passive Material configuration}
+\label{sec:passive_material_config}
+The passive material configuration consists, similar to the detector configuarion, of a set of sections describing the passive material in the setup.
+Each section starts with a header describing the name used to identify the passive material; all names are required to be unique.
+Every passive material should contain all of the following parameters:
+\begin{itemize}
+
+
+  \item The 3D \parameter{position} in the world frame in the order x, y, z.
+  See Section~\ref{sec:models_geometry} for details.
+  \item The \parameter{orientation} specified as X-Y-Z extrinsic Euler angles.
+  This means the detector is rotated first around the world's X-axis, then around the world's Y-axis and then around the world's Z-axis.
+  Alternatively the orientation can be set as Z-Y-X or X-Z-X extrinsic Euler angles, refer to Section~\ref{sec:models_geometry} for details.
+  \item An optional string referring to the \parameter{mother_volume}, which defines the volume where the passive material will be placed in.
+  Note: the position that is given will be relative to the center of the mother volume chosen. An error will be given if the specified mother volume is too small for the specified size or position of the passive material. Defaults to the world frame.
+  Note: if the \parameter{mother_volume} is a hollow material, only the non-hollow part of the material is considered part of the material. Placing a volume in the hollow part requires a different \parameter{mother_volume}.
+  \item A string referring to the \parameter{type} of the passive material. 
+  The model should be described by a model-file in module PassiveMaterialBuilderGeant4. Currently, the implented models are "box", "cylinder" and "sphere".
+  \item A string referring to the \parameter{material} of the passive material. 
+  The materials are defined in the GeometryBuilderGeant4 module and are described in the module section. 
+  Note: If the material is the same as the material of its \parameter{mother_volume}, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
+  \item A set of \parameter{size} parameters specific for the model that is chosen. 
+  The size parameters for the specific models are described below.
+  All size parameters that describe the total length of something are placed such that half of this total length extends from each side of the given \parameter{position}.
+  If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
+
+\end{itemize}
+
+For each model, a set of specific size parameters need to be given, of which some are optional.\\
+\textbf{Box}: A rectangular box which can be massive or have an hole in the middle along the z-axis.
+\begin{itemize}
+\item The \parameter{size} of the box is an XYZ vector which defines the total size of the box.
+\item (Optional) The \parameter{inner_size} of the box is an XY vector which defines the size of the hole which will be removed from the original box volume. Defaults to 0mm 0mm.
+\item (Optional) The \parameter{thickness} of the box is a value which defines the thickness of the walls of a box with a hole in the middle. This has the has the same effect as the \parameter{inner_size}, and such they can't be used together.
+ Defaults to 0mm.
+\end{itemize}
+
+\textbf{Cylinder}: A cylindrical tube which can be massive or have an hole in the middle along the z-axis.
+\begin{itemize}
+\item The \parameter{outer_radius} of the cylinder is the total radius of the cylinder (in the XY-plane).
+\item The \parameter{length} of the cylinder is the total length of the cylinder (in the Z-direction).
+\item (Optional) The \parameter{inner_radius} of the cylinder is the radius of the inner cylinder. Defaults to 0mm.
+\item (Optional) The \parameter{starting_angle} of the cylinder is the angle at which circumference of the cylinder will start. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length} of the cylinder is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle}. Defaults to 360deg which is the full circumference.
+Note that the if the \parameter{arc_length} is set to 360 degrees, the \apsq framework will always draw the full circumference, regardless of the value of \parameter{starting_angle}.
+\end{itemize}
+
+\textbf{Sphere}: A full or partly made sphere with an inner- and outer radius.
+\begin{itemize}
+\item The \parameter{outer_radius} of the sphere is the total radius of the sphere in all directions.
+\item (Optional) The \parameter{inner_radius} of the sphere is the radius of the inner sphere. Defaults to 0mm.
+\item (Optional) The \parameter{starting_angle_phi} of the sphere is the azimuthal angle at which circumference of the sphere will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length_phi} of the sphere is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle_phi} in the XY-plane. Defaults to 360deg which is the full circumference.
+\item (Optional) The \parameter{starting_angle_theta} of the sphere is the polar angle at which the \parameter{arc_length_theta} will start. 0 degrees refers to the point along the positive z-axis. Defaults to 0deg.
+\item (Optional) The \parameter{arc_length_theta} of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given \parameter{starting_angle_theta}. Defaults to 100deg which creates the full circle.\\
+Note that \parameter{arc_length_phi} works the same as the \parameter{arc_length} from the cylinder, but the \parameter{arc_length_theta} works different.
+The \apsq framework will only draw the full circle if \parameter{starting_angle_theta} = 0deg, and \parameter{arc_length_theta} = 180deg. 
+In all other situations, the sphere will start at \parameter{starting_angle_theta} and continue the \parameter{arc_length_theta} untill \parameter{arc_length_theta} + \parameter{starting_angle_theta} = 180deg. After this it willl stop.
+The necessary module errors and warnings have been included to make sure the user will know will and won't be build.
+Note: If the VisualizationGeant4 module is used in conjunction with and \parameter{arc_length_theta} different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
+\end{itemize}
+
+Similar to the detector configuration, it is also possible to define an orientation mode.
+\begin{itemize}
+\item An \parameter{orientation_mode} that determines the way that the orientation is applied.
+The orientation mode is further explained in Section~\ref{sec:models_geometry}.
+\end{itemize}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\textwidth]{passive_materials.png}
+  \caption{Visualization of 9 different passive materials, each showing the different features of each model.}
+  \label{fig:passivematerials}
+\end{figure}
+
+An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/passive_materials.conf}
+Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
+
+
 \section{Framework parameters}
 \label{sec:framework_parameters}
 The \apsq framework provides a set of global parameters which control and alter its behavior:
 \begin{itemize}
 \item \parameter{detectors_file}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
 The only \textit{required} global parameter: the framework will fail to start if it is not specified.
+\item \parameter{passive_materials_file}: Location of the file describing the passive materials configuration (introduced in Section~\ref{sec:passive_material_config}).
+This file is \textit{required} if the PassiveMaterialBuilderGeant4 module is used in your configuration. 
 \item \parameter{number_of_events}: Determines the total number of events the framework should simulate.
 Defaults to one (simulating a single event).
 \item \parameter{root_file}: Location relative to the \parameter{output_directory} where the ROOT output data of all modules will be written to. The file extension \texttt{.root} will be appended if not present.

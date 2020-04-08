@@ -42,57 +42,21 @@ GeometryManager::GeometryManager() : closed_{false} {}
  */
 void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder) {
     // Set up a random number generator and seed it with the global seed:
-    std::mt19937_64 random_generator;
-    random_generator.seed(seeder());
+    random_generator_.seed(seeder());
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
     for(auto& detector_section : conf_manager->getDetectorConfigurations()) {
         LOG(DEBUG) << "Detector " << detector_section.getName() << ":";
-
-        // Calculate possible detector misalignment to be added
-        auto misalignment = [&](auto residuals) {
-            double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
-            double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
-            double dz = std::normal_distribution<double>(0, residuals.z())(random_generator);
-            return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
-        };
-
-        // Get the position and apply potenial misalignment
-        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
-        LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
-        position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
-        LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
-
-        // Get the orientation and apply misalignment to the individual angles before combining them
-        auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
-        LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
-        orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
-        LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
-
-        auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
-        Rotation3D orientation;
-
-        if(orientation_mode == "zyx") {
-            // First angle given in the configuration file is around z, second around y, last around x:
-            LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
-            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
-        } else if(orientation_mode == "xyz") {
-            LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
-            // First angle given in the configuration file is around x, second around y, last around z:
-            orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
-        } else if(orientation_mode == "zxz") {
-            LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
-            // First angle given in the configuration file is around z, second around x, last around z:
-            orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
-        } else {
-            throw InvalidValueError(
-                detector_section, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
-        }
+        // Get the position and orientation of the detector
+        auto orientation = calculate_orientation(detector_section);
+        // Get the mother volume of the detector
+        auto mother_volume = detector_section.get<std::string>("mother_volume", "World").append("_log");
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector = std::shared_ptr<Detector>(new Detector(detector_section.getName(), position, orientation));
+        auto detector = std::shared_ptr<Detector>(
+            new Detector(detector_section.getName(), orientation.first, orientation.second, mother_volume));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
@@ -136,6 +100,12 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
  */
 std::vector<std::string> GeometryManager::getModelsPath() {
     return model_paths_;
+}
+/**
+ * Calls the calculate_orientation function for a given configuration
+ */
+std::pair<XYZPoint, Rotation3D> GeometryManager::getOrientation(const Configuration& config) {
+    return calculate_orientation(config);
 }
 
 /**
@@ -222,7 +192,7 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
 }
 
 /**
- * @throws ModuleError If the geometry is already closed before calling this function
+ * @o   oduleError If the geometry is already closed before calling this function
  *
  * Can be used to add an arbitrary and unspecified point which is part of the geometry
  */
@@ -334,6 +304,7 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
     }
     throw allpix::InvalidDetectorError(name);
 }
+
 /**
  * @throws InvalidDetectorError If not a single detector with this type exists
  */
@@ -489,6 +460,50 @@ void GeometryManager::close_geometry() {
 
     closed_ = true;
     LOG(TRACE) << "Closed geometry";
+}
+/*
+ * Calculates the position and orientation of the object from the provided configuration file
+ */
+std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Configuration& config) {
+
+    // Calculate possible detector misalignment to be added
+    auto misalignment = [&](auto residuals) {
+        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
+        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator_);
+        double dz = std::normal_distribution<double>(0, residuals.z())(random_generator_);
+        return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
+    };
+
+    // Get the position and apply potenial misalignment
+    auto position = config.get<XYZPoint>("position", XYZPoint());
+    LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
+    position += misalignment(config.get<XYZPoint>("alignment_precision_position", XYZPoint()));
+    LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
+
+    // Get the orientation and apply misalignment to the individual angles before combining them
+    auto orient_vec = config.get<XYZVector>("orientation", XYZVector());
+    LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
+    orient_vec += misalignment(config.get<XYZVector>("alignment_precision_orientation", XYZVector()));
+    LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
+
+    auto orientation_mode = config.get<std::string>("orientation_mode", "xyz");
+    Rotation3D orientation;
+    if(orientation_mode == "zyx") {
+        // First angle given in the configuration file is around z, second around y, last around x:
+        LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
+        orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+    } else if(orientation_mode == "xyz") {
+        LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
+        // First angle given in the configuration file is around x, second around y, last around z:
+        orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
+    } else if(orientation_mode == "zxz") {
+        LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
+        // First angle given in the configuration file is around z, second around x, last around z:
+        orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+    } else {
+        throw InvalidValueError(config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
+    }
+    return std::pair<XYZPoint, Rotation3D>(position, orientation);
 }
 
 bool GeometryManager::hasMagneticField() const {

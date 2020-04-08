@@ -355,6 +355,11 @@ Currently implemented tests comprise:
     \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
     \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
     \item[\file{test_09-3_reader_root_ignoreseed.conf}] tests if core random seeds are properly ignored by the ROOTObjectReader module if requested by the configuration. The monitored output comprises the warning message emitted if a difference in seed values is discovered.
+    \item[\file{test_10-1_passivemat_addpoint.conf}] ensures the module adds corner points of the passive material in a correct way.
+    \item[\file{test_10-2_passivemat_addpoint_rot.conf}] ensures proper rotation of the position of the corner points of the passive material.
+    \item[\file{test_10-3_passivemat_mothervolume.conf}] ensures placing a detector inside a passive material will not cause overlapping materials.
+    \item[\file{test_10-4_passivemat_worldvolume.conf}] ensures the added corner points of the passive material increase the world volume accordingly.
+    \item[\file{test_10-5_passivemat_same_materials.conf}] tests if a warning will be thrown if the material of the passive material is the same as the material of the world volume.
 \end{description}
 
 \paragraph{Performance Tests}

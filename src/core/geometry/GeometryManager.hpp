@@ -87,6 +87,11 @@ namespace allpix {
         std::vector<std::string> getModelsPath();
 
         /**
+         * @brief Returns the position and orientation from a config rile
+         * @return Pair of position and orientation
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
+        /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame
          * @note Closes the geometry if it has not been closed yet
@@ -204,6 +209,22 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
+        /**
+         * @brief Fetch an external object linked to this detector
+         * @param name Name of the external object
+         * @return External object or null pointer if it does not exists
+         */
+        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name, const std::string& obj_name);
+        /**
+         * @brief Sets an external object linked to this detector
+         * @param name Name of the external object
+         * @param model External object of arbitrary type
+         */
+        template <typename T>
+        void setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name);
+
+        std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -219,10 +240,19 @@ namespace allpix {
         std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
 
         /**
+         * @brief Get the orientation of an object
+         * @param config Configuration that defines in the object
+         * @return Position and rotation vector of the object
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> calculate_orientation(const Configuration& config);
+
+        /**
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
          */
         void close_geometry();
         std::atomic_bool closed_;
+
+        std::mt19937_64 random_generator_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
 
@@ -236,7 +266,30 @@ namespace allpix {
 
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
+
+        std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
+        std::vector<std::string> external_object_names_;
     };
+    /**
+     * If the returned object is not a null pointer it is guaranteed to be of the correct type
+     */
+    template <typename T>
+    std::shared_ptr<T> GeometryManager::getExternalObject(const std::string& name, const std::string& obj_name) {
+        return std::static_pointer_cast<T>(external_objects_[typeid(T)][std::make_pair(name, obj_name)]);
+    }
+
+    /**
+     * Stores external representations of objects in this detector that need to be shared between modules.
+     */
+    template <typename T>
+    void GeometryManager::setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name) {
+        external_objects_[typeid(T)][std::make_pair(name, obj_name)] = std::static_pointer_cast<void>(model);
+        if(std::find(external_object_names_.begin(), external_object_names_.end(), obj_name) ==
+           external_object_names_.end()) {
+            external_object_names_.push_back(obj_name);
+        }
+    }
+
 } // namespace allpix
 
 #endif /* ALLPIX_GEOMETRY_MANAGER_H */

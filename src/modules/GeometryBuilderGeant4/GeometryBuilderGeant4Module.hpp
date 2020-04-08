@@ -7,13 +7,16 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
-#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
+#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
 
 #include <memory>
 #include <string>
 
+#include "PassiveMaterialConstructionG4.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
+
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
@@ -46,10 +49,10 @@ namespace allpix {
 
     private:
         GeometryManager* geo_manager_;
-
+        std::vector<Configuration> passive_material_configs_;
         // Geant4 run manager is owned by this module
         std::unique_ptr<G4RunManager> run_manager_g4_;
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H */

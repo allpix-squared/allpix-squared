@@ -52,7 +52,8 @@ namespace allpix {
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
                  ROOT::Math::XYZPoint position,
-                 const ROOT::Math::Rotation3D& orientation);
+                 const ROOT::Math::Rotation3D& orientation,
+                 std::string mother_volume);
 
         /**
          * @brief Get name of the detector
@@ -76,6 +77,12 @@ namespace allpix {
          * @return Rotation matrix representing the orientation
          */
         ROOT::Math::Rotation3D getOrientation() const;
+
+        /**
+         * @brief Get mother volume of the detector
+         * @return Detector mother volume
+         */
+        std::string getMotherVolume() const;
 
         /**
          * @brief Convert a global position to a position in the detector frame
@@ -231,19 +238,6 @@ namespace allpix {
          */
         const std::shared_ptr<DetectorModel> getModel() const;
 
-        /**
-         * @brief Fetch an external object linked to this detector
-         * @param name Name of the external object
-         * @return External object or null pointer if it does not exists
-         */
-        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name);
-        /**
-         * @brief Sets an external object linked to this detector
-         * @param name Name of the external object
-         * @param model External object of arbitrary type
-         */
-        template <typename T> void setExternalObject(const std::string& name, std::shared_ptr<T> model);
-
     private:
         /**
          * @brief Constructs a detector in the geometry without a model (added later by the \ref GeometryManager)
@@ -251,7 +245,10 @@ namespace allpix {
          * @param position Position in the world frame
          * @param orientation Rotation matrix representing the orientation
          */
-        Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
+        Detector(std::string name,
+                 ROOT::Math::XYZPoint position,
+                 const ROOT::Math::Rotation3D& orientation,
+                 std::string mother_volume);
 
         /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
@@ -269,6 +266,7 @@ namespace allpix {
 
         ROOT::Math::XYZPoint position_;
         ROOT::Math::Rotation3D orientation_;
+        std::string mother_volume_;
 
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
@@ -282,22 +280,8 @@ namespace allpix {
         // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
-
-        std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
 
-    /**
-     * If the returned object is not a null pointer it is guaranteed to be of the correct type
-     */
-    template <typename T> std::shared_ptr<T> Detector::getExternalObject(const std::string& name) {
-        return std::static_pointer_cast<T>(external_objects_[typeid(T)][name]);
-    }
-    /**
-     * Stores external representations of objects in this detector that need to be shared between modules.
-     */
-    template <typename T> void Detector::setExternalObject(const std::string& name, std::shared_ptr<T> model) {
-        external_objects_[typeid(T)][name] = std::static_pointer_cast<void>(model);
-    }
 } // namespace allpix
 
 #endif /* ALLPIX_DETECTOR_H */
