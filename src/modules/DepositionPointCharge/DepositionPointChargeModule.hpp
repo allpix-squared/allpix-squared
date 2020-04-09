@@ -82,6 +82,7 @@ namespace allpix {
         SourceType type_;
         double spot_size_{};
         ROOT::Math::XYZVector voxel_;
+        double step_size_z_{};
         unsigned int root_, carriers_;
     };
 } // namespace allpix

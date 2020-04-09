@@ -2,7 +2,7 @@
 
 #Get the line for the CVMFS status and chech if server is transaction
 clicdp_status=`cvmfs_server list | grep clicdp`
-if [[ $clicdp_status == *"(stratum0 / local)"* ]]; then
+if [[ $clicdp_status == *"(stratum0 / S3)"* ]]; then
   echo "No ongoing CVMFS transaction detected, initializing new transaction."
   # Start transaction
   cvmfs_server transaction clicdp.cern.ch

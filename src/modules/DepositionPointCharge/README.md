@@ -33,7 +33,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 
 ```toml
 [DepositionPointCharge]
-number_of_charges = 100
+number_of_steps = 100
 position = -10um 10um 0um
 model = "fixed"
 source_type = "mip"
