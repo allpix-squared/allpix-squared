@@ -16,7 +16,7 @@ VERBOSE=0
 ##################################################################
 
 # A push without tag -- exit normally
-if [ ! -s "$TAGREF" ]; then
+if [ -z "$TAGREF" ]; then
     if [ "$VERBOSE" -ne 0 ] ; then
         printf "No tag to be pushed, allowing push.\n"
     fi
@@ -27,7 +27,7 @@ fi
 VERSION=$(git cat-file blob master:"$VERSIONFILE" | grep -m 1 'ALLPIX_VERSION' | sed 's/^[^"]*"//;s/"[^"]*$//')
 
 # The tag name matches the version number -- exit normally
-if [ "$TAGREF" == "$VERSION" ]; then
+if [ "$TAGREF" = "$VERSION" ]; then
     if [ "$VERBOSE" -ne 0 ] ; then
         printf "Tag name matches version number, allowing push.\n"
     fi

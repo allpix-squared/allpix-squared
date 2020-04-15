@@ -33,3 +33,15 @@
 1560799445|MR!214: Implement transient simulation of signal formation
 1561108178|MR!221: Allow more freedom in Geant4 macro usage
 1562598460|Stable Release: Allpix Squared v1.4
+1567433418|MR!230: Update dependencies in Docker image
+1568275832|MR!233: Overhaul of CorryvreckanWriter Module
+1570959485|MR!242: Modernize CMake and linking dependencies
+1578498225|MR!260: Make setup script zsh compatible
+1580730673|MR!267: Switch Continuous Integration to LCG
+1583504309|MR!277: MCParticle provides reference point
+1584091156|MR!195: New module DepositionReader
+1584973047|MR!292: Update macOS CI to Catalina and LCG View
+1585133272|MR!274: Rework Behavior of PulseTransfer Module
+1585551840|MR!278: New module DatabaseWriter to Store Data in PostgreSQL
+1586440834|MR!306: Add Alpide sensor model
+1586861106|Stable Release: Allpix Squared v1.5
