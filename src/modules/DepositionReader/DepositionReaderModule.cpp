@@ -233,23 +233,25 @@ void DepositionReaderModule::run(unsigned int event) {
                    << Units::display(global_deposit_position, {"mm", "um"}) << ", particleID " << pdg_code;
 
         // MCParticle:
-        if(track_id_to_mcparticle[detector].find(track_id) == track_id_to_mcparticle[detector].end()) {
-            // We have not yet seen this MCParticle, let's store it and keep track of the track id
-            LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
-            mc_particles[detector].emplace_back(
-                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
-            track_id_to_mcparticle[detector][track_id] = (mc_particles[detector].size() - 1);
+        if(create_mcparticles_) {
+            if(track_id_to_mcparticle[detector].find(track_id) == track_id_to_mcparticle[detector].end()) {
+                // We have not yet seen this MCParticle, let's store it and keep track of the track id
+                LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
+                mc_particles[detector].emplace_back(
+                    deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+                track_id_to_mcparticle[detector][track_id] = (mc_particles[detector].size() - 1);
 
-            // Check if we know the parent - and set it:
-            auto parent = track_id_to_mcparticle[detector].find(parent_id);
-            if(parent != track_id_to_mcparticle[detector].end()) {
-                LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
-                mc_particles[detector].back().setParent(&mc_particles[detector].at(parent->second));
+                // Check if we know the parent - and set it:
+                auto parent = track_id_to_mcparticle[detector].find(parent_id);
+                if(parent != track_id_to_mcparticle[detector].end()) {
+                    LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
+                    mc_particles[detector].back().setParent(&mc_particles[detector].at(parent->second));
+                } else {
+                    LOG(DEBUG) << "Parent MCParticle is unknown, parent id " << parent_id;
+                }
             } else {
-                LOG(DEBUG) << "Parent MCParticle is unknown, parent id " << parent_id;
+                LOG(DEBUG) << "Found MCParticle with track id " << track_id;
             }
-        } else {
-            LOG(DEBUG) << "Found MCParticle with track id " << track_id;
         }
 
         // Deposit electron
@@ -267,9 +269,12 @@ void DepositionReaderModule::run(unsigned int event) {
     for(const auto& detector : geo_manager_->getDetectors()) {
         LOG(DEBUG) << "Detector " << detector->getName() << " has " << mc_particles[detector].size() << " MC particles";
 
-        // Send the mc particle information
+        // Treat MCParticles
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles[detector]), detector);
-        messenger_->dispatchMessage(this, mc_particle_message);
+        if(create_mcparticles_) {
+            // Send the mc particle information
+            messenger_->dispatchMessage(this, mc_particle_message);
+        }
 
         if(!deposits[detector].empty()) {
             double total_deposits = 0;
@@ -277,8 +282,11 @@ void DepositionReaderModule::run(unsigned int event) {
             // Assign MCParticles:
             for(size_t i = 0; i < deposits[detector].size(); ++i) {
                 total_deposits += deposits[detector].at(i).getCharge();
-                deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
-                    track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
+
+                if(create_mcparticles_) {
+                    deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
+                        track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
+                }
             }
 
             // Create a new charge deposit message
