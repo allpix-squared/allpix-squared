@@ -39,11 +39,7 @@ fi
 
 
 # Determine which LCG version to use
-if [ "$(uname)" == "Darwin" ]; then
-    DEFAULT_LCG="LCG_97python3"
-else
-    DEFAULT_LCG="LCG_96b"
-fi
+DEFAULT_LCG="LCG_97python3"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
