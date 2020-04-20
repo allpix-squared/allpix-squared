@@ -112,8 +112,10 @@ void DepositionReaderModule::init() {
         create_tree_reader(pz_, branches.at(5));
         create_tree_reader(volume_, branches.at(6));
         create_tree_reader(pdg_code_, branches.at(7));
-        create_tree_reader(track_id_, branches.at(8));
-        create_tree_reader(parent_id_, branches.at(9));
+        if(create_mcparticles_) {
+            create_tree_reader(track_id_, branches.at(8));
+            create_tree_reader(parent_id_, branches.at(9));
+        }
 
         // Advance to first entry of the tree:
         tree_reader_->Next();
@@ -129,8 +131,11 @@ void DepositionReaderModule::init() {
         check_tree_reader(pz_);
         check_tree_reader(volume_);
         check_tree_reader(pdg_code_);
-        check_tree_reader(track_id_);
-        check_tree_reader(parent_id_);
+        if(create_mcparticles_) {
+            check_tree_reader(track_id_);
+            check_tree_reader(parent_id_);
+        }
+
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
@@ -342,8 +347,10 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
 
     // Read PDG code and track ids
     pdg_code = (*pdg_code_->Get());
-    track_id = (*track_id_->Get());
-    parent_id = (*parent_id_->Get());
+    if(create_mcparticles_) {
+        track_id = (*track_id_->Get());
+        parent_id = (*parent_id_->Get());
+    }
 
     // Return and advance to next tree entry:
     tree_reader_->Next();
@@ -409,10 +416,12 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     std::getline(ls, volume, ',');
     volume = allpix::trim(volume);
 
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> track_id;
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> parent_id;
+    if(create_mcparticles_) {
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> track_id;
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> parent_id;
+    }
 
     // Select the detector name from this:
     if(volume_chars_ != 0) {
@@ -423,7 +432,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     // Calculate the charge deposit at a global position and convert the proper units
     position =
         ROOT::Math::XYZPoint(Units::get(px, unit_length_), Units::get(py, unit_length_), Units::get(pz, unit_length_));
-    time = Units::get(time, unit_time_);
+    time = (time_available_ ? Units::get(time, unit_time_) : 0);
     energy = Units::get(energy, unit_energy_);
 
     return true;
