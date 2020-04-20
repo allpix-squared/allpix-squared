@@ -45,6 +45,8 @@ By default the expected branch names and types are:
 
 Entries are read from all branches synchronously and accumulated in the same event until the event id read from the `event` branch changes.
 
+If the parameters `assign_timestamps` or `create_mcparticles` are set to `true`, no attempt is made in reading the respective branches, independently whether they are present or not.
+
 Different branch names can be configured using the `branch_names` parameter.
 It should be noted that new names have to be provided for all branches, i.e. ten names, and that the order of the names has to reflect the order of the branches as listed here to allow for correct assignment.
 Individual leafs of branches can be assigned using the dot notation, e.g. `energy.Edep` to access a leaf of the branch `energy` to retrieve the energy deposit information.
@@ -73,6 +75,8 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 The values are interpreted in the default framework units unless specified otherwise via the configuration parameters of this module.
 `<TRK>` represents the track id of the particle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
+If the parameters `assign_timestamps` or `create_mcparticles` are set to `true`, the parsing assumes that the respective columns `<T>` and `<TRK>`, `<PRT>` are not present in the CSV file.
+
 The file should have its end-of-file marker (EOF) in a new line, otherwise the last entry will be ignored.
 
 ### Parameters
@@ -86,6 +90,8 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
 * `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
+* `assign_timestamps`: Boolean to select whether or not time information should be read and assigned to energy deposits. Dfeaults to `true`.
+* `create_mcparticles`: Boolean to select whether or not Monte Carlo particle IDs should be read and MCParticle objects created, defaults to `true`.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 

@@ -29,6 +29,8 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     config_.setDefault<std::string>("unit_length", "mm");
     config_.setDefault<std::string>("unit_time", "ns");
     config_.setDefault<std::string>("unit_energy", "MeV");
+    config_.setDefault<bool>("assign_timestamps", true);
+    config_.setDefault<bool>("create_mcparticles", true);
 
     config_.setDefaultArray<std::string>("branch_names",
                                          {"event",
@@ -53,9 +55,19 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     unit_length_ = config_.get<std::string>("unit_length");
     unit_time_ = config_.get<std::string>("unit_time");
     unit_energy_ = config_.get<std::string>("unit_energy");
+
+    time_available_ = config_.get<bool>("assign_timestamps");
+    create_mcparticles_ = config.get<bool>("create_mcparticles");
 }
 
 void DepositionReaderModule::init() {
+
+    if(!time_available_) {
+        LOG(WARNING) << "No time information provided, all energy deposition will be assigned to t = 0";
+    }
+    if(!create_mcparticles_) {
+        LOG(ERROR) << "No MCParticle objects will be produced";
+    }
 
     // Check which file type we want to read:
     file_model_ = config_.get<std::string>("model");
@@ -92,7 +104,9 @@ void DepositionReaderModule::init() {
         // Set up branch pointers
         create_tree_reader(event_, branches.at(0));
         create_tree_reader(edep_, branches.at(1));
-        create_tree_reader(time_, branches.at(2));
+        if(time_available_) {
+            create_tree_reader(time_, branches.at(2));
+        }
         create_tree_reader(px_, branches.at(3));
         create_tree_reader(py_, branches.at(4));
         create_tree_reader(pz_, branches.at(5));
@@ -107,7 +121,9 @@ void DepositionReaderModule::init() {
         // Only after loading the first entry we can actually check the branch status:
         check_tree_reader(event_);
         check_tree_reader(edep_);
-        check_tree_reader(time_);
+        if(time_available_) {
+            check_tree_reader(time_);
+        }
         check_tree_reader(px_);
         check_tree_reader(py_);
         check_tree_reader(pz_);
@@ -319,7 +335,9 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     // Read other information, interpret in framework units:
     position = ROOT::Math::XYZPoint(
         Units::get(*px_->Get(), unit_length_), Units::get(*py_->Get(), unit_length_), Units::get(*pz_->Get(), unit_length_));
-    time = Units::get(*time_->Get(), unit_time_);
+
+    // Attempt to read time only if available:
+    time = (time_available_ ? Units::get(*time_->Get(), unit_time_) : 0);
     energy = Units::get(*edep_->Get(), unit_energy_);
 
     // Read PDG code and track ids
@@ -373,8 +391,10 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> pdg_code;
 
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> time;
+    if(time_available_) {
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> time;
+    }
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> energy;
