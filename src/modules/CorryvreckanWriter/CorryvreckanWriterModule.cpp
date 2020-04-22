@@ -15,9 +15,9 @@
 #include <string>
 #include <utility>
 
+#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "core/geometry/HybridPixelDetectorModel.hpp"
 
 #include <G4LogicalVolume.hh>
 #include <G4Material.hh>
@@ -188,44 +188,46 @@ void CorryvreckanWriterModule::run(unsigned int event) {
     time_ += 10;
 }
 
-
-
-
 inline double compute_model_relative_radlength(Detector& det) {
 
     double total = 0;
     // sensor
     auto logical_volume = det.getExternalObject<G4LogicalVolume>("sensor_log");
-    LOG(DEBUG) <<"adding sensor material " << (det.getModel()->getSensorSize().z()/logical_volume->GetMaterial()->GetRadlen()) << " for " <<det.getName();
-    total+=(det.getModel()->getSensorSize().z()/logical_volume->GetMaterial()->GetRadlen());
+    LOG(DEBUG) << "adding sensor material "
+               << (det.getModel()->getSensorSize().z() / logical_volume->GetMaterial()->GetRadlen()) << " for "
+               << det.getName();
+    total += (det.getModel()->getSensorSize().z() / logical_volume->GetMaterial()->GetRadlen());
     // chip
     logical_volume = det.getExternalObject<G4LogicalVolume>("chip_log");
-    LOG(DEBUG) <<"adding chip material " << (det.getModel()->getChipSize().z()/logical_volume->GetMaterial()->GetRadlen()) << " for " <<det.getName();
-    total+=(det.getModel()->getChipSize().z()/logical_volume->GetMaterial()->GetRadlen());
+    LOG(DEBUG) << "adding chip material " << (det.getModel()->getChipSize().z() / logical_volume->GetMaterial()->GetRadlen())
+               << " for " << det.getName();
+    total += (det.getModel()->getChipSize().z() / logical_volume->GetMaterial()->GetRadlen());
     // supports:
-    auto volumes =  det.getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>("supports_log");
-    auto layers  =  det.getModel()->getSupportLayers();
+    auto volumes = det.getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>("supports_log");
+    auto layers = det.getModel()->getSupportLayers();
     // really looking forward to a zip loop
-    for(uint i=0;i<volumes->size();++i){
-        LOG(DEBUG) <<"adding support material " << (layers.at(i).getSize().z()/volumes->at(i)->GetMaterial()->GetRadlen()) << " for " <<det.getName();
-        total+=(layers.at(i).getSize().z()/volumes->at(i)->GetMaterial()->GetRadlen());
+    for(uint i = 0; i < volumes->size(); ++i) {
+        LOG(DEBUG) << "adding support material " << (layers.at(i).getSize().z() / volumes->at(i)->GetMaterial()->GetRadlen())
+                   << " for " << det.getName();
+        total += (layers.at(i).getSize().z() / volumes->at(i)->GetMaterial()->GetRadlen());
     }
     // bump bonds for hybrid models only:
     const DetectorModel& model = *det.getModel();
     const auto* hybrid = dynamic_cast<const HybridPixelDetectorModel*>(&model);
 
-    if(hybrid!=nullptr){
-        auto radius = std::max(hybrid->getBumpSphereRadius(),hybrid->getBumpCylinderRadius());
-        auto relativeArea = M_PI*radius*radius/hybrid->getPixelSize().x()/hybrid->getPixelSize().y();
+    if(hybrid != nullptr) {
+        auto radius = std::max(hybrid->getBumpSphereRadius(), hybrid->getBumpCylinderRadius());
+        auto relativeArea = M_PI * radius * radius / hybrid->getPixelSize().x() / hybrid->getPixelSize().y();
         logical_volume = det.getExternalObject<G4LogicalVolume>("bumps_wrapper_log");
-        LOG(DEBUG) <<"adding scaled bump material " << (relativeArea*hybrid->getBumpHeight()/logical_volume->GetMaterial()->GetRadlen()) << " for " <<det.getName();
+        LOG(DEBUG) << "adding scaled bump material "
+                   << (relativeArea * hybrid->getBumpHeight() / logical_volume->GetMaterial()->GetRadlen()) << " for "
+                   << det.getName();
 
-        total+=(relativeArea*hybrid->getBumpHeight()/logical_volume->GetMaterial()->GetRadlen());
+        total += (relativeArea * hybrid->getBumpHeight() / logical_volume->GetMaterial()->GetRadlen());
     }
-    LOG(DEBUG) << "added a total material of " << total << "x/x0 for detector "<< det.getName()<<std::flush;
+    LOG(DEBUG) << "added a total material of " << total << "x/x0 for detector " << det.getName() << std::flush;
     return total;
 }
-
 
 // Save the output trees to file
 void CorryvreckanWriterModule::finalize() {
@@ -263,6 +265,7 @@ void CorryvreckanWriterModule::finalize() {
                           << std::endl;
 
             auto model = detector->getModel();
+
             geometry_file << "type = \"" << model->getType() << "\"" << std::endl;
             geometry_file << "pixel_pitch = " << Units::display(model->getPixelSize().x(), "um") << ", "
                           << Units::display(model->getPixelSize().y(), "um") << std::endl;
@@ -285,9 +288,9 @@ void CorryvreckanWriterModule::finalize() {
             if(!roles.empty()) {
                 geometry_file << "role = " << roles << std::endl;
             }
-            //get the material:
+            // get the material:
             double budget = compute_model_relative_radlength(*detector);
-            geometry_file <<"material_budget = " << budget <<std::endl;
+            geometry_file << "material_budget = " << budget << std::endl;
             geometry_file << std::endl;
         }
     }
