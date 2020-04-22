@@ -1,7 +1,7 @@
 # DepositionReader
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
-**Status**: Functional
-**Output**: DepositedCharge
+**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
+**Status**: Functional  
+**Output**: DepositedCharge, MCParticle
 
 ### Description
 This module allows to read in energy depositions in a sensor volume produced with a different program, e.g. with Geant4 in a standalone simulation of the respective experiment.
