@@ -61,9 +61,12 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
     Get the information for the passive materials
     */
     std::list<Configuration>& passive_configs = geo_manager_->getPassiveElements();
+    LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
         auto name = passive_config.getName();
+        LOG(DEBUG) << "Building pasive material: " << name;
+
         auto passive_material_type = passive_config.get<std::string>("type");
         std::shared_ptr<PassiveMaterialModel> model;
         if(passive_material_type == "box") {
