@@ -47,6 +47,16 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
     for(auto& detector_section : conf_manager->getDetectorConfigurations()) {
+        auto role = detector_section.get<std::string>("role", "active");
+        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+        if(role == "passive") {
+            LOG(DEBUG) << "Passive element " << detector_section.getName() << ", skipping";
+            passive_elements_.push_back(detector_section);
+            continue;
+        } else if(role != "active") {
+            throw InvalidValueError(detector_section, "role", "unknown role");
+        }
+
         LOG(DEBUG) << "Detector " << detector_section.getName() << ":";
         // Get the position and orientation of the detector
         auto orientation = calculate_orientation(detector_section);
@@ -324,6 +334,10 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     }
 
     return result;
+}
+
+std::list<Configuration>& GeometryManager::getPassiveElements() {
+    return passive_elements_;
 }
 
 void GeometryManager::load_models() {

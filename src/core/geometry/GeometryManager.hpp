@@ -225,6 +225,12 @@ namespace allpix {
 
         std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
+        /**
+         * @brief Get the list of Configuration objects for all passive elements in the current geometry
+         * @return List of Configuration objects for passive elements
+         */
+        std::list<Configuration>& getPassiveElements();
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -263,6 +269,8 @@ namespace allpix {
         std::map<std::string, std::vector<std::pair<Configuration, Detector*>>> nonresolved_models_;
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
+
+        std::list<Configuration> passive_elements_;
 
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
