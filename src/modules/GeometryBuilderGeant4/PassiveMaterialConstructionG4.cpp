@@ -83,9 +83,8 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
         orientation.second.GetComponents(copy_vec.begin(), copy_vec.end());
         XYZPoint vx, vy, vz;
         orientation.second.GetComponents(vx, vy, vz);
-        auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
+        auto rotation = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
-        // FIXME!!! Get correct mother volume
         auto mother_volume = passive_config.get<std::string>("mother_volume", "World").append("_log");
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
         G4LogicalVolume* mother_log_volume = log_volume_store->GetVolume(mother_volume);
@@ -93,12 +92,8 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
             throw InvalidValueError(passive_config, "mother_volume", "mother_volume does not exist");
         }
 
-        LOG(DEBUG) << "Building pasive material: " << passive_config.getName();
-
-        G4ThreeVector posWrapper = toG4Vector(position);
-        G4Transform3D transform_phys(*rotWrapper, posWrapper);
-
-        LOG(DEBUG) << "Check for material";
+        G4ThreeVector position_vector = toG4Vector(position);
+        G4Transform3D transform_phys(*rotation, position_vector);
 
         auto passive_material = passive_config.get<std::string>("material");
         std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
