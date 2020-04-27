@@ -41,10 +41,8 @@
 
 using namespace allpix;
 
-GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager,
-                                               Configuration& config,
-                                               std::vector<Configuration> pm_config)
-    : geo_manager_(geo_manager), config_(config), pm_config_(std::move(pm_config)) {}
+GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
+    : geo_manager_(geo_manager), config_(config) {}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -119,11 +117,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    LOG(TRACE) << "Building " << pm_config_.size() << " passive material(s).";
-    for(auto& pm_conf : pm_config_) {
-        const auto& pmBuilder = new PassiveMaterialConstructionG4(pm_conf, geo_manager_);
-        pmBuilder->build(materials_);
-    }
+    // FIXME: Insert construction of passive materials
     const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
     detBuilder->build(materials_);
 
