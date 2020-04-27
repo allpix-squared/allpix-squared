@@ -117,7 +117,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    // FIXME: Insert construction of passive materials
+    const auto& passiveBuilder = new PassiveMaterialConstructionG4(geo_manager_);
+    passiveBuilder->build(materials_);
     const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
     detBuilder->build(materials_);
 
