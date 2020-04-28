@@ -22,6 +22,41 @@
 
 namespace allpix {
     /**
+     * @brief Represents one passive material volume
+     */
+    class PassiveMaterialVolume {
+    public:
+        /**
+         * @brief Constructor
+         */
+        PassiveMaterialVolume(const Configuration config, GeometryManager* geo_manager);
+
+        void register_volume();
+
+        void build_volume(std::map<std::string, G4Material*> materials);
+
+        /**
+         * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager
+         */
+        void addPoints();
+
+    private:
+        std::string name_;
+        std::string type_;
+        std::shared_ptr<PassiveMaterialModel> model_;
+        ROOT::Math::Rotation3D orientation_;
+        ROOT::Math::XYZPoint position_;
+        std::shared_ptr<G4RotationMatrix> rotation_;
+        std::string mother_volume_;
+
+        Configuration config_;
+        GeometryManager* geo_manager_;
+
+        // Storage of internal objects
+        std::vector<std::shared_ptr<G4VSolid>> solids_;
+    };
+
+    /**
      * @brief Constructs passive materials during Geant4 initialization
      */
     class PassiveMaterialConstructionG4 {
@@ -32,22 +67,19 @@ namespace allpix {
         PassiveMaterialConstructionG4(GeometryManager* geo_manager);
 
         /**
-         * @brief Constructs the passive materials
-         * @return Physical volume representing the passive materials
+         * @brief Registers the passive material
          */
-        void build(std::map<std::string, G4Material*> materials_);
+        void register_volumes();
+
         /**
-         * @brief Defines the points which represent the outer corners of the passive material
-         * @return Vector of all XYZ points of the corners
+         * @brief Constructs the passive materials
          */
-        std::vector<ROOT::Math::XYZPoint> addPoints();
+        void build_volumes(std::map<std::string, G4Material*> materials);
 
     private:
         GeometryManager* geo_manager_;
-
-        // Storage of internal objects
-        std::vector<ROOT::Math::XYZPoint> points_;
-        std::vector<std::shared_ptr<G4VSolid>> solids_;
+        std::vector<PassiveMaterialVolume*> passive_volumes_;
+        std::vector<std::string> passive_volume_names_;
     };
 
 } // namespace allpix
