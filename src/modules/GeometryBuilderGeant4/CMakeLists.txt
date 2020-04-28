@@ -27,6 +27,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     Parameterization2DG4.cpp
     DetectorConstructionG4.cpp
     PassiveMaterialConstructionG4.cpp
+    PassiveMaterialVolume.cpp
     PassiveMaterialModel.cpp
 )
 
