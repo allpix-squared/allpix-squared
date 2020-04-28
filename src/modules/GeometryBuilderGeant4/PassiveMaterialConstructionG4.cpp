@@ -136,3 +136,23 @@ void PassiveMaterialConstructionG4::build(std::map<std::string, G4Material*> mat
         LOG(TRACE) << " Constructed passive material " << name << " successfully";
     }
 }
+
+std::vector<XYZPoint> PassiveMaterialConstructionG4::addPoints() {
+    std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
+    std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
+    std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
+    // Add the min and max points for every type
+    auto max_size = model_->getMaxSize();
+    if(max_size == 0) {
+        throw ModuleError("Pasive Material '" + name + "' does not have a maximum size parameter associated with its model");
+    }
+    for(size_t i = 0; i < 8; ++i) {
+        auto points_vector =
+            G4ThreeVector(offset_x.at(i) * max_size / 2, offset_y.at(i) * max_size / 2, offset_z.at(i) * max_size / 2);
+        // Rotate the outer points of the material
+        points_vector *= *rotWrapper;
+        points_.emplace_back(XYZPoint(
+            position_.x() + points_vector.x(), position_.y() + points_vector.y(), position_.z() + points_vector.z()));
+    }
+    return points_;
+}

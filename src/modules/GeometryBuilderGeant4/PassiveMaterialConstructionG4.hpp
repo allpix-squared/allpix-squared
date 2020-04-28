@@ -36,6 +36,11 @@ namespace allpix {
          * @return Physical volume representing the passive materials
          */
         void build(std::map<std::string, G4Material*> materials_);
+        /**
+         * @brief Defines the points which represent the outer corners of the passive material
+         * @return Vector of all XYZ points of the corners
+         */
+        std::vector<ROOT::Math::XYZPoint> addPoints();
 
     private:
         GeometryManager* geo_manager_;
