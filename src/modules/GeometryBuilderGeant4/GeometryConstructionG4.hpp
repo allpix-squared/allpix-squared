@@ -17,6 +17,7 @@
 #include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
 
+#include "PassiveMaterialConstructionG4.hpp"
 #include "core/geometry/GeometryManager.hpp"
 
 namespace allpix {
@@ -54,6 +55,8 @@ namespace allpix {
 
         // List of all materials
         std::map<std::string, G4Material*> materials_;
+
+        PassiveMaterialConstructionG4* passive_builder_;
 
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;

@@ -37,12 +37,14 @@
 
 #include "DetectorConstructionG4.hpp"
 #include "Parameterization2DG4.hpp"
-#include "PassiveMaterialConstructionG4.hpp"
 
 using namespace allpix;
 
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
-    : geo_manager_(geo_manager), config_(config) {}
+    : geo_manager_(geo_manager), config_(config) {
+    passive_builder_ = new PassiveMaterialConstructionG4(geo_manager_);
+    passive_builder_->register_volumes();
+}
 
 /**
  * @brief Version of std::make_shared that does not delete the pointer
@@ -117,8 +119,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    const auto& passiveBuilder = new PassiveMaterialConstructionG4(geo_manager_);
-    passiveBuilder->build(materials_);
+    passive_builder_->build_volumes(materials_);
     const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
     detBuilder->build(materials_);
 
