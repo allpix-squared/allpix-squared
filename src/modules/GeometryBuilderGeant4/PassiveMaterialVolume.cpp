@@ -153,7 +153,8 @@ void PassiveMaterialVolume::addPoints() {
             G4ThreeVector(offset_x.at(i) * max_size / 2, offset_y.at(i) * max_size / 2, offset_z.at(i) * max_size / 2);
         // Rotate the outer points of the material
         points_vector *= *rotation_;
-
+        points_vector += toG4Vector(position_);
+        LOG(TRACE) << "adding point " << Units::display(points_vector, {"mm", "um"}) << "to the geometry";
         geo_manager_->addPoint(ROOT::Math::XYZPoint(points_vector));
     }
 }
