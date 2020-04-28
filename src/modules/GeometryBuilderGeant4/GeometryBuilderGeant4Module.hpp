@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+#include "GeometryConstructionG4.hpp"
 #include "PassiveMaterialConstructionG4.hpp"
 #include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
@@ -50,6 +51,7 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
         // Geant4 run manager is owned by this module
+        GeometryConstructionG4* geometry_construction_;
         std::unique_ptr<G4RunManager> run_manager_g4_;
     };
 } // namespace allpix
