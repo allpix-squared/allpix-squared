@@ -74,24 +74,24 @@ The main page of the reference can then be found at `reference/html/index.html` 
 Allpix<sup>2</sup> has been developed and is maintained by
 
 * Koen Wolters, CERN, @kwolters
-* Daniel Hynds, CERN, @dhynds
+* Daniel Hynds, Nikhef, @dhynds
 * Paul Schütze, DESY, @pschutze
-* Simon Spannagel, CERN, @simonspa
+* Simon Spannagel, DESY, @simonspa
 
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
 * Mohamed Moanis Ali, Free University of Bozen-Bolzano, @mmoanis
-* Mathieu Benoit, Université de Genève, @mbenoit
+* Mathieu Benoit, BNL, @mbenoit
 * Thomas Billoud, Université de Montréal, @tbilloud
-* Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
-* Koen van den Brandt, Nikhef National Institute for Subatomic Physics, @kvandenb
+* Tobias Bisanz, CERN, @tbisanz
+* Koen van den Brandt, Nikhef, @kvandenb
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
-* Katharina Dort, CERN Summer Student, @kdort
+* Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Sebastien Murphy, ETHZ, @smurphy
-* Andreas Matthias Nürnberg, CERN, @nurnberg
+* Andreas Matthias Nürnberg, KIT, @nurnberg
 * Marko Petric, CERN, @mpetric
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
@@ -99,7 +99,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
-* Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
+* Mateus Vicente Barreto Pinto, CERN, @mvicente
 * Andy Wharton, Lancaster University, @awharton
 * Morag Williams, University of Glasgow, @williamm
 

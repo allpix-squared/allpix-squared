@@ -1,5 +1,5 @@
 # GDMLOutputWriter
-**Maintainer**: Koen van den Brandt (<kbrandt@nikhef.nl>)
+**Maintainer**: Koen van den Brandt (<kbrandt@nikhef.nl>)  
 **Status**: Functional
 
 ### Description
