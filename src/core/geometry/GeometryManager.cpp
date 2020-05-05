@@ -52,7 +52,6 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
         if(role == "passive") {
             LOG(DEBUG) << "Passive element " << detector_section.getName() << ", skipping";
             passive_elements_.push_back(detector_section);
-            passive_orientations_[detector_section.getName()] = calculate_orientation(detector_section);
             continue;
         } else if(role != "active") {
             throw InvalidValueError(detector_section, "role", "unknown role");
@@ -72,6 +71,11 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
 
         // Add a link to the detector to add the model later
         nonresolved_models_[detector_section.get<std::string>("type")].emplace_back(detector_section, detector.get());
+    }
+
+    // Calculate the orientations of passive elements
+    for(auto& passive_element : passive_elements_) {
+        passive_orientations_[passive_element.getName()] = calculate_orientation(passive_element);
     }
 
     // Load the list of standard model paths
