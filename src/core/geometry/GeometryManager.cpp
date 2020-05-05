@@ -52,6 +52,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
         if(role == "passive") {
             LOG(DEBUG) << "Passive element " << detector_section.getName() << ", skipping";
             passive_elements_.push_back(detector_section);
+            passive_orientations_[detector_section.getName()] = calculate_orientation(detector_section);
             continue;
         } else if(role != "active") {
             throw InvalidValueError(detector_section, "role", "unknown role");

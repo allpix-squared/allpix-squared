@@ -271,6 +271,7 @@ namespace allpix {
         std::set<std::string> detector_names_;
 
         std::list<Configuration> passive_elements_;
+        std::map<std::string, std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D>> passive_orientations_;
 
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
