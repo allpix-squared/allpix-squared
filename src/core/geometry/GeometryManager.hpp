@@ -87,7 +87,7 @@ namespace allpix {
         std::vector<std::string> getModelsPath();
 
         /**
-         * @brief Returns the position and orientation from a config rile
+         * @brief Returns the position and orientation from a config file
          * @return Pair of position and orientation
          */
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const Configuration& config);
