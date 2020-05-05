@@ -43,7 +43,7 @@ using namespace allpix;
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
     : geo_manager_(geo_manager), config_(config) {
     passive_builder_ = new PassiveMaterialConstructionG4(geo_manager_);
-    passive_builder_->register_volumes();
+    passive_builder_->registerVolumes();
 }
 
 /**
@@ -119,7 +119,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    passive_builder_->build_volumes(materials_);
+    passive_builder_->buildVolumes(materials_);
     const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
     detBuilder->build(materials_);
 
