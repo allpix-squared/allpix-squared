@@ -34,12 +34,12 @@ namespace allpix {
         /**
          * @brief Registers the passive material
          */
-        void register_volumes();
+        void registerVolumes();
 
         /**
          * @brief Constructs the passive materials
          */
-        void build_volumes(std::map<std::string, G4Material*> materials);
+        void buildVolumes(std::map<std::string, G4Material*> materials);
 
     private:
         GeometryManager* geo_manager_;

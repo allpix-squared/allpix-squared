@@ -31,9 +31,9 @@ namespace allpix {
          */
         PassiveMaterialVolume(const Configuration config, GeometryManager* geo_manager);
 
-        void register_volume();
+        void registerVolume();
 
-        void build_volume(std::map<std::string, G4Material*> materials);
+        void buildVolume(std::map<std::string, G4Material*> materials);
 
         /**
          * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager

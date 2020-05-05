@@ -46,7 +46,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 
 PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 
-void PassiveMaterialConstructionG4::register_volumes() {
+void PassiveMaterialConstructionG4::registerVolumes() {
     std::list<Configuration>& passive_configs = geo_manager_->getPassiveElements();
     LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
 
@@ -62,7 +62,7 @@ void PassiveMaterialConstructionG4::register_volumes() {
     }
 }
 
-void PassiveMaterialConstructionG4::build_volumes(std::map<std::string, G4Material*> materials) {
+void PassiveMaterialConstructionG4::buildVolumes(std::map<std::string, G4Material*> materials) {
     for(auto& passive_volume : passive_volumes_) {
         passive_volume->build_volume(materials);
     }
