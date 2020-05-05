@@ -89,7 +89,7 @@ void PassiveMaterialVolume::registerVolume() {
     LOG(DEBUG) << "Registered volume.";
 }
 
-void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*> materials) {
+void PassiveMaterialVolume::buildVolume(std::map<std::string, G4Material*> materials) {
     mother_volume_ = config_.get<std::string>("mother_volume", "World").append("_log");
 
     G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
