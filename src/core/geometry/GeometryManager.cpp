@@ -202,7 +202,7 @@ ROOT::Math::XYZPoint GeometryManager::getMaximumCoordinate() {
 }
 
 /**
- * @o   oduleError If the geometry is already closed before calling this function
+ * @throws ModuleError If the geometry is already closed before calling this function
  *
  * Can be used to add an arbitrary and unspecified point which is part of the geometry
  */
