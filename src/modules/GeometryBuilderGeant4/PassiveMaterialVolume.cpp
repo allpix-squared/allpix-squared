@@ -89,7 +89,7 @@ void PassiveMaterialVolume::registerVolume() {
     LOG(DEBUG) << "Registered volume.";
 }
 
-void PassiveMaterialVolume::buildVolume(std::map<std::string, G4Material*> materials) {
+void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>& materials) {
     mother_volume_ = config_.get<std::string>("mother_volume", "World").append("_log");
 
     G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
@@ -105,7 +105,7 @@ void PassiveMaterialVolume::buildVolume(std::map<std::string, G4Material*> mater
     std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
 
     LOG(TRACE) << "Creating Geant4 model for '" << name_ << "' of type '" << type_ << "'";
-    LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials[passive_material]->GetName() << " )";
+    LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials.at(passive_material)->GetName() << " )";
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
@@ -116,17 +116,17 @@ void PassiveMaterialVolume::buildVolume(std::map<std::string, G4Material*> mater
     solids_.push_back(solid);
 
     // Place the logical volume of the passive material
-    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials[passive_material], name_ + "_log");
+    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(passive_material), name_ + "_log");
     geo_manager_->setExternalObject("passive_material_log", log_volume, name_);
 
     // Set VisAttribute to invisible if material is equal to the material of its mother volume
-    if(materials[passive_material] == mother_log_volume->GetMaterial()) {
+    if(materials.at(passive_material) == mother_log_volume->GetMaterial()) {
         LOG(WARNING) << "Material of passive material " << name_
                      << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
         log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
     }
     // Set VisAttribute to white if material = world_material
-    else if(materials[passive_material] == materials["world_material"]) {
+    else if(materials.at(passive_material) == materials.at("world_material")) {
         auto white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.4));
         log_volume->SetVisAttributes(white_vol);
     }
