@@ -247,25 +247,12 @@ Figure~\ref{fig:telescope} shows a visualization of the setup described in the f
 This configuration is used in the rest of this chapter for explaining concepts.
 
 \subsubsection{Passive Material configuration}
+\label{sec:passive_material_config}
 
 Descriptions of passive materials can be added to the detector setup via a set of sections, with a syntax similar to the detector configuration.
 Passive geometry entries are identified by the `role` parameter set to `passive`.
-
-An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
-\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_passive_materials.conf}
-Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.6\textwidth]{passive_materials.png}
-  \caption{Visualization of 9 different passive materials, each showing the different features of each model.}
-  \label{fig:passivematerials}
-\end{figure}
-
-\subsection{Passive Material configuration}
-\label{sec:passive_material_config}
-The passive material configuration consists of a set of sections describing the passive materials in the geometry setup, with a syntax similar to the detector configuration.
 Each section starts with a header describing the name used to identify the passive material; all names are required to be unique.
+
 Every passive material should contain all of the following parameters:
 \begin{itemize}
 
@@ -292,6 +279,17 @@ Similar to the detector configuration, it is also possible to define an orientat
 \item An \parameter{orientation_mode} that determines the way that the orientation is applied.
 The orientation mode is further explained in Section~\ref{sec:models_geometry}.
 \end{itemize}
+
+An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_passive_materials.conf}
+Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\textwidth]{passive_materials.png}
+  \caption{Visualization of 9 different passive materials, each showing the different features of each model.}
+  \label{fig:passivematerials}
+\end{figure}
 
 
 \section{Framework parameters}
