@@ -283,45 +283,9 @@ Every passive material should contain all of the following parameters:
   The materials are defined in the GeometryBuilderGeant4 module and are described in the module section. 
   Note: If the material is the same as the material of its \parameter{mother_volume}, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
   \item A set of \parameter{size} parameters specific for the model that is chosen. 
-  The size parameters for the specific models are described below.
   All size parameters that describe the total length of something are placed such that half of this total length extends from each side of the given \parameter{position}.
   If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
-
-\end{itemize}
-
-For each model, a set of specific size parameters need to be given, of which some are optional.\\
-\textbf{Box}: A rectangular box which can be massive or have an hole in the middle along the z-axis.
-\begin{itemize}
-\item The \parameter{size} of the box is an XYZ vector which defines the total size of the box.
-\item (Optional) The \parameter{inner_size} of the box is an XY vector which defines the size of the hole which will be removed from the original box volume. Defaults to 0mm 0mm.
-\item (Optional) The \parameter{thickness} of the box is a value which defines the thickness of the walls of a box with a hole in the middle. This has the has the same effect as the \parameter{inner_size}, and such they can't be used together.
- Defaults to 0mm.
-\end{itemize}
-
-\textbf{Cylinder}: A cylindrical tube which can be massive or have an hole in the middle along the z-axis.
-\begin{itemize}
-\item The \parameter{outer_radius} of the cylinder is the total radius of the cylinder (in the XY-plane).
-\item The \parameter{length} of the cylinder is the total length of the cylinder (in the Z-direction).
-\item (Optional) The \parameter{inner_radius} of the cylinder is the radius of the inner cylinder. Defaults to 0mm.
-\item (Optional) The \parameter{starting_angle} of the cylinder is the angle at which circumference of the cylinder will start. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
-\item (Optional) The \parameter{arc_length} of the cylinder is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle}. Defaults to 360deg which is the full circumference.
-Note that the if the \parameter{arc_length} is set to 360 degrees, the \apsq framework will always draw the full circumference, regardless of the value of \parameter{starting_angle}.
-\end{itemize}
-
-\textbf{Sphere}: A full or partly made sphere with an inner- and outer radius.
-\begin{itemize}
-\item The \parameter{outer_radius} of the sphere is the total radius of the sphere in all directions.
-\item (Optional) The \parameter{inner_radius} of the sphere is the radius of the inner sphere. Defaults to 0mm.
-\item (Optional) The \parameter{starting_angle_phi} of the sphere is the azimuthal angle at which circumference of the sphere will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
-\item (Optional) The \parameter{arc_length_phi} of the sphere is the arc-length of the circumference that will be drawn, starting from the given \parameter{starting_angle_phi} in the XY-plane. Defaults to 360deg which is the full circumference.
-\item (Optional) The \parameter{starting_angle_theta} of the sphere is the polar angle at which the \parameter{arc_length_theta} will start. 0 degrees refers to the point along the positive z-axis. Defaults to 0deg.
-\item (Optional) The \parameter{arc_length_theta} of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given \parameter{starting_angle_theta}. Defaults to 100deg which creates the full circle.\\
-Note that \parameter{arc_length_phi} works the same as the \parameter{arc_length} from the cylinder, but the \parameter{arc_length_theta} works different.
-The \apsq framework will only draw the full circle if \parameter{starting_angle_theta} = 0deg, and \parameter{arc_length_theta} = 180deg. 
-In all other situations, the sphere will start at \parameter{starting_angle_theta} and continue the \parameter{arc_length_theta} untill \parameter{arc_length_theta} + \parameter{starting_angle_theta} = 180deg. After this it willl stop.
-The necessary module errors and warnings have been included to make sure the user will know will and won't be build.
-Note: If the VisualizationGeant4 module is used in conjunction with and \parameter{arc_length_theta} different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
-\end{itemize}
+The size parameters for the specific models are described in Section~\ref{geometrybuildergeant4}.
 
 Similar to the detector configuration, it is also possible to define an orientation mode.
 \begin{itemize}
