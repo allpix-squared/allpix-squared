@@ -90,7 +90,7 @@ namespace allpix {
          * @brief Returns the position and orientation for a passive element
          * @return Pair of position and orientation
          */
-        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const std::string passive_element);
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> getOrientation(const std::string& passive_element);
         /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame

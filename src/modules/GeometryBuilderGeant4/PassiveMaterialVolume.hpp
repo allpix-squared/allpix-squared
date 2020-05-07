@@ -29,7 +29,7 @@ namespace allpix {
         /**
          * @brief Constructor
          */
-        PassiveMaterialVolume(const Configuration& config, GeometryManager* geo_manager);
+        PassiveMaterialVolume(Configuration config, GeometryManager* geo_manager);
 
         void registerVolume();
 
