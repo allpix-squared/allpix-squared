@@ -5,7 +5,7 @@
 ### Description
 Constructs the Geant4 geometry from the internal geometry description.
 First, the world frame with a configurable margin and material is constructed.
-Then all passive materials and detectors using their internal detector models and passive material models are created and placed within the world frame or a specified mother volume, which corresponds to another passive volume.
+Then all passive materials and detectors using their internal detector models and passive material models are created and placed within the world frame or a specified mother volume (only for passive materials), which corresponds to another passive volume.
 The descriptions of all detectors and passive volumes have to be specified within the geometry configuration.
 
 All available detector models are fully supported.
