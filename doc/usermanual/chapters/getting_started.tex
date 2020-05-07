@@ -286,8 +286,6 @@ The \apsq framework provides a set of global parameters which control and alter 
 \begin{itemize}
 \item \parameter{detectors_file}: Location of the file describing the detector configuration (introduced in Section~\ref{sec:detector_config}).
 The only \textit{required} global parameter: the framework will fail to start if it is not specified.
-\item \parameter{passive_materials_file}: Location of the file describing the passive materials configuration (introduced in Section~\ref{sec:passive_material_config}).
-This file is \textit{required} if the PassiveMaterialBuilderGeant4 module is used in your configuration. 
 \item \parameter{number_of_events}: Determines the total number of events the framework should simulate.
 Defaults to one (simulating a single event).
 \item \parameter{root_file}: Location relative to the \parameter{output_directory} where the ROOT output data of all modules will be written to. The file extension \texttt{.root} will be appended if not present.
