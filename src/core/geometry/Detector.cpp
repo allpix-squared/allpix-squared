@@ -29,9 +29,8 @@ using namespace allpix;
 Detector::Detector(std::string name,
                    std::shared_ptr<DetectorModel> model,
                    ROOT::Math::XYZPoint position,
-                   const ROOT::Math::Rotation3D& orientation,
-                   std::string mother_volume)
-    : Detector(std::move(name), std::move(position), orientation, std::move(mother_volume)) {
+                   const ROOT::Math::Rotation3D& orientation)
+    : Detector(std::move(name), std::move(position), orientation) {
     model_ = std::move(model);
     // Check if valid model is supplied
     if(model_ == nullptr) {
@@ -49,12 +48,8 @@ Detector::Detector(std::string name,
  * that these detectors can never be accessed by modules before the detector
  * model is added.
  */
-Detector::Detector(std::string name,
-                   ROOT::Math::XYZPoint position,
-                   const ROOT::Math::Rotation3D& orientation,
-                   std::string mother_volume)
-    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation),
-      mother_volume_(std::move(mother_volume)) {}
+Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
+    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation) {}
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
@@ -97,10 +92,6 @@ ROOT::Math::XYZPoint Detector::getPosition() const {
 }
 ROOT::Math::Rotation3D Detector::getOrientation() const {
     return orientation_;
-}
-
-std::string Detector::getMotherVolume() const {
-    return mother_volume_;
 }
 
 /**

@@ -52,8 +52,7 @@ namespace allpix {
         Detector(std::string name,
                  std::shared_ptr<DetectorModel> model,
                  ROOT::Math::XYZPoint position,
-                 const ROOT::Math::Rotation3D& orientation,
-                 std::string mother_volume);
+                 const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Get name of the detector
@@ -77,12 +76,6 @@ namespace allpix {
          * @return Rotation matrix representing the orientation
          */
         ROOT::Math::Rotation3D getOrientation() const;
-
-        /**
-         * @brief Get mother volume of the detector
-         * @return Detector mother volume
-         */
-        std::string getMotherVolume() const;
 
         /**
          * @brief Convert a global position to a position in the detector frame
@@ -245,10 +238,7 @@ namespace allpix {
          * @param position Position in the world frame
          * @param orientation Rotation matrix representing the orientation
          */
-        Detector(std::string name,
-                 ROOT::Math::XYZPoint position,
-                 const ROOT::Math::Rotation3D& orientation,
-                 std::string mother_volume);
+        Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation);
 
         /**
          * @brief Set the detector model (used by the \ref GeometryManager for lazy loading)
@@ -266,7 +256,6 @@ namespace allpix {
 
         ROOT::Math::XYZPoint position_;
         ROOT::Math::Rotation3D orientation_;
-        std::string mother_volume_;
 
         // Transform matrix from global to local coordinates
         ROOT::Math::Transform3D transform_;
