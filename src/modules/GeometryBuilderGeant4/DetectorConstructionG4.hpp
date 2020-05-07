@@ -27,7 +27,6 @@ namespace allpix {
         /**
          * @brief Constructs geometry construction module
          * @param geo_manager Pointer to the geometry manager, containing the detectors
-         * @param config Configuration object of the geometry builder module
          */
         DetectorConstructionG4(GeometryManager* geo_manager);
 
