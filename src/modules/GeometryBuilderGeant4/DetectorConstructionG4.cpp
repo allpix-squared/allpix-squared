@@ -106,9 +106,16 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         geo_manager_->setExternalObject("rotation_matrix", rotWrapper, name);
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
+        G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+        G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("World_log");
+
+        if(world_log_volume == nullptr) {
+            throw ModuleError("Cannot find world volume");
+        }
+
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", mother_log_volume, false, 0, true);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_volume, false, 0, true);
         geo_manager_->setExternalObject("wrapper_phys", wrapper_phys, name);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
