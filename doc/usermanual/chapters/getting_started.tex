@@ -266,11 +266,7 @@ Every passive material should contain all of the following parameters:
   If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
 The size parameters for the specific models are described in Section~\ref{geometrybuildergeant4}.
 
-Similar to the detector configuration, it is also possible to define an orientation mode.
-\begin{itemize}
-\item An \parameter{orientation_mode} that determines the way that the orientation is applied.
-The orientation mode is further explained in Section~\ref{sec:models_geometry}.
-\end{itemize}
+Similar to the detector configuration, the parameters \parameter{orientation_mode} (see Section~\ref{sec:models_geometry}), \parameter{alignment_precision_position} and \parameter{alignment_precision_orientation} (see Section~\ref{sec:detector_config}) can be used optionally to define the rotation order and a possible misalignment of passive materials.
 
 An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_passive_materials.conf}
