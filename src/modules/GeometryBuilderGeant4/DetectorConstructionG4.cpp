@@ -66,22 +66,13 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
     for(auto& detector : detectors) {
         // Get pointer to the model of the detector
         auto model = detector->getModel();
-        auto mother_volume = detector->getMotherVolume();
 
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
         LOG(DEBUG) << " Wrapper dimensions of model: " << Units::display(model->getSize(), {"mm", "um"});
         LOG(TRACE) << " Sensor dimensions: " << model->getSensorSize();
         LOG(TRACE) << " Chip dimensions: " << model->getChipSize();
-        LOG(TRACE) << " Mother volume: " << mother_volume;
         LOG(DEBUG) << " Global position and orientation of the detector:";
-
-        auto log_volume_store = G4LogicalVolumeStore::GetInstance();
-        auto mother_log_volume = log_volume_store->GetVolume(mother_volume);
-
-        if(mother_log_volume == nullptr) {
-            throw ModuleError("Cannot place detector in volume '" + mother_volume + "' because it does not exist");
-        }
 
         // Create the wrapper box and logical volume
         auto wrapper_box = make_shared_no_delete<G4Box>(
