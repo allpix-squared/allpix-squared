@@ -259,7 +259,7 @@ Every passive material should contain all of the following parameters:
 \begin{itemize}
   \item The \parameter{position}, \parameter{orientation} and \parameter{mother_volume} of the material as described for the detector, see Section \ref{sec:detector_config}.
   \item A string referring to the \parameter{type} of the passive material. 
-  The model should be described by a model-file in module PassiveMaterialBuilderGeant4. Currently, the implented models are "box", "cylinder" and "sphere".
+  The model should be interpreted by the module constructing the passive material, such as for example the GeometryBuilderGeant4 module.
   \item A string referring to the \parameter{material} of the passive material. 
   The materials are defined in the GeometryBuilderGeant4 module and are described in the module section. 
   Note: If the material is the same as the material of its \parameter{mother_volume}, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
@@ -270,7 +270,7 @@ The size parameters for the specific models are described in Section~\ref{geomet
 
 Similar to the detector configuration, the parameters \parameter{orientation_mode} (see Section~\ref{sec:models_geometry}), \parameter{alignment_precision_position} and \parameter{alignment_precision_orientation} (see Section~\ref{sec:detector_config}) can be used optionally to define the rotation order and a possible misalignment of passive materials.
 
-An example configuration file describing a set of 9 passive materials, displaying all of the software features, is the following:
+An example configuration file describing a set of passive materials with different configuration options is the following:
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_passive_materials.conf}
 Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
 
