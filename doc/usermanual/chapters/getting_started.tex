@@ -255,15 +255,7 @@ Each section starts with a header describing the name used to identify the passi
 
 Every passive material should contain all of the following parameters:
 \begin{itemize}
-
-  \item The 3D \parameter{position} in the world frame in the order x, y, z.
-  See Section~\ref{sec:models_geometry} for details.
-  \item The \parameter{orientation} specified as X-Y-Z extrinsic Euler angles.
-  This means the detector is rotated first around the world's X-axis, then around the world's Y-axis and then around the world's Z-axis.
-  Alternatively the orientation can be set as Z-Y-X or X-Z-X extrinsic Euler angles, refer to Section~\ref{sec:models_geometry} for details.
-  \item An optional string referring to the \parameter{mother_volume}, which defines the volume where the passive material will be placed in.
-  Note: the position that is given will be relative to the center of the mother volume chosen. An error will be given if the specified mother volume is too small for the specified size or position of the passive material. Defaults to the world frame.
-  Note: if the \parameter{mother_volume} is a hollow material, only the non-hollow part of the material is considered part of the material. Placing a volume in the hollow part requires a different \parameter{mother_volume}.
+  \item The \parameter{position}, \parameter{orientation} and \parameter{mother_volume} of the material as described for the detector, see Section \ref{sec:detector_config}.
   \item A string referring to the \parameter{type} of the passive material. 
   The model should be described by a model-file in module PassiveMaterialBuilderGeant4. Currently, the implented models are "box", "cylinder" and "sphere".
   \item A string referring to the \parameter{material} of the passive material. 
