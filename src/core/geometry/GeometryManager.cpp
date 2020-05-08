@@ -46,29 +46,29 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
-    for(auto& detector_section : conf_manager->getDetectorConfigurations()) {
-        auto role = detector_section.get<std::string>("role", "active");
+    for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
+        auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
-            LOG(DEBUG) << "Passive element " << detector_section.getName() << ", skipping";
-            passive_elements_.push_back(detector_section);
+            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", skipping";
+            passive_elements_.push_back(geometry_section);
             continue;
         } else if(role != "active") {
-            throw InvalidValueError(detector_section, "role", "unknown role");
+            throw InvalidValueError(geometry_section, "role", "unknown role");
         }
 
-        LOG(DEBUG) << "Detector " << detector_section.getName() << ":";
+        LOG(DEBUG) << "Detector " << geometry_section.getName() << ":";
         // Get the position and orientation of the detector
-        auto orientation = calculate_orientation(detector_section);
+        auto orientation = calculate_orientation(geometry_section);
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
         auto detector =
-            std::shared_ptr<Detector>(new Detector(detector_section.getName(), orientation.first, orientation.second));
+            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), orientation.first, orientation.second));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
-        nonresolved_models_[detector_section.get<std::string>("type")].emplace_back(detector_section, detector.get());
+        nonresolved_models_[geometry_section.get<std::string>("type")].emplace_back(geometry_section, detector.get());
     }
 
     // Calculate the orientations of passive elements
