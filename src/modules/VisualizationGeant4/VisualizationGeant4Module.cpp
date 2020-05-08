@@ -376,45 +376,45 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     // Apply the visualization attributes to all detectors that exist
     for(auto& name : geo_manager_->getExternalObjectNames()) {
 
-        auto wrapper_log = geo_manager_->getExternalObject<G4LogicalVolume>("wrapper_log", name);
+        auto wrapper_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "wrapper_log");
         if(wrapper_log != nullptr) {
             wrapper_log->SetVisAttributes(wrapperVisAtt);
         }
 
-        auto sensor_log = geo_manager_->getExternalObject<G4LogicalVolume>("sensor_log", name);
+        auto sensor_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "sensor_log");
         if(sensor_log != nullptr) {
             sensor_log->SetVisAttributes(BoxVisAtt);
         }
 
-        auto pixel_log = geo_manager_->getExternalObject<G4LogicalVolume>("pixel_log", name);
+        auto pixel_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "pixel_log");
         if(pixel_log != nullptr) {
             pixel_log->SetVisAttributes(SensorVisAtt);
         }
 
-        auto bumps_wrapper_log = geo_manager_->getExternalObject<G4LogicalVolume>("bumps_wrapper_log", name);
+        auto bumps_wrapper_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "bumps_wrapper_log");
         if(bumps_wrapper_log != nullptr) {
             bumps_wrapper_log->SetVisAttributes(BumpBoxVisAtt);
         }
 
-        auto bumps_cell_log = geo_manager_->getExternalObject<G4LogicalVolume>("bumps_cell_log", name);
+        auto bumps_cell_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "bumps_cell_log");
         if(bumps_cell_log != nullptr) {
             bumps_cell_log->SetVisAttributes(BumpVisAtt);
         }
 
-        auto chip_log = geo_manager_->getExternalObject<G4LogicalVolume>("chip_log", name);
+        auto chip_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "chip_log");
         if(chip_log != nullptr) {
             chip_log->SetVisAttributes(ChipVisAtt);
         }
 
         auto supports_log =
-            geo_manager_->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>("supports_log", name);
+            geo_manager_->getExternalObject<std::vector<std::shared_ptr<G4LogicalVolume>>>(name, "supports_log");
         if(supports_log != nullptr) {
             for(auto& support_log : *supports_log) {
                 support_log->SetVisAttributes(supportVisAtt);
             }
         }
 
-        auto passive_material_log = geo_manager_->getExternalObject<G4LogicalVolume>("passive_material_log", name);
+        auto passive_material_log = geo_manager_->getExternalObject<G4LogicalVolume>(name, "passive_material_log");
         if(passive_material_log != nullptr) {
             // If VisAttribute is not set to invisible, give it a blue colour
             if(passive_material_log->GetVisAttributes() == nullptr) {
@@ -455,9 +455,9 @@ void VisualizationGeant4Module::add_visualization_volumes() {
     if(!config_.get<bool>("simple_view")) {
         // Loop through detectors
         for(auto& detector : geo_manager_->getDetectors()) {
-            auto sensor_log = geo_manager_->getExternalObject<G4LogicalVolume>("sensor_log", detector->getName());
-            auto pixel_log = geo_manager_->getExternalObject<G4LogicalVolume>("pixel_log", detector->getName());
-            auto pixel_param = geo_manager_->getExternalObject<G4VPVParameterisation>("pixel_param", detector->getName());
+            auto sensor_log = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+            auto pixel_log = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "pixel_log");
+            auto pixel_param = geo_manager_->getExternalObject<G4VPVParameterisation>(detector->getName(), "pixel_param");
 
             // Continue if a required external object is missing
             if(sensor_log == nullptr || pixel_log == nullptr || pixel_param == nullptr) {
