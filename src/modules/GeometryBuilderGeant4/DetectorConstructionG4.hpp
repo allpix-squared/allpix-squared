@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 
+#include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4VSolid.hh"
 
@@ -34,7 +35,7 @@ namespace allpix {
          * @brief Constructs the world geometry with all detectors
          * @return Physical volume representing the world
          */
-        void build(std::map<std::string, G4Material*> materials_);
+        void build(std::map<std::string, G4Material*> materials_, std::shared_ptr<G4LogicalVolume> world_log);
 
     private:
         GeometryManager* geo_manager_;

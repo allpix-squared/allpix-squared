@@ -121,7 +121,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
     passive_builder_->buildVolumes(materials_);
     const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
-    detBuilder->build(materials_);
+    detBuilder->build(materials_, world_log_);
 
     // Check for overlaps:
     check_overlaps();

@@ -55,7 +55,8 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
     return std::shared_ptr<T>(new T(args...), [](T*) {});
 }
 
-void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_) {
+void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_,
+                                   std::shared_ptr<G4LogicalVolume> world_log) {
 
     /*
     Build the individual detectors
@@ -106,7 +107,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
 
         // Place the wrapper
         auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_volume, false, 0, true);
+            transform_phys, wrapper_log.get(), "wrapper_" + name + "_phys", world_log.get(), false, 0, true);
         geo_manager_->setExternalObject("wrapper_phys", wrapper_phys, name);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
