@@ -56,7 +56,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 }
 
 void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_,
-                                   std::shared_ptr<G4LogicalVolume> world_log) {
+                                   const std::shared_ptr<G4LogicalVolume>& world_log) {
 
     /*
     Build the individual detectors
