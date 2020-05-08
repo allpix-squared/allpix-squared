@@ -91,7 +91,7 @@ namespace allpix {
          * @return Pair of position and orientation
          */
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D>
-        getPassiveElementOrientation(const std::string& passive_element);
+        getPassiveElementOrientation(const std::string& passive_element) const;
         /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame
