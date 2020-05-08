@@ -473,7 +473,7 @@ void VisualizationGeant4Module::add_visualization_volumes() {
                 detector->getModel()->getNPixels().x() * detector->getModel()->getNPixels().y(),
                 pixel_param.get(),
                 false);
-            geo_manager_->setExternalObject("pixel_param_phys", pixel_param_phys, detector->getName());
+            geo_manager_->setExternalObject(detector->getName(), "pixel_param_phys", pixel_param_phys);
         }
     }
 }

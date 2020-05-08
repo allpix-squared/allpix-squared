@@ -124,7 +124,7 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
 
     // Place the logical volume of the passive material
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(passive_material), name_ + "_log");
-    geo_manager_->setExternalObject("passive_material_log", log_volume, name_);
+    geo_manager_->setExternalObject(name_, "passive_material_log", log_volume);
 
     // Set VisAttribute to invisible if material is equal to the material of its mother volume
     if(materials.at(passive_material) == mother_log_volume->GetMaterial()) {
@@ -141,7 +141,7 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
     // Place the physical volume of the passive material
     auto phys_volume = make_shared_no_delete<G4PVPlacement>(
         transform_phys, log_volume.get(), name_ + "_phys", mother_log_volume, false, 0, true);
-    geo_manager_->setExternalObject("passive_material_phys", phys_volume, name_);
+    geo_manager_->setExternalObject(name_, "passive_material_phys", phys_volume);
     LOG(TRACE) << " Constructed passive material " << name_ << " successfully";
 }
 
