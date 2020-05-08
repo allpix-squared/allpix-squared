@@ -92,8 +92,15 @@ void PassiveMaterialVolume::registerVolume() {
 void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>& materials,
                                         std::shared_ptr<G4LogicalVolume> world_log) {
 
-    G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-    G4LogicalVolume* mother_log_volume = log_volume_store->GetVolume(mother_volume_);
+    G4LogicalVolume* mother_log_volume = nullptr;
+    if(config_.has("mother_volume")) {
+        mother_volume_ = config_.get<std::string>("mother_volume").append("_log");
+        G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+        mother_log_volume = log_volume_store->GetVolume(mother_volume_);
+    } else {
+        mother_log_volume = world_log.get();
+    }
+
     if(mother_log_volume == nullptr) {
         throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
     }
