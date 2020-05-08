@@ -53,7 +53,7 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     for(auto& passive_config : passive_configs) {
         if(std::find(passive_volume_names_.begin(), passive_volume_names_.end(), passive_config.getName()) !=
            passive_volume_names_.end()) {
-            throw ModuleError("Pasive Material '" + passive_config.getName() + "' is defined more than once.");
+            throw ModuleError("Passive Material '" + passive_config.getName() + "' is defined more than once.");
             continue;
         }
         auto passive_volume = new PassiveMaterialVolume(passive_config, geo_manager_);
