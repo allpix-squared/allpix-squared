@@ -91,7 +91,7 @@ namespace allpix {
          * @return Pair of position and orientation
          */
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D>
-        getPassiveElementOrientation(const std::string& passive_element);
+        getPassiveElementOrientation(const std::string& passive_element) const;
         /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame
@@ -233,7 +233,7 @@ namespace allpix {
          * @brief Get all names of external objects registered via setExternalObject
          * @return Vector of names of external objects
          */
-        std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
+        std::set<std::string> getExternalObjectNames() const { return external_object_names_; };
 
         /**
          * @brief Get the list of Configuration objects for all passive elements in the current geometry
@@ -287,7 +287,7 @@ namespace allpix {
         MagneticFieldFunction magnetic_field_function_;
 
         std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
-        std::vector<std::string> external_object_names_;
+        std::set<std::string> external_object_names_;
     };
 
 } // namespace allpix
