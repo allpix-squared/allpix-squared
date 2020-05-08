@@ -109,7 +109,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build the world
     auto world_box = std::make_shared<G4Box>("World", half_world_size.x(), half_world_size.y(), half_world_size.z());
     solids_.push_back(world_box);
-    world_log_ = std::make_unique<G4LogicalVolume>(world_box.get(), world_material_, "World_log", nullptr, nullptr, nullptr);
+    world_log_ = std::make_shared<G4LogicalVolume>(world_box.get(), world_material_, "World_log", nullptr, nullptr, nullptr);
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());

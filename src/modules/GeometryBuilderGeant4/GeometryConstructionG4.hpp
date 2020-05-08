@@ -62,7 +62,7 @@ namespace allpix {
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_{};
 
-        std::unique_ptr<G4LogicalVolume> world_log_;
+        std::shared_ptr<G4LogicalVolume> world_log_;
         std::unique_ptr<G4VPhysicalVolume> world_phys_;
     };
 } // namespace allpix
