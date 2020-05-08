@@ -229,6 +229,10 @@ namespace allpix {
         void
         setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> external_object);
 
+        /**
+         * @brief Get all names of external objects registered via setExternalObject
+         * @return Vector of names of external objects
+         */
         std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
         /**
