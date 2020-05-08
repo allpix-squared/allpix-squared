@@ -33,7 +33,8 @@ namespace allpix {
 
         void registerVolume();
 
-        void buildVolume(const std::map<std::string, G4Material*>& materials, std::shared_ptr<G4LogicalVolume> world_log);
+        void buildVolume(const std::map<std::string, G4Material*>& materials,
+                         const std::shared_ptr<G4LogicalVolume>& world_log);
 
         /**
          * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager

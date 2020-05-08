@@ -90,7 +90,7 @@ void PassiveMaterialVolume::registerVolume() {
 }
 
 void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>& materials,
-                                        std::shared_ptr<G4LogicalVolume> world_log) {
+                                        const std::shared_ptr<G4LogicalVolume>& world_log) {
 
     G4LogicalVolume* mother_log_volume = nullptr;
     if(config_.has("mother_volume")) {
