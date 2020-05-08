@@ -25,9 +25,7 @@ namespace allpix {
                                             const std::string& id,
                                             std::shared_ptr<T> external_object) {
         external_objects_[typeid(T)][std::make_pair(associated_name, id)] = std::static_pointer_cast<void>(external_object);
-        if(std::find(external_object_names_.begin(), external_object_names_.end(), associated_name) ==
-           external_object_names_.end()) {
-            external_object_names_.push_back(associated_name);
-        }
+
+        external_object_names_.insert(associated_name);
     }
 } // namespace allpix
