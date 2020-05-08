@@ -39,7 +39,7 @@ namespace allpix {
         /**
          * @brief Constructs the passive materials
          */
-        void buildVolumes(const std::map<std::string, G4Material*>& materials);
+        void buildVolumes(const std::map<std::string, G4Material*>& materials, std::shared_ptr<G4LogicalVolume> world_log);
 
     private:
         GeometryManager* geo_manager_;

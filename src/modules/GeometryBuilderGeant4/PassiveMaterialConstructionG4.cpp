@@ -62,8 +62,9 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     }
 }
 
-void PassiveMaterialConstructionG4::buildVolumes(const std::map<std::string, G4Material*>& materials) {
+void PassiveMaterialConstructionG4::buildVolumes(const std::map<std::string, G4Material*>& materials,
+                                                 std::shared_ptr<G4LogicalVolume> world_log) {
     for(auto& passive_volume : passive_volumes_) {
-        passive_volume->buildVolume(materials);
+        passive_volume->buildVolume(materials, world_log);
     }
 }
