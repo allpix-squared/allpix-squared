@@ -115,8 +115,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
 
     // Place the world at the center
-    world_phys_ = std::make_unique<G4PVPlacement>(
-        nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World_log", nullptr, false, 0);
+    world_phys_ =
+        std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
     passive_builder_->buildVolumes(materials_, world_log_);
