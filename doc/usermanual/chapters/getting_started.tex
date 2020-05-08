@@ -259,7 +259,6 @@ Every passive material has to contain all of the following parameters:
   The model should be interpreted by the module constructing the passive material, such as for example the GeometryBuilderGeant4 module.
   \item A string referring to the \parameter{material} of the passive material. 
   The materials are defined in the GeometryBuilderGeant4 module and are described in the module section.
-  Note: If the material is the same as the material of its \parameter{mother_volume}, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
   \item A set of size parameters specific for the model that is chosen. 
   All size parameters that describe the total length of something are placed such that half of this total length extends from each side of the given \parameter{position}.
   If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
