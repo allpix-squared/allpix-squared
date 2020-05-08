@@ -223,10 +223,11 @@ namespace allpix {
          * @brief Sets an external object associated to a detector or passive volume
          * @param associated_name Name of the detector or passive volume the external object is associated to
          * @param id ID of the external object
-         * @param model External object of arbitrary type
+         * @param external_object External object of arbitrary type
          */
         template <typename T>
-        void setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> model);
+        void
+        setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> external_object);
 
         std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 

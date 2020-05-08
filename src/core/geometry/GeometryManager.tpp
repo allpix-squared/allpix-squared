@@ -21,9 +21,10 @@ namespace allpix {
      * Stores external representations of objects in this detector that need to be shared between modules.
      */
     template <typename T>
-    void
-    GeometryManager::setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> model) {
-        external_objects_[typeid(T)][std::make_pair(associated_name, id)] = std::static_pointer_cast<void>(model);
+    void GeometryManager::setExternalObject(const std::string& associated_name,
+                                            const std::string& id,
+                                            std::shared_ptr<T> external_object) {
+        external_objects_[typeid(T)][std::make_pair(associated_name, id)] = std::static_pointer_cast<void>(external_object);
         if(std::find(external_object_names_.begin(), external_object_names_.end(), associated_name) ==
            external_object_names_.end()) {
             external_object_names_.push_back(associated_name);
