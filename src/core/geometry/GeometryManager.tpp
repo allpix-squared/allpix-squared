@@ -13,19 +13,20 @@ namespace allpix {
      * If the returned object is not a null pointer it is guaranteed to be of the correct type
      */
     template <typename T>
-    std::shared_ptr<T> GeometryManager::getExternalObject(const std::string& name, const std::string& obj_name) {
-        return std::static_pointer_cast<T>(external_objects_[typeid(T)][std::make_pair(name, obj_name)]);
+    std::shared_ptr<T> GeometryManager::getExternalObject(const std::string& associated_name, const std::string& id) {
+        return std::static_pointer_cast<T>(external_objects_[typeid(T)][std::make_pair(associated_name, id)]);
     }
 
     /**
      * Stores external representations of objects in this detector that need to be shared between modules.
      */
     template <typename T>
-    void GeometryManager::setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name) {
-        external_objects_[typeid(T)][std::make_pair(name, obj_name)] = std::static_pointer_cast<void>(model);
-        if(std::find(external_object_names_.begin(), external_object_names_.end(), obj_name) ==
+    void
+    GeometryManager::setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> model) {
+        external_objects_[typeid(T)][std::make_pair(associated_name, id)] = std::static_pointer_cast<void>(model);
+        if(std::find(external_object_names_.begin(), external_object_names_.end(), associated_name) ==
            external_object_names_.end()) {
-            external_object_names_.push_back(obj_name);
+            external_object_names_.push_back(associated_name);
         }
     }
 } // namespace allpix

@@ -211,18 +211,22 @@ namespace allpix {
         MagneticFieldType getMagneticFieldType() const;
 
         /**
-         * @brief Fetch an external object linked to this detector
-         * @param name Name of the external object
-         * @return External object or null pointer if it does not exists
+         * @brief Fetch an external object associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param id ID of the external object
+         * @return External object or null pointer if it does not exist
          */
-        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name, const std::string& obj_name);
+        template <typename T>
+        std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id);
+
         /**
-         * @brief Sets an external object linked to this detector
-         * @param name Name of the external object
+         * @brief Sets an external object associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param id ID of the external object
          * @param model External object of arbitrary type
          */
         template <typename T>
-        void setExternalObject(const std::string& name, std::shared_ptr<T> model, const std::string& obj_name);
+        void setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> model);
 
         std::vector<std::string> getExternalObjectNames() { return external_object_names_; };
 
