@@ -47,10 +47,22 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
+
+        auto checkForMissingKey = [&](std::string keyString) {
+            if(!geometry_section.has(keyString)) {
+                throw MissingKeyError(keyString, geometry_section.getName());
+            }
+        };
+
+        for(auto& key : {"position", "orientation", "type"}) {
+            checkForMissingKey(key);
+        }
+
         auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
-            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", skipping";
+            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
+            checkForMissingKey("material");
             passive_elements_.push_back(geometry_section);
             continue;
         } else if(role != "active") {
