@@ -48,7 +48,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     LOG(DEBUG) << "Loading detectors";
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
-        auto checkForMissingKey = [&](std::string keyString) {
+        auto checkForMissingKey = [&](const std::string& keyString) {
             if(!geometry_section.has(keyString)) {
                 throw MissingKeyError(keyString, geometry_section.getName());
             }
