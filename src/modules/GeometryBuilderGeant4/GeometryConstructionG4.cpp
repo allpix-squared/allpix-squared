@@ -198,12 +198,12 @@ void GeometryConstructionG4::check_overlaps() {
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
     // Release Geant4 output for better error description
-    RELEASE_STREAM(G4cout);
+    IFLOG(WARNING) { RELEASE_STREAM(G4cout); }
     for(auto volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
     // Supress again to prevent further complications
-    SUPPRESS_STREAM(G4cout);
+    IFLOG(WARNING) { SUPPRESS_STREAM(G4cout); }
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";
     } else {
