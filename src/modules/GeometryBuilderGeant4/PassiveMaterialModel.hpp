@@ -44,12 +44,6 @@ namespace allpix {
     class PassiveMaterialModel {
     public:
         /**
-         * @brief Constructs the base passive material model
-         * @param Configuration with description of the model
-         */
-        PassiveMaterialModel(Configuration&);
-
-        /**
          * @brief Essential virtual destructor
          */
         virtual ~PassiveMaterialModel() = default;
@@ -64,6 +58,13 @@ namespace allpix {
          * @return 0 if no valid model type is defined
          */
         virtual double getMaxSize() { return 0; }
+
+    protected:
+        /**
+         * @brief Constructs the base passive material model
+         * @param Configuration with description of the model
+         */
+        PassiveMaterialModel(Configuration&){};
     };
 } // namespace allpix
 
