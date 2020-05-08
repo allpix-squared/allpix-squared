@@ -28,7 +28,6 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     DetectorConstructionG4.cpp
     PassiveMaterialConstructionG4.cpp
     PassiveMaterialVolume.cpp
-    PassiveMaterialModel.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
