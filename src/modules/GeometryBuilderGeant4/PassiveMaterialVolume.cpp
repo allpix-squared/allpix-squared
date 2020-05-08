@@ -75,9 +75,9 @@ void PassiveMaterialVolume::registerVolume() {
         throw ModuleError("Pasive Material '" + name_ + "' has an incorrect type.");
     }
     // Get the orientation and position of the material
-    orientation_ = geo_manager_->getOrientation(name_).second;
+    orientation_ = geo_manager_->getPassiveElementOrientation(name_).second;
 
-    position_ = geo_manager_->getOrientation(name_).first;
+    position_ = geo_manager_->getPassiveElementOrientation(name_).first;
     std::vector<double> copy_vec(9);
     orientation_.GetComponents(copy_vec.begin(), copy_vec.end());
     XYZPoint vx, vy, vz;

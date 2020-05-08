@@ -129,7 +129,7 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 /**
  * Calls the calculate_orientation function for a given configuration
  */
-std::pair<XYZPoint, Rotation3D> GeometryManager::getOrientation(const std::string& passive_element) {
+std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) {
     if(passive_orientations_.count(passive_element) == 0) {
         throw ModuleError("Passive Material '" + passive_element + "' is not defined.");
     }
