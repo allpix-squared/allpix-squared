@@ -51,8 +51,7 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
-        auto passive_volume = new PassiveMaterialVolume(passive_config, geo_manager_);
-        passive_volumes_.emplace_back(passive_volume);
+        passive_volumes_.emplace_back(new PassiveMaterialVolume{passive_config, geo_manager_});
         passive_volume_names_.push_back(passive_config.getName());
     }
 }
