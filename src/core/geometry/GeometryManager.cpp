@@ -48,21 +48,10 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     LOG(DEBUG) << "Loading detectors";
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
-        auto checkForMissingKey = [&](const std::string& keyString) {
-            if(!geometry_section.has(keyString)) {
-                throw MissingKeyError(keyString, geometry_section.getName());
-            }
-        };
-
-        for(auto& key : {"position", "orientation", "type"}) {
-            checkForMissingKey(key);
-        }
-
         auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
-            checkForMissingKey("material");
             passive_elements_.push_back(geometry_section);
             continue;
         } else if(role != "active") {
@@ -86,6 +75,15 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     // Calculate the orientations of passive elements
     for(auto& passive_element : passive_elements_) {
         passive_orientations_[passive_element.getName()] = calculate_orientation(passive_element);
+
+        // Check for mandatory but herein unused keys:
+        auto check_key = [&](const Configuration& cfg, const std::string& key) {
+            if(!cfg.has(key)) {
+                throw MissingKeyError(key, cfg.getName());
+            }
+        };
+        check_key(passive_element, "material");
+        check_key(passive_element, "type");
     }
 
     // Load the list of standard model paths
