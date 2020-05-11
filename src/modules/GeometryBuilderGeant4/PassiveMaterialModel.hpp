@@ -64,7 +64,10 @@ namespace allpix {
          * @brief Constructs the base passive material model
          * @param Configuration with description of the model
          */
-        PassiveMaterialModel(Configuration&){};
+        PassiveMaterialModel(Configuration& config) : config_(config){};
+
+        Configuration& config_;
+        double max_size_;
     };
 } // namespace allpix
 

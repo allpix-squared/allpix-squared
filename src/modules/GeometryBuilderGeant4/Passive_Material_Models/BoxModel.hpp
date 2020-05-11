@@ -37,7 +37,7 @@ namespace allpix {
          * @brief Constructs the box passive material model
          * @param config Configuration with description of the model
          */
-        explicit BoxModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
+        explicit BoxModel(Configuration& config) : PassiveMaterialModel(config) {
 
             // Set the box specifications
             setOuterSize(config.get<ROOT::Math::XYZVector>("size"));
@@ -87,12 +87,8 @@ namespace allpix {
         double getMaxSize() const override { return max_size_; }
 
     private:
-        Configuration& config_;
-
         // G4VSolid returnables
         G4VSolid* solid_;
-
-        double max_size_;
 
         // G4VSolid specifications
         ROOT::Math::XYZVector outer_size_;

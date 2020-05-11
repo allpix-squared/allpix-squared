@@ -36,7 +36,7 @@ namespace allpix {
          * @brief Constructs the sphere passive material model
          * @param config Configuration with description of the model
          */
-        explicit SphereModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
+        explicit SphereModel(Configuration& config) : PassiveMaterialModel(config) {
 
             // Set the cylinder specifications
             setOuterRadius(config_.get<double>("outer_radius"));
@@ -120,11 +120,8 @@ namespace allpix {
         double getMaxSize() const override { return max_size_; }
 
     private:
-        Configuration& config_;
-
         // G4VSolid returnables
         G4Sphere* solid_;
-        double max_size_;
 
         // G4VSolid specifications
         double inner_radius_;

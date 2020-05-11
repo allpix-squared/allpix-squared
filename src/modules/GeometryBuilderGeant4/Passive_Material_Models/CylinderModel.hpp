@@ -36,7 +36,7 @@ namespace allpix {
          * @brief Constructs the cylinder passive material model
          * @param config Configuration with description of the model
          */
-        explicit CylinderModel(Configuration& config) : PassiveMaterialModel(config), config_(config) {
+        explicit CylinderModel(Configuration& config) : PassiveMaterialModel(config) {
 
             // Set the cylinder specifications
             setOuterRadius(config_.get<double>("outer_radius"));
@@ -99,11 +99,8 @@ namespace allpix {
         double getMaxSize() const override { return max_size_; }
 
     private:
-        Configuration& config_;
-
         // G4VSolid returnables
         G4Tubs* solid_;
-        double max_size_;
 
         // G4VSolid specifications
         double inner_radius_;
