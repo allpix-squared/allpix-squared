@@ -116,8 +116,8 @@ namespace allpix {
         void setArcLengthTheta(double val) { arc_length_theta_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4Sphere* getSolid() override { return solid_; }
-        double getMaxSize() override { return max_size_; }
+        G4Sphere* getSolid() const override { return solid_; }
+        double getMaxSize() const override { return max_size_; }
 
     private:
         Configuration& config_;

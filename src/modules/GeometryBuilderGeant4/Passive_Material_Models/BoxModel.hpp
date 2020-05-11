@@ -83,8 +83,8 @@ namespace allpix {
         void setInnerSize(ROOT::Math::XYVector val) { inner_size_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4VSolid* getSolid() override { return solid_; }
-        double getMaxSize() override { return max_size_; }
+        G4VSolid* getSolid() const override { return solid_; }
+        double getMaxSize() const override { return max_size_; }
 
     private:
         Configuration& config_;

@@ -95,8 +95,8 @@ namespace allpix {
         void setArcLength(double val) { arc_length_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
-        G4Tubs* getSolid() override { return solid_; }
-        double getMaxSize() override { return max_size_; }
+        G4Tubs* getSolid() const override { return solid_; }
+        double getMaxSize() const override { return max_size_; }
 
     private:
         Configuration& config_;
