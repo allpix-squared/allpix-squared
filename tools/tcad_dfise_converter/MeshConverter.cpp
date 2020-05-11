@@ -210,6 +210,8 @@ int main(int argc, char** argv) {
                 points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
             } else {
                 LOG(ERROR) << "Region \"" << region << "\" not found in TCAD mesh";
+                allpix::Log::finish();
+                return 1;
             }
         }
 
