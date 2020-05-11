@@ -231,7 +231,7 @@ namespace allpix {
 
         /**
          * @brief Get all names of external objects registered via setExternalObject
-         * @return Vector of names of external objects
+         * @return Set of names of external objects
          */
         std::set<std::string> getExternalObjectNames() const { return external_object_names_; };
 

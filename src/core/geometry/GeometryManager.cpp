@@ -48,6 +48,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     LOG(DEBUG) << "Loading detectors";
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
+        // Read role of this section and default ot "active" (i.e. detector)
         auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
