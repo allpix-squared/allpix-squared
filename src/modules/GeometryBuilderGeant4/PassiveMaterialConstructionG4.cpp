@@ -47,17 +47,12 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 
 void PassiveMaterialConstructionG4::registerVolumes() {
-    std::list<Configuration>& passive_configs = geo_manager_->getPassiveElements();
+    auto passive_configs = geo_manager_->getPassiveElements();
     LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
-        if(std::find(passive_volume_names_.begin(), passive_volume_names_.end(), passive_config.getName()) !=
-           passive_volume_names_.end()) {
-            throw ModuleError("Passive Material '" + passive_config.getName() + "' is defined more than once.");
-            continue;
-        }
         auto passive_volume = new PassiveMaterialVolume(passive_config, geo_manager_);
-        passive_volumes_.push_back(passive_volume);
+        passive_volumes_.emplace_back(passive_volume);
         passive_volume_names_.push_back(passive_config.getName());
     }
 }

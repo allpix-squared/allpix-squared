@@ -52,8 +52,17 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
         auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
-            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
+            // Check for duplicate names:
+            auto it = std::find_if(
+                passive_elements_.begin(),
+                passive_elements_.end(),
+                [name = geometry_section.getName()](const Configuration& cfg) { return name == cfg.getName(); });
+            if(it != passive_elements_.end()) {
+                throw PassiveElementExistsError(geometry_section.getName());
+            }
+
             passive_elements_.push_back(geometry_section);
+            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
             continue;
         } else if(role != "active") {
             throw InvalidValueError(geometry_section, "role", "unknown role");
