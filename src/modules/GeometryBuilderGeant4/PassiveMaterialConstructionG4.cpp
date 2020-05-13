@@ -9,6 +9,7 @@
  */
 
 #include "PassiveMaterialConstructionG4.hpp"
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -53,6 +54,25 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     for(auto& passive_config : passive_configs) {
         passive_volumes_.emplace_back(new PassiveMaterialVolume{passive_config, geo_manager_});
     }
+
+    // Sort the volumes according to their hierarchy (mother volumes before dependants)
+    std::function<int(const std::shared_ptr<PassiveMaterialVolume>&,
+                      const std::vector<std::shared_ptr<PassiveMaterialVolume>>&)>
+        hierarchy;
+    hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialVolume>& vol,
+                             const std::vector<std::shared_ptr<PassiveMaterialVolume>>& vols) {
+        auto m = std::find_if(vols.begin(), vols.end(), [&vol](const std::shared_ptr<PassiveMaterialVolume>& v) {
+            return v->getName() == vol->getMotherVolume();
+        });
+        return (m == vols.end() ? 0 : hierarchy(*m, vols)) + 1;
+    };
+
+    std::sort(passive_volumes_.begin(),
+              passive_volumes_.end(),
+              [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialVolume>& lhs,
+                                                       const std::shared_ptr<PassiveMaterialVolume>& rhs) {
+                  return (hierarchy(lhs, volumes) < hierarchy(rhs, volumes));
+              });
 }
 
 void PassiveMaterialConstructionG4::buildVolumes(const std::map<std::string, G4Material*>& materials,
