@@ -52,7 +52,6 @@ namespace allpix {
          */
         void add_points();
 
-        std::string type_{};
         std::shared_ptr<PassiveMaterialModel> model_;
         ROOT::Math::Rotation3D orientation_;
         ROOT::Math::XYZPoint position_;

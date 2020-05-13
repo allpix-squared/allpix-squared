@@ -60,12 +60,12 @@ PassiveMaterialVolume::PassiveMaterialVolume(Configuration config, GeometryManag
 
     LOG(DEBUG) << "Registering volume: " << getName();
 
-    type_ = config_.get<std::string>("type");
-    if(type_ == "box") {
+    auto type = config_.get<std::string>("type");
+    if(type == "box") {
         model_ = std::make_shared<BoxModel>(config_);
-    } else if(type_ == "cylinder") {
+    } else if(type == "cylinder") {
         model_ = std::make_shared<CylinderModel>(config_);
-    } else if(type_ == "sphere") {
+    } else if(type == "sphere") {
         model_ = std::make_shared<SphereModel>(config_);
     } else {
         throw ModuleError("Pasive Material '" + getName() + "' has an incorrect type.");
@@ -115,7 +115,7 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
     auto passive_material = config_.get<std::string>("material");
     std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
 
-    LOG(TRACE) << "Creating Geant4 model for '" << getName() << "' of type '" << type_ << "'";
+    LOG(TRACE) << "Creating Geant4 model for '" << getName() << "' of type '" << config_.get<std::string>("type") << "'";
     LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials.at(passive_material)->GetName() << " )";
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
