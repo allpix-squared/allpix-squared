@@ -58,8 +58,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 PassiveMaterialVolume::PassiveMaterialVolume(Configuration config, GeometryManager* geo_manager)
     : config_(std::move(config)), geo_manager_(geo_manager) {
 
-    name_ = config_.getName();
-    LOG(DEBUG) << "Registering volume: " << name_;
+    LOG(DEBUG) << "Registering volume: " << getName();
 
     type_ = config_.get<std::string>("type");
     if(type_ == "box") {
@@ -69,12 +68,12 @@ PassiveMaterialVolume::PassiveMaterialVolume(Configuration config, GeometryManag
     } else if(type_ == "sphere") {
         model_ = std::make_shared<SphereModel>(config_);
     } else {
-        throw ModuleError("Pasive Material '" + name_ + "' has an incorrect type.");
+        throw ModuleError("Pasive Material '" + getName() + "' has an incorrect type.");
     }
     // Get the orientation and position of the material
-    orientation_ = geo_manager_->getPassiveElementOrientation(name_).second;
+    orientation_ = geo_manager_->getPassiveElementOrientation(getName()).second;
 
-    position_ = geo_manager_->getPassiveElementOrientation(name_).first;
+    position_ = geo_manager_->getPassiveElementOrientation(getName()).first;
     std::vector<double> copy_vec(9);
     orientation_.GetComponents(copy_vec.begin(), copy_vec.end());
     XYZPoint vx, vy, vz;
@@ -82,8 +81,17 @@ PassiveMaterialVolume::PassiveMaterialVolume(Configuration config, GeometryManag
     rotation_ = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
     LOG(DEBUG) << "Adding points for volume";
-    addPoints();
+    add_points();
     LOG(DEBUG) << "Registered volume.";
+}
+
+std::string PassiveMaterialVolume::getName() const {
+    return config_.getName();
+}
+
+std::string PassiveMaterialVolume::getMotherVolume() const {
+    return config_.get<std::string>("mother_volume", "");
+    ;
 }
 
 void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>& materials,
@@ -91,9 +99,8 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
 
     G4LogicalVolume* mother_log_volume = nullptr;
     if(config_.has("mother_volume")) {
-        mother_volume_ = config_.get<std::string>("mother_volume").append("_log");
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-        mother_log_volume = log_volume_store->GetVolume(mother_volume_);
+        mother_log_volume = log_volume_store->GetVolume(config_.get<std::string>("mother_volume").append("_log"));
     } else {
         mother_log_volume = world_log.get();
     }
@@ -108,24 +115,25 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
     auto passive_material = config_.get<std::string>("material");
     std::transform(passive_material.begin(), passive_material.end(), passive_material.begin(), ::tolower);
 
-    LOG(TRACE) << "Creating Geant4 model for '" << name_ << "' of type '" << type_ << "'";
+    LOG(TRACE) << "Creating Geant4 model for '" << getName() << "' of type '" << type_ << "'";
     LOG(TRACE) << " -Material\t\t:\t " << passive_material << "( " << materials.at(passive_material)->GetName() << " )";
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
     auto solid = std::shared_ptr<G4VSolid>(model_->getSolid());
     if(solid == nullptr) {
-        throw ModuleError("Pasive Material '" + name_ + "' does not have a solid associated with its model");
+        throw ModuleError("Pasive Material '" + getName() + "' does not have a solid associated with its model");
     }
     solids_.push_back(solid);
 
     // Place the logical volume of the passive material
-    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(passive_material), name_ + "_log");
-    geo_manager_->setExternalObject(name_, "passive_material_log", log_volume);
+    auto log_volume =
+        make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(passive_material), getName() + "_log");
+    geo_manager_->setExternalObject(getName(), "passive_material_log", log_volume);
 
     // Set VisAttribute to invisible if material is equal to the material of its mother volume
     if(materials.at(passive_material) == mother_log_volume->GetMaterial()) {
-        LOG(WARNING) << "Material of passive material " << name_
+        LOG(WARNING) << "Material of passive material " << getName()
                      << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
         log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
     }
@@ -137,19 +145,19 @@ void PassiveMaterialVolume::buildVolume(const std::map<std::string, G4Material*>
 
     // Place the physical volume of the passive material
     auto phys_volume = make_shared_no_delete<G4PVPlacement>(
-        transform_phys, log_volume.get(), name_ + "_phys", mother_log_volume, false, 0, true);
-    geo_manager_->setExternalObject(name_, "passive_material_phys", phys_volume);
-    LOG(TRACE) << " Constructed passive material " << name_ << " successfully";
+        transform_phys, log_volume.get(), getName() + "_phys", mother_log_volume, false, 0, true);
+    geo_manager_->setExternalObject(getName(), "passive_material_phys", phys_volume);
+    LOG(TRACE) << " Constructed passive material " << getName() << " successfully";
 }
 
-void PassiveMaterialVolume::addPoints() {
+void PassiveMaterialVolume::add_points() {
     std::array<int, 8> offset_x = {{1, 1, 1, 1, -1, -1, -1, -1}};
     std::array<int, 8> offset_y = {{1, 1, -1, -1, 1, 1, -1, -1}};
     std::array<int, 8> offset_z = {{1, -1, 1, -1, 1, -1, 1, -1}};
     // Add the min and max points for every type
     auto max_size = model_->getMaxSize();
     if(max_size == 0) {
-        throw ModuleError("Pasive Material '" + name_ +
+        throw ModuleError("Pasive Material '" + getName() +
                           "' does not have a maximum size parameter associated with its model");
     }
     for(size_t i = 0; i < 8; ++i) {

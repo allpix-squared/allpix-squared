@@ -35,18 +35,28 @@ namespace allpix {
                          const std::shared_ptr<G4LogicalVolume>& world_log);
 
         /**
-         * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager
+         * @brief return name of this volume
+         * @return Volume name
          */
-        void addPoints();
+        std::string getName() const;
+
+        /**
+         * @brief return name of the mother volume or an empty string of none is set
+         * @return Mother volume
+         */
+        std::string getMotherVolume() const;
 
     private:
-        std::string name_;
-        std::string type_;
+        /**
+         * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager
+         */
+        void add_points();
+
+        std::string type_{};
         std::shared_ptr<PassiveMaterialModel> model_;
         ROOT::Math::Rotation3D orientation_;
         ROOT::Math::XYZPoint position_;
         std::shared_ptr<G4RotationMatrix> rotation_;
-        std::string mother_volume_;
 
         Configuration config_;
         GeometryManager* geo_manager_;
