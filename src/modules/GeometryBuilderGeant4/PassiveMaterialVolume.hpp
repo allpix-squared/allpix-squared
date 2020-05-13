@@ -31,8 +31,6 @@ namespace allpix {
          */
         PassiveMaterialVolume(Configuration config, GeometryManager* geo_manager);
 
-        void registerVolume();
-
         void buildVolume(const std::map<std::string, G4Material*>& materials,
                          const std::shared_ptr<G4LogicalVolume>& world_log);
 

@@ -57,10 +57,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 
 PassiveMaterialVolume::PassiveMaterialVolume(Configuration config, GeometryManager* geo_manager)
     : config_(std::move(config)), geo_manager_(geo_manager) {
-    registerVolume();
-}
 
-void PassiveMaterialVolume::registerVolume() {
     name_ = config_.getName();
     LOG(DEBUG) << "Registering volume: " << name_;
 
