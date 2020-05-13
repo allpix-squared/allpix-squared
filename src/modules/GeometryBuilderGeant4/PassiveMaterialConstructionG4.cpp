@@ -52,7 +52,6 @@ void PassiveMaterialConstructionG4::registerVolumes() {
 
     for(auto& passive_config : passive_configs) {
         passive_volumes_.emplace_back(new PassiveMaterialVolume{passive_config, geo_manager_});
-        passive_volume_names_.push_back(passive_config.getName());
     }
 }
 

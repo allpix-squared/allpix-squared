@@ -45,7 +45,6 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
         std::vector<std::shared_ptr<PassiveMaterialVolume>> passive_volumes_;
-        std::vector<std::string> passive_volume_names_;
     };
 
 } // namespace allpix
