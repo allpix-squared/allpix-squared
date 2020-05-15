@@ -41,7 +41,7 @@ PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(GeometryManager* ge
 
 void PassiveMaterialConstructionG4::registerVolumes() {
     auto passive_configs = geo_manager_->getPassiveElements();
-    LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
+    LOG(TRACE) << "Registering " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
         std::shared_ptr<PassiveMaterialModel> model =

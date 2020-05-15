@@ -64,7 +64,7 @@ allpix::PassiveMaterialModel::Factory(std::string type, Configuration config, Ge
     } else if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
     } else {
-        throw ModuleError("Pasive Material has an incorrect type " + type);
+        throw ModuleError("Passive Material has an incorrect type " + type);
     }
 }
 
@@ -75,6 +75,7 @@ PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager
     mother_volume_ = config_.get<std::string>("mother_volume", "");
 
     LOG(DEBUG) << "Registering volume: " << name_;
+    LOG(DEBUG) << "Mother volume: " << mother_volume_;
     // Get the orientation and position of the material
     orientation_ = geo_manager_->getPassiveElementOrientation(getName()).second;
 
@@ -116,7 +117,7 @@ void PassiveMaterialModel::buildVolume(const std::map<std::string, G4Material*>&
     // Get the solid from the Model
     auto solid = std::shared_ptr<G4VSolid>(getSolid());
     if(solid == nullptr) {
-        throw ModuleError("Pasive Material '" + getName() + "' does not have a solid associated with its model");
+        throw ModuleError("Passive Material '" + getName() + "' does not have a solid associated with its model");
     }
     solids_.push_back(solid);
 
@@ -151,7 +152,7 @@ void PassiveMaterialModel::add_points() {
     // Add the min and max points for every type
     auto max_size = getMaxSize();
     if(max_size == 0) {
-        throw ModuleError("Pasive Material '" + getName() +
+        throw ModuleError("Passive Material '" + getName() +
                           "' does not have a maximum size parameter associated with its model");
     }
     for(size_t i = 0; i < 8; ++i) {
