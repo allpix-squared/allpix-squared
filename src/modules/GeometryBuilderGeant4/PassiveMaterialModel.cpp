@@ -64,7 +64,7 @@ allpix::PassiveMaterialModel::Factory(std::string type, Configuration config, Ge
     } else if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
     } else {
-        throw ModuleError("Passive Material has an incorrect type " + type);
+        throw ModuleError("Passive Material has an unknown type " + type);
     }
 }
 
