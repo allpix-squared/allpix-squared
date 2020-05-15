@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Base of passive material models
+ * @brief Base of passive material volumes
  *
  * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -27,6 +27,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
@@ -44,9 +45,25 @@ namespace allpix {
     class PassiveMaterialModel {
     public:
         /**
+         * @brief Factory to dynamically create track objects
+         * @param The name of the track model which should be used
+         * @return By param trackModel assigned track model to be used
+         */
+        static std::shared_ptr<PassiveMaterialModel>
+        Factory(std::string type, Configuration config, GeometryManager* geo_manager);
+
+        /**
+         * @brief Constructs the base passive material model
+         * @param Configuration with description of the model
+         */
+        PassiveMaterialModel(Configuration config, GeometryManager* geo_manager);
+
+        /**
          * @brief Essential virtual destructor
          */
         virtual ~PassiveMaterialModel() = default;
+
+        virtual void calculate_size();
 
         /**
          * @brief Virtual function that will return a G4VSolid corresponding to the specific model
@@ -59,15 +76,40 @@ namespace allpix {
          */
         virtual double getMaxSize() const { return 0; }
 
+        void buildVolume(const std::map<std::string, G4Material*>& materials,
+                         const std::shared_ptr<G4LogicalVolume>& world_log);
+
+        /**
+         * @brief return name of this volume
+         * @return Volume name
+         */
+        std::string getName() const { return name_; }
+
+        /**
+         * @brief return name of the mother volume or an empty string of none is set
+         * @return Mother volume
+         */
+        std::string getMotherVolume() const { return mother_volume_; }
+
     protected:
         /**
-         * @brief Constructs the base passive material model
-         * @param Configuration with description of the model
+         * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager
          */
-        PassiveMaterialModel(Configuration& config) : config_(config){};
+        void add_points();
 
         Configuration& config_;
+        GeometryManager* geo_manager_;
         double max_size_;
+
+        std::string name_;
+        std::string mother_volume;
+        ROOT::Math::Rotation3D orientation_;
+        ROOT::Math::XYZPoint position_;
+        std::shared_ptr<G4RotationMatrix> rotation_;
+        std::string mother_volume_;
+
+        // Storage of internal objects
+        std::vector<std::shared_ptr<G4VSolid>> solids_;
     };
 } // namespace allpix
 
