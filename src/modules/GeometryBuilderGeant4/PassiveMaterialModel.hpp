@@ -95,12 +95,11 @@ namespace allpix {
          */
         void add_points();
 
-        Configuration& config_;
+        Configuration config_;
         GeometryManager* geo_manager_;
         double max_size_;
 
         std::string name_;
-        std::string mother_volume;
         ROOT::Math::Rotation3D orientation_;
         ROOT::Math::XYZPoint position_;
         std::shared_ptr<G4RotationMatrix> rotation_;
