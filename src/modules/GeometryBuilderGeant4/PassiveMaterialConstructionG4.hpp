@@ -16,9 +16,10 @@
 
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "PassiveMaterialVolume.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
+
+#include "PassiveMaterialModel.hpp"
 
 namespace allpix {
     /**
@@ -44,7 +45,7 @@ namespace allpix {
 
     private:
         GeometryManager* geo_manager_;
-        std::vector<std::shared_ptr<PassiveMaterialVolume>> passive_volumes_;
+        std::vector<std::shared_ptr<PassiveMaterialModel>> passive_volumes_;
     };
 
 } // namespace allpix

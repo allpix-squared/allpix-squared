@@ -27,23 +27,15 @@
 #include <G4ThreeVector.hh>
 #include <G4VisAttributes.hh>
 
-#include "PassiveMaterialVolume.hpp"
+#include "Passive_Material_Models/BoxModel.hpp"
+#include "Passive_Material_Models/CylinderModel.hpp"
+#include "Passive_Material_Models/SphereModel.hpp"
 #include "core/module/exceptions.h"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
-
-/**
- * @brief Version of std::make_shared that does not delete the pointer
- *
- * This version is needed because some pointers are deleted by Geant4 internally, but they are stored as std::shared_ptr in
- * the framework.
- */
-template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
-    return std::shared_ptr<T>(new T(args...), [](T*) {});
-}
 
 PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 
@@ -52,16 +44,19 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     LOG(TRACE) << "Building " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
-        passive_volumes_.emplace_back(new PassiveMaterialVolume{passive_config, geo_manager_});
+        std::shared_ptr<PassiveMaterialModel> model =
+            PassiveMaterialModel::Factory(passive_config.get<std::string>("type"), passive_config, geo_manager_);
+        model->calculate_size();
+        passive_volumes_.emplace_back(model);
     }
 
     // Sort the volumes according to their hierarchy (mother volumes before dependants)
-    std::function<int(const std::shared_ptr<PassiveMaterialVolume>&,
-                      const std::vector<std::shared_ptr<PassiveMaterialVolume>>&)>
+    std::function<int(const std::shared_ptr<PassiveMaterialModel>&,
+                      const std::vector<std::shared_ptr<PassiveMaterialModel>>&)>
         hierarchy;
-    hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialVolume>& vol,
-                             const std::vector<std::shared_ptr<PassiveMaterialVolume>>& vols) {
-        auto m = std::find_if(vols.begin(), vols.end(), [&vol](const std::shared_ptr<PassiveMaterialVolume>& v) {
+    hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialModel>& vol,
+                             const std::vector<std::shared_ptr<PassiveMaterialModel>>& vols) {
+        auto m = std::find_if(vols.begin(), vols.end(), [&vol](const std::shared_ptr<PassiveMaterialModel>& v) {
             return v->getName() == vol->getMotherVolume();
         });
         return (m == vols.end() ? 0 : hierarchy(*m, vols)) + 1;
@@ -69,8 +64,8 @@ void PassiveMaterialConstructionG4::registerVolumes() {
 
     std::sort(passive_volumes_.begin(),
               passive_volumes_.end(),
-              [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialVolume>& lhs,
-                                                       const std::shared_ptr<PassiveMaterialVolume>& rhs) {
+              [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialModel>& lhs,
+                                                       const std::shared_ptr<PassiveMaterialModel>& rhs) {
                   return (hierarchy(lhs, volumes) < hierarchy(rhs, volumes));
               });
 }
