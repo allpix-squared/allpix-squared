@@ -230,6 +230,9 @@ Misalignment can be introduced both for shifts along the three global axes and t
 \item The parameter \parameter{alignment_precision_orientation} allows to specify the alignment precision in the three rotation angles defined by the \parameter{orientation} parameter. The misalignments are added to the individual angles before combining them into the final rotation as defined by the \parameter{orientation_mode} parameter.
 \end{itemize}
 
+The optional parameter \parameter{role} accepts the values \parameter{active} for detectors and \parameter{passive} for passive elements in the setup.
+If no value is given, \parameter{active} is taken as the default value.
+
 Furthermore it is possible to specify certain parameters of the detector explained in more detail in Section~\ref{sec:detector_models}.
 This allows to quickly adapt e.g. the sensor thickness of a certain detector without altering the actual detector model file.
 
@@ -255,11 +258,11 @@ Each section starts with a header describing the name used to identify the passi
 Every passive material has to contain all of the following parameters:
 \begin{itemize}
   \item The \parameter{position} and \parameter{orientation} of the material as described for the detector, see Section \ref{sec:detector_config}.
-  \item A string referring to the \parameter{type} of the passive material. 
+  \item A string referring to the \parameter{type} of the passive material.
   The model should be interpreted by the module constructing the passive material, such as for example the GeometryBuilderGeant4 module.
-  \item A string referring to the \parameter{material} of the passive material. 
+  \item A string referring to the \parameter{material} of the passive material.
   The materials are defined in the GeometryBuilderGeant4 module and are described in the module section.
-  \item A set of size parameters specific for the model that is chosen. 
+  \item A set of size parameters specific for the model that is chosen.
   All size parameters that describe the total length of something are placed such that half of this total length extends from each side of the given \parameter{position}.
   If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
   The size parameters for the specific models are described in Section~\ref{geometrybuildergeant4}.
