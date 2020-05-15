@@ -68,8 +68,8 @@ allpix::PassiveMaterialModel::factory(const std::string& type, const Configurati
     }
 }
 
-PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager)
-    : config_(config), geo_manager_(geo_manager) {
+PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager* geo_manager)
+    : config_(std::move(config)), geo_manager_(geo_manager) {
 
     name_ = config_.getName();
     mother_volume_ = config_.get<std::string>("mother_volume", "");

@@ -56,7 +56,7 @@ namespace allpix {
          * @brief Constructs the base passive material model
          * @param Configuration with description of the model
          */
-        PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager);
+        PassiveMaterialModel(Configuration config, GeometryManager* geo_manager);
 
         /**
          * @brief Essential virtual destructor
