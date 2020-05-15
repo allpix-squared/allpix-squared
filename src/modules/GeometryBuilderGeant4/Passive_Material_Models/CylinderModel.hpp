@@ -70,6 +70,21 @@ namespace allpix {
             max_size_ = std::max(2 * outer_radius_, length_);
         }
 
+        // Set the override functions of PassiveMaterialModel
+        G4Tubs* getSolid() const override { return solid_; }
+        double getMaxSize() const override { return max_size_; }
+
+    private:
+        // G4VSolid returnables
+        G4Tubs* solid_;
+
+        // G4VSolid specifications
+        double inner_radius_;
+        double outer_radius_;
+        double length_;
+        double starting_angle_;
+        double arc_length_;
+
         /**
          * @brief Set the inner radius of the cylinder in the XY-plane
          * @param val Inner radius of the cylinder
@@ -95,21 +110,6 @@ namespace allpix {
          * @param val Arc length of the cylinder
          */
         void setArcLength(double val) { arc_length_ = std::move(val); }
-
-        // Set the override functions of PassiveMaterialModel
-        G4Tubs* getSolid() const override { return solid_; }
-        double getMaxSize() const override { return max_size_; }
-
-    private:
-        // G4VSolid returnables
-        G4Tubs* solid_;
-
-        // G4VSolid specifications
-        double inner_radius_;
-        double outer_radius_;
-        double length_;
-        double starting_angle_;
-        double arc_length_;
     };
 } // namespace allpix
 

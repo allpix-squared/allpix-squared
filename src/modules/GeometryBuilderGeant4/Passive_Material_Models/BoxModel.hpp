@@ -73,16 +73,6 @@ namespace allpix {
             // Get the maximum of the size parameters
             max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
         }
-        /**
-         * @brief Set the XYZ-value of the outer size of the box
-         * @param val Outer size of the box
-         */
-        void setOuterSize(ROOT::Math::XYZVector val) { outer_size_ = std::move(val); }
-        /**
-         * @brief Set the XYZ-value of the outer size of the box
-         * @param val Outer size of the box
-         */
-        void setInnerSize(ROOT::Math::XYVector val) { inner_size_ = std::move(val); }
 
         // Set the override functions of PassiveMaterialModel
         G4VSolid* getSolid() const override { return solid_; }
@@ -95,6 +85,17 @@ namespace allpix {
         // G4VSolid specifications
         ROOT::Math::XYZVector outer_size_;
         ROOT::Math::XYVector inner_size_;
+
+        /**
+         * @brief Set the XYZ-value of the outer size of the box
+         * @param val Outer size of the box
+         */
+        void setOuterSize(ROOT::Math::XYZVector val) { outer_size_ = std::move(val); }
+        /**
+         * @brief Set the XYZ-value of the outer size of the box
+         * @param val Outer size of the box
+         */
+        void setInnerSize(ROOT::Math::XYVector val) { inner_size_ = std::move(val); }
     };
 } // namespace allpix
 
