@@ -37,9 +37,7 @@ namespace allpix {
          * @brief Constructs the box passive material model
          * @param config Configuration with description of the model
          */
-        explicit BoxModel(Configuration config, GeometryManager* geo_manager) : PassiveMaterialModel(config, geo_manager){};
-
-        void calculate_size() {
+        explicit BoxModel(Configuration config, GeometryManager* geo_manager) : PassiveMaterialModel(config, geo_manager) {
 
             // Set the box specifications
             setOuterSize(config_.get<ROOT::Math::XYZVector>("size"));
@@ -72,6 +70,9 @@ namespace allpix {
             }
             // Get the maximum of the size parameters
             max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
+
+            LOG(DEBUG) << "Adding points for volume";
+            add_points();
         }
 
         // Set the override functions of PassiveMaterialModel

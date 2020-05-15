@@ -63,8 +63,6 @@ namespace allpix {
          */
         virtual ~PassiveMaterialModel() = default;
 
-        virtual void calculate_size();
-
         /**
          * @brief Virtual function that will return a G4VSolid corresponding to the specific model
          * @return Nullptr if no valid model type is defined

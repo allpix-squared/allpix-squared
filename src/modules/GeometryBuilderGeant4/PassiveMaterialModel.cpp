@@ -85,8 +85,6 @@ PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager
     orientation_.GetComponents(vx, vy, vz);
     rotation_ = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
-    LOG(DEBUG) << "Adding points for volume";
-    add_points();
     LOG(DEBUG) << "Registered volume.";
 }
 

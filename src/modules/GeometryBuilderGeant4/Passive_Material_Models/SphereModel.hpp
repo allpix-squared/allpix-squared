@@ -37,9 +37,7 @@ namespace allpix {
          * @param config Configuration with description of the model
          */
         explicit SphereModel(Configuration config, GeometryManager* geo_manager)
-            : PassiveMaterialModel(config, geo_manager){};
-
-        void calculate_size() {
+            : PassiveMaterialModel(config, geo_manager) {
 
             // Set the cylinder specifications
             setOuterRadius(config_.get<double>("outer_radius"));
@@ -85,6 +83,9 @@ namespace allpix {
 
             // Get the maximum of the size parameters
             max_size_ = 2 * outer_radius_;
+
+            LOG(DEBUG) << "Adding points for volume";
+            add_points();
         }
 
         // Set the override functions of PassiveMaterialModel
