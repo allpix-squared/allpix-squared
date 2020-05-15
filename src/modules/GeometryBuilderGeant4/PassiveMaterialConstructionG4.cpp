@@ -50,22 +50,28 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     }
 
     // Sort the volumes according to their hierarchy (mother volumes before dependants)
-    std::function<int(const std::shared_ptr<PassiveMaterialModel>&,
-                      const std::vector<std::shared_ptr<PassiveMaterialModel>>&)>
+    std::function<int(
+        const std::shared_ptr<PassiveMaterialModel>&, const std::vector<std::shared_ptr<PassiveMaterialModel>>&, size_t)>
         hierarchy;
     hierarchy = [&hierarchy](const std::shared_ptr<PassiveMaterialModel>& vol,
-                             const std::vector<std::shared_ptr<PassiveMaterialModel>>& vols) {
+                             const std::vector<std::shared_ptr<PassiveMaterialModel>>& vols,
+                             size_t n) {
         auto m = std::find_if(vols.begin(), vols.end(), [&vol](const std::shared_ptr<PassiveMaterialModel>& v) {
             return v->getName() == vol->getMotherVolume();
         });
-        return (m == vols.end() ? 0 : hierarchy(*m, vols)) + 1;
+        LOG(DEBUG) << "n=" << n;
+        if(n > 100) {
+            throw ModuleError(
+                "Hierarchy of mother volumes cannot be resolved. The configuration might hold circular dependencies.");
+        }
+        return (m == vols.end() ? 0 : hierarchy(*m, vols, ++n)) + 1;
     };
 
     std::sort(passive_volumes_.begin(),
               passive_volumes_.end(),
               [&hierarchy, volumes = passive_volumes_](const std::shared_ptr<PassiveMaterialModel>& lhs,
                                                        const std::shared_ptr<PassiveMaterialModel>& rhs) {
-                  return (hierarchy(lhs, volumes) < hierarchy(rhs, volumes));
+                  return (hierarchy(lhs, volumes, 0) < hierarchy(rhs, volumes, 0));
               });
 }
 
