@@ -37,12 +37,14 @@ namespace allpix {
          * @brief Constructs the box passive material model
          * @param config Configuration with description of the model
          */
-        explicit BoxModel(Configuration& config) : PassiveMaterialModel(config) {
+        BoxModel(Configuration config, GeometryManager* geo_manager);
+
+        void calculate_size() {
 
             // Set the box specifications
-            setOuterSize(config.get<ROOT::Math::XYZVector>("size"));
-            setInnerSize(config.get<ROOT::Math::XYVector>("inner_size", ROOT::Math::XYVector()));
-            auto thickness = config.get<double>("thickness", 0);
+            setOuterSize(config_.get<ROOT::Math::XYZVector>("size"));
+            setInnerSize(config_.get<ROOT::Math::XYVector>("inner_size", ROOT::Math::XYVector()));
+            auto thickness = config_.get<double>("thickness", 0);
             if(thickness != 0) {
                 if(inner_size_ != ROOT::Math::XYVector()) {
                     throw InvalidValueError(config_, "thickness", "cannot have both 'thickness' and 'inner_size'");

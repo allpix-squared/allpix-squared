@@ -36,12 +36,14 @@ namespace allpix {
          * @brief Constructs the cylinder passive material model
          * @param config Configuration with description of the model
          */
-        explicit CylinderModel(Configuration& config) : PassiveMaterialModel(config) {
+        CylinderModel(Configuration config, GeometryManager* geo_manager);
+
+        void calculate_size() {
 
             // Set the cylinder specifications
             setOuterRadius(config_.get<double>("outer_radius"));
             setInnerRadius(config_.get<double>("inner_radius", 0));
-            auto thickness = config.get<double>("thickness", 0);
+            auto thickness = config_.get<double>("thickness", 0);
             if(thickness != 0) {
                 if(inner_radius_ != 0) {
                     throw InvalidValueError(config_, "thickness", "cannot have both 'thickness' and 'inner_radius'");
