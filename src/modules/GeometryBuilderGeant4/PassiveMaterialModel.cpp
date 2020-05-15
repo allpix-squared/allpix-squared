@@ -74,8 +74,8 @@ PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager
     name_ = config_.getName();
     mother_volume_ = config_.get<std::string>("mother_volume", "");
 
-    LOG(DEBUG) << "Registering volume: " << name_;
-    LOG(DEBUG) << "Mother volume: " << mother_volume_;
+    LOG(DEBUG) << "Registering volume: " << getName();
+    LOG(DEBUG) << " Mother volume: " << getMotherVolume();
     // Get the orientation and position of the material
     orientation_ = geo_manager_->getPassiveElementOrientation(getName()).second;
 
@@ -92,10 +92,11 @@ PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager
 void PassiveMaterialModel::buildVolume(const std::map<std::string, G4Material*>& materials,
                                        const std::shared_ptr<G4LogicalVolume>& world_log) {
 
+    LOG(TRACE) << "Building passive material: " << getName();
     G4LogicalVolume* mother_log_volume = nullptr;
-    if(config_.has("mother_volume")) {
+    if(!getMotherVolume().empty()) {
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-        mother_log_volume = log_volume_store->GetVolume(config_.get<std::string>("mother_volume").append("_log"));
+        mother_log_volume = log_volume_store->GetVolume(getMotherVolume().append("_log"));
     } else {
         mother_log_volume = world_log.get();
     }
