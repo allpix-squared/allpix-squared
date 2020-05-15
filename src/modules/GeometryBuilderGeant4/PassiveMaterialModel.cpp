@@ -56,7 +56,7 @@ template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no
 }
 
 std::shared_ptr<PassiveMaterialModel>
-allpix::PassiveMaterialModel::Factory(std::string type, Configuration config, GeometryManager* geo_manager) {
+allpix::PassiveMaterialModel::factory(const std::string& type, const Configuration& config, GeometryManager* geo_manager) {
     if(type == "box") {
         return std::make_shared<BoxModel>(config, geo_manager);
     } else if(type == "cylinder") {
@@ -68,8 +68,8 @@ allpix::PassiveMaterialModel::Factory(std::string type, Configuration config, Ge
     }
 }
 
-PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager* geo_manager)
-    : config_(config), geo_manager_(geo_manager) {
+PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager)
+    : config_(std::move(config)), geo_manager_(geo_manager) {
 
     name_ = config_.getName();
     mother_volume_ = config_.get<std::string>("mother_volume", "");

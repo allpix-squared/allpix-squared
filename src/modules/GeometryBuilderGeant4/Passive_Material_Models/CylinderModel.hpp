@@ -36,7 +36,7 @@ namespace allpix {
          * @brief Constructs the cylinder passive material model
          * @param config Configuration with description of the model
          */
-        explicit CylinderModel(Configuration config, GeometryManager* geo_manager)
+        explicit CylinderModel(const Configuration& config, GeometryManager* geo_manager)
             : PassiveMaterialModel(config, geo_manager) {
 
             // Set the cylinder specifications

@@ -37,7 +37,8 @@ namespace allpix {
          * @brief Constructs the box passive material model
          * @param config Configuration with description of the model
          */
-        explicit BoxModel(Configuration config, GeometryManager* geo_manager) : PassiveMaterialModel(config, geo_manager) {
+        explicit BoxModel(const Configuration& config, GeometryManager* geo_manager)
+            : PassiveMaterialModel(config, geo_manager) {
 
             // Set the box specifications
             setOuterSize(config_.get<ROOT::Math::XYZVector>("size"));

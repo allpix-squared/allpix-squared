@@ -50,13 +50,13 @@ namespace allpix {
          * @return By param trackModel assigned track model to be used
          */
         static std::shared_ptr<PassiveMaterialModel>
-        Factory(std::string type, Configuration config, GeometryManager* geo_manager);
+        factory(const std::string& type, const Configuration& config, GeometryManager* geo_manager);
 
         /**
          * @brief Constructs the base passive material model
          * @param Configuration with description of the model
          */
-        PassiveMaterialModel(Configuration config, GeometryManager* geo_manager);
+        PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager);
 
         /**
          * @brief Essential virtual destructor
