@@ -209,6 +209,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                         }
                         LOG(TRACE) << "Charge carrier is now within an electric field of "
                                    << Units::display(efield_mag, "V/cm");
+                        LOG(TRACE) << "Diffusion time prior to drift is " << Units::display(diffusion_time, "ns");
                     }
                 }
             }
@@ -219,12 +220,12 @@ void ProjectionPropagationModule::run(unsigned int) {
             double diffusion_constant =
                 boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
 
-            double drift_time = calc_drift_time() + diffusion_time;
-            LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns")
-                       << " (of which are accounted for diffusion: " << Units::display(diffusion_time, "ns") << ")";
+            double drift_time = calc_drift_time();
+            double propagation_time = drift_time + diffusion_time;
+            LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
-                drift_time_histo_->Fill(drift_time, deposit.getCharge());
+                drift_time_histo_->Fill(propagation_time, deposit.getCharge());
             }
 
             double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
@@ -238,9 +239,10 @@ void ProjectionPropagationModule::run(unsigned int) {
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
             // Only add if within requested integration time:
-            auto event_time = deposit.getEventTime() + drift_time;
-            if(drift_time > integration_time_) {
-                LOG(DEBUG) << "Charge carriers drift time not within integration time: " << Units::display(event_time, "ns");
+            auto event_time = deposit.getEventTime() + propagation_time;
+            if(propagation_time > integration_time_) {
+                LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
+                           << Units::display(event_time, "ns");
                 continue;
             }
 
