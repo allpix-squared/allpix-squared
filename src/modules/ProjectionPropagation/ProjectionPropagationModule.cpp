@@ -34,9 +34,11 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<int>("charge_per_step", 10);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("diffuse_deposit", false);
 
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");
+    diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);

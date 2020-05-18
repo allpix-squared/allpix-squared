@@ -66,6 +66,7 @@ namespace allpix {
         // Config parameters: Check whether plots should be generated
         bool output_plots_;
         double integration_time_{};
+        bool diffuse_deposit_;
 
         // Carrier type to be propagated
         CarrierType propagate_type_;
