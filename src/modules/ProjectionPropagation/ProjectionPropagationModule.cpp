@@ -197,20 +197,29 @@ void ProjectionPropagationModule::run(unsigned int) {
 
                     auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
                     double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
-                    if(efield_mag_diffusion < std::numeric_limits<double>::epsilon()) {
-                        LOG(TRACE) << "Charge carrier remains within undepleted volume";
-                        continue;
-                    } else {
-                        auto diffusion_step = diffusion_vec / 50;
-                        while(efield_mag < std::numeric_limits<double>::epsilon()) {
+                    if(efield_mag_diffusion >= std::numeric_limits<double>::epsilon() ||
+                       (!detector_->isWithinSensor(position))) {
+                        size_t nstep = 50;
+                        auto diffusion_step = diffusion_vec / double(nstep);
+                        for(size_t step = 0; step < nstep; ++step) {
                             position += diffusion_step;
-                            diffusion_time += integration_time_ / 50;
+                            diffusion_time += integration_time_ / double(nstep);
                             efield = detector_->getElectricField(position);
                             efield_mag = std::sqrt(efield.Mag2());
+                            if(efield_mag >= std::numeric_limits<double>::epsilon()) {
+                                break;
+                            }
+                        }
+                        if(!detector_->isWithinSensor(position)) {
+                            LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
+                            continue;
                         }
                         LOG(TRACE) << "Charge carrier is now within an electric field of "
                                    << Units::display(efield_mag, "V/cm");
                         LOG(TRACE) << "Diffusion time prior to drift is " << Units::display(diffusion_time, "ns");
+                    } else {
+                        LOG(TRACE) << "Charge carrier remains within undepleted volume";
+                        continue;
                     }
                 }
             }
