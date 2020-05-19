@@ -194,8 +194,6 @@ void ProjectionPropagationModule::run(unsigned int) {
 
                     auto local_position_diffusion = position + diffusion_vec;
 
-                    LOG(TRACE) << "Charge diffused to position: " << Units::display(local_position_diffusion, {"mm", "um"});
-
                     auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
                     double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
                     if(efield_mag_diffusion >= std::numeric_limits<double>::epsilon() ||
@@ -224,15 +222,14 @@ void ProjectionPropagationModule::run(unsigned int) {
                         diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
                                                                        (local_position_diffusion - initial_position).Mag2());
 
-                        LOG(TRACE) << "Charge is at position: " << Units::display(position, {"mm", "um"});
-
                         if(!detector_->isWithinSensor(position)) {
                             LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
                             continue;
                         }
-                        LOG(TRACE) << "Charge carrier is now within an electric field of "
-                                   << Units::display(efield_mag, "V/cm");
-                        LOG(TRACE) << "Diffusion time prior to drift is " << Units::display(diffusion_time, "ns");
+                        LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
+                        LOG(TRACE) << " ... with an electric field of " << Units::display(efield_mag, "V/cm");
+                        LOG(TRACE) << " ... and a diffusion time prior to the drift of "
+                                   << Units::display(diffusion_time, "ns");
                     } else {
                         LOG(TRACE) << "Charge carrier remains within undepleted volume";
                         continue;
