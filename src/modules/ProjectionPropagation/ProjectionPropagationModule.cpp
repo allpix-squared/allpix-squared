@@ -204,7 +204,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                         auto diffusion_step = diffusion_vec / 50;
                         while(efield_mag < std::numeric_limits<double>::epsilon()) {
                             position += diffusion_step;
-                            diffusion_time += integration_time_ * 50;
+                            diffusion_time += integration_time_ / 50;
                             efield = detector_->getElectricField(position);
                             efield_mag = std::sqrt(efield.Mag2());
                         }
