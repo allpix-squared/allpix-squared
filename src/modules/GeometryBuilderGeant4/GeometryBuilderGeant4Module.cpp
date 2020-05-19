@@ -21,7 +21,9 @@
 
 #include <Math/Vector3D.h>
 
+#include "DetectorConstructionG4.hpp"
 #include "GeometryConstructionG4.hpp"
+#include "PassiveMaterialConstructionG4.hpp"
 
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
@@ -33,16 +35,12 @@
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
 
-// Include GDML if Geant4 version has it
-#ifdef Geant4_GDML
-#include "G4GDMLParser.hh"
-#endif
-
 using namespace allpix;
 using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 }
@@ -101,8 +99,7 @@ void GeometryBuilderGeant4Module::init() {
     RELEASE_STREAM(std::cout);
 
     // Set the geometry construction to use
-    auto geometry_construction = new GeometryConstructionG4(geo_manager_, config_);
-    run_manager_g4_->SetUserInitialization(geometry_construction);
+    run_manager_g4_->SetUserInitialization(geometry_construction_);
 
     // Run the geometry construct function in GeometryConstructionG4
     LOG(TRACE) << "Building Geant4 geometry";

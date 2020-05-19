@@ -7,8 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
-#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
+#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
 
 #include <memory>
 #include <utility>
@@ -17,6 +17,7 @@
 #include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
 
+#include "PassiveMaterialConstructionG4.hpp"
 #include "core/geometry/GeometryManager.hpp"
 
 namespace allpix {
@@ -24,6 +25,7 @@ namespace allpix {
      * @brief Constructs the Geant4 geometry during Geant4 initialization
      */
     class GeometryConstructionG4 : public G4VUserDetectorConstruction {
+
     public:
         /**
          * @brief Constructs geometry construction module
@@ -41,16 +43,10 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
         Configuration& config_;
-
         /**
          * @brief Initializes the list of materials from the supported allpix materials
          */
         void init_materials();
-
-        /**
-         * @brief Build all the detectors
-         */
-        void build_detectors();
 
         /**
          * @brief Check all placed volumes for overlaps
@@ -60,12 +56,15 @@ namespace allpix {
         // List of all materials
         std::map<std::string, G4Material*> materials_;
 
+        PassiveMaterialConstructionG4* passive_builder_;
+
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
         G4Material* world_material_{};
-        std::unique_ptr<G4LogicalVolume> world_log_;
+
+        std::shared_ptr<G4LogicalVolume> world_log_;
         std::unique_ptr<G4VPhysicalVolume> world_phys_;
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_DETECTOR_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */

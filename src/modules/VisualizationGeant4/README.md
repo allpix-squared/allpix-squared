@@ -8,6 +8,9 @@ It offers the best visualization experience.
 
 The module allows for changing a variety of parameters to control the output visualization both for the different detector components and the particle beam.
 
+Both detectors and passive materials will be displayed.
+If the material of a passive material is the same as the material of its `mother_volume`, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
+
 ### Dependencies
 
 This module requires an installation of Geant4.
