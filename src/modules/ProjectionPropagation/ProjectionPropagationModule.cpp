@@ -201,9 +201,10 @@ void ProjectionPropagationModule::run(unsigned int) {
                         LOG(TRACE) << "Charge carrier remains within undepleted volume";
                         continue;
                     } else {
+                        auto diffusion_step = diffusion_vec / 50;
                         while(efield_mag < std::numeric_limits<double>::epsilon()) {
-                            position += diffusion_vec / 10.;
-                            diffusion_time += integration_time_ / 10.;
+                            position += diffusion_step;
+                            diffusion_time += integration_time_ * 50;
                             efield = detector_->getElectricField(position);
                             efield_mag = std::sqrt(efield.Mag2());
                         }
