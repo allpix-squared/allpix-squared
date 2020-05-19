@@ -32,7 +32,7 @@
 #include "Passive_Material_Models/SphereModel.hpp"
 #include "core/module/exceptions.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
