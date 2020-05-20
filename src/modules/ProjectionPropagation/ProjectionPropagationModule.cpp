@@ -93,12 +93,29 @@ void ProjectionPropagationModule::init() {
     }
 
     if(output_plots_) {
-        // Initialize output plot
+        // Initialize output plots
+        propagation_time_histo_ = new TH1D("propagation_time_histo",
+                                           "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
+                                           static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                           0,
+                                           static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
         drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
+                                     "Drift time (directed drift only);Drift time [ns];charge carriers",
                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                      0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+                                     static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        initial_position_histo_ = new TH1D("initial_position_histo",
+                                           "Initial position of collected charge carriers;Position z [um];charge carriers",
+                                           100,
+                                           static_cast<double>(Units::convert(-top_z_, "um")),
+                                           static_cast<double>(Units::convert(top_z_, "um")));
+        if(diffuse_deposit_) {
+            diffusion_time_histo_ = new TH1D("diffusion_time_histo",
+                                             "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
+                                             static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                             0,
+                                             static_cast<double>(Units::convert(integration_time_, "ns")));
+        }
     }
 }
 
@@ -250,7 +267,11 @@ void ProjectionPropagationModule::run(unsigned int) {
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
-                drift_time_histo_->Fill(propagation_time, charge_per_step);
+                propagation_time_histo_->Fill(propagation_time, charge_per_step);
+                drift_time_histo_->Fill(drift_time, charge_per_step);
+                if(diffuse_deposit_) {
+                    diffusion_time_histo_->Fill(diffusion_time, charge_per_step);
+                }
             }
 
             double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
@@ -277,6 +298,11 @@ void ProjectionPropagationModule::run(unsigned int) {
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
             }
+
+            if(output_plots_) {
+                initial_position_histo_->Fill(initial_position.z(), charge_per_step);
+            }
+
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
@@ -306,7 +332,12 @@ void ProjectionPropagationModule::run(unsigned int) {
 
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
-        // Write output plot
+        // Write output plots
         drift_time_histo_->Write();
+        propagation_time_histo_->Write();
+        initial_position_histo_->Write();
+        if(diffuse_deposit_) {
+            diffusion_time_histo_->Write();
+        }
     }
 }
