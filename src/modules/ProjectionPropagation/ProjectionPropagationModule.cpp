@@ -197,63 +197,56 @@ void ProjectionPropagationModule::run(unsigned int) {
                 LOG(TRACE) << "Electric field is zero at " << Units::display(position, {"mm", "um"});
                 if(!diffuse_deposit_) {
                     continue;
-                } else {
-
-                    double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
-                    double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
-                    LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
-
-                    std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-                    double diffusion_x = gauss_distribution(random_generator_);
-                    double diffusion_y = gauss_distribution(random_generator_);
-                    double diffusion_z = gauss_distribution(random_generator_);
-                    auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
-
-                    auto local_position_diffusion = position + diffusion_vec;
-
-                    auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
-                    double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
-                    if(efield_mag_diffusion >= std::numeric_limits<double>::epsilon() ||
-                       (!detector_->isWithinSensor(position))) {
-
-                        double precision = Units::get(0.01, "um");
-
-                        std::function<ROOT::Math::XYZPoint(const ROOT::Math::XYZPoint&, const ROOT::Math::XYZPoint&)>
-                            interval;
-                        interval = [this, precision, &interval](const ROOT::Math::XYZPoint& start,
-                                                                const ROOT::Math::XYZPoint& stop) -> ROOT::Math::XYZPoint {
-                            if(std::sqrt((stop - ROOT::Math::XYZVector(start)).Mag2()) < precision) {
-                                return stop;
-                            } else {
-                                auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
-                                double efield_center_mag = std::sqrt(efield_center.Mag2());
-                                if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
-                                    return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
-                                } else {
-                                    return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
-                                }
-                            }
-                        };
-
-                        position = interval(position, local_position_diffusion);
-                        efield = detector_->getElectricField(position);
-                        efield_mag = std::sqrt(efield.Mag2());
-                        diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
-                                                                       (local_position_diffusion - initial_position).Mag2());
-
-                        if(!detector_->isWithinSensor(position)) {
-                            LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
-                            continue;
-                        }
-                        LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
-                        LOG(TRACE) << " ... with an electric field of " << Units::display(efield_mag, "V/cm");
-                        LOG(TRACE) << " ... and a diffusion time prior to the drift of "
-                                   << Units::display(diffusion_time, "ns");
-                    } else {
-                        LOG(TRACE) << "Charge carrier remains within undepleted volume";
-                        continue;
-                    }
                 }
+                double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
+                double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
+                LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
+
+                std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+                double diffusion_x = gauss_distribution(random_generator_);
+                double diffusion_y = gauss_distribution(random_generator_);
+                double diffusion_z = gauss_distribution(random_generator_);
+                auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
+
+                auto local_position_diffusion = position + diffusion_vec;
+
+                auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
+                double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
+
+                if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() && (detector_->isWithinSensor(position))) {
+                    LOG(TRACE) << "Charge carrier remains within undepleted volume";
+                    continue;
+                }
+
+                std::function<ROOT::Math::XYZPoint(const ROOT::Math::XYZPoint&, const ROOT::Math::XYZPoint&)> interval;
+                interval = [this, &interval](const ROOT::Math::XYZPoint& start,
+                                             const ROOT::Math::XYZPoint& stop) -> ROOT::Math::XYZPoint {
+                    // Break nested intervals at a precision of 0.01 um
+                    if(std::sqrt((stop - ROOT::Math::XYZVector(start)).Mag2()) < 0.00001) {
+                        return stop;
+                    }
+                    auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
+                    double efield_center_mag = std::sqrt(efield_center.Mag2());
+                    if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
+                        return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
+                    } else {
+                        return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
+                    }
+                };
+
+                position = interval(position, local_position_diffusion);
+                efield = detector_->getElectricField(position);
+                efield_mag = std::sqrt(efield.Mag2());
+                diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
+                                                               (local_position_diffusion - initial_position).Mag2());
+
+                if(!detector_->isWithinSensor(position)) {
+                    LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
+                    continue;
+                }
+                LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
+                LOG(TRACE) << " ... with an electric field of " << Units::display(efield_mag, "V/cm");
+                LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
             }
 
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
