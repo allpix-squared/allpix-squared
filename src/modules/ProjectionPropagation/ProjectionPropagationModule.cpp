@@ -176,20 +176,6 @@ void ProjectionPropagationModule::run(unsigned int) {
                 return numerator / denominator;
             };
 
-            LOG(TRACE) << "Electric field at carrier position / top of the sensor: "
-                       << Units::display(efield_mag_top, "V/cm") << " , " << Units::display(efield_mag, "V/cm");
-
-            slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
-
-            // Calculate the drift time
-            auto calc_drift_time = [&]() {
-                double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
-                double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
-
-                return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
-                       zero_mobility;
-            };
-
             double diffusion_time = 0;
 
             // Only project if within the depleted region (i.e. efield not zero)
@@ -249,9 +235,22 @@ void ProjectionPropagationModule::run(unsigned int) {
                 LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
             }
 
+            LOG(TRACE) << "Electric field at carrier position / top of the sensor: "
+                       << Units::display(efield_mag_top, "V/cm") << " , " << Units::display(efield_mag, "V/cm");
+
+            slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
+
+            // Calculate the drift time
+            auto calc_drift_time = [&]() {
+                double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
+
+                return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
+                       zero_mobility;
+            };
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
-            // Assume linear electric field over the sensor:
+            // Assume linear electric field over the depleted part of the sensor
             double diffusion_constant =
                 boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
 
