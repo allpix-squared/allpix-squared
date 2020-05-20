@@ -201,18 +201,20 @@ void ProjectionPropagationModule::run(unsigned int) {
 
                         double precision = Units::get(0.01, "um");
 
-                        std::function<ROOT::Math::XYZPoint(ROOT::Math::XYZPoint, ROOT::Math::XYZPoint)> interval;
-                        interval = [this, precision, &interval](ROOT::Math::XYZPoint start,
-                                                                ROOT::Math::XYZPoint stop) -> ROOT::Math::XYZPoint {
+                        std::function<ROOT::Math::XYZPoint(const ROOT::Math::XYZPoint&, const ROOT::Math::XYZPoint&)>
+                            interval;
+                        interval = [this, precision, &interval](const ROOT::Math::XYZPoint& start,
+                                                                const ROOT::Math::XYZPoint& stop) -> ROOT::Math::XYZPoint {
                             if(std::sqrt((stop - ROOT::Math::XYZVector(start)).Mag2()) < precision) {
                                 return stop;
                             } else {
                                 auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
                                 double efield_center_mag = std::sqrt(efield_center.Mag2());
-                                if(efield_center_mag > std::numeric_limits<double>::epsilon())
+                                if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
                                     return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
-                                else
+                                } else {
                                     return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
+                                }
                             }
                         };
 
