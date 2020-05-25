@@ -22,7 +22,7 @@ All available detector models are fully supported. This builder can create extra
 
 ### Dependencies
 
-This module requires an installation Geant4.
+This module requires an installation of Geant4.
 
 ### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.

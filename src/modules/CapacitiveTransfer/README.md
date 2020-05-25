@@ -11,9 +11,12 @@ It is also possible to simulate assemblies with tilted chips, with non-uniform c
 
 The coupling matrix (imported via the *coupling_matrix* or the *coupling_file* configuration keys) represents the pixels coupling with a nominal gap between the chips, while the the ROOT file imported with the configuration key *coupling_scan_file* contains the coupling between the pixels for several gaps.
 
-The coupling matrices can be used to easily simulate the cross-coupling in CCPDs with the nominal, and constant, gap between chips over the pixel matrix. In such cases, the "central pixel" (center element of the coupling matrix) always receive 100% of the charge transfered while neighbor pixels, with lower coupling capacitance, gets a fraction of the charged transfered to the central pixel, normalized by the nominal capacitance (capacitance to central pixel). The coupling matrices always represents the coupling in fractions from 0 (no charge transfered) up to 1 (100% transfer).
+The coupling matrices can be used to easily simulate the cross-coupling in CCPDs with the nominal, and constant, gap between chips over the pixel matrix.
+In such cases, the "central pixel" (center element of the coupling matrix) always receive 100% of the charge transferred while neighbor pixels, with lower coupling capacitance, gets a fraction of the charged transferred to the central pixel, normalized by the nominal capacitance (capacitance to central pixel).
+The coupling matrices always represents the coupling in fractions from 0 (no charge transferred) up to 1 (100% transfer).
 
-If a coupling_scan_file is provided the gap between the chips will be calculated on each pixel with a hit and the charge transfered will be normalized by the capacitance value of the central pixel at the nominal gap. This model will reproduce the results with the coupling matrices if *chip_angle* = 0rad 0rad (parallel chips) and *minimum_gap* = *nominal_gap*.
+If a coupling_scan_file is provided the gap between the chips will be calculated on each pixel with a hit and the charge transferred will be normalized by the capacitance value of the central pixel at the nominal gap. 
+This model will reproduce the results with the coupling matrices if *chip_angle* = 0rad 0rad (parallel chips) and *minimum_gap* = *nominal_gap*.
 
 ### Dependencies
 

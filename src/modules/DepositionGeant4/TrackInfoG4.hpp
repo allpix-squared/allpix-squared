@@ -58,7 +58,7 @@ namespace allpix {
         ROOT::Math::XYZPoint getStartPoint() const;
 
         /**
-         * @brief Get the point of where the track terminated in global coordiantes
+         * @brief Get the point of where the track terminated in global coordinates
          * @return Track end point
          */
         ROOT::Math::XYZPoint getEndPoint() const;
