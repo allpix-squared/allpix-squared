@@ -202,7 +202,7 @@ void GeometryConstructionG4::check_overlaps() {
     for(auto volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
-    // Supress again to prevent further complications
+    // Suppress again to prevent further complications
     IFLOG(WARNING) { SUPPRESS_STREAM(G4cout); }
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";
