@@ -155,6 +155,7 @@ fmt:codespell:
     dependencies: []
     script:
         - source .gitlab/ci/load_deps.sh
+        - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,conf,build,share,3rdparty"
 
