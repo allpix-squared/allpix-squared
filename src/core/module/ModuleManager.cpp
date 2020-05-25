@@ -571,7 +571,7 @@ void ModuleManager::init() {
 }
 
 /**
- * Initializes the thread pool for excuting multiple modules and module tasks in parallel. The run for a module is skipped if
+ * Initializes the thread pool for executing multiple modules and module tasks in parallel. The run for a module is skipped if
  * its delegates are not \ref Module::check_delegates() "satisfied". Sets the section header and logging settings before
  * executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the delegates and the logging after
  * initialization

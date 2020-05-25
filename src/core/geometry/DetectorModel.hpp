@@ -198,7 +198,7 @@ namespace allpix {
          * @return Size of the detector model
          *
          * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
-         * means that the extend of the model should be calculated using the geometrical center as reference, not the positon
+         * means that the extend of the model should be calculated using the geometrical center as reference, not the position
          * returned by \ref DetectorModel::getCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
