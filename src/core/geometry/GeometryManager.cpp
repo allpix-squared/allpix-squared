@@ -58,7 +58,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
             return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
         };
 
-        // Get the position and apply potenial misalignment
+        // Get the position and apply potential misalignment
         auto position = detector_section.get<XYZPoint>("position", XYZPoint());
         LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
         position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
