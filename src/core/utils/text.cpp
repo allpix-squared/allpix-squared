@@ -72,7 +72,7 @@ bool allpix::from_string_impl(std::string str, type_tag<bool>) {
         sstream >> ret_value;
     }
 
-    // Check if the reading was succesfull and everything was read
+    // Check if the reading was successful and everything was read
     if(sstream.fail() || sstream.peek() != EOF) {
         throw std::invalid_argument("conversion not possible");
     }

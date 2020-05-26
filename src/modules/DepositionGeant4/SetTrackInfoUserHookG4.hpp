@@ -20,7 +20,7 @@
 namespace allpix {
     class DepositionGeant4Module;
     /**
-     * @brief Assigns every G4Track a TrackInfoG4 which carries various inforamtion, including the custom track id
+     * @brief Assigns every G4Track a TrackInfoG4 which carries various information, including the custom track id
      */
     class SetTrackInfoUserHookG4 : public G4UserTrackingAction {
     public:

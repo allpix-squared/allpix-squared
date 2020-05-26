@@ -48,7 +48,7 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
     LOG(DEBUG) << "Loading detectors";
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
-        // Read role of this section and default ot "active" (i.e. detector)
+        // Read role of this section and default to "active" (i.e. detector)
         auto role = geometry_section.get<std::string>("role", "active");
         std::transform(role.begin(), role.end(), role.begin(), ::tolower);
         if(role == "passive") {
@@ -514,7 +514,7 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
     };
 
-    // Get the position and apply potenial misalignment
+    // Get the position and apply potential misalignment
     auto position = config.get<XYZPoint>("position", XYZPoint());
     LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
     position += misalignment(config.get<XYZPoint>("alignment_precision_position", XYZPoint()));

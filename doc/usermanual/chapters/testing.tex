@@ -96,7 +96,7 @@ It is configured via the \file{.gitlab-ci.yml} file in the repository's root dir
 \begin{figure}[btp]
   \centering
   \includegraphics[width=\textwidth]{ci.png}
-  \caption{Typical \apsq continous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
+  \caption{Typical \apsq continuous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
 
@@ -223,7 +223,7 @@ $ docker push gitlab-registry.cern.ch/allpix-squared/\
 These images are created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
 
 \begin{warning}
-  The dependencies Docker images should not be flattend with commands like
+  The dependencies Docker images should not be flattened with commands like
 
   \command{docker export <container id> | docker import - <tag name>}
 

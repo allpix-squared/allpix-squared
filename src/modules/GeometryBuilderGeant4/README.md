@@ -40,7 +40,7 @@ A full or partly made sphere with an inner- and outer radius.
 * (Optional) The `arc_length_theta` of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given `starting_angle_theta`. Defaults to 100deg which creates the full circle.\\
 Note that `arc_length_phi` works the same as the `arc_length` from the cylinder, but the `arc_length_theta` works different.
 The \apsq framework will only draw the full circle if `starting_angle_theta` = 0deg, and `arc_length_theta` = 180deg. 
-In all other situations, the sphere will start at `starting_angle_theta` and continue the `arc_length_theta` untill `arc_length_theta` + `starting_angle_theta` = 180deg. After this it willl stop.
+In all other situations, the sphere will start at `starting_angle_theta` and continue the `arc_length_theta` until `arc_length_theta` + `starting_angle_theta` = 180deg. After this it will stop.
 The necessary module errors and warnings have been included to make sure the user will know will and won't be build.
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 

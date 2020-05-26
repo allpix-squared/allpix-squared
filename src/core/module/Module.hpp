@@ -44,7 +44,7 @@ namespace allpix {
      * - Module::run(Event*): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
-     * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
+     * The module class also provides a few utility methods and stores internal data of instantiations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
     class Module {

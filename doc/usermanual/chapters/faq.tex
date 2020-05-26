@@ -209,7 +209,7 @@ Heavy-duty tasks such as handling data should not be performed in the \command{f
 The \command{filter} function should only decide whether to keep a message for processing or to discard it before the \command{run} function.
 
 \item[How do I process data from multiple detectors?]
-When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unqiue} as described in Section~\ref{sec:module_manager}.
+When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unique} as described in Section~\ref{sec:module_manager}.
 As a \emph{detector} module, it would always only have access to the information linked to the specific detector is has been instantiated for.
 The module should then request all messages of the desired type using the messenger call \command{bindMulti} as described in Section~\ref{sec:objects_messages}.
 For \emph{PixelHit} messages, an example code would be:

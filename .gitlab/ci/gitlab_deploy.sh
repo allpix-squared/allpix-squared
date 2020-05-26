@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Get the line for the CVMFS status and chech if server is transaction
+#Get the line for the CVMFS status and check if server is transaction
 clicdp_status=`cvmfs_server list | grep clicdp`
 if [[ $clicdp_status == *"(stratum0 / S3)"* ]]; then
   echo "No ongoing CVMFS transaction detected, initializing new transaction."
