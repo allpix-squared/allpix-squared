@@ -148,7 +148,7 @@ namespace allpix {
         bool hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message);
 
         /**
-         * @brief Check if a delegate has recieved its message
+         * @brief Check if a delegate has received its message
          * @param delegate Delegate to check if it was satisfied
          * @param event Event to check the messages for this delegate
          * @return True if satisfied, false otherwise
@@ -185,7 +185,7 @@ namespace allpix {
     /**
      * @brief Responsible for the actual handling of messages between Modules.
      *
-     * The local messenger is an internal object that is allocated for each thread seperatly. It handles dispatching
+     * The local messenger is an internal object that is allocated for each thread separately. It handles dispatching
      * and fetching messages between Modules.
      */
     class LocalMessenger {
@@ -199,7 +199,7 @@ namespace allpix {
                              const std::string& id);
 
         /**
-         * @brief Check if a delegate has recieved its message
+         * @brief Check if a delegate has received its message
          * @return True if satisfied, false otherwise
          */
         bool isSatisfied(BaseDelegate* delegate) const;

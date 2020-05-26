@@ -19,7 +19,7 @@ namespace {
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
 void MTRunManager::FillWorkerSeedsMap(G4int n_event) { // NOLINT
-    // Fill the auxilary array with new random numbers drawn from the main engine
+    // Fill the auxiliary array with new random numbers drawn from the main engine
     auto engine = G4Random::getTheEngine();
     engine->flatArray(nSeedsPerEvent * n_event, randDbl);
 
@@ -39,7 +39,7 @@ void MTRunManager::Run(G4int allpix_event, G4int n_event) { // NOLINT
     {
         G4AutoLock l(&worker_seed_mutex);
 
-        // Draw the nessecary seeds so that each event will be seeded
+        // Draw the necessary seeds so that each event will be seeded
         auto itr = workers_seeds_.find(allpix_event);
         if(itr == workers_seeds_.end()) {
             // We need to fill more seeds

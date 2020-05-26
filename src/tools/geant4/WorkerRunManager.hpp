@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief The WorkerRunManager class, run manager for Geant4 that works on seperate thread.
+ * @brief The WorkerRunManager class, run manager for Geant4 that works on separate thread.
  * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -71,7 +71,7 @@ namespace allpix {
          * @brief Constructs an event object and set the seeds for RNG.
          * @param i_event the event number.
          *
-         * Creats a new \ref G4Event object and set its event number, seeds for the thread RNG.
+         * Creates a new \ref G4Event object and set its event number, seeds for the thread RNG.
          */
         G4Event* GenerateEvent(G4int i_event) override;
 

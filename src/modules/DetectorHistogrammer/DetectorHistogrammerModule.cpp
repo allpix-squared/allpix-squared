@@ -384,7 +384,7 @@ void DetectorHistogrammerModule::finalize() {
                   << total_vector_ / static_cast<double>(total_hits_);
     }
 
-    // Merge the histograms that was possiblly filled in parallel
+    // Merge the histograms that was possibly filled in parallel
     auto hit_map_histogram = hit_map->Merge();
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();

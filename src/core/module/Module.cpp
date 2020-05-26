@@ -240,7 +240,7 @@ void BufferedModule::finalize_buffer() {
 }
 
 void BufferedModule::flush_buffered_events() {
-    // Sepcial random generator for events executed out of order
+    // Special random generator for events executed out of order
     static thread_local std::mt19937_64 random_generator;
 
     std::map<unsigned int, std::shared_ptr<Event>>::iterator iter;

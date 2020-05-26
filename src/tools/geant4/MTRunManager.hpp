@@ -42,7 +42,7 @@ namespace allpix {
          * @param allpix_event The allpix event number
          * @param n_event number of events to simulate in one run.
          *
-         * Run the specified number of events on a seperate worker that is associated with the calling thread.
+         * Run the specified number of events on a separate worker that is associated with the calling thread.
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
@@ -90,7 +90,7 @@ namespace allpix {
         /**
          * @brief Previously used by workers to wait for master commands.
          *
-         * Worker manager waits on the shared barrier untill master issues a new command. It will now do nothing.
+         * Worker manager waits on the shared barrier until master issues a new command. It will now do nothing.
          */
         WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
 
@@ -172,7 +172,7 @@ namespace allpix {
         void ThisWorkerReady() override {}
 
         /**
-         * @brief Previously used to wait untill all workers have finished the event loop.
+         * @brief Previously used to wait until all workers have finished the event loop.
          *
          * Wait for all the workers to finish and signal the end of event loop. It will now do nothing.
          */
