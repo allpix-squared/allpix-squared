@@ -318,7 +318,7 @@ Defaults to the current working directory with the subdirectory \textit{output/}
 The 64-bit Mersenne Twister \command{mt19937_64} from the \CPP Standard Library is used to generate seeds.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
-\item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explictely, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
+\item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explicitly, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
 \item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
@@ -360,7 +360,7 @@ No interaction with the framework is possible during the simulation. Signals can
 \begin{itemize}
     \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means the current simulated event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
     \item SIGTERM: Same as SIGINT, request a graceful shutdown of the simulation. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
-    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
 

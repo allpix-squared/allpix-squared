@@ -23,8 +23,8 @@ namespace allpix {
     public:
         /**
          * @brief Construct a Monte-Carlo track
-         * @param start_point Global point where track came into existance
-         * @param end_point Global point where track went out of existance
+         * @param start_point Global point where track came into existence
+         * @param end_point Global point where track went out of existence
          * @param g4_volume Geant4 volume where track originated in
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
