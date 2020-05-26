@@ -140,6 +140,7 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             usermanual/figures/telescope.png
+            usermanual/figures/passive_materials.png
             usermanual/figures/ci.png
             usermanual/figures/linegraph_hrcmos_collected.png
             INPUTS

@@ -210,6 +210,8 @@ int main(int argc, char** argv) {
                 points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
             } else {
                 LOG(ERROR) << "Region \"" << region << "\" not found in TCAD mesh";
+                allpix::Log::finish();
+                return 1;
             }
         }
 
@@ -469,7 +471,7 @@ int main(int argc, char** argv) {
         std::vector<std::future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;
-        // Loop over x coordinate, add tasks for each coorinate to the queue
+        // Loop over x coordinate, add tasks for each coordinate to the queue
         for(int i = 0; i < divisions.x(); ++i) {
             double y = miny + ystep / 2.0;
             for(int j = 0; j < divisions.y(); ++j) {

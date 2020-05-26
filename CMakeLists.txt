@@ -9,7 +9,7 @@ IF(COMMAND CMAKE_POLICY)
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v1.4.0")
+SET(ALLPIX_VERSION "v1.5.0")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -73,7 +73,9 @@ ENDIF()
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+SET(CMAKE_SKIP_INSTALL_RPATH FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 
 # Add the automatically determined parts of the RPATH which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -83,6 +85,11 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${IsSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${IsSystemDir}" STREQUAL "-1")
+
+IF(APPLE)
+  SET(CMAKE_INSTALL_NAME_DIR "@rpath")
+  SET(CMAKE_INSTALL_RPATH "@loader_path/../lib") # self relative LIBDIR
+ENDIF()
 
 # If available, use CMake's link-what-you-use feature, not on APPLE
 IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
@@ -111,6 +118,9 @@ ENDIF()
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+# Check if compiler version supports all features:
+INCLUDE("cmake/compiler-version-checks.cmake")
+
 # Options for debug builds:
 OPTION(SANITIZER "Build with sanitizer flags" OFF)
 OPTION(COVERAGE "Create code coverage report" OFF)
@@ -129,7 +139,7 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") 
     IF(COVERAGE)
         INCLUDE("cmake/CodeCoverage.cmake")
         APPEND_COVERAGE_COMPILER_FLAGS()
-        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools")
+        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools" "${PROJECT_SOURCE_DIR}/3rdparty" "${PROJECT_BINARY_DIR}")
         SETUP_TARGET_FOR_COVERAGE_GCOVR(NAME coverage_gcovr
                                         EXECUTABLE ctest -L coverage
                                         DEPENDENCIES allpix AllpixCore)
@@ -157,11 +167,11 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+17.*")
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
-ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14].*")
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14y].*")
     SET(CMAKE_CXX_STANDARD 14)
 ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
     MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version: ${ROOT_CXX_FLAGS}")
@@ -180,6 +190,11 @@ ALLPIX_SETUP_ROOT_TARGETS()
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
 SET(ALLPIX_DEPS_LIBRARIES Threads::Threads ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
+
+# Add the LCG view as dependency if set:
+IF(DEFINED ENV{LCG_VIEW})
+    ADD_RUNTIME_DEP($ENV{LCG_VIEW})
+ENDIF()
 
 # Add "thisroot.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(thisroot.sh)

@@ -198,8 +198,8 @@ namespace allpix {
          * @return Size of the detector model
          *
          * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
-         * means that the extend of the model should be calculated using the geometrical center as reference, not the positon
-         * returned by \ref DetectorModel::getCenter.
+         * means that the extend of the model should be calculated using the geometrical center as reference, not the
+         * position returned by \ref DetectorModel::getCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
@@ -208,14 +208,14 @@ namespace allpix {
          * @brief Get number of pixel (replicated blocks in generic sensors)
          * @return Number of two dimensional pixels
          */
-        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> getNPixels() const {
             return number_of_pixels_;
         }
         /**
          * @brief Set number of pixels (replicated blocks in generic sensors)
          * @param val Number of two dimensional pixels
          */
-        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
+        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> val) {
             number_of_pixels_ = std::move(val);
         }
         /**
@@ -371,7 +371,7 @@ namespace allpix {
     protected:
         std::string type_;
 
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYVector implant_size_;
 

@@ -266,7 +266,7 @@ A sketch of the actual coordinate transformations performed, including the order
 \begin{figure}[tbp]
   \center
   \input{tikz/transformations}
-  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the repective coordinate systems in top view, the second row in side view.}
+  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the respective coordinate systems in top view, the second row in side view.}
   \label{fig:transformations}
 \end{figure}
 
@@ -424,6 +424,7 @@ Communication between modules is performed by the exchange of messages.
 Messages are templated instantiations of the \parameter{Message} class carrying a vector of objects.
 The list of objects available in the \apsq objects library are discussed in Chapter~\ref{ch:objects}.
 The messaging system has a dispatching mechanism to send messages and a receiving part that fetches incoming messages.
+Messages are always received by modules in the order they have been dispatched by preceding modules.
 
 The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly.
 If the name is not given (or equal to \texttt{-}) the \parameter{output} parameter of the module is used to determine the name of the message, defaulting to an empty string.

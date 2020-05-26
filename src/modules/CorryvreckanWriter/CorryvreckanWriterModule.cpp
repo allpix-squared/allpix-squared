@@ -50,7 +50,7 @@ void CorryvreckanWriterModule::init() {
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
-    LOG(TRACE) << "Creating ouput file \"" << fileName_ << "\"";
+    LOG(TRACE) << "Creating output file \"" << fileName_ << "\"";
     output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -240,7 +240,7 @@ void CorryvreckanWriterModule::finalize() {
                 roles += "dut";
             }
             if(!roles.empty()) {
-                geometry_file << "role = " << roles;
+                geometry_file << "role = " << roles << std::endl;
             }
             geometry_file << std::endl;
         }

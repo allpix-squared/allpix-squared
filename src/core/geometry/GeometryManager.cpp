@@ -42,61 +42,58 @@ GeometryManager::GeometryManager() : closed_{false} {}
  */
 void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder) {
     // Set up a random number generator and seed it with the global seed:
-    std::mt19937_64 random_generator;
-    random_generator.seed(seeder());
+    random_generator_.seed(seeder());
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
-    for(auto& detector_section : conf_manager->getDetectorConfigurations()) {
-        LOG(DEBUG) << "Detector " << detector_section.getName() << ":";
+    for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
-        // Calculate possible detector misalignment to be added
-        auto misalignment = [&](auto residuals) {
-            double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
-            double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
-            double dz = std::normal_distribution<double>(0, residuals.z())(random_generator);
-            return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
-        };
+        // Read role of this section and default to "active" (i.e. detector)
+        auto role = geometry_section.get<std::string>("role", "active");
+        std::transform(role.begin(), role.end(), role.begin(), ::tolower);
+        if(role == "passive") {
+            // Check for duplicate names:
+            auto it = std::find_if(
+                passive_elements_.begin(),
+                passive_elements_.end(),
+                [name = geometry_section.getName()](const Configuration& cfg) { return name == cfg.getName(); });
+            if(it != passive_elements_.end()) {
+                throw PassiveElementExistsError(geometry_section.getName());
+            }
 
-        // Get the position and apply potenial misalignment
-        auto position = detector_section.get<XYZPoint>("position", XYZPoint());
-        LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
-        position += misalignment(detector_section.get<XYZPoint>("alignment_precision_position", XYZPoint()));
-        LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
-
-        // Get the orientation and apply misalignment to the individual angles before combining them
-        auto orient_vec = detector_section.get<XYZVector>("orientation", XYZVector());
-        LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
-        orient_vec += misalignment(detector_section.get<XYZVector>("alignment_precision_orientation", XYZVector()));
-        LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
-
-        auto orientation_mode = detector_section.get<std::string>("orientation_mode", "xyz");
-        Rotation3D orientation;
-
-        if(orientation_mode == "zyx") {
-            // First angle given in the configuration file is around z, second around y, last around x:
-            LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
-            orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
-        } else if(orientation_mode == "xyz") {
-            LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
-            // First angle given in the configuration file is around x, second around y, last around z:
-            orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
-        } else if(orientation_mode == "zxz") {
-            LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
-            // First angle given in the configuration file is around z, second around x, last around z:
-            orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
-        } else {
-            throw InvalidValueError(
-                detector_section, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
+            passive_elements_.push_back(geometry_section);
+            LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
+            continue;
+        } else if(role != "active") {
+            throw InvalidValueError(geometry_section, "role", "unknown role");
         }
+
+        LOG(DEBUG) << "Detector " << geometry_section.getName() << ":";
+        // Get the position and orientation of the detector
+        auto orientation = calculate_orientation(geometry_section);
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector = std::shared_ptr<Detector>(new Detector(detector_section.getName(), position, orientation));
+        auto detector =
+            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), orientation.first, orientation.second));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
-        nonresolved_models_[detector_section.get<std::string>("type")].emplace_back(detector_section, detector.get());
+        nonresolved_models_[geometry_section.get<std::string>("type")].emplace_back(geometry_section, detector.get());
+    }
+
+    // Calculate the orientations of passive elements
+    for(auto& passive_element : passive_elements_) {
+        passive_orientations_[passive_element.getName()] = calculate_orientation(passive_element);
+
+        // Check for mandatory but herein unused keys:
+        auto check_key = [&](const Configuration& cfg, const std::string& key) {
+            if(!cfg.has(key)) {
+                throw MissingKeyError(key, cfg.getName());
+            }
+        };
+        check_key(passive_element, "material");
+        check_key(passive_element, "type");
     }
 
     // Load the list of standard model paths
@@ -136,6 +133,15 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
  */
 std::vector<std::string> GeometryManager::getModelsPath() {
     return model_paths_;
+}
+/**
+ * Calls the calculate_orientation function for a given configuration
+ */
+std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
+    if(passive_orientations_.count(passive_element) == 0) {
+        throw ModuleError("Passive Material '" + passive_element + "' is not defined.");
+    }
+    return passive_orientations_.at(passive_element);
 }
 
 /**
@@ -334,6 +340,7 @@ std::shared_ptr<Detector> GeometryManager::getDetector(const std::string& name) 
     }
     throw allpix::InvalidDetectorError(name);
 }
+
 /**
  * @throws InvalidDetectorError If not a single detector with this type exists
  */
@@ -353,6 +360,10 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     }
 
     return result;
+}
+
+std::list<Configuration>& GeometryManager::getPassiveElements() {
+    return passive_elements_;
 }
 
 void GeometryManager::load_models() {
@@ -489,6 +500,50 @@ void GeometryManager::close_geometry() {
 
     closed_ = true;
     LOG(TRACE) << "Closed geometry";
+}
+/*
+ * Calculates the position and orientation of the object from the provided configuration file
+ */
+std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Configuration& config) {
+
+    // Calculate possible detector misalignment to be added
+    auto misalignment = [&](auto residuals) {
+        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator_);
+        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator_);
+        double dz = std::normal_distribution<double>(0, residuals.z())(random_generator_);
+        return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
+    };
+
+    // Get the position and apply potential misalignment
+    auto position = config.get<XYZPoint>("position", XYZPoint());
+    LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
+    position += misalignment(config.get<XYZPoint>("alignment_precision_position", XYZPoint()));
+    LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
+
+    // Get the orientation and apply misalignment to the individual angles before combining them
+    auto orient_vec = config.get<XYZVector>("orientation", XYZVector());
+    LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
+    orient_vec += misalignment(config.get<XYZVector>("alignment_precision_orientation", XYZVector()));
+    LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
+
+    auto orientation_mode = config.get<std::string>("orientation_mode", "xyz");
+    Rotation3D orientation;
+    if(orientation_mode == "zyx") {
+        // First angle given in the configuration file is around z, second around y, last around x:
+        LOG(DEBUG) << "Interpreting Euler angles as ZYX rotation";
+        orientation = RotationZYX(orient_vec.x(), orient_vec.y(), orient_vec.z());
+    } else if(orientation_mode == "xyz") {
+        LOG(DEBUG) << "Interpreting Euler angles as XYZ rotation";
+        // First angle given in the configuration file is around x, second around y, last around z:
+        orientation = RotationZ(orient_vec.z()) * RotationY(orient_vec.y()) * RotationX(orient_vec.x());
+    } else if(orientation_mode == "zxz") {
+        LOG(DEBUG) << "Interpreting Euler angles as ZXZ rotation";
+        // First angle given in the configuration file is around z, second around x, last around z:
+        orientation = EulerAngles(orient_vec.x(), orient_vec.y(), orient_vec.z());
+    } else {
+        throw InvalidValueError(config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
+    }
+    return std::pair<XYZPoint, Rotation3D>(position, orientation);
 }
 
 bool GeometryManager::hasMagneticField() const {

@@ -3,14 +3,14 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
 # Add layer for Geant4
 
-ENV GEANT4_VERSION 10.06
-ENV GEANT4_VERSION_PATH 10.6.0
+ENV GEANT4_VERSION 10.06.p01
+ENV GEANT4_VERSION_PATH 10.6.1
 
 ENV GEANT4DIR="/opt/geant4"
 ENV PATH="$GEANT4DIR/bin:$PATH"
 ENV LD_LIBRARY_PATH="$GEANT4DIR/lib:$LD_LIBRARY_PATH"
 ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4NDL4.6"
-ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4EMLOW7.9"
+ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4EMLOW7.9.1"
 ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/PhotonEvaporation5.5"
 ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/RadioactiveDecay5.4"
 ENV G4PIIDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PII1.3"
@@ -43,7 +43,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for ROOT6
 
-ENV ROOT6_VERSION 6.18.04
+ENV ROOT6_VERSION 6.20.00
 
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
@@ -67,6 +67,8 @@ RUN source scl_source enable devtoolset-7 && \
            -Dthread=ON \
            -Dx11=OFF \
            -Dopengl=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
            -DCMAKE_INSTALL_PREFIX=../ \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
@@ -76,7 +78,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for LCIO
 
-ENV LCIO_VERSION 02-13-01
+ENV LCIO_VERSION 02-13-02
 
 ENV LCIODIR="/opt/lcio"
 ENV PATH="$LCIODIR/bin:$PATH"
