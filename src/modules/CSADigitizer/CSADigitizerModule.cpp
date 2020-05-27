@@ -216,12 +216,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
-	    // asv fill histos always or just when pulse is over threshold?
-	    if (0.0 < tot){
-	      h_tot->Fill(tot);
-	      h_toa->Fill(toa);
-	      h_pxq_vs_tot->Fill(inputcharge / 1e3,tot);
-	    }
+	    h_tot->Fill(tot);
+	    h_toa->Fill(toa);
+	    h_pxq_vs_tot->Fill(inputcharge / 1e3,tot);
         }
 
 	
