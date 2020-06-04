@@ -1,7 +1,7 @@
 #ifndef ALLPIX_MESHPARSER_DFISE_H
 #define ALLPIX_MESHPARSER_DFISE_H
 
-#include "MeshParser.hpp"
+#include "../MeshParser.hpp"
 
 #include <iostream>
 #include <map>

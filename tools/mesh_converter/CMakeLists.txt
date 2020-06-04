@@ -29,7 +29,7 @@ INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 ADD_EXECUTABLE(mesh_converter
     MeshElement.cpp
     MeshConverter.cpp
-    DFISEParser.cpp
+    parsers/DFISEParser.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp
