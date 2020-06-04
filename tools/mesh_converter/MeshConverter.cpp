@@ -144,6 +144,12 @@ int main(int argc, char** argv) {
     LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
     LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
+    if(!file) {
+        LOG(FATAL) << "Failed to open configuration file \"" << conf_file_name << "\"";
+        allpix::Log::finish();
+        return 1;
+    }
+
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
