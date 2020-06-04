@@ -23,6 +23,10 @@ namespace mesh_converter {
          * @brief Default constructor
          */
         MeshParser() = default;
+        /**
+         * @brief Default destructor
+         */
+        virtual ~MeshParser() = default;
 
         // Read the grid
         virtual MeshMap read_meshes(const std::string& file_name, bool mesh_tree) = 0;
