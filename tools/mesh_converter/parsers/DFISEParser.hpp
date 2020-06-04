@@ -33,7 +33,7 @@ namespace mesh_converter {
 
     public:
         // Read the grid
-        MeshMap read_meshes(const std::string& file_name, bool mesh_tree) override;
+        MeshMap read_meshes(const std::string& file_name) override;
 
         // Read the electric field
         FieldMap read_fields(const std::string& file_name) override;

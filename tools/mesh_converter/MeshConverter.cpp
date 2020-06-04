@@ -184,8 +184,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    const auto mesh_tree = config.get<bool>("mesh_tree", false);
-
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
     if(!log_file_name.empty()) {
@@ -207,7 +205,7 @@ int main(int argc, char** argv) {
 
     std::vector<Point> points;
     try {
-        auto region_grid = parser->read_meshes(grid_file, mesh_tree);
+        auto region_grid = parser->read_meshes(grid_file);
         LOG(INFO) << "Grid sizes for all regions:";
         for(auto& reg : region_grid) {
             LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();

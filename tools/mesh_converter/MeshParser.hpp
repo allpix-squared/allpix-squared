@@ -28,8 +28,7 @@ namespace mesh_converter {
          */
         virtual ~MeshParser() = default;
 
-        // Read the grid
-        virtual MeshMap read_meshes(const std::string& file_name, bool mesh_tree) = 0;
+        virtual MeshMap read_meshes(const std::string& file_name) = 0;
 
         // Read the electric field
         virtual FieldMap read_fields(const std::string& file_name) = 0;

@@ -16,7 +16,7 @@
 
 using namespace mesh_converter;
 
-MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
+MeshMap DFISEParser::read_meshes(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -39,10 +39,6 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
 
     Point point(-1.0, -1.0, -1.0);
-    auto tree = new TTree("mesh_points", "Mesh points");
-    tree->Branch("x", &point.x, "x/D");
-    tree->Branch("y", &point.y, "y/D");
-    tree->Branch("z", &point.z, "z/D");
 
     std::string region;
     long unsigned int dimension = 1;
@@ -201,7 +197,6 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
                 point.z = -1.0;
                 while(sstr >> point.x >> point.y >> point.z) {
                     vertices.push_back(point);
-                    tree->Fill();
                 }
             }
             if(dimension == 2) {
@@ -210,7 +205,6 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
                 point.z = -1.0;
                 while(sstr >> point.y >> point.z) {
                     vertices.push_back(point);
-                    tree->Fill();
                 }
             }
         } break;
@@ -375,15 +369,6 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
         }
 
         ret_map[name_region_vertices.first] = ret_vector;
-    }
-
-    if(mesh_tree) {
-        std::string root_file_name = file_name + "_MESH_POINTS_TTREE.root";
-        auto root_file = new TFile(root_file_name.c_str(), "RECREATE");
-        tree->Write();
-        root_file->Close();
-    } else {
-        tree->Delete();
     }
 
     return ret_map;

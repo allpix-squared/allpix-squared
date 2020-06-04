@@ -41,7 +41,6 @@ It should be noted that the TCAD DF-ISE mesh converter depends on the core utili
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
-* `mesh_tree`: Boolean to enable creation of a root file with the TCAD mesh nodes stored in a `ROOT::TTree`. This setting is deactivated by default.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
 
 ### Usage
