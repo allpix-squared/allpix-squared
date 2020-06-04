@@ -4,6 +4,7 @@
 #include "MeshElement.hpp"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@ namespace mesh_converter {
      */
     class MeshParser {
     public:
+        static std::shared_ptr<MeshParser> Factory(std::string parser);
         /**
          * @brief Default constructor
          */

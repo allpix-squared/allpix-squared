@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
     std::signal(SIGQUIT, interrupt_handler);
     std::signal(SIGINT, interrupt_handler);
 
+    std::string parser_type = "df-ise";
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
@@ -196,11 +197,11 @@ int main(int argc, char** argv) {
     std::string grid_file = file_prefix + ".grd";
     LOG(STATUS) << "Reading mesh grid from grid file \"" << grid_file << "\"";
 
-    DFISEParser parser;
+    auto parser = MeshParser::Factory(parser_type);
 
     std::vector<Point> points;
     try {
-        auto region_grid = parser.read_meshes(grid_file, mesh_tree);
+        auto region_grid = parser->read_meshes(grid_file, mesh_tree);
         LOG(INFO) << "Grid sizes for all regions:";
         for(auto& reg : region_grid) {
             LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
@@ -232,7 +233,7 @@ int main(int argc, char** argv) {
 
     std::vector<Point> field;
     try {
-        auto region_fields = parser.read_fields(data_file);
+        auto region_fields = parser->read_fields(data_file);
         LOG(INFO) << "Field sizes for all regions and observables:";
         for(auto& reg : region_fields) {
             LOG(INFO) << " " << reg.first << ":";
