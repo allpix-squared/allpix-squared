@@ -201,11 +201,11 @@ int main(int argc, char** argv) {
     std::string grid_file = file_prefix + ".grd";
     LOG(STATUS) << "Reading mesh grid from grid file \"" << grid_file << "\"";
 
-    auto parser = MeshParser::Factory(parser_type);
+    auto parser = MeshParser::factory(parser_type);
 
     std::vector<Point> points;
     try {
-        auto region_grid = parser->read_meshes(grid_file);
+        auto region_grid = parser->readMeshes(grid_file);
         LOG(INFO) << "Grid sizes for all regions:";
         for(auto& reg : region_grid) {
             LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 
     std::vector<Point> field;
     try {
-        auto region_fields = parser->read_fields(data_file);
+        auto region_fields = parser->readFields(data_file);
         LOG(INFO) << "Field sizes for all regions and observables:";
         for(auto& reg : region_fields) {
             LOG(INFO) << " " << reg.first << ":";

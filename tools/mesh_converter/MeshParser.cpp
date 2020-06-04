@@ -2,7 +2,7 @@
 
 using namespace mesh_converter;
 
-std::shared_ptr<MeshParser> MeshParser::Factory(std::string parser) {
+std::shared_ptr<MeshParser> MeshParser::factory(std::string parser) {
     std::transform(parser.begin(), parser.end(), parser.begin(), ::tolower);
 
     if(parser == "df-ise" || parser == "dfise") {

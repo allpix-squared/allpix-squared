@@ -16,7 +16,7 @@
 
 using namespace mesh_converter;
 
-MeshMap DFISEParser::read_meshes(const std::string& file_name) {
+MeshMap DFISEParser::readMeshes(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -374,7 +374,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
     return ret_map;
 }
 
-FieldMap DFISEParser::read_fields(const std::string& file_name) {
+FieldMap DFISEParser::readFields(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
