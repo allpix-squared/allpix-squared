@@ -28,9 +28,18 @@ namespace mesh_converter {
          */
         virtual ~MeshParser() = default;
 
+        /**
+         * @brief Method to read grids of mesh points from the given file
+         * @param  file_name Canonical path of the input file
+         * @return           Map with mesh points for all regions found in the file
+         */
         virtual MeshMap read_meshes(const std::string& file_name) = 0;
 
-        // Read the electric field
+        /**
+         * @brief Method to read fields from the given file
+         * @param  file_name Canonical path pof the input file
+         * @return           Map with all fields for the different regions
+         */
         virtual FieldMap read_fields(const std::string& file_name) = 0;
     };
 
