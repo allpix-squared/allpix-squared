@@ -16,7 +16,7 @@
 
 using namespace mesh_converter;
 
-std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::string& file_name, bool mesh_tree) {
+MeshMap DFISEParser::read_meshes(const std::string& file_name, bool mesh_tree) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -389,8 +389,7 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
     return ret_map;
 }
 
-std::map<std::string, std::map<std::string, std::vector<Point>>>
-mesh_converter::read_electric_field(const std::string& file_name) {
+FieldMap DFISEParser::read_fields(const std::string& file_name) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
