@@ -184,8 +184,11 @@ void DefaultDigitizerModule::run(unsigned int) {
             }
         }
 
+        auto time = time_of_arrival(pixel_charge, threshold);
+        LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"});
+
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time_of_arrival(pixel_charge, threshold), charge, &pixel_charge);
+        hits.emplace_back(pixel, time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
