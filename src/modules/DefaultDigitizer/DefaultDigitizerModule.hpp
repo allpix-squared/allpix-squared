@@ -66,6 +66,14 @@ namespace allpix {
         // Input message with the charges on the pixels
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
+        /**
+         * @brief Helper function to calculate time of crossing the threshold
+         * @param  pixel_charge PixelCharge object to calculate the threshold crossing for
+         * @param  threshold    Threshold to be crossed
+         * @return              Timestamp of threshold crossing in internal units
+         */
+        double time_of_arrival(const PixelCharge& pixel_charge, double threshold) const;
+
         // Statistics
         unsigned long long total_hits_{};
 
