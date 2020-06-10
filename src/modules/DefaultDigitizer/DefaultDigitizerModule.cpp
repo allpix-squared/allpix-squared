@@ -206,10 +206,10 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
     if(pulse.isInitialized()) {
         auto charges = pulse.getPulse();
         std::vector<double>::iterator bin;
-        double c = 0;
+        double integrated_charge = 0;
         for(bin = charges.begin(); bin != charges.end(); bin++) {
-            c += *bin;
-            if(c > threshold) {
+            integrated_charge += *bin;
+            if(integrated_charge > threshold) {
                 break;
             }
         }
