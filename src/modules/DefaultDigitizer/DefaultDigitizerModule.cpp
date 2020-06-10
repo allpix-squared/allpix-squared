@@ -205,7 +205,7 @@ void DefaultDigitizerModule::run(unsigned int) {
 double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, double threshold) const {
 
     // If this PixelCharge has a pulse, we can find out when it crossed the threshold:
-    auto pulse = pixel_charge.getPulse();
+    const auto& pulse = pixel_charge.getPulse();
     if(pulse.isInitialized()) {
         auto charges = pulse.getPulse();
         std::vector<double>::iterator bin;
