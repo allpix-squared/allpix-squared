@@ -16,6 +16,9 @@ In detail, the following steps are performed for every pixel charge:
 
 The ADC implementation also allows to simulate ToT (time-over-threshold) devices by setting the `adc_offset` parameter to the negative `threshold`. Then, the ADC only converts charge above threshold.
 
+If the necessary pulse information is available from the input data, e.g. by using the PulseTransfer module to generate PixelCharge objects, this module calculates the time-of-arrival (ToA) as the time when the integrated input charge crosses the threshold.
+If no time information is available from the input data, a time stamp of 0 is stored.
+
 With the `output_plots` parameter activated, the module produces histograms of the charge distribution at the different stages of the simulation, i.e. before processing, with electronics noise, after threshold selection, and with ADC smearing applied.
 A 2D-histogram of the actual pixel charge in electrons and the converted charge in ADC units is provided if ADC simulation is enabled by setting `adc_resolution` to a value different from zero.
 In addition, the distribution of the actually applied threshold is provided as histogram.
