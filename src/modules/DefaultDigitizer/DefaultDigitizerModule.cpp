@@ -212,7 +212,7 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
         double integrated_charge = 0;
         for(bin = charges.begin(); bin != charges.end(); bin++) {
             integrated_charge += *bin;
-            if(integrated_charge > threshold) {
+            if(integrated_charge >= threshold) {
                 break;
             }
         }
