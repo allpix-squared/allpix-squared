@@ -1,4 +1,4 @@
-# EUDET Telescope Simulation Example
+# Simulation example with passive volumes
 
 This example showcases the definition of passive volumes in the geometry file.
 
@@ -6,4 +6,4 @@ The file `example_detector_passive.conf` contains a detector of the type `test`,
 
 The `VisualizationGeant4` should visualize these objects.
 
-All further modules contain standard parameters.
+All other modules contain standard parameters.
