@@ -1,5 +1,5 @@
 # GeometryBuilderGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)
 **Status**: Functional  
 
 ### Description
