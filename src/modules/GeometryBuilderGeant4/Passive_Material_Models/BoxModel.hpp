@@ -54,9 +54,20 @@ namespace allpix {
 
             std::string name = config_.getName();
             // Limit the values that can be given
-            if(inner_size_.x() >= outer_size_.x() || inner_size_.y() >= outer_size_.y() ||
-               inner_size_.z() >= outer_size_.z()) {
+            if(inner_size_.x() > outer_size_.x() || inner_size_.y() > outer_size_.y() || inner_size_.z() > outer_size_.z()) {
                 throw InvalidValueError(config_, "inner_size", "inner_size_ cannot be larger than the outer_size_");
+            }
+
+            // Add infinitesimal amount of material if the inner and outer size are equal to avoid artificial remnant
+            // surfaces
+            if(outer_size_.x() - inner_size_.x() < std::numeric_limits<double>::epsilon()) {
+                setInnerSize(ROOT::Math::XYZVector(inner_size_.x() * 2, inner_size_.y(), inner_size_.z()));
+            }
+            if(outer_size_.y() - inner_size_.y() < std::numeric_limits<double>::epsilon()) {
+                setInnerSize(ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y() * 2, inner_size_.z()));
+            }
+            if(outer_size_.z() - inner_size_.z() < std::numeric_limits<double>::epsilon()) {
+                setInnerSize(ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y(), inner_size_.z() * 2));
             }
 
             // Create the G4VSolids which make the Box
