@@ -17,9 +17,8 @@ For each model, a set of specific size parameters need to be given, of which som
 #### Box:
 A rectangular box which can be massive or have an hole in the middle along the z-axis.
 * The `size` of the box is an XYZ vector which defines the total size of the box.
-* (Optional) The `inner_size` of the box is an XY vector which defines the size of the hole which will be removed from the original box volume. Defaults to 0mm 0mm.
-* (Optional) The `thickness` of the box is a value which defines the thickness of the walls of a box with a hole in the middle. This has the has the same effect as the `inner_size`, and such they can't be used together.
- Defaults to 0mm.
+* (Optional) The `inner_size` of the box is an XYZ vector which defines the size of the volume that will be removed at the center of the original box volume. Defaults to 0mm 0mm 0mm (no volume removed).
+* (Optional) The `thickness` of the box is a value which defines the thickness of the walls of a box. This has a similar effect as the parameter `inner_size`, and such they can't be used together. Defaults to 0mm.
 
 #### Cylinder:
 A cylindrical tube which can be massive or have an hole in the middle along the z-axis.
