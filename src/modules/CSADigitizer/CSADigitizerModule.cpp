@@ -35,29 +35,6 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
-    // Set defaults for config variables
-    
-    // defaults for the "simple" parametrisation
-    config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));  
-    config_.setDefault<double>("feedback_time_constant", Units::get(10e-9, "s"));  // R_f * C_f
-    // for both cases
-    config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
-    // and for the advanced one
-    config_.setDefault<double>("krummenacher_current", Units::get(20e-9, "C/s"));
-    config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
-    config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
-    config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V") );
-    config_.setDefault<double>("v_temperature", Units::get(25.7e-3, "eV"));  // Boltzmann kT at 298K
-
-    config_.setDefault<double>("amp_time_window", Units::get(0.5e-6, "s"));
-    config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
-    config_.setDefault<double>("sigma_noise", Units::get(0.1e-3, "V"));
-    
-    config_.setDefault<bool>("output_pulsegraphs", false);
-    config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
-    config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
-    config_.setDefault<int>("output_plots_bins", 100);
-
     // Read model
     auto model = config_.get<std::string>("model");
     std::transform(model.begin(), model.end(), model.begin(), ::tolower);
@@ -70,9 +47,37 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config,
             config_, "model", "Invalid model, only 'simple' and 'csa' are supported.");
     }
 
+    // Set defaults for config variables
+    config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
 
+    config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
+    config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
+    config_.setDefault<double>("sigma_noise", Units::get(0.1e-3, "V"));
+    
+    config_.setDefault<bool>("output_pulsegraphs", false);
+    config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
+    config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
+    config_.setDefault<int>("output_plots_bins", 100);
+
+    if(model_ == DigitizerType::SIMPLE){
+      // defaults for the "simple" parametrisation
+      config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));  
+      config_.setDefault<double>("feedback_time_constant", Units::get(10e-9, "s"));  // R_f * C_f
+    }
+    else if(model_ == DigitizerType::CSA){
+          // and for the "advanced" csa
+      config_.setDefault<double>("krummenacher_current", Units::get(20e-9, "C/s"));
+      config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
+      config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
+      config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V") );
+      config_.setDefault<double>("v_temperature", Units::get(25.7e-3, "eV"));  // Boltzmann kT at 298K
+    }
+
+
+
+    
     // Copy some variables from configuration to avoid lookups:
-    tmax_ = config_.get<double>("amp_time_window");
+    tmax_ = config_.get<double>("integration_time");
     if(model_ == DigitizerType::SIMPLE){
       tauF_ = config_.get<double>("feedback_time_constant");
       tauR_ = config_.get<double>("rise_time_constant");
