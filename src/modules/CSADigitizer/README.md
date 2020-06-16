@@ -35,7 +35,7 @@ The default configuration is equal to the following:
 feedback_capacitance = 5e-15 C/V
 rise_time_constant = 1e-9 s  
 feedback_time_constant = 10e-9 s  // R_f * C_f
-amp_time_window = 0.5e-6 s
+integration_time = 0.5e-6 s
 threshold = 10e-3 V
 sigma_noise = 0.1e-3 V
 ```
