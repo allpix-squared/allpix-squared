@@ -36,8 +36,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config,
     random_generator_.seed(getRandomSeed());
 
     // Set defaults for config variables
-    config_.setDefault<bool>("simple_parametrisation", true);
-    // defaults for the "advanced" parametrisation
+    
+    // defaults for the "simple" parametrisation
     config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));  
     config_.setDefault<double>("feedback_time_constant", Units::get(10e-9, "s"));  // R_f * C_f
     // for both cases
@@ -58,10 +58,22 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config,
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
 
+    // Read model
+    auto model = config_.get<std::string>("model");
+    std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+    if(model == "simple") {
+        model_ = DigitizerType::SIMPLE;
+    } else if(model == "csa") {
+        model_ = DigitizerType::CSA;
+    } else {
+        throw InvalidValueError(
+            config_, "model", "Invalid model, only 'simple' and 'csa' are supported.");
+    }
+
 
     // Copy some variables from configuration to avoid lookups:
     tmax_ = config_.get<double>("amp_time_window");
-    if (config_.get<bool>("simple_parametrisation")){
+    if(model_ == DigitizerType::SIMPLE){
       tauF_ = config_.get<double>("feedback_time_constant");
       tauR_ = config_.get<double>("rise_time_constant");
       cf_ = config_.get<double>("feedback_capacitance");
@@ -69,7 +81,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config,
       LOG(DEBUG) << "Parameters: cf " << Units::display(cf_/1e-15, "C/V")  << ", rf " << Units::display(rf_, "V*s/C")
 		 << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s");
     }
-    else{
+    else if(model_ == DigitizerType::CSA){
       ikrum_ = config_.get<double>("krummenacher_current");
       cd_ = config_.get<double>("detector_capacitance");
       cf_ = config_.get<double>("feedback_capacitance");

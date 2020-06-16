@@ -35,6 +35,16 @@ namespace allpix {
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
     class CSADigitizerModule : public Module {
+
+      /**
+         * @brief Different implemented digitization models
+         */
+      enum class DigitizerType {
+				SIMPLE, ///< No source
+				CSA,    ///< Deposition at a single point
+      };
+
+
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -72,7 +82,7 @@ namespace allpix {
         // Statistics
         unsigned long long total_hits_{};
 
-      
+        DigitizerType model_;
         // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance, v_temperature
         double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{};
       
