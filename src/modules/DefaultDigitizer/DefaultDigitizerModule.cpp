@@ -32,6 +32,12 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
+    config_.setAlias("qdc_smearing", "adc_resolution");
+    config_.setAlias("qdc_smearing", "adc_smearing");
+    config_.setAlias("qdc_offset", "adc_offset");
+    config_.setAlias("qdc_slope", "adc_slope");
+    config_.setAlias("allow_zero_qdc", "allow_zero_adc");
+
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<double>("gain", 1.0);
@@ -58,12 +64,19 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
 void DefaultDigitizerModule::init() {
     // Conversion to ADC units requested:
-    if(config_.get<int>("adc_resolution") > 31) {
-        throw InvalidValueError(config_, "adc_resolution", "precision higher than 31bit is not possible");
+    if(config_.get<int>("qdc_resolution") > 31) {
+        throw InvalidValueError(config_, "qdc_resolution", "precision higher than 31bit is not possible");
     }
-    if(config_.get<int>("adc_resolution") > 0) {
-        LOG(INFO) << "Converting charge to ADC units, ADC resolution: " << config_.get<int>("adc_resolution")
-                  << "bit, max. value " << ((1 << config_.get<int>("adc_resolution")) - 1);
+    if(config_.get<int>("tdc_resolution") > 31) {
+        throw InvalidValueError(config_, "tdc_resolution", "precision higher than 31bit is not possible");
+    }
+    if(config_.get<int>("qdc_resolution") > 0) {
+        LOG(INFO) << "Converting charge to QDC units, QDC resolution: " << config_.get<int>("qdc_resolution")
+                  << "bit, max. value " << ((1 << config_.get<int>("qdc_resolution")) - 1);
+    }
+    if(config_.get<int>("tdc_resolution") > 0) {
+        LOG(INFO) << "Converting time to TDC units, TDC resolution: " << config_.get<int>("tdc_resolution")
+                  << "bit, max. value " << ((1 << config_.get<int>("tdc_resolution")) - 1);
     }
 
     if(config_.get<bool>("output_plots")) {
@@ -83,14 +96,14 @@ void DefaultDigitizerModule::init() {
         h_pxq_thr =
             new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_adc_smear = new TH1D(
-            "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
+            "pixelcharge_adc_smeared", "pixel charge after QDC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
-        if(config_.get<int>("adc_resolution") > 0) {
-            int adcbins = (1 << config_.get<int>("adc_resolution"));
-            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after ADC;pixel charge [ADC];pixels", adcbins, 0, adcbins);
+        if(config_.get<int>("qdc_resolution") > 0) {
+            int adcbins = (1 << config_.get<int>("qdc_resolution"));
+            h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
             h_calibration = new TH2D("charge_adc_calibration",
-                                     "calibration curve of pixel charge to ADC units;pixel charge [ke];pixel charge [ADC]",
+                                     "calibration curve of pixel charge to QDC units;pixel charge [ke];pixel charge [QDC]",
                                      nbins,
                                      0,
                                      maximum,
@@ -159,25 +172,25 @@ void DefaultDigitizerModule::run(unsigned int) {
             h_pxq_thr->Fill(charge / 1e3);
         }
 
-        // Simulate ADC if resolution set to more than 0bit
-        if(config_.get<int>("adc_resolution") > 0) {
+        // Simulate QDC if resolution set to more than 0bit
+        if(config_.get<int>("qdc_resolution") > 0) {
             // temporarily store old charge for histogramming:
             auto original_charge = charge;
 
             // Add ADC smearing:
-            std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("adc_smearing"));
+            std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("qdc_smearing"));
             charge += adc_smearing(random_generator_);
             if(config_.get<bool>("output_plots")) {
                 h_pxq_adc_smear->Fill(charge / 1e3);
             }
-            LOG(DEBUG) << "Smeared for simulating limited ADC sensitivity: " << Units::display(charge, "e");
+            LOG(DEBUG) << "Smeared for simulating limited QDC sensitivity: " << Units::display(charge, "e");
 
             // Convert to ADC units and precision, make sure ADC count is at least 1:
             charge = static_cast<double>(std::max(
-                std::min(static_cast<int>((config_.get<double>("adc_offset") + charge) / config_.get<double>("adc_slope")),
-                         (1 << config_.get<int>("adc_resolution")) - 1),
-                (config_.get<bool>("allow_zero_adc") ? 0 : 1)));
-            LOG(DEBUG) << "Charge converted to ADC units: " << charge;
+                std::min(static_cast<int>((config_.get<double>("qdc_offset") + charge) / config_.get<double>("qdc_slope")),
+                         (1 << config_.get<int>("qdc_resolution")) - 1),
+                (config_.get<bool>("allow_zero_qdc") ? 0 : 1)));
+            LOG(DEBUG) << "Charge converted to QDC units: " << charge;
 
             if(config_.get<bool>("output_plots")) {
                 h_calibration->Fill(original_charge / 1e3, charge);
@@ -256,7 +269,7 @@ void DefaultDigitizerModule::finalize() {
         h_pxq_thr->Write();
         h_pxq_adc->Write();
 
-        if(config_.get<int>("adc_resolution") > 0) {
+        if(config_.get<int>("qdc_resolution") > 0) {
             h_pxq_adc_smear->Write();
             h_calibration->Write();
         }
