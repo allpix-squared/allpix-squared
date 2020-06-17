@@ -45,6 +45,12 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<double>("adc_slope", Units::get(10, "e"));
     config_.setDefault<bool>("allow_zero_adc", false);
 
+    config_.setDefault<int>("tdc_resolution", 0);
+    config_.setDefault<int>("tdc_smearing", Units::get(50, "ps"));
+    config_.setDefault<double>("tdc_offset", Units::get(0, "ns"));
+    config_.setDefault<double>("tdc_slope", Units::get(10, "ns"));
+    config_.setDefault<bool>("allow_zero_tdc", false);
+
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
