@@ -187,6 +187,21 @@ void DefaultDigitizerModule::run(unsigned int) {
         auto time = time_of_arrival(pixel_charge, threshold);
         LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"});
 
+        // Simulate TDC if resolution set to more than 0bit
+        if(config_.get<int>("tdc_resolution") > 0) {
+            // Add TDC smearing:
+            std::normal_distribution<double> tdc_smearing(0, config_.get<unsigned int>("tdc_smearing"));
+            time += tdc_smearing(random_generator_);
+            LOG(DEBUG) << "Smeared for simulating limited TDC sensitivity: " << Units::display(time, {"ns", "ps"});
+
+            // Convert to TDC units and precision, make sure TDC count is at least 1:
+            time = static_cast<double>(std::max(
+                std::min(static_cast<int>((config_.get<double>("tdc_offset") + time) / config_.get<double>("tdc_slope")),
+                         (1 << config_.get<int>("tdc_resolution")) - 1),
+                (config_.get<bool>("allow_zero_tdc") ? 0 : 1)));
+            LOG(DEBUG) << "Time converted to TDC units: " << time;
+        }
+
         // Add the hit to the hitmap
         hits.emplace_back(pixel, time, charge, &pixel_charge);
     }
