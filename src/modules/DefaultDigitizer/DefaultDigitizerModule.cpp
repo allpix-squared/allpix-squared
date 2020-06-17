@@ -39,11 +39,11 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
 
-    config_.setDefault<int>("adc_resolution", 0);
-    config_.setDefault<int>("adc_smearing", Units::get(300, "e"));
-    config_.setDefault<double>("adc_offset", Units::get(0, "e"));
-    config_.setDefault<double>("adc_slope", Units::get(10, "e"));
-    config_.setDefault<bool>("allow_zero_adc", false);
+    config_.setDefault<int>("qdc_resolution", 0);
+    config_.setDefault<int>("qdc_smearing", Units::get(300, "e"));
+    config_.setDefault<double>("qdc_offset", Units::get(0, "e"));
+    config_.setDefault<double>("qdc_slope", Units::get(10, "e"));
+    config_.setDefault<bool>("allow_zero_qdc", false);
 
     config_.setDefault<int>("tdc_resolution", 0);
     config_.setDefault<int>("tdc_smearing", Units::get(50, "ps"));
