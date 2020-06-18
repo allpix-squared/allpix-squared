@@ -341,7 +341,7 @@ Currently implemented tests comprise:
     \item[\file{test_04-4_propagation_project_integration.conf}] projects deposited charges to the implant side of the sensor with a reduced integration time to ignore some charge carriers. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
     \item[\file{test_05_transfer_simple.conf}] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the coordinates of the pixels the charges have been assigned to.
     \item[\file{test_06-1_digitization_charge.conf}] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge for one pixel including noise contributions and the smeared threshold it is compared to.
-    \item[\file{test_06-2_digitization_adc.conf}] digitizes the transferred charges and tests the conversion into ADC units. The monitored output comprises the converted charge value in units of ADC counts.
+    \item[\file{test_06-2_digitization_qdc.conf}] digitizes the transferred charges and tests the conversion into QDC units. The monitored output comprises the converted charge value in units of QDC counts.
     \item[\file{test_06-3_digitization_gain.conf}] digitizes the transferred charges and tests the amplification process by monitoring the total charge after signal amplification and smearing.
     \item[\file{test_06-4_digitization_toa.conf}] digitizes the signal and calculates the time-of-arrival of the particle by checking when the threshold was crossed.
     \item[\file{test_06-5_digitization_tdc.conf}] digitizes the signal and test the conversion of time-of-arrival to TDC units.
