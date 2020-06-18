@@ -32,11 +32,11 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
-    config_.setAlias("qdc_smearing", "adc_resolution");
-    config_.setAlias("qdc_smearing", "adc_smearing");
-    config_.setAlias("qdc_offset", "adc_offset");
-    config_.setAlias("qdc_slope", "adc_slope");
-    config_.setAlias("allow_zero_qdc", "allow_zero_adc");
+    config_.setAlias("qdc_resolution", "adc_resolution", true);
+    config_.setAlias("qdc_smearing", "adc_smearing", true);
+    config_.setAlias("qdc_offset", "adc_offset", true);
+    config_.setAlias("qdc_slope", "adc_slope", true);
+    config_.setAlias("allow_zero_qdc", "allow_zero_adc", true);
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
