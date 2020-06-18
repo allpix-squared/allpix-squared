@@ -344,6 +344,7 @@ Currently implemented tests comprise:
     \item[\file{test_06-2_digitization_adc.conf}] digitizes the transferred charges and tests the conversion into ADC units. The monitored output comprises the converted charge value in units of ADC counts.
     \item[\file{test_06-3_digitization_gain.conf}] digitizes the transferred charges and tests the amplification process by monitoring the total charge after signal amplification and smearing.
     \item[\file{test_06-4_digitization_toa.conf}] digitizes the signal and calculates the time-of-arrival of the particle by checking when the threshold was crossed.
+    \item[\file{test_06-5_digitization_tdc.conf}] digitizes the signal and test the conversion of time-of-arrival to TDC units.
     \item[\file{test_07_histogramming.conf}] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
     \item[\file{test_08-1_writer_root.conf}] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
     \item[\file{test_08-2_writer_rce.conf}] ensures proper functionality of the RCE file writer module. The correct conversion of the PixelHit position and value is monitored by the test's regular expressions.
