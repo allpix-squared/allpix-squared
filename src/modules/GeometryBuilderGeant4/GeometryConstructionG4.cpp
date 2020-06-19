@@ -131,14 +131,22 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
 /**
  * Initializes all the internal materials. The following materials are supported by this module:
- * - vacuum
- * - air
  * - silicon
- * - epoxy
+ * - plexiglass
  * - kapton
- * - solder
+ * - copper
+ * - aluminum
+ * - air
+ * - lead
+ * - tungsten
  * - lithium
  * - beryllium
+ * - vacuum
+ * - epoxy
+ * - carbon fiber
+ * - PCB G-10
+ * - solder
+ * - fused silica
  */
 void GeometryConstructionG4::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();
@@ -162,6 +170,7 @@ void GeometryConstructionG4::init_materials() {
     G4Element* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
     G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
     G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
+    G4Element* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
@@ -191,6 +200,20 @@ void GeometryConstructionG4::init_materials() {
     Solder->AddElement(Sn, 0.63);
     Solder->AddElement(Pb, 0.37);
     materials_["solder"] = Solder;
+
+    G4Material* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
+    FusedSilica->AddElement(O, 0.53);
+    FusedSilica->AddElement(Si, 0.47);
+    materials_["fusedsilica"] = FusedSilica;
+
+    G4MaterialPropertiesTable* FusedSilica_prop = new G4MaterialPropertiesTable();
+    const G4int nE = 2;
+    G4double FS_energy[nE] = {2.0 * CLHEP::eV, 3.0 * CLHEP::eV};
+    G4double FS_rindex[nE] = {1.458, 1.458};
+
+    FusedSilica_prop->AddProperty("RINDEX", FS_energy, FS_rindex, nE);
+
+    FusedSilica->SetMaterialPropertiesTable(FusedSilica_prop);
 }
 
 void GeometryConstructionG4::check_overlaps() {
