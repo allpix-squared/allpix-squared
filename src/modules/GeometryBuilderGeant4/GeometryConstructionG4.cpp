@@ -174,18 +174,18 @@ void GeometryConstructionG4::init_materials() {
     G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
     G4Element* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
 
-    // Create Carbon Fiber material:
-    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
-    CarbonFiber->AddMaterial(Epoxy, 0.4);
-    CarbonFiber->AddElement(C, 0.6);
-    materials_["carbonfiber"] = CarbonFiber;
-
     // Create Epoxy material
     G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
     Epoxy->AddElement(H, 44);
     Epoxy->AddElement(C, 15);
     Epoxy->AddElement(O, 7);
     materials_["epoxy"] = Epoxy;
+
+    // Create Carbon Fiber material:
+    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
+    CarbonFiber->AddMaterial(Epoxy, 0.4);
+    CarbonFiber->AddElement(C, 0.6);
+    materials_["carbonfiber"] = CarbonFiber;
 
     G4Material* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
     FusedSilica->AddElement(O, 0.53);
