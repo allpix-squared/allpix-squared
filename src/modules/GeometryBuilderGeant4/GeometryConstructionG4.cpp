@@ -131,37 +131,39 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
 /**
  * Initializes all the internal materials. The following materials are supported by this module:
- * - silicon
- * - plexiglass
- * - kapton
- * - copper
- * - aluminum
- * - air
- * - lead
- * - tungsten
- * - lithium
- * - beryllium
- * - vacuum
- * - epoxy
- * - carbon fiber
- * - PCB G-10
- * - solder
- * - fused silica
+ * - Materials listed by Geant4:
+ *   - air
+ *   - aluminum
+ *   - beryllium
+ *   - copper
+ *   - kapton
+ *   - lead
+ *   - lithium
+ *   - plexiglass
+ *   - silicon
+ *   - tungsten
+ * - Composite or custom materials:
+ *   - carbon fiber
+ *   - epoxy
+ *   - fused silica
+ *   - PCB G-10
+ *   - solder
+ *   - vacuum
  */
 void GeometryConstructionG4::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();
 
     // Build table of materials from database
-    materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
-    materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
-    materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
-    materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
-    materials_["aluminum"] = nistman->FindOrBuildMaterial("G4_Al");
     materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
-    materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
-    materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
-    materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
+    materials_["aluminum"] = nistman->FindOrBuildMaterial("G4_Al");
     materials_["beryllium"] = nistman->FindOrBuildMaterial("G4_Be");
+    materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
+    materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
+    materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
+    materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
+    materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
+    materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
+    materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
 
     // Create required elements:
     G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
@@ -172,8 +174,11 @@ void GeometryConstructionG4::init_materials() {
     G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
     G4Element* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
 
-    // Add vacuum
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
+    // Create Carbon Fiber material:
+    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
+    CarbonFiber->AddMaterial(Epoxy, 0.4);
+    CarbonFiber->AddElement(C, 0.6);
+    materials_["carbonfiber"] = CarbonFiber;
 
     // Create Epoxy material
     G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
@@ -182,11 +187,18 @@ void GeometryConstructionG4::init_materials() {
     Epoxy->AddElement(O, 7);
     materials_["epoxy"] = Epoxy;
 
-    // Create Carbon Fiber material:
-    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
-    CarbonFiber->AddMaterial(Epoxy, 0.4);
-    CarbonFiber->AddElement(C, 0.6);
-    materials_["carbonfiber"] = CarbonFiber;
+    G4Material* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
+    FusedSilica->AddElement(O, 0.53);
+    FusedSilica->AddElement(Si, 0.47);
+    materials_["fusedsilica"] = FusedSilica;
+
+    G4MaterialPropertiesTable* FusedSilica_prop = new G4MaterialPropertiesTable();
+    const G4int nE = 2;
+    G4double FS_energy[nE] = {2.0 * CLHEP::eV, 3.0 * CLHEP::eV};
+    G4double FS_rindex[nE] = {1.458, 1.458};
+
+    FusedSilica_prop->AddProperty("RINDEX", FS_energy, FS_rindex, nE);
+    FusedSilica->SetMaterialPropertiesTable(FusedSilica_prop);
 
     // Create PCB G-10 material
     G4Material* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
@@ -201,19 +213,8 @@ void GeometryConstructionG4::init_materials() {
     Solder->AddElement(Pb, 0.37);
     materials_["solder"] = Solder;
 
-    G4Material* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
-    FusedSilica->AddElement(O, 0.53);
-    FusedSilica->AddElement(Si, 0.47);
-    materials_["fusedsilica"] = FusedSilica;
-
-    G4MaterialPropertiesTable* FusedSilica_prop = new G4MaterialPropertiesTable();
-    const G4int nE = 2;
-    G4double FS_energy[nE] = {2.0 * CLHEP::eV, 3.0 * CLHEP::eV};
-    G4double FS_rindex[nE] = {1.458, 1.458};
-
-    FusedSilica_prop->AddProperty("RINDEX", FS_energy, FS_rindex, nE);
-
-    FusedSilica->SetMaterialPropertiesTable(FusedSilica_prop);
+    // Add vacuum
+    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 }
 
 void GeometryConstructionG4::check_overlaps() {
