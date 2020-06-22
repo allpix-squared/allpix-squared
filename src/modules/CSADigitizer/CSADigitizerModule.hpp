@@ -30,20 +30,19 @@ namespace allpix {
      * @brief Module to simulate digitization of collected charges
      * @note This module supports parallelization
      *
-     * This module provides a relatively simple simulation of a charge-sensitive amplifier 
+     * This module provides a relatively simple simulation of a charge-sensitive amplifier
      * with Krummenacher feedack circuit while adding electronics
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
     class CSADigitizerModule : public Module {
 
-      /**
+        /**
          * @brief Different implemented digitization models
          */
-      enum class DigitizerType {
-				SIMPLE, ///< No source
-				CSA,    ///< Deposition at a single point
-      };
-
+        enum class DigitizerType {
+            SIMPLE, ///< No source
+            CSA,    ///< Deposition at a single point
+        };
 
     public:
         /**
@@ -70,8 +69,8 @@ namespace allpix {
         void finalize() override;
 
     private:
-      bool output_plots_{}, output_pulsegraphs_{}, first_event_{true};
-      
+        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true};
+
         std::mt19937_64 random_generator_;
 
         Messenger* messenger_;
@@ -83,19 +82,19 @@ namespace allpix {
         unsigned long long total_hits_{};
 
         DigitizerType model_;
-        // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance, v_temperature
+        // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance,
+        // v_temperature
         double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{};
-      
+
         // helper variables for transfer function
         double gf_{}, rf_{}, tmax_{};
-        double *impulseResponse_{};	  
-        TF1 *fImpulseResponse_{};
+        std::vector<double> impulseResponse_;
+        TF1* fImpulseResponse_{};
 
         std::vector<double> amplified_pulse_;
         // Output histograms
         TH1D *h_pxq{}, *h_tot{}, *h_toa{};
-	TH2D *h_pxq_vs_tot{};
-       
+        TH2D* h_pxq_vs_tot{};
     };
 } // namespace allpix
 
