@@ -172,6 +172,13 @@ void CSADigitizerModule::run(unsigned int event_num) {
         LOG(TRACE) << "amplified signal" << output_pulse.getCharge() / 1e9 << " mV in a pulse with " << output_vec.size()
                    << "bins";
 
+        // apply noise on the amplified pulse
+        std::normal_distribution<double> pulse_smearing(0, config_.get<double>("sigma_noise"));
+        std::vector<double> output_with_noise(output_vec.size());
+        std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
+            return c + pulse_smearing(random_generator_);
+        });
+
         // TOA and TOT logic
         auto threshold = config_.get<double>("threshold");
         bool is_over_threshold = false;
@@ -186,8 +193,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 tot = timestep;
                 LOG(TRACE) << "now starting the tot counting...";
             };
-            // asv need to add some precision to avoid noise stopping tot
-            // or do TOT/TOA before adding noise?
             if(is_over_threshold) {
                 if(output_vec.at(i) > threshold) {
                     tot += timestep;
@@ -202,13 +207,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
             }
         }
         LOG(TRACE) << "ToA " << toa << " ns, ToT " << tot << "ns";
-
-        // apply noise on the amplified pulse
-        std::normal_distribution<double> pulse_smearing(0, config_.get<double>("sigma_noise"));
-        std::vector<double> output_with_noise(output_vec.size());
-        std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
-            return c + pulse_smearing(random_generator_);
-        });
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
