@@ -146,9 +146,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const int npx = static_cast<int>(ceil(tmax_ / timestep));
 
         if(first_event_) { // initialize impulse response function - assume all time bins are equal
-            impulseResponse_ = new double[npx];
             for(int ipx = 0; ipx < npx; ++ipx) {
-                impulseResponse_[ipx] = fImpulseResponse_->Eval(ipx * timestep);
+                impulseResponse_.push_back(fImpulseResponse_->Eval(ipx * timestep));
             }
             first_event_ = false;
             LOG(TRACE) << "impulse response initalised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
@@ -164,7 +163,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(unsigned long int i = 0; i <= k; ++i) {
                 if((k - i) < input_length) {
                     // asv to do: not a charge, but voltage pulse... still use this?
-                    output_pulse.addCharge(pulse_vec.at(k - i) * impulseResponse_[i], timestep * static_cast<double>(k));
+                    output_pulse.addCharge(pulse_vec.at(k - i) * impulseResponse_.at(i), timestep * static_cast<double>(k));
                 }
             }
         }
