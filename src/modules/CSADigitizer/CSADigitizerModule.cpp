@@ -146,6 +146,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const int npx = static_cast<int>(ceil(tmax_ / timestep));
 
         if(first_event_) { // initialize impulse response function - assume all time bins are equal
+            impulseResponse_.reserve(npx);
             for(int ipx = 0; ipx < npx; ++ipx) {
                 impulseResponse_.push_back(fImpulseResponse_->Eval(ipx * timestep));
             }
