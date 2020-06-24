@@ -1,11 +1,20 @@
 # CSADigitizer
-**Maintainer**: 
-**Status**: 
+**Maintainer**: Annika Vauth (<annika.vauth@desy.de>)
+**Status**: Immature
 **Input**: PixelCharge  
 **Output**: PixelHit  
 
 ### Description
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
+For this purpose, an impulse response function is convoluted with the charge pulse.
+An impulse response function for a CSA with Krummenacher feedback is taken from [@kleczek] : 
+$`H(s) = \frac{R_f}{((1+ \tau_f s) * (1 + \tau_r s))}, `$
+with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$ 
+
+
+Noise can be applied to the pulse, drawn from a normal distribution.
+Of the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be counted.
+
 
 
 ### Parameters
@@ -39,3 +48,6 @@ integration_time = 0.5e-6 s
 threshold = 10e-3 V
 sigma_noise = 0.1e-3 V
 ```
+
+
+[@kleczek]:  https://doi.org/10.1109/MIXDES.2015.7208529
