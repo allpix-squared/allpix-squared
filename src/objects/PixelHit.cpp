@@ -21,7 +21,7 @@ PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* p
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
     // Get the unique set of MC particles
-    std::set<TRef> unique_particles;
+    std::set<Object*> unique_particles;
     for(auto& mc_particle : pixel_charge->mc_particles_) {
         unique_particles.insert(mc_particle);
     }
@@ -45,7 +45,7 @@ Pixel::Index PixelHit::getIndex() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const PixelCharge* PixelHit::getPixelCharge() const {
-    auto pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_.GetObject());
+    auto pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_);
     if(pixel_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(PixelCharge));
     }
@@ -61,10 +61,10 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
     for(auto& mc_particle : mc_particles_) {
-        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
+        if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle.GetObject()));
+        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
     }
 
     // Return as a vector of mc particles
@@ -79,10 +79,10 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
     std::vector<const MCParticle*> primary_particles;
     for(auto& mc_particle : mc_particles_) {
-        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
+        if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        auto particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+        auto particle = dynamic_cast<MCParticle*>(mc_particle);
 
         // Check for possible parents:
         if(particle->getParent() != nullptr) {

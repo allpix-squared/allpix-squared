@@ -29,7 +29,7 @@ DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* DepositedCharge::getMCParticle() const {
-    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_.GetObject());
+    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_);
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }

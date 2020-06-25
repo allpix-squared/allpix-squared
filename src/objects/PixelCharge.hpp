@@ -102,8 +102,8 @@ namespace allpix {
         unsigned int charge_{};
         Pulse pulse_{};
 
-        std::vector<TRef> propagated_charges_;
-        std::vector<TRef> mc_particles_;
+        std::vector<Object*> propagated_charges_;
+        std::vector<Object*> mc_particles_;
     };
 
     /**

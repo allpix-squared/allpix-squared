@@ -93,8 +93,8 @@ namespace allpix {
         PropagatedCharge() = default;
 
     private:
-        TRef deposited_charge_;
-        TRef mc_particle_{nullptr};
+        Object* deposited_charge_;
+        Object* mc_particle_{nullptr};
         std::map<Pixel::Index, Pulse> pulses_;
     };
 

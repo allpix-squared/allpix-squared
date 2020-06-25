@@ -69,7 +69,7 @@ namespace allpix {
         DepositedCharge() = default;
 
     private:
-        TRef mc_particle_;
+        Object* mc_particle_;
     };
 
     /**

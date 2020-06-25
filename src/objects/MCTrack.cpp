@@ -74,7 +74,7 @@ std::string MCTrack::getCreationProcessName() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCTrack::getParent() const {
-    return dynamic_cast<MCTrack*>(parent_.GetObject());
+    return dynamic_cast<MCTrack*>(parent_);
 }
 
 void MCTrack::setParent(const MCTrack* mc_track) {
@@ -112,7 +112,7 @@ void MCTrack::print(std::ostream& out) const {
         << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap) << "Final total energy: " << std::right
         << std::setw(med_gap) << final_tot_E_ << std::setw(small_gap) << " MeV   \n";
     if(parent != nullptr) {
-        out << "Linked parent: " << parent_.GetObject() << '\n';
+        out << "Linked parent: " << *parent_ << '\n';
     } else {
         out << "Linked parent: <nullptr>\n";
     }

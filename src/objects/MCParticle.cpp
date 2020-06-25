@@ -73,7 +73,7 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getParent() const {
-    return dynamic_cast<MCParticle*>(parent_.GetObject());
+    return dynamic_cast<MCParticle*>(parent_);
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
@@ -84,7 +84,7 @@ void MCParticle::setTrack(const MCTrack* mc_track) {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCParticle::getTrack() const {
-    return dynamic_cast<MCTrack*>(track_.GetObject());
+    return dynamic_cast<MCTrack*>(track_);
 }
 
 void MCParticle::print(std::ostream& out) const {
