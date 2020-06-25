@@ -22,9 +22,9 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double event_time,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
-    deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
+    deposited_charge_ref_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
     if(deposited_charge != nullptr) {
-        mc_particle_ = deposited_charge->mc_particle_;
+        mc_particle_ref_ = deposited_charge->mc_particle_ref_;
     }
 }
 
@@ -54,7 +54,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
-    auto deposited_charge = dynamic_cast<DepositedCharge*>(deposited_charge_);
+    auto deposited_charge = dynamic_cast<DepositedCharge*>(deposited_charge_ref_);
     if(deposited_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
     }
@@ -67,7 +67,7 @@ const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* PropagatedCharge::getMCParticle() const {
-    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_);
+    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_ref_);
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
@@ -81,4 +81,15 @@ std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
     SensorCharge::print(out);
+}
+
+void PropagatedCharge::storeHistory() {
+    mc_particle_ = mc_particle_ref_;
+    deposited_charge_ = deposited_charge_ref_;
+}
+
+void PropagatedCharge::loadHistory() {
+    mc_particle_ref_ = dynamic_cast<Object*>(mc_particle_.GetObject());
+    deposited_charge_ref_ = dynamic_cast<Object*>(deposited_charge_.GetObject());
+    // FIXME we need to reset TRef member
 }

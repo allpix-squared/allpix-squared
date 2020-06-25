@@ -59,7 +59,10 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 2);
+        ClassDefOverride(Object, 3);
+
+        virtual void storeHistory(){};
+        virtual void loadHistory(){};
 
     protected:
         /**

@@ -19,15 +19,15 @@ using namespace allpix;
 
 PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
-    pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
+    pixel_charge_ref_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
     // Get the unique set of MC particles
     std::set<Object*> unique_particles;
-    for(auto& mc_particle : pixel_charge->mc_particles_) {
+    for(auto& mc_particle : pixel_charge->mc_particles_ref_) {
         unique_particles.insert(mc_particle);
     }
     // Store the MC particle references
     for(auto& mc_particle : unique_particles) {
-        mc_particles_.push_back(mc_particle);
+        mc_particles_ref_.push_back(mc_particle);
     }
 }
 
@@ -45,7 +45,7 @@ Pixel::Index PixelHit::getIndex() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const PixelCharge* PixelHit::getPixelCharge() const {
-    auto pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_);
+    auto pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_ref_);
     if(pixel_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(PixelCharge));
     }
@@ -60,7 +60,7 @@ const PixelCharge* PixelHit::getPixelCharge() const {
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(auto& mc_particle : mc_particles_ref_) {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
@@ -78,7 +78,7 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
  */
 std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
     std::vector<const MCParticle*> primary_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(auto& mc_particle : mc_particles_ref_) {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
@@ -98,4 +98,22 @@ std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
 void PixelHit::print(std::ostream& out) const {
     out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
         << this->getTime();
+}
+
+void PixelHit::storeHistory() {
+    pixel_charge_ = pixel_charge_ref_;
+
+    for(auto& mc_particle : mc_particles_ref_) {
+        mc_particles_.push_back(mc_particle);
+    }
+}
+
+void PixelHit::loadHistory() {
+    pixel_charge_ref_ = dynamic_cast<Object*>(pixel_charge_.GetObject());
+
+    for(auto& mc_particle : mc_particles_) {
+        mc_particles_ref_.push_back(dynamic_cast<Object*>(mc_particle.GetObject()));
+    }
+
+    // FIXME we need to reset TRef member
 }

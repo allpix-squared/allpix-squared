@@ -129,11 +129,14 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 2);
+        ClassDefOverride(MCTrack, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
         MCTrack() = default;
+
+        void storeHistory() override;
+        void loadHistory() override;
 
     private:
         ROOT::Math::XYZPoint start_point_{};
@@ -150,7 +153,8 @@ namespace allpix {
         double initial_tot_E_{};
         double final_tot_E_{};
 
-        Object* parent_;
+        Object* parent_ref_;
+        TRef parent_;
     };
 
     /**

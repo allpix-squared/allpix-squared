@@ -74,11 +74,11 @@ std::string MCTrack::getCreationProcessName() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCTrack::getParent() const {
-    return dynamic_cast<MCTrack*>(parent_);
+    return dynamic_cast<MCTrack*>(parent_ref_);
 }
 
 void MCTrack::setParent(const MCTrack* mc_track) {
-    parent_ = const_cast<MCTrack*>(mc_track); // NOLINT
+    parent_ref_ = const_cast<MCTrack*>(mc_track); // NOLINT
 }
 
 void MCTrack::print(std::ostream& out) const {
@@ -112,11 +112,18 @@ void MCTrack::print(std::ostream& out) const {
         << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap) << "Final total energy: " << std::right
         << std::setw(med_gap) << final_tot_E_ << std::setw(small_gap) << " MeV   \n";
     if(parent != nullptr) {
-        out << "Linked parent: " << *parent_ << '\n';
+        out << "Linked parent: " << *parent_ref_ << '\n';
     } else {
         out << "Linked parent: <nullptr>\n";
     }
     out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
 
-ClassImp(MCTrack)
+void MCTrack::storeHistory() {
+    parent_ = parent_ref_;
+}
+
+void MCTrack::loadHistory() {
+    parent_ref_ = dynamic_cast<Object*>(parent_.GetObject());
+    // FIXME we need to reset TRef member
+}

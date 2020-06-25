@@ -91,19 +91,24 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 6);
+        ClassDefOverride(PixelCharge, 7);
         /**
          * @brief Default constructor for ROOT I/O
          */
         PixelCharge() = default;
+
+        void storeHistory() override;
+        void loadHistory() override;
 
     private:
         Pixel pixel_;
         unsigned int charge_{};
         Pulse pulse_{};
 
-        std::vector<Object*> propagated_charges_;
-        std::vector<Object*> mc_particles_;
+        std::vector<Object*> propagated_charges_ref_;
+        std::vector<Object*> mc_particles_ref_;
+        std::vector<TRef> propagated_charges_;
+        std::vector<TRef> mc_particles_;
     };
 
     /**

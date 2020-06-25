@@ -20,12 +20,12 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<con
     std::set<Object*> unique_particles;
     // Store all propagated charges and their MC particles
     for(auto& propagated_charge : propagated_charges) {
-        propagated_charges_.push_back(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
-        unique_particles.insert(propagated_charge->mc_particle_);
+        propagated_charges_ref_.push_back(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
+        unique_particles.insert(propagated_charge->mc_particle_ref_);
     }
     // Store the MC particle references
     for(auto& mc_particle : unique_particles) {
-        mc_particles_.push_back(mc_particle);
+        mc_particles_ref_.push_back(mc_particle);
     }
 
     // No pulse provided, set full charge in first bin:
@@ -62,7 +62,7 @@ const Pulse& PixelCharge::getPulse() const {
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
-    for(auto& propagated_charge : propagated_charges_) {
+    for(auto& propagated_charge : propagated_charges_ref_) {
         if(propagated_charge == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
@@ -79,7 +79,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
 std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(auto& mc_particle : mc_particles_ref_) {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
@@ -102,4 +102,26 @@ void PixelCharge::print(std::ostream& out) const {
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
         << global_center_location.Z() << ") mm\n";
+}
+
+void PixelCharge::storeHistory() {
+    for(auto& propagated_charge : propagated_charges_ref_) {
+        propagated_charges_.push_back(propagated_charge);
+    }
+
+    for(auto& mc_particle : mc_particles_ref_) {
+        mc_particles_.push_back(mc_particle);
+    }
+}
+
+void PixelCharge::loadHistory() {
+    for(auto& propagated_charge : propagated_charges_) {
+        propagated_charges_ref_.push_back(dynamic_cast<Object*>(propagated_charge.GetObject()));
+    }
+
+    for(auto& mc_particle : mc_particles_) {
+        mc_particles_ref_.push_back(dynamic_cast<Object*>(mc_particle.GetObject()));
+    }
+
+    // FIXME we need to reset TRef member
 }
