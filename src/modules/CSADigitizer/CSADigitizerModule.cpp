@@ -164,49 +164,48 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(unsigned long int i = 0; i <= k; ++i) {
                 if((k - i) < input_length) {
                     // asv to do: not a charge, but voltage pulse... still use this?
-                    output_pulse.addCharge(pulse_vec.at(k - i) * impulseResponse_.at(i), timestep * static_cast<double>(k));
+                    // asv: even worse, I'm filling it in mV directly instead of base unit MV, but otherwise there are
+                    // precision issues
+                    output_pulse.addCharge(pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9,
+                                           timestep * static_cast<double>(k));
                 }
             }
         }
         auto output_vec = output_pulse.getPulse();
-        LOG(TRACE) << "amplified signal" << output_pulse.getCharge() / 1e9 << " mV in a pulse with " << output_vec.size()
+        LOG(TRACE) << "amplified signal " << output_pulse.getCharge() << " mV in a pulse with " << output_vec.size()
                    << "bins";
 
         // apply noise on the amplified pulse
+        // watch out - output_vec and output_with_noise should be in mV
         std::normal_distribution<double> pulse_smearing(0, config_.get<double>("sigma_noise"));
         std::vector<double> output_with_noise(output_vec.size());
         std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
-            return c + pulse_smearing(random_generator_);
+            return c + pulse_smearing(random_generator_) * 1e9;
         });
 
         // TOA and TOT logic
-        auto threshold = config_.get<double>("threshold");
+        auto threshold_in_mV = config_.get<double>("threshold") * 1e9;
         bool is_over_threshold = false;
         double toa{}, tot{};
-        for(long unsigned int i = 0; i < output_vec.size(); ++i) {
-
-            // use while instead of for maybe?
+        for(const auto& current : output_vec) {
+            auto i = &current - &output_vec[0];
             // set time of arrival when pulse first crosses threshold, start countint ToT
-            if(output_vec.at(i) > threshold && !is_over_threshold) {
+            if(current > threshold_in_mV && !is_over_threshold) {
                 is_over_threshold = true;
                 toa = i * timestep;
                 tot = timestep;
                 LOG(TRACE) << "now starting the tot counting...";
             };
             if(is_over_threshold) {
-                if(output_vec.at(i) > threshold) {
+                if(current > threshold_in_mV) {
                     tot += timestep;
                 } else {
                     is_over_threshold = false;
                     break;
                 }
-            } else if(output_vec.size() - 1 == i) { // pulse over, never crossed the threshold
-                toa = 0;
-                tot = 0;
-                LOG(TRACE) << " - never crossing the threshold";
             }
         }
-        LOG(TRACE) << "ToA " << toa << " ns, ToT " << tot << "ns";
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum " << output_pulse.getCharge() << " mV";
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
@@ -262,16 +261,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
             std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
             // clang-format on
 
-            // asv there needs to be a better way to plot in mV ?
-            std::vector<double> output_in_mV(output_vec.size());
-            double scaleConvert{1e9};
-            std::transform(output_vec.begin(), output_vec.end(), output_in_mV.begin(), [&scaleConvert](auto& c) {
-                return c * scaleConvert;
-            });
-
             name = "output_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                    std::to_string(pixel_index.y());
-            auto output_graph = new TGraph(static_cast<int>(output_vec.size()), &amptime[0], &output_in_mV[0]);
+            auto output_graph = new TGraph(static_cast<int>(output_vec.size()), &amptime[0], &output_vec[0]);
             output_graph->GetXaxis()->SetTitle("t [ns]");
             output_graph->GetYaxis()->SetTitle("CSA output [mV]");
             output_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
@@ -280,17 +272,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
             getROOTDirectory()->WriteTObject(output_graph, name.c_str());
 
             // -------- now the same for the amplified (and shaped) pulses with noise
-            // asv there needs to be a better way to plot in mV ?
-            std::vector<double> output_with_noise_in_mV(output_with_noise.size());
-            std::transform(output_with_noise.begin(),
-                           output_with_noise.end(),
-                           output_with_noise_in_mV.begin(),
-                           [&scaleConvert](auto& c) { return c * scaleConvert; });
 
             name = "output_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                    std::to_string(pixel_index.y());
             auto output_with_noise_graph =
-                new TGraph(static_cast<int>(output_with_noise.size()), &amptime[0], &output_with_noise_in_mV[0]);
+                new TGraph(static_cast<int>(output_with_noise.size()), &amptime[0], &output_with_noise[0]);
             output_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
             output_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
             output_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
