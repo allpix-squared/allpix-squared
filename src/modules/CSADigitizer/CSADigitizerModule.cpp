@@ -182,7 +182,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         // TOA and TOT logic
         auto threshold = config_.get<double>("threshold");
         bool is_over_threshold = false;
-        double toa, tot;
+        double toa{}, tot{};
         for(long unsigned int i = 0; i < output_vec.size(); ++i) {
 
             // use while instead of for maybe?
@@ -307,7 +307,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
     // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
-    total_hits_ += hits.size();
 
     if(!hits.empty()) {
         // Create and dispatch hit message
@@ -325,6 +324,4 @@ void CSADigitizerModule::finalize() {
         h_toa->Write();
         h_pxq_vs_tot->Write();
     }
-
-    LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
 }

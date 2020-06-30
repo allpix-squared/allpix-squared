@@ -78,9 +78,6 @@ namespace allpix {
         // Input message with the charges on the pixels
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
-        // Statistics
-        unsigned long long total_hits_{};
-
         DigitizerType model_;
         // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance,
         // v_temperature
@@ -91,7 +88,6 @@ namespace allpix {
         std::vector<double> impulseResponse_;
         TF1* fImpulseResponse_{};
 
-        std::vector<double> amplified_pulse_;
         // Output histograms
         TH1D *h_pxq{}, *h_tot{}, *h_toa{};
         TH2D* h_pxq_vs_tot{};
