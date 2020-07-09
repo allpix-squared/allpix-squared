@@ -669,14 +669,14 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     // Push all events to the thread pool
     std::atomic<unsigned int> finished_events{0};
-    global_config.setDefault<unsigned int>("number_of_events", 1u);
-    auto number_of_events = global_config.get<unsigned int>("number_of_events");
-    for(unsigned int i = 1; i <= number_of_events; i++) {
+    global_config.setDefault<unsigned long>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned long>("number_of_events");
+    for(unsigned long i = 1; i <= number_of_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
-            LOG(INFO) << "Interrupting prematurely as requested";
+            LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             thread_pool->destroy();
-            global_config.set<unsigned int>("number_of_events", finished_events);
+            global_config.set<unsigned long>("number_of_events", finished_events);
             break;
         }
 

@@ -10,13 +10,12 @@
 #include "DefaultDigitizerModule.hpp"
 
 #include "core/utils/unit.h"
+#include "objects/PixelHit.hpp"
 #include "tools/ROOT.h"
 
 #include <TFile.h>
 #include <TH1D.h>
 #include <TProfile.h>
-
-#include "objects/PixelHit.hpp"
 
 using namespace allpix;
 
@@ -190,8 +189,11 @@ void DefaultDigitizerModule::run(Event* event) {
             }
         }
 
+        auto time = time_of_arrival(pixel_charge, threshold);
+        LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"});
+
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, 0, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
@@ -202,6 +204,27 @@ void DefaultDigitizerModule::run(Event* event) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
         messenger_->dispatchMessage(this, hits_message, event);
+    }
+}
+
+double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, double threshold) const {
+
+    // If this PixelCharge has a pulse, we can find out when it crossed the threshold:
+    const auto& pulse = pixel_charge.getPulse();
+    if(pulse.isInitialized()) {
+        auto charges = pulse.getPulse();
+        std::vector<double>::iterator bin;
+        double integrated_charge = 0;
+        for(bin = charges.begin(); bin != charges.end(); bin++) {
+            integrated_charge += *bin;
+            if(integrated_charge >= threshold) {
+                break;
+            }
+        }
+        return pulse.getBinning() * static_cast<double>(std::distance(charges.begin(), bin));
+    } else {
+        LOG_ONCE(WARNING) << "Simulation chain does not allow for time-of-arrival calculation";
+        return 0;
     }
 }
 
