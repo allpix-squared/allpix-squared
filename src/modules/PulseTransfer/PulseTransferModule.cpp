@@ -57,6 +57,22 @@ void PulseTransferModule::init() {
             new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
         h_induced_pixel_charge_ =
             new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+        h_induced_pulses_ = new TH2D("pulses_induced",
+                                     "Induced charge per pixel;t [ns];Q_{ind} [e]",
+                                     nbins,
+                                     0,
+                                     10.,
+                                     nbins,
+                                     0,
+                                     config_.get<int>("output_plots_scale") / 0.5e3);
+        h_integrated_pulses_ = new TH2D("pulses_integrated",
+                                        "Accumulated induced charge per pixel;t [ns];Q_{ind} [e]",
+                                        nbins,
+                                        0,
+                                        10.,
+                                        nbins,
+                                        0,
+                                        config_.get<int>("output_plots_scale"));
     }
 }
 
@@ -157,6 +173,18 @@ void PulseTransferModule::run(unsigned int event_num) {
         // Fill pixel charge histogram
         if(output_plots_) {
             h_induced_pixel_charge_->Fill(pulse.getCharge() / 1e3);
+
+            auto step = pulse.getBinning();
+            auto pulse_vec = pulse.getPulse();
+            double charge = 0;
+
+            for(auto bin = pulse_vec.begin(); bin != pulse_vec.end(); ++bin) {
+                auto time = step * static_cast<double>(std::distance(pulse_vec.begin(), bin));
+                h_induced_pulses_->Fill(time, *bin);
+
+                charge += *bin;
+                h_integrated_pulses_->Fill(time, charge);
+            }
         }
 
         // Fill a graphs with the individual pixel pulses:
@@ -228,5 +256,7 @@ void PulseTransferModule::finalize() {
         LOG(TRACE) << "Writing output plots to file";
         h_induced_pixel_charge_->Write();
         h_total_induced_charge_->Write();
+        h_induced_pulses_->Write();
+        h_integrated_pulses_->Write();
     }
 }
