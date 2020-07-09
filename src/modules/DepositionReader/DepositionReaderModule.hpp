@@ -94,7 +94,7 @@ namespace allpix {
         size_t volume_chars_{};
         std::string unit_length_{}, unit_time_{}, unit_energy_{};
 
-        bool read_csv(unsigned int event_num,
+        bool read_csv(uint64_t event_num,
                       std::string& volume,
                       ROOT::Math::XYZPoint& position,
                       double& time,
@@ -102,7 +102,7 @@ namespace allpix {
                       int& pdg_code,
                       int& track_id,
                       int& parent_id);
-        bool read_root(unsigned int event_num,
+        bool read_root(uint64_t event_num,
                        std::string& volume,
                        ROOT::Math::XYZPoint& position,
                        double& time,
