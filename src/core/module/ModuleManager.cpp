@@ -613,14 +613,14 @@ void ModuleManager::run() {
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
-    global_config.setDefault<unsigned long>("number_of_events", 1u);
-    auto number_of_events = global_config.get<unsigned long>("number_of_events");
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
-            global_config.set<unsigned long>("number_of_events", i);
+            global_config.set<unsigned int>("number_of_events", i);
             break;
         }
 
