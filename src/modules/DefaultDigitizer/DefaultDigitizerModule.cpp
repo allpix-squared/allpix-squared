@@ -99,11 +99,12 @@ void DefaultDigitizerModule::init() {
         h_thr = new TH1D("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
         h_pxq_thr =
             new TH1D("pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_adc_smear = new TH1D(
-            "pixelcharge_adc_smeared", "pixel charge after QDC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("qdc_resolution") > 0) {
+            h_pxq_adc_smear = new TH1D(
+                "pixelcharge_adc_smeared", "pixel charge after QDC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
+
             int adcbins = (1 << config_.get<int>("qdc_resolution"));
             h_pxq_adc = new TH1D("pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
             h_calibration = new TH2D("charge_adc_calibration",
