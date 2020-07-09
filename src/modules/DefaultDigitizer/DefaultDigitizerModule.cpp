@@ -124,6 +124,12 @@ void DefaultDigitizerModule::init() {
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
         if(config_.get<int>("tdc_resolution") > 0) {
+            h_px_tdc_smear = new TH1D("pixel_tdc_smeared",
+                                      "pixel time-of-arrival after TDC smearing;pixel ToA [ns];pixels",
+                                      nbins,
+                                      0,
+                                      time_maximum);
+
             int adcbins = (1 << config_.get<int>("tdc_resolution"));
             h_px_tdc = new TH1D("pixel_tdc", "pixel time-of-arrival after TDC;pixel ToA [TDC];pixels", adcbins, 0, adcbins);
             h_toa_calibration =
@@ -239,6 +245,9 @@ void DefaultDigitizerModule::run(unsigned int) {
             // Add TDC smearing:
             std::normal_distribution<double> tdc_smearing(0, config_.get<unsigned int>("tdc_smearing"));
             time += tdc_smearing(random_generator_);
+            if(config_.get<bool>("output_plots")) {
+                h_px_tdc_smear->Fill(time);
+            }
             LOG(DEBUG) << "Smeared for simulating limited TDC sensitivity: " << Units::display(time, {"ns", "ps"});
 
             // Convert to TDC units and precision, make sure TDC count is at least 1:
