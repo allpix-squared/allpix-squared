@@ -305,18 +305,28 @@ void DefaultDigitizerModule::finalize() {
     if(config_.get<bool>("output_plots")) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
+
+        // Charge plots
         h_pxq->Write();
         h_pxq_noise->Write();
         h_gain->Write();
         h_pxq_gain->Write();
         h_thr->Write();
         h_pxq_thr->Write();
-        h_pxq_adc->Write();
 
+        h_pxq_adc->Write();
         if(config_.get<int>("qdc_resolution") > 0) {
             h_pxq_adc_smear->Write();
             h_calibration->Write();
         }
+
+        // Time plots
+        h_px_toa->Write();
+        if(config_.get<int>("tdc_resolution") > 0) {
+            h_px_tdc_smear->Write();
+            h_toa_calibration->Write();
+        }
+        h_px_tdc->Write();
     }
 
     LOG(INFO) << "Digitized " << total_hits_ << " pixel hits in total";
