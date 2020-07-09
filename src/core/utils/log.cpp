@@ -376,8 +376,8 @@ std::string DefaultLogger::getSection() {
 }
 
 // Getters and setters for the event number
-unsigned int& DefaultLogger::get_event_num() {
-    thread_local unsigned int event_num;
+uint64_t& DefaultLogger::get_event_num() {
+    thread_local uint64_t event_num;
 
     // Make sure event_num is initialized to zero.
     thread_local std::once_flag flag;
@@ -386,10 +386,10 @@ unsigned int& DefaultLogger::get_event_num() {
 
     return event_num;
 }
-void DefaultLogger::setEventNum(unsigned int event_num) {
+void DefaultLogger::setEventNum(uint64_t event_num) {
     get_event_num() = event_num;
 }
-unsigned int DefaultLogger::getEventNum() {
+uint64_t DefaultLogger::getEventNum() {
     return get_event_num();
 }
 
