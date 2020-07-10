@@ -19,7 +19,7 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 
 
 ### Parameters
-* `model` :  Choice between different CSA models. Currently implemented are two parametrisations of the circuit from [@kleczek], SIMPLE and CSA.
+* `model` :  Choice between different CSA models. Currently implemented are two parametrisations of the circuit from [@kleczek], `simple` and `csa`.
 * `feedback_capacitance` :  The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `amp_time_window` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
@@ -39,7 +39,7 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 * `detector_capacitance` : The detector capacitance. Defaults to 100 e-15 F.
 * `amp_output_capacitance` : The capacitance at the amplifier output. Defaults to 20 e-15 F.
 * `transconductance` : The transconductance of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
-* `v_temperature` : From Boltzmann kT . Defaults to 25.7e-3 eV (298K).
+* `temperature` : Defaults to 293.15K.
 
 
 
@@ -48,9 +48,10 @@ The default configuration is equal to the following:
 
 ```ini
 [CSADigitizer]
+model = "csa"
 feedback_capacitance = 5e-15 C/V
 rise_time_constant = 1e-9 s  
-feedback_time_constant = 10e-9 s  // R_f * C_f
+feedback_time_constant = 10e-9 s
 integration_time = 0.5e-6 s
 threshold = 10e-3 V
 sigma_noise = 0.1e-3 V

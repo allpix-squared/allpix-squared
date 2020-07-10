@@ -40,8 +40,8 @@ namespace allpix {
          * @brief Different implemented digitization models
          */
         enum class DigitizerType {
-            SIMPLE, ///< No source
-            CSA,    ///< Deposition at a single point
+            SIMPLE, ///< Simplified parametrisation
+            CSA,    ///< Enter all contributions to the transfer function as parameters
         };
 
     public:
