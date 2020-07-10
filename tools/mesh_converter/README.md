@@ -1,11 +1,19 @@
-# Mesh converter
-This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster field value lookup.
+# Mesh Converter
+
+This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster field value lookup as reuqired by Monte Carlo simulations tools such as Allpix Squared.
 The input consists of two files, one containing the vertex coordinates of each input mesh node, the other providing the relevant field values associated to each of these vertices.
+One output file containing the regular interpolated mesh is produced.
+
+A new regular mesh is created by scanning the model volume in regular X Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation [@octree].
+
+## File Formats
+
+### Input Data
 
 Currently, this tool supports the TCAD DF-ISE data format and requires the `.grd` and `.dat` files as input.
 Here, the `.grd` file contains the vertex coordinates (3D or 2D) of each mesh node and the `.dat` file contains the value of each electric field vector component for each mesh node, grouped by model regions (such as silicon bulk or metal contacts). The regions are defined in the `.grd` file by grouping vertices into edges, faces and, consecutively, volumes or elements.
 
-A new regular mesh is created by scanning the model volume in regular X Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation [@octree].
+### Output Data
 
 The output `.init` or `.apf` file can be imported into Allpix Squared. The INIT file is an ASCII text file with a header followed by a list of columns organized as
 ```bash
@@ -13,9 +21,9 @@ node.x node.y node.z observable.x observable.y observable.z
 ```
 The APF (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
 
-### Compilation
+## Compilation
 
-When compiling the Allpix Squared framework, the TCAD DF-ISE mesh converter is automatically compiled and installed in the Allpix Squared installation directory.
+When compiling the Allpix Squared framework, the Mesh Converter is automatically compiled and installed in the Allpix Squared installation directory.
 
 It is also possible to compile the converter separately as stand-alone tool within this directory:
 ```bash
@@ -25,10 +33,10 @@ $ cmake ..
 $ make
 ```
 
-It should be noted that the TCAD DF-ISE mesh converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus, it is discouraged to move the converter code outside the repository as this directory would have to be copied and included in the code as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
+It should be noted that the Mesh Converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus, it is discouraged to move the converter code outside the repository as this directory would have to be copied and included in the code as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
 
-### Features
-- TCAD DF-ISE file format reader.
+## Features
+- TCAD DF-ISE file format parser.
 - Fast radius neighbor search for three-dimensional point clouds.
 - Barycentric interpolation between non-regular mesh points.
 - Several cuts available on the interpolation algorithm variables.
@@ -73,7 +81,10 @@ The new coordinate system of the mesh can be changed by providing an array for t
 The program can be used to convert 3D and 2D TCAD mesh files. Note that when converting 2D meshes, the *x* coordinate will be fixed to 1 and the interpolation will happen over the *yz* plane.
 The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a `ROOT::TTree` for later, fast, inspection.
 
-In addition, the `mesh_plotter` tool can be used, in order to visualize the new mesh interpolation results, from the installation folder as follows:
+
+# Mesh Plotter
+
+In addition to the Mesh Converter, the `mesh_plotter` tool can be used to visualize the new mesh interpolation results, from the installation folder as follows:
 ```bash
 mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
@@ -92,7 +103,7 @@ In a 3D mesh, the plane to be plotted must be identified by using the option `-p
 The data to be plotted can be selected with the `-d` option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
 The number of mesh divisions in each dimension is automatically read from the `init`/`apf` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
 
-### Octree
+# Octree
 J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].
 
 Copyright 2015 Jens Behley, University of Bonn.
