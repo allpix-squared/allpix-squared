@@ -56,6 +56,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
 
+    config_.setDefault<bool>("output_tot", true);
+
     if(model_ == DigitizerType::SIMPLE) {
         // defaults for the "simple" parametrisation
         config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));
@@ -113,7 +115,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
 void CSADigitizerModule::init() {
 
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
@@ -168,8 +170,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 }
             }
         }
-        auto output_charge = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
-        LOG(TRACE) << "amplified signal " << output_charge << " mV in a pulse with " << output_vec.size() << "bins";
+        auto output_integral = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
+        LOG(TRACE) << "amplified signal without noise " << output_integral << " mV in a pulse with " << output_vec.size()
+                   << "bins";
 
         // apply noise on the amplified pulse
         // watch out - output_vec and output_with_noise should be in mV
@@ -178,6 +181,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
         std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
             return c + pulse_smearing(random_generator_) * 1e9;
         });
+
+        // re-calculate pulse integral with the noise
+        output_integral = std::accumulate(output_with_noise.begin(), output_with_noise.end(), 0.0);
 
         // TOA and TOT logic
         auto threshold_in_mV = config_.get<double>("threshold") * 1e9;
@@ -201,7 +207,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 }
             }
         }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum " << output_charge << " mV";
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral << " mV";
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
@@ -281,10 +287,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
             getROOTDirectory()->WriteTObject(output_with_noise_graph, name.c_str());
         }
 
-        // asv output "charge" of output pulse, or output tot? also add hit if never over threshold?
         // Add the hit to the hitmap
-        //        hits.emplace_back(pixel, toa, output_charge, &pixel_charge);
-        hits.emplace_back(pixel, toa, tot, &pixel_charge);
+        if(config_.get<bool>("output_tot")) {
+            hits.emplace_back(pixel, toa, tot, &pixel_charge);
+        } else {
+            hits.emplace_back(pixel, toa, output_integral, &pixel_charge);
+        }
     }
 
     // Output summary and update statistics

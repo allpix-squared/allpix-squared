@@ -28,6 +28,7 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 * `output_plots_scale` : Set the x-axis scale of the output histograms, defaults to 30ke.
 * `output_plots_bins` : Set the number of bins for the output histograms, defaults to 100.
 * `output_pulsegraphs`: Determines if pulse graphs should be generated for every event. This creates several graphs per event, depending on how many pixels see a signal, and can slow down the simulation. It is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
+* `output_tot`: Determines if the output of this module is Time-over-Threshold. Defaults to true. Otherwise, the pulse integral is stored instead.
 
 #### Parameters for the simplified model
 * `rise_time_constant` : Rise time constant of CSA output. Defaults to 1 ns.  
