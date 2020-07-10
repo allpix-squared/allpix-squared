@@ -68,7 +68,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
-        config_.setDefault<double>("v_temperature", Units::get(25.7e-3, "eV")); // Boltzmann kT at 298K
+        config_.setDefault<double>("temperature", 293.15);
     }
 
     // Copy some variables from configuration to avoid lookups:
@@ -86,7 +86,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         cf_ = config_.get<double>("feedback_capacitance");
         co_ = config_.get<double>("amp_output_capacitance");
         gm_ = config_.get<double>("transconductance");
-        vt_ = config_.get<double>("v_temperature");
+        vt_ = config_.get<double>("temperature") * 8.617333262145e-11; // Boltzmann kT in MeV
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
@@ -99,7 +99,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         LOG(DEBUG) << "Parameters: rf " << Units::display(rf_, "V*s/C") << ", cf_ " << Units::display(cf_, "C/V") << ", cd_ "
                    << Units::display(cd_, "C/V") << ", co_ " << Units::display(co_, "C/V") << ", gm_ "
                    << Units::display(gm_, "C/s/V") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
-                   << Units::display(tauR_, "s");
+                   << Units::display(tauR_, "s") << ", temperature " << config_.get<double>("temperature") << "K";
     }
 
     output_plots_ = config_.get<bool>("output_plots");
