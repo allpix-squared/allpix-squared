@@ -15,11 +15,35 @@ Here, the `.grd` file contains the vertex coordinates (3D or 2D) of each mesh no
 
 ### Output Data
 
-The output `.init` or `.apf` file can be imported into Allpix Squared. The INIT file is an ASCII text file with a header followed by a list of columns organized as
+This tools can produce output in two different formats, with the file extensions `.init` and `.apf`.
+Both file formats can be imported into Allpix Squared.
+
+The **APF** (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
+
+The **INIT** file is an ASCII text file with a format used by other tools such as PixelAV.
+Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<...>` while other fields are not interpreted and can be left untouched:
+
 ```bash
-node.x node.y node.z observable.x observable.y observable.z
+<first line: some descriptive text to identify the field or field source>
+##SEED##  ##EVENTS##
+##TURN## ##TILT## 1.0
+0.00 0.0 0.00
+<thickness in um> <size x in um> <size y in um> 0 0
+0 0 <number of bins x> <number of bins y> <number of bins z> 0
 ```
-The APF (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
+
+After the header part, the data follows as list of individual nodes with three indices for `x`, `y`, and `z` coordinates at the beginning and the scalar or vector field components afterwards. For a vector field, this looks like:
+
+```bash
+<node.x> <node.y> <node.z> <observable.x> <observable.y> <observable.z>
+```
+
+whereas for a scalar field such as a weighting potential, only one field component is present:
+
+```bash
+<node.x> <node.y> <node.z> <observable>
+```
+
 
 ## Compilation
 
