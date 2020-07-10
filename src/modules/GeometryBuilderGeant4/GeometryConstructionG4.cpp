@@ -192,14 +192,6 @@ void GeometryConstructionG4::init_materials() {
     FusedSilica->AddElement(Si, 0.47);
     materials_["fusedsilica"] = FusedSilica;
 
-    G4MaterialPropertiesTable* FusedSilica_prop = new G4MaterialPropertiesTable();
-    const G4int nE = 2;
-    G4double FS_energy[nE] = {2.0 * CLHEP::eV, 3.0 * CLHEP::eV};
-    G4double FS_rindex[nE] = {1.458, 1.458};
-
-    FusedSilica_prop->AddProperty("RINDEX", FS_energy, FS_rindex, nE);
-    FusedSilica->SetMaterialPropertiesTable(FusedSilica_prop);
-
     // Create PCB G-10 material
     G4Material* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
     GTen->AddMaterial(nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE"), 0.773);
