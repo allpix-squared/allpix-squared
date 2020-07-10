@@ -155,7 +155,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        << npx;
         }
 
-        Pulse output_pulse(timestep);
+        std::vector<double> output_vec(npx);
         auto input_length = pulse_vec.size();
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse_vec.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
@@ -163,17 +163,13 @@ void CSADigitizerModule::run(unsigned int event_num) {
         for(unsigned long int k = 0; k < npx; ++k) {
             for(unsigned long int i = 0; i <= k; ++i) {
                 if((k - i) < input_length) {
-                    // asv to do: not a charge, but voltage pulse... still use this?
-                    // asv: even worse, I'm filling it in mV directly instead of base unit MV, but otherwise there are
-                    // precision issues
-                    output_pulse.addCharge(pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9,
-                                           timestep * static_cast<double>(k));
+                    output_vec.at(k) += pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9;
+                    // time = timestep * static_cast<double>(k);
                 }
             }
         }
-        auto output_vec = output_pulse.getPulse();
-        LOG(TRACE) << "amplified signal " << output_pulse.getCharge() << " mV in a pulse with " << output_vec.size()
-                   << "bins";
+        auto output_charge = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
+        LOG(TRACE) << "amplified signal " << output_charge << " mV in a pulse with " << output_vec.size() << "bins";
 
         // apply noise on the amplified pulse
         // watch out - output_vec and output_with_noise should be in mV
@@ -205,7 +201,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 }
             }
         }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum " << output_pulse.getCharge() << " mV";
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum " << output_charge << " mV";
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
@@ -287,7 +283,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // asv output "charge" of output pulse, or output tot? also add hit if never over threshold?
         // Add the hit to the hitmap
-        //        hits.emplace_back(pixel, toa, output_pulse.getCharge(), &pixel_charge);
+        //        hits.emplace_back(pixel, toa, output_charge, &pixel_charge);
         hits.emplace_back(pixel, toa, tot, &pixel_charge);
     }
 
