@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
     std::signal(SIGQUIT, interrupt_handler);
     std::signal(SIGINT, interrupt_handler);
 
-    std::string parser_type = "df-ise";
     std::string file_prefix;
     std::string init_file_prefix;
     std::string log_file_name;
@@ -153,9 +152,14 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
+    // Output file format:
     auto format = config.get<std::string>("model", "apf");
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+
+    // Input file parser:
+    auto parser_type = config.get<std::string>("parser", "df-ise");
+    std::transform(format.begin(), format.end(), parser_type.begin(), ::tolower);
 
     auto regions = config.getArray<std::string>("region", {"bulk"});
     auto observable = config.get<std::string>("observable", "ElectricField");
