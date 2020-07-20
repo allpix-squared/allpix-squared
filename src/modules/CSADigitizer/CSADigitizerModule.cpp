@@ -125,8 +125,8 @@ void CSADigitizerModule::init() {
         // asv do these histos make sense? what about one with the noise?
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, maximum);
-        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, maximum);
+        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, tmax_);
+        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, tmax_);
         h_pxq_vs_tot =
             new TH2D("pxqvstot", "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]", nbins, 0, maximum, nbins, 0, tmax_);
     }
@@ -212,11 +212,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
             // asv fill histos always or just when pulse is over threshold?
-            if(0.0 < tot) {
-                h_tot->Fill(tot);
-                h_toa->Fill(toa);
-                h_pxq_vs_tot->Fill(inputcharge / 1e3, tot);
-            }
+            //            if(0.0 < tot) {
+            h_tot->Fill(tot);
+            h_toa->Fill(toa);
+            h_pxq_vs_tot->Fill(inputcharge / 1e3, tot);
+            //            }
         }
 
         // Fill a graphs with the individual pixel pulses:
