@@ -32,7 +32,7 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 
 #### Parameters for the simplified model
 * `rise_time_constant` : Rise time constant of CSA output. Defaults to 1 ns.  
-* `feedback_time_constant` : Rise time constant of CSA output. Defaults to 10 ns.
+* `feedback_time_constant` : Feedback time constant of CSA output. Defaults to 10 ns.
 
 #### Parameters for the CSA model
 * `krummenacher_current` : The feedback current setting of the CSA. Defaults to 20 nA.
