@@ -1,6 +1,6 @@
 # TransientPropagation
 **Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Immature  
+**Status**: Functional  
 **Input**: DepositedCharge  
 **Output**: PropagatedCharge
 
