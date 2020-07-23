@@ -242,9 +242,12 @@ void CorryvreckanWriterModule::finalize() {
             if(!roles.empty()) {
                 geometry_file << "role = " << roles << std::endl;
             }
-            // get the material:
-            double budget = compute_model_relative_radlength(*detector);
-            geometry_file << "material_budget = " << budget << std::endl;
+
+            // Get the material budget if available:
+            auto budget = geometryManager_->getExternalObject<double>(detector->getName(), "material_budget");
+            if(budget != nullptr) {
+                geometry_file << "material_budget = " << *budget << std::endl;
+            }
             geometry_file << std::endl;
         }
     }
