@@ -167,10 +167,14 @@ int main(int argc, char** argv) {
     auto format = config.get<std::string>("model", "apf");
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+    if(file_type == FileType::UNKNOWN) {
+        throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
+    }
 
     // Input file parser:
     auto parser_type = config.get<std::string>("parser", "df-ise");
     std::transform(parser_type.begin(), parser_type.end(), parser_type.begin(), ::tolower);
+    auto parser = MeshParser::factory(parser_type);
 
     auto regions = config.getArray<std::string>("region", {"bulk"});
     auto observable = config.get<std::string>("observable", "ElectricField");
@@ -194,9 +198,7 @@ int main(int argc, char** argv) {
         rot = config.getArray<std::string>("xyz");
     }
     if(rot.size() != 3) {
-        LOG(FATAL) << "Configuration keyword xyz must have 3 entries.";
-        allpix::Log::finish();
-        return 1;
+        throw allpix::InvalidValueError(config, "xyz", "three entries required");
     }
 
     auto start = std::chrono::system_clock::now();
@@ -210,10 +212,8 @@ int main(int argc, char** argv) {
     std::vector<Point> field = parser->getField(data_file, observable, regions);
 
     if(points.size() != field.size()) {
-        LOG(FATAL) << "Field and grid file do not match, found " << points.size() << " and " << field.size()
-                   << " data points, respectively.";
-        allpix::Log::finish();
-        return 1;
+        throw std::runtime_error("Field and grid file do not match, found " + std::to_string(points.size()) + " and " +
+                                 std::to_string(field.size()) + " data points, respectively.");
     }
 
     auto points_temp = points;
@@ -375,7 +375,8 @@ int main(int argc, char** argv) {
                     return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
                 });
 
-                // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
+                // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference
+                // point
                 auto res = for_each_combination(results.begin(),
                                                 results.begin() + (dimension == 3 ? 4 : 3),
                                                 results.end(),
@@ -442,8 +443,7 @@ int main(int argc, char** argv) {
         pool.destroy();
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
-        allpix::Log::finish();
-        return 1;
+        throw;
     }
 
     end = std::chrono::system_clock::now();
