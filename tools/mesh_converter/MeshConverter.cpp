@@ -140,6 +140,18 @@ int main(int argc, char** argv) {
         return return_code;
     }
 
+    // NOTE: this stream should be available for the duration of the logging
+    std::ofstream log_file;
+    if(!log_file_name.empty()) {
+        log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
+        if(!log_file.good()) {
+            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
+            allpix::Log::finish();
+            return 1;
+        }
+        allpix::Log::addStream(log_file);
+    }
+
     LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
     LOG(STATUS) << "Using " << conf_file_name << " configuration file";
     std::ifstream file(conf_file_name);
@@ -186,18 +198,6 @@ int main(int argc, char** argv) {
         LOG(FATAL) << "Configuration keyword xyz must have 3 entries.";
         allpix::Log::finish();
         return 1;
-    }
-
-    // NOTE: this stream should be available for the duration of the logging
-    std::ofstream log_file;
-    if(!log_file_name.empty()) {
-        log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
-        if(!log_file.good()) {
-            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
-            allpix::Log::finish();
-            return 1;
-        }
-        allpix::Log::addStream(log_file);
     }
 
     auto start = std::chrono::system_clock::now();
