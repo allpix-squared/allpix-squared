@@ -60,8 +60,7 @@ MeshParser::getField(const std::string& file, const std::string& observable, con
            region_fields[region].find(observable) != region_fields[region].end()) {
             field.insert(field.end(), region_fields[region][observable].begin(), region_fields[region][observable].end());
         } else {
-            throw std::runtime_error("Region \"" + region + "\" with observable \"" + observable +
-                                     "\" not found in field file");
+            throw std::runtime_error("No matching region with observable \"" + observable + "\" found in field file");
         }
     }
 
