@@ -152,7 +152,7 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
                 std::string model_file = path + "/" + key + ".conf";
                 std::ofstream mod_file(model_file, std::ios_base::out | std::ios_base::trunc);
                 if(mod_file.good()) {
-                    // Remove numbering fro support layer headers
+                    // Remove numbering from support layer headers
                     std::regex support_header("\\[support_[0-9]+\\]");
                     mod_file << std::regex_replace(model_parameters, support_header, "[support]");
                     std::cout << "Wrote model \"" << key << "\" to: \"" << model_file << "\"" << std::endl;

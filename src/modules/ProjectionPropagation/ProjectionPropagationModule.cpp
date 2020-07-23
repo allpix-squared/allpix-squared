@@ -7,6 +7,7 @@
 #include "ProjectionPropagationModule.hpp"
 
 #include <cmath>
+#include <functional>
 #include <limits>
 #include <string>
 #include <utility>
@@ -34,9 +35,11 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<int>("charge_per_step", 10);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<bool>("diffuse_deposit", false);
 
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");
+    diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);
@@ -90,12 +93,29 @@ void ProjectionPropagationModule::init() {
     }
 
     if(output_plots_) {
-        // Initialize output plot
+        // Initialize output plots
+        propagation_time_histo_ = new TH1D("propagation_time_histo",
+                                           "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
+                                           static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                           0,
+                                           static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
         drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
+                                     "Drift time (directed drift only);Drift time [ns];charge carriers",
                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                      0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+                                     static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        initial_position_histo_ = new TH1D("initial_position_histo",
+                                           "Initial position of collected charge carriers;Position z [um];charge carriers",
+                                           100,
+                                           static_cast<double>(Units::convert(-top_z_, "um")),
+                                           static_cast<double>(Units::convert(top_z_, "um")));
+        if(diffuse_deposit_) {
+            diffusion_time_histo_ = new TH1D("diffusion_time_histo",
+                                             "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
+                                             static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                             0,
+                                             static_cast<double>(Units::convert(integration_time_, "ns")));
+        }
     }
 }
 
@@ -111,8 +131,8 @@ void ProjectionPropagationModule::run(unsigned int) {
     // Loop over all deposits for propagation
     for(auto& deposit : deposits_message_->getData()) {
 
-        auto position = deposit.getLocalPosition();
         auto type = deposit.getType();
+        auto initial_position = deposit.getLocalPosition();
 
         // Selection of charge carrier:
         if(type != propagate_type_) {
@@ -120,62 +140,7 @@ void ProjectionPropagationModule::run(unsigned int) {
         }
 
         LOG(DEBUG) << "Set of " << deposit.getCharge() << " charge carriers (" << type << ") on "
-                   << Units::display(position, {"mm", "um"});
-
-        // Define a lambda function to compute the carrier mobility
-        auto carrier_mobility = [&](double efield_mag) {
-            // Compute carrier mobility from constants and electric field magnitude
-            double numerator, denominator;
-            if(type == CarrierType::ELECTRON) {
-                numerator = electron_Vm_ / electron_Ec_;
-                denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
-            } else {
-                numerator = hole_Vm_ / hole_Ec_;
-                denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
-            }
-            return numerator / denominator;
-        };
-
-        // Get the electric field at the position of the deposited charge and the top of the sensor:
-        auto efield = detector_->getElectricField(position);
-        double efield_mag = std::sqrt(efield.Mag2());
-        auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
-        double efield_mag_top = std::sqrt(efield_top.Mag2());
-
-        LOG(TRACE) << "Electric field at carrier position / top of the sensor: " << Units::display(efield_mag_top, "V/cm")
-                   << " , " << Units::display(efield_mag, "V/cm");
-
-        slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
-
-        // Calculate the drift time
-        auto calc_drift_time = [&]() {
-            double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
-            double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
-
-            return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
-                   zero_mobility;
-        };
-
-        // Only project if within the depleted region (i.e. efield not zero)
-        if(efield_mag < std::numeric_limits<double>::epsilon()) {
-            LOG(TRACE) << "Electric field is zero at " << Units::display(position, {"mm", "um"});
-            continue;
-        }
-
-        LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
-
-        // Assume linear electric field over the sensor:
-        double diffusion_constant = boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
-
-        double drift_time = calc_drift_time();
-        LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
-
-        if(output_plots_) {
-            drift_time_histo_->Fill(drift_time, deposit.getCharge());
-        }
-
-        double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
-        LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
+                   << Units::display(initial_position, {"mm", "um"});
 
         double projected_charge = 0;
 
@@ -189,6 +154,121 @@ void ProjectionPropagationModule::run(unsigned int) {
             }
             charges_remaining -= charge_per_step;
 
+            auto position = initial_position;
+
+            // Get the electric field at the position of the deposited charge and the top of the sensor:
+            auto efield = detector_->getElectricField(position);
+            double efield_mag = std::sqrt(efield.Mag2());
+            auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
+            double efield_mag_top = std::sqrt(efield_top.Mag2());
+
+            // Define a lambda function to compute the carrier mobility
+            auto carrier_mobility = [&](double efield_magn) {
+                // Compute carrier mobility from constants and electric field magnitude
+                double numerator, denominator;
+                if(type == CarrierType::ELECTRON) {
+                    numerator = electron_Vm_ / electron_Ec_;
+                    denominator = std::pow(1. + std::pow(efield_magn / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+                } else {
+                    numerator = hole_Vm_ / hole_Ec_;
+                    denominator = std::pow(1. + std::pow(efield_magn / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+                }
+                return numerator / denominator;
+            };
+
+            double diffusion_time = 0;
+
+            // Only project if within the depleted region (i.e. efield not zero)
+            if(efield_mag < std::numeric_limits<double>::epsilon()) {
+                LOG(TRACE) << "Electric field is zero at " << Units::display(position, {"mm", "um"});
+                if(!diffuse_deposit_) {
+                    continue;
+                }
+                double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
+                double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
+                LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
+
+                std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+                double diffusion_x = gauss_distribution(random_generator_);
+                double diffusion_y = gauss_distribution(random_generator_);
+                double diffusion_z = gauss_distribution(random_generator_);
+                auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
+
+                auto local_position_diffusion = position + diffusion_vec;
+
+                auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
+                double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
+
+                if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() && (detector_->isWithinSensor(position))) {
+                    LOG(TRACE) << "Charge carrier remains within undepleted volume";
+                    continue;
+                }
+
+                std::function<ROOT::Math::XYZPoint(const ROOT::Math::XYZPoint&, const ROOT::Math::XYZPoint&)> interval;
+                interval = [this, &interval](const ROOT::Math::XYZPoint& start,
+                                             const ROOT::Math::XYZPoint& stop) -> ROOT::Math::XYZPoint {
+                    // Break nested intervals at a precision of 0.01 um
+                    if(std::sqrt((stop - ROOT::Math::XYZVector(start)).Mag2()) < 0.00001) {
+                        return stop;
+                    }
+                    auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
+                    double efield_center_mag = std::sqrt(efield_center.Mag2());
+                    if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
+                        return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
+                    } else {
+                        return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
+                    }
+                };
+
+                position = interval(position, local_position_diffusion);
+                efield = detector_->getElectricField(position);
+                efield_mag = std::sqrt(efield.Mag2());
+                diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
+                                                               (local_position_diffusion - initial_position).Mag2());
+
+                if(!detector_->isWithinSensor(position)) {
+                    LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
+                    continue;
+                }
+                LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
+                LOG(TRACE) << " ... with an electric field of " << Units::display(efield_mag, "V/cm");
+                LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
+            }
+
+            LOG(TRACE) << "Electric field at carrier position / top of the sensor: "
+                       << Units::display(efield_mag_top, "V/cm") << " , " << Units::display(efield_mag, "V/cm");
+
+            slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
+
+            // Calculate the drift time
+            auto calc_drift_time = [&]() {
+                double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
+
+                return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
+                       zero_mobility;
+            };
+            LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
+
+            // Assume linear electric field over the depleted part of the sensor
+            double diffusion_constant =
+                boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
+
+            double drift_time = calc_drift_time();
+            double propagation_time = drift_time + diffusion_time;
+            LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
+
+            if(output_plots_) {
+                propagation_time_histo_->Fill(propagation_time, charge_per_step);
+                drift_time_histo_->Fill(drift_time, charge_per_step);
+                if(diffuse_deposit_) {
+                    diffusion_time_histo_->Fill(diffusion_time, charge_per_step);
+                }
+            }
+
+            double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
+            LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
+
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
             double diffusion_x = gauss_distribution(random_generator_);
             double diffusion_y = gauss_distribution(random_generator_);
@@ -197,9 +277,10 @@ void ProjectionPropagationModule::run(unsigned int) {
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
             // Only add if within requested integration time:
-            auto event_time = deposit.getEventTime() + drift_time;
-            if(drift_time > integration_time_) {
-                LOG(DEBUG) << "Charge carriers drift time not within integration time: " << Units::display(event_time, "ns");
+            auto event_time = deposit.getEventTime() + propagation_time;
+            if(propagation_time > integration_time_) {
+                LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
+                           << Units::display(event_time, "ns");
                 continue;
             }
 
@@ -209,6 +290,12 @@ void ProjectionPropagationModule::run(unsigned int) {
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;
             }
+
+            if(output_plots_) {
+                initial_position_histo_->Fill(static_cast<double>(Units::convert(initial_position.z(), "um")),
+                                              charge_per_step);
+            }
+
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
@@ -238,7 +325,12 @@ void ProjectionPropagationModule::run(unsigned int) {
 
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
-        // Write output plot
+        // Write output plots
         drift_time_histo_->Write();
+        propagation_time_histo_->Write();
+        initial_position_histo_->Write();
+        if(diffuse_deposit_) {
+            diffusion_time_histo_->Write();
+        }
     }
 }

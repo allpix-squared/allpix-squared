@@ -46,7 +46,7 @@ namespace allpix {
      */
     enum class FileType {
         UNKNOWN = 0, ///< Unknown file format
-        INIT,        ///< Leagcy file format, values stored in plain-text ASCII
+        INIT,        ///< Legacy file format, values stored in plain-text ASCII
         APF,         ///< Binary Allpix Squared format serialized using the cereal library
     };
 
@@ -159,7 +159,7 @@ namespace allpix {
      *
      * This class can be used to deserialize and parse FieldData objects from files of different format. The FieldData
      * objects read from file are cached, and a cache hit will be returned when trying to re-read a file with the same
-     * canoncial path.
+     * canonical path.
      */
     template <typename T = double> class FieldParser {
     public:

@@ -177,7 +177,7 @@ for iev in range(0, PixelHit.GetEntries()):
         mc_local_endpoints['y'].append(output_track_y)
         mc_local_endpoints['z'].append(output_track_z)
 
-# print numner of events processed
+# print number of events processed
 print(" ----- processed events (pixelhit):" + str(PixelHit.GetEntries()) + " empty_mc_branch:" + str(empty_mc_branch))
 
 print("Plotting...")

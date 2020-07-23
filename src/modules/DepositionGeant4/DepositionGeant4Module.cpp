@@ -110,7 +110,7 @@ void DepositionGeant4Module::init() {
 
         for(auto& detector : geo_manager_->getDetectors()) {
             // Get logical volume
-            auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
             if(logical_volume == nullptr) {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
@@ -257,7 +257,7 @@ void DepositionGeant4Module::init() {
         // Get model of the sensitive device
         auto sensitive_detector_action = new SensitiveDetectorActionG4(
             this, detector, messenger_, track_info_manager_.get(), charge_creation_energy, fano_factor, getRandomSeed());
-        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
