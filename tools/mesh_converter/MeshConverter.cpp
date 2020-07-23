@@ -5,7 +5,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -203,73 +202,12 @@ int main(int argc, char** argv) {
     auto start = std::chrono::system_clock::now();
 
     std::string grid_file = file_prefix + ".grd";
-    LOG(STATUS) << "Reading mesh grid from grid file \"" << grid_file << "\"";
-
-    auto parser = MeshParser::factory(parser_type);
-
-    std::vector<Point> points;
-    try {
-        auto region_grid = parser->readMeshes(grid_file);
-        LOG(INFO) << "Grid sizes for all regions:";
-        for(auto& reg : region_grid) {
-            LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
-        }
-
-        // Append all grid regions to the mesh:
-        for(const auto& region : regions) {
-            if(region_grid.find(region) != region_grid.end()) {
-                points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
-            } else {
-                LOG(ERROR) << "Region \"" << region << "\" not found in TCAD mesh";
-                allpix::Log::finish();
-                return 1;
-            }
-        }
-
-        if(points.empty()) {
-            throw std::runtime_error("Empty grid");
-        }
-        LOG(DEBUG) << "Grid with " << points.size() << " points";
-    } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse grid file \"" << grid_file << "\":\n" << e.what();
-        allpix::Log::finish();
-        return 1;
-    }
+    LOG(STATUS) << "Reading mesh grid from file \"" << grid_file << "\"";
+    std::vector<Point> points = parser->getMesh(grid_file, regions);
 
     std::string data_file = file_prefix + ".dat";
-    LOG(STATUS) << "Reading electric field from data file \"" << data_file << "\"";
-
-    std::vector<Point> field;
-    try {
-        auto region_fields = parser->readFields(data_file);
-        LOG(INFO) << "Field sizes for all regions and observables:";
-        for(auto& reg : region_fields) {
-            LOG(INFO) << " " << reg.first << ":";
-            for(auto& fld : reg.second) {
-                LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
-            }
-        }
-
-        // Append all field regions to the field vector:
-        for(const auto& region : regions) {
-            if(region_fields.find(region) != region_fields.end() &&
-               region_fields[region].find(observable) != region_fields[region].end()) {
-                field.insert(
-                    field.end(), region_fields[region][observable].begin(), region_fields[region][observable].end());
-            } else {
-                LOG(ERROR) << "Region \"" << region << "\" with observable \"" << observable << "\" not found in TCAD field";
-            }
-        }
-
-        if(field.empty()) {
-            throw std::runtime_error("Empty observable data");
-        }
-        LOG(DEBUG) << "Field with " << field.size() << " points";
-    } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to parse data file \"" << data_file << "\":\n" << e.what();
-        allpix::Log::finish();
-        return 1;
-    }
+    LOG(STATUS) << "Reading field from file \"" << data_file << "\"";
+    std::vector<Point> field = parser->getField(data_file, observable, regions);
 
     if(points.size() != field.size()) {
         LOG(FATAL) << "Field and grid file do not match, found " << points.size() << " and " << field.size()
