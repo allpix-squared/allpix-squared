@@ -87,6 +87,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
+* Lennart Huth, DESY, @lhuth
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
