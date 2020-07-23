@@ -111,10 +111,11 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         geo_manager_->setExternalObject(name, "wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
-        /*
-                 SENSOR
-                 * the sensitive detector is the part that collects the deposits
-        */
+
+        /**
+         * SENSOR
+         * the sensitive detector is the part that collects the deposits
+         */
 
         // Create the sensor box and logical volume
         auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
@@ -152,12 +153,12 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                    -model->getGridSize().y() / 2.0,
                                                    0);
         geo_manager_->setExternalObject(name, "pixel_param", pixel_param);
-
         // WARNING: do not place the actual parameterization, only use it if we need it
-        /*
-                 CHIP
-                 * the chip connected to the bumps bond and the support
-        */
+
+        /**
+         * CHIP
+         * the chip connected to the bumps bond and the support
+         */
 
         // Construct the chips only if necessary
         if(model->getChipSize().z() > 1e-9) {
@@ -249,9 +250,10 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
 
-            /*   BUMPS
-                    the bump bonds connect the sensor to the readout chip
-                */
+            /**
+             * BUMPS
+             * the bump bonds connect the sensor to the readout chip
+             */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();
