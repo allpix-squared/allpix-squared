@@ -454,6 +454,7 @@ int main(int argc, char** argv) {
         std::string units = (observable == "ElectricField" ? "V/cm" : "");
 
         // Prepare data:
+        LOG(INFO) << "Preparing data for storage...";
         auto data = std::make_shared<std::vector<double>>();
         for(int i = 0; i < divisions.x(); ++i) {
             for(int j = 0; j < divisions.y(); ++j) {
