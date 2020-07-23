@@ -167,9 +167,7 @@ int main(int argc, char** argv) {
         }
 
         // Input file parser:
-        auto parser_type = config.get<std::string>("parser", "df-ise");
-        std::transform(parser_type.begin(), parser_type.end(), parser_type.begin(), ::tolower);
-        auto parser = MeshParser::factory(parser_type);
+        auto parser = MeshParser::factory(config);
 
         // Region, observable and binning of output field
         auto regions = config.getArray<std::string>("region", {"bulk"});

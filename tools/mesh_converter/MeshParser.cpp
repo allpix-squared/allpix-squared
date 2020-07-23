@@ -4,13 +4,14 @@
 
 using namespace mesh_converter;
 
-std::shared_ptr<MeshParser> MeshParser::factory(std::string parser) {
+std::shared_ptr<MeshParser> MeshParser::factory(const allpix::Configuration& config) {
+    auto parser = config.get<std::string>("parser", "df-ise");
     std::transform(parser.begin(), parser.end(), parser.begin(), ::tolower);
 
     if(parser == "df-ise" || parser == "dfise") {
         return std::make_shared<DFISEParser>();
     } else {
-        throw std::runtime_error("Unknown parser type \"" + parser + "\"");
+        throw allpix::InvalidValueError(config, "parser", "Unknown parser type");
     }
 }
 

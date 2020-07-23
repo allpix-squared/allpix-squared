@@ -2,6 +2,7 @@
 #define ALLPIX_MESHPARSER_H
 
 #include "MeshElement.hpp"
+#include "core/config/Configuration.hpp"
 
 #include <map>
 #include <memory>
@@ -18,7 +19,7 @@ namespace mesh_converter {
      */
     class MeshParser {
     public:
-        static std::shared_ptr<MeshParser> factory(std::string parser);
+        static std::shared_ptr<MeshParser> factory(const allpix::Configuration& config);
         /**
          * @brief Default constructor
          */
