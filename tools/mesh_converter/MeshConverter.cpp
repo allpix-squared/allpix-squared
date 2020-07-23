@@ -151,264 +151,267 @@ int main(int argc, char** argv) {
         allpix::Log::addStream(log_file);
     }
 
-    LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
-    LOG(STATUS) << "Using " << conf_file_name << " configuration file";
-    std::ifstream file(conf_file_name);
-    if(!file) {
-        LOG(FATAL) << "Failed to open configuration file \"" << conf_file_name << "\"";
-        allpix::Log::finish();
-        return 1;
-    }
-
-    allpix::ConfigReader reader(file, conf_file_name);
-    allpix::Configuration config = reader.getHeaderConfiguration();
-
-    // Output file format:
-    auto format = config.get<std::string>("model", "apf");
-    std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-    FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
-    if(file_type == FileType::UNKNOWN) {
-        throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
-    }
-
-    // Input file parser:
-    auto parser_type = config.get<std::string>("parser", "df-ise");
-    std::transform(parser_type.begin(), parser_type.end(), parser_type.begin(), ::tolower);
-    auto parser = MeshParser::factory(parser_type);
-
-    auto regions = config.getArray<std::string>("region", {"bulk"});
-    auto observable = config.get<std::string>("observable", "ElectricField");
-
-    const auto radius_step = config.get<double>("radius_step", 0.5);
-    const auto max_radius = config.get<double>("max_radius", 50);
-
-    const auto volume_cut = config.get<double>("volume_cut", 10e-9);
-
-    XYZVectorInt divisions;
-    const auto dimension = config.get<size_t>("dimension", 3);
-    if(dimension == 2) {
-        auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
-        divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
-    } else {
-        divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
-    }
-
-    std::vector<std::string> rot = {"x", "y", "z"};
-    if(config.has("xyz")) {
-        rot = config.getArray<std::string>("xyz");
-    }
-    if(rot.size() != 3) {
-        throw allpix::InvalidValueError(config, "xyz", "three entries required");
-    }
-
-    auto start = std::chrono::system_clock::now();
-
-    std::string grid_file = file_prefix + ".grd";
-    LOG(STATUS) << "Reading mesh grid from file \"" << grid_file << "\"";
-    std::vector<Point> points = parser->getMesh(grid_file, regions);
-
-    std::string data_file = file_prefix + ".dat";
-    LOG(STATUS) << "Reading field from file \"" << data_file << "\"";
-    std::vector<Point> field = parser->getField(data_file, observable, regions);
-
-    if(points.size() != field.size()) {
-        throw std::runtime_error("Field and grid file do not match, found " + std::to_string(points.size()) + " and " +
-                                 std::to_string(field.size()) + " data points, respectively.");
-    }
-
-    auto points_temp = points;
-    auto field_temp = field;
-    if(rot.at(0) == "-y" || rot.at(0) == "y") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].x = points[i].y;
-            field_temp[i].x = field[i].y;
-        }
-    }
-    if(rot.at(0) == "-z" || rot.at(0) == "z") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].x = points[i].z;
-            field_temp[i].x = field[i].z;
-        }
-    }
-    if(rot.at(1) == "-x" || rot.at(1) == "x") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].y = points[i].x;
-            field_temp[i].y = field[i].x;
-        }
-    }
-    if(rot.at(1) == "-z" || rot.at(1) == "z") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].y = points[i].z;
-            field_temp[i].y = field[i].z;
-        }
-    }
-    if(rot.at(2) == "-x" || rot.at(2) == "x") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].z = points[i].x;
-            field_temp[i].z = field[i].x;
-        }
-    }
-    if(rot.at(2) == "-y" || rot.at(2) == "y") {
-        for(size_t i = 0; i < points.size(); ++i) {
-            points_temp[i].z = points[i].y;
-            field_temp[i].z = field[i].y;
-        }
-    }
-    points = points_temp;
-    field = field_temp;
-
-    // Find minimum and maximum from mesh coordinates
-    double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
-    double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
-    for(auto& point : points) {
-        if(dimension == 2) {
-            maxx = 1;
-            minx = 0;
-            maxy = std::max(maxy, point.y);
-            maxz = std::max(maxz, point.z);
-            miny = std::min(miny, point.y);
-            minz = std::min(minz, point.z);
-        }
-
-        if(dimension == 3) {
-            maxx = std::max(maxx, point.x);
-            maxy = std::max(maxy, point.y);
-            maxz = std::max(maxz, point.z);
-            minx = std::min(minx, point.x);
-            miny = std::min(miny, point.y);
-            minz = std::min(minz, point.z);
-        }
-    }
-
-    // Creating a new mesh points cloud with a regular pitch
-    const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
-    const double ystep = (maxy - miny) / static_cast<double>(divisions.y());
-    const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
-    const double cell_volume = xstep * ystep * zstep;
-
-    // Using the minimal cell dimension as initial search radius for the point cloud:
-    const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
-    LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
-
-    if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
-        LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
-                    << rot.at(2) << ")";
-    }
-    LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
-                << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
-                << " ==>  Volume = " << cell_volume;
-
-    if(rot.at(0).find('-') != std::string::npos) {
-        LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
-        for(size_t i = 0; i < points.size(); ++i) {
-            points[i].x = maxx - (points[i].x - minx);
-            field[i].x = -field[i].x;
-        }
-    }
-    if(rot.at(1).find('-') != std::string::npos) {
-        LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
-        for(size_t i = 0; i < points.size(); ++i) {
-            points[i].y = maxy - (points[i].y - miny);
-            field[i].y = -field[i].y;
-        }
-    }
-    if(rot.at(2).find('-') != std::string::npos) {
-        LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
-        for(size_t i = 0; i < points.size(); ++i) {
-            points[i].z = maxz - (points[i].z - minz);
-            field[i].z = -field[i].z;
-        }
-    }
-
-    rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
-    rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
-    rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
-
-    auto end = std::chrono::system_clock::now();
-    auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
-
-    // Initializing the Octree with points from mesh cloud.
-    unibn::Octree<Point> octree;
-    octree.initialize(points);
-
-    auto mesh_section = [&](double x, double y) {
-        allpix::Log::setReportingLevel(log_level);
-
-        // New mesh slice
-        std::vector<Point> new_mesh;
-
-        double z = minz + zstep / 2.0;
-        for(int k = 0; k < divisions.z(); ++k) {
-            // New mesh vertex and field
-            Point q(dimension == 2 ? -1 : x, y, z), e;
-            bool valid = false;
-
-            size_t prev_neighbours = 0;
-            double radius = initial_radius;
-
-            while(radius < max_radius) {
-                LOG(DEBUG) << "Search radius: " << radius;
-                // Calling octree neighbours search and sorting the results list with the closest neighbours first
-                std::vector<unsigned int> results;
-                octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
-                LOG(DEBUG) << "Number of vertices found: " << results.size();
-
-                // If after a radius step no new neighbours are found, go to the next radius step
-                if(results.size() <= prev_neighbours || results.empty()) {
-                    prev_neighbours = results.size();
-                    LOG(DEBUG) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
-                    radius = radius + radius_step;
-                    continue;
-                }
-
-                // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
-                if(results.size() < (dimension == 3 ? 4 : 3)) {
-                    LOG(DEBUG) << "Incomplete mesh element found for radius " << radius << ", increasing radius";
-                    radius = radius + radius_step;
-                    continue;
-                }
-
-                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
-                // valid mesh element and also ensures that this is the one with the smallest volume.
-                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
-                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
-                });
-
-                // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference
-                // point
-                auto res = for_each_combination(results.begin(),
-                                                results.begin() + (dimension == 3 ? 4 : 3),
-                                                results.end(),
-                                                Combination(&points, &field, q, volume_cut));
-                valid = res.valid();
-                if(valid) {
-                    e = res.result();
-                    break;
-                }
-
-                radius = radius + radius_step;
-                LOG(DEBUG) << "All combinations tried. Increasing search radius to " << radius;
-            }
-
-            if(!valid) {
-                throw std::runtime_error("Could not find valid volume element. Consider to increase max_radius to include "
-                                         "more mesh points in the search");
-            }
-
-            new_mesh.push_back(e);
-            z += zstep;
-        }
-
-        return new_mesh;
-    };
-
-    // Start the interpolation on many threads:
-    auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
-    LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
-    std::vector<Point> e_field_new_mesh;
-
     try {
+
+        LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
+        LOG(STATUS) << "Using " << conf_file_name << " configuration file";
+        std::ifstream file(conf_file_name);
+        if(!file) {
+            LOG(FATAL) << "Failed to open configuration file \"" << conf_file_name << "\"";
+            allpix::Log::finish();
+            return 1;
+        }
+
+        allpix::ConfigReader reader(file, conf_file_name);
+        allpix::Configuration config = reader.getHeaderConfiguration();
+
+        // Output file format:
+        auto format = config.get<std::string>("model", "apf");
+        std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+        FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+        if(file_type == FileType::UNKNOWN) {
+            throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
+        }
+
+        // Input file parser:
+        auto parser_type = config.get<std::string>("parser", "df-ise");
+        std::transform(parser_type.begin(), parser_type.end(), parser_type.begin(), ::tolower);
+        auto parser = MeshParser::factory(parser_type);
+
+        auto regions = config.getArray<std::string>("region", {"bulk"});
+        auto observable = config.get<std::string>("observable", "ElectricField");
+
+        const auto radius_step = config.get<double>("radius_step", 0.5);
+        const auto max_radius = config.get<double>("max_radius", 50);
+
+        const auto volume_cut = config.get<double>("volume_cut", 10e-9);
+
+        XYZVectorInt divisions;
+        const auto dimension = config.get<size_t>("dimension", 3);
+        if(dimension == 2) {
+            auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
+            divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
+        } else {
+            divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
+        }
+
+        std::vector<std::string> rot = {"x", "y", "z"};
+        if(config.has("xyz")) {
+            rot = config.getArray<std::string>("xyz");
+        }
+        if(rot.size() != 3) {
+            throw allpix::InvalidValueError(config, "xyz", "three entries required");
+        }
+
+        auto start = std::chrono::system_clock::now();
+
+        std::string grid_file = file_prefix + ".grd";
+        LOG(STATUS) << "Reading mesh grid from file \"" << grid_file << "\"";
+        std::vector<Point> points = parser->getMesh(grid_file, regions);
+
+        std::string data_file = file_prefix + ".dat";
+        LOG(STATUS) << "Reading field from file \"" << data_file << "\"";
+        std::vector<Point> field = parser->getField(data_file, observable, regions);
+
+        if(points.size() != field.size()) {
+            throw std::runtime_error("Field and grid file do not match, found " + std::to_string(points.size()) + " and " +
+                                     std::to_string(field.size()) + " data points, respectively.");
+        }
+
+        auto points_temp = points;
+        auto field_temp = field;
+        if(rot.at(0) == "-y" || rot.at(0) == "y") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].x = points[i].y;
+                field_temp[i].x = field[i].y;
+            }
+        }
+        if(rot.at(0) == "-z" || rot.at(0) == "z") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].x = points[i].z;
+                field_temp[i].x = field[i].z;
+            }
+        }
+        if(rot.at(1) == "-x" || rot.at(1) == "x") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].y = points[i].x;
+                field_temp[i].y = field[i].x;
+            }
+        }
+        if(rot.at(1) == "-z" || rot.at(1) == "z") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].y = points[i].z;
+                field_temp[i].y = field[i].z;
+            }
+        }
+        if(rot.at(2) == "-x" || rot.at(2) == "x") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].z = points[i].x;
+                field_temp[i].z = field[i].x;
+            }
+        }
+        if(rot.at(2) == "-y" || rot.at(2) == "y") {
+            for(size_t i = 0; i < points.size(); ++i) {
+                points_temp[i].z = points[i].y;
+                field_temp[i].z = field[i].y;
+            }
+        }
+        points = points_temp;
+        field = field_temp;
+
+        // Find minimum and maximum from mesh coordinates
+        double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
+        double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
+        for(auto& point : points) {
+            if(dimension == 2) {
+                maxx = 1;
+                minx = 0;
+                maxy = std::max(maxy, point.y);
+                maxz = std::max(maxz, point.z);
+                miny = std::min(miny, point.y);
+                minz = std::min(minz, point.z);
+            }
+
+            if(dimension == 3) {
+                maxx = std::max(maxx, point.x);
+                maxy = std::max(maxy, point.y);
+                maxz = std::max(maxz, point.z);
+                minx = std::min(minx, point.x);
+                miny = std::min(miny, point.y);
+                minz = std::min(minz, point.z);
+            }
+        }
+
+        // Creating a new mesh points cloud with a regular pitch
+        const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
+        const double ystep = (maxy - miny) / static_cast<double>(divisions.y());
+        const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
+        const double cell_volume = xstep * ystep * zstep;
+
+        // Using the minimal cell dimension as initial search radius for the point cloud:
+        const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
+        LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
+
+        if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
+            LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
+                        << rot.at(2) << ")";
+        }
+        LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
+                    << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep
+                    << " ==>  Volume = " << cell_volume;
+
+        if(rot.at(0).find('-') != std::string::npos) {
+            LOG(WARNING) << "Inverting coordinate X. This might change the right-handness of the coordinate system!";
+            for(size_t i = 0; i < points.size(); ++i) {
+                points[i].x = maxx - (points[i].x - minx);
+                field[i].x = -field[i].x;
+            }
+        }
+        if(rot.at(1).find('-') != std::string::npos) {
+            LOG(WARNING) << "Inverting coordinate Y. This might change the right-handness of the coordinate system!";
+            for(size_t i = 0; i < points.size(); ++i) {
+                points[i].y = maxy - (points[i].y - miny);
+                field[i].y = -field[i].y;
+            }
+        }
+        if(rot.at(2).find('-') != std::string::npos) {
+            LOG(WARNING) << "Inverting coordinate Z. This might change the right-handness of the coordinate system!";
+            for(size_t i = 0; i < points.size(); ++i) {
+                points[i].z = maxz - (points[i].z - minz);
+                field[i].z = -field[i].z;
+            }
+        }
+
+        rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
+        rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
+        rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
+
+        auto end = std::chrono::system_clock::now();
+        auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+        LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
+
+        // Initializing the Octree with points from mesh cloud.
+        unibn::Octree<Point> octree;
+        octree.initialize(points);
+
+        auto mesh_section = [&](double x, double y) {
+            allpix::Log::setReportingLevel(log_level);
+
+            // New mesh slice
+            std::vector<Point> new_mesh;
+
+            double z = minz + zstep / 2.0;
+            for(int k = 0; k < divisions.z(); ++k) {
+                // New mesh vertex and field
+                Point q(dimension == 2 ? -1 : x, y, z), e;
+                bool valid = false;
+
+                size_t prev_neighbours = 0;
+                double radius = initial_radius;
+
+                while(radius < max_radius) {
+                    LOG(DEBUG) << "Search radius: " << radius;
+                    // Calling octree neighbours search and sorting the results list with the closest neighbours first
+                    std::vector<unsigned int> results;
+                    octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
+                    LOG(DEBUG) << "Number of vertices found: " << results.size();
+
+                    // If after a radius step no new neighbours are found, go to the next radius step
+                    if(results.size() <= prev_neighbours || results.empty()) {
+                        prev_neighbours = results.size();
+                        LOG(DEBUG) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
+                        radius = radius + radius_step;
+                        continue;
+                    }
+
+                    // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
+                    if(results.size() < (dimension == 3 ? 4 : 3)) {
+                        LOG(DEBUG) << "Incomplete mesh element found for radius " << radius << ", increasing radius";
+                        radius = radius + radius_step;
+                        continue;
+                    }
+
+                    // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
+                    // valid mesh element and also ensures that this is the one with the smallest volume.
+                    std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                        return unibn::L2Distance<Point>::compute(points[a], q) <
+                               unibn::L2Distance<Point>::compute(points[b], q);
+                    });
+
+                    // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference
+                    // point
+                    auto res = for_each_combination(results.begin(),
+                                                    results.begin() + (dimension == 3 ? 4 : 3),
+                                                    results.end(),
+                                                    Combination(&points, &field, q, volume_cut));
+                    valid = res.valid();
+                    if(valid) {
+                        e = res.result();
+                        break;
+                    }
+
+                    radius = radius + radius_step;
+                    LOG(DEBUG) << "All combinations tried. Increasing search radius to " << radius;
+                }
+
+                if(!valid) {
+                    throw std::runtime_error(
+                        "Could not find valid volume element. Consider to increase max_radius to include "
+                        "more mesh points in the search");
+                }
+
+                new_mesh.push_back(e);
+                z += zstep;
+            }
+
+            return new_mesh;
+        };
+
+        // Start the interpolation on many threads:
+        auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
+        std::vector<Point> e_field_new_mesh;
+
         // clang-format off
         auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
             // clang-format on
@@ -441,57 +444,64 @@ int main(int argc, char** argv) {
             mesh_slices_done++;
         }
         pool.destroy();
-    } catch(std::runtime_error& e) {
-        LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
-        throw;
-    }
 
-    end = std::chrono::system_clock::now();
-    elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+        LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
-    // Prepare header and auxiliary information:
-    std::string header =
-        "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-    std::array<double, 3> size{{allpix::Units::get(maxx - minx, "um"),
-                                allpix::Units::get(maxy - miny, "um"),
-                                allpix::Units::get(maxz - minz, "um")}};
-    std::array<size_t, 3> gridsize{
-        {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
+        // Prepare header and auxiliary information:
+        std::string header =
+            "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
+        std::array<double, 3> size{{allpix::Units::get(maxx - minx, "um"),
+                                    allpix::Units::get(maxy - miny, "um"),
+                                    allpix::Units::get(maxz - minz, "um")}};
+        std::array<size_t, 3> gridsize{
+            {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
-    // FIXME this should be done in a more elegant way
-    FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
-    std::string units = (observable == "ElectricField" ? "V/cm" : "");
+        // FIXME this should be done in a more elegant way
+        FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+        std::string units = (observable == "ElectricField" ? "V/cm" : "");
 
-    // Prepare data:
-    auto data = std::make_shared<std::vector<double>>();
-    for(int i = 0; i < divisions.x(); ++i) {
-        for(int j = 0; j < divisions.y(); ++j) {
-            for(int k = 0; k < divisions.z(); ++k) {
-                auto& point =
-                    e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() + j * divisions.z() + k)];
-                // We need to convert to framework-internal units:
-                data->push_back(allpix::Units::get(point.x, units));
-                // For a vector field, we push three values:
-                if(quantity == FieldQuantity::VECTOR) {
-                    data->push_back(allpix::Units::get(point.y, units));
-                    data->push_back(allpix::Units::get(point.z, units));
+        // Prepare data:
+        auto data = std::make_shared<std::vector<double>>();
+        for(int i = 0; i < divisions.x(); ++i) {
+            for(int j = 0; j < divisions.y(); ++j) {
+                for(int k = 0; k < divisions.z(); ++k) {
+                    auto& point = e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() +
+                                                                             j * divisions.z() + k)];
+                    // We need to convert to framework-internal units:
+                    data->push_back(allpix::Units::get(point.x, units));
+                    // For a vector field, we push three values:
+                    if(quantity == FieldQuantity::VECTOR) {
+                        data->push_back(allpix::Units::get(point.y, units));
+                        data->push_back(allpix::Units::get(point.z, units));
+                    }
                 }
             }
         }
+
+        allpix::FieldData<double> field_data(header, gridsize, size, data);
+        std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
+
+        allpix::FieldWriter<double> field_writer(quantity);
+        field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
+        LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
+
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+        LOG(STATUS) << "Interpolation and conversion completed in " << elapsed_seconds << " seconds.";
+
+    } catch(allpix::ConfigurationError& e) {
+        LOG(FATAL) << "Error in the configuration:" << std::endl
+                   << e.what() << std::endl
+                   << "The configuration needs to be updated. Cannot continue.";
+        return_code = 1;
+    } catch(std::exception& e) {
+        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
+        return_code = 127;
     }
 
-    allpix::FieldData<double> field_data(header, gridsize, size, data);
-    std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
-
-    allpix::FieldWriter<double> field_writer(quantity);
-    field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
-    LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
-
-    end = std::chrono::system_clock::now();
-    elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-    LOG(STATUS) << "Interpolation and conversion completed in " << elapsed_seconds << " seconds.";
-
+    // Finish the logging
     allpix::Log::finish();
-    return 1;
+    return return_code;
 }
