@@ -120,7 +120,8 @@ void MCTrack::print(std::ostream& out) const {
 }
 
 void MCTrack::storeHistory() {
-    parent_ = parent_ref_;
+    parent_ = TRef(parent_ref_);
+    parent_ref_ = nullptr;
 }
 
 void MCTrack::loadHistory() {

@@ -84,8 +84,10 @@ void PropagatedCharge::print(std::ostream& out) const {
 }
 
 void PropagatedCharge::storeHistory() {
-    mc_particle_ = mc_particle_ref_;
-    deposited_charge_ = deposited_charge_ref_;
+    mc_particle_ = TRef(mc_particle_ref_);
+    mc_particle_ref_ = nullptr;
+    deposited_charge_ = TRef(deposited_charge_ref_);
+    deposited_charge_ref_ = nullptr;
 }
 
 void PropagatedCharge::loadHistory() {

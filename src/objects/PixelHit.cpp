@@ -101,10 +101,12 @@ void PixelHit::print(std::ostream& out) const {
 }
 
 void PixelHit::storeHistory() {
-    pixel_charge_ = pixel_charge_ref_;
+    pixel_charge_ = TRef(pixel_charge_ref_);
+    pixel_charge_ref_ = nullptr;
 
     for(auto& mc_particle : mc_particles_ref_) {
         mc_particles_.push_back(mc_particle);
+        mc_particle = nullptr;
     }
 }
 
