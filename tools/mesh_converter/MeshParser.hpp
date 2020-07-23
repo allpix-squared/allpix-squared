@@ -28,19 +28,24 @@ namespace mesh_converter {
          */
         virtual ~MeshParser() = default;
 
+        std::vector<Point> getMesh(const std::string& file, const std::vector<std::string>& regions);
+        std::vector<Point>
+        getField(const std::string& file, const std::string& observable, const std::vector<std::string>& regions);
+
+    private:
         /**
          * @brief Method to read grids of mesh points from the given file
          * @param  file_name Canonical path of the input file
          * @return           Map with mesh points for all regions found in the file
          */
-        virtual MeshMap readMeshes(const std::string& file_name) = 0;
+        virtual MeshMap read_meshes(const std::string& file_name) = 0;
 
         /**
          * @brief Method to read fields from the given file
          * @param  file_name Canonical path pof the input file
          * @return           Map with all fields for the different regions
          */
-        virtual FieldMap readFields(const std::string& file_name) = 0;
+        virtual FieldMap read_fields(const std::string& file_name) = 0;
     };
 
 } // namespace mesh_converter
