@@ -152,16 +152,9 @@ int main(int argc, char** argv) {
     }
 
     try {
-
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
         LOG(STATUS) << "Using " << conf_file_name << " configuration file";
         std::ifstream file(conf_file_name);
-        if(!file) {
-            LOG(FATAL) << "Failed to open configuration file \"" << conf_file_name << "\"";
-            allpix::Log::finish();
-            return 1;
-        }
-
         allpix::ConfigReader reader(file, conf_file_name);
         allpix::Configuration config = reader.getHeaderConfiguration();
 
@@ -178,12 +171,12 @@ int main(int argc, char** argv) {
         std::transform(parser_type.begin(), parser_type.end(), parser_type.begin(), ::tolower);
         auto parser = MeshParser::factory(parser_type);
 
+        // Region, observable and binning of output field
         auto regions = config.getArray<std::string>("region", {"bulk"});
         auto observable = config.get<std::string>("observable", "ElectricField");
 
         const auto radius_step = config.get<double>("radius_step", 0.5);
         const auto max_radius = config.get<double>("max_radius", 50);
-
         const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
         XYZVectorInt divisions;
@@ -191,14 +184,14 @@ int main(int argc, char** argv) {
         if(dimension == 2) {
             auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
             divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
-        } else {
+        } else if(dimension == 3) {
             divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
+        } else {
+            throw allpix::InvalidValueError(config, "dimension", "only two or three dimensional fields are supported");
         }
 
-        std::vector<std::string> rot = {"x", "y", "z"};
-        if(config.has("xyz")) {
-            rot = config.getArray<std::string>("xyz");
-        }
+        // Swapping elements
+        auto rot = config.getArray<std::string>("xyz", {"x", "y", "z"});
         if(rot.size() != 3) {
             throw allpix::InvalidValueError(config, "xyz", "three entries required");
         }
