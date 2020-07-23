@@ -246,6 +246,7 @@ void CorryvreckanWriterModule::finalize() {
             // Get the material budget if available:
             auto budget = geometryManager_->getExternalObject<double>(detector->getName(), "material_budget");
             if(budget != nullptr) {
+                LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
                 geometry_file << "material_budget = " << *budget << std::endl;
             }
             geometry_file << std::endl;
