@@ -41,6 +41,10 @@ double Pulse::getBinning() const {
     return bin_;
 }
 
+bool Pulse::isInitialized() const {
+    return initialized_;
+}
+
 Pulse& Pulse::operator+=(const Pulse& rhs) {
     auto rhs_pulse = rhs.getPulse();
 
