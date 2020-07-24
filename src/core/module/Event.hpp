@@ -39,7 +39,7 @@ namespace allpix {
          * @param event_num The unique event identifier
          * @param seed Random generator seed for this event
          */
-        explicit Event(Messenger& messenger, unsigned int event_num, uint64_t seed);
+        explicit Event(Messenger& messenger, uint64_t event_num, uint64_t seed);
         /**
          * @brief Use default destructor
          */
@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Unique identifier of this event
          */
-        const unsigned int number;
+        const uint64_t number;
 
         /**
          * @brief Access the random engine of this event

@@ -73,8 +73,9 @@ namespace allpix {
         /**
          * @brief Create output plots in every event
          * @param event_num Index for this event
+         * @param output_plot_points List of points cached for plotting
          */
-        void create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points);
+        void create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points);
 
         /**
          * @brief Propagate a single set of charges through the sensor

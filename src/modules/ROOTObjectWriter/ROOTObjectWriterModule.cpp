@@ -171,14 +171,14 @@ void ROOTObjectWriterModule::run(Event* event) {
             if(last_event_ > 0) {
                 if(new_tree) {
                     LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
-                    for(unsigned int i = 0; i < last_event_; ++i) {
+                    for(uint64_t i = 0; i < last_event_; ++i) {
                         trees_[class_name]->Fill();
                     }
                 } else {
                     LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with " << last_event_
                                << " empty events";
                     auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
-                    for(unsigned int i = 0; i < last_event_; ++i) {
+                    for(uint64_t i = 0; i < last_event_; ++i) {
                         branch->Fill();
                     }
                 }

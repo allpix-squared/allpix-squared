@@ -79,7 +79,7 @@ namespace allpix {
         std::string output_file_name_{};
 
         // Last event processed
-        unsigned int last_event_{0};
+        uint64_t last_event_{0};
 
         // List of trees that are stored in data file
         std::map<std::string, std::unique_ptr<TTree>> trees_;

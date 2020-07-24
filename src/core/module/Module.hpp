@@ -225,7 +225,7 @@ namespace allpix {
          * @brief Inform the module that a certain event will be skipped
          * @param event Number of event skipped
          */
-        virtual void skip_event(unsigned int) {}
+        virtual void skip_event(uint64_t) {}
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
@@ -283,13 +283,13 @@ namespace allpix {
          * @brief Returns the next event number to run
          * @param event Current event number to check from
          */
-        unsigned int get_next_event(unsigned int);
+        uint64_t get_next_event(uint64_t);
 
         /**
          * @brief Inform the module that a certain event will be skipped
          * @param event Number of event skipped
          */
-        void skip_event(unsigned int) override;
+        void skip_event(uint64_t) override;
 
         /**
          * @brief Flush the buffered events
@@ -302,7 +302,7 @@ namespace allpix {
         bool is_buffered() const override { return true; }
 
         // The buffer that holds out of order events
-        std::map<unsigned int, std::shared_ptr<Event>> buffered_events_;
+        std::map<uint64_t, std::shared_ptr<Event>> buffered_events_;
 
         // Mutex used to guard access to \ref buffered_events_
         std::mutex buffer_mutex_;
@@ -313,13 +313,13 @@ namespace allpix {
         std::condition_variable cond_var_;
 
         // Set of event numbers that was skipped because not all messages were present
-        std::set<unsigned int> skipped_events_;
+        std::set<uint64_t> skipped_events_;
 
         // Mutex to guard access to \ref skipped_events_mutex_
         std::mutex skipped_events_mutex_;
 
         // The expected in order event to write
-        std::atomic_uint next_event_to_write_{1};
+        std::atomic_uint64_t next_event_to_write_{1};
 
         // Maximum buffer size to store events
         static size_t max_buffer_size_;
