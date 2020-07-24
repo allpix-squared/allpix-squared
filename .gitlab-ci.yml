@@ -167,7 +167,7 @@ fmt:coverity:
         - coverity
         - schedules
     variables:
-        - $SCHEDULE_TAG == "coverity"
+        SCHEDULE_TAG: "coverity"
     script:
         - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
         - mkdir build
