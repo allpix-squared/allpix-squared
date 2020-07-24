@@ -24,6 +24,8 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 * `amp_time_window` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
+* `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival clock. Defaults to 1.5625 ns (i.e. a 640MHz clock).
+* `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold clock. Defaults to 25 ns (i.e. a 40MHz clock).
 * `output_plots` : Enables simple output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output histograms, defaults to 30ke.
 * `output_plots_bins` : Set the number of bins for the output histograms, defaults to 100.

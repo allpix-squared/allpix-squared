@@ -81,7 +81,7 @@ namespace allpix {
         DigitizerType model_;
         // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance,
         // v_temperature
-        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{};
+        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{}, clockToT_{}, clockToA_{};
 
         // helper variables for transfer function
         double gf_{}, rf_{}, tmax_{};

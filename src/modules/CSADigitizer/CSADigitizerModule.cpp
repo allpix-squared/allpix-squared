@@ -50,6 +50,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<double>("sigma_noise", Units::get(0.1e-3, "V"));
+    config_.setDefault<double>("clock_bin_toa", Units::get(1.5625, "ns"));
+    config_.setDefault<double>("clock_bin_tot", Units::get(25.0, "ns"));
 
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
@@ -73,6 +75,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     // Copy some variables from configuration to avoid lookups:
     tmax_ = config_.get<double>("integration_time");
+    clockToA_ = config_.get<double>("clock_bin_toa");
+    clockToT_ = config_.get<double>("clock_bin_tot");
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
         tauR_ = config_.get<double>("rise_time_constant");
@@ -122,7 +126,6 @@ void CSADigitizerModule::init() {
         int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
-        // asv do these histos make sense? what about one with the noise?
         // Create histograms if needed
         h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, tmax_);
@@ -186,21 +189,26 @@ void CSADigitizerModule::run(unsigned int event_num) {
         output_integral = std::accumulate(output_with_noise.begin(), output_with_noise.end(), 0.0);
 
         // TOA and TOT logic
+        // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
         auto threshold_in_mV = config_.get<double>("threshold") * 1e9;
         bool is_over_threshold = false;
         double toa{}, tot{};
-        for(const auto& current : output_vec) {
-            auto i = &current - &output_vec[0];
-            // set time of arrival when pulse first crosses threshold, start countint ToT
-            if(current > threshold_in_mV && !is_over_threshold) {
+        // first find the point where the signal crosses the threshold, latch toa
+        for(int i = 0; i * clockToA_ < tmax_; ++i) {
+            auto index = static_cast<int>(floor(i * clockToA_ / timestep));
+            if(output_vec[index] > threshold_in_mV) {
                 is_over_threshold = true;
-                toa = i * timestep;
-                tot = timestep;
-                LOG(TRACE) << "now starting the tot counting...";
+                toa = i * clockToA_;
+                break;
             };
-            if(is_over_threshold) {
-                if(current > threshold_in_mV) {
-                    tot += timestep;
+        }
+        // only look for ToT if the threshold was crossed in the ToA loop
+        if(is_over_threshold) {
+            // start from the next tot clock cycle following toa
+            for(int j = static_cast<int>(ceil(toa / clockToT_)); j * clockToT_ < tmax_; ++j) {
+                auto index = static_cast<int>(floor(j * clockToT_ / timestep));
+                if(output_vec[index] > threshold_in_mV) {
+                    tot += clockToT_;
                 } else {
                     is_over_threshold = false;
                     break;
@@ -211,12 +219,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(inputcharge / 1e3);
-            // asv fill histos always or just when pulse is over threshold?
-            //            if(0.0 < tot) {
             h_tot->Fill(tot);
             h_toa->Fill(toa);
             h_pxq_vs_tot->Fill(inputcharge / 1e3, tot);
-            //            }
         }
 
         // Fill a graphs with the individual pixel pulses:
