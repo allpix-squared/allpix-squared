@@ -159,6 +159,24 @@ fmt:codespell:
         - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty"
 
+fmt:coverity:
+    extends: .format
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    only:
+        refs:
+            - master
+            - coverity
+    script:
+        - curl -o /tmp/cov-analysis-linux64.tgz https://scan.coverity.com/download/linux64 --form project=$COVERITY_SCAN_PROJECT_NAME --form token=$COVERITY_SCAN_TOKEN
+        - tar xfz /tmp/cov-analysis-linux64.tgz
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
+        - cov-analysis-linux64-*/bin/cov-build --dir cov-int make -j4
+        - tar cfz cov-int.tar.gz cov-int
+        - curl https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID "
+
 ##############
 # Unit tests #
 ##############
