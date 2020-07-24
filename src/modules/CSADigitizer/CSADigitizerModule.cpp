@@ -148,12 +148,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
         auto pulse_vec = pulse.getPulse();           // the vector of the charges
         auto timestep = pulse.getBinning();
-        const int npx = static_cast<int>(ceil(tmax_ / timestep));
+        auto npx = static_cast<size_t>(ceil(tmax_ / timestep));
 
         if(first_event_) { // initialize impulse response function - assume all time bins are equal
             impulseResponse_.reserve(npx);
-            for(int ipx = 0; ipx < npx; ++ipx) {
-                impulseResponse_.push_back(fImpulseResponse_->Eval(ipx * timestep));
+            for(size_t ipx = 0; ipx < npx; ++ipx) {
+                impulseResponse_.push_back(fImpulseResponse_->Eval(timestep * static_cast<double>(ipx)));
             }
             first_event_ = false;
             LOG(TRACE) << "impulse response initalised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
@@ -165,8 +165,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse_vec.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
         // convolution of the pulse (size input_length) with the impulse response (size npx)
-        for(unsigned long int k = 0; k < npx; ++k) {
-            for(unsigned long int i = 0; i <= k; ++i) {
+        for(size_t k = 0; k < npx; ++k) {
+            for(size_t i = 0; i <= k; ++i) {
                 if((k - i) < input_length) {
                     output_vec.at(k) += pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9;
                     // time = timestep * static_cast<double>(k);
@@ -193,10 +193,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto threshold_in_mV = config_.get<double>("threshold") * 1e9;
         bool is_over_threshold = false;
         double toa{}, tot{};
+        size_t index{};
         // first find the point where the signal crosses the threshold, latch toa
         for(int i = 0; i * clockToA_ < tmax_; ++i) {
-            auto index = static_cast<int>(floor(i * clockToA_ / timestep));
-            if(output_vec[index] > threshold_in_mV) {
+            index = static_cast<size_t>(floor(i * clockToA_ / timestep));
+            if(output_vec.at(index) > threshold_in_mV) {
                 is_over_threshold = true;
                 toa = i * clockToA_;
                 break;
@@ -206,8 +207,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
         if(is_over_threshold) {
             // start from the next tot clock cycle following toa
             for(int j = static_cast<int>(ceil(toa / clockToT_)); j * clockToT_ < tmax_; ++j) {
-                auto index = static_cast<int>(floor(j * clockToT_ / timestep));
-                if(output_vec[index] > threshold_in_mV) {
+                index = static_cast<size_t>(floor(j * clockToT_ / timestep));
+                if(output_vec.at(index) > threshold_in_mV) {
                     tot += clockToT_;
                 } else {
                     is_over_threshold = false;
