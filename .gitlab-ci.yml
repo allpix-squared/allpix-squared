@@ -163,7 +163,7 @@ fmt:coverity:
     extends: .format
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     dependencies: []
-    refs:
+    only:
         - coverity
         - schedules
     variables:
