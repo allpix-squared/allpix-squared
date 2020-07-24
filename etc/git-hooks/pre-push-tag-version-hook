@@ -28,9 +28,7 @@ VERSION=$(git cat-file blob master:"$VERSIONFILE" | grep -m 1 'ALLPIX_VERSION' |
 
 # The tag name matches the version number -- exit normally
 if [ "$TAGREF" = "$VERSION" ]; then
-    if [ "$VERBOSE" -ne 0 ] ; then
-        printf "Tag name matches version number, allowing push.\n"
-    fi
+    printf "Tag name matches version number, allowing push.\n"
     exit 0
 fi
 
