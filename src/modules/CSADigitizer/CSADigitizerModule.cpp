@@ -95,7 +95,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
-        // collector current) n_wi typically 1.5, for circuit descriped in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
+        // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
         gf_ = ikrum_ / (2.0 * 1.5 * vt_);
         rf_ = 2. / gf_; // feedback resistor
         tauF_ = rf_ * cf_;
@@ -156,7 +156,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 impulseResponse_.push_back(fImpulseResponse_->Eval(timestep * static_cast<double>(ipx)));
             }
             first_event_ = false;
-            LOG(TRACE) << "impulse response initalised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
+            LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
                        << npx;
         }
 
