@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
     }
 
     // Parse arguments
-    FileType format_to;
+    FileType format_to = FileType::UNKNOWN;
     std::string file_input;
     std::string file_output;
     std::string units;
