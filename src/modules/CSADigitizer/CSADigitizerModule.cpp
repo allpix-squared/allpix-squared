@@ -195,26 +195,25 @@ void CSADigitizerModule::run(unsigned int event_num) {
         double toa{}, tot{};
         size_t index{};
         // first find the point where the signal crosses the threshold, latch toa
-        for(int i = 0; i * clockToA_ < tmax_; ++i) {
-            index = static_cast<size_t>(floor(i * clockToA_ / timestep));
+        for(int itoa = 0; itoa * clockToA_ < tmax_; ++itoa) {
+            index = static_cast<size_t>(floor(itoa * clockToA_ / timestep));
             if(output_vec.at(index) > threshold_in_mV) {
                 is_over_threshold = true;
-                toa = i * clockToA_;
+                toa = itoa * clockToA_;
                 break;
             };
         }
         // only look for ToT if the threshold was crossed in the ToA loop
-        if(is_over_threshold) {
-            // start from the next tot clock cycle following toa
-            for(int j = static_cast<int>(ceil(toa / clockToT_)); j * clockToT_ < tmax_; ++j) {
-                index = static_cast<size_t>(floor(j * clockToT_ / timestep));
-                if(output_vec.at(index) > threshold_in_mV) {
-                    tot += clockToT_;
-                } else {
-                    is_over_threshold = false;
-                    break;
-                }
+        int itot = static_cast<int>(ceil(toa / clockToT_));
+        // start from the next tot clock cycle following toa
+        while(is_over_threshold && itot * clockToT_ < tmax_) {
+            index = static_cast<size_t>(floor(itot * clockToT_ / timestep));
+            if(output_vec.at(index) > threshold_in_mV) {
+                tot += clockToT_;
+            } else {
+                is_over_threshold = false;
             }
+            itot++;
         }
         LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral << " mV";
 
