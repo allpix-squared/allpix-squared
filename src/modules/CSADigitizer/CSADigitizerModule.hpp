@@ -69,7 +69,7 @@ namespace allpix {
         void finalize() override;
 
     private:
-        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true};
+        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true}, output_tot_{true};
 
         std::mt19937_64 random_generator_;
 
@@ -81,12 +81,14 @@ namespace allpix {
         DigitizerType model_;
         // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance,
         // v_temperature
-        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{}, clockToT_{}, clockToA_{};
+        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{}, clockToT_{}, clockToA_{}, sigmaNoise_{},
+            threshold_in_mV_{};
 
         // helper variables for transfer function
         double gf_{}, rf_{}, tmax_{};
+        double calcImpRes_(double x);
         std::vector<double> impulseResponse_;
-        TF1* fImpulseResponse_{};
+        //      TF1* fImpulseResponse_{};
 
         // Output histograms
         TH1D *h_pxq{}, *h_tot{}, *h_toa{};

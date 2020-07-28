@@ -77,6 +77,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     tmax_ = config_.get<double>("integration_time");
     clockToA_ = config_.get<double>("clock_bin_toa");
     clockToT_ = config_.get<double>("clock_bin_tot");
+    sigmaNoise_ = config_.get<double>("sigma_noise");
+    threshold_in_mV_ = config_.get<double>("threshold") * 1e9;
+
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
         tauR_ = config_.get<double>("rise_time_constant");
@@ -105,16 +108,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << Units::display(gm_, "C/s/V") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
                    << Units::display(tauR_, "s") << ", temperature " << config_.get<double>("temperature") << "K";
     }
-
+    output_tot_ = config_.get<bool>("output_tot");
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
-
-    // impulse response of the CSA from Kleczek 2016 JINST11 C12001
-    // H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
-    // tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
-    // inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
-    fImpulseResponse_ = new TF1("fImpulseResponse_", "[0] * ( exp(-x / [1]) - exp(-x/[2]) ) / ([1]-[2])", 0, tmax_);
-    fImpulseResponse_->SetParameters(rf_, tauF_, tauR_);
 }
 
 void CSADigitizerModule::init() {
@@ -135,6 +131,14 @@ void CSADigitizerModule::init() {
     }
 }
 
+// impulse response of the CSA from Kleczek 2016 JINST11 C12001
+// H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
+// tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
+// inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
+double CSADigitizerModule::calcImpRes_(double x) {
+    return (rf_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
+}
+
 void CSADigitizerModule::run(unsigned int event_num) {
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
@@ -153,7 +157,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         if(first_event_) { // initialize impulse response function - assume all time bins are equal
             impulseResponse_.reserve(npx);
             for(size_t ipx = 0; ipx < npx; ++ipx) {
-                impulseResponse_.push_back(fImpulseResponse_->Eval(timestep * static_cast<double>(ipx)));
+                impulseResponse_.push_back(calcImpRes_(timestep * static_cast<double>(ipx)));
             }
             first_event_ = false;
             LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
@@ -166,23 +170,28 @@ void CSADigitizerModule::run(unsigned int event_num) {
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
         // convolution of the pulse (size input_length) with the impulse response (size npx)
         for(size_t k = 0; k < npx; ++k) {
-            for(size_t i = 0; i <= k; ++i) {
+            double outsum = 0.0;
+            // convolution: multiply pulse_vec.at(k - i) * impulseResponse_.at(i), when (k - i) < input_length
+            // -> no point to start i at 0, start from jmin:
+            size_t jmin = (k >= input_length - 1) ? k - (input_length - 1) : 0;
+            for(size_t i = jmin; i <= k; ++i) {
                 if((k - i) < input_length) {
-                    output_vec.at(k) += pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9;
-                    // time = timestep * static_cast<double>(k);
+                    outsum += pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9;
                 }
             }
+            output_vec.at(k) = outsum;
         }
+
         auto output_integral = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
         LOG(TRACE) << "amplified signal without noise " << output_integral << " mV in a pulse with " << output_vec.size()
                    << "bins";
 
         // apply noise on the amplified pulse
         // watch out - output_vec and output_with_noise should be in mV
-        std::normal_distribution<double> pulse_smearing(0, config_.get<double>("sigma_noise"));
+        std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         std::vector<double> output_with_noise(output_vec.size());
         std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
-            return c + pulse_smearing(random_generator_) * 1e9;
+            return c + (pulse_smearing(random_generator_) * 1e9);
         });
 
         // re-calculate pulse integral with the noise
@@ -190,34 +199,32 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // TOA and TOT logic
         // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
-        auto threshold_in_mV = config_.get<double>("threshold") * 1e9;
         bool is_over_threshold = false;
-        double toa{}, tot{};
-        size_t index{};
+        double toa{}, tot{}, jtoa{}, jtot{};
         // first find the point where the signal crosses the threshold, latch toa
-        for(int itoa = 0; itoa * clockToA_ < tmax_; ++itoa) {
-            index = static_cast<size_t>(floor(itoa * clockToA_ / timestep));
-            if(output_vec.at(index) > threshold_in_mV) {
+        while(jtoa < tmax_) {
+            if(output_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_in_mV_) {
                 is_over_threshold = true;
-                toa = itoa * clockToA_;
+                toa = jtoa;
                 break;
             };
+            jtoa += clockToA_;
         }
         // only look for ToT if the threshold was crossed in the ToA loop
-        int itot = static_cast<int>(ceil(toa / clockToT_));
         // start from the next tot clock cycle following toa
-        while(is_over_threshold && itot * clockToT_ < tmax_) {
-            index = static_cast<size_t>(floor(itot * clockToT_ / timestep));
-            if(output_vec.at(index) > threshold_in_mV) {
+        //        int jtot = static_cast<int>(ceil(toa / clockToT_));
+        jtot = clockToT_ * (ceil(toa / clockToT_));
+        while(is_over_threshold && jtot < tmax_) {
+            if(output_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_in_mV_) {
                 tot += clockToT_;
             } else {
                 is_over_threshold = false;
             }
-            itot++;
+            jtot += clockToT_;
         }
         LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral << " mV";
 
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq->Fill(inputcharge / 1e3);
             h_tot->Fill(tot);
             h_toa->Fill(toa);
@@ -293,7 +300,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         }
 
         // Add the hit to the hitmap
-        if(config_.get<bool>("output_tot")) {
+        if(output_tot_) {
             hits.emplace_back(pixel, toa, tot, &pixel_charge);
         } else {
             hits.emplace_back(pixel, toa, output_integral, &pixel_charge);
@@ -311,7 +318,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 }
 
 void CSADigitizerModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         h_pxq->Write();
