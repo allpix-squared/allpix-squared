@@ -79,10 +79,11 @@ namespace allpix {
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         DigitizerType model_;
-        // krummenacher_current, detector_capacitance, feedback_capacitance, amp_output_capacitance, transconductance,
-        // v_temperature
-        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{}, clockToT_{}, clockToA_{}, sigmaNoise_{},
-            threshold_in_mV_{};
+        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance, transconductance,
+        // v temperature, feedback time constant, risetime time constant
+        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{};
+        // parameters of the electronics: noise, time-over-threshold logic
+        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
         // helper variables for transfer function
         double gf_{}, rf_{}, tmax_{};
@@ -91,7 +92,7 @@ namespace allpix {
         //      TF1* fImpulseResponse_{};
 
         // Output histograms
-        TH1D *h_pxq{}, *h_tot{}, *h_toa{};
+        TH1D *h_tot{}, *h_toa{};
         TH2D* h_pxq_vs_tot{};
     };
 } // namespace allpix

@@ -78,7 +78,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     clockToA_ = config_.get<double>("clock_bin_toa");
     clockToT_ = config_.get<double>("clock_bin_tot");
     sigmaNoise_ = config_.get<double>("sigma_noise");
-    threshold_in_mV_ = config_.get<double>("threshold") * 1e9;
+    threshold_ = config_.get<double>("threshold");
 
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
@@ -123,7 +123,6 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_pxq = new TH1D("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, tmax_);
         h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, tmax_);
         h_pxq_vs_tot =
@@ -176,22 +175,20 @@ void CSADigitizerModule::run(unsigned int event_num) {
             size_t jmin = (k >= input_length - 1) ? k - (input_length - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
                 if((k - i) < input_length) {
-                    outsum += pulse_vec.at(k - i) * impulseResponse_.at(i) * 1e9;
+                    outsum += pulse_vec.at(k - i) * impulseResponse_.at(i);
                 }
             }
             output_vec.at(k) = outsum;
         }
-
         auto output_integral = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
-        LOG(TRACE) << "amplified signal without noise " << output_integral << " mV in a pulse with " << output_vec.size()
+        LOG(TRACE) << "amplified signal without noise " << output_integral << " in a pulse with " << output_vec.size()
                    << "bins";
 
         // apply noise on the amplified pulse
-        // watch out - output_vec and output_with_noise should be in mV
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         std::vector<double> output_with_noise(output_vec.size());
         std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
-            return c + (pulse_smearing(random_generator_) * 1e9);
+            return c + (pulse_smearing(random_generator_));
         });
 
         // re-calculate pulse integral with the noise
@@ -203,7 +200,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         double toa{}, tot{}, jtoa{}, jtot{};
         // first find the point where the signal crosses the threshold, latch toa
         while(jtoa < tmax_) {
-            if(output_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_in_mV_) {
+            if(output_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
                 is_over_threshold = true;
                 toa = jtoa;
                 break;
@@ -215,17 +212,16 @@ void CSADigitizerModule::run(unsigned int event_num) {
         //        int jtot = static_cast<int>(ceil(toa / clockToT_));
         jtot = clockToT_ * (ceil(toa / clockToT_));
         while(is_over_threshold && jtot < tmax_) {
-            if(output_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_in_mV_) {
+            if(output_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
                 tot += clockToT_;
             } else {
                 is_over_threshold = false;
             }
             jtot += clockToT_;
         }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral << " mV";
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral;
 
         if(output_plots_) {
-            h_pxq->Fill(inputcharge / 1e3);
             h_tot->Fill(tot);
             h_toa->Fill(toa);
             h_pxq_vs_tot->Fill(inputcharge / 1e3, tot);
@@ -233,66 +229,36 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
+            // -------- first the amplified (and shaped) pulses without noise
             // Generate x-axis:
-            std::vector<double> time(pulse_vec.size());
-            // clang-format off
-            std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
-            // clang-format on
-
-            std::string name = "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
-                               std::to_string(pixel_index.y());
-            auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
-            pulse_graph->GetXaxis()->SetTitle("t [ns]");
-            pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
-            pulse_graph->SetTitle(("Induced charge in pixel (" + std::to_string(pixel_index.x()) + "," +
-                                   std::to_string(pixel_index.y()) + "), Q_{tot} = " + std::to_string(pulse.getCharge()) +
-                                   " e")
-                                      .c_str());
-            getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
-
-            // Generate graphs of integrated charge over time:
-            std::vector<double> charge_vec;
-            double charge = 0;
-            for(const auto& bin : pulse_vec) {
-                charge += bin;
-                charge_vec.push_back(charge);
-            }
-
-            name = "charge_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
-                   std::to_string(pixel_index.y());
-            auto charge_graph = new TGraph(static_cast<int>(charge_vec.size()), &time[0], &charge_vec[0]);
-            charge_graph->GetXaxis()->SetTitle("t [ns]");
-            charge_graph->GetYaxis()->SetTitle("Q_{tot} [e]");
-            charge_graph->SetTitle(("Accumulated induced charge in pixel (" + std::to_string(pixel_index.x()) + "," +
-                                    std::to_string(pixel_index.y()) + "), Q_{tot} = " + std::to_string(pulse.getCharge()) +
-                                    " e")
-                                       .c_str());
-            getROOTDirectory()->WriteTObject(charge_graph, name.c_str());
-
-            // -------- now the same for the amplified (and shaped) pulses
             std::vector<double> amptime(output_vec.size());
             // clang-format off
             std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
             // clang-format on
 
-            name = "output_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
-                   std::to_string(pixel_index.y());
+            std::string name = "output_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
+                               std::to_string(pixel_index.y());
             auto output_graph = new TGraph(static_cast<int>(output_vec.size()), &amptime[0], &output_vec[0]);
             output_graph->GetXaxis()->SetTitle("t [ns]");
             output_graph->GetYaxis()->SetTitle("CSA output [mV]");
+            // scale the y-axis values to be in mV instead of MV
+            for(int i = 0; i < output_graph->GetN(); ++i)
+                output_graph->GetY()[i] *= 1e9;
             output_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
                                     std::to_string(pixel_index.y()) + ")")
                                        .c_str());
             getROOTDirectory()->WriteTObject(output_graph, name.c_str());
 
             // -------- now the same for the amplified (and shaped) pulses with noise
-
             name = "output_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                    std::to_string(pixel_index.y());
             auto output_with_noise_graph =
                 new TGraph(static_cast<int>(output_with_noise.size()), &amptime[0], &output_with_noise[0]);
             output_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
             output_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
+            // scale the y-axis values to be in mV instead of MV
+            for(int i = 0; i < output_with_noise->GetN(); ++i)
+                output_with_noise->GetY()[i] *= 1e9;
             output_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
                                                std::to_string(pixel_index.x()) + "," + std::to_string(pixel_index.y()) + ")")
                                                   .c_str());
@@ -321,7 +287,6 @@ void CSADigitizerModule::finalize() {
     if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
-        h_pxq->Write();
         h_tot->Write();
         h_toa->Write();
         h_pxq_vs_tot->Write();
