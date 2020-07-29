@@ -85,7 +85,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauR_ = config_.get<double>("rise_time_constant");
         cf_ = config_.get<double>("feedback_capacitance");
         rf_ = tauF_ / cf_;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(cf_ / 1e-15, "C/V") << ", rf " << Units::display(rf_, "V*s/C")
+        LOG(DEBUG) << "Parameters: cf " << Units::display(cf_, "C/V") << ", rf " << Units::display(rf_, "V*s/C")
                    << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
         ikrum_ = config_.get<double>("krummenacher_current");
@@ -257,8 +257,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
             output_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
             output_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
             // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < output_with_noise->GetN(); ++i)
-                output_with_noise->GetY()[i] *= 1e9;
+            for(int i = 0; i < output_with_noise_graph->GetN(); ++i)
+                output_with_noise_graph->GetY()[i] *= 1e9;
             output_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
                                                std::to_string(pixel_index.x()) + "," + std::to_string(pixel_index.y()) + ")")
                                                   .c_str());
