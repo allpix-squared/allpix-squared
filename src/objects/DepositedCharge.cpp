@@ -46,7 +46,8 @@ void DepositedCharge::print(std::ostream& out) const {
 }
 
 void DepositedCharge::storeHistory() {
-    mc_particle_ = mc_particle_ref_;
+    mc_particle_ = TRef(mc_particle_ref_);
+    mc_particle_ref_ = nullptr;
 }
 
 void DepositedCharge::loadHistory() {

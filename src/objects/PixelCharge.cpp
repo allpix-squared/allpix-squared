@@ -107,10 +107,12 @@ void PixelCharge::print(std::ostream& out) const {
 void PixelCharge::storeHistory() {
     for(auto& propagated_charge : propagated_charges_ref_) {
         propagated_charges_.push_back(propagated_charge);
+        propagated_charge = nullptr;
     }
 
     for(auto& mc_particle : mc_particles_ref_) {
         mc_particles_.push_back(mc_particle);
+        mc_particle = nullptr;
     }
 }
 

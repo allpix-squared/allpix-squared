@@ -133,8 +133,10 @@ void MCParticle::print(std::ostream& out) const {
 }
 
 void MCParticle::storeHistory() {
-    parent_ = parent_ref_;
-    track_ = track_ref_;
+    parent_ = TRef(parent_ref_);
+    parent_ref_ = nullptr;
+    track_ = TRef(track_ref_);
+    track_ref_ = nullptr;
 }
 
 void MCParticle::loadHistory() {
