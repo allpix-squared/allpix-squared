@@ -298,7 +298,8 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             if(output_plots_) {
-                initial_position_histo_->Fill(initial_position.z(), charge_per_step);
+                initial_position_histo_->Fill(static_cast<double>(Units::convert(initial_position.z(), "um")),
+                                              charge_per_step);
             }
 
             auto global_position = detector_->getGlobalPosition(local_position);
