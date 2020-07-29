@@ -83,28 +83,28 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
         tauR_ = config_.get<double>("rise_time_constant");
-        cf_ = config_.get<double>("feedback_capacitance");
-        rf_ = tauF_ / cf_;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(cf_, "C/V") << ", rf " << Units::display(rf_, "V*s/C")
+        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
+        resistance_feedback_ = tauF_ / capacitance_feedback_;
+        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback_, "C/V") << ", rf " << Units::display(resistance_feedback_, "V*s/C")
                    << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
         ikrum_ = config_.get<double>("krummenacher_current");
-        cd_ = config_.get<double>("detector_capacitance");
-        cf_ = config_.get<double>("feedback_capacitance");
-        co_ = config_.get<double>("amp_output_capacitance");
+        capacitance_detector_ = config_.get<double>("detector_capacitance");
+        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
+        capacitance_output_ = config_.get<double>("amp_output_capacitance");
         gm_ = config_.get<double>("transconductance");
-        vt_ = config_.get<double>("temperature") * 8.617333262145e-11; // Boltzmann kT in MeV
+        v_temperature_ = config_.get<double>("temperature") * 8.617333262145e-11; // Boltzmann kT in MeV
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        gf_ = ikrum_ / (2.0 * 1.5 * vt_);
-        rf_ = 2. / gf_; // feedback resistor
-        tauF_ = rf_ * cf_;
-        tauR_ = (cd_ * co_) / (gm_ * cf_);
-        LOG(DEBUG) << "Parameters: rf " << Units::display(rf_, "V*s/C") << ", cf_ " << Units::display(cf_, "C/V") << ", cd_ "
-                   << Units::display(cd_, "C/V") << ", co_ " << Units::display(co_, "C/V") << ", gm_ "
+        transconductance_feedback_ = ikrum_ / (2.0 * 1.5 * v_temperature_);
+        resistance_feedback_ = 2. / transconductance_feedback_; // feedback resistor
+        tauF_ = resistance_feedback_ * capacitance_feedback_;
+        tauR_ = (capacitance_detector_ * capacitance_output_) / (gm_ * capacitance_feedback_);
+        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback_ " << Units::display(capacitance_feedback_, "C/V") << ", capacitance_detector_ "
+                   << Units::display(capacitance_detector_, "C/V") << ", capacitance_output_ " << Units::display(capacitance_output_, "C/V") << ", gm_ "
                    << Units::display(gm_, "C/s/V") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
                    << Units::display(tauR_, "s") << ", temperature " << config_.get<double>("temperature") << "K";
     }
@@ -135,7 +135,7 @@ void CSADigitizerModule::init() {
 // tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
 // inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
 double CSADigitizerModule::calcImpRes_(double x) {
-    return (rf_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
+    return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
 }
 
 void CSADigitizerModule::run(unsigned int event_num) {
@@ -163,7 +163,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        << npx;
         }
 
-        std::vector<double> output_vec(npx);
+        std::vector<double> amplified_pulse_vec(npx);
         auto input_length = pulse_vec.size();
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse_vec.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
@@ -178,21 +178,21 @@ void CSADigitizerModule::run(unsigned int event_num) {
                     outsum += pulse_vec.at(k - i) * impulseResponse_.at(i);
                 }
             }
-            output_vec.at(k) = outsum;
+            amplified_pulse_vec.at(k) = outsum;
         }
-        auto output_integral = std::accumulate(output_vec.begin(), output_vec.end(), 0.0);
-        LOG(TRACE) << "amplified signal without noise " << output_integral << " in a pulse with " << output_vec.size()
+        auto amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
+        LOG(TRACE) << "amplified signal without noise " << amplified_pulse_integral << " in a pulse with " << amplified_pulse_vec.size()
                    << "bins";
 
         // apply noise on the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
-        std::vector<double> output_with_noise(output_vec.size());
-        std::transform(output_vec.begin(), output_vec.end(), output_with_noise.begin(), [&pulse_smearing, this](auto& c) {
+        std::vector<double> amplified_pulse_with_noise(amplified_pulse_vec.size());
+        std::transform(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), amplified_pulse_with_noise.begin(), [&pulse_smearing, this](auto& c) {
             return c + (pulse_smearing(random_generator_));
         });
 
         // re-calculate pulse integral with the noise
-        output_integral = std::accumulate(output_with_noise.begin(), output_with_noise.end(), 0.0);
+        amplified_pulse_integral = std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
 
         // TOA and TOT logic
         // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
@@ -200,7 +200,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         double toa{}, tot{}, jtoa{}, jtot{};
         // first find the point where the signal crosses the threshold, latch toa
         while(jtoa < tmax_) {
-            if(output_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
+            if(amplified_pulse_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
                 is_over_threshold = true;
                 toa = jtoa;
                 break;
@@ -212,14 +212,14 @@ void CSADigitizerModule::run(unsigned int event_num) {
         //        int jtot = static_cast<int>(ceil(toa / clockToT_));
         jtot = clockToT_ * (ceil(toa / clockToT_));
         while(is_over_threshold && jtot < tmax_) {
-            if(output_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
+            if(amplified_pulse_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
                 tot += clockToT_;
             } else {
                 is_over_threshold = false;
             }
             jtot += clockToT_;
         }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << output_integral;
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << amplified_pulse_integral;
 
         if(output_plots_) {
             h_tot->Fill(tot);
@@ -231,45 +231,47 @@ void CSADigitizerModule::run(unsigned int event_num) {
         if(output_pulsegraphs_) {
             // -------- first the amplified (and shaped) pulses without noise
             // Generate x-axis:
-            std::vector<double> amptime(output_vec.size());
+            std::vector<double> amptime(amplified_pulse_vec.size());
             // clang-format off
             std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
             // clang-format on
 
-            std::string name = "output_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
+            std::string name = "csa_pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                                std::to_string(pixel_index.y());
-            auto output_graph = new TGraph(static_cast<int>(output_vec.size()), &amptime[0], &output_vec[0]);
-            output_graph->GetXaxis()->SetTitle("t [ns]");
-            output_graph->GetYaxis()->SetTitle("CSA output [mV]");
+            auto csa_pulse_graph = new TGraph(static_cast<int>(amplified_pulse_vec.size()), &amptime[0], &amplified_pulse_vec[0]);
+            csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
+            csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
             // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < output_graph->GetN(); ++i)
-                output_graph->GetY()[i] *= 1e9;
-            output_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
+            for(int i = 0; i < csa_pulse_graph->GetN(); ++i){
+                csa_pulse_graph->GetY()[i] *= 1e9;
+            }
+            csa_pulse_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
                                     std::to_string(pixel_index.y()) + ")")
                                        .c_str());
-            getROOTDirectory()->WriteTObject(output_graph, name.c_str());
+            getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
 
             // -------- now the same for the amplified (and shaped) pulses with noise
-            name = "output_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
+            name = "amplified_pulse_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                    std::to_string(pixel_index.y());
-            auto output_with_noise_graph =
-                new TGraph(static_cast<int>(output_with_noise.size()), &amptime[0], &output_with_noise[0]);
-            output_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
-            output_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
+            auto amplified_pulse_with_noise_graph =
+                new TGraph(static_cast<int>(amplified_pulse_with_noise.size()), &amptime[0], &amplified_pulse_with_noise[0]);
+            amplified_pulse_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
+            amplified_pulse_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
             // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < output_with_noise_graph->GetN(); ++i)
-                output_with_noise_graph->GetY()[i] *= 1e9;
-            output_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
+            for(int i = 0; i < amplified_pulse_with_noise_graph->GetN(); ++i){
+                amplified_pulse_with_noise_graph->GetY()[i] *= 1e9;
+            }
+            amplified_pulse_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
                                                std::to_string(pixel_index.x()) + "," + std::to_string(pixel_index.y()) + ")")
                                                   .c_str());
-            getROOTDirectory()->WriteTObject(output_with_noise_graph, name.c_str());
+            getROOTDirectory()->WriteTObject(amplified_pulse_with_noise_graph, name.c_str());
         }
 
         // Add the hit to the hitmap
         if(output_tot_) {
             hits.emplace_back(pixel, toa, tot, &pixel_charge);
         } else {
-            hits.emplace_back(pixel, toa, output_integral, &pixel_charge);
+            hits.emplace_back(pixel, toa, amplified_pulse_integral, &pixel_charge);
         }
     }
 

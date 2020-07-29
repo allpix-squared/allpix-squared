@@ -79,14 +79,15 @@ namespace allpix {
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         DigitizerType model_;
-        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance, transconductance,
-        // v temperature, feedback time constant, risetime time constant
-        double ikrum_{}, cd_{}, cf_{}, co_{}, gm_{}, vt_{}, tauF_{}, tauR_{};
+        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance, 
+        // transconductance, v temperature, feedback time constant, risetime time constant
+        double ikrum_{}, capacitance_detector_{}, capacitance_feedback_{}, capacitance_output_;
+        double gm_{}, v_temperature_{}, tauF_{}, tauR_{};
         // parameters of the electronics: noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
         // helper variables for transfer function
-        double gf_{}, rf_{}, tmax_{};
+        double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
         double calcImpRes_(double x);
         std::vector<double> impulseResponse_;
         //      TF1* fImpulseResponse_{};
