@@ -17,7 +17,7 @@
 #include <Math/Vector3D.h>
 
 // FIXME use central ThreadPool once available
-#include "../tcad_dfise_converter/ThreadPool.hpp"
+#include "../mesh_converter/ThreadPool.hpp"
 
 void interrupt_handler(int);
 
