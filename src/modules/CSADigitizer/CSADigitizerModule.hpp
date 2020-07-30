@@ -69,7 +69,7 @@ namespace allpix {
         void finalize() override;
 
     private:
-        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true}, output_tot_{true};
+        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true}, store_tot_{true};
 
         std::mt19937_64 random_generator_;
 
@@ -79,7 +79,7 @@ namespace allpix {
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         DigitizerType model_;
-        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance, 
+        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance,
         // transconductance, v temperature, feedback time constant, risetime time constant
         double ikrum_{}, capacitance_detector_{}, capacitance_feedback_{}, capacitance_output_;
         double gm_{}, v_temperature_{}, tauF_{}, tauR_{};

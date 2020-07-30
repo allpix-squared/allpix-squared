@@ -58,7 +58,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
 
-    config_.setDefault<bool>("output_tot", true);
+    config_.setDefault<bool>("store_tot", true);
 
     if(model_ == DigitizerType::SIMPLE) {
         // defaults for the "simple" parametrisation
@@ -85,8 +85,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauR_ = config_.get<double>("rise_time_constant");
         capacitance_feedback_ = config_.get<double>("feedback_capacitance");
         resistance_feedback_ = tauF_ / capacitance_feedback_;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback_, "C/V") << ", rf " << Units::display(resistance_feedback_, "V*s/C")
-                   << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s");
+        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback_, "C/V") << ", rf "
+                   << Units::display(resistance_feedback_, "V*s/C") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
+                   << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
         ikrum_ = config_.get<double>("krummenacher_current");
         capacitance_detector_ = config_.get<double>("detector_capacitance");
@@ -103,12 +104,14 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         resistance_feedback_ = 2. / transconductance_feedback_; // feedback resistor
         tauF_ = resistance_feedback_ * capacitance_feedback_;
         tauR_ = (capacitance_detector_ * capacitance_output_) / (gm_ * capacitance_feedback_);
-        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback_ " << Units::display(capacitance_feedback_, "C/V") << ", capacitance_detector_ "
-                   << Units::display(capacitance_detector_, "C/V") << ", capacitance_output_ " << Units::display(capacitance_output_, "C/V") << ", gm_ "
-                   << Units::display(gm_, "C/s/V") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
-                   << Units::display(tauR_, "s") << ", temperature " << config_.get<double>("temperature") << "K";
+        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback_ "
+                   << Units::display(capacitance_feedback_, "C/V") << ", capacitance_detector_ "
+                   << Units::display(capacitance_detector_, "C/V") << ", capacitance_output_ "
+                   << Units::display(capacitance_output_, "C/V") << ", gm_ " << Units::display(gm_, "C/s/V") << ", tauF_ "
+                   << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s") << ", temperature "
+                   << config_.get<double>("temperature") << "K";
     }
-    output_tot_ = config_.get<bool>("output_tot");
+    store_tot_ = config_.get<bool>("store_tot");
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 }
@@ -181,18 +184,20 @@ void CSADigitizerModule::run(unsigned int event_num) {
             amplified_pulse_vec.at(k) = outsum;
         }
         auto amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
-        LOG(TRACE) << "amplified signal without noise " << amplified_pulse_integral << " in a pulse with " << amplified_pulse_vec.size()
-                   << "bins";
+        LOG(TRACE) << "amplified signal without noise " << amplified_pulse_integral << " in a pulse with "
+                   << amplified_pulse_vec.size() << "bins";
 
         // apply noise on the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         std::vector<double> amplified_pulse_with_noise(amplified_pulse_vec.size());
-        std::transform(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), amplified_pulse_with_noise.begin(), [&pulse_smearing, this](auto& c) {
-            return c + (pulse_smearing(random_generator_));
-        });
+        std::transform(amplified_pulse_vec.begin(),
+                       amplified_pulse_vec.end(),
+                       amplified_pulse_with_noise.begin(),
+                       [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
         // re-calculate pulse integral with the noise
-        amplified_pulse_integral = std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
+        amplified_pulse_integral =
+            std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
 
         // TOA and TOT logic
         // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
@@ -238,37 +243,39 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
             std::string name = "csa_pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
                                std::to_string(pixel_index.y());
-            auto csa_pulse_graph = new TGraph(static_cast<int>(amplified_pulse_vec.size()), &amptime[0], &amplified_pulse_vec[0]);
+            auto csa_pulse_graph =
+                new TGraph(static_cast<int>(amplified_pulse_vec.size()), &amptime[0], &amplified_pulse_vec[0]);
             csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
             csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
             // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < csa_pulse_graph->GetN(); ++i){
+            for(int i = 0; i < csa_pulse_graph->GetN(); ++i) {
                 csa_pulse_graph->GetY()[i] *= 1e9;
             }
             csa_pulse_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
-                                    std::to_string(pixel_index.y()) + ")")
-                                       .c_str());
+                                       std::to_string(pixel_index.y()) + ")")
+                                          .c_str());
             getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
 
             // -------- now the same for the amplified (and shaped) pulses with noise
-            name = "amplified_pulse_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
-                   std::to_string(pixel_index.y());
+            name = "amplified_pulse_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) +
+                   "-" + std::to_string(pixel_index.y());
             auto amplified_pulse_with_noise_graph =
                 new TGraph(static_cast<int>(amplified_pulse_with_noise.size()), &amptime[0], &amplified_pulse_with_noise[0]);
             amplified_pulse_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
             amplified_pulse_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
             // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < amplified_pulse_with_noise_graph->GetN(); ++i){
+            for(int i = 0; i < amplified_pulse_with_noise_graph->GetN(); ++i) {
                 amplified_pulse_with_noise_graph->GetY()[i] *= 1e9;
             }
             amplified_pulse_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
-                                               std::to_string(pixel_index.x()) + "," + std::to_string(pixel_index.y()) + ")")
-                                                  .c_str());
+                                                        std::to_string(pixel_index.x()) + "," +
+                                                        std::to_string(pixel_index.y()) + ")")
+                                                           .c_str());
             getROOTDirectory()->WriteTObject(amplified_pulse_with_noise_graph, name.c_str());
         }
 
         // Add the hit to the hitmap
-        if(output_tot_) {
+        if(store_tot_) {
             hits.emplace_back(pixel, toa, tot, &pixel_charge);
         } else {
             hits.emplace_back(pixel, toa, amplified_pulse_integral, &pixel_charge);
