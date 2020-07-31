@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of Monte-Carlo track object
- * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -23,8 +23,8 @@ namespace allpix {
     public:
         /**
          * @brief Construct a Monte-Carlo track
-         * @param start_point Global point where track came into existance
-         * @param end_point Global point where track went out of existance
+         * @param start_point Global point where track came into existence
+         * @param end_point Global point where track went out of existence
          * @param g4_volume Geant4 volume where track originated in
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
@@ -68,12 +68,6 @@ namespace allpix {
          * @return The Geant4 process type or "-1" if no such process exists
          */
         int getCreationProcessType() const;
-
-        /**
-         * @brief Get the amount of stepping steps the Geant4 track made
-         * @return The amount of steps
-         */
-        int getNumberOfSteps() const;
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track was created
@@ -135,7 +129,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 1);
+        ClassDefOverride(MCTrack, 2);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -150,7 +144,6 @@ namespace allpix {
 
         int origin_g4_process_type_{};
         int particle_id_{};
-        int n_steps_{};
 
         double initial_kin_E_{};
         double final_kin_E_{};
@@ -166,4 +159,4 @@ namespace allpix {
     using MCTrackMessage = Message<MCTrack>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_MC_TRACK_H */

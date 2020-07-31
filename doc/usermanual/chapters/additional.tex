@@ -39,8 +39,8 @@ auto step = runge_kutta.step();
 The \command{getValue()} and \command{setValue()} methods allow to retrieve, alter and update the position, e.g. to include additional displacements from diffusion processes.
 
 \subsection{Field Data Parser}
-A field parser tool is provided, which parses files stored in the INIT file format and returns field data on a three-dimensional grid.
-The number of field components per grid point is configurable via a template argument, e.g. 3 for a vector field or 1 for a scalar field map.
+A field parser tool is provided, which parses files stored in the INIT or APF file formats and returns field data on a three-dimensional grid.
+The number of field components per grid point is configurable via the constructor argument, e.g. \parameter{FieldQuantity::VECTOR} for a vector field or \parameter{FieldQuantity::SCALAR} for a scalar field map.
 The parsed field data is cached internally by the class, and if a file is requested a second time, the cached field is returned.
 In conjunction with a static instance of the field parser class in a module, this allows to share field data across multiple module instances.
 
@@ -49,19 +49,24 @@ class MyVectorFieldModule(...) : Module(...) {
 private:
     void some_function(std::string canonical_path);
     // Define static field parser instance
-    static FieldParser<double, 3> field_parser_;
+    static FieldParser<double> field_parser_;
 }
 
 // Create static instance of field parser in the translation unit:
-FieldParser<double, 3> MyVectorFieldModule::field_parser_("V/cm");
+FieldParser<double> MyVectorFieldModule::field_parser_(FieldQuantity::VECTOR);
 
 void MyVectorFieldModule::some_function(std::string canonical_path) {
     // Get vector field from file:
-    auto field_data = field_parser_.get_by_file_name(canonical_path);
+    auto field_data = field_parser_.getByFileName(canonical_path, "V/cm");
 }
 \end{minted}
 
-The constructor of the parser takes the units in which the field data should be interpreted, and they are automatically converted to the framework base units described in Section~\ref{sec:config_values}. The file path provided to the field parser should always be canonical, if the file is not found or cannot be parsed, a \command{std::runtime_error} exception is thrown.
+For the INIT format, the \command{getByFileName()} function of the parser takes the units in which the field data should be interpreted, and they are automatically converted to the framework base units described in Section~\ref{sec:config_values}. Fields in the APF format are always stored in framework base units and do not require conversion.
+The file path provided to the field parser should always be canonical, if the file is not found or cannot be parsed, a \command{std::runtime_error} exception is thrown.
+
+The type of field data to be parsed is automatically deduced from the file content by checking for binary or ASCII text
+The field parser determines whether a file is text or binary by checking the first few bytes in the file.
+If every byte in that part of the file is non-null, the parser considers the file to be text and reads it as INIT file; otherwise it considers the file to be binary and parses the field as APF data.
 
 \inputmd{tools/tcad_dfise_converter.tex}
 % FIXME This label is not required to bind correctly

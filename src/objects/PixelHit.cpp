@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of object with digitized pixel hit
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -69,6 +69,30 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     // Return as a vector of mc particles
     return mc_particles;
+}
+
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
+std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
+    std::vector<const MCParticle*> primary_particles;
+    for(auto& mc_particle : mc_particles_) {
+        if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+        }
+        auto particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+
+        // Check for possible parents:
+        if(particle->getParent() != nullptr) {
+            continue;
+        }
+        primary_particles.emplace_back(particle);
+    }
+
+    // Return as a vector of mc particles
+    return primary_particles;
 }
 
 void PixelHit::print(std::ostream& out) const {

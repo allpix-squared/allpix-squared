@@ -103,7 +103,7 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
 
     // Use path of the configuration file:
     std::size_t found = config_file_name.find_last_of("/\\");
-    std::string path = config_file_name.substr(0, found);
+    std::string path = (found != std::string::npos ? config_file_name.substr(0, found) : ".");
 
     TDirectoryFile* detectors = nullptr;
     f1->GetObject("detectors", detectors);
@@ -114,13 +114,14 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
         if(detectors_file.empty()) {
             // Default to detectors file name:
             detectors_file = "detectors.conf";
-            cout << "Using default name for detectors file - you might need to adjust the parameter.";
+            cout << "Using default name for detectors file - you might need to adjust the parameter." << std::endl;
         } else {
             // Clean string from quotation marks:
             if(detectors_file.front() == '"') {
                 detectors_file.erase(0, 1);                      // erase the first character
                 detectors_file.erase(detectors_file.size() - 1); // erase the last character
             }
+            cout << "Using stored detectors file name \"" << detectors_file << "\"" << std::endl;
         }
 
         detectors_file = path + "/" + detectors_file;
@@ -128,6 +129,8 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
         if(det_file.good()) {
             det_file << str.str();
             std::cout << "Wrote detector setup to: \"" << detectors_file << "\"" << std::endl;
+        } else {
+            std::cout << "Problem writing detector file \"" << detectors_file << "\"" << std::endl;
         }
     } else {
         cout << "Could not find TDirectory with detector configuration." << std::endl;
@@ -149,17 +152,19 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
                 std::string model_file = path + "/" + key + ".conf";
                 std::ofstream mod_file(model_file, std::ios_base::out | std::ios_base::trunc);
                 if(mod_file.good()) {
-                    // Remove numbering fro support layer headers
+                    // Remove numbering from support layer headers
                     std::regex support_header("\\[support_[0-9]+\\]");
                     mod_file << std::regex_replace(model_parameters, support_header, "[support]");
                     std::cout << "Wrote model \"" << key << "\" to: \"" << model_file << "\"" << std::endl;
+                } else {
+                    std::cout << "Problem writing model \"" << key << "\" to \"" << model_file << "\"" << std::endl;
                 }
             } else {
                 std::cout << "Directory entry not a detector model." << std::endl;
             }
         }
     } else {
-        cout << "Could not find TDirectory with detector configuration." << std::endl;
+        cout << "Could not find TDirectory with detector models." << std::endl;
     }
 
     return;

@@ -9,7 +9,7 @@ This chapter contains details on the standard installation process and informati
 \section{Supported Operating Systems}
 \label{sec:os}
 \apsq is designed to run without issues on either a recent Linux distribution or Mac OS\,X.
-Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC and LLVM) and Mac OS Sierra (OS X 10.12, with AppleClang).
+Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), SLC\,6 (with GCC only) and Mac OS Mojave (OS X 10.14, with AppleClang).
 
 \section{Prerequisites}
 \label{sec:prerequisites}
@@ -96,6 +96,7 @@ Other possible options are \texttt{Debug} (for compiling with no optimizations, 
 Defaults to not installing if the \parameter{CMAKE_INSTALL_PREFIX} is set to the directory containing the sources (the default).
 Otherwise the default value is equal to the directory \textit{<CMAKE\_INSTALL\_PREFIX>/share/allpix/}.
 The install directory is automatically added to the model search path used by the geometry model parsers to find all of the detector models.
+\item \parameter{BUILD_TOOLS}: Enable or disable the compilation of additional tools such as the mesh converter. Defaults to \parameter{ON}.
 \item \textbf{\texttt{BUILD\_\textit{ModuleName}}}: If the specific module \parameter{ModuleName} should be installed or not.
 Defaults to ON for most modules, however some modules with large additional dependencies such as LCIO~\cite{lcio} are disabled by default.
 This set of parameters allows to configure the build for minimal requirements as detailed in Section~\ref{sec:prerequisites}.

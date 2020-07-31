@@ -8,6 +8,9 @@ It offers the best visualization experience.
 
 The module allows for changing a variety of parameters to control the output visualization both for the different detector components and the particle beam.
 
+Both detectors and passive materials will be displayed.
+If the material of a passive material is the same as the material of its `mother_volume`, the passive material will not be shown in the visualization. In the case that the material is the same as the material of the world frame, the material will have a white colour instead of the default blue in the visualisation.
+
 ### Dependencies
 
 This module requires an installation of Geant4.
@@ -34,6 +37,7 @@ This module requires an installation of Geant4.
 * `trajectories_draw_step_color` : Color of the markers used to display a trajectory step. Default value *red*. Only used if *trajectories_draw_step* is enabled.
 * `draw_hits` : Determines if hits in the detector should be displayed. Defaults to false. Option is only useful if Geant4 hits are generated in a module.
 * `macro_init` : Optional Geant4 macro to execute during initialization. Whenever possible, the configuration parameters above should be used instead of this option.
+* `display_limit` : Sets the `displayListLimit` of the visualization GUI, in case the geometry which has to be loaded is too complex for the GUI to be displayed with the current size Display List. Defaults to 1000000.
 
 ### Usage
 An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:

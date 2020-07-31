@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Keeping track of the global geometry of independent detectors
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -86,6 +86,12 @@ namespace allpix {
          */
         std::vector<std::string> getModelsPath();
 
+        /**
+         * @brief Returns the position and orientation for a passive element
+         * @return Pair of position and orientation
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D>
+        getPassiveElementOrientation(const std::string& passive_element) const;
         /**
          * @brief Return the minimum coordinate of all detectors in the geometry
          * @return Minimum coordinate in global frame
@@ -204,6 +210,37 @@ namespace allpix {
 
         MagneticFieldType getMagneticFieldType() const;
 
+        /**
+         * @brief Fetch an external object associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param id ID of the external object
+         * @return External object or null pointer if it does not exist
+         */
+        template <typename T>
+        std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id);
+
+        /**
+         * @brief Sets an external object associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param id ID of the external object
+         * @param external_object External object of arbitrary type
+         */
+        template <typename T>
+        void
+        setExternalObject(const std::string& associated_name, const std::string& id, std::shared_ptr<T> external_object);
+
+        /**
+         * @brief Get all names of external objects registered via setExternalObject
+         * @return Set of names of external objects
+         */
+        std::set<std::string> getExternalObjectNames() const { return external_object_names_; };
+
+        /**
+         * @brief Get the list of Configuration objects for all passive elements in the current geometry
+         * @return List of Configuration objects for passive elements
+         */
+        std::list<Configuration>& getPassiveElements();
+
     private:
         /**
          * @brief Load all standard framework models (automatically done when the geometry is closed)
@@ -219,10 +256,19 @@ namespace allpix {
         std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
 
         /**
+         * @brief Get the orientation of an object
+         * @param config Configuration that defines in the object
+         * @return Position and rotation vector of the object
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D> calculate_orientation(const Configuration& config);
+
+        /**
          * @brief Close the geometry after which changes to the detector geometry cannot be made anymore
          */
         void close_geometry();
         std::atomic_bool closed_;
+
+        std::mt19937_64 random_generator_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
 
@@ -234,9 +280,19 @@ namespace allpix {
         std::vector<std::shared_ptr<Detector>> detectors_;
         std::set<std::string> detector_names_;
 
+        std::list<Configuration> passive_elements_;
+        std::map<std::string, std::pair<ROOT::Math::XYZPoint, ROOT::Math::Rotation3D>> passive_orientations_;
+
         MagneticFieldType magnetic_field_type_{MagneticFieldType::NONE};
         MagneticFieldFunction magnetic_field_function_;
+
+        std::map<std::type_index, std::map<std::pair<std::string, std::string>, std::shared_ptr<void>>> external_objects_;
+        std::set<std::string> external_object_names_;
     };
+
 } // namespace allpix
+
+// Include template members
+#include "GeometryManager.tpp"
 
 #endif /* ALLPIX_GEOMETRY_MANAGER_H */

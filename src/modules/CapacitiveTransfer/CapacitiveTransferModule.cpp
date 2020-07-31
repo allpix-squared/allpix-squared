@@ -1,5 +1,5 @@
 /*
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -204,36 +204,25 @@ void CapacitiveTransferModule::init() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            auto pixel_grid = model_->getNPixels();
-            gap_map = new TH2D("gap_map",
-                               "Gap;pixel x;pixel y",
-                               pixel_grid.x(),
-                               -0.5,
-                               pixel_grid.x() - 0.5,
-                               pixel_grid.y(),
-                               -0.5,
-                               pixel_grid.y() - 0.5);
+            auto xpixels = static_cast<int>(model_->getNPixels().x());
+            auto ypixels = static_cast<int>(model_->getNPixels().y());
 
-            capacitance_map = new TH2D("capacitance_map",
-                                       "Capacitance;pixel x;pixel y",
-                                       pixel_grid.x(),
-                                       -0.5,
-                                       pixel_grid.x() - 0.5,
-                                       pixel_grid.y(),
-                                       -0.5,
-                                       pixel_grid.y() - 0.5);
+            gap_map = new TH2D("gap_map", "Gap;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
+
+            capacitance_map = new TH2D(
+                "capacitance_map", "Capacitance;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
             relative_capacitance_map = new TH2D("relative_capacitance_map",
                                                 "Relative Capacitance;pixel x;pixel y",
-                                                pixel_grid.x(),
+                                                xpixels,
                                                 -0.5,
-                                                pixel_grid.x() - 0.5,
-                                                pixel_grid.y(),
+                                                xpixels,
+                                                ypixels,
                                                 -0.5,
-                                                pixel_grid.y() - 0.5);
+                                                ypixels - 0.5);
 
-            for(int col = 0; col < pixel_grid.x(); col++) {
-                for(int row = 0; row < pixel_grid.y(); row++) {
+            for(int col = 0; col < xpixels; col++) {
+                for(int row = 0; row < ypixels; row++) {
                     auto local_x = col * model_->getPixelSize().x();
                     auto local_y = row * model_->getPixelSize().y();
 
@@ -267,7 +256,7 @@ void CapacitiveTransferModule::run(unsigned int) {
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
-    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>, pixel_cmp> pixel_map;
+    std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
     for(auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
@@ -297,22 +286,18 @@ void CapacitiveTransferModule::run(unsigned int) {
                     row = static_cast<size_t>(std::floor(matrix_rows / 2));
                 }
 
+                auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)));
+                auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)));
+
                 // Ignore if out of pixel grid
-                if((xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) < 0 ||
-                   (xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols / 2)))) >=
-                       model_->getNPixels().x() ||
-                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) < 0 ||
-                   (ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows / 2)))) >=
-                       model_->getNPixels().y()) {
+                if(!detector_->isWithinPixelGrid(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";
                     continue;
                 }
 
-                pixel_index =
-                    Pixel::Index(static_cast<unsigned int>(xpixel + static_cast<int>(col) - std::floor(matrix_cols / 2)),
-                                 static_cast<unsigned int>(ypixel + static_cast<int>(row) - std::floor(matrix_rows / 2)));
+                pixel_index = Pixel::Index(static_cast<unsigned int>(xcoord), static_cast<unsigned int>(ycoord));
 
                 if(config_.has("coupling_scan_file")) {
                     double local_x = pixel_index.x() * model_->getPixelSize().x();

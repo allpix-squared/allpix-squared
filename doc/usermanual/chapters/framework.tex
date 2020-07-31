@@ -27,7 +27,7 @@ The chapter is structured as follows.
 Section~\ref{sec:arch} provides an overview of the architectural design of the core and describes its interaction with the rest of the \apsq framework.
 The different subcomponents such as configuration, modules and messages are discussed in Sections~\ref{sec:config_parameters}--\ref{sec:objects_messages}.
 The chapter closes with a description of the available framework tools in Section~\ref{sec:logging_utilities}.
-Some C++ code will be provided in the text, but readers not interested may skip the technical details.
+Some \CPP code will be provided in the text, but readers not interested may skip the technical details.
 
 \section{Architecture of the Core}
 \label{sec:arch}
@@ -50,7 +50,7 @@ The messenger object is passed to every module and can be used to bind to messag
 Messages with objects are also dispatched through the messenger as described in Section~\ref{sec:objects_messages}.
 \item \textbf{Utilities}: The framework provides a set of utilities for logging, file and directory access, and unit conversion.
 An explanation on how to use of these utilities can be found in Section~\ref{sec:logging_utilities}.
-A set of C++ exceptions is also provided in the utilities, which are inherited and extended by the other components.
+A set of \CPP exceptions is also provided in the utilities, which are inherited and extended by the other components.
 Proper use of exceptions, together with logging information and reporting errors, makes the framework easier to use and debug.
 A few notes about the use and structure of exceptions are provided in Section~\ref{sec:error_reporting_exceptions}.
 \end{enumerate}
@@ -106,7 +106,7 @@ The conversion to the elements to the actual type is performed when accessing th
 \subsection{Accessing parameters}
 \label{sec:accessing_parameters}
 Values are accessed via the configuration object.
-In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid C++ type the value should represent.
+In the following example, the key is a string called \parameter{key}, the object is named \parameter{config} and the type \parameter{TYPE} is a valid \CPP type the value should represent.
 The values can be accessed via the following methods:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Returns true if the key exists and false otherwise
@@ -136,8 +136,8 @@ config.setAlias("new_key", "old_key")
 \end{minted}
 
 Conversions to the requested type are using the \parameter{from_string} and \parameter{to_string} methods provided by the string utility library described in Section~\ref{sec:string_utilities}.
-These conversions largely follow standard C++ parsing, with one important exception.
-If (and only if) the value is retrieved as a C/C++ string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
+These conversions largely follow standard \CPP parsing, with one important exception.
+If (and only if) the value is retrieved as a C/\CPP string and the string is fully enclosed by a pair of \texttt{"} characters, these are stripped before returning the value.
 Strings can thus also be provided with or without quotation marks.
 
 \begin{warning}
@@ -266,7 +266,7 @@ A sketch of the actual coordinate transformations performed, including the order
 \begin{figure}[tbp]
   \center
   \input{tikz/transformations}
-  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the repective coordinate systems in top view, the second row in side view.}
+  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the respective coordinate systems in top view, the second row in side view.}
   \label{fig:transformations}
 \end{figure}
 
@@ -424,6 +424,7 @@ Communication between modules is performed by the exchange of messages.
 Messages are templated instantiations of the \parameter{Message} class carrying a vector of objects.
 The list of objects available in the \apsq objects library are discussed in Chapter~\ref{ch:objects}.
 The messaging system has a dispatching mechanism to send messages and a receiving part that fetches incoming messages.
+Messages are always received by modules in the order they have been dispatched by preceding modules.
 
 The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly.
 If the name is not given (or equal to \texttt{-}) the \parameter{output} parameter of the module is used to determine the name of the message, defaulting to an empty string.
@@ -566,9 +567,9 @@ input = "high_noise"
 
 \section{Logging and other Utilities}
 \label{sec:logging_utilities}
-The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the C++ Standard Template Library (STL).
+The \apsq framework provides a set of utilities which improve the usability of the framework and extend the functionality provided by the \CPP Standard Template Library (STL).
 The former includes a flexible and easy-to-use logging system, introduced in Section~\ref{sec:logger} and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units which can  be used transparently throughout the framework, and which will be discussed in more detail in Section~\ref{sec:unit_system}.
-The latter comprise tools which provide functionality the C++14 standard does not contain.
+The latter comprise tools which provide functionality the {\CPP}14 standard does not contain.
 These utilities are used internally in the framework and are only shortly discussed in Section~\ref{sec:filesystem} (file system support) and Section~\ref{sec:string_utilities} (string utilities).
 
 \subsection{Logging system}
@@ -576,16 +577,32 @@ These utilities are used internally in the framework and are only shortly discus
 The logging system is built to handle input/output in the same way as \texttt{std::cin} and \texttt{std::cout} do.
 This approach is both very flexible and easy to read.
 The system is globally configured, thus only one logger instance exists.
-In order to send a message to the logging system at a level of \parameter{LEVEL}, the following can be used:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
-\end{minted}
-A new line and carriage return is added at the end of every log message.
-Multi-line log messages can also be used: the logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
+The following commands are available for sending messages to the logging system at a level of \parameter{LEVEL}:
 
-The system also allows messages to be updated on the same line, for simple progressbar-like functionality.
-It is enabled using the \parameter{LOG_PROCESS(LEVEL, IDENTIFIER)} command.
-Here, the \parameter{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
+\begin{description}
+    \item[\command{LOG(LEVEL)}] Send a message with severity level \parameter{LEVEL} to the logging system.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
+    \end{minted}
+    A new line and carriage return is added at the end of every log message.
+    Multi-line log messages can be used by adding new line commands to the stream. The logging system will automatically align every new line under the previous message and will leave the header space empty on new lines.
+    \item[\command{LOG_ONCE(LEVEL)}] Same as \command{LOG}, but will only log this message once over the full run, even if the logging function is called multiple times.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
+    \end{minted}
+    This can be used to log warnings or messages e.g.\ from the \command{run()} function of a module without flooding the log output with the same message for every event.
+    The message is preceded by the information that further messages will be suppressed.
+    \item[\command{LOG_N(LEVEL, NUMBER)}] Same as \command{LOG_ONCE} but allows to specify the number of times the message will be logged via the additional parameter \parameter{NUMBER}.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
+    \end{minted}
+    The last message is preceded by the information that further messages will be suppressed.
+    \item[\command{LOG_PROGRESS(LEVEL, IDENTIFIER)}] This function allows to update the message to be updated on the same line for simple progressbar-like functionality.
+    \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << n << " of " << number_of_events;
+    \end{minted}
+    Here, the \parameter{IDENTIFIER} is a unique string identifying this output stream in order not to mix different progress reports.
+\end{description}
 
 If the output is a terminal screen the logging output will be coloured to make it easier to identify warnings and error messages.
 This is disabled automatically for all non-terminal outputs.
@@ -595,7 +612,7 @@ More details about the logging levels and formats can be found in Section~\ref{s
 \subsection{Unit system}
 \label{sec:unit_system}
 Correctly handling units and conversions is of paramount importance.
-Having a separate C++ type for every unit would however be too cumbersome for a lot of operations, therefore units are stored in standard C++ floating point types in a default unit which all code in the framework should use for calculations.
+Having a separate \CPP type for every unit would however be too cumbersome for a lot of operations, therefore units are stored in standard \CPP floating point types in a default unit which all code in the framework should use for calculations.
 In configuration files, as well as for logging, it is however very useful to provide quantities in different units.
 
 The unit system allows adding, retrieving, converting and displaying units.
@@ -621,7 +638,7 @@ A description of the use of units in config files within \apsq was presented in 
 \subsection{Internal utilities}
 \label{sec:filesystem}
 The \textbf{filesystem} utilities provide functions to convert relative to absolute canonical paths, to iterate through all files in a directory and to create new directories.
-These functions should be replaced by the C++17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to C++17.
+These functions should be replaced by the {\CPP}17 file system API~\cite{cppfilesystem} as soon as the framework minimum standard is updated to {\CPP}17.
 
 \label{sec:string_utilities}
 STL only provides string conversions for standard types using \texttt{std::stringstream} and \texttt{std::to\_string}, which do not allow parsing strings encapsulated in pairs of double quote (\texttt{"}) characters nor integrating different units.

@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of unit system
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -71,7 +71,7 @@ allpix::Units::UnitType Units::getSingle(std::string str) {
  * always multiplied, following common sense. Grouping units together within brackets or parentheses is not supported. Thus
  * any other character then a name of a unit, * or \ should lead to an error
  */
-allpix::Units::UnitType Units::get(std::string str) {
+allpix::Units::UnitType Units::get(const std::string& str) {
     UnitType ret_value = 1;
     if(allpix::trim(str).empty()) {
         return ret_value;
@@ -137,7 +137,8 @@ allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
 /**
  * @throws std::invalid_argument If the list of units is empty
  *
- * The best unit is determined using the two rules below:
+ * The best unit is determined using the rules below:
+ * - If the input is zero, the best unit can't be determined and the first one will be used.
  * - If there exists at least one unit for which the value is larger than one, the unit with value nearest to one is chosen
  *   from all units with values larger than one
  * - Otherwise the unit is chosen that has a value as close as possible to one (from below)
@@ -148,27 +149,22 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     }
 
     std::ostringstream stream;
-    if(std::fabs(input) < std::numeric_limits<Units::UnitType>::epsilon()) {
-        // Zero needs no unit
-        stream << input;
-    } else {
-        // Find best unit
-        int best_exponent = std::numeric_limits<int>::min();
-        std::string best_unit;
-        for(auto& unit : units) {
-            Units::UnitType value = convert(input, unit);
-            int exponent = 0;
-            std::frexp(value, &exponent);
-            if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
-                best_exponent = exponent;
-                best_unit = unit;
-            }
+    // Find best unit
+    int best_exponent = std::numeric_limits<int>::min();
+    std::string best_unit;
+    for(auto& unit : units) {
+        Units::UnitType value = convert(input, unit);
+        int exponent = 0;
+        std::frexp(value, &exponent);
+        if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {
+            best_exponent = exponent;
+            best_unit = unit;
         }
-
-        // Write unit
-        stream << convert(input, best_unit);
-        stream << best_unit;
     }
+
+    // Write unit
+    stream << convert(input, best_unit);
+    stream << best_unit;
     return stream.str();
 }
 std::string Units::display(UnitType input, std::string unit) {

@@ -2,7 +2,7 @@
  * @file
  * @brief Implements the handling of the sensitive device
  * @remarks Based on code from John Idarraga
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -37,13 +37,19 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      const std::shared_ptr<Detector>& detector,
                                                      Messenger* msg,
                                                      TrackInfoManager* track_info_manager,
-                                                     double charge_creation_energy)
+                                                     double charge_creation_energy,
+                                                     double fano_factor,
+                                                     uint64_t random_seed)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
-      messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy) {
+      messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy),
+      fano_factor_(fano_factor) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
+
+    // Seed the random generator for Fano fluctuations with the seed received
+    random_generator_.seed(random_seed);
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
@@ -62,7 +68,12 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
     auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(mid_pos);
-    auto charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+
+    // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
+    // excitations via the Fano factor. We assume Gaussian statistics here.
+    auto mean_charge = static_cast<unsigned int>(edep / charge_creation_energy_);
+    std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+    auto charge = charge_fluctuation(random_generator_);
 
     auto deposit_position_g4loc =
         ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
@@ -177,16 +188,13 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     track_time_.clear();
 
     // Send a deposit message if we have any deposits
+    unsigned int charges = 0;
     if(!deposits_.empty()) {
-        unsigned int charges = 0;
         for(auto& ch : deposits_) {
             charges += ch.getCharge();
             total_deposited_charge_ += ch.getCharge();
         }
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
-
-        // Store the number of charge carriers:
-        deposited_charge_ = charges;
 
         // Match deposit with mc particle if possible
         for(size_t i = 0; i < deposits_.size(); ++i) {
@@ -200,6 +208,8 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         // Dispatch the message
         messenger_->dispatchMessage(module_, deposit_message);
     }
+    // Store the number of charge carriers:
+    deposited_charge_ = charges;
 
     // Clear deposits for next event
     deposits_ = std::vector<DepositedCharge>();

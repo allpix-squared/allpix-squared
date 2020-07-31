@@ -4,7 +4,10 @@ OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 # reset the saved libraries
 SET(ALLPIX_MODULE_LIBRARIES "" CACHE INTERNAL "Module libraries")
 
-# Build all the modules 
+# Generate an interface library containing all modules:
+ADD_LIBRARY(Modules INTERFACE)
+
+# Build all the modules
 FILE(GLOB subdirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
 FOREACH(subdir ${subdirs})
     IF(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
@@ -12,3 +15,9 @@ FOREACH(subdir ${subdirs})
         ADD_SUBDIRECTORY(${subdir})
     ENDIF()
 ENDFOREACH()
+
+INSTALL(TARGETS Modules
+    EXPORT Allpix
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

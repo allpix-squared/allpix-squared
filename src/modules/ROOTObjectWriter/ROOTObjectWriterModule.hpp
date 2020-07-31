@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of ROOT data file writer module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -74,6 +74,9 @@ namespace allpix {
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
+
+        // Last event processed
+        unsigned int last_event_{0};
 
         // List of trees that are stored in data file
         std::map<std::string, std::unique_ptr<TTree>> trees_;

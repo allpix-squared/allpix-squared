@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of pixel object
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -14,6 +14,13 @@
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
 #include <TObject.h>
+
+namespace ROOT {
+    namespace Math { // NOLINT
+        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
+                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
+    }
+} // namespace ROOT
 
 namespace allpix {
     /**
@@ -71,6 +78,7 @@ namespace allpix {
         ROOT::Math::XYZPoint global_center_;
         ROOT::Math::XYVector size_;
     };
+
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PIXEL_H */

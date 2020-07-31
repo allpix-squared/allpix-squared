@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of detector
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -53,8 +53,12 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
+
+    // Initialize the detector fields with the model parameters:
     electric_field_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
+    weighting_potential_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
     magnetic_field_on_ = false;
+
     build_transform();
 }
 void Detector::build_transform() {
@@ -130,16 +134,37 @@ bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 }
 
 /**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+    return !(pixel_index.x() >= model_->getNPixels().x() || pixel_index.y() >= model_->getNPixels().y());
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const int x, const int y) const {
+    return !(x < 0 || x >= static_cast<int>(model_->getNPixels().x()) || y < 0 ||
+             y >= static_cast<int>(model_->getNPixels().y()));
+}
+
+/**
  * The pixel has internal information about the size and location specific for this detector
  */
-Pixel Detector::getPixel(unsigned int x, unsigned int y) {
+Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
     Pixel::Index index(x, y);
+    return getPixel(index);
+}
 
+/**
+ * The pixel has internal information about the size and location specific for this detector
+ */
+Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto size = model_->getPixelSize();
 
     // WARNING This relies on the origin of the local coordinate system
-    auto local_x = size.x() * x;
-    auto local_y = size.y() * y;
+    auto local_x = size.x() * index.x();
+    auto local_y = size.y() * index.y();
     auto local_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
 
     auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
@@ -172,20 +197,65 @@ FieldType Detector::getElectricFieldType() const {
 }
 
 /**
- * @throws std::invalid_argument If the electric field sizes are incorrect or the thickness domain is outside the sensor
+ * @throws std::invalid_argument If the electric field dimensions are incorrect or the thickness domain is outside the sensor
  */
-void Detector::setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
-                                    std::array<size_t, 3> sizes,
+void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
+                                    std::array<size_t, 3> dimensions,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    electric_field_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
+    electric_field_.setGrid(field, dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
                                         std::pair<double, double> thickness_domain,
                                         FieldType type) {
     electric_field_.setFunction(std::move(function), thickness_domain, type);
+}
+
+bool Detector::hasWeightingPotential() const {
+    return weighting_potential_.isValid();
+}
+
+/**
+ * The weighting potential is retrieved relative to a reference pixel. Outside of the sensor the weighting potential is
+ * strictly zero by definition.
+ */
+double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
+    auto size = model_->getPixelSize();
+
+    // WARNING This relies on the origin of the local coordinate system
+    auto local_x = size.x() * reference.x();
+    auto local_y = size.y() * reference.y();
+
+    // Requiring to extrapolate the field along z because equilibrium means no change in weighting potential,
+    // Without this, we would get large jumps close to the electrode once charge carriers cross the boundary.
+    return weighting_potential_.getRelativeTo(pos, {local_x, local_y}, true);
+}
+
+/**
+ * The type of the weighting potential is set depending on the function used to apply it.
+ */
+FieldType Detector::getWeightingPotentialType() const {
+    return weighting_potential_.getType();
+}
+
+/**
+ * @throws std::invalid_argument If the weighting potential dimensions are incorrect or the thickness domain is outside the
+ * sensor
+ */
+void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
+                                         std::array<size_t, 3> dimensions,
+                                         std::array<double, 2> scales,
+                                         std::array<double, 2> offset,
+                                         std::pair<double, double> thickness_domain) {
+    weighting_potential_.setGrid(potential, dimensions, scales, offset, thickness_domain);
+}
+
+void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
+                                             std::pair<double, double> thickness_domain,
+                                             FieldType type) {
+    weighting_potential_.setFunction(std::move(function), thickness_domain, type);
 }
 
 bool Detector::hasMagneticField() const {

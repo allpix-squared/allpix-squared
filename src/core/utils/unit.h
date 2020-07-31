@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief System to support units in the framework
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -78,14 +78,14 @@ namespace allpix {
          * @warning Conversions should not be done with the result of this function. The \ref get(std::string) version should
          *          be used for that purpose instead.
          */
-        static UnitType get(std::string str);
+        static UnitType get(const std::string& str);
         /**
          * @brief Get input parameter in the base units
          * @param inp Value in a particular unit
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        template <typename T> static T get(T inp, std::string str);
+        template <typename T> static T get(T inp, const std::string& str);
         /**
          * @brief Get input parameter in the inverse of the base units
          * @param inp Value in a particular unit
@@ -93,7 +93,7 @@ namespace allpix {
          * @return Value in the base unit
          */
         // TODO [doc] This function should likely be removed
-        template <typename T> static T getInverse(T inp, std::string str);
+        template <typename T> static T getInverse(T inp, const std::string& str);
 
         /**
          * @brief Get base unit in the requested unit

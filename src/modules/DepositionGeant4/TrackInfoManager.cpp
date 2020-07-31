@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of the TrackInfoManager class
- * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -51,7 +51,7 @@ void TrackInfoManager::resetTrackInfoManager() {
 }
 
 void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
-    setAllTrackParents();
+    set_all_track_parents();
     IFLOG(DEBUG) {
         LOG(DEBUG) << "Dispatching " << stored_tracks_.size() << " MCTrack(s) from TrackInfoManager::dispatchMessage()";
         for(auto const& mc_track : stored_tracks_) {
@@ -65,10 +65,13 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger) {
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {
     auto it = id_to_track_.find(track_id);
-    return (it == id_to_track_.end()) ? nullptr : &stored_tracks_.at(it->second);
+    return (it == id_to_track_.end()) ? nullptr : it->second;
 }
 
 void TrackInfoManager::createMCTracks() {
+    // Reserve size so we don't move the vector around and change addresses:
+    stored_tracks_.reserve(stored_track_infos_.size());
+
     for(auto& track_info : stored_track_infos_) {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
@@ -81,12 +84,12 @@ void TrackInfoManager::createMCTracks() {
                                     track_info->getTotalEnergyInitial(),
                                     track_info->getTotalEnergyFinal());
 
-        id_to_track_[track_info->getID()] = stored_tracks_.size() - 1;
+        id_to_track_[track_info->getID()] = &stored_tracks_.back();
         stored_track_ids_.emplace_back(track_info->getID());
     }
 }
 
-void TrackInfoManager::setAllTrackParents() {
+void TrackInfoManager::set_all_track_parents() {
     for(size_t ix = 0; ix < stored_track_ids_.size(); ++ix) {
         auto track_id = stored_track_ids_[ix];
         auto parent_id = track_id_to_parent_id_[track_id];

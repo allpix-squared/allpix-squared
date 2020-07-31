@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of CorryvreckanWriter module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -28,59 +28,46 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
-    config_.setDefault("output_mctruth", false);
+    config_.setDefault("output_mctruth", true);
 }
 
 // Set up the output trees
 void CorryvreckanWriterModule::init() {
 
     // Check if MC data to be saved
-    outputMCtruth_ = config_.get<bool>("output_mctruth", false);
+    output_mc_truth_ = config_.get<bool>("output_mctruth");
+
+    reference_ = config_.get<std::string>("reference");
+    if(!geometryManager_->hasDetector(reference_)) {
+        throw InvalidValueError(config_, "reference", "detector not defined");
+    }
+    dut_ = config_.getArray<std::string>("dut", std::vector<std::string>());
+    for(auto& dut : dut_) {
+        if(!geometryManager_->hasDetector(dut)) {
+            throw InvalidValueError(config_, "dut", "detector not defined");
+        }
+    }
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
-    outputFile_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
-    outputFile_->cd();
-    outputFile_->mkdir("pixels");
-    if(outputMCtruth_) {
-        outputFile_->mkdir("mcparticles");
-    }
+    LOG(TRACE) << "Creating output file \"" << fileName_ << "\"";
+    output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
+    output_file_->cd();
 
     // Create geometry file:
     geometryFileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"));
 
-    // Loop over all detectors and make trees for data
-    auto detectors = geometryManager_->getDetectors();
-    for(auto& detector : detectors) {
+    // Create trees:
+    LOG(TRACE) << "Booking event tree";
+    event_tree_ = std::make_unique<TTree>("Event", (std::string("Tree of Events").c_str()));
+    event_tree_->Bronch("global", "corryvreckan::Event", &event_);
 
-        // Get the detector ID and type
-        std::string detectorID = detector->getName();
-        std::string detectorModel = detector->getModel()->getType();
+    LOG(TRACE) << "Booking pixel tree";
+    pixel_tree_ = std::make_unique<TTree>("Pixel", (std::string("Tree of Pixels").c_str()));
 
-        // Create the tree
-        std::string objectID = detectorID + "_pixels";
-        std::string treeName = detectorID + "_" + detectorModel + "_pixels"; // NOLINT
-        outputTrees_[objectID] = new TTree(treeName.c_str(), treeName.c_str());
-        outputTrees_[objectID]->Branch("time", &time_);
-
-        // Map the pixel object to the tree
-        treePixels_[objectID] = new corryvreckan::Pixel();
-        outputTrees_[objectID]->Branch("pixels", &treePixels_[objectID]);
-
-        // If MC truth needed then make trees for output
-        if(!outputMCtruth_) {
-            continue;
-        }
-
-        // Create the tree
-        std::string objectID_MC = detectorID + "_mcparticles";
-        std::string treeName_MC = detectorID + "_" + detectorModel + "_mcparticles"; // NOLINT
-        outputTreesMC_[objectID_MC] = new TTree(treeName_MC.c_str(), treeName_MC.c_str());
-        outputTreesMC_[objectID_MC]->Branch("time", &time_);
-
-        // Map the mc particle object to the tree
-        treeMCParticles_[objectID_MC] = new corryvreckan::MCParticle();
-        outputTreesMC_[objectID_MC]->Branch("mcparticles", &treeMCParticles_[objectID_MC]);
+    if(output_mc_truth_) {
+        LOG(TRACE) << "Booking MCParticle tree";
+        mcparticle_tree_ = std::make_unique<TTree>("MCParticle", (std::string("Tree of MCParticles").c_str()));
     }
 
     // Initialise the time
@@ -88,62 +75,109 @@ void CorryvreckanWriterModule::init() {
 }
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
-void CorryvreckanWriterModule::run(unsigned int) {
+void CorryvreckanWriterModule::run(unsigned int event) {
 
-    // Loop through all receieved messages
+    LOG(TRACE) << "Processing event " << event;
+
+    // Create and store a new Event:
+    event_ = new corryvreckan::Event(time_, time_ + 5);
+    LOG(DEBUG) << "Defining event for Corryvreckan: [" << Units::display(event_->start(), {"ns", "um"}) << ","
+               << Units::display(event_->end(), {"ns", "um"}) << "]";
+    event_tree_->Fill();
+
+    // Events start with 1, pre-filling only with empty events before:
+    event--;
+
+    // Loop through all received messages
     for(auto& message : pixel_messages_) {
 
-        auto detectorID = message->getDetector()->getName();
-        auto objectID = detectorID + "_pixels";
-        LOG(DEBUG) << "Receieved " << message->getData().size() << " pixel hits from detector " << detectorID;
-        LOG(DEBUG) << "Time on event hits will be " << time_;
+        auto detector_name = message->getDetector()->getName();
+        LOG(DEBUG) << "Received " << message->getData().size() << " pixel hits from detector " << detector_name;
 
-        // Loop through all pixels received
-        for(auto& allpix_pixel : message->getData()) {
+        if(write_list_px_.find(detector_name) == write_list_px_.end()) {
+            write_list_px_[detector_name] = new std::vector<corryvreckan::Pixel*>();
+            pixel_tree_->Bronch(detector_name.c_str(),
+                                std::string("std::vector<corryvreckan::Pixel*>").c_str(),
+                                &write_list_px_[detector_name]);
 
-            // Make a new output pixel
-            unsigned int pixelX = allpix_pixel.getPixel().getIndex().X();
-            unsigned int pixelY = allpix_pixel.getPixel().getIndex().Y();
-            double adc = allpix_pixel.getSignal();
-            double time(time_);
-            auto outputPixel = new corryvreckan::Pixel(detectorID, int(pixelY), int(pixelX), int(adc), time);
+            if(event > 0) {
+                LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::Pixel with " << event
+                           << " empty events";
+                auto* branch = pixel_tree_->GetBranch(detector_name.c_str());
+                for(unsigned int i = 0; i < event; ++i) {
+                    branch->Fill();
+                }
+            }
+        }
 
-            LOG(DEBUG) << "Pixel (" << pixelX << "," << pixelY << ") written to device " << detectorID;
+        if(output_mc_truth_ && write_list_mcp_.find(detector_name) == write_list_mcp_.end()) {
+            write_list_mcp_[detector_name] = new std::vector<corryvreckan::MCParticle*>();
+            mcparticle_tree_->Bronch(detector_name.c_str(),
+                                     std::string("std::vector<corryvreckan::MCParticle*>").c_str(),
+                                     &write_list_mcp_[detector_name]);
 
-            // Map the pixel to the output tree and write it
-            treePixels_[objectID] = outputPixel;
-            outputTrees_[objectID]->Fill();
-            delete outputPixel;
+            if(event > 0) {
+
+                LOG(DEBUG) << "Pre-filling new branch " << detector_name << " of corryvreckan::MCParticle with " << event
+                           << " empty events";
+                auto* branch = mcparticle_tree_->GetBranch(detector_name.c_str());
+                for(unsigned int i = 0; i < event; ++i) {
+                    branch->Fill();
+                }
+            }
+        }
+
+        // Fill the branch vector
+        for(auto& apx_pixel : message->getData()) {
+            auto corry_pixel = new corryvreckan::Pixel(detector_name,
+                                                       static_cast<int>(apx_pixel.getPixel().getIndex().X()),
+                                                       static_cast<int>(apx_pixel.getPixel().getIndex().Y()),
+                                                       static_cast<int>(apx_pixel.getSignal()),
+                                                       apx_pixel.getSignal(),
+                                                       event_->start());
+            write_list_px_[detector_name]->push_back(corry_pixel);
 
             // If writing MC truth then also write out associated particle info
-            if(!outputMCtruth_) {
+            if(!output_mc_truth_) {
                 continue;
             }
 
             // Get all associated particles
-            auto mcp = allpix_pixel.getMCParticles();
+            auto mcp = apx_pixel.getMCParticles();
+            LOG(DEBUG) << "Received " << mcp.size() << " Monte Carlo particles from pixel hit";
             for(auto& particle : mcp) {
-
-                // Create a new particle object
-                std::string objectID_MC = detectorID + "_mcparticles";
-                auto mcParticle = new corryvreckan::MCParticle(detectorID,
+                auto mcParticle = new corryvreckan::MCParticle(detector_name,
                                                                particle->getParticleID(),
                                                                particle->getLocalStartPoint(),
                                                                particle->getLocalEndPoint(),
-                                                               time);
-
-                // Map the mc particle to the output tree and write it
-                treeMCParticles_[objectID_MC] = mcParticle;
-                LOG(DEBUG) << "MC particle started locally at (" << mcParticle->getLocalStart().X() << ","
-                           << mcParticle->getLocalStart().Y() << ") and ended at " << mcParticle->getLocalEnd().X() << ","
-                           << mcParticle->getLocalEnd().Y() << ")";
-                LOG(DEBUG) << "MC particle started globally at (" << particle->getGlobalStartPoint().X() << ","
-                           << particle->getGlobalStartPoint().Y() << ") and ended at " << particle->getGlobalEndPoint().X()
-                           << "," << particle->getGlobalEndPoint().Y() << ")";
-                outputTreesMC_[objectID_MC]->Fill();
-                delete mcParticle;
+                                                               event_->start());
+                write_list_mcp_[detector_name]->push_back(mcParticle);
             }
         }
+    }
+
+    LOG(TRACE) << "Writing new objects to tree";
+    output_file_->cd();
+
+    pixel_tree_->Fill();
+    if(output_mc_truth_) {
+        mcparticle_tree_->Fill();
+    }
+
+    // Clear the current write lists
+    for(auto& index_data : write_list_px_) {
+        for(auto& pixel : (*index_data.second)) {
+            delete pixel;
+        }
+        index_data.second->clear();
+    }
+
+    // Clear the current write lists
+    for(auto& index_data : write_list_mcp_) {
+        for(auto& mcp : (*index_data.second)) {
+            delete mcp;
+        }
+        index_data.second->clear();
     }
 
     // Increment the time till the next event
@@ -153,37 +187,8 @@ void CorryvreckanWriterModule::run(unsigned int) {
 // Save the output trees to file
 void CorryvreckanWriterModule::finalize() {
 
-    // Loop over all detectors and store the trees
-    auto detectors = geometryManager_->getDetectors();
-    for(auto& detector : detectors) {
-
-        // Get the detector ID and type
-        std::string detectorID = detector->getName();
-        std::string objectID = detectorID + "_pixels";
-
-        // Move to the write output file
-        outputFile_->cd();
-        outputFile_->cd("pixels");
-        outputTrees_[objectID]->Write();
-
-        // Clean up the tree and remove object pointer
-        delete outputTrees_[objectID];
-        treePixels_[objectID] = nullptr;
-
-        // Write the MC truth
-        if(!outputMCtruth_) {
-            continue;
-        }
-
-        std::string objectID_MC = detectorID + "_mcparticles";
-        outputFile_->cd("mcparticles");
-        outputTreesMC_[objectID_MC]->Write();
-
-        // Clean up the tree and remove object pointer
-        delete outputTreesMC_[objectID_MC];
-        treeMCParticles_[objectID_MC] = nullptr;
-    }
-    outputFile_->Close();
+    // Finish writing to output file
+    output_file_->Write();
 
     // Print statistics
     LOG(STATUS) << "Wrote output data to file:" << std::endl << fileName_;
@@ -199,6 +204,7 @@ void CorryvreckanWriterModule::finalize() {
 
         geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << std::endl << std::endl;
 
+        auto detectors = geometryManager_->getDetectors();
         for(auto& detector : detectors) {
             geometry_file << "[" << detector->getName() << "]" << std::endl;
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
@@ -219,7 +225,23 @@ void CorryvreckanWriterModule::finalize() {
                           << Units::display(model->getPixelSize().y(), "um") << std::endl;
             geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
                           << std::endl;
+            // Time resolution hard-coded as 5ns due to time structure of written out events: events of length 5ns, with a
+            // gap of 10ns in between events
+            geometry_file << "time_resolution = 5ns" << std::endl;
 
+            std::string roles;
+            if(detector->getName() == reference_) {
+                roles += "reference";
+            }
+            if(std::find(dut_.begin(), dut_.end(), detector->getName()) != dut_.end()) {
+                if(!roles.empty()) {
+                    roles += ",";
+                }
+                roles += "dut";
+            }
+            if(!roles.empty()) {
+                geometry_file << "role = " << roles << std::endl;
+            }
             geometry_file << std::endl;
         }
     }

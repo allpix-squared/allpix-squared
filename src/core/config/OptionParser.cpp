@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of option parser
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -10,6 +10,7 @@
 #include "OptionParser.hpp"
 
 #include "ConfigReader.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 
@@ -39,6 +40,7 @@ void OptionParser::parseOption(std::string line) {
 
 bool OptionParser::applyGlobalOptions(Configuration& config) {
     for(auto& key_value : global_options_) {
+        LOG(INFO) << "Setting provided option " << key_value.first << '=' << key_value.second;
         config.setText(key_value.first, key_value.second);
     }
     return !global_options_.empty();
@@ -50,6 +52,7 @@ bool OptionParser::applyOptions(const std::string& identifier, Configuration& co
     }
 
     for(auto& key_value : identifier_options_[identifier]) {
+        LOG(INFO) << "Setting provided option " << key_value.first << '=' << key_value.second << " for " << identifier;
         config.setText(key_value.first, key_value.second);
     }
     return true;

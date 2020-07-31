@@ -18,9 +18,9 @@ For more details about the project please have a look at the website at https://
 Ready-to-run installations of Allpix<sup>2</sup> are provided via the CERN Virtual Machine File System (CVMFS) for use on SLC6 and CentOS7 machines supported by CERN. In order to use Allpix<sup>2</sup>, the respective environment has to be set up by sourcing the appropriate file:
 
 ```
-$ source /cvmfs/clicdp.cern.ch/software/allpix-squared/<version>/x86_64-<system>-gcc7-opt/setup.sh
+$ source /cvmfs/clicdp.cern.ch/software/allpix-squared/<version>/x86_64-<system>-<compiler>-opt/setup.sh
 ```
-where `<version>` should be replaced with the desired Allpix<sup>2</sup> version and `<system>` with the operating system of the executing machine (either `slc6` or `centos7`).
+where `<version>` should be replaced with the desired Allpix<sup>2</sup> version and `<system>` with the operating system of the executing machine (either `slc6` or `centos7`). The compiler versions available via the `<compiler>` tag depend on the selected operating system.
 
 After this, the `allpix` executable is in the `$PATH` environment variable and can be used.
 It should be noted that the CVMFS cache of the executing machine has to be populated with all dependencies when running the program for the first time.
@@ -74,27 +74,34 @@ The main page of the reference can then be found at `reference/html/index.html` 
 Allpix<sup>2</sup> has been developed and is maintained by
 
 * Koen Wolters, CERN, @kwolters
-* Daniel Hynds, CERN, @dhynds
-* Simon Spannagel, CERN, @simonspa
+* Daniel Hynds, Nikhef, @dhynds
+* Paul Schütze, DESY, @pschutze
+* Simon Spannagel, DESY, @simonspa
 
 The following authors, in alphabetical order, have contributed to Allpix<sup>2</sup>:
-* Mathieu Benoit, Université de Genève, @mbenoit
+* Mohamed Moanis Ali, Free University of Bozen-Bolzano, @mmoanis
+* Mathieu Benoit, BNL, @mbenoit
 * Thomas Billoud, Université de Montréal, @tbilloud
-* Tobias Bisanz, Georg-August-Universität Göttingen, @tbisanz
+* Tobias Bisanz, CERN, @tbisanz
+* Koen van den Brandt, Nikhef, @kvandenb
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
-* Katharina Dort, CERN Summer Student, @kdort
+* Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
-* Andreas Matthias Nürnberg, CERN, @nurnberg
+* Sebastien Murphy, ETHZ, @smurphy
+* Andreas Matthias Nürnberg, KIT, @nurnberg
 * Marko Petric, CERN, @mpetric
+* Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
-* Paul Schütze, DESY, @pschutze
+* Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
-* Mateus Vicente Barreto Pinto, Université de Genève, @mvicente
+* Mateus Vicente Barreto Pinto, CERN, @mvicente
+* Andy Wharton, Lancaster University, @awharton
+* Morag Williams, University of Glasgow, @williamm
 
 The authors would also like to express their thanks to the developers of [AllPix](https://twiki.cern.ch/twiki/bin/view/Main/AllPix).
 
@@ -111,6 +118,11 @@ Please cite this paper when publishing your work using Allpix Squared as:
 
 A preprint version is available on [arxiv.org](https://arxiv.org/abs/1806.05813).
 
+In addition, the software can be cited using the [versioned Zenodo record](https://doi.org/10.5281/zenodo.3550935) or the current version as:
+
+> S. Spannagel, K. Wolters, D. Hynds. (2019, July 9). Allpix Squared - Generic Pixel Detector Simulation Framework
+> (Version 1.4.0). Zenodo. http://doi.org/10.5281/zenodo.3550971
+
 ## Contributing
 All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
 
@@ -121,8 +133,11 @@ This software is distributed under the terms of the MIT license. A copy of this 
 
 The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
 
-The LaTeX and Pandoc CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
+The LaTeX, Pandoc and PostgreSQL CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
+The CodeCoverage CMake module is copyright 2012 - 2017 by Lars Bilke, the full license can be found in the [module file](cmake/CodeCoverage.cmake).
 
 The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
 
-The cereal C++11 serialization library used by Allpix<sup>2</sup> is publised under the BSD 3-Clause License.
+The cereal C++11 serialization library used by Allpix<sup>2</sup> is published under the BSD 3-Clause License, the original source code can be found [here](https://github.com/USCiLab/cereal).
+
+The combination algorithms by Howard Hinnant are published under the Boost Software License Version 1.0, the code can be found [here](https://github.com/HowardHinnant/combinations) and the documentation of the class is published [here](https://howardhinnant.github.io/combinations/combinations.html).

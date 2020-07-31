@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of ROOT data file writer module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -109,7 +109,8 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
                 write_list_[index_tuple] = new std::vector<Object*>();
                 auto addr = &write_list_[index_tuple];
 
-                if(trees_.find(class_name) == trees_.end()) {
+                auto new_tree = (trees_.find(class_name) == trees_.end());
+                if(new_tree) {
                     // Create new tree
                     output_file_->cd();
                     trees_.emplace(
@@ -125,6 +126,23 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
 
                 trees_[class_name]->Bronch(
                     branch_name.c_str(), (std::string("std::vector<") + cls->GetName() + "*>").c_str(), addr);
+
+                // Prefill new tree or new branch with empty records for all events that were missed since the start
+                if(last_event_ > 0) {
+                    if(new_tree) {
+                        LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            trees_[class_name]->Fill();
+                        }
+                    } else {
+                        LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with "
+                                   << last_event_ << " empty events";
+                        auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
+                        for(unsigned int i = 0; i < last_event_; ++i) {
+                            branch->Fill();
+                        }
+                    }
+                }
             }
 
             // Fill the branch vector
@@ -141,9 +159,12 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
     }
 }
 
-void ROOTObjectWriterModule::run(unsigned int) {
+void ROOTObjectWriterModule::run(unsigned int event) {
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
+
+    // Save last event number for trees created later
+    last_event_ = event;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {

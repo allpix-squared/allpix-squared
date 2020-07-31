@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Utility to parse INIT-format field files
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -15,6 +15,7 @@
 #include <iostream>
 #include <map>
 
+#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -24,6 +25,10 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <utility>
+
+// Mime type version for APF files
+#define APF_MIME_TYPE_VERSION 1
 
 namespace allpix {
 
@@ -41,7 +46,7 @@ namespace allpix {
      */
     enum class FileType {
         UNKNOWN = 0, ///< Unknown file format
-        INIT,        ///< Leagcy file format, values stored in plain-text ASCII
+        INIT,        ///< Legacy file format, values stored in plain-text ASCII
         APF,         ///< Binary Allpix Squared format serialized using the cereal library
     };
 
@@ -53,17 +58,58 @@ namespace allpix {
      */
     template <typename T = double> class FieldData {
     public:
+        /**
+         * @brief Default constructor to create an empty field data object
+         */
         FieldData() = default;
+
+        /**
+         * @brief Constructor for field data
+         * @param header     Human readable header string to identify file content, program version used for generation etc.
+         * @param dimensions Number of bins of the field in each coordinate
+         * @param size       Physical extent of the field in each dimension, given in internal units
+         * @param data       Shared pointer to the flat field data
+         */
         FieldData(std::string header,
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data)
-            : header_(header), dimensions_(dimensions), size_(size), data_(data){};
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)){};
 
+        /**
+         * @brief Function to obtain the header (human readbale content description) of the field data
+         * @return header string
+         */
         std::string getHeader() const { return header_; }
+
+        /**
+         * @brief Member to get the dimensions of the field as number of bins in x, y, z
+         * @return array with the number of bins in x, y and z
+         */
         std::array<size_t, 3> getDimensions() const { return dimensions_; }
+
+        /**
+         * @brief Member to get the physical extent of the field in each dimension as parsed from the input in internal units
+         * @return array with physical size in x, y and z
+         */
         std::array<T, 3> getSize() const { return size_; }
+
+        /**
+         * @brief Member to access the actual field data
+         * @return shared pointer to the flat vector of field data
+         */
         std::shared_ptr<std::vector<T>> getData() const { return data_; }
+
+        /**
+         * @brief get the dimensionality of the configured field in the x-y plane, e.g whether it is defined in 1D, 2D or 3D.
+         * @return Dimensionality of the field
+         */
+        size_t getDimensionality() const {
+            size_t dim = 3;
+            dim -= (dimensions_[0] == 1 ? 1u : 0);
+            dim -= (dimensions_[1] == 1 ? 1u : 0);
+            return dim;
+        }
 
     private:
         std::string header_;
@@ -73,20 +119,47 @@ namespace allpix {
 
         friend class cereal::access;
 
-        template <class Archive> void serialize(Archive& archive) {
+        // Versioned serialization function:
+        template <class Archive> void serialize(Archive& archive, std::uint32_t const version) {
+            // For now, we only know one version of this file type:
+            if(version != 1) {
+                throw std::runtime_error("unknown format version " + std::to_string(version));
+            }
+
+            // (De-) Serialize the data:
             archive(header_);
             archive(dimensions_);
             archive(size_);
             archive(data_);
         }
     };
+} // namespace allpix
+
+// Enable versioning for the FieldData class template
+namespace cereal {
+    namespace detail {
+        template <class T> struct Version<allpix::FieldData<T>> {
+            static const std::uint32_t version;
+            static std::uint32_t registerVersion() {
+                ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
+                    std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
+                return 3;
+            }
+            static void unused() { (void)version; } // NOLINT
+        };                                          /* end Version */
+        template <class T>
+        const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
+    } // namespace detail
+} // namespace cereal
+
+namespace allpix {
 
     /**
      * @brief Class to parse Allpix Squared field data from files
      *
      * This class can be used to deserialize and parse FieldData objects from files of different format. The FieldData
      * objects read from file are cached, and a cache hit will be returned when trying to re-read a file with the same
-     * canoncial path.
+     * canonical path.
      */
     template <typename T = double> class FieldParser {
     public:
@@ -95,7 +168,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldParser(const FieldQuantity quantity) {
+        explicit FieldParser(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -104,18 +177,22 @@ namespace allpix {
         /**
          * @brief Parse a file and retrieve the field data.
          * @param file_name  File name (as canonical path) of the input file to be parsed
-         * @param file_type  Type of file (file format) to be parsed
          * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
          * @return           Field data object read from file or internal cache
+         *
+         * The type of the field data file to be read is deducted automatically from the file content
          */
-        FieldData<T>
-        get_by_file_name(const std::string& file_name, const FileType& file_type, const std::string units = std::string()) {
+        FieldData<T> getByFileName(const std::string& file_name, const std::string& units = std::string()) {
             // Search in cache (NOTE: the path reached here is always a canonical name)
             auto iter = field_map_.find(file_name);
             if(iter != field_map_.end()) {
                 LOG(INFO) << "Using cached field data";
                 return iter->second;
             }
+
+            // Deduce the file format
+            auto file_type = guess_file_type(file_name);
+            LOG(DEBUG) << "Assuming file type \"" << (file_type == FileType::APF ? "APF" : "INIT") << "\"";
 
             switch(file_type) {
             case FileType::INIT:
@@ -126,7 +203,7 @@ namespace allpix {
                 return parse_init_file(file_name, units);
             case FileType::APF:
                 if(!units.empty()) {
-                    LOG(WARNING) << "Units will be ignored, APF file content is interpreted in internal units.";
+                    LOG(DEBUG) << "Units will be ignored, APF file content is interpreted in internal units.";
                 }
                 return parse_apf_file(file_name);
             default:
@@ -135,6 +212,17 @@ namespace allpix {
         }
 
     private:
+        /**
+         * @brief Function to guess the type of a field data file
+         * @param path Path to the file to be tested
+         * @return Type of the file
+         *
+         * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
+         */
+        FileType guess_file_type(const std::string& path) const {
+            return (file_is_binary(path) ? FileType::APF : FileType::INIT);
+        }
+
         /**
          * @brief Function to deserialize FieldData from an APF file, using the cereal library. This does not convert any
          * units, i.e. all values stored in APF files are given framework-internal base units. This includes the field data
@@ -190,7 +278,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the input file to be parsed
          * @param units      Units to convert the values of the field data from
          */
-        FieldData<T> parse_init_file(const std::string& file_name, const std::string units) {
+        FieldData<T> parse_init_file(const std::string& file_name, const std::string& units) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -279,7 +367,7 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        FieldWriter(const FieldQuantity quantity) {
+        explicit FieldWriter(const FieldQuantity quantity) {
             // Store quantity: vector or scalar field:
             N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
         };
@@ -292,10 +380,10 @@ namespace allpix {
          * @param file_type  Type of file (file format) to be produced
          * @param units      Optional units to convert the field into before writing. Only used by some formats.
          */
-        void write_file(const FieldData<T>& field_data,
-                        const std::string& file_name,
-                        const FileType& file_type,
-                        const std::string units = std::string()) {
+        void writeFile(const FieldData<T>& field_data,
+                       const std::string& file_name,
+                       const FileType& file_type,
+                       const std::string& units = std::string()) {
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
@@ -343,7 +431,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the output file to be created
          * @param units      Units to convert the values of the field data to.
          */
-        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string units) {
+        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string& units) {
             std::ofstream file(file_name);
 
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
@@ -375,11 +463,10 @@ namespace allpix {
 
                         // Vector or scalar field:
                         for(size_t j = 0; j < N_; j++) {
-                            // clang-format off
-                            file << " " << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
-                                                                   yind * dimensions[2] * N_ + zind * N_ + j),
-                                                          units);
-                            // clang-format off
+                            file << " "
+                                 << Units::convert(data->at(xind * dimensions[1] * dimensions[2] * N_ +
+                                                            yind * dimensions[2] * N_ + zind * N_ + j),
+                                                   units);
                         }
                         // End this line
                         file << std::endl;

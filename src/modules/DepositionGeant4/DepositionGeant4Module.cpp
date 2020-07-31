@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Geant4 deposition module
  * @remarks Based on code from Mathieu Benoit
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -64,8 +64,27 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
 
+    // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
+    if(config.get<std::string>("source_type") == "macro") {
+        std::ifstream file(config.getPath("file_name", true));
+        std::string line;
+        while(std::getline(file, line)) {
+            if(line.rfind("/gps/position", 0) == 0 || line.rfind("/gps/pos/centre") == 0) {
+                LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
+                std::stringstream sstr(line);
+                std::string command, units;
+                double pos_x, pos_y, pos_z;
+                sstr >> command >> pos_x >> pos_y >> pos_z >> units;
+                ROOT::Math::XYZPoint source_position(
+                    Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
+                LOG(DEBUG) << "Found source positioned at " << Units::display(source_position, {"mm", "cm"});
+                geo_manager_->addPoint(source_position);
+            }
+        }
+    }
+
     // Add the particle source position to the geometry
-    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position"));
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
 }
 
 /**
@@ -91,7 +110,7 @@ void DepositionGeant4Module::init() {
 
         for(auto& detector : geo_manager_->getDetectors()) {
             // Get logical volume
-            auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
             if(logical_volume == nullptr) {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
@@ -187,8 +206,11 @@ void DepositionGeant4Module::init() {
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
+    // Default value chosen to ensure proper gamma generation for Cs137 decay
+    auto decay_cutoff_time = config_.get<double>("decay_cutoff_time", 2.21e+11);
+
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get(), decay_cutoff_time);
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
@@ -207,6 +229,17 @@ void DepositionGeant4Module::init() {
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
+    auto fano_factor = config_.get<double>("fano_factor", 0.115);
+
+    // Prepare seeds for Geant4:
+    // NOTE Assumes this is the only Geant4 module using random numbers
+    std::string seed_command = "/random/setSeeds ";
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
+        if(i != G4_NUM_SEEDS - 1) {
+            seed_command += " ";
+        }
+    }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
@@ -222,9 +255,9 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action =
-            new SensitiveDetectorActionG4(this, detector, messenger_, track_info_manager_.get(), charge_creation_energy);
-        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        auto sensitive_detector_action = new SensitiveDetectorActionG4(
+            this, detector, messenger_, track_info_manager_.get(), charge_creation_energy, fano_factor, getRandomSeed());
+        auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
@@ -262,14 +295,6 @@ void DepositionGeant4Module::init() {
     G4HadronicProcessStore::Instance()->SetVerbose(0);
 
     // Set the random seed for Geant4 generation
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
     ui_g4->ApplyCommand(seed_command);
 
     // Release the output stream
@@ -294,6 +319,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     track_info_manager_->createMCTracks();
 
     // Dispatch the necessary messages
+    track_info_manager_->dispatchMessage(this, messenger_);
+
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
 
@@ -304,7 +331,6 @@ void DepositionGeant4Module::run(unsigned int event_num) {
         }
     }
 
-    track_info_manager_->dispatchMessage(this, messenger_);
     track_info_manager_->resetTrackInfoManager();
 }
 

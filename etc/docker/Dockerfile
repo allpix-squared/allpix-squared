@@ -12,6 +12,7 @@ RUN source scl_source enable devtoolset-7 && \
     mkdir -p /opt/allpix-squared/build && \
     cd /opt/allpix-squared/build && \
     cmake3 -DCMAKE_INSTALL_PREFIX=../ \
+           -DBUILD_ALL_MODULES=ON \
            -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \

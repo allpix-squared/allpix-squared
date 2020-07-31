@@ -1,32 +1,45 @@
 #!/usr/bin/env bash
 
-# get git directory
-ROOT=$(git rev-parse --show-toplevel)
+##---
 
-# install the commit hooks
-if [ -f $ROOT/.git/hooks/pre-commit-clang-format ];then
-    echo "WARNING: File .git/hooks/pre-commit-clang-format already exists! Overwriting previous version..."
-fi
-cp $ROOT/etc/git-hooks/pre-commit-clang-format-hook $ROOT/.git/hooks/pre-commit-clang-format
-chmod +x $ROOT/.git/hooks/pre-commit-clang-format
+REPLACE=("pre-commit-clang-format" "pre-push-tag-version")
+WARNING=("pre-commit" "pre-push")
 
-if [ -f $ROOT/.git/hooks/pre-commit ];then
-    echo "ERROR: File .git/hooks/pre-commit already exists! Will not overwrite, add script manually if needed."
-else
-    cp $ROOT/etc/git-hooks/pre-commit-hook $ROOT/.git/hooks/pre-commit
-    chmod +x $ROOT/.git/hooks/pre-commit
-fi
+SRCDIR=$(git rev-parse --show-toplevel)/etc/git-hooks
+TGTDIR=$(git rev-parse --absolute-git-dir)/hooks
 
-# install the push hooks
-if [ -f $ROOT/.git/hooks/pre-push-tag-version ];then
-    echo "WARNING: File .git/hooks/pre-push-tag-version already exists! Overwriting previous version..."
-fi
-cp $ROOT/etc/git-hooks/pre-push-tag-version-hook $ROOT/.git/hooks/pre-push-tag-version
-chmod +x $ROOT/.git/hooks/pre-push-tag-version
+##---
 
-if [ -f $ROOT/.git/hooks/pre-push ];then
-    echo "ERROR: File .git/hooks/pre-push already exists! Will not overwrite, add script manually if needed."
-else
-    cp $ROOT/etc/git-hooks/pre-push-hook $ROOT/.git/hooks/pre-push
-    chmod +x $ROOT/.git/hooks/pre-push
-fi
+InstallHook () {
+    cp $SRCDIR/$1-hook $TGTDIR/$1
+    chmod +x $TGTDIR/$1
+}
+
+
+InstallReplaceHooks () {
+    for HOOK in "${REPLACE[@]}"
+    do
+	if [ -f $TGTDIR/$HOOK ]
+	then
+	    echo "WARNING: File $TGTDIR/$HOOK already exists! Overwriting previous version..."
+	fi
+	InstallHook $HOOK
+    done
+}
+
+InstallWarningHooks () {
+    for HOOK in "${WARNING[@]}"
+    do
+	if [ -f $TGTDIR/$HOOK ]
+	then
+	    echo "ERROR: File $TGTDIR/$HOOK already exists! Will not overwrite, add script manually if needed."
+	else
+	    InstallHook $HOOK
+	fi
+    done
+}
+
+##---
+
+InstallReplaceHooks
+InstallWarningHooks

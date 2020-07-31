@@ -16,7 +16,7 @@ Currently, the following targets are provided:
 \begin{description}
   \item[\command{make format}] invokes the \command{clang-format} tool to apply the project's coding style convention to all files of the code base. The format is defined in the \file{.clang-format} file in the root directory of the repository and mostly follows the suggestions defined by the standard LLVM style with minor modifications. Most notably are the consistent usage of four whitespace characters as indentation and the column limit of 125 characters.
   \item[\command{make check-format}] also invokes the \command{clang-format} tool but does not apply the required changes to the code. Instead, it returns an exit code 0 (pass) if no changes are necessary and exit code 1 (fail) if changes are to be applied. This is used by the CI.
-  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern C++ standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
+  \item[\command{make lint}] invokes the \command{clang-tidy} tool to provide additional linting of the source code. The tool tries to detect possible errors (and thus potential bugs), dangerous constructs (such as uninitialized variables) as well as stylistic errors. In addition, it ensures proper usage of modern \CPP standards. The configuration used for the \command{clang-tidy} command can be found in the \file{.clang-tidy} file in the root directory of the repository.
   \item[\command{make check-lint}] also invokes the \command{clang-tidy} tool but does not report the issues found while parsing the code. Instead, it returns an exit code 0 (pass) if no errors have been produced and exit code 1 (fail) if issues are present. This is used by the CI.
   \item[\command{make cppcheck}] runs the \command{cppcheck} command for additional static code analysis. The output is stored in the file \file{cppcheck_results.xml} in XML2.0 format. It should be noted that some of the issues reported by the tool are to be considered false positives.
   \item[\command{make cppcheck-html}] compiles a HTML report from the defects list gathered by \command{make cppcheck}. This target is only available if the \command{cppcheck-htmlreport} executable is found in the \dir{PATH}.
@@ -96,7 +96,7 @@ It is configured via the \file{.gitlab-ci.yml} file in the repository's root dir
 \begin{figure}[btp]
   \centering
   \includegraphics[width=\textwidth]{ci.png}
-  \caption{Typical \apsq continous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
+  \caption{Typical \apsq continuous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
 
@@ -187,7 +187,7 @@ The files are taken from the packaging jobs and published via the \parameter{ci-
 This job requires the secret project variables \parameter{EOS_ACCOUNT_USERNAME} and \parameter{EOS_ACCOUNT_PASSWORD} to be set via the GitLab web interface.
 Currently, this uses the credentials of the service account user \emph{ap2}.
 
-\subsection{Building Docker images}
+\section{Building Docker images}
 \label{sec:build-docker}
 
 New \apsq Docker images are automatically created and deployed by the CI for every new tag and as a nightly build from the \parameter{master} branch.
@@ -221,6 +221,14 @@ $ docker push gitlab-registry.cern.ch/allpix-squared/\
               allpix-squared/allpix-squared-deps
 \end{verbatim}
 These images are created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
+
+\begin{warning}
+  The dependencies Docker images should not be flattened with commands like
+
+  \command{docker export <container id> | docker import - <tag name>}
+
+  because it strips any \parameter{ENV} variables set or used during the build process. They are used to set up the ROOT6 and Geant4 environments. When flattening, their executables and data paths cannot be found in the final \apsq image.
+\end{warning}
 
 Finally, the latest revision of \apsq is built using the file \file{etc/docker/Dockerfile}.
 This job is performed automatically by the continuous integration and the created containers are directly uploaded to the project's Docker registry.
@@ -258,7 +266,7 @@ These expressions are simply placed in the configuration file of the correspondi
 Each test can only contain one passing and one failing expression.
 If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
-Different tags are provided for Mac OS X since the C++ standard does not define the exact implementation of random number distributions such as \texttt{std::normal\_distribution}.
+Different tags are provided for Mac OS X since the \CPP standard does not define the exact implementation of random number distributions such as \texttt{std::normal\_distribution}.
 Thus, the distributions produce different results on different platforms even when used with the same random number as input.
 
 \begin{description}
@@ -267,6 +275,7 @@ Thus, the distributions produce different results on different platforms even wh
   \item[Depending on another test] The tag \parameter{#DEPENDS} can be used to indicate dependencies between tests. For example, the module test 09 described below implements such a dependency as it uses the output of module test 08-1 to read data from a previously produced \apsq data file.
   \item[Defining a timeout] For performance tests the runtime of the application is monitored, and the test fails if it exceeds the number of seconds defined using the \parameter{#TIMEOUT} tag.
   \item[Adding additional CLI options] Additional module command line options can be specified for the \parameter{allpix} executable using the \parameter{#OPTION} tag, following the format found in Section~\ref{sec:allpix_executable}. Multiple options can be supplied by repeating the \parameter{#OPTION} tag in the configuration file, only one option per tag is allowed. In exactly the same way options for the detectors can be set as well using the \parameter{#DETOPION} tag.
+  \item[Defining a test case label] Tests can be grouped and executed based on labels, e.g.\ for code coverage reports. Labels can be assigned to individual tests using the \parameter{#LABEL} tag.
 \end{description}
 
 \paragraph{Framework Functionality Tests}
@@ -323,13 +332,19 @@ Currently implemented tests comprise:
     \item[\file{test_03-9_deposition_scan.conf}] tests the scan of a pixel volume by depositing charges for a given number of events, check for the calculated voxel size.
     \item[\file{test_03-10_deposition_scan_cube.conf}] tests the calculation of the scanning points by monitoring the warning of the number of events is not a perfect cube.
     \item[\file{test_03-11_deposition_mip.conf}] tests the deposition of charges along a line by monitoring the calculated step size and number of charge carriers deposited per step.
+    \item[\file{test_03-12_deposition_mip_position.conf}] tests the generation of the Monte Carlo particle when depositing charges along a line by monitoring the start and end positions of the particle.
+    \item[\file{test_03-13_deposition_fano.conf}] tests the simulation of fluctuations in charge carrier generation by monitoring the total number of generated carrier pairs when altering the Fano factor.
+    \item[\file{test_03-14_deposition_spot.conf}] tests the deposition of charge carriers around a fixed position with a Gaussian distribution.
     \item[\file{test_04-1_propagation_project.conf}] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
     \item[\file{test_04-2_propagation_generic.conf}] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
     \item[\file{test_04-3_propagation_generic-magnetic.conf}] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants under the influence of a constant magnetic field. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
+    \item[\file{test_04-4_propagation_project_integration.conf}] projects deposited charges to the implant side of the sensor with a reduced integration time to ignore some charge carriers. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
     \item[\file{test_05_transfer_simple.conf}] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the coordinates of the pixels the charges have been assigned to.
     \item[\file{test_06-1_digitization_charge.conf}] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge for one pixel including noise contributions and the smeared threshold it is compared to.
-    \item[\file{test_06-2_digitization_adc.conf}] digitizes the transferred charges and tests the conversion into ADC units. The monitored output comprises the converted charge value in units of ADC counts.
+    \item[\file{test_06-2_digitization_qdc.conf}] digitizes the transferred charges and tests the conversion into QDC units. The monitored output comprises the converted charge value in units of QDC counts.
     \item[\file{test_06-3_digitization_gain.conf}] digitizes the transferred charges and tests the amplification process by monitoring the total charge after signal amplification and smearing.
+    \item[\file{test_06-4_digitization_toa.conf}] digitizes the signal and calculates the time-of-arrival of the particle by checking when the threshold was crossed.
+    \item[\file{test_06-5_digitization_tdc.conf}] digitizes the signal and test the conversion of time-of-arrival to TDC units.
     \item[\file{test_07_histogramming.conf}] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
     \item[\file{test_08-1_writer_root.conf}] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
     \item[\file{test_08-2_writer_rce.conf}] ensures proper functionality of the RCE file writer module. The correct conversion of the PixelHit position and value is monitored by the test's regular expressions.
@@ -342,6 +357,11 @@ Currently implemented tests comprise:
     \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
     \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
     \item[\file{test_09-3_reader_root_ignoreseed.conf}] tests if core random seeds are properly ignored by the ROOTObjectReader module if requested by the configuration. The monitored output comprises the warning message emitted if a difference in seed values is discovered.
+    \item[\file{test_10-1_passivemat_addpoint.conf}] ensures the module adds corner points of the passive material in a correct way.
+    \item[\file{test_10-2_passivemat_addpoint_rot.conf}] ensures proper rotation of the position of the corner points of the passive material.
+    \item[\file{test_10-3_passivemat_mothervolume.conf}] ensures placing a detector inside a passive material will not cause overlapping materials.
+    \item[\file{test_10-4_passivemat_worldvolume.conf}] ensures the added corner points of the passive material increase the world volume accordingly.
+    \item[\file{test_10-5_passivemat_same_materials.conf}] tests if a warning will be thrown if the material of the passive material is the same as the material of the world volume.
 \end{description}
 
 \paragraph{Performance Tests}

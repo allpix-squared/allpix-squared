@@ -1,6 +1,8 @@
 #include <Eigen/Eigen>
+#include <array>
 #include <utility>
-#include <vector>
+
+#include "core/utils/log.h"
 
 #include "DFISEParser.hpp"
 #include "octree/Octree.hpp"
@@ -14,22 +16,7 @@ namespace mesh_converter {
         /**
          * @brief Default constructor
          */
-        explicit MeshElement() = default;
-
-        /**
-         * @brief Constructor with vector containing the vertices points
-         * @param vertices_tetrahedron List containing 4 mesh node points
-         */
-        explicit MeshElement(std::vector<Point> vertices_tetrahedron) : vertices_(std::move(vertices_tetrahedron)) {}
-
-        /**
-         * @brief Constructor with list for the mesh and the electric field points
-         * @param vertices_tetrahedron List containing 4 mesh node points
-         * @param efield_vertices_tetrahedron List containing 4 points with the component of the electric field at the mesh
-         * node
-         */
-        MeshElement(std::vector<Point> vertices_tetrahedron, std::vector<Point> efield_vertices_tetrahedron)
-            : vertices_(std::move(vertices_tetrahedron)), e_field_(std::move(efield_vertices_tetrahedron)) {}
+        MeshElement() = delete;
 
         /**
          * @brief Constructor using a vector to store the index of the nodes and a list for the mesh and electric field
@@ -40,95 +27,122 @@ namespace mesh_converter {
          * @param efield_vertices_tetrahedron List containing 4 points with the component of the electric field at the mesh
          * node
          */
-        MeshElement(int dimension,
-                    std::vector<size_t> index,
-                    std::vector<Point> vertices_tetrahedron,
-                    std::vector<Point> efield_vertices_tetrahedron)
-            : dimension_(dimension), indices_(std::move(index)), vertices_(std::move(vertices_tetrahedron)),
-              e_field_(std::move(efield_vertices_tetrahedron)) {}
-
-        /**
-         * @brief Setting vertices for the default tetrahedron constructor
-         * @param new_vertices std::vector<Points> containing 4 mesh node Points
-         */
-        void setVertices(std::vector<Point>& new_vertices);
-
-        /**
-         * @brief Set individual vertices of the tetrahedron
-         * @param index Vertex to be set
-         * @param new_vertice New tetrahedron Point
-         */
-        void setVertex(size_t index, Point& new_vertice);
-
-        /**
-         * @brief Get tetrahedron vertice defined by the index
-         * @param index Vertex to be returned
-         */
-        Point getVertex(size_t index);
-
-        /**
-         * @brief Set the electric field on the tetrahedron vertices
-         * @param new_e_field New std::vector<Point> to be assigned to the tetrahedron
-         */
-        void setVerticesField(std::vector<Point>& new_e_field);
-
-        /**
-         * @brief Set the electric field from individual vertices of the tetrahedron
-         * @param index Vertex to be set
-         * @param new_e_field New electric field for the tetrahedron vertex
-         */
-        void setVertexField(size_t index, Point& new_e_field);
-
-        /**
-         * @brief Get the point with the components of the electric field for a individual vertex
-         * @param index Vertex to return electric field Point
-         */
-        Point getVertexProperty(size_t index);
-
-        /**
-         * @brief Get dimension of the element
-         */
-        int getDimension();
-
-        /**
-         * @brief Set dimension of the element
-         */
-        void setDimension(int dimension);
-
-        /**
-         * @brief Get the volume of the tetrahedron
-         */
-        double getVolume();
-
-        /**
-         * @brief Get the distance from vertex to a random point
-         * @param index Vertex for which the distance will be calculated
-         * @param qp Point from which will be calculated the distance
-         */
-        double getDistance(size_t index, Point& qp);
+        MeshElement(size_t dimension,
+                    const std::array<Point, 4>& vertices_tetrahedron,
+                    const std::array<Point, 4>& efield_vertices_tetrahedron)
+            : dimension_(dimension), vertices_(vertices_tetrahedron), e_field_(efield_vertices_tetrahedron) {
+            calculate_volume();
+        }
 
         /**
          * @brief Checks if the tetrahedron is valid for the interpolation
          * @param volume_cut Threshold for the minimum tetrahedron volume
          * @param qp Desired point for the interpolation
          */
-        bool validElement(double volume_cut, Point& qp);
+        bool validElement(double volume_cut, Point& qp) const;
 
         /**
          * @brief Barycentric interpolation implementation
          * @param qp Point where the interpolation is being done
          */
-        Point getObservable(Point& qp);
+        Point getObservable(Point& qp) const;
 
         /**
          * @brief Print tetrahedron information for debugging
+         * @return String describing the mesh element
          */
-        void printElement(Point& qp);
+        std::string print(Point& qp) const;
 
     private:
-        int dimension_{3};
-        std::vector<size_t> indices_{};
-        std::vector<Point> vertices_{};
-        std::vector<Point> e_field_{};
+        /**
+         * @brief Get the distance from vertex to a random point
+         * @param index Vertex for which the distance will be calculated
+         * @param qp Point from which will be calculated the distance
+         */
+        double get_distance(size_t index, Point& qp) const;
+
+        void calculate_volume();
+
+        double get_sub_volume(size_t index, Point& p) const;
+
+        size_t dimension_{3};
+        std::array<Point, 4> vertices_{};
+        std::array<Point, 4> e_field_{};
+
+        double volume_{0};
     };
+
+    /**
+     * @brief Functor class to be used by the for_each_combination algorithm.
+     *
+     * It receives pointers to the point and field vectors and its operator() member is called for every combination of
+     * results found. It constructs a new MeshElement, checks for its validity and returns true to stop the iteration and
+     * false to continue to the next combination of results.
+     */
+    class Combination {
+        const std::vector<Point>* grid_;
+        const std::vector<Point>* field_;
+        Point reference_;
+        Point result_;
+        bool valid_{};
+        double cut_;
+
+        std::array<Point, 4> grid_elements;
+        std::array<Point, 4> field_elements;
+
+    public:
+        /**
+         * @brief constructor for functor
+         * @param  points     Pointer to mesh point vector
+         * @param  field      Pointer to field vector
+         * @param  q          Reference point to interpolate at
+         * @param  volume_cut Volume cut to be used
+         */
+        explicit Combination(const std::vector<Point>* points,
+                             const std::vector<Point>* field,
+                             const Point& q,
+                             const double volume_cut)
+            : grid_(points), field_(field), reference_(q), cut_(volume_cut) {}
+
+        /**
+         * @brief Operator called for each permutation
+         * @param begin First iterator element of current combination
+         * @param end Last iterator element of current combination
+         * @return True if valid mesh element was found, stops the loop, or False if not found, continuing loop through
+         * combinations.
+         */
+        template <class It> bool operator()(It begin, It end) {
+            // Dimensionality is number of iterator elements minus one:
+            size_t dimensions = static_cast<size_t>(end - begin) - 1;
+            size_t idx = 0;
+            for(; begin < end; begin++) {
+                grid_elements[idx] = (*grid_)[*begin];
+                field_elements[idx++] = (*field_)[*begin];
+            }
+
+            LOG(TRACE) << "Constructing element with dim " << dimensions << " at " << reference_;
+            MeshElement element(dimensions, grid_elements, field_elements);
+            valid_ = element.validElement(cut_, reference_);
+            if(valid_) {
+                LOG(DEBUG) << element.print(reference_);
+                result_ = element.getObservable(reference_);
+            }
+
+            return valid_; // Don't break out of the loop if element is invalid
+        }
+
+        /**
+         * @brief Member to check for validity of returned mesh element:
+         * @return True if element is valid and can be used, False if no valid element was found but iteration ended without
+         * result
+         */
+        bool valid() const { return valid_; }
+
+        /**
+         * @brief Member to retrieve interpolated result from valid mesh element
+         * @return Interpolated result from valid mesh element
+         */
+        Point result() const { return result_; }
+    };
+
 } // namespace mesh_converter

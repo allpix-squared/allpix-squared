@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of object for charges in sensor
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -23,6 +23,10 @@ ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const {
     return local_position_;
 }
 
+ROOT::Math::XYZPoint SensorCharge::getGlobalPosition() const {
+    return global_position_;
+}
+
 CarrierType SensorCharge::getType() const {
     return type_;
 }
@@ -33,4 +37,12 @@ unsigned int SensorCharge::getCharge() const {
 
 double SensorCharge::getEventTime() const {
     return event_time_;
+}
+
+void SensorCharge::print(std::ostream& out) const {
+    out << "Type: " << (type_ == CarrierType::ELECTRON ? "\"e\"" : "\"h\"") << "\nCharge: " << charge_ << " e"
+        << "\nLocal Position: (" << local_position_.X() << ", " << local_position_.Y() << ", " << local_position_.Z()
+        << ") mm\n"
+        << "Global Position: (" << global_position_.X() << ", " << global_position_.Y() << ", " << global_position_.Z()
+        << ") mm\n";
 }

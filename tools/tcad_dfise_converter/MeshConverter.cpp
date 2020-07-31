@@ -1,5 +1,3 @@
-#include "MeshConverter.hpp"
-
 #include <algorithm>
 #include <cfloat>
 #include <chrono>
@@ -14,11 +12,7 @@
 #include <utility>
 
 #include <Math/Vector3D.h>
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TGraph2D.h"
-#include "TH1.h"
-#include "TTree.h"
+#include <TTree.h>
 
 #include <Eigen/Eigen>
 
@@ -34,6 +28,8 @@
 #include "DFISEParser.hpp"
 #include "MeshElement.hpp"
 #include "ThreadPool.hpp"
+#include "combinations/combinations.h"
+#include "octree/Octree.hpp"
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
@@ -47,55 +43,6 @@ void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);
-}
-
-void mesh_converter::mesh_plotter(const std::string& grid_file,
-                                  double ss_radius,
-                                  double radius,
-                                  double x,
-                                  double y,
-                                  double z,
-                                  std::vector<mesh_converter::Point> points,
-                                  std::vector<unsigned int> results) {
-    auto tg = new TGraph2D();
-    tg->SetMarkerStyle(20);
-    tg->SetMarkerSize(0.5);
-    tg->SetMarkerColor(kBlack);
-
-    for(auto& point : points) {
-        if(ss_radius != -1) {
-            if((fabs(point.x - x) < radius * ss_radius) && (fabs(point.y - y) < radius * ss_radius) &&
-               (fabs(point.z - z) < radius * ss_radius)) {
-                tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
-            }
-        } else {
-            tg->SetPoint(tg->GetN(), point.x, point.y, point.z);
-        }
-    }
-
-    auto tg1 = new TGraph2D();
-    auto tg2 = new TGraph2D();
-    tg1->SetMarkerStyle(20);
-    tg1->SetMarkerSize(1);
-    tg1->SetMarkerColor(kBlue);
-    tg2->SetMarkerStyle(34);
-    tg2->SetMarkerSize(1);
-    tg2->SetMarkerColor(kRed);
-    tg2->SetPoint(0, x, y, z);
-    for(auto& elem : results) {
-        tg1->SetPoint(tg1->GetN(), points[elem].x, points[elem].y, points[elem].z);
-    }
-
-    std::string root_file_name_out = grid_file + "_INTERPOLATION_POINT_SCREEN_SHOT.root";
-    auto root_output = new TFile(root_file_name_out.c_str(), "RECREATE");
-    auto c = new TCanvas();
-    tg->Draw("p");
-    tg1->Draw("p same");
-    tg2->Draw("p same");
-    c->Write("canvas");
-    root_output->Close();
-
-    LOG(STATUS) << "Mesh screen-shot created. Closing the program.";
 }
 
 int main(int argc, char** argv) {
@@ -199,29 +146,20 @@ int main(int argc, char** argv) {
     allpix::ConfigReader reader(file, conf_file_name);
     allpix::Configuration config = reader.getHeaderConfiguration();
 
-    std::string format = config.get<std::string>("model", "apf");
+    auto format = config.get<std::string>("model", "apf");
     std::transform(format.begin(), format.end(), format.begin(), ::tolower);
     FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
 
-    std::string region = config.get<std::string>("region", "bulk");
-    std::string observable = config.get<std::string>("observable", "ElectricField");
+    auto regions = config.getArray<std::string>("region", {"bulk"});
+    auto observable = config.get<std::string>("observable", "ElectricField");
 
-    const auto initial_radius = config.get<double>("initial_radius", 1);
     const auto radius_step = config.get<double>("radius_step", 0.5);
-    const auto max_radius = config.get<double>("max_radius", 10);
-
-    // Only use a radius threshold if requested
-    const bool threshold_flag = config.has("radius_threshold");
-    const auto radius_threshold = config.get<double>("radius_threshold", -1);
+    const auto max_radius = config.get<double>("max_radius", 50);
 
     const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
-    // Only use index cut if set.
-    const bool index_cut_flag = config.has("index_cut");
-    auto index_cut = config.get<size_t>("index_cut", 999999);
-
     XYZVectorInt divisions;
-    const auto dimension = config.get<int>("dimension", 3);
+    const auto dimension = config.get<size_t>("dimension", 3);
     if(dimension == 2) {
         auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
         divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
@@ -240,16 +178,6 @@ int main(int argc, char** argv) {
     }
 
     const auto mesh_tree = config.get<bool>("mesh_tree", false);
-
-    bool ss_flag = false;
-    const auto ss_radius = config.get<double>("ss_radius", -1);
-    std::vector<int> ss_point = {-1, -1, -1};
-    if(config.has("screen_shot")) {
-        ss_point = config.getArray<int>("screen_shot");
-    }
-    if(ss_point[0] != -1 && ss_point[1] != -1 && ss_point[2] != -1 && dimension == 3) {
-        ss_flag = true;
-    }
 
     // NOTE: this stream should be available for the duration of the logging
     std::ofstream log_file;
@@ -275,7 +203,18 @@ int main(int argc, char** argv) {
         for(auto& reg : region_grid) {
             LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
         }
-        points = region_grid[region];
+
+        // Append all grid regions to the mesh:
+        for(const auto& region : regions) {
+            if(region_grid.find(region) != region_grid.end()) {
+                points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
+            } else {
+                LOG(ERROR) << "Region \"" << region << "\" not found in TCAD mesh";
+                allpix::Log::finish();
+                return 1;
+            }
+        }
+
         if(points.empty()) {
             throw std::runtime_error("Empty grid");
         }
@@ -292,7 +231,6 @@ int main(int argc, char** argv) {
     std::vector<Point> field;
     try {
         auto region_fields = read_electric_field(data_file);
-        field = region_fields[region][observable];
         LOG(INFO) << "Field sizes for all regions and observables:";
         for(auto& reg : region_fields) {
             LOG(INFO) << " " << reg.first << ":";
@@ -300,6 +238,18 @@ int main(int argc, char** argv) {
                 LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
             }
         }
+
+        // Append all field regions to the field vector:
+        for(const auto& region : regions) {
+            if(region_fields.find(region) != region_fields.end() &&
+               region_fields[region].find(observable) != region_fields[region].end()) {
+                field.insert(
+                    field.end(), region_fields[region][observable].begin(), region_fields[region][observable].end());
+            } else {
+                LOG(ERROR) << "Region \"" << region << "\" with observable \"" << observable << "\" not found in TCAD field";
+            }
+        }
+
         if(field.empty()) {
             throw std::runtime_error("Empty observable data");
         }
@@ -387,6 +337,10 @@ int main(int argc, char** argv) {
     const double zstep = (maxz - minz) / static_cast<double>(divisions.z());
     const double cell_volume = xstep * ystep * zstep;
 
+    // Using the minimal cell dimension as initial search radius for the point cloud:
+    const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
+    LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
+
     if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
         LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
                     << rot.at(2) << ")";
@@ -429,191 +383,71 @@ int main(int argc, char** argv) {
     unibn::Octree<Point> octree;
     octree.initialize(points);
 
-    auto mesh_section = [&](double x) {
+    auto mesh_section = [&](double x, double y) {
         allpix::Log::setReportingLevel(log_level);
 
         // New mesh slice
         std::vector<Point> new_mesh;
 
-        // Local index cut used:
-        auto my_index_cut = index_cut;
+        double z = minz + zstep / 2.0;
+        for(int k = 0; k < divisions.z(); ++k) {
+            // New mesh vertex and field
+            Point q(dimension == 2 ? -1 : x, y, z), e;
+            bool valid = false;
 
-        double y = miny + ystep / 2.0;
-        for(int j = 0; j < divisions.y(); ++j) {
-            double z = minz + zstep / 2.0;
-            for(int k = 0; k < divisions.z(); ++k) {
-                Point q, e;
-                if(ss_flag) {
-                    std::map<std::string, int> map;
-                    map.emplace("x", ss_point[0]);
-                    map.emplace("y", ss_point[1]);
-                    map.emplace("z", ss_point[2]);
-                    x = map.find(rot.at(0))->second;
-                    y = map.find(rot.at(1))->second;
-                    z = map.find(rot.at(2))->second;
-                }
-                if(dimension == 2) {
-                    q.x = -1;
-                    q.y = y;
-                    q.z = z; // New mesh vertex
-                    e.x = -1;
-                    e.y = y;
-                    e.z = z;
-                } else {
-                    q.x = x;
-                    q.y = y;
-                    q.z = z; // New mesh vertex
-                    e.x = x;
-                    e.y = y;
-                    e.z = z; // Corresponding, to be interpolated, electric field
-                }
-                bool valid = false;
+            size_t prev_neighbours = 0;
+            double radius = initial_radius;
 
-                size_t prev_neighbours = 0;
-                double radius = initial_radius;
-                size_t index_cut_up;
-                while(radius < max_radius) {
-                    LOG(DEBUG) << "Search radius: " << radius;
-                    // Calling octree neighbours search and sorting the results list with the closest neighbours first
-                    std::vector<unsigned int> results;
-                    std::vector<unsigned int> results_high;
-                    octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results_high);
-                    std::sort(results_high.begin(), results_high.end(), [&](unsigned int a, unsigned int b) {
-                        return unibn::L2Distance<Point>::compute(points[a], q) <
-                               unibn::L2Distance<Point>::compute(points[b], q);
-                    });
+            while(radius < max_radius) {
+                LOG(DEBUG) << "Search radius: " << radius;
+                // Calling octree neighbours search and sorting the results list with the closest neighbours first
+                std::vector<unsigned int> results;
+                octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
+                LOG(DEBUG) << "Number of vertices found: " << results.size();
 
-                    if(threshold_flag) {
-                        size_t results_size = results_high.size();
-                        int count = 0;
-                        for(size_t index = 0; index < results_size; index++) {
-                            if(unibn::L2Distance<Point>::compute(points[results_high[index]], q) < radius_threshold) {
-                                count++;
-                                continue;
-                            }
-                            results.push_back(results_high[index]);
-                        }
-                        LOG(DEBUG) << "Applying radius threshold of " << radius_threshold << std::endl
-                                   << "Removing " << count << " of " << results_size;
-                    } else {
-                        results = results_high;
-                    }
-
-                    // If after a radius step no new neighbours are found, go to the next radius step
-                    if(results.size() <= prev_neighbours || results.empty()) {
-                        prev_neighbours = results.size();
-                        LOG(WARNING) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
-                        radius = radius + radius_step;
-                        continue;
-                    }
-
-                    if(results.size() < 4) {
-                        LOG(WARNING) << "Incomplete mesh element found for radius " << radius << std::endl
-                                     << "Increasing the readius (setting a higher initial radius may help)";
-                        radius = radius + radius_step;
-                        continue;
-                    }
-
-                    LOG(DEBUG) << "Number of vertices found: " << results.size();
-
-                    if(ss_flag) {
-                        mesh_plotter(grid_file, ss_radius, radius, x, y, z, points, results);
-                        throw std::runtime_error("aborted interpolation, mesh point snapshot taken");
-                    }
-
-                    // Finding tetrahedrons
-                    Eigen::Matrix4d matrix;
-                    size_t num_nodes_element = 0;
-                    if(dimension == 3) {
-                        num_nodes_element = 4;
-                    }
-                    if(dimension == 2) {
-                        num_nodes_element = 3;
-                    }
-                    std::vector<Point> element_vertices;
-                    std::vector<Point> element_vertices_field;
-
-                    std::vector<int> bitmask(num_nodes_element, 1);
-                    bitmask.resize(results.size(), 0);
-                    std::vector<size_t> index;
-
-                    if(!index_cut_flag) {
-                        my_index_cut = results.size();
-                    }
-                    index_cut_up = my_index_cut;
-                    while(index_cut_up <= results.size()) {
-                        do {
-                            valid = false;
-                            index.clear();
-                            element_vertices.clear();
-                            element_vertices_field.clear();
-                            // print integers and permute bitmask
-                            for(size_t idk = 0; idk < results.size(); ++idk) {
-                                if(bitmask[idk] != 0) {
-                                    index.push_back(idk);
-                                    element_vertices.push_back(points[results[idk]]);
-                                    element_vertices_field.push_back(field[results[idk]]);
-                                }
-                                if(index.size() == num_nodes_element) {
-                                    break;
-                                }
-                            }
-
-                            bool index_flag = false;
-                            for(size_t ttt = 0; ttt < num_nodes_element; ttt++) {
-                                if(index[ttt] > index_cut_up) {
-                                    index_flag = true;
-                                    break;
-                                }
-                            }
-                            if(index_flag) {
-                                continue;
-                            }
-
-                            if(dimension == 3) {
-                                LOG(TRACE) << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", "
-                                           << index[2] << ", " << index[3];
-                            }
-                            if(dimension == 2) {
-                                LOG(TRACE)
-                                    << "Parsing neighbors [index]: " << index[0] << ", " << index[1] << ", " << index[2];
-                            }
-
-                            MeshElement element(dimension, index, element_vertices, element_vertices_field);
-                            valid = element.validElement(volume_cut, q);
-                            if(!valid) {
-                                continue;
-                            }
-                            element.printElement(q);
-                            e = element.getObservable(q);
-                            break;
-                        } while(std::prev_permutation(bitmask.begin(), bitmask.end()));
-
-                        if(valid) {
-                            break;
-                        }
-
-                        LOG(DEBUG) << "All combinations tried up to index " << index_cut_up
-                                   << " done. Increasing the index cut.";
-                        index_cut_up = index_cut_up + my_index_cut;
-                    }
-
-                    if(valid) {
-                        break;
-                    }
-
-                    LOG(DEBUG) << "All combinations tried. Increasing the radius.";
+                // If after a radius step no new neighbours are found, go to the next radius step
+                if(results.size() <= prev_neighbours || results.empty()) {
+                    prev_neighbours = results.size();
+                    LOG(DEBUG) << "No (new) neighbour found with radius " << radius << ". Increasing search radius.";
                     radius = radius + radius_step;
+                    continue;
                 }
 
-                if(!valid) {
-                    throw std::runtime_error("Couldn't interpolate new mesh point, the grid might be too irregular");
+                // If we have less than N close neighbors, no full mesh element can be formed. Increase radius.
+                if(results.size() < (dimension == 3 ? 4 : 3)) {
+                    LOG(DEBUG) << "Incomplete mesh element found for radius " << radius << ", increasing radius";
+                    radius = radius + radius_step;
+                    continue;
                 }
 
-                new_mesh.push_back(e);
-                z += zstep;
+                // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
+                // valid mesh element and also ensures that this is the one with the smallest volume.
+                std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
+                    return unibn::L2Distance<Point>::compute(points[a], q) < unibn::L2Distance<Point>::compute(points[b], q);
+                });
+
+                // Finding tetrahedrons by checking all combinations of N elements, starting with closest to reference point
+                auto res = for_each_combination(results.begin(),
+                                                results.begin() + (dimension == 3 ? 4 : 3),
+                                                results.end(),
+                                                Combination(&points, &field, q, volume_cut));
+                valid = res.valid();
+                if(valid) {
+                    e = res.result();
+                    break;
+                }
+
+                radius = radius + radius_step;
+                LOG(DEBUG) << "All combinations tried. Increasing search radius to " << radius;
             }
-            y += ystep;
+
+            if(!valid) {
+                throw std::runtime_error("Could not find valid volume element. Consider to increase max_radius to include "
+                                         "more mesh points in the search");
+            }
+
+            new_mesh.push_back(e);
+            z += zstep;
         }
 
         return new_mesh;
@@ -625,13 +459,25 @@ int main(int argc, char** argv) {
     std::vector<Point> e_field_new_mesh;
 
     try {
-        ThreadPool pool(num_threads, log_level);
+        // clang-format off
+        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
+            // clang-format on
+            // Initialize the threads to the same log level and format as the master setting
+            allpix::Log::setReportingLevel(log_level);
+            allpix::Log::setFormat(log_format);
+        };
+
+        ThreadPool pool(num_threads, init_function);
         std::vector<std::future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;
-        // Loop over x coordinate, add tasks for each coorinate to the queue
+        // Loop over x coordinate, add tasks for each coordinate to the queue
         for(int i = 0; i < divisions.x(); ++i) {
-            mesh_futures.push_back(pool.submit(mesh_section, x));
+            double y = miny + ystep / 2.0;
+            for(int j = 0; j < divisions.y(); ++j) {
+                mesh_futures.push_back(pool.submit(mesh_section, x, y));
+                y += ystep;
+            }
             x += xstep;
         }
 
@@ -640,11 +486,11 @@ int main(int argc, char** argv) {
         for(auto& mesh_future : mesh_futures) {
             auto mesh_slice = mesh_future.get();
             e_field_new_mesh.insert(e_field_new_mesh.end(), mesh_slice.begin(), mesh_slice.end());
-            LOG_PROGRESS(INFO, "meshing") << "Interpolating new mesh: " << (100 * mesh_slices_done / mesh_futures.size())
-                                          << "%";
+            LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << mesh_slices_done << " of " << mesh_futures.size()
+                                    << ", " << (100 * mesh_slices_done / mesh_futures.size()) << "%";
             mesh_slices_done++;
         }
-        pool.shutdown();
+        pool.destroy();
     } catch(std::runtime_error& e) {
         LOG(FATAL) << "Failed to interpolate new mesh:\n" << e.what();
         allpix::Log::finish();
@@ -690,7 +536,8 @@ int main(int argc, char** argv) {
     std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
     allpix::FieldWriter<double> field_writer(quantity);
-    field_writer.write_file(field_data, init_file_name, file_type, units);
+    field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
+    LOG(STATUS) << "New mesh written to file \"" << init_file_name << "\"";
 
     end = std::chrono::system_clock::now();
     elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();

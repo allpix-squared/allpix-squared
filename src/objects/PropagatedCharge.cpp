@@ -1,11 +1,13 @@
 /**
  * @file
  * @brief Implementation of propagated charge object
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
+
+#include <numeric>
 
 #include "PropagatedCharge.hpp"
 
@@ -24,6 +26,26 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
     }
+}
+
+PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
+                                   ROOT::Math::XYZPoint global_position,
+                                   CarrierType type,
+                                   std::map<Pixel::Index, Pulse> pulses,
+                                   double event_time,
+                                   const DepositedCharge* deposited_charge)
+    : PropagatedCharge(std::move(local_position),
+                       std::move(global_position),
+                       type,
+                       std::accumulate(pulses.begin(),
+                                       pulses.end(),
+                                       0u,
+                                       [](const unsigned int prev, const auto& elem) {
+                                           return prev + static_cast<unsigned int>(std::abs(elem.second.getCharge()));
+                                       }),
+                       event_time,
+                       deposited_charge) {
+    pulses_ = std::move(pulses);
 }
 
 /**
@@ -50,4 +72,13 @@ const MCParticle* PropagatedCharge::getMCParticle() const {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
     return mc_particle;
+}
+
+std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
+    return pulses_;
+}
+
+void PropagatedCharge::print(std::ostream& out) const {
+    out << "--- Propagated charge information\n";
+    SensorCharge::print(out);
 }

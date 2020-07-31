@@ -15,13 +15,14 @@ MACRO(_allpix_module_define_common name)
     # Build all modules by default if not specified otherwise
     OPTION(BUILD_${_allpix_module_dir} "Build module in directory ${_allpix_module_dir}?" ON)
 
+    # Put message
+    MESSAGE(STATUS "Building module " ${BUILD_${_allpix_module_dir}} "\t- " ${_allpix_module_dir})
+
     # Quit the file if not building this file or all modules
     IF(NOT (BUILD_${_allpix_module_dir} OR BUILD_ALL_MODULES))
         RETURN()
     ENDIF()
 
-    # Put message
-    MESSAGE( STATUS "Building module: " ${_allpix_module_dir} )
 
     # Prepend with the allpix module prefix to create the name of the module
     SET(${name} "AllpixModule${_allpix_module_dir}")
@@ -56,9 +57,18 @@ Create the header or provide the alternative class name as first argument")
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_NAME=${_allpix_module_class})
     TARGET_COMPILE_DEFINITIONS(${${name}} PRIVATE ALLPIX_MODULE_HEADER="${_allpix_module_class}.hpp")
 
-    TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
-    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
-    SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/Module.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+    # If modules are build externally, the path to the dynamic implementation changes and we need to link differently:
+    IF(${ALLPIX_MODULE_EXTERNAL})
+        TARGET_SOURCES(${${name}} PRIVATE "${ALLPIX_INCLUDE_DIR}/core/module/dynamic_module_impl.cpp")
+        SET_PROPERTY(SOURCE "${ALLPIX_INCLUDE_DIR}/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+    ELSE()
+        TARGET_SOURCES(${${name}} PRIVATE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp")
+        SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/dynamic_module_impl.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+        SET_PROPERTY(SOURCE "${PROJECT_SOURCE_DIR}/src/core/module/Module.cpp" APPEND PROPERTY OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${_allpix_module_class}.hpp")
+
+        # Add to the interface library for devices:
+        TARGET_LINK_LIBRARIES(Modules INTERFACE ${${name}})
+    ENDIF()
 ENDMACRO()
 
 # Put this at the start of every unique module
@@ -89,15 +99,68 @@ MACRO(allpix_module_sources name)
     # Add the library
     TARGET_SOURCES(${name} PRIVATE ${_list_var})
 
-    # Link the standard allpix libraries
-    TARGET_LINK_LIBRARIES(${name} ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
+    # Link the standard allpix libraries, either directly or via targets
+    IF(${ALLPIX_MODULE_EXTERNAL})
+        TARGET_LINK_LIBRARIES(${name} Allpix::AllpixCore Allpix::AllpixObjects)
+    ELSE()
+        TARGET_LINK_LIBRARIES(${name} ${ALLPIX_LIBRARIES} ${ALLPIX_DEPS_LIBRARIES})
+    ENDIF()
 ENDMACRO()
 
 # Provide default install target for the module
 MACRO(allpix_module_install name)
     INSTALL(TARGETS ${name}
         COMPONENT modules
+        EXPORT Allpix
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+ENDMACRO()
+
+# Macro to set up Eigen3:: targets
+MACRO(ALLPIX_SETUP_EIGEN_TARGETS)
+
+    IF(NOT TARGET Eigen3::Eigen)
+        ADD_LIBRARY(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+        SET_TARGET_PROPERTIES(Eigen3::Eigen
+            PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR}
+        )
+    ENDIF()
+
+ENDMACRO()
+
+# Macro to set up ROOT:: targets so that we can use the same code for root 6.8 and for root 6.10 and beyond
+# Inpsired by CMake build system of DD4Hep
+MACRO(ALLPIX_SETUP_ROOT_TARGETS)
+
+    #ROOT CXX Flags are a string with quotes, not a list, so we need to convert to a list...
+    STRING(REPLACE " " ";" ALLXPIX_ROOT_CXX_FLAGS ${ROOT_CXX_FLAGS})
+
+    IF(NOT TARGET ROOT::Core)
+        #in ROOT before 6.10 there is no ROOT namespace, so we create ROOT::Core ourselves
+        ADD_LIBRARY(ROOT::Core INTERFACE IMPORTED GLOBAL)
+        SET_TARGET_PROPERTIES(ROOT::Core
+            PROPERTIES
+            INTERFACE_COMPILE_OPTIONS "${ALLXPIX_ROOT_CXX_FLAGS}"
+            INTERFACE_INCLUDE_DIRECTORIES ${ROOT_INCLUDE_DIRS}
+        )
+        # there is also no dependency between the targets
+        TARGET_LINK_LIBRARIES(ROOT::Core INTERFACE Core)
+        # we list here the targets we use, as later versions of root have the namespace, we do not have to to this for ever
+        FOREACH(LIB Geom GenVector Graf3d RIO MathCore Tree Hist GuiBld)
+            IF(TARGET ${LIB})
+                ADD_LIBRARY(ROOT::${LIB} INTERFACE IMPORTED GLOBAL)
+                TARGET_LINK_LIBRARIES(ROOT::${LIB} INTERFACE ${LIB} ROOT::Core)
+            ENDIF()
+        ENDFOREACH()
+    ELSEIF(${ROOT_VERSION} VERSION_GREATER_EQUAL 6.12 AND ${ROOT_VERSION} VERSION_LESS 6.14)
+        # Root 6.12 exports ROOT::Core, but does not assign include directories to the target
+        SET_TARGET_PROPERTIES(ROOT::Core
+            PROPERTIES
+            INTERFACE_COMPILE_OPTIONS "${ALLXPIX_ROOT_CXX_FLAGS}"
+            INTERFACE_INCLUDE_DIRECTORIES ${ROOT_INCLUDE_DIRS}
+        )
+    ENDIF()
+
 ENDMACRO()

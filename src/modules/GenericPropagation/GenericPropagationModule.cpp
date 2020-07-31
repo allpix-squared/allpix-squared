@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of generic charge propagation module
  * @remarks Based on code from Paul Schuetze
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -329,7 +329,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
 
         // Create color table
-        TColor* colors[80];
+        TColor* colors[80]; // NOLINT
         for(int i = 20; i < 100; ++i) {
             auto color_idx = TColor::GetFreeColorIndex();
             colors[i - 20] = new TColor(color_idx,
@@ -674,16 +674,16 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     };
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
-    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_noB =
-        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
+        [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         return static_cast<int>(type) * carrier_mobility(efield.norm()) * efield;
     };
 
-    std::function<Eigen::Vector3d(double, Eigen::Vector3d)> carrier_velocity_withB =
-        [&](double, Eigen::Vector3d cur_pos) -> Eigen::Vector3d {
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
+        [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 

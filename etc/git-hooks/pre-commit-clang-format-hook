@@ -8,7 +8,7 @@
 ##################################################################
 # SETTINGS
 # set path to clang-format binary
-for bin in "clang-format-6.0" "clang-format-5.0" "clang-format-4.0" "clang-format";
+for bin in "clang-format-8" "clang-format";
 do
     CLANG_FORMAT=$(which "$bin")
     [ -n "$CLANG_FORMAT" ] && break
@@ -60,6 +60,17 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
     exit 1
 fi
 
+if ! "$CLANG_FORMAT" --version | grep 'clang-format version 8\.0' >/dev/null 2>/dev/null; then
+    # Be indulgent with OSX users, no 4.0 seems to be available...
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        printf "Error: clang-format version 8.0 is required (exactly), cannot check format!\n"
+        exit 1
+    else
+        printf "Warning: clang-format version 8.0 is required, formatting might be incompatible!\n"
+    fi
+fi
+
+
 # create one patch containing all changes to the files
 git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
 do
@@ -68,18 +79,18 @@ do
     if ! matches_extension "$file"; then
         continue;
     fi
-    
+
     # temporary save the staged file to work with this instead of the real file
     git show :$file > $staged_file
-    
+
     # clang-format our sourcefile, create a patch and append it to our $patch
     cat "$staged_file" | "$CLANG_FORMAT" -assume-filename=$file -style=file | \
         git diff --no-index -- "$staged_file" - | \
         sed -e "s|--- a$staged_file|--- a/$file|" | \
-        sed -e "s|+++ b/-|+++ b/$file|" >> "$patch" 
-        
-    # also make a colored patch for displaying if needed    
-    if [ "$VERBOSE" -ne 0 ] ; then   
+        sed -e "s|+++ b/-|+++ b/$file|" >> "$patch"
+
+    # also make a colored patch for displaying if needed
+    if [ "$VERBOSE" -ne 0 ] ; then
         cat "$staged_file" | "$CLANG_FORMAT" -assume-filename=$file -style=file | \
             git diff --color --no-index -- "$staged_file" - | \
             sed -e "s|--- a$staged_file|--- a/$file|" | \
@@ -89,7 +100,7 @@ done
 
 # if no patch has been generated all is ok, clean up the file stub and exit
 if [ ! -s "$patch" ] ; then
-    if [ "$VERBOSE" -ne 0 ] ; then 
+    if [ "$VERBOSE" -ne 0 ] ; then
         printf "Changes in this commit comply with the clang-format rules.\n"
     fi
     rm -f "$patch"
@@ -108,7 +119,7 @@ if [ $? -ne 0 ] ; then
     rm -f "$patch";
     rm -f "$patch_color";
     rm -f "$staged_file"
-    exit 1; 
+    exit 1;
 fi
 
 # a patch has been created, let the user know about it
@@ -118,24 +129,24 @@ if [ "$VERBOSE" -ne 0 ] ; then
     printf "The following differences were found between the code to commit "
     printf "and the clang-format rules:\n"
     cat "$patch_color"
-    printf "\n" 
+    printf "\n"
 fi
 
-# assign stdin back to keyboard 
+# assign stdin back to keyboard
 exec < /dev/tty
 
 # ask what we want to do with the patch
 while true; do
     read -p "Do you want to install the patch (yes - commit with patch, no - do not commit)? [y/n] " yn
         case $yn in
-            [Yy] ) 
-                git apply --index $patch; 
+            [Yy] )
+                git apply --index $patch;
                 rm -f "$patch";
                 rm -f "$patch_color";
                 rm -f "$staged_file"
                 exit 0
             ;;
-            [Nn] ) 
+            [Nn] )
                 printf "Changes are not applied! You can apply these changes manually with:\n";
                 printf "  git apply --index $patch\n";
                 printf "  (needs to be called from the root directory of your repository)\n";

@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of logger
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -38,7 +38,7 @@ std::mutex DefaultLogger::write_mutex_;
 DefaultLogger::DefaultLogger() : exception_count_(get_uncaught_exceptions(true)) {}
 
 /**
- * The output is written to the streams as soon as the logger gets out-of-scope and desctructed. The destructor checks
+ * The output is written to the streams as soon as the logger gets out-of-scope and destructed. The destructor checks
  * specifically if an exception is thrown while output is written to the stream. In that case the log stream will not be
  * forwarded to the output streams and the message will be discarded.
  */
@@ -48,7 +48,7 @@ DefaultLogger::~DefaultLogger() {
         return;
     }
 
-    // TODO [doc] any extra exceptions here need to be catched
+    // TODO [doc] any extra exceptions here need to be caught
 
     // Get output string
     std::string out(os.str());

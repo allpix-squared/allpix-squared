@@ -33,7 +33,6 @@ int main(int argc, const char* argv[]) {
     }
 
     // Parse arguments
-    FileType format_from;
     FileType format_to;
     std::string file_input;
     std::string file_output;
@@ -49,10 +48,6 @@ int main(int argc, const char* argv[]) {
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
-        } else if(strcmp(argv[i], "--from") == 0 && (i + 1 < argc)) {
-            std::string format = std::string(argv[++i]);
-            std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-            format_from = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
         } else if(strcmp(argv[i], "--to") == 0 && (i + 1 < argc)) {
             std::string format = std::string(argv[++i]);
             std::transform(format.begin(), format.end(), format.begin(), ::tolower);
@@ -79,7 +74,6 @@ int main(int argc, const char* argv[]) {
         std::cout << "Usage: field_converter <parameters>" << std::endl;
         std::cout << std::endl;
         std::cout << "Parameters (all mandatory):" << std::endl;
-        std::cout << "  --from <format>  file format of the input file" << std::endl;
         std::cout << "  --to <format>    file format of the output file" << std::endl;
         std::cout << "  --input <file>   input field file" << std::endl;
         std::cout << "  --output <file>  output field file" << std::endl;
@@ -96,11 +90,10 @@ int main(int argc, const char* argv[]) {
 
         FieldParser<double> field_parser(quantity);
         LOG(STATUS) << "Reading input file from " << file_input;
-        auto field_data =
-            field_parser.get_by_file_name(file_input, format_from, (format_from == FileType::INIT ? units : ""));
+        auto field_data = field_parser.getByFileName(file_input, units);
         FieldWriter<double> field_writer(quantity);
         LOG(STATUS) << "Writing output file to " << file_output;
-        field_writer.write_file(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));
+        field_writer.writeFile(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));
     } catch(std::exception& e) {
         LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
         return_code = 127;

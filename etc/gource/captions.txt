@@ -21,3 +21,27 @@
 1541489096|MR!168: Scaling and Shifting of Electric Fields
 1542358071|MR!150: Detector Model Wrapper and Overlap Check
 1542791646|Stable Release: Allpix Squared v1.3
+1543587520|MR!180: Change detector parameters from command line
+1543594790|MR!173: Generalized handling of field data
+1548332344|MR!188: Introduce "Coding Conventions" section to manual
+1549967410|MR!194: New module DepositionPointCharge
+1551852439|MR!197: New field data file format
+1551958922|MR!198: Allow depletion from sensor backside
+1553160023|MR!203: Provide full Proteus configuration
+1553246487|MR!200: Improved TCAD Mesh Converter tool
+1560417948|MR!216: Automatically Deduce File Type for Field Data
+1560799445|MR!214: Implement transient simulation of signal formation
+1561108178|MR!221: Allow more freedom in Geant4 macro usage
+1562598460|Stable Release: Allpix Squared v1.4
+1567433418|MR!230: Update dependencies in Docker image
+1568275832|MR!233: Overhaul of CorryvreckanWriter Module
+1570959485|MR!242: Modernize CMake and linking dependencies
+1578498225|MR!260: Make setup script zsh compatible
+1580730673|MR!267: Switch Continuous Integration to LCG
+1583504309|MR!277: MCParticle provides reference point
+1584091156|MR!195: New module DepositionReader
+1584973047|MR!292: Update macOS CI to Catalina and LCG View
+1585133272|MR!274: Rework Behavior of PulseTransfer Module
+1585551840|MR!278: New module DatabaseWriter to Store Data in PostgreSQL
+1586440834|MR!306: Add Alpide sensor model
+1586861106|Stable Release: Allpix Squared v1.5

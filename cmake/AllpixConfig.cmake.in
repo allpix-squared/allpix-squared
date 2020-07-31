@@ -1,0 +1,27 @@
+@PACKAGE_INIT@
+
+SET_AND_CHECK(ALLPIX_INCLUDE_DIR "@PACKAGE_ALLPIX_INCLUDE_DIR@")
+SET_AND_CHECK(ALLPIX_LIBRARY_DIR "@PACKAGE_ALLPIX_LIBRARY_DIR@")
+
+INCLUDE("${CMAKE_CURRENT_LIST_DIR}/AllpixConfigTargets.cmake")
+
+SET(ALLPIX_MODULE_EXTERNAL TRUE)
+INCLUDE("${CMAKE_CURRENT_LIST_DIR}/AllpixMacros.cmake")
+
+# Prepare ROOT Targets if necessary:
+ALLPIX_SETUP_ROOT_TARGETS()
+
+# Check for presence of required components:
+foreach(_comp ${Allpix_FIND_COMPONENTS})
+  find_library(Allpix_${_comp}_LIBRARY ${_comp} HINTS ${ALLPIX_LIBRARY_DIR})
+  if(Allpix_${_comp}_LIBRARY)
+    mark_as_advanced(Allpix_${_comp}_LIBRARY)
+    list(APPEND Allpix_LIBRARIES ${Allpix_${_comp}_LIBRARY})
+    SET(Allpix_${_comp}_FOUND TRUE)
+  endif()
+endforeach()
+if(Allpix_LIBRARIES)
+  list(REMOVE_DUPLICATES Allpix_LIBRARIES)
+endif()
+
+CHECK_REQUIRED_COMPONENTS(Allpix)

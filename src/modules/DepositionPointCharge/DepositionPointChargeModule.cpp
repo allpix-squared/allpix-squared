@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of a module to deposit charges at a specific point
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -25,23 +25,40 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
+    // Seed the random generator with the global seed
+    random_generator_.seed(getRandomSeed());
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
-    config_.setDefault("model", "point");
+    config_.setDefault("source_type", "point");
+    config_.setDefault("model", "fixed");
+
+    // Read type:
+    auto type = config_.get<std::string>("source_type");
+    std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+    if(type == "point") {
+        type_ = SourceType::POINT;
+    } else if(type == "mip") {
+        type_ = SourceType::MIP;
+    } else {
+        throw InvalidValueError(config_, "source_type", "Invalid deposition type, only 'point' and 'mip' are supported.");
+    }
 
     // Read model
     auto model = config_.get<std::string>("model");
     std::transform(model.begin(), model.end(), model.begin(), ::tolower);
-    if(model == "point") {
-        model_ = DepositionModel::POINT;
+    if(model == "fixed") {
+        model_ = DepositionModel::FIXED;
     } else if(model == "scan") {
         model_ = DepositionModel::SCAN;
-    } else if(model == "mip") {
-        model_ = DepositionModel::MIP;
+    } else if(model == "spot") {
+        model_ = DepositionModel::SPOT;
+        spot_size_ = config.get<double>("spot_size");
     } else {
-        throw InvalidValueError(config_, "model", "Invalid deposition model, only 'point', 'scan' and `mip` are supported.");
+        throw InvalidValueError(
+            config_, "model", "Invalid deposition model, only 'fixed', 'scan' and 'spot' are supported.");
     }
 }
 
@@ -49,73 +66,120 @@ void DepositionPointChargeModule::init() {
 
     auto model = detector_->getModel();
 
-    carriers_ = config_.get<unsigned int>("number_of_charges");
+    // Set up the different source types
+    if(type_ == SourceType::MIP) {
+        // Calculate voxel size:
+        auto granularity = config_.get<unsigned int>("number_of_steps");
+        step_size_z_ = model->getSensorSize().z() / granularity;
+
+        // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
+        carriers_ = static_cast<unsigned int>(80000 * step_size_z_);
+        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
+                  << carriers_ << " e/h pairs per step";
+    } else {
+        carriers_ = config_.get<unsigned int>("number_of_charges");
+    }
+
+    // Set up the different scan methods
     if(model_ == DepositionModel::SCAN) {
         // Get the config manager and retrieve total number of events:
         ConfigManager* conf_manager = getConfigManager();
         auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
-        root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
-        if(events != root_ * root_ * root_) {
-            LOG(WARNING) << "Number of events is no perfect cube, pixel cell volume cannot fully be covered in scan. "
-                         << "Closest cube is " << root_ * root_ * root_;
+
+        // Scan with points required 3D scanning, scan with MIPs only 2D:
+        if(type_ == SourceType::MIP) {
+            root_ = static_cast<unsigned int>(std::round(std::sqrt(events)));
+            if(events != root_ * root_) {
+                LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
+                             << "Closest square is " << root_ * root_;
+            }
+            // Calculate voxel size:
+            voxel_ = ROOT::Math::XYZVector(
+                model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
+        } else {
+            root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
+            if(events != root_ * root_ * root_) {
+                LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
+                             << "Closest cube is " << root_ * root_ * root_;
+            }
+            // Calculate voxel size:
+            voxel_ = ROOT::Math::XYZVector(
+                model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
         }
-
-        // Calculate voxel size:
-        voxel_ = ROOT::Math::XYZVector(
-            model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
         LOG(INFO) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
-    } else if(model_ == DepositionModel::MIP) {
-        // Calculate voxel size:
-        auto granularity = config_.get<unsigned int>("number_of_steps");
-        voxel_ = ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / granularity);
-
-        // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
-        carriers_ = static_cast<unsigned int>(80000 * voxel_.z());
-        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(voxel_.z(), {"um", "mm"}) << ", depositing "
-                  << carriers_ << " e/h pairs per step";
     }
 }
 
 void DepositionPointChargeModule::run(unsigned int event) {
 
-    if(model_ == DepositionModel::MIP) {
-        DepositLine(event);
+    ROOT::Math::XYZPoint position;
+    auto model = detector_->getModel();
+
+    auto get_position = [&]() {
+        if(config_.getArray<double>("position").size() == 2) {
+            auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
+            return ROOT::Math::XYZPoint(tmp_pos.x(), tmp_pos.y(), 0);
+        } else {
+            return config_.get<ROOT::Math::XYZPoint>("position");
+        }
+    };
+
+    if(model_ == DepositionModel::FIXED) {
+        // Fixed position as read from the configuration:
+        position = get_position();
+    } else if(model_ == DepositionModel::SCAN) {
+        // Center the volume to be scanned in the center of the sensor,
+        // reference point is lower left corner of one pixel volume
+        auto ref = config_.get<ROOT::Math::XYZVector>("position") + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+                   ROOT::Math::XYZVector(
+                       model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
+        LOG(DEBUG) << "Reference: " << ref;
+        position = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
+                                        voxel_.y() * (((event - 1) / root_) % root_),
+                                        voxel_.z() * (((event - 1) / root_ / root_) % root_)) +
+                   ref;
     } else {
-        DepositPoint(event);
+        // Calculate random offset from configured position
+        auto shift = [&](auto size) {
+            double dx = std::normal_distribution<double>(0, size)(random_generator_);
+            double dy = std::normal_distribution<double>(0, size)(random_generator_);
+            double dz = std::normal_distribution<double>(0, size)(random_generator_);
+            return ROOT::Math::XYZVector(dx, dy, dz);
+        };
+
+        // Spot around the configured position
+        position = get_position() + shift(config_.get<double>("spot_size"));
+    }
+
+    // Create charge carriers at requested position
+    if(type_ == SourceType::MIP) {
+        DepositLine(position);
+    } else {
+        DepositPoint(position);
     }
 }
 
-void DepositionPointChargeModule::DepositPoint(unsigned int event) {
+void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
 
-    // Local and global position of the MCParticle
-    ROOT::Math::XYZPoint position_local;
-    if(model_ == DepositionModel::SCAN) {
-        auto model = detector_->getModel();
-        // Center the volume to be scanned in the center of the sensor,
-        // reference point is lower left corner of one pixel volume
-        auto ref =
-            model->getGridSize() / 2.0 - ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0);
-        position_local = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
-                                              voxel_.y() * (((event - 1) / root_) % root_),
-                                              voxel_.z() * (((event - 1) / root_ / root_) % root_)) +
-                         ref;
-    } else {
-        position_local = config_.get<ROOT::Math::XYZPoint>("position");
+    LOG(DEBUG) << "Position (local coordinates): " << Units::display(position, {"um", "mm"});
+    // Cross-check calculated position to be within sensor:
+    if(!detector_->isWithinSensor(position)) {
+        LOG(DEBUG) << "Requested position is outside active sensor volume.";
+        return;
     }
 
-    LOG(DEBUG) << "Position (local coordinates): " << Units::display(position_local, {"um", "mm"});
-    auto position_global = detector_->getGlobalPosition(position_local);
+    auto position_global = detector_->getGlobalPosition(position);
 
     // Start and stop position is the same for the MCParticle
-    mcparticles.emplace_back(position_local, position_global, position_local, position_global, -1, 0.);
+    mcparticles.emplace_back(position, position_global, position, position_global, -1, 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
 
-    charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
-    charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
+    charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
+    charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
     LOG(DEBUG) << "Deposited " << carriers_ << " charge carriers of both types at global position "
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
@@ -126,18 +190,17 @@ void DepositionPointChargeModule::DepositPoint(unsigned int event) {
     messenger_->dispatchMessage(this, mcparticle_message);
 }
 
-void DepositionPointChargeModule::DepositLine(unsigned int) {
+void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
     auto model = detector_->getModel();
 
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
 
-    ROOT::Math::XYPoint position;
-    if(config_.getArray<double>("position").size() == 2) {
-        position = config_.get<ROOT::Math::XYPoint>("position");
-    } else {
-        position = static_cast<ROOT::Math::XYPoint>(config_.get<ROOT::Math::XYZPoint>("position"));
+    // Cross-check calculated position to be within sensor:
+    if(!detector_->isWithinSensor(ROOT::Math::XYZPoint(position.x(), position.y(), 0))) {
+        LOG(DEBUG) << "Requested position is outside active sensor volume.";
+        return;
     }
 
     // Start and end position of MCParticle:
@@ -154,7 +217,7 @@ void DepositionPointChargeModule::DepositLine(unsigned int) {
     // Deposit the charge carriers:
     auto position_local = start_local;
     while(position_local.z() < model->getSensorSize().z() / 2.0) {
-        position_local += voxel_;
+        position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 
         charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));

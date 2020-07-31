@@ -31,9 +31,8 @@ namespace mesh_converter {
     // Simple point class to store data
     class Point {
     public:
-        Point() = default;
-        Point(double px, double py) : x(px), y(py) {}
-        Point(double px, double py, double pz) : x(px), y(py), z(pz) {}
+        Point() noexcept = default;
+        Point(double px, double py, double pz = 0) noexcept : x(px), y(py), z(pz) {}
 
         double x{0}, y{0}, z{0};
 

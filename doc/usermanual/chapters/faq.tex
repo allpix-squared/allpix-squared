@@ -20,7 +20,7 @@ To run it on a single detector, one should add a parameter \parameter{name} spec
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 [ElectricFieldReader]
 name = "dut"
-model = "init"
+model = "mesh"
 file_name = "../example_electric_field.init"
 \end{minted}
 \item[How do I run a module only for a specific detector type?]
@@ -120,6 +120,82 @@ for(auto& mc_particle : my_mc_particles) {
 \end{minted}
 
 A similar function is used e.g.\ in the DetectorHistogrammer module to filter primary particles and create position-resolved graphs.
+\item[How do I access data stored in a file produced with the ROOTObjectWriter from an analysis script?]
+\apsq uses ROOT trees to directly store the relevant \CPP objects as binary data in the file. This retains all information present during the simulation run, including relations between different objects such as assignment of Monte Carlo particles.
+In order to read such a data file in an analysis script, the relevant \CPP library as well as its header have to be loaded.
+
+In ROOT this can be done interactively by loading a data file, the necessary shared library objects and a macro for the analysis:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{bash}
+$ root -l data_file.root
+root [1] .L ~/path/to/your/allpix-squared/lib/libAllpixObjects.so
+root [2] .L analysisMacro.C+
+root [3] readTree(_file0, "detector1")
+\end{minted}
+
+A simple macro for reading DepositedCharges from a file and displaying their position is presented below:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+#include <TFile.h>
+#include <TTree.h>
+
+// FIXME: adapt path to the include file of APSQ installation
+#include "/path/to/your/allpix-squared/DepositedCharge.hpp"
+
+// Read data from tree
+void readTree(TFile* file, std::string detector) {
+
+    // Read tree of deposited charges:
+    TTree* dc_tree = static_cast<TTree*>(file->Get("DepositedCharge"));
+    if(!dc_tree) {
+        throw std::runtime_error("Could not read tree");
+    }
+
+    // Find branch for the detector requested:
+    TBranch* dc_branch = dc_tree->FindBranch(detector.c_str());
+    if(!dc_branch) {
+        throw std::runtime_error("Could not find detector branch");
+    }
+
+    // Allocate object vector and link to ROOT branch:
+    std::vector<allpix::DepositedCharge*> deposited_charges;
+    dc_branch->SetObject(&deposited_charges);
+
+    // Go through the tree event-by-event:
+    for(int i = 0; i < dc_tree->GetEntries(); ++i) {
+        dc_tree->GetEntry(i);
+        // Loop over all deposited charge objects
+        for(auto& charge : deposited_charges) {
+            std::cout << "Event " << i << ": "
+                      << "charge = " << charge->getCharge() << ", "
+                      << "position = " << charge->getGlobalPosition()
+                      << std::endl;
+        }
+    }
+}
+
+\end{minted}
+A more elaborate example for a data analysis script can be found in the \dir{tools} directory of the repository and in Section~\ref{sec:root_analysis_macros} of this user manual.
+Scripts written in both \CPP and in Python are provided.
+
+\item[How can I convert data from the ROOTObject format to other formats?]
+Since the ROOTObject format is the native format of \apsq, the stored data can be read into the framework again.
+To convert it to another format, a simple pseudo-simulation setup can be used, which reads in data with one module and stores it with another.
+
+In order to convert for example from ROOTObjects to the data format used by the Corryvreckan reconstruction framework, the following configuration could be used:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Allpix]
+number_of_events = 999999999
+detectors_file = "telescope.conf"
+random_seed_core = 0
+
+[ROOTObjectReader]
+file_name = "input_data_rootobjects.root"
+
+[CorryvreckanWriter]
+file_name = "output_data_corryvreckan.root"
+reference = "mydetector0"
+\end{minted}
 \end{description}
 
 \section{Development}
@@ -131,7 +207,7 @@ This function will be called for every new message dispatched within the framewo
 Heavy-duty tasks such as handling data should not be performed in the \command{listener} routine, but deferred to the \command{run} function of the respective output module.
 
 \item[How do I process data from multiple detectors?]
-When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unqiue} as described in Section~\ref{sec:module_manager}.
+When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unique} as described in Section~\ref{sec:module_manager}.
 As a \emph{detector} module, it would always only have access to the information linked to the specific detector is has been instantiated for.
 The module should then request all messages of the desired type using the messenger call \command{bindMulti} as described in Section~\ref{sec:objects_messages}.
 For \emph{PixelHit} messages, an example code would be:

@@ -2,7 +2,7 @@
  * @file
  * @brief Implements the particle generator
  * @remark Based on code from John Idarraga
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -44,14 +44,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     particle_source_->SetVerbosity(0);
 
     // Get source specific parameters
-    auto single_source = particle_source_->GetCurrentSource();
     auto source_type = config.get<std::string>("source_type");
 
-    // Set the centre coordinate of the source
-    single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
-
     if(source_type == "macro") {
-
         LOG(INFO) << "Using user macro for particle source.";
 
         // Get the UI commander
@@ -63,15 +58,11 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         while(std::getline(file, line)) {
             // Check for the "/gps/" pattern in the line:
             if(!line.empty()) {
-                if(line.substr(0, 13) == "/gps/position" || line.substr(0, 15) == "/gps/pos/centre") {
-                    throw ModuleError(
-                        "The source position must be defined in the main configuration file, not in the macro.");
-                } else if(line.substr(0, 11) == "/gps/number") {
+                if(line.rfind("/gps/number", 0) == 0) {
                     throw ModuleError(
                         "The number of particles must be defined in the main configuration file, not in the macro.");
-                } else if(line.substr(0, 13) == "/gps/particle" || line.substr(0, 10) == "/gps/hist/" ||
-                          line.substr(0, 9) == "/gps/ang/" || line.substr(0, 9) == "/gps/pos/" ||
-                          line.substr(0, 9) == "/gps/ene/" || line.at(0) == '#') {
+                } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
+                    LOG(DEBUG) << "Applying Geant4 macro command: \"" << line << "\"";
                     UI->ApplyCommand(line);
                 } else {
                     LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
@@ -81,6 +72,10 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
     } else {
 
+        // Get the source and set the centre coordinate of the source
+        auto single_source = particle_source_->GetCurrentSource();
+        single_source->GetPosDist()->SetCentreCoords(config.get<G4ThreeVector>("source_position"));
+
         // Set position and direction parameters according to shape
         if(source_type == "beam") {
 
@@ -89,16 +84,30 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetBeamSigmaInR(config.get<double>("beam_size", 0));
 
             // Set angle distribution parameters
+            // NOTE beam2d will always fire in the -z direction of the system
             single_source->GetAngDist()->SetAngDistType("beam2d");
-            single_source->GetAngDist()->DefineAngRefAxes("angref1", G4ThreeVector(-1., 0, 0));
-            G4TwoVector divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
-            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
-            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
-            G4ThreeVector direction = config.get<G4ThreeVector>("beam_direction");
+
+            // Align the -z axis of the system with the direction vector
+            auto direction = config.get<G4ThreeVector>("beam_direction");
             if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
                 LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
             }
-            single_source->GetAngDist()->SetParticleMomentumDirection(direction);
+            auto min_element = std::min(std::abs(direction.x()), std::min(std::abs(direction.y()), std::abs(direction.z())));
+            G4ThreeVector angref1;
+            if(min_element == std::abs(direction.x())) {
+                angref1 = direction.cross({1, 0, 0});
+            } else if(min_element == std::abs(direction.y())) {
+                angref1 = direction.cross({0, 1, 0});
+            } else if(min_element == std::abs((direction.z()))) {
+                angref1 = direction.cross({0, 0, 1});
+            }
+            G4ThreeVector angref2 = angref1.cross(direction);
+
+            single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
+            single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
+            auto divergence = config.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
+            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
 
         } else if(source_type == "sphere") {
 

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of module to read electric fields
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -31,6 +31,12 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     : Module(config, detector), detector_(std::move(detector)) {
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
+
+    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
+    auto model = config_.get<std::string>("model");
+    if(model == "init" || model == "apf") {
+        config_.set("model", "mesh");
+    }
 }
 
 void ElectricFieldReaderModule::init() {
@@ -62,12 +68,12 @@ void ElectricFieldReaderModule::init() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "init" || field_model == "apf") {
+    if(field_model == "mesh") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
         LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
-        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+        std::array<double, 2> field_scale{{model->getPixelSize().x() * scales.x(), model->getPixelSize().y() * scales.y()}};
 
         // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
         auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
@@ -75,10 +81,13 @@ void ElectricFieldReaderModule::init() {
             throw InvalidValueError(
                 config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
         }
+        if(offset.x() < 0.0 || offset.y() < 0.0) {
+            throw InvalidValueError(config_, "field_offset", "offsets for the electric field have to be positive");
+        }
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
-        std::array<double, 2> field_offset{{offset.x(), offset.y()}};
+        std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
-        auto field_data = read_field(thickness_domain, field_scale, field_model);
+        auto field_data = read_field(thickness_domain, field_scale);
 
         detector_->setElectricFieldGrid(
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
@@ -131,7 +140,7 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
     LOG(TRACE) << "Effective thickness of the electric field: " << Units::display(eff_thickness, {"um", "mm"});
     LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
     return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
-        const ROOT::Math::XYZPoint& pos) {
+               const ROOT::Math::XYZPoint& pos) {
         double z_rel = thickness_domain.second - pos.z();
         double field_z = std::max(0.0,
                                   (bias_voltage - depletion_voltage) / eff_thickness +
@@ -142,22 +151,18 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
 }
 
 /**
- * The field read from the INIT format are shared between module instantiations using the static
- * ElectricFieldReaderModuleget_by_file_name method.
+ * The field data read from files are shared between module instantiations using the static
+ * FieldParser's getByFileName method.
  */
 FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
 FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
-                                                        std::array<double, 2> field_scale,
-                                                        const std::string& format) {
-
-    FileType type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
-    std::string units = (type == FileType::INIT ? "V/cm" : "");
+                                                        std::array<double, 2> field_scale) {
 
     try {
-        LOG(TRACE) << "Fetching electric field from init file";
+        LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.get_by_file_name(config_.getPath("file_name", true), type, units);
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "V/cm");
 
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);
@@ -195,7 +200,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         model->setSensorExcessBottom(0);
         model->setSensorExcessLeft(0);
         model->setSensorExcessRight(0);
-        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>(1, 1));
+        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>(1, 1));
     }
     // Use either full sensor axis or only depleted region
     double z_min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
@@ -362,13 +367,13 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
         }
 
         // Check the field extent along the pixel pitch in x and y:
-        if(std::fabs(xpixsz - model->getPixelSize().x() * field_scale[0]) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSize().y() * field_scale[1]) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(xpixsz - field_scale[0]) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - field_scale[1]) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
                          << Units::display(ypixsz, {"um", "mm"})
                          << ") but current configuration results in an field area of ("
-                         << Units::display(model->getPixelSize().x() * field_scale[0], {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSize().y() * field_scale[1], {"um", "mm"}) << ")" << std::endl
+                         << Units::display(field_scale[0], {"um", "mm"}) << ","
+                         << Units::display(field_scale[1], {"um", "mm"}) << ")" << std::endl
                          << "The size of the area to which the electric field is applied can be changes using the "
                             "field_scale parameter.";
         }

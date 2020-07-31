@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Base for the module implementation
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -40,7 +40,7 @@ namespace allpix {
      * - Module::run(unsigned int): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
-     * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
+     * The module class also provides a few utility methods and stores internal data of instantiations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
     class Module {
@@ -101,9 +101,10 @@ namespace allpix {
          * @brief Create and return an absolute path to be used for output from a relative path
          * @param path Relative path to add after the main output directory
          * @param global True if the global output directory should be used instead of the module-specific version
+         * @param delete_file True if the created output file should be deleted after testing access
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path, bool global = false);
+        std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
          * @brief Get seed to initialize random generators

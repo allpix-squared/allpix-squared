@@ -19,9 +19,10 @@ The framework has the following three required layers of configuration files:
 Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
 An example can be found in the repository at \textit{examples/example.conf}.
 More details and a more thorough example are found in Section~\ref{sec:main_config}, several advanced simulation chain configurations are presented in Chapter~\ref{ch:examples}.
-\item The \textbf{detector} configuration passed to the framework to determine the geometry.
+\item The \textbf{geometry} configuration passed to the framework to determine the detector setup and passive materials.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
-An example is available in the repository at \file{examples/example_detector.conf}.
+Optionally, passive materials can be added to this configuration.
+Examples are available in the repository at \file{examples/example_detector.conf} or \file{examples/example_detector_passive.conf}.
 Introduced in Section~\ref{sec:detector_config}.
 \item The detector \textbf{model} configuration.
 Contains the parameters describing a particular type of detector.
@@ -67,7 +68,9 @@ The internal base units of the framework are not chosen for user convenience but
   \toprule
 \textbf{Quantity}                 & \textbf{Default unit}                   & \textbf{Auxiliary units} \\
  \midrule
-\multirow{6}{*}{\textit{Length}}  & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
+ \textit{Unity}                   & 1                                       & ---                      \\
+ \midrule
+ \multirow{6}{*}{\textit{Length}} & \multirow{6}{*}{mm (millimeter)}        & nm (nanometer)           \\
                                   &                                         & um (micrometer)          \\
                                   &                                         & cm (centimeter)          \\
                                   &                                         & dm (decimeter)           \\
@@ -92,7 +95,7 @@ The internal base units of the framework are not chosen for user convenience but
 \multirow{2}{*}{\textit{Voltage}} & \multirow{2}{*}{MV (megavolt)}          & V (volt)                 \\
                                   &                                         & kV (kilovolt)            \\
 \midrule
-\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)                 \\
+\textit{Magnetic field strength}  & T (tesla)                               & mT (millitesla)          \\
 \midrule
 \multirow{2}{*}{\textit{Angle}}   & \multirow{2}{*}{rad (radian)}           & deg (degree)             \\
                                   &                                         & mrad (milliradian)       \\
@@ -208,7 +211,7 @@ In the following paragraphs, a fully functional (albeit simple) configuration fi
 \label{sec:detector_config}
 The detector configuration consists of a set of sections describing the detectors in the setup.
 Each section starts with a header describing the name used to identify the detector; all names are required to be unique.
-Every detector should contain all of the following parameters:
+Every detector has to contain all of the following parameters:
 \begin{itemize}
 \item A string referring to the \parameter{type} of the detector model.
 The model should exist in the search path described in Section~\ref{sec:detector_models}.
@@ -227,6 +230,9 @@ Misalignment can be introduced both for shifts along the three global axes and t
 \item The parameter \parameter{alignment_precision_orientation} allows to specify the alignment precision in the three rotation angles defined by the \parameter{orientation} parameter. The misalignments are added to the individual angles before combining them into the final rotation as defined by the \parameter{orientation_mode} parameter.
 \end{itemize}
 
+The optional parameter \parameter{role} accepts the values \parameter{active} for detectors and \parameter{passive} for passive elements in the setup.
+If no value is given, \parameter{active} is taken as the default value.
+
 Furthermore it is possible to specify certain parameters of the detector explained in more detail in Section~\ref{sec:detector_models}.
 This allows to quickly adapt e.g. the sensor thickness of a certain detector without altering the actual detector model file.
 
@@ -241,6 +247,44 @@ An example configuration file describing a setup with one CLICpix2 detector and 
 \inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_detector.conf}
 Figure~\ref{fig:telescope} shows a visualization of the setup described in the file.
 This configuration is used in the rest of this chapter for explaining concepts.
+
+\subsubsection{Passive material configuration}
+\label{sec:passive_material_config}
+
+Descriptions of passive materials can be added to the detector setup via a set of sections, with a syntax similar to the detector configuration.
+Passive geometry entries are identified by the \parameter{role} parameter set to \parameter{passive}.
+Each section starts with a header describing the name used to identify the passive material; all names are required to be unique.
+
+Every passive material has to contain all of the following parameters:
+\begin{itemize}
+  \item The \parameter{position} and \parameter{orientation} of the material as described for the detector, see Section \ref{sec:detector_config}.
+  \item A string referring to the \parameter{type} of the passive material.
+  The model should be interpreted by the module constructing the passive material, such as for example the GeometryBuilderGeant4 module.
+  \item A string referring to the \parameter{material} of the passive material.
+  The materials are defined in the GeometryBuilderGeant4 module and are described in the module section.
+  \item A set of size parameters specific for the model that is chosen.
+  All size parameters that describe the total length of something are placed such that half of this total length extends from each side of the given \parameter{position}.
+  If a parameter describes the radius, this means the radius will extend from the \parameter{position} on both sides, making its total size two times the radius in the given direction.
+  The size parameters for the specific models are described in Section~\ref{geometrybuildergeant4}.
+\end{itemize}
+
+In addition, an optional string referring to the \parameter{mother_volume}, which defines another passive material the volume will be placed in, can be specified.
+Note: If a mother volume is chosen, the position defined in the configuration file will be relative to the center of the mother volume. An error will be given if the specified mother volume is too small for the specified size or position of this volume. Per default, the mother volume is the world frame.
+Note: if the \parameter{mother_volume} is a hollow material, only the non-hollow part of the material is considered part of the material. Placing a passive volume in the hollow part requires a different \parameter{mother_volume}.
+
+Similar to the detector configuration, the parameters \parameter{orientation_mode} (see Section~\ref{sec:models_geometry}), \parameter{alignment_precision_position} and \parameter{alignment_precision_orientation} (see Section~\ref{sec:detector_config}) can be used optionally to define the rotation order and a possible misalignment of passive materials.
+
+An example configuration file describing a set of passive materials with different configuration options is the following:
+\inputminted[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}{../../etc/manual_passive_materials.conf}
+Figure~\ref{fig:passivematerials} shows a visualization of the setup described in the file.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.6\textwidth]{passive_materials.png}
+  \caption{Visualization of a set of passive materials showing different configuration options.}
+  \label{fig:passivematerials}
+\end{figure}
+
 
 \section{Framework parameters}
 \label{sec:framework_parameters}
@@ -271,10 +315,10 @@ Defaults to the current working directory with the subdirectory \textit{output/}
 \item \parameter{purge_output_directory}: Decides whether the content of an already existing output directory is deleted before a new run starts. Defaults to \texttt{false}, i.e. files are kept but will be overwritten by new files created by the framework.
 \item \parameter{deny_overwrite}: Forces the framework to abort the run and throw an exception when attempting to overwrite an existing file. Defaults to \texttt{false}, i.e. files are overwritten when requested. This setting is inherited by all modules, but can be overwritten in the configuration section of each of the modules.
 \item \parameter{random_seed}: Seed for the global random seed generator used to initialize seeds for module instantiations.
-The 64-bit Mersenne Twister \command{mt19937_64} from the C++ Standard Library is used to generate seeds.
+The 64-bit Mersenne Twister \command{mt19937_64} from the \CPP Standard Library is used to generate seeds.
 A random seed from multiple entropy sources will be generated if the parameter is not specified.
 Can be used to reproduce an earlier simulation run.
-\item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explictely, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
+\item \parameter{random_seed_core}: Optional seed used for pseudo-random number generators in the core components of the framework. If not set explicitly, the value $(\textrm{\parameter{random_seed}} + 1)$ is used.
 \item \parameter{library_directories}: Additional directories to search for module libraries, before searching the default paths.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
@@ -316,7 +360,7 @@ No interaction with the framework is possible during the simulation. Signals can
 \begin{itemize}
     \item SIGINT (\texttt{CTRL+C}): Request a graceful shutdown of the simulation. This means the current simulated event is finished, while all other events requested in the configuration file are ignored. After finishing the event, the finalization stage is run for every module to ensure all modules finish properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish entirely, but the output generated so far should still be kept.
     \item SIGTERM: Same as SIGINT, request a graceful shutdown of the simulation. This signal is emitted e.g.\ by the \command{kill} command or by cluster computing schedulers to ask for a termination of the job.
-    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommmended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
+    \item SIGQUIT (\texttt{CTRL+\textbackslash}): Forcefully terminates the simulation. It is not recommended to use this signal as it will normally lead to the loss of all generated data. This signal should only be used when graceful termination is for any reason not possible.
 \end{itemize}
 
 
@@ -433,8 +477,8 @@ A possible configuration would be:
 [ElectricFieldReader]
 # Bind the electric field to the detector named `dut`
 name = "dut"
-# Specify that the model is provided in the `init` electric field map format converted from TCAD
-model = "init"
+# Specify that the model is provided as meshed electric field map format, e.g. converted from TCAD
+model = "mesh"
 # Name of the file containing the electric field
 file_name = "example_electric_field.init"
 \end{minted}

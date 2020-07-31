@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of detector fields
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -20,6 +20,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -68,7 +69,7 @@ namespace allpix {
          * @brief Check if the field is valid and either a field grid or a field function is configured
          * @return Boolean indicating field validity
          */
-        bool isValid() const { return function_ || (sizes_[0] != 0 && sizes_[1] != 0 && sizes_[2] != 0); };
+        bool isValid() const { return function_ || (dimensions_[0] != 0 && dimensions_[1] != 0 && dimensions_[2] != 0); };
 
         /**
          * @brief Return the type of field
@@ -84,14 +85,26 @@ namespace allpix {
         T get(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Get the value of the field at a position provided in local coordinates with respect to the reference
+         * @param pos       Position in the local frame
+         * @param reference Reference position to calculate the field for, x and y coordinate only
+         * @param extrapolate_z Extrapolate the field along z when outside the defined region
+         * @return Value(s) of the field assigned to the reference pixel at the queried point
+         */
+        T getRelativeTo(const ROOT::Math::XYZPoint& local_pos,
+                        const ROOT::Math::XYPoint& reference,
+                        const bool extrapolate_z = false) const;
+
+        /**
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
-         * @param sizes The dimensions of the flat field array
-         * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
+         * @param dimensions The dimensions of the flat field array
+         * @param scales The actual physical extent of the field in each direction in x and y
+         * @param offset Offset of the field in x and y, given in physical units
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
-                     std::array<size_t, 3> sizes,
+                     std::array<size_t, 3> dimensions,
                      std::array<double, 2> scales,
                      std::array<double, 2> offset,
                      std::pair<double, double> thickness_domain);
@@ -112,29 +125,37 @@ namespace allpix {
          * @param sensor_size The extend of the sensor
          * @param pixel_pitch the pitch in X and Y of a single pixel
          */
-        void set_model_parameters(ROOT::Math::XYZPoint sensor_center,
-                                  ROOT::Math::XYZVector sensor_size,
-                                  ROOT::Math::XYVector pixel_pitch) {
+        void set_model_parameters(const ROOT::Math::XYZPoint& sensor_center,
+                                  const ROOT::Math::XYZVector& sensor_size,
+                                  const ROOT::Math::XYVector& pixel_pitch) {
             sensor_center_ = sensor_center;
             sensor_size_ = sensor_size;
             pixel_size_ = pixel_pitch;
+            model_initialized_ = true;
         }
 
         /**
-         * @brief Helper function to retrieve the return type from a calculated index
-         * @param a the field data vector
-         * @param offset the calcilated global index to start from
+         * @brief Helper function to retrieve the return type from a calculated index of the field data vector
+         * @param offset The calculated global index to start from
          * @param index sequence expanded to the number of elements requested, depending on the template instance
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
         /**
+         * @brief Helper function to calculate the field index based on the distance from its center and to return the values
+         * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
+         * @param extrapolate_z Switch to either extrapolate the field along z when outside the grid or return zero
+         * @return Value(s) of the field at the queried point
+         */
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z = false) const;
+
+        /**
          * Field properties
-         * * Size of the field map (bins in x, y, z)
+         * * Dimensions of the field map (bins in x, y, z)
          * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell
          * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
          */
-        std::array<size_t, 3> sizes_{};
+        std::array<size_t, 3> dimensions_{};
         std::array<double_t, 2> scales_{{1., 1.}};
         std::array<double_t, 2> offset_{{0., 0.}};
 
@@ -161,6 +182,7 @@ namespace allpix {
         ROOT::Math::XYVector pixel_size_{};
         ROOT::Math::XYZPoint sensor_center_{};
         ROOT::Math::XYZVector sensor_size_{};
+        bool model_initialized_{};
     };
 } // namespace allpix
 

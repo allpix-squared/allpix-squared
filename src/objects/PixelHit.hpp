@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of object with digitized pixel hit
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -30,7 +30,7 @@ namespace allpix {
         /**
          * @brief Construct a digitized pixel hit
          * @param pixel Object holding the information of the pixel
-         * @param time Timing of the occurence of the hit
+         * @param time Timing of the occurrence of the hit
          * @param signal Signal data produced by the digitizer
          * @param pixel_charge Optional pointer to the related pixel charge
          */
@@ -67,7 +67,12 @@ namespace allpix {
          * @return List of all related Monte-Carlo particles
          */
         std::vector<const MCParticle*> getMCParticles() const;
-
+        /**
+         * @brief Get all primary Monte-Carlo particles resulting in this pixel hit. A particle is considered primary if it
+         * has no parent particle set.
+         * @return List of all related primary Monte-Carlo particles
+         */
+        std::vector<const MCParticle*> getPrimaryMCParticles() const;
         /**
          * @brief Print an ASCII representation of PixelHit to the given stream
          * @param out Stream to print to
@@ -98,4 +103,4 @@ namespace allpix {
     using PixelHitMessage = Message<PixelHit>;
 } // namespace allpix
 
-#endif
+#endif /* ALLPIX_PIXEL_HIT_H */

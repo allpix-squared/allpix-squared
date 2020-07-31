@@ -1,19 +1,23 @@
 /**
  * @file
  * @brief Definition of Geant4 geometry construction module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
-#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H
+#ifndef ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
+#define ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H
 
 #include <memory>
 #include <string>
 
+#include "GeometryConstructionG4.hpp"
+#include "PassiveMaterialConstructionG4.hpp"
+#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
+
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
@@ -46,10 +50,10 @@ namespace allpix {
 
     private:
         GeometryManager* geo_manager_;
-
         // Geant4 run manager is owned by this module
+        GeometryConstructionG4* geometry_construction_;
         std::unique_ptr<G4RunManager> run_manager_g4_;
     };
 } // namespace allpix
 
-#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_H */
+#endif /* ALLPIX_MODULE_GEOMETRY_CONSTRUCTION_MODULE_H */

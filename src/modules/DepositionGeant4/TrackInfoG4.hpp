@@ -2,7 +2,7 @@
  * @file
  * @brief Defines a concrete implementation of a G4VUserTrackInformation to carry unique track and parent track IDs as well
  * as create and dispatch MCTracks which are the AP2 representation of a Monte-Carlo trajectory
- * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -58,7 +58,7 @@ namespace allpix {
         ROOT::Math::XYZPoint getStartPoint() const;
 
         /**
-         * @brief Get the point of where the track terminated in global coordiantes
+         * @brief Get the point of where the track terminated in global coordinates
          * @return Track end point
          */
         ROOT::Math::XYZPoint getEndPoint() const;
@@ -74,12 +74,6 @@ namespace allpix {
          * @return The Geant4 process type, or "-1" if no such process exists
          */
         int getCreationProcessType() const;
-
-        /**
-         * @brief Get the amount of stepping steps the Geant4 track made
-         * @return The amount of steps
-         */
-        int getNumberOfSteps() const;
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track was created
@@ -127,8 +121,6 @@ namespace allpix {
         int origin_g4_process_type_{};
         // PDG particle id
         int particle_id_{};
-        // Number of steps this track made in Geant4
-        int n_steps_{};
         // Start point of track (in mm)
         ROOT::Math::XYZPoint start_point_{};
         // End point of track (in mm)
@@ -147,4 +139,4 @@ namespace allpix {
         double final_tot_E_{};
     };
 } // namespace allpix
-#endif
+#endif /* TrackInfoG4_H */

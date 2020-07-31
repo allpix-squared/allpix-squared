@@ -2,7 +2,7 @@
  * @file
  * @brief Base of detector implementation
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -103,10 +103,28 @@ namespace allpix {
         bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
+         * @brief Returns if a pixel index is within the grid of pixels defined for the device
+         * @return True if pixel_index is within the pixel grid, false otherwise
+         */
+        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+
+        /**
+         * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
+         * @return True if pixel coordinates are within the pixel grid, false otherwise
+         */
+        bool isWithinPixelGrid(const int x, const int y) const;
+
+        /**
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
-        Pixel getPixel(unsigned int x, unsigned int y);
+        Pixel getPixel(unsigned int x, unsigned int y) const;
+
+        /**
+         * @brief Return a pixel object from the pixel index
+         * @return Pixel object
+         */
+        Pixel getPixel(const Pixel::Index& index) const;
 
         /**
          * @brief Returns if the detector has an electric field in the sensor
@@ -132,7 +150,7 @@ namespace allpix {
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
-        void setElectricFieldGrid(std::shared_ptr<std::vector<double>> field,
+        void setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                   std::array<size_t, 3> sizes,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
@@ -148,11 +166,51 @@ namespace allpix {
                                       FieldType type = FieldType::CUSTOM);
 
         /**
-             * @brief Set the magnetic field in the detector
-             * @param function Function used to retrieve the magnetic field
-             * @param type Type of the magnetic field function used
-     holds
-             */
+         * @brief Returns if the detector has a weighting potential in the sensor
+         * @return True if the detector has a weighting potential, false otherwise
+         */
+        bool hasWeightingPotential() const;
+        /**
+         * @brief Return the type of weighting potential that is simulated.
+         * @return The type of the weighting potential
+         */
+        FieldType getWeightingPotentialType() const;
+
+        /**
+         * @brief Get the weighting potential in the sensor at a local position
+         * @param pos Position in the local frame
+         * @param x x-coordinate of the pixel for which we want the weighting potential
+         * @param y y-coordinate of the pixel for which we want the weighting potential
+         * @return Value of the potential at the queried point
+         */
+        double getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const;
+
+        /**
+         * @brief Set the weighting potential in a single pixel in the detector using a grid
+         * @param potential Flat array of the potential vectors (see detailed description)
+         * @param sizes The dimensions of the flat weighting potential array
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
+         */
+        void setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
+                                       std::array<size_t, 3> sizes,
+                                       std::array<double, 2> scales,
+                                       std::array<double, 2> offset,
+                                       std::pair<double, double> thickness_domain);
+        /**
+         * @brief Set the weighting potential in a single pixel using a function
+         * @param function Function used to retrieve the weighting potential
+         * @param type Type of the weighting potential function used
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
+         */
+        void setWeightingPotentialFunction(FieldFunction<double> function,
+                                           std::pair<double, double> thickness_domain,
+                                           FieldType type = FieldType::CUSTOM);
+
+        /**
+         * @brief Set the magnetic field in the detector
+         * @param function Function used to retrieve the magnetic field
+         * @param type Type of the magnetic field function used
+         */
         void setMagneticField(ROOT::Math::XYZVector b_field);
 
         /**
@@ -172,19 +230,6 @@ namespace allpix {
          * @return Pointer to the constant detector model
          */
         const std::shared_ptr<DetectorModel> getModel() const;
-
-        /**
-         * @brief Fetch an external object linked to this detector
-         * @param name Name of the external object
-         * @return External object or null pointer if it does not exists
-         */
-        template <typename T> std::shared_ptr<T> getExternalObject(const std::string& name);
-        /**
-         * @brief Sets an external object linked to this detector
-         * @param name Name of the external object
-         * @param model External object of arbitrary type
-         */
-        template <typename T> void setExternalObject(const std::string& name, std::shared_ptr<T> model);
 
     private:
         /**
@@ -218,25 +263,14 @@ namespace allpix {
         // Electric field
         DetectorField<ROOT::Math::XYZVector, 3> electric_field_;
 
+        // Weighting potential
+        DetectorField<double, 1> weighting_potential_;
+
         // Magnetic field properties
         ROOT::Math::XYZVector magnetic_field_;
         bool magnetic_field_on_;
-
-        std::map<std::type_index, std::map<std::string, std::shared_ptr<void>>> external_objects_;
     };
 
-    /**
-     * If the returned object is not a null pointer it is guaranteed to be of the correct type
-     */
-    template <typename T> std::shared_ptr<T> Detector::getExternalObject(const std::string& name) {
-        return std::static_pointer_cast<T>(external_objects_[typeid(T)][name]);
-    }
-    /**
-     * Stores external representations of objects in this detector that need to be shared between modules.
-     */
-    template <typename T> void Detector::setExternalObject(const std::string& name, std::shared_ptr<T> model) {
-        external_objects_[typeid(T)][name] = std::static_pointer_cast<void>(model);
-    }
 } // namespace allpix
 
 #endif /* ALLPIX_DETECTOR_H */

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of CorryvreckanWriter module
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -15,9 +15,10 @@
 #include "core/module/Module.hpp"
 
 // Local includes
-#include "corryvreckan/MCParticle.h"
+#include "corryvreckan/Event.hpp"
+#include "corryvreckan/MCParticle.hpp"
 #include "corryvreckan/Object.hpp"
-#include "corryvreckan/Pixel.h"
+#include "corryvreckan/Pixel.hpp"
 #include "objects/PixelHit.hpp"
 
 // ROOT includes
@@ -59,20 +60,26 @@ namespace allpix {
 
     private:
         // General module members
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_; // Receieved pixels
+        std::vector<std::shared_ptr<PixelHitMessage>> pixel_messages_; // Received pixels
         Messenger* messenger_;
         GeometryManager* geometryManager_;
 
         // Parameters for output writing
-        std::string fileName_;                                   // Output filename
-        std::string geometryFileName_;                           // Output geometry filename
-        std::unique_ptr<TFile> outputFile_;                      // Output file
-        double time_;                                            // Event time being written
-        std::map<std::string, TTree*> outputTrees_;              // Output trees
-        std::map<std::string, corryvreckan::Pixel*> treePixels_; // Objects attached to trees for writing
+        std::string fileName_;               // Output filename
+        std::string geometryFileName_;       // Output geometry filename
+        std::unique_ptr<TFile> output_file_; // Output file
+        double time_;                        // Event time being written
+        bool output_mc_truth_;               // Decision to write out MC
 
-        bool outputMCtruth_;                                               // Decision to write out MC particle info
-        std::map<std::string, TTree*> outputTreesMC_;                      // Output trees for MC particles
-        std::map<std::string, corryvreckan::MCParticle*> treeMCParticles_; // Objects attached to trees for writing
+        std::string reference_;
+        std::vector<std::string> dut_;
+
+        std::unique_ptr<TTree> event_tree_;
+        corryvreckan::Event* event_{};
+
+        std::unique_ptr<TTree> pixel_tree_;
+        std::unique_ptr<TTree> mcparticle_tree_;
+        std::map<std::string, std::vector<corryvreckan::Pixel*>*> write_list_px_;
+        std::map<std::string, std::vector<corryvreckan::MCParticle*>*> write_list_mcp_;
     };
 } // namespace allpix

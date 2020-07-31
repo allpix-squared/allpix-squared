@@ -2,7 +2,7 @@
  * @file
  * @brief Collection of all module exceptions
  *
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -36,7 +36,7 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
-     * @brief Raised if ambigious instantiation of two similar modules occurs
+     * @brief Raised if ambiguous instantiation of two similar modules occurs
      *
      * The framework cannot decide which module to instantiate of two with the same \ref ModuleIdentifier::getUniqueName
      * "unique name", because they have the same priority.
@@ -45,7 +45,7 @@ namespace allpix {
     public:
         /**
          * @brief Constructs error with the name of the problematic module
-         * @param module Name of the module that is ambigious
+         * @param module Name of the module that is ambiguous
          */
         explicit AmbiguousInstantiationError(const std::string& module) {
             // FIXME: add detector and input output instance here

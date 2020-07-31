@@ -1,7 +1,11 @@
 /**
  * @file
  * @brief Definition of thread pool for module multithreading
- * @copyright MIT License
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
 #ifndef ALLPIX_THREADPOOL_H
@@ -95,8 +99,8 @@ namespace allpix {
          * @warning Only module instantiations that are registered in this constructor can spawn tasks
          */
         explicit ThreadPool(unsigned int num_threads,
-                            std::vector<Module*> modules,
-                            std::function<void()> worker_init_function);
+                            const std::vector<Module*>& modules,
+                            const std::function<void()>& worker_init_function);
 
         /// @{
         /**
@@ -175,4 +179,4 @@ namespace allpix {
 // Include template members
 #include "ThreadPool.tpp"
 
-#endif
+#endif /* ALLPIX_THREADPOOL_H */

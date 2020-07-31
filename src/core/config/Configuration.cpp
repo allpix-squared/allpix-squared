@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of configuration
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -15,6 +15,7 @@
 #include <string>
 
 #include "core/utils/file.h"
+#include "core/utils/log.h"
 #include "exceptions.h"
 
 using namespace allpix;
@@ -77,6 +78,19 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
+ * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
+ */
+std::string
+Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
+    try {
+        return path_to_absolute(allpix::add_file_extension(get<std::string>(key), extension), check_exists);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(*this, key, e.what());
+    }
+}
+/**
+ * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
+ *
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
@@ -121,7 +135,7 @@ void Configuration::setText(const std::string& key, const std::string& val) {
 /**
  *  The alias is only used if new key does not exist but old key does
  */
-void Configuration::setAlias(const std::string& new_key, const std::string& old_key) {
+void Configuration::setAlias(const std::string& new_key, const std::string& old_key, bool warn) {
     if(!has(old_key) || has(new_key)) {
         return;
     }
@@ -129,6 +143,10 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
         config_[new_key] = config_.at(old_key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(old_key, getName());
+    }
+
+    if(warn) {
+        LOG(WARNING) << "Parameter \"" << old_key << "\" is deprecated and superseded by \"" << new_key << "\"";
     }
 }
 
@@ -140,7 +158,7 @@ unsigned int Configuration::countSettings() const {
  * All keys that are already defined earlier in this configuration are not changed.
  */
 void Configuration::merge(const Configuration& other) {
-    for(auto config_pair : other.config_) {
+    for(const auto& config_pair : other.config_) {
         // Only merge values that do not yet exist
         if(!has(config_pair.first)) {
             setText(config_pair.first, config_pair.second);
@@ -177,8 +195,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1, lst = 1;
-    int in_dpt = 0;
+    size_t beg = 1, lst = 1, in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

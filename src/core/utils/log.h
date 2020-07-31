@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -228,10 +228,12 @@ namespace allpix {
 
     using Log = DefaultLogger;
 
+#ifndef __FILE_NAME__
 /**
  *  @brief Base name of the file without the directory
  */
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
 
 /**
  * @brief Execute a block only if the reporting level is high enough
@@ -257,6 +259,34 @@ namespace allpix {
     if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())                   \
     allpix::Log().getProcessStream(                                                                                         \
         identifier, allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)
+
+/**
+ * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged
+ * @param level The log level of the stream
+ */
+#define LOG_ONCE(level) LOG_N(level, 1)
+
+/**
+ * @brief Generator for a local variable to hold the logging count of a message
+ * @param  Count Number of allowed counts
+ * @return       Local counter variable
+ */
+#define GENERATE_LOG_VAR(Count) thread_local size_t local___FUNCTION__##Count##__LINE__ = Count
+#define GET_LOG_VARIABLE(Count) local___FUNCTION__##Count##__LINE__
+
+/**
+ * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged more than
+ * max_log_count times.
+ * @param level The log level of the stream
+ * @param max_log_count Maximum number of times this message is allowed to be logged
+ */
+#define LOG_N(level, max_log_count)                                                                                         \
+    GENERATE_LOG_VAR(max_log_count);                                                                                        \
+    if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
+        if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
+    allpix::Log().getStream(                                                                                                \
+        allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
+        << std::string(GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
 
     /**
      * @brief Suppress an stream from writing any output

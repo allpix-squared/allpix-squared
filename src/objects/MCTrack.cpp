@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of Monte-Carlo track object
- * @copyright Copyright (c) 2018 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -43,10 +43,6 @@ int MCTrack::getParticleID() const {
 
 int MCTrack::getCreationProcessType() const {
     return origin_g4_process_type_;
-}
-
-int MCTrack::getNumberOfSteps() const {
-    return n_steps_;
 }
 
 double MCTrack::getKineticEnergyInitial() const {

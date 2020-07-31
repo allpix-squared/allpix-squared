@@ -12,23 +12,12 @@ ELSE()
     SET(MODEL_DIRECTORY "share/${CMAKE_PROJECT_NAME}/models" CACHE PATH "Models directory" FORCE)
 ENDIF()
 
+SET(MODEL_INSTALL_DIRECTORY "${MODEL_DIRECTORY}")
 IF(NOT IS_ABSOLUTE ${MODEL_DIRECTORY})
     SET(MODEL_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${MODEL_DIRECTORY}" CACHE PATH "Models directory" FORCE)
 ENDIF()
 
 # Install the files to the models directory
 # NOTE: With default install path this does not change anything
-INSTALL(
-    FILES
-    test.conf
-    timepix.conf
-    medipix3.conf
-    mimosa23.conf
-    mimosa26.conf
-    fei3.conf
-    ibl_planar.conf
-    cmsp1.conf
-    clicpix.conf
-    clicpix2.conf
-    DESTINATION ${MODEL_DIRECTORY}
-    COMPONENT models)
+FILE(GLOB MODEL_FILES LIST_DIRECTORIES false CONFIGURE_DEPENDS "*.conf")
+INSTALL(FILES ${MODEL_FILES} DESTINATION ${MODEL_INSTALL_DIRECTORY} COMPONENT models)

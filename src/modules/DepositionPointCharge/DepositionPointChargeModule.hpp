@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of a module to deposit charges at a specific point
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -24,9 +24,18 @@ namespace allpix {
          */
         enum class DepositionModel {
             NONE = 0, ///< No deposition
-            POINT,    ///< Deposition at a specific point
+            FIXED,    ///< Deposition at a specific point
             SCAN,     ///< Scan through the volume of a pixel
-            MIP,      ///< MIP-like linear deposition of charge carriers
+            SPOT,     ///< Deposition around fixed position with Gaussian profile
+        };
+
+        /**
+         * @brief Types of sources
+         */
+        enum class SourceType {
+            NONE = 0, ///< No source
+            POINT,    ///< Deposition at a single point
+            MIP,      ///< MIP-like linear deposition of charge carrier
         };
 
     public:
@@ -53,19 +62,24 @@ namespace allpix {
          * @brief Helper function to deposit charges at a single point
          * @param event event number
          */
-        void DepositPoint(unsigned int event);
+        void DepositPoint(const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Helper function to deposit charges along a line
          * @param event event number
          */
-        void DepositLine(unsigned int event);
+        void DepositLine(const ROOT::Math::XYZPoint& position);
 
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
+        std::mt19937_64 random_generator_;
+
         DepositionModel model_;
+        SourceType type_;
+        double spot_size_{};
         ROOT::Math::XYZVector voxel_;
+        double step_size_z_{};
         unsigned int root_, carriers_;
     };
 } // namespace allpix

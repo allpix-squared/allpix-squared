@@ -1,23 +1,24 @@
 FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
-ENV GEANT4_VERSION 10.03.p03
-ENV ROOT6_VERSION 6.10.08
-
 # Add layer for Geant4
+
+ENV GEANT4_VERSION 10.06.p01
+ENV GEANT4_VERSION_PATH 10.6.1
+
 ENV GEANT4DIR="/opt/geant4"
 ENV PATH="$GEANT4DIR/bin:$PATH"
 ENV LD_LIBRARY_PATH="$GEANT4DIR/lib:$LD_LIBRARY_PATH"
-ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4NDL4.5"
-ENV G4LEDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4EMLOW6.50"
-ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-10.3.3/data/PhotonEvaporation4.3.2"
-ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-10.3.3/data/RadioactiveDecay5.1.1"
-ENV G4NEUTRONXSDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4NEUTRONXS1.4"
-ENV G4PIIDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4PII1.3"
-ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4-10.3.3/data/RealSurface1.0"
-ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4SAIDDATA1.1"
-ENV G4ABLADATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4ABLA3.0"
-ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-10.3.3/data/G4ENSDFSTATE2.1"
+ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4NDL4.6"
+ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4EMLOW7.9.1"
+ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/PhotonEvaporation5.5"
+ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/RadioactiveDecay5.4"
+ENV G4PIIDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PII1.3"
+ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/RealSurface2.1.1"
+ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4SAIDDATA2.0"
+ENV G4ABLADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ABLA3.1"
+ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ENSDFSTATE2.2"
+ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PARTICLEXS2.1"
 
 RUN source scl_source enable devtoolset-7 && \
     mkdir -p ${GEANT4DIR}/{src,build} && \
@@ -27,6 +28,7 @@ RUN source scl_source enable devtoolset-7 && \
     rm -f ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz && \
     cd ${GEANT4DIR}/build && \
     cmake3 -DGEANT4_INSTALL_DATA=ON \
+          -DOpenGL_GL_PREFERENCE=GLVND \
           -DGEANT4_USE_GDML=ON \
           -DGEANT4_USE_QT=ON \
           -DGEANT4_USE_XM=ON \
@@ -38,7 +40,11 @@ RUN source scl_source enable devtoolset-7 && \
     make install && \
     rm -rf ${GEANT4DIR}/{src,build}
 
+
 # Add layer for ROOT6
+
+ENV ROOT6_VERSION 6.20.00
+
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
 ENV LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
@@ -61,8 +67,34 @@ RUN source scl_source enable devtoolset-7 && \
            -Dthread=ON \
            -Dx11=OFF \
            -Dopengl=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
            -DCMAKE_INSTALL_PREFIX=../ \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${ROOTSYS}/{src,build}
+
+
+# Add layer for LCIO
+
+ENV LCIO_VERSION 02-13-02
+
+ENV LCIODIR="/opt/lcio"
+ENV PATH="$LCIODIR/bin:$PATH"
+ENV LD_LIBRARY_PATH="$LCIODIR/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$LCIODIR/lib:$LIBPATH"
+ENV CMAKE_PREFIX_PATH="$LCIODIR:$CMAKE_PREFIX_PATH"
+
+RUN source scl_source enable devtoolset-7 && \
+    mkdir -p ${LCIODIR}/{src,build} && \
+    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
+            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
+    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
+    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
+    cd ${LCIODIR}/build && \
+    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
+           ../src/LCIO-${LCIO_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${LCIODIR}/{src,build}

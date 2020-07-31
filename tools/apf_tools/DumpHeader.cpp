@@ -91,11 +91,11 @@ int main(int argc, const char* argv[]) {
         std::cout << "FILE:       " << file_input << std::endl;
         try {
             FieldParser<double> field_parser(FieldQuantity::VECTOR);
-            auto field_data = field_parser.get_by_file_name(file_input, FileType::APF);
+            auto field_data = field_parser.getByFileName(file_input);
             print_info(field_data, n, units);
         } catch(std::runtime_error& e) {
             FieldParser<double> field_parser(FieldQuantity::SCALAR);
-            auto field_data = field_parser.get_by_file_name(file_input, FileType::APF);
+            auto field_data = field_parser.getByFileName(file_input);
             print_info(field_data, n, units);
         } catch(std::exception& e) {
             LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";

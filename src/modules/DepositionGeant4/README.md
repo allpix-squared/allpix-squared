@@ -7,6 +7,7 @@
 Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
 It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
+The number of electron/hole pairs created is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
 
 #### Source Shapes
 
@@ -17,7 +18,10 @@ By default, the particle directions for the square are random, as would be for a
 For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic.
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
-These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps] (only the source position and number of particles must still be defined in the main configuration file).
+These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps].
+In order to avoid collisions with internal configurations, the command `/gps/number` should be replaced by the configuration parameter `number_of_particles` in this module in order to correctly execute the Geant4 event loop.
+
+All source positions defined in the macro via the commands `/gps/position` and `/gps/pos/centre` are used to automatically extend the Geant4 world volume to always include the sources.
 
 #### Particles, Ions and Radioactive Decays
 
@@ -25,9 +29,10 @@ The particle type can be set via a string (`particle_type`) or by the respective
 
 Radioactive sources can be simulated simply by setting their isotope name in the `particle_type` parameter, and optionally by setting the source energy to zero for a decay in rest.
 The `G4RadioactiveDecay` package [@g4radioactive] is used to simulate the decay of the radioactive nuclei.
-Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated.
+Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated. The full decay chain can be simulated if the `decay_cutoff_time` is set to the appropriate value for this chain.
 Radioactive isotopes are forced to decay immediately in order to allow sensible measurements of arrival and deposition times.
 Currently, the following radioactive isotopes are supported: `Fe55`, `Am241`, `Sr90`, `Co60`, `Cs137`.
+Note that for `Cs137` the `decay_cutoff_time` has to be set to 221 seconds for the decay to work properly.
 
 Ions can be used as particles by setting their atomic properties, i.e. the atomic number Z, the atomic mass A, their charge Q and the excitation energy E via the following syntax:
 
@@ -63,7 +68,8 @@ This module requires an installation Geant4.
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV).
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
 * `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
@@ -73,6 +79,8 @@ This module requires an installation Geant4.
 * `source_position` : Position of the particle source in the world geometry.
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
 * `file_name` : Name of the macro file (if source_type=**macro**).
+* `decay_cutoff_time` : Maximum lifetime of secondary particles that will be propagated in the simulation. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
+Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `decay_cutoff_time`.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
@@ -138,3 +146,5 @@ number_of_particles = 1
 [@g4gps]:  http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5
+[@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
+[@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565

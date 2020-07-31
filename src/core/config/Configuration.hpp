@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Core object of the configuration system
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -51,8 +51,8 @@ namespace allpix {
         /**
          * @brief Allow moving the configuration
          */
-        Configuration(Configuration&&) noexcept = default;
-        Configuration& operator=(Configuration&&) noexcept = default;
+        Configuration(Configuration&&) noexcept = default; // NOLINT
+        Configuration& operator=(Configuration&&) = default;
         /// @}
 
         /**
@@ -140,6 +140,15 @@ namespace allpix {
          * @return Absolute path to a file
          */
         std::string getPath(const std::string& key, bool check_exists = false) const;
+
+        /**
+         * @brief Get absolute path to file with paths relative to the configuration
+         * @param key Key to get path of
+         * @param extension File extension to be added to path if not present
+         * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
+         * @return Absolute path to a file
+         */
+        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
@@ -173,6 +182,13 @@ namespace allpix {
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
 
         /**
+         * @brief Set matrix of values for a key in a given type
+         * @param key Key to set values of
+         * @param val List of values to assign to the key
+         */
+        template <typename T> void setMatrix(const std::string& key, const Matrix<T>& val);
+
+        /**
          * @brief Set default value for a key only if it is not defined yet
          * @param key Key to possible set value of
          * @param val Value to assign if the key is not defined yet
@@ -196,8 +212,9 @@ namespace allpix {
          * @brief Set alias name for an already existing key
          * @param new_key New alias to be created
          * @param old_key Key the alias is created for
+         * @param warn Optionally print a warning message to notify of deprecation
          */
-        void setAlias(const std::string& new_key, const std::string& old_key);
+        void setAlias(const std::string& new_key, const std::string& old_key, bool warn = false);
 
         /**
          * @brief Return total number of key / value pairs

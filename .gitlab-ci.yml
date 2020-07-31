@@ -23,8 +23,8 @@ stages:
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
-        - ninja
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
+        - ninja -k0
         - ninja install
     artifacts:
         paths:
@@ -35,36 +35,43 @@ stages:
 
 cmp:slc6-gcc:
     extends: .compile
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
-cmp:slc6-llvm:
-    extends: .compile
-    image: clicdp/slc6-base
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
     extends: .compile
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="gcc"
         - source etc/scripts/setup_lxplus.sh
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - ninja
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
+        - ninja -k0
         - ninja install
+
+cmp:cc7-docker:
+    extends: .compile
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
+    script:
+        - mkdir build
+        - cd build
+        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - make
+        - make install
 
 cmp:cc7-gcc:
     extends: .compile
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
@@ -72,23 +79,23 @@ cmp:cc7-gcc:
 
 cmp:cc7-llvm:
     extends: .compile
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
 
-cmp:mac1013-clang:
+cmp:mac1015-clang:
     extends: .compile
     tags:
         - mac
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
     script:
         - mkdir build
         - cd build
-        - cmake -GNinja -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DGeant4_DIR=$G4LIB -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
-        - ninja
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
+        - ninja -k0
         - ninja install
 
 
@@ -105,33 +112,11 @@ cmp:mac1013-clang:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
 
-# SLC 6
-
-fmt:slc6-llvm-format:
-    extends: .format
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - cd build/
-        - ninja check-format
-
-fmt:slc6-llvm-lint:
-    extends: .format
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    script:
-        - cd build/
-        - ninja check-lint
-
-# CentOS 7
-
 fmt:cc7-llvm-format:
     extends: .format
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - cd build/
         - ninja check-format
@@ -140,12 +125,39 @@ fmt:cc7-llvm-lint:
     extends: .format
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - cd build/
         - ninja check-lint
 
 
+fmt:coverage:
+    extends: .format
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - export PATH=$PATH:/home/sftnight/.local/bin
+    script:
+        - source .gitlab/ci/load_deps.sh
+        - pip install --trusted-host=pypi.org --user gcovr
+        - mkdir build
+        - cd build
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
+        - ninja -k0
+        - ninja install
+        - ninja coverage_gcovr
+
+fmt:codespell:
+    extends: .format
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    dependencies: []
+    script:
+        - source .gitlab/ci/load_deps.sh
+        - export PATH=~/.local/bin:$PATH
+        - pip install --trusted-host=pypi.org --user codespell
+        - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty"
 
 ##############
 # Unit tests #
@@ -175,7 +187,7 @@ examples:
     extends: .test
     dependencies:
         - cmp:cc7-gcc
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -189,23 +201,25 @@ mod:slc6-gcc:
     extends: .testmod
     dependencies:
         - cmp:slc6-gcc
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:slc6-gcc:
     extends: .testcore
     dependencies:
         - cmp:slc6-gcc
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 mod:lxplus-gcc:
     extends: .testmod
     dependencies:
         - cmp:lxplus-gcc
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
@@ -213,36 +227,27 @@ core:lxplus-gcc:
     extends: .testcore
     dependencies:
         - cmp:lxplus-gcc
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
-mod:slc6-llvm:
-    extends: .testmod
-    dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
+# CentOS 7
 
-core:slc6-llvm:
+core:cc7-docker:
     extends: .testcore
     dependencies:
-        - cmp:slc6-llvm
-    image: clicdp/slc6-base
+        - cmp:cc7-docker
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+        entrypoint: [""]
     before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-
-
-# CentOS 7
+        - source scl_source enable devtoolset-7 || echo " "
 
 mod:cc7-gcc:
     extends: .testmod
     dependencies:
         - cmp:cc7-gcc
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -251,7 +256,7 @@ core:cc7-gcc:
     extends: .testcore
     dependencies:
         - cmp:cc7-gcc
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -260,41 +265,43 @@ mod:cc7-llvm:
     extends: .testmod
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 core:cc7-llvm:
     extends: .testcore
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
 
 
 # Mac OS X
 
-mod:mac1013-clang:
+mod:mac1015-clang:
     extends: .testmod
     tags:
         - mac
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
-core:mac1013-clang:
+core:mac1015-clang:
     extends: .testcore
     tags:
         - mac
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
 
@@ -321,7 +328,7 @@ perf:cc7-gcc:
     extends: .testperf
     dependencies:
         - cmp:cc7-gcc
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -331,19 +338,19 @@ perf:cc7-gcc:
     extends: .testperf
     dependencies:
         - cmp:cc7-llvm
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:mac1013-clang:
+.perf:mac1015-clang:
     extends: .testperf
     dependencies:
-        - cmp:mac1013-clang
+        - cmp:mac1015-clang
     before_script:
-        - source .gitlab/ci/init_mac.sh
+        - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
 
 
@@ -364,7 +371,7 @@ perf:cc7-gcc:
 # Compile Doxygen reference
 cmp:doxygen:
     extends: .doc
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     dependencies: []
     script:
         - source .gitlab/ci/init_x86_64.sh
@@ -422,7 +429,7 @@ cmp:usermanual:
 
 pkg:slc6-gcc:
     extends: .pack
-    image: clicdp/slc6-base
+    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     dependencies:
         - cmp:slc6-gcc
     before_script:
@@ -432,7 +439,7 @@ pkg:slc6-gcc:
 
 pkg:cc7-gcc:
     extends: .pack
-    image: clicdp/cc7-base
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     dependencies:
         - cmp:cc7-gcc
     before_script:

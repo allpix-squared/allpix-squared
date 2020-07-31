@@ -16,59 +16,99 @@
 
 class ThreadPool {
 private:
-    class ThreadWorker {
-    private:
-        ThreadPool* pool_;
+    using Task = std::unique_ptr<std::packaged_task<void()>>;
 
-    public:
-        ThreadWorker(ThreadPool* pool, allpix::LogLevel log_level) : pool_(pool) {
-            // Set logging level
-            allpix::Log::setReportingLevel(log_level);
-        }
-        void operator()() {
-            std::function<void()> func;
-            bool dequeued;
-            while(!pool_->shutdown_) {
-                {
-                    std::unique_lock<std::mutex> lock(pool_->conditional_mutex_);
-                    if(pool_->queue_.empty()) {
-                        pool_->conditional_lock_.wait(lock);
-                    }
-                    dequeued = pool_->queue_.pop(func);
-                }
-                if(dequeued) {
-                    func();
-                }
-            }
-        }
-    };
+    std::atomic_bool done_{false};
 
-    bool shutdown_;
-    allpix::ThreadPool::SafeQueue<std::function<void()>> queue_;
+    allpix::ThreadPool::SafeQueue<Task> queue_;
+
+    std::atomic<unsigned int> run_cnt_;
+    std::mutex run_mutex_;
+    std::condition_variable run_condition_;
     std::vector<std::thread> threads_;
-    std::mutex conditional_mutex_;
-    std::condition_variable conditional_lock_;
 
-public:
-    ThreadPool(const unsigned int n_threads, allpix::LogLevel log_level)
-        : shutdown_(false), threads_(std::vector<std::thread>(n_threads)) {
-        for(auto& thread : threads_) {
-            thread = std::thread(ThreadWorker(this, log_level));
+    std::atomic_flag has_exception_;
+    std::exception_ptr exception_ptr_{nullptr};
+
+    /**
+     * @brief Constantly running internal function each thread uses to acquire work items from the queue.
+     * @param init_function Function to initialize the relevant thread_local variables
+     */
+    void worker(const std::function<void()>& init_function) {
+        // Initialize the worker
+        init_function();
+
+        // Safe lambda to increase the atomic run count
+        auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+
+        // Continue running until the thread pool is finished
+        while(!done_) {
+            Task task{nullptr};
+            if(queue_.pop(task, true, increase_run_cnt_func)) {
+                // Try to run task
+                try {
+                    // Execute task
+                    (*task)();
+                    // Fetch the future to propagate exceptions
+                    task->get_future().get();
+                } catch(...) {
+                    // Check if the first exception thrown
+                    if(has_exception_.test_and_set()) {
+                        // Save first exception
+                        exception_ptr_ = std::current_exception();
+                        // Invalidate the queue to terminate other threads
+                        queue_.invalidate();
+                    }
+                }
+
+                // Propagate that the task has been finished
+                std::lock_guard<std::mutex> lock{run_mutex_};
+                --run_cnt_;
+                run_condition_.notify_all();
+            }
         }
     }
 
+public:
+    /**
+     * @brief Construct thread pool with provided number of threads
+     * @param num_threads Number of threads in the pool
+     * @param worker_init_function Function run by all the workers to initialize
+     */
+    explicit ThreadPool(const unsigned int num_threads, const std::function<void()>& worker_init_function) {
+        // Create threads
+        try {
+            for(unsigned int i = 0u; i < num_threads; ++i) {
+                threads_.emplace_back(&ThreadPool::worker, this, worker_init_function);
+            }
+        } catch(...) {
+            destroy();
+            throw;
+        }
+
+        run_cnt_ = 0;
+    }
+
+    /**
+     * @brief Destroy and wait for all threads to finish on destruction
+     */
+    ~ThreadPool() { destroy(); }
+
+    /// @{
+    /**
+     * @brief Copying the thread pool is not allowed
+     */
     ThreadPool(const ThreadPool&) = delete;
-    ThreadPool(ThreadPool&&) = delete;
-
     ThreadPool& operator=(const ThreadPool&) = delete;
-    ThreadPool& operator=(ThreadPool&&) = delete;
+    /// @}
 
-    // Waits until threads finish their current task and shutdowns the pool
-    void shutdown() {
-        shutdown_ = true;
-        conditional_lock_.notify_all();
+    /**
+     * @brief Invalidate all queues and joins all running threads when the pool is destroyed.
+     */
+    void destroy() {
+        done_ = true;
+
         queue_.invalidate();
-
         for(auto& thrd : threads_) {
             if(thrd.joinable()) {
                 thrd.join();
@@ -76,24 +116,26 @@ public:
         }
     }
 
-    // Submit a function to be executed asynchronously by the pool
-    template <typename F, typename... Args> auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
-        // Create a function with bounded parameters ready to execute
-        std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-        // Encapsulate it into a shared ptr in order to be able to copy construct / assign
-        auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
+    /**
+     * @brief Submit a job to be run by the thread pool
+     * @param func Function to execute by the pool
+     * @param args Parameters to pass to the function
+     * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
+     *          there are no threads available
+     */
+    template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args) {
+        // Bind the arguments to the tasks
+        auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
 
-        // Wrap packaged task into void function
-        std::function<void()> wrapper_func = [task_ptr]() { (*task_ptr)(); };
+        // Construct packaged task with correct return type
+        using PackagedTask = std::packaged_task<decltype(bound_task())()>;
+        PackagedTask task(bound_task);
 
-        // Enqueue generic wrapper function
-        queue_.push(wrapper_func);
-
-        // Wake up one thread if its waiting
-        conditional_lock_.notify_one();
-
-        // Return future from promise
-        return task_ptr->get_future();
+        // Get future and wrapper to add to vector
+        auto future = task.get_future();
+        auto task_function = [task = std::move(task)]() mutable { task(); };
+        queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+        return future;
     }
 };
 

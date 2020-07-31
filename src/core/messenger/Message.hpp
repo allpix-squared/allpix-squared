@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Base for the message implementation
- * @copyright Copyright (c) 2017 CERN and the Allpix Squared authors.
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -84,7 +85,7 @@ namespace allpix {
          * @param data List of data objects
          * @param detector Linked detector
          */
-        Message(std::vector<T> data, std::shared_ptr<const Detector> detector);
+        Message(std::vector<T> data, const std::shared_ptr<const Detector>& detector);
 
         /**
          * @brief Get a reference to the data in this message

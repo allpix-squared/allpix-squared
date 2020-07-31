@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Implements a G4VUserTrackInformation to carry unique track and parent track IDs
+ *
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
 #include "TrackInfoG4.hpp"
 #include "G4VProcess.hh"
 
@@ -18,7 +28,6 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
 void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_kin_E_ = aTrack->GetKineticEnergy();
     final_tot_E_ = aTrack->GetTotalEnergy();
-    n_steps_ = aTrack->GetCurrentStepNumber();
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
 }
 
@@ -44,10 +53,6 @@ int TrackInfoG4::getParticleID() const {
 
 int TrackInfoG4::getCreationProcessType() const {
     return origin_g4_process_type_;
-}
-
-int TrackInfoG4::getNumberOfSteps() const {
-    return n_steps_;
 }
 
 double TrackInfoG4::getKineticEnergyInitial() const {
