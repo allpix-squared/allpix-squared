@@ -73,10 +73,10 @@ namespace allpix {
             bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
 
             /**
-             * @brief Return if the support layer hole type
-             * @return the support layer hole type
+             * @brief Return the support layer hole type
+             * @return support layer hole type
              */
-            std::string isHoleType() { return type_; }
+            std::string getHoleType() { return type_; }
 
             /**
              * @brief Get the center of the hole in the support layer

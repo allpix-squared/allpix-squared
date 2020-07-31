@@ -60,8 +60,9 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
         }
 
         auto material = support_config.get<std::string>("material", "g10");
-        auto hole_type = support_config.get<std::string>("hole_type", "rectangular");
         std::transform(material.begin(), material.end(), material.begin(), ::tolower);
+        auto hole_type = support_config.get<std::string>("hole_type", "rectangular");
+        std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
         addSupportLayer(size, thickness, offset, material, hole_type, location, hole_size, hole_offset);
