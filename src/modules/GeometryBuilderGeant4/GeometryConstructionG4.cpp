@@ -15,7 +15,6 @@
 #include <utility>
 
 #include <G4Box.hh>
-#include <G4EllipticalTube.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
