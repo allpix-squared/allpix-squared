@@ -128,7 +128,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void GenericPropagationModule::create_output_plots(unsigned int event_num, OutputPlotPoints& output_plot_points) {
+void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points) {
     LOG(TRACE) << "Writing output plots";
 
     // Convert to pixel units if necessary

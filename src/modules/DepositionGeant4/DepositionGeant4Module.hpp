@@ -96,7 +96,7 @@ namespace allpix {
         static thread_local std::vector<SensitiveDetectorActionG4*> sensors_;
 
         // Number of the last event
-        std::atomic_uint last_event_num_{0};
+        std::atomic_uint64_t last_event_num_{0};
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
