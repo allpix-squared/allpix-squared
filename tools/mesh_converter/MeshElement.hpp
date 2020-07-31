@@ -1,13 +1,28 @@
+#ifndef ALLPIX_MESHELEMENT_H
+#define ALLPIX_MESHELEMENT_H
+
 #include <Eigen/Eigen>
 #include <array>
 #include <utility>
 
 #include "core/utils/log.h"
-
-#include "DFISEParser.hpp"
 #include "octree/Octree.hpp"
 
 namespace mesh_converter {
+    // Simple point class to store data
+    class Point {
+    public:
+        Point() noexcept = default;
+        Point(double px, double py, double pz = 0) noexcept : x(px), y(py), z(pz) {}
+
+        double x{0}, y{0}, z{0};
+
+        friend std::ostream& operator<<(std::ostream& out, const Point& pt) {
+            out << "(" << pt.x << "," << pt.y << "," << pt.z << ")";
+            return out;
+        }
+    };
+
     /**
      * @brief Tetrahedron class for the 3D barycentric interpolation
      */
@@ -146,3 +161,5 @@ namespace mesh_converter {
     };
 
 } // namespace mesh_converter
+
+#endif // ALLPIX_MESHELEMENT_H
