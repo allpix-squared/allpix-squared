@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <G4Box.hh>
+#include <G4EllipticalTube.hh>
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4NistManager.hh>
@@ -209,17 +210,28 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             std::shared_ptr<G4VSolid> support_solid = support_box;
             if(layer.hasHole()) {
                 // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
-                auto hole_box = make_shared_no_delete<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
-                                                             layer.getHoleSize().x() / 2.0,
-                                                             layer.getHoleSize().y() / 2.0,
-                                                             layer.getHoleSize().z());
-                solids_.push_back(hole_box);
+                std::shared_ptr<G4VSolid> hole_solid;
+
+                if(layer.getHoleType() == "cylinder") {
+                    hole_solid =
+                        make_shared_no_delete<G4EllipticalTube>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                                layer.getHoleSize().x() / 2.0,
+                                                                layer.getHoleSize().y() / 2.0,
+                                                                layer.getHoleSize().z());
+                } else {
+                    hole_solid = make_shared_no_delete<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                              layer.getHoleSize().x() / 2.0,
+                                                              layer.getHoleSize().y() / 2.0,
+                                                              layer.getHoleSize().z());
+                }
+
+                solids_.push_back(hole_solid);
 
                 G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
                 auto subtraction_solid = make_shared_no_delete<G4SubtractionSolid>("support_" + name + "_subtraction_" +
                                                                                        std::to_string(support_idx),
                                                                                    support_box.get(),
-                                                                                   hole_box.get(),
+                                                                                   hole_solid.get(),
                                                                                    transform);
                 solids_.push_back(subtraction_solid);
                 support_solid = subtraction_solid;
