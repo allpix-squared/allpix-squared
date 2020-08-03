@@ -49,7 +49,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
-    config_.setDefault<double>("sigma_noise", Units::get(0.1e-3, "V"));
+    config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
     config_.setDefault<double>("clock_bin_toa", Units::get(1.5625, "ns"));
     config_.setDefault<double>("clock_bin_tot", Units::get(25.0, "ns"));
 
@@ -186,8 +186,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
             amplified_pulse_integral += outsum;
         }
         // amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
-        LOG(TRACE) << "amplified signal without noise " << amplified_pulse_integral << " in a pulse with "
-                   << amplified_pulse_vec.size() << "bins";
+        LOG(TRACE) << "integrated amplified signal without noise " << Units::display(amplified_pulse_integral, "V")
+                   << " in a pulse with " << amplified_pulse_vec.size() << "bins";
 
         // apply noise on the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
@@ -207,7 +207,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         double toa{}, tot{}, jtoa{}, jtot{};
         // first find the point where the signal crosses the threshold, latch toa
         while(jtoa < tmax_) {
-            if(amplified_pulse_vec.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
+            if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
                 is_over_threshold = true;
                 toa = jtoa;
                 break;
@@ -219,14 +219,15 @@ void CSADigitizerModule::run(unsigned int event_num) {
         //        int jtot = static_cast<int>(ceil(toa / clockToT_));
         jtot = clockToT_ * (ceil(toa / clockToT_));
         while(is_over_threshold && jtot < tmax_) {
-            if(amplified_pulse_vec.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
+            if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
                 tot += clockToT_;
             } else {
                 is_over_threshold = false;
             }
             jtot += clockToT_;
         }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) " << amplified_pulse_integral;
+        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) "
+                  << Units::display(amplified_pulse_integral, "V");
 
         if(output_plots_) {
             h_tot->Fill(tot);
@@ -236,44 +237,19 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            // -------- first the amplified (and shaped) pulses without noise
-            // Generate x-axis:
-            std::vector<double> amptime(amplified_pulse_vec.size());
-            // clang-format off
-            std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
-            // clang-format on
+            create_output_pulsegraphs(std::to_string(event_num),
+                                      std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
+                                      "csa_pulse_before_noise",
+                                      "Amplifier signal",
+                                      timestep,
+                                      amplified_pulse_vec);
 
-            std::string name = "csa_pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) + "-" +
-                               std::to_string(pixel_index.y());
-            auto csa_pulse_graph =
-                new TGraph(static_cast<int>(amplified_pulse_vec.size()), &amptime[0], &amplified_pulse_vec[0]);
-            csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
-            csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
-            // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < csa_pulse_graph->GetN(); ++i) {
-                csa_pulse_graph->GetY()[i] *= 1e9;
-            }
-            csa_pulse_graph->SetTitle(("Amplifier signal in pixel (" + std::to_string(pixel_index.x()) + "," +
-                                       std::to_string(pixel_index.y()) + ")")
-                                          .c_str());
-            getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
-
-            // -------- now the same for the amplified (and shaped) pulses with noise
-            name = "amplified_pulse_with_noise_ev" + std::to_string(event_num) + "_px" + std::to_string(pixel_index.x()) +
-                   "-" + std::to_string(pixel_index.y());
-            auto amplified_pulse_with_noise_graph =
-                new TGraph(static_cast<int>(amplified_pulse_with_noise.size()), &amptime[0], &amplified_pulse_with_noise[0]);
-            amplified_pulse_with_noise_graph->GetXaxis()->SetTitle("t [ns]");
-            amplified_pulse_with_noise_graph->GetYaxis()->SetTitle("CSA output [mV]");
-            // scale the y-axis values to be in mV instead of MV
-            for(int i = 0; i < amplified_pulse_with_noise_graph->GetN(); ++i) {
-                amplified_pulse_with_noise_graph->GetY()[i] *= 1e9;
-            }
-            amplified_pulse_with_noise_graph->SetTitle(("Amplifier signal with added noise in pixel (" +
-                                                        std::to_string(pixel_index.x()) + "," +
-                                                        std::to_string(pixel_index.y()) + ")")
-                                                           .c_str());
-            getROOTDirectory()->WriteTObject(amplified_pulse_with_noise_graph, name.c_str());
+            create_output_pulsegraphs(std::to_string(event_num),
+                                      std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
+                                      "csa_pulse_with_noise",
+                                      "Amplifier signal with added noise",
+                                      timestep,
+                                      amplified_pulse_with_noise);
         }
 
         // Add the hit to the hitmap
@@ -292,6 +268,33 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
         messenger_->dispatchMessage(this, hits_message);
     }
+}
+
+void CSADigitizerModule::create_output_pulsegraphs(std::string s_event_num,
+                                                   std::string s_pixel_index,
+                                                   std::string s_name,
+                                                   std::string s_title,
+                                                   double timestep,
+                                                   std::vector<double> plot_pulse_vec) {
+    // -------- first the amplified (and shaped) pulses without noise
+    // Generate x-axis:
+    std::vector<double> amptime(plot_pulse_vec.size());
+    // clang-format off
+    std::generate(amptime.begin(), amptime.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+    // clang-format on
+
+    // scale the y-axis values to be in mV instead of MV
+    std::vector<double> pulse_in_mV(plot_pulse_vec.size());
+    double scale = 1e9;
+    std::transform(
+        plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [&scale](auto& c) { return c * scale; });
+
+    std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
+    auto csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), &amptime[0], &pulse_in_mV[0]);
+    csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
+    csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
+    csa_pulse_graph->SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());
+    getROOTDirectory()->WriteTObject(csa_pulse_graph, name.c_str());
 }
 
 void CSADigitizerModule::finalize() {

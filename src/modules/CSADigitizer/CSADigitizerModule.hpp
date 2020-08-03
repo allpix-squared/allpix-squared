@@ -68,6 +68,16 @@ namespace allpix {
          */
         void finalize() override;
 
+        /**
+         * @brief Create output plots of the pulses
+         */
+        void create_output_pulsegraphs(std::string s_event_num,
+                                       std::string s_pixel_index,
+                                       std::string s_name,
+                                       std::string s_title,
+                                       double timestep,
+                                       std::vector<double> plot_pulse_vec);
+
     private:
         bool output_plots_{}, output_pulsegraphs_{}, first_event_{true}, store_tot_{true};
 
@@ -88,7 +98,6 @@ namespace allpix {
 
         // helper variables for transfer function
         double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
-
         std::vector<double> impulse_response_function__;
 
         // Output histograms
