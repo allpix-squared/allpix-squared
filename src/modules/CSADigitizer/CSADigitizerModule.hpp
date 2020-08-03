@@ -80,17 +80,16 @@ namespace allpix {
 
         DigitizerType model_;
         // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance,
-        // transconductance, v temperature, feedback time constant, risetime time constant
+        // transconductance, Boltzmann kT, feedback time constant, risetime time constant
         double ikrum_{}, capacitance_detector_{}, capacitance_feedback_{}, capacitance_output_;
-        double gm_{}, v_temperature_{}, tauF_{}, tauR_{};
+        double gm_{}, boltzmann_kT_{}, tauF_{}, tauR_{};
         // parameters of the electronics: noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
         // helper variables for transfer function
         double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
-        double calcImpRes_(double x);
-        std::vector<double> impulseResponse_;
-        //      TF1* fImpulseResponse_{};
+
+        std::vector<double> impulse_response_function__;
 
         // Output histograms
         TH1D *h_tot{}, *h_toa{};

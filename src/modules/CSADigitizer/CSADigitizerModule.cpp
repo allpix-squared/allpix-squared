@@ -94,13 +94,13 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         capacitance_feedback_ = config_.get<double>("feedback_capacitance");
         capacitance_output_ = config_.get<double>("amp_output_capacitance");
         gm_ = config_.get<double>("transconductance");
-        v_temperature_ = config_.get<double>("temperature") * 8.617333262145e-11; // Boltzmann kT in MeV
+        boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        transconductance_feedback_ = ikrum_ / (2.0 * 1.5 * v_temperature_);
+        transconductance_feedback_ = ikrum_ / (2.0 * 1.5 * boltzmann_kT_);
         resistance_feedback_ = 2. / transconductance_feedback_; // feedback resistor
         tauF_ = resistance_feedback_ * capacitance_feedback_;
         tauR_ = (capacitance_detector_ * capacitance_output_) / (gm_ * capacitance_feedback_);
@@ -133,14 +133,6 @@ void CSADigitizerModule::init() {
     }
 }
 
-// impulse response of the CSA from Kleczek 2016 JINST11 C12001
-// H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
-// tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
-// inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
-double CSADigitizerModule::calcImpRes_(double x) {
-    return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
-}
-
 void CSADigitizerModule::run(unsigned int event_num) {
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
@@ -154,36 +146,46 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
         auto pulse_vec = pulse.getPulse();           // the vector of the charges
         auto timestep = pulse.getBinning();
-        auto npx = static_cast<size_t>(ceil(tmax_ / timestep));
+        auto ntimepoints = static_cast<size_t>(ceil(tmax_ / timestep));
 
         if(first_event_) { // initialize impulse response function - assume all time bins are equal
-            impulseResponse_.reserve(npx);
-            for(size_t ipx = 0; ipx < npx; ++ipx) {
-                impulseResponse_.push_back(calcImpRes_(timestep * static_cast<double>(ipx)));
+            impulse_response_function__.reserve(ntimepoints);
+            // impulse response of the CSA from Kleczek 2016 JINST11 C12001
+            // H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
+            // tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
+            // inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
+            auto calculate_impulse_response = [&](double x) {
+                return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
+            };
+            for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
+                impulse_response_function__.push_back(
+                    calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
             first_event_ = false;
-            LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_ << ", npx "
-                       << npx;
+            LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_
+                       << ", ntimepoints " << ntimepoints;
         }
 
-        std::vector<double> amplified_pulse_vec(npx);
+        std::vector<double> amplified_pulse_vec(ntimepoints);
         auto input_length = pulse_vec.size();
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse_vec.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
-        // convolution of the pulse (size input_length) with the impulse response (size npx)
-        for(size_t k = 0; k < npx; ++k) {
-            double outsum = 0.0;
-            // convolution: multiply pulse_vec.at(k - i) * impulseResponse_.at(i), when (k - i) < input_length
+        // convolution of the pulse (size input_length) with the impulse response (size ntimepoints)
+        double amplified_pulse_integral{};
+        for(size_t k = 0; k < ntimepoints; ++k) {
+            double outsum{};
+            // convolution: multiply pulse_vec.at(k - i) * impulse_response_function__.at(i), when (k - i) < input_length
             // -> no point to start i at 0, start from jmin:
             size_t jmin = (k >= input_length - 1) ? k - (input_length - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
                 if((k - i) < input_length) {
-                    outsum += pulse_vec.at(k - i) * impulseResponse_.at(i);
+                    outsum += pulse_vec.at(k - i) * impulse_response_function__.at(i);
                 }
             }
             amplified_pulse_vec.at(k) = outsum;
+            amplified_pulse_integral += outsum;
         }
-        auto amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
+        // amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
         LOG(TRACE) << "amplified signal without noise " << amplified_pulse_integral << " in a pulse with "
                    << amplified_pulse_vec.size() << "bins";
 
