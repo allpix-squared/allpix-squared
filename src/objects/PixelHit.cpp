@@ -65,7 +65,7 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+        mc_particles.emplace_back(mc_particle);
     }
 
     // Return as a vector of mc particles
@@ -80,11 +80,10 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
     std::vector<const MCParticle*> primary_particles;
     for(auto& mc_particle_ptr : mc_particles_ref_) {
-        auto mc_particle = reinterpret_cast<MCParticle*>(mc_particle_ptr);
-        if(mc_particle == nullptr) {
+        auto particle = reinterpret_cast<MCParticle*>(mc_particle_ptr);
+        if(particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        auto particle = dynamic_cast<MCParticle*>(mc_particle);
 
         // Check for possible parents:
         if(particle->getParent() != nullptr) {

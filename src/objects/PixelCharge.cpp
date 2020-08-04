@@ -67,7 +67,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
         if(propagated_charge == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
-        propagated_charges.emplace_back(dynamic_cast<PropagatedCharge*>(propagated_charge));
+        propagated_charges.emplace_back(propagated_charge);
     }
     return propagated_charges;
 }
@@ -85,7 +85,7 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
         if(mc_particle == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(dynamic_cast<MCParticle*>(mc_particle));
+        mc_particles.emplace_back(mc_particle);
     }
 
     // Return as a vector of mc particles
