@@ -795,8 +795,9 @@ void ModuleManager::finalize() {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
+    auto total_events = global_config.get<unsigned int>("number_of_events");
+    if(total_events > 0) {
+        processing_time = std::round((1000 * total_time_) / total_events);
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
