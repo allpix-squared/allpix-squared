@@ -153,7 +153,7 @@ namespace allpix {
         double initial_tot_E_{};
         double final_tot_E_{};
 
-        Object* parent_ref_;
+        uintptr_t parent_ref_;
         TRef parent_;
     };
 

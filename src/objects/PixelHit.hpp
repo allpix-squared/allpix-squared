@@ -96,8 +96,8 @@ namespace allpix {
         double time_{};
         double signal_{};
 
-        Object* pixel_charge_ref_;
-        std::vector<Object*> mc_particles_ref_;
+        uintptr_t pixel_charge_ref_;
+        std::vector<uintptr_t> mc_particles_ref_;
         TRef pixel_charge_;
         std::vector<TRef> mc_particles_;
     };

@@ -132,8 +132,8 @@ namespace allpix {
         int particle_id_{};
         double time_{};
 
-        Object* parent_ref_;
-        Object* track_ref_;
+        uintptr_t parent_ref_;
+        uintptr_t track_ref_;
         TRef parent_;
         TRef track_;
     };

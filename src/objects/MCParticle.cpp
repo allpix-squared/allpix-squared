@@ -66,25 +66,25 @@ double MCParticle::getTime() const {
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ref_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+    parent_ref_ = reinterpret_cast<uintptr_t>(mc_particle); // NOLINT
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getParent() const {
-    return dynamic_cast<MCParticle*>(parent_ref_);
+    return reinterpret_cast<MCParticle*>(parent_ref_);
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
-    track_ref_ = const_cast<MCTrack*>(mc_track); // NOLINT
+    track_ref_ = reinterpret_cast<uintptr_t>(mc_track); // NOLINT
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCParticle::getTrack() const {
-    return dynamic_cast<MCTrack*>(track_ref_);
+    return reinterpret_cast<MCTrack*>(track_ref_);
 }
 
 void MCParticle::print(std::ostream& out) const {
@@ -133,14 +133,14 @@ void MCParticle::print(std::ostream& out) const {
 }
 
 void MCParticle::storeHistory() {
-    parent_ = TRef(parent_ref_);
-    parent_ref_ = nullptr;
-    track_ = TRef(track_ref_);
-    track_ref_ = nullptr;
+    parent_ = TRef(reinterpret_cast<MCParticle*>(parent_ref_));
+    parent_ref_ = 0;
+    track_ = TRef(reinterpret_cast<MCTrack*>(track_ref_));
+    track_ref_ = 0;
 }
 
 void MCParticle::loadHistory() {
-    parent_ref_ = dynamic_cast<Object*>(parent_.GetObject());
-    track_ref_ = dynamic_cast<Object*>(track_.GetObject());
+    parent_ref_ = reinterpret_cast<uintptr_t>(parent_.GetObject());
+    track_ref_ = reinterpret_cast<uintptr_t>(track_.GetObject());
     // FIXME we need to reset TRef member
 }

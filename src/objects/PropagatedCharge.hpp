@@ -96,8 +96,8 @@ namespace allpix {
         void loadHistory() override;
 
     private:
-        Object* deposited_charge_ref_;
-        Object* mc_particle_ref_{nullptr};
+        uintptr_t deposited_charge_ref_;
+        uintptr_t mc_particle_ref_;
         TRef deposited_charge_;
         TRef mc_particle_{nullptr};
         std::map<Pixel::Index, Pulse> pulses_;

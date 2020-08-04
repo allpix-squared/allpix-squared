@@ -75,7 +75,7 @@ namespace allpix {
         // TRef object for storage in output file
         TRef mc_particle_;
         // Run-time object reference
-        Object* mc_particle_ref_;
+        uintptr_t mc_particle_ref_;
     };
 
     /**
