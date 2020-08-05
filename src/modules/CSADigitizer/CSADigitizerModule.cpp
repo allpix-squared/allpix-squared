@@ -206,17 +206,24 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            createOutputPulsegraphs(std::to_string(event_num),
-                                    std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                    "csa_pulse_before_noise",
-                                    "Amplifier signal",
+            const std::string s_event_num=std::to_string(event_num);
+            const std::string s_pixel_index=std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y());
+            const std::string s_name_without="csa_pulse_before_noise";
+            const std::string s_title_without="Amplifier signal without noise";
+            const std::string s_name_with="csa_pulse_with_noise";
+            const std::string s_title_with="Amplifier signal with added noise";
+
+            createOutputPulsegraphs(s_event_num,
+                                    s_pixel_index,
+                                    s_name_without,
+                                    s_title_without,
                                     timestep,
                                     amplified_pulse_vec);
 
             createOutputPulsegraphs(std::to_string(event_num),
                                     std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                    "csa_pulse_with_noise",
-                                    "Amplifier signal with added noise",
+                                    s_name_with,
+                                    s_title_with,
                                     timestep,
                                     amplified_pulse_with_noise);
         }
@@ -272,8 +279,6 @@ void CSADigitizerModule::compareWithThreshold(double& toa,
         }
         jtot += clockToT_;
     }
-
-    return;
 }
 
 void CSADigitizerModule::createOutputPulsegraphs(const std::string s_event_num,
