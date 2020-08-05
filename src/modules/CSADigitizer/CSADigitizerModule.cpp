@@ -281,10 +281,10 @@ void CSADigitizerModule::compareWithThreshold(double& toa,
     }
 }
 
-void CSADigitizerModule::createOutputPulsegraphs(const std::string s_event_num,
-                                                 const std::string s_pixel_index,
-                                                 const std::string s_name,
-                                                 const std::string s_title,
+void CSADigitizerModule::createOutputPulsegraphs(const& std::string s_event_num,
+                                                 const& std::string s_pixel_index,
+                                                 const& std::string s_name,
+                                                 const& std::string s_title,
                                                  double timestep,
                                                  std::vector<double> plot_pulse_vec) {
     // -------- first the amplified (and shaped) pulses without noise

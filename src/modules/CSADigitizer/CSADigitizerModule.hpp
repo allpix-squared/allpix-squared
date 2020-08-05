@@ -76,10 +76,10 @@ namespace allpix {
         /**
          * @brief Create output plots of the pulses
          */
-        void createOutputPulsegraphs(const std::string s_event_num,
-                                     const std::string s_pixel_index,
-                                     const std::string s_name,
-                                     const std::string s_title,
+        void createOutputPulsegraphs(const& std::string s_event_num,
+                                     const& std::string s_pixel_index,
+                                     const& std::string s_name,
+                                     const& std::string s_title,
                                      double timestep,
                                      std::vector<double> plot_pulse_vec);
 
