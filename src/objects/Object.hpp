@@ -76,6 +76,71 @@ namespace allpix {
             print(std::cout);
             std::cout << std::endl;
         }
+
+    public:
+        template <class T> class ReferenceWrapper {
+        public:
+            ReferenceWrapper() = default;
+            ~ReferenceWrapper() = default;
+            ReferenceWrapper(const T* obj) {
+                std::cout << "Construct: " << obj << std::endl;
+                set(obj);
+            }
+
+            /**
+             * Custom copy constructor to not copu the pointer but update it from the TRef object
+             * @param rhs Object to be copied
+             */
+            ReferenceWrapper(const ReferenceWrapper& rhs) {
+                std::cout << "Copy constructor " << &rhs << " to " << this << std::endl;
+                print(&rhs);
+
+                ref_ = rhs.ref_;
+                ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
+
+                print(this);
+            }
+
+            /// @{
+            /**
+             * @brief Use default assignment behaviour
+             */
+            ReferenceWrapper& operator=(const ReferenceWrapper& rhs) = default;
+            /// @}
+
+            /// @{
+            /**
+             * @brief Use default move behaviour
+             */
+            ReferenceWrapper(ReferenceWrapper&& rhs) = default;
+            ReferenceWrapper& operator=(ReferenceWrapper&& rhs) = default;
+            /// @}
+
+            void set(const T* obj) {
+                std::cout << "Set: " << obj << std::endl;
+                ptr_ = reinterpret_cast<uintptr_t>(obj);
+                ref_ = const_cast<T*>(obj);
+                print(this);
+            }
+
+            T* get() const {
+                std::cout << "Get: " << this << std::endl;
+                print(this);
+                return reinterpret_cast<T*>(ptr_);
+            };
+
+            ClassDef(ReferenceWrapper, 1);
+
+        private:
+            uintptr_t ptr_{};
+            TRef ref_{};
+
+            void print(const ReferenceWrapper* wrp) const {
+                std::cout << "\t TRef resolved " << wrp->ref_.GetObject() << std::endl;
+                std::cout << "\t uintptr_t     0x" << std::hex << wrp->ptr_ << std::dec << std::endl;
+                std::cout << "\t ptr           " << reinterpret_cast<T*>(wrp->ptr_) << std::endl;
+            }
+        };
     };
 
     /**
