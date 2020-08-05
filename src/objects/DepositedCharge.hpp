@@ -69,10 +69,7 @@ namespace allpix {
         DepositedCharge() = default;
 
     private:
-        // TRef object for storage in output file
-        TRef mc_particle_;
-        // Run-time object reference
-        uintptr_t mc_particle_ref_;
+        ReferenceWrapper<MCParticle> mc_particle_;
     };
 
     /**

@@ -74,11 +74,11 @@ std::string MCTrack::getCreationProcessName() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCTrack::getParent() const {
-    return reinterpret_cast<MCTrack*>(parent_ref_);
+    return parent_.get();
 }
 
 void MCTrack::setParent(const MCTrack* mc_track) {
-    parent_ref_ = reinterpret_cast<uintptr_t>(mc_track); // NOLINT
+    parent_.set(mc_track);
 }
 
 void MCTrack::print(std::ostream& out) const {

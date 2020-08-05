@@ -17,15 +17,15 @@ using namespace allpix;
 PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<const PropagatedCharge*>& propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
-    std::set<uintptr_t> unique_particles;
+    std::set<const MCParticle*> unique_particles;
     // Store all propagated charges and their MC particles
     for(auto& propagated_charge : propagated_charges) {
-        propagated_charges_ref_.push_back(reinterpret_cast<uintptr_t>(propagated_charge)); // NOLINT
-        unique_particles.insert(propagated_charge->mc_particle_ref_);
+        propagated_charges_.emplace_back(propagated_charge);
+        unique_particles.insert(propagated_charge->mc_particle_.get());
     }
     // Store the MC particle references
     for(auto& mc_particle : unique_particles) {
-        mc_particles_ref_.push_back(mc_particle);
+        mc_particles_.emplace_back(mc_particle);
     }
 
     // No pulse provided, set full charge in first bin:
@@ -62,15 +62,11 @@ const Pulse& PixelCharge::getPulse() const {
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
-    for(auto& propagated_charge_ptr : propagated_charges_ref_) {
-        std::cout << "\t uintptr_t     0x" << std::hex << propagated_charge_ptr << std::dec << std::endl;
-        std::cout << "\t ptr           " << reinterpret_cast<PropagatedCharge*>(propagated_charge_ptr) << std::endl;
-
-        auto propagated_charge = reinterpret_cast<const PropagatedCharge*>(propagated_charge_ptr);
-        if(propagated_charge == nullptr) {
+    for(auto& propagated_charge : propagated_charges_) {
+        if(propagated_charge.get() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
-        propagated_charges.emplace_back(propagated_charge);
+        propagated_charges.emplace_back(propagated_charge.get());
     }
     return propagated_charges;
 }
@@ -83,12 +79,11 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
 std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle_ptr : mc_particles_ref_) {
-        auto mc_particle = reinterpret_cast<MCParticle*>(mc_particle_ptr);
-        if(mc_particle == nullptr) {
+    for(auto& mc_particle : mc_particles_) {
+        if(mc_particle.get() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        mc_particles.emplace_back(mc_particle);
+        mc_particles.emplace_back(mc_particle.get());
     }
 
     // Return as a vector of mc particles

@@ -66,25 +66,25 @@ double MCParticle::getTime() const {
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ref_ = reinterpret_cast<uintptr_t>(mc_particle); // NOLINT
+    parent_.set(mc_particle);
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getParent() const {
-    return reinterpret_cast<MCParticle*>(parent_ref_);
+    return parent_.get();
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
-    track_ref_ = reinterpret_cast<uintptr_t>(mc_track); // NOLINT
+    track_.set(mc_track); // NOLINT
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCParticle::getTrack() const {
-    return reinterpret_cast<MCTrack*>(track_ref_);
+    return track_.get();
 }
 
 void MCParticle::print(std::ostream& out) const {

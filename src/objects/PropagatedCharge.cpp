@@ -22,9 +22,9 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double event_time,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
-    deposited_charge_ref_ = reinterpret_cast<uintptr_t>(deposited_charge); // NOLINT
+    deposited_charge_.set(deposited_charge);
     if(deposited_charge != nullptr) {
-        mc_particle_ref_ = deposited_charge->mc_particle_ref_;
+        mc_particle_ = deposited_charge->mc_particle_;
     }
 }
 
@@ -54,7 +54,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
-    auto deposited_charge = reinterpret_cast<DepositedCharge*>(deposited_charge_ref_);
+    auto deposited_charge = deposited_charge_.get();
     if(deposited_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
     }
@@ -67,7 +67,7 @@ const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* PropagatedCharge::getMCParticle() const {
-    auto mc_particle = reinterpret_cast<MCParticle*>(mc_particle_ref_);
+    auto mc_particle = mc_particle_.get();
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
