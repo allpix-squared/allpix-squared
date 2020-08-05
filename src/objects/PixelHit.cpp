@@ -113,6 +113,7 @@ void PixelHit::storeHistory() {
 
     pixel_charge_ref_ = 0;
 
+    mc_particles_.clear();
     for(auto& mc_particle : mc_particles_ref_) {
         mc_particles_.push_back(reinterpret_cast<MCParticle*>(mc_particle));
         mc_particle = 0;
@@ -128,6 +129,7 @@ void PixelHit::loadHistory() {
     std::cout << "\t uintptr_t     0x" << std::hex << pixel_charge_ref_ << std::dec << std::endl;
     std::cout << "\t ptr           " << reinterpret_cast<PixelCharge*>(pixel_charge_ref_) << std::endl;
 
+    mc_particles_ref_.clear();
     for(auto& mc_particle : mc_particles_) {
         mc_particles_ref_.push_back(reinterpret_cast<uintptr_t>(mc_particle.GetObject()));
     }
