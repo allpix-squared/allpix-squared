@@ -171,7 +171,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse_vec.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
         // convolution of the pulse (size input_length) with the impulse response (size ntimepoints)
-        double amplified_pulse_integral{};
         for(size_t k = 0; k < ntimepoints; ++k) {
             double outsum{};
             // convolution: multiply pulse_vec.at(k - i) * impulse_response_function__.at(i), when (k - i) < input_length
@@ -183,11 +182,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 }
             }
             amplified_pulse_vec.at(k) = outsum;
-            amplified_pulse_integral += outsum;
         }
-        // amplified_pulse_integral = std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0);
-        LOG(TRACE) << "integrated amplified signal without noise " << Units::display(amplified_pulse_integral, "V")
-                   << " in a pulse with " << amplified_pulse_vec.size() << "bins";
 
         // apply noise on the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
@@ -197,38 +192,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        amplified_pulse_with_noise.begin(),
                        [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
-        // re-calculate pulse integral with the noise
-        amplified_pulse_integral =
-            std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
-
         // TOA and TOT logic
-        // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
-        bool is_over_threshold = false;
-        double toa{}, tot{}, jtoa{}, jtot{};
-        // first find the point where the signal crosses the threshold, latch toa
-        while(jtoa < tmax_) {
-            if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
-                is_over_threshold = true;
-                toa = jtoa;
-                break;
-            };
-            jtoa += clockToA_;
-        }
-        // only look for ToT if the threshold was crossed in the ToA loop
-        // start from the next tot clock cycle following toa
-        //        int jtot = static_cast<int>(ceil(toa / clockToT_));
-        jtot = clockToT_ * (ceil(toa / clockToT_));
-        while(is_over_threshold && jtot < tmax_) {
-            if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
-                tot += clockToT_;
-            } else {
-                is_over_threshold = false;
-            }
-            jtot += clockToT_;
-        }
-        LOG(INFO) << "TOA " << toa << " ns, TOT " << tot << " ns, pulse sum (with noise) "
-                  << Units::display(amplified_pulse_integral, "V");
+        double toa{}, tot{};
+        compareWithThreshold(toa, tot, timestep, amplified_pulse_with_noise);
+        LOG(TRACE) << "TOA " << toa << " ns, TOT " << tot << " ns";
 
+        // Fill histograms if requested
         if(output_plots_) {
             h_tot->Fill(tot);
             h_toa->Fill(toa);
@@ -237,25 +206,28 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            create_output_pulsegraphs(std::to_string(event_num),
-                                      std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                      "csa_pulse_before_noise",
-                                      "Amplifier signal",
-                                      timestep,
-                                      amplified_pulse_vec);
+            createOutputPulsegraphs(std::to_string(event_num),
+                                    std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
+                                    "csa_pulse_before_noise",
+                                    "Amplifier signal",
+                                    timestep,
+                                    amplified_pulse_vec);
 
-            create_output_pulsegraphs(std::to_string(event_num),
-                                      std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                      "csa_pulse_with_noise",
-                                      "Amplifier signal with added noise",
-                                      timestep,
-                                      amplified_pulse_with_noise);
+            createOutputPulsegraphs(std::to_string(event_num),
+                                    std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
+                                    "csa_pulse_with_noise",
+                                    "Amplifier signal with added noise",
+                                    timestep,
+                                    amplified_pulse_with_noise);
         }
 
         // Add the hit to the hitmap
         if(store_tot_) {
             hits.emplace_back(pixel, toa, tot, &pixel_charge);
         } else {
+            // calculate pulse integral with noise
+            auto amplified_pulse_integral =
+                std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
             hits.emplace_back(pixel, toa, amplified_pulse_integral, &pixel_charge);
         }
     }
@@ -270,12 +242,46 @@ void CSADigitizerModule::run(unsigned int event_num) {
     }
 }
 
-void CSADigitizerModule::create_output_pulsegraphs(std::string s_event_num,
-                                                   std::string s_pixel_index,
-                                                   std::string s_name,
-                                                   std::string s_title,
-                                                   double timestep,
-                                                   std::vector<double> plot_pulse_vec) {
+// to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
+void CSADigitizerModule::compareWithThreshold(double& toa,
+                                              double& tot,
+                                              double timestep,
+                                              std::vector<double> amplified_pulse_with_noise) {
+
+    bool is_over_threshold = false;
+    double jtoa{}, jtot{};
+    // first find the point where the signal crosses the threshold, latch toa
+    while(jtoa < tmax_) {
+        if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
+            is_over_threshold = true;
+            toa = jtoa;
+            break;
+        };
+        jtoa += clockToA_;
+    }
+
+    // only look for ToT if the threshold was crossed in the ToA loop
+    // start from the next tot clock cycle following toa
+    //        int jtot = static_cast<int>(ceil(toa / clockToT_));
+    jtot = clockToT_ * (ceil(toa / clockToT_));
+    while(is_over_threshold && jtot < tmax_) {
+        if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
+            tot += clockToT_;
+        } else {
+            is_over_threshold = false;
+        }
+        jtot += clockToT_;
+    }
+
+    return;
+}
+
+void CSADigitizerModule::createOutputPulsegraphs(const std::string s_event_num,
+                                                 const std::string s_pixel_index,
+                                                 const std::string s_name,
+                                                 const std::string s_title,
+                                                 double timestep,
+                                                 std::vector<double> plot_pulse_vec) {
     // -------- first the amplified (and shaped) pulses without noise
     // Generate x-axis:
     std::vector<double> amptime(plot_pulse_vec.size());
