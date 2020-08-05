@@ -187,7 +187,6 @@ void ROOTObjectWriterModule::run(Event* event) {
 
         // Fill the branch vector
         for(Object& object : object_array) {
-            object.storeHistory();
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
         }

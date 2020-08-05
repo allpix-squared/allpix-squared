@@ -61,9 +61,6 @@ namespace allpix {
          */
         ClassDefOverride(Object, 3);
 
-        virtual void storeHistory(){};
-        virtual void loadHistory(){};
-
     protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream

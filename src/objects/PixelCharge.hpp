@@ -97,9 +97,6 @@ namespace allpix {
          */
         PixelCharge() = default;
 
-        void storeHistory() override;
-        void loadHistory() override;
-
     private:
         Pixel pixel_;
         unsigned int charge_{};

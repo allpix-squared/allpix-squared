@@ -100,39 +100,3 @@ void PixelHit::print(std::ostream& out) const {
     out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
         << this->getTime();
 }
-
-void PixelHit::storeHistory() {
-    std::cout << "Storing PixelHit" << this << std::endl;
-    std::cout << "\t PixelCharge:" << std::endl;
-    std::cout << "\t uintptr_t " << pixel_charge_ref_ << std::endl;
-    std::cout << "\t ptr " << reinterpret_cast<PixelCharge*>(pixel_charge_ref_) << std::endl;
-
-    pixel_charge_ = TRef(reinterpret_cast<PixelCharge*>(pixel_charge_ref_));
-
-    std::cout << "\t TRef resolved " << pixel_charge_.GetObject() << std::endl;
-
-    pixel_charge_ref_ = 0;
-
-    mc_particles_.clear();
-    for(auto& mc_particle : mc_particles_ref_) {
-        mc_particles_.push_back(reinterpret_cast<MCParticle*>(mc_particle));
-        mc_particle = 0;
-    }
-}
-
-void PixelHit::loadHistory() {
-    std::cout << "Loading PixelHit " << this << std::endl;
-    std::cout << "\t PixelCharge:" << std::endl;
-    std::cout << "\t TRef resolved " << pixel_charge_.GetObject() << std::endl;
-    pixel_charge_ref_ = reinterpret_cast<uintptr_t>(pixel_charge_.GetObject());
-
-    std::cout << "\t uintptr_t     0x" << std::hex << pixel_charge_ref_ << std::dec << std::endl;
-    std::cout << "\t ptr           " << reinterpret_cast<PixelCharge*>(pixel_charge_ref_) << std::endl;
-
-    mc_particles_ref_.clear();
-    for(auto& mc_particle : mc_particles_) {
-        mc_particles_ref_.push_back(reinterpret_cast<uintptr_t>(mc_particle.GetObject()));
-    }
-
-    // FIXME we need to reset TRef member
-}

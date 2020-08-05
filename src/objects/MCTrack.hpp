@@ -135,9 +135,6 @@ namespace allpix {
          */
         MCTrack() = default;
 
-        void storeHistory() override;
-        void loadHistory() override;
-
     private:
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};

@@ -76,8 +76,6 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
                 new_obj.SetBit(kIsReferenced);
                 pid->PutObjectWithID(&new_obj);
             }
-
-            data[i].loadHistory();
         }
 
         if(detector == nullptr) {

@@ -92,9 +92,6 @@ namespace allpix {
          */
         PropagatedCharge() = default;
 
-        void storeHistory() override;
-        void loadHistory() override;
-
     private:
         uintptr_t deposited_charge_ref_;
         uintptr_t mc_particle_ref_;

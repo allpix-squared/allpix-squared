@@ -44,27 +44,3 @@ void DepositedCharge::print(std::ostream& out) const {
     out << "--- Deposited charge information\n";
     SensorCharge::print(out);
 }
-
-void DepositedCharge::storeHistory() {
-    std::cout << "Storing DepositedCharge " << this << " type " << (getType() == CarrierType::ELECTRON ? "\"e\"" : "\"h\"")
-              << std::endl;
-    std::cout << "\t MCParticle:" << std::endl;
-    std::cout << "\t uintptr_t     0x" << std::hex << mc_particle_ref_ << std::dec << std::endl;
-    std::cout << "\t ptr           " << reinterpret_cast<MCParticle*>(mc_particle_ref_) << std::endl;
-    mc_particle_ = TRef(reinterpret_cast<MCParticle*>(mc_particle_ref_));
-    std::cout << "\t TRef resolved " << mc_particle_.GetObject() << std::endl;
-
-    mc_particle_ref_ = 0;
-}
-
-void DepositedCharge::loadHistory() {
-    std::cout << "Loading DepositedCharge " << this << std::endl;
-    std::cout << "\t MCParticle:" << std::endl;
-    std::cout << "\t TRef resolved " << mc_particle_.GetObject() << std::endl;
-    mc_particle_ref_ = reinterpret_cast<uintptr_t>(mc_particle_.GetObject());
-
-    std::cout << "\t uintptr_t     0x" << std::hex << mc_particle_ref_ << std::dec << std::endl;
-    std::cout << "\t ptr           " << reinterpret_cast<MCParticle*>(mc_particle_ref_) << std::endl;
-
-    // FIXME we need to reset TRef member
-}

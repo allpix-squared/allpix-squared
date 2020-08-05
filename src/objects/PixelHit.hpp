@@ -88,9 +88,6 @@ namespace allpix {
          */
         PixelHit() = default;
 
-        void storeHistory() override;
-        void loadHistory() override;
-
     private:
         Pixel pixel_;
         double time_{};

@@ -68,9 +68,6 @@ namespace allpix {
          */
         DepositedCharge() = default;
 
-        void storeHistory() override;
-        void loadHistory() override;
-
     private:
         // TRef object for storage in output file
         TRef mc_particle_;

@@ -118,15 +118,3 @@ void MCTrack::print(std::ostream& out) const {
     }
     out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
-
-void MCTrack::storeHistory() {
-    std::cout << "storing";
-    ;
-    parent_ = TRef(reinterpret_cast<MCTrack*>(parent_ref_));
-    parent_ref_ = 0;
-}
-
-void MCTrack::loadHistory() {
-    parent_ref_ = reinterpret_cast<uintptr_t>(parent_.GetObject());
-    // FIXME we need to reset TRef member
-}
