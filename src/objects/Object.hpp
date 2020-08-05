@@ -81,7 +81,6 @@ namespace allpix {
         template <class T> class ReferenceWrapper {
         public:
             ReferenceWrapper() = default;
-            ~ReferenceWrapper() = default;
             ReferenceWrapper(const T* obj) {
                 std::cout << "Construct: " << obj << std::endl;
                 set(obj);
