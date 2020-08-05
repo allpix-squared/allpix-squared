@@ -145,7 +145,7 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
 
-        ConfigManager* conf_manager_;
+        ConfigManager* conf_manager_{};
 
         std::unique_ptr<TFile> modules_file_;
 

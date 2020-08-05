@@ -148,6 +148,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
  *   - fused silica
  *   - PCB G-10
  *   - solder
+ *   - paper
  *   - vacuum
  */
 void GeometryConstructionG4::init_materials() {
@@ -204,6 +205,13 @@ void GeometryConstructionG4::init_materials() {
     Solder->AddElement(Sn, 0.63);
     Solder->AddElement(Pb, 0.37);
     materials_["solder"] = Solder;
+
+    // Create paper material (cellulose C6H10O5)
+    G4Material* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
+    Paper->AddElement(C, 6);
+    Paper->AddElement(O, 10);
+    Paper->AddElement(H, 5);
+    materials_["paper"] = Paper;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
