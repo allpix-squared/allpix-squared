@@ -6,6 +6,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
+#pragma link C++ nestedclasses;
 
 // Missing ROOT objects
 #pragma link C++ class ROOT::Math::Cartesian2D < unsigned int> + ;
