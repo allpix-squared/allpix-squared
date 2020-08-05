@@ -133,14 +133,29 @@ void MCParticle::print(std::ostream& out) const {
 }
 
 void MCParticle::storeHistory() {
+    std::cout << "Storing MCParticle " << this << std::endl;
+    std::cout << "\t Parent:" << std::endl;
+    std::cout << "\t uintptr_t " << parent_ref_ << std::endl;
+    std::cout << "\t ptr " << reinterpret_cast<MCParticle*>(parent_ref_) << std::endl;
+
     parent_ = TRef(reinterpret_cast<MCParticle*>(parent_ref_));
+
+    std::cout << "\t TRef resolved " << parent_.GetObject() << std::endl;
     parent_ref_ = 0;
+
     track_ = TRef(reinterpret_cast<MCTrack*>(track_ref_));
     track_ref_ = 0;
 }
 
 void MCParticle::loadHistory() {
+    std::cout << "Loading MCParticle " << this << std::endl;
+    std::cout << "\t Parent:" << std::endl;
+    std::cout << "\t TRef resolved " << parent_.GetObject() << std::endl;
     parent_ref_ = reinterpret_cast<uintptr_t>(parent_.GetObject());
+
+    std::cout << "\t uintptr_t     0x" << std::hex << parent_ref_ << std::dec << std::endl;
+    std::cout << "\t ptr           " << reinterpret_cast<MCParticle*>(parent_ref_) << std::endl;
+
     track_ref_ = reinterpret_cast<uintptr_t>(track_.GetObject());
     // FIXME we need to reset TRef member
 }

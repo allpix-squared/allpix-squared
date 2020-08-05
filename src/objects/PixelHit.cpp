@@ -102,7 +102,15 @@ void PixelHit::print(std::ostream& out) const {
 }
 
 void PixelHit::storeHistory() {
+    std::cout << "Storing PixelHit" << this << std::endl;
+    std::cout << "\t PixelCharge:" << std::endl;
+    std::cout << "\t uintptr_t " << pixel_charge_ref_ << std::endl;
+    std::cout << "\t ptr " << reinterpret_cast<PixelCharge*>(pixel_charge_ref_) << std::endl;
+
     pixel_charge_ = TRef(reinterpret_cast<PixelCharge*>(pixel_charge_ref_));
+
+    std::cout << "\t TRef resolved " << pixel_charge_.GetObject() << std::endl;
+
     pixel_charge_ref_ = 0;
 
     for(auto& mc_particle : mc_particles_ref_) {
@@ -112,7 +120,13 @@ void PixelHit::storeHistory() {
 }
 
 void PixelHit::loadHistory() {
+    std::cout << "Loading PixelHit " << this << std::endl;
+    std::cout << "\t PixelCharge:" << std::endl;
+    std::cout << "\t TRef resolved " << pixel_charge_.GetObject() << std::endl;
     pixel_charge_ref_ = reinterpret_cast<uintptr_t>(pixel_charge_.GetObject());
+
+    std::cout << "\t uintptr_t     0x" << std::hex << pixel_charge_ref_ << std::dec << std::endl;
+    std::cout << "\t ptr           " << reinterpret_cast<PixelCharge*>(pixel_charge_ref_) << std::endl;
 
     for(auto& mc_particle : mc_particles_) {
         mc_particles_ref_.push_back(reinterpret_cast<uintptr_t>(mc_particle.GetObject()));

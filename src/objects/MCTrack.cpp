@@ -120,6 +120,8 @@ void MCTrack::print(std::ostream& out) const {
 }
 
 void MCTrack::storeHistory() {
+    std::cout << "storing";
+    ;
     parent_ = TRef(reinterpret_cast<MCTrack*>(parent_ref_));
     parent_ref_ = 0;
 }

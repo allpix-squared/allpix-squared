@@ -63,7 +63,10 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
     for(auto& propagated_charge_ptr : propagated_charges_ref_) {
-        auto propagated_charge = reinterpret_cast<PropagatedCharge*>(propagated_charge_ptr);
+        std::cout << "\t uintptr_t     0x" << std::hex << propagated_charge_ptr << std::dec << std::endl;
+        std::cout << "\t ptr           " << reinterpret_cast<PropagatedCharge*>(propagated_charge_ptr) << std::endl;
+
+        auto propagated_charge = reinterpret_cast<const PropagatedCharge*>(propagated_charge_ptr);
         if(propagated_charge == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
@@ -107,8 +110,13 @@ void PixelCharge::print(std::ostream& out) const {
 }
 
 void PixelCharge::storeHistory() {
+    std::cout << "Storing PixelCharge " << this << std::endl;
+    std::cout << "\t PropagatedCharges:" << std::endl;
     for(auto& propagated_charge : propagated_charges_ref_) {
+        std::cout << "\t uintptr_t     0x" << std::hex << propagated_charge << std::dec << std::endl;
+        std::cout << "\t ptr           " << reinterpret_cast<PropagatedCharge*>(propagated_charge) << std::endl;
         propagated_charges_.push_back(reinterpret_cast<PropagatedCharge*>(propagated_charge));
+        std::cout << "\t TRef resolved " << propagated_charges_.back().GetObject() << std::endl;
         propagated_charge = 0;
     }
 
@@ -119,8 +127,13 @@ void PixelCharge::storeHistory() {
 }
 
 void PixelCharge::loadHistory() {
+    std::cout << "Loading PixelCharge " << this << std::endl;
+    std::cout << "\t PropagatedCharges:" << std::endl;
     for(auto& propagated_charge : propagated_charges_) {
+        std::cout << "\t TRef resolved " << propagated_charge.GetObject() << std::endl;
         propagated_charges_ref_.push_back(reinterpret_cast<uintptr_t>(propagated_charge.GetObject()));
+        std::cout << "\t uintptr_t     0x" << std::hex << propagated_charges_ref_.back() << std::dec << std::endl;
+        std::cout << "\t ptr           " << reinterpret_cast<PropagatedCharge*>(propagated_charges_ref_.back()) << std::endl;
     }
 
     for(auto& mc_particle : mc_particles_) {

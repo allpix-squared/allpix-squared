@@ -84,14 +84,27 @@ void PropagatedCharge::print(std::ostream& out) const {
 }
 
 void PropagatedCharge::storeHistory() {
+    std::cout << "Storing PropagatedCharge " << this << std::endl;
+    std::cout << "\t DepositedCharge:" << std::endl;
+    std::cout << "\t uintptr_t     0x" << std::hex << deposited_charge_ref_ << std::dec << std::endl;
+    std::cout << "\t ptr           " << reinterpret_cast<DepositedCharge*>(deposited_charge_ref_) << std::endl;
+    deposited_charge_ = TRef(reinterpret_cast<DepositedCharge*>(deposited_charge_ref_));
+    std::cout << "\t TRef resolved " << deposited_charge_.GetObject() << std::endl;
+    deposited_charge_ref_ = 0;
+
     mc_particle_ = TRef(reinterpret_cast<MCParticle*>(mc_particle_ref_));
     mc_particle_ref_ = 0;
-    deposited_charge_ = TRef(reinterpret_cast<DepositedCharge*>(deposited_charge_ref_));
-    deposited_charge_ref_ = 0;
 }
 
 void PropagatedCharge::loadHistory() {
-    mc_particle_ref_ = reinterpret_cast<uintptr_t>(mc_particle_.GetObject());
+    std::cout << "Loading PropagatedCharge " << this << std::endl;
+    std::cout << "\t DepositedCharge:" << std::endl;
+    std::cout << "\t TRef resolved " << deposited_charge_.GetObject() << std::endl;
     deposited_charge_ref_ = reinterpret_cast<uintptr_t>(deposited_charge_.GetObject());
+
+    std::cout << "\t uintptr_t     0x" << std::hex << deposited_charge_ref_ << std::dec << std::endl;
+    std::cout << "\t ptr           " << reinterpret_cast<DepositedCharge*>(deposited_charge_ref_) << std::endl;
+
+    mc_particle_ref_ = reinterpret_cast<uintptr_t>(mc_particle_.GetObject());
     // FIXME we need to reset TRef member
 }
