@@ -85,6 +85,7 @@ namespace allpix {
                 std::cout << "Construct: " << obj << std::endl;
                 set(obj);
             }
+            virtual ~ReferenceWrapper() = default;
 
             /**
              * Custom copy constructor to not copu the pointer but update it from the TRef object
