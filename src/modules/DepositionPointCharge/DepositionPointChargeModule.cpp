@@ -184,10 +184,11 @@ void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& posit
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }
 
 void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
@@ -227,8 +228,9 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
     }
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }
