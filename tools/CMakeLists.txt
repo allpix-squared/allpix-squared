@@ -2,8 +2,8 @@
 OPTION(BUILD_TOOLS "Build additional tools and executables" ON)
 
 if(BUILD_TOOLS)
-    # Build the TCAD converter
-    ADD_SUBDIRECTORY(tcad_dfise_converter)
+    # Build the MeshConverter
+    ADD_SUBDIRECTORY(mesh_converter)
 
     # Install the ROOT helper macro's for analysis
     ADD_SUBDIRECTORY(root_analysis_macros)

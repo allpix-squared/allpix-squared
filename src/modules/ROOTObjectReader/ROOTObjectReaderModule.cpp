@@ -260,7 +260,8 @@ void ROOTObjectReaderModule::run(Event* event) {
     // We can not read multiple events at the same time so we need to synchronize access
     std::lock_guard<std::mutex> lock{mutex_};
 
-    unsigned int event_num = event->number;
+    // Beware: ROOT uses signed entry counters for its trees
+    auto event_num = static_cast<int64_t>(event->number);
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {

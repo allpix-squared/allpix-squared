@@ -25,7 +25,7 @@ using namespace allpix;
 
 std::mutex Event::stats_mutex_;
 
-Event::Event(Messenger& messenger, unsigned int event_num, uint64_t seed) : number(event_num), seed_(seed) {
+Event::Event(Messenger& messenger, uint64_t event_num, uint64_t seed) : number(event_num), seed_(seed) {
     local_messenger_ = std::make_unique<LocalMessenger>(messenger);
 }
 

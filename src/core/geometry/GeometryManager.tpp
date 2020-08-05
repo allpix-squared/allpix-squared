@@ -13,8 +13,12 @@ namespace allpix {
      * If the returned object is not a null pointer it is guaranteed to be of the correct type
      */
     template <typename T>
-    std::shared_ptr<T> GeometryManager::getExternalObject(const std::string& associated_name, const std::string& id) {
-        return std::static_pointer_cast<T>(external_objects_[typeid(T)][std::make_pair(associated_name, id)]);
+    std::shared_ptr<T> GeometryManager::getExternalObject(const std::string& associated_name, const std::string& id) const {
+        try {
+            return std::static_pointer_cast<T>(external_objects_.at(typeid(T)).at(std::make_pair(associated_name, id)));
+        } catch(std::out_of_range&) {
+            return nullptr;
+        }
     }
 
     /**

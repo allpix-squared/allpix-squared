@@ -668,15 +668,15 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
-    std::atomic<unsigned int> finished_events{0};
-    global_config.setDefault<unsigned int>("number_of_events", 1u);
-    auto number_of_events = global_config.get<unsigned int>("number_of_events");
-    for(unsigned int i = 1; i <= number_of_events; i++) {
+    std::atomic<uint64_t> finished_events{0};
+    global_config.setDefault<uint64_t>("number_of_events", 1u);
+    auto number_of_events = global_config.get<uint64_t>("number_of_events");
+    for(uint64_t i = 1; i <= number_of_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             thread_pool->destroy();
-            global_config.set<unsigned int>("number_of_events", finished_events);
+            global_config.set<uint64_t>("number_of_events", finished_events);
             break;
         }
 
@@ -708,7 +708,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
                 // Set run module section header
                 std::string old_section_name = Log::getSection();
-                unsigned int old_event_num = Log::getEventNum();
+                uint64_t old_event_num = Log::getEventNum();
                 std::string section_name = "R:";
                 section_name += module->get_identifier().getUniqueName();
                 Log::setSection(section_name);
@@ -852,8 +852,9 @@ void ModuleManager::finalize() {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
+    auto total_events = global_config.get<uint64_t>("number_of_events");
+    if(total_events > 0) {
+        processing_time = std::round((1000 * total_time_) / total_events);
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"

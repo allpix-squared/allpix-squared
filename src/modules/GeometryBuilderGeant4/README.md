@@ -45,20 +45,24 @@ Note: If the VisualizationGeant4 module is used in conjunction with and `arc_len
 
 This module can create support layers and passive volumes of the following materials:
 
-* Air
-* Aluminum
-* Carbonfiber (a mixture of carbon and epoxy)
-* Copper
-* Epoxy
-* G10 (PCB material)
-* Kapton (using the `G4_KAPTON` definition)
-* Lead
-* Plexiglass (using the `G4_PLEXIGLASS` definition)
-* Silicon
-* Solder (a mixture of tin and lead)
-* Tungsten
-* Lithium
-* Beryllium
+* Materials listed by Geant4:
+    * air
+    * aluminum
+    * beryllium
+    * copper
+    * kapton
+    * lead
+    * lithium
+    * plexiglass
+    * silicon
+    * tungsten
+* Composite or custom materials:
+    * carbon fiber
+    * epoxy
+    * fused silica
+    * PCB G-10
+    * solder
+    * vacuum
 
 ### Dependencies
 

@@ -243,7 +243,7 @@ void BufferedModule::flush_buffered_events() {
     // Special random generator for events executed out of order
     static thread_local std::mt19937_64 random_generator;
 
-    std::map<unsigned int, std::shared_ptr<Event>>::iterator iter;
+    std::map<uint64_t, std::shared_ptr<Event>>::iterator iter;
     std::shared_ptr<Event> event;
 
     next_event_to_write_ = get_next_event(next_event_to_write_);
@@ -278,8 +278,8 @@ void BufferedModule::flush_buffered_events() {
     }
 }
 
-unsigned int BufferedModule::get_next_event(unsigned int current) {
-    std::set<unsigned int>::iterator iter;
+uint64_t BufferedModule::get_next_event(uint64_t current) {
+    std::set<uint64_t>::iterator iter;
     auto next = current;
 
     // Check sequentially if events were skipped
@@ -296,7 +296,7 @@ unsigned int BufferedModule::get_next_event(unsigned int current) {
     return next;
 }
 
-void BufferedModule::skip_event(unsigned int event) {
+void BufferedModule::skip_event(uint64_t event) {
     std::lock_guard<std::mutex> lock(skipped_events_mutex_);
     skipped_events_.insert(event);
 }

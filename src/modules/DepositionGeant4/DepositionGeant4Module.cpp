@@ -302,7 +302,7 @@ void DepositionGeant4Module::run(Event* event) {
                             static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
     }
 
-    unsigned int last_event_num = last_event_num_.load();
+    uint64_t last_event_num = last_event_num_.load();
     last_event_num_.compare_exchange_strong(last_event_num, event->number);
 
     RELEASE_STREAM(G4cout);

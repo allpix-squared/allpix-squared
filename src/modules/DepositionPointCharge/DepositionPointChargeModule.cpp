@@ -134,9 +134,9 @@ void DepositionPointChargeModule::run(Event* event) {
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
-        position = ROOT::Math::XYZPoint(voxel_.x() * ((event->number - 1) % root_),
-                                        voxel_.y() * (((event->number - 1) / root_) % root_),
-                                        voxel_.z() * (((event->number - 1) / root_ / root_) % root_)) +
+        position = ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
+                                        voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
+                                        voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
                    ref;
     } else {
         // Calculate random offset from configured position
@@ -184,10 +184,11 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message, event);
     messenger_->dispatchMessage(this, mcparticle_message, event);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message, event);
 }
 
 void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XYZPoint& position) {
@@ -229,6 +230,6 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // Dispatch the messages to the framework
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message, event);
-    messenger_->dispatchMessage(this, mcparticle_message, event);
+    messenger_->dispatchMessage(this, deposit_message);
+    messenger_->dispatchMessage(this, mcparticle_message);
 }

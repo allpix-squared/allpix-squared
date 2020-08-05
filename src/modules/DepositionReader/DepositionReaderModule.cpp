@@ -151,7 +151,7 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
 void DepositionReaderModule::run(Event* event) {
     // We can not read multiple events at the same time so we need to synchronize access
     std::lock_guard<std::mutex> lock{mutex_};
-    unsigned int event_num = event->number;
+    auto event_num = event->number;
 
     // Set of deposited charges in this event
     std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
@@ -295,7 +295,7 @@ void DepositionReaderModule::finalize() {
         }
     }
 }
-bool DepositionReaderModule::read_root(unsigned int event_num,
+bool DepositionReaderModule::read_root(uint64_t event_num,
                                        std::string& volume,
                                        ROOT::Math::XYZPoint& position,
                                        double& time,
@@ -312,7 +312,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     }
 
     // Separate individual events
-    if(static_cast<unsigned int>(*event_->Get()) > event_num - 1) {
+    if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
         return false;
     }
 
@@ -337,7 +337,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     return true;
 }
 
-bool DepositionReaderModule::read_csv(unsigned int event_num,
+bool DepositionReaderModule::read_csv(uint64_t event_num,
                                       std::string& volume,
                                       ROOT::Math::XYZPoint& position,
                                       double& time,
@@ -362,7 +362,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
         // Check for event header:
         if(line.front() == 'E') {
             std::stringstream lse(line);
-            unsigned int event_read;
+            uint64_t event_read;
             lse >> tmp >> event_read;
             if(event_read + 1 > event_num) {
                 return false;
