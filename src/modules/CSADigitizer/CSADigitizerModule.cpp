@@ -148,8 +148,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto timestep = pulse.getBinning();
         auto ntimepoints = static_cast<size_t>(ceil(tmax_ / timestep));
 
-        // initialize impulse response function - assume all time bins are equal
         std::call_once(first_event_flag_, [&]() {
+            // initialize impulse response function - assume all time bins are equal
             impulse_response_function_.reserve(ntimepoints);
             // impulse response of the CSA from Kleczek 2016 JINST11 C12001
             // H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
@@ -205,19 +205,15 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            const std::string s_event_num=std::to_string(event_num);
-            const std::string s_pixel_index=std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y());
-            const std::string s_name_without="csa_pulse_before_noise";
-            const std::string s_title_without="Amplifier signal without noise";
-            const std::string s_name_with="csa_pulse_with_noise";
-            const std::string s_title_with="Amplifier signal with added noise";
+            const std::string s_event_num = std::to_string(event_num);
+            const std::string s_pixel_index = std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y());
+            const std::string s_name_without = "csa_pulse_before_noise";
+            const std::string s_title_without = "Amplifier signal without noise";
+            const std::string s_name_with = "csa_pulse_with_noise";
+            const std::string s_title_with = "Amplifier signal with added noise";
 
-            createOutputPulsegraphs(s_event_num,
-                                    s_pixel_index,
-                                    s_name_without,
-                                    s_title_without,
-                                    timestep,
-                                    amplified_pulse_vec);
+            createOutputPulsegraphs(
+                s_event_num, s_pixel_index, s_name_without, s_title_without, timestep, amplified_pulse_vec);
 
             createOutputPulsegraphs(std::to_string(event_num),
                                     std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
@@ -268,7 +264,6 @@ void CSADigitizerModule::compareWithThreshold(double& toa,
 
     // only look for ToT if the threshold was crossed in the ToA loop
     // start from the next tot clock cycle following toa
-    //        int jtot = static_cast<int>(ceil(toa / clockToT_));
     jtot = clockToT_ * (ceil(toa / clockToT_));
     while(is_over_threshold && jtot < tmax_) {
         if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {

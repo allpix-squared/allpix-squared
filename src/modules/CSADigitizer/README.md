@@ -21,7 +21,7 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 ### Parameters
 * `model` :  Choice between different CSA models. Currently implemented are two parametrisations of the circuit from [@kleczek], `simple` and `csa`.
 * `feedback_capacitance` :  The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
-* `amp_time_window` : The length of time the amplifier output is registered. Defaults to 500 ns.
+* `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
 * `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival clock. Defaults to 1.5625 ns (i.e. a 640MHz clock).
@@ -47,18 +47,36 @@ For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be c
 
 
 ### Usage
-The default configuration is equal to the following:
+Two examples how to use this module:
 
 ```ini
 [CSADigitizer]
 model = "csa"
+feedback_capacitance = 10e-15 C/V
+detector_capacitance = 100e-15 C/V
+krummenacher_current = 25e-9 C/s
+amp_output_capacitance = 15e-15 C/V
+transconductance = 50e-6 C/s/V
+temperature = 298
+integration_time = 0.5e-6 s
+threshold = 10e-3 V
+sigma_noise = 0.1e-3 V
+```
+
+
+
+```ini
+[CSADigitizer]
+model = "simple"
 feedback_capacitance = 5e-15 C/V
 rise_time_constant = 1e-9 s  
 feedback_time_constant = 10e-9 s
 integration_time = 0.5e-6 s
 threshold = 10e-3 V
-sigma_noise = 0.1e-3 V
+clock_bin_toa = 1.5625 ns
+clock_bin_tot = 25.0 ns
 ```
+
 
 
 [@kleczek]:  https://doi.org/10.1109/MIXDES.2015.7208529
