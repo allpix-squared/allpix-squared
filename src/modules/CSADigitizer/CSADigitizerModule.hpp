@@ -84,7 +84,8 @@ namespace allpix {
                                      std::vector<double> plot_pulse_vec);
 
     private:
-        bool output_plots_{}, output_pulsegraphs_{}, first_event_{true}, store_tot_{true};
+        bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
+        std::once_flag first_event_flag_;
 
         std::mt19937_64 random_generator_;
 
@@ -103,7 +104,7 @@ namespace allpix {
 
         // helper variables for transfer function
         double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
-        std::vector<double> impulse_response_function__;
+        std::vector<double> impulse_response_function_;
 
         // Output histograms
         TH1D *h_tot{}, *h_toa{};

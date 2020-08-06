@@ -148,8 +148,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto timestep = pulse.getBinning();
         auto ntimepoints = static_cast<size_t>(ceil(tmax_ / timestep));
 
-        if(first_event_) { // initialize impulse response function - assume all time bins are equal
-            impulse_response_function__.reserve(ntimepoints);
+        // initialize impulse response function - assume all time bins are equal
+        std::call_once(first_event_flag_, [&]() {
+            impulse_response_function_.reserve(ntimepoints);
             // impulse response of the CSA from Kleczek 2016 JINST11 C12001
             // H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
             // tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
@@ -158,13 +159,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
                 return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
             };
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
-                impulse_response_function__.push_back(
-                    calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
+                impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
-            first_event_ = false;
             LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_
                        << ", ntimepoints " << ntimepoints;
-        }
+        });
 
         std::vector<double> amplified_pulse_vec(ntimepoints);
         auto input_length = pulse_vec.size();
@@ -173,12 +172,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
         // convolution of the pulse (size input_length) with the impulse response (size ntimepoints)
         for(size_t k = 0; k < ntimepoints; ++k) {
             double outsum{};
-            // convolution: multiply pulse_vec.at(k - i) * impulse_response_function__.at(i), when (k - i) < input_length
+            // convolution: multiply pulse_vec.at(k - i) * impulse_response_function_.at(i), when (k - i) < input_length
             // -> no point to start i at 0, start from jmin:
             size_t jmin = (k >= input_length - 1) ? k - (input_length - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
                 if((k - i) < input_length) {
-                    outsum += pulse_vec.at(k - i) * impulse_response_function__.at(i);
+                    outsum += pulse_vec.at(k - i) * impulse_response_function_.at(i);
                 }
             }
             amplified_pulse_vec.at(k) = outsum;
