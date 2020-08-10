@@ -41,7 +41,7 @@ namespace allpix {
          * @param copy_id Id of the volume on the grid
          * @param phys_volume Physical volume to place on the grid
          */
-        void ComputeTransformation(int, G4VPhysicalVolume*) const override;
+        void ComputeTransformation(const G4int, G4VPhysicalVolume*) const override;
 
     private:
         int div_x_;
