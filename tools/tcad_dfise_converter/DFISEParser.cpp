@@ -54,7 +54,7 @@ std::map<std::string, std::vector<Point>> mesh_converter::read_grid(const std::s
         std::getline(file, line);
 
         // Log the parsing progress:
-        if(num_lines_parsed % 1000 == 0 && num_lines > 0) {
+        if(num_lines > 0 && num_lines_parsed % 1000 == 0) {
             LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: " << (100 * num_lines_parsed / num_lines) << "%";
         }
         num_lines_parsed++;
@@ -421,7 +421,7 @@ mesh_converter::read_electric_field(const std::string& file_name) {
         line = allpix::trim(line);
 
         // Log the parsing progress:
-        if(num_lines_parsed % 1000 == 0) {
+        if(num_lines > 0 && num_lines_parsed % 1000 == 0) {
             LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: " << (100 * num_lines_parsed / num_lines) << "%";
         }
         num_lines_parsed++;
