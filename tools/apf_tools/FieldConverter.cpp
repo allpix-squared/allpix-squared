@@ -18,6 +18,7 @@ using namespace allpix;
  */
 int main(int argc, const char* argv[]) {
 
+    int return_code = 0;
     try {
 
         // Register the default set of units with this executable:
@@ -28,7 +29,6 @@ int main(int argc, const char* argv[]) {
 
         // If no arguments are provided, print the help:
         bool print_help = false;
-        int return_code = 0;
         if(argc == 1) {
             print_help = true;
             return_code = 1;
