@@ -323,9 +323,12 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
 
         // Remove temporary created files
-        remove(file_name_anim.c_str());
+        auto ret = remove(file_name_anim.c_str());
         for(size_t i = 0; i < 3; ++i) {
-            remove(file_name_contour[i].c_str());
+            ret |= remove(file_name_contour[i].c_str());
+        }
+        if(ret != 0) {
+            throw ModuleError("Could not delete temporary animation files.");
         }
 
         // Create color table
