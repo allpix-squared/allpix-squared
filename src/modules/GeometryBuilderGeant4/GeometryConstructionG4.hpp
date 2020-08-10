@@ -56,7 +56,7 @@ namespace allpix {
         // List of all materials
         std::map<std::string, G4Material*> materials_;
 
-        PassiveMaterialConstructionG4* passive_builder_;
+        std::unique_ptr<PassiveMaterialConstructionG4> passive_builder_;
 
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
