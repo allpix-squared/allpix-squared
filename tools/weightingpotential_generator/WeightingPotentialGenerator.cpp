@@ -17,7 +17,7 @@
 #include <Math/Vector3D.h>
 
 // FIXME use central ThreadPool once available
-#include "../tcad_dfise_converter/ThreadPool.hpp"
+#include "../mesh_converter/ThreadPool.hpp"
 
 void interrupt_handler(int);
 
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
         ThreadPool pool(num_threads, init_function);
         std::vector<std::future<std::vector<double>>> wp_futures;
 
-        // Loop over x coordinate, add tasks for each coorinate to the queue
+        // Loop over x coordinate, add tasks for each coordinate to the queue
         for(size_t x = 1; x <= binning.x(); x++) {
             wp_futures.push_back(pool.submit(generate_section, x));
         }

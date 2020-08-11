@@ -32,7 +32,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module to read pre-computed energy deposits
      *
-     * This module allows to read pre-computed energy deposits from data files fo different formats. The files should contain
+     * This module allows to read pre-computed energy deposits from data files of different formats. The files should contain
      * individual events with a list of energy deposits at specific position given in local coordinates of the respective
      * detector.
      */

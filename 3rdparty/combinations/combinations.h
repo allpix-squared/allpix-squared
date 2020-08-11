@@ -353,7 +353,7 @@ namespace detail {
         bool operator()() { return permute(first_, last_, d_, f_); }
     };
 
-} // detail
+} // namespace detail
 
 template <class BidirIter, class Function>
 Function for_each_combination(BidirIter first, BidirIter mid, BidirIter last, Function f) {
@@ -463,7 +463,7 @@ namespace detail {
         }
     };
 
-} // detail
+} // namespace detail
 
 template <class BidirIter, class Function>
 Function for_each_circular_permutation(BidirIter first, BidirIter mid, BidirIter last, Function f) {
@@ -684,7 +684,7 @@ namespace detail {
         return false;
     }
 
-} // detail
+} // namespace detail
 
 template <class BidirIter, class Function>
 Function for_each_reversible_permutation(BidirIter first, BidirIter mid, BidirIter last, Function f) {
@@ -750,7 +750,7 @@ namespace detail {
         }
     };
 
-} // detail
+} // namespace detail
 
 template <class BidirIter, class Function>
 Function for_each_reversible_circular_permutation(BidirIter first, BidirIter mid, BidirIter last, Function f) {

@@ -222,7 +222,7 @@ void DepositionReaderModule::run(unsigned int event) {
             continue;
         }
 
-        // Calculate number of electron hole pairs produced, taking into acocunt fluctuations between ionization and lattice
+        // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = static_cast<unsigned int>(energy / charge_creation_energy_);
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));

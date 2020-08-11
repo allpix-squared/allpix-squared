@@ -34,7 +34,7 @@ IF(LATEX_COMPILER)
 
     # Markdown files that should be included in the manual relative to the root of the repository
     SET(DOC_README_FILES
-            tools/tcad_dfise_converter/README.md
+            tools/mesh_converter/README.md
             tools/root_analysis_macros/README.md
     )
 
@@ -140,6 +140,7 @@ IF(LATEX_COMPILER)
             logo.png
             cc-by.png
             usermanual/figures/telescope.png
+            usermanual/figures/passive_materials.png
             usermanual/figures/ci.png
             usermanual/figures/linegraph_hrcmos_collected.png
             INPUTS

@@ -75,7 +75,7 @@ namespace allpix {
         /**
          * @brief Populate the #stored_tracks_ with MCTrack objects
          * @warning Must only be called once Geant4 finished stepping through all the G4Track objects
-         * guranteed
+         * guaranteed
          */
         void createMCTracks();
 
@@ -91,7 +91,7 @@ namespace allpix {
         /**
          * @brief Will internally set all the parent-child relations between stored tracks
          * @warning This must only be called once all the tracks are created (@see #createMCTracks) and no reallocation of
-         * the back-end vector is guranteed
+         * the back-end vector is guaranteed
          */
         void set_all_track_parents();
 
