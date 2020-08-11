@@ -1,0 +1,12 @@
+# Exclude everything from Docker build context that is not necessary:
+*
+!3rdparty
+!cmake
+!CMakeLists.txt
+!doc
+!etc
+!examples
+!LICENSE.md
+!models
+!src
+!tools
