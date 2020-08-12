@@ -26,12 +26,12 @@
 #pragma link C++ class allpix::PixelHit + ;
 #pragma link C++ class allpix::Pulse + ;
 
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::MCTrack> + ;
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::MCParticle> + ;
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::PropagatedCharge> + ;
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::DepositedCharge> + ;
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::PixelCharge> + ;
-#pragma link C++ class allpix::Object::ReferenceWrapper < allpix::PixelHit> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::MCTrack> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::MCParticle> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::PropagatedCharge> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::DepositedCharge> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelCharge> + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelHit> + ;
 
 // Vector of Object for internal storage
 #pragma link C++ class std::vector < allpix::Object*> + ;

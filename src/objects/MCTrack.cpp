@@ -78,7 +78,7 @@ const MCTrack* MCTrack::getParent() const {
 }
 
 void MCTrack::setParent(const MCTrack* mc_track) {
-    parent_ = ReferenceWrapper<MCTrack>(mc_track);
+    parent_ = PointerWrapper<MCTrack>(mc_track);
 }
 
 void MCTrack::print(std::ostream& out) const {

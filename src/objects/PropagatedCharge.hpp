@@ -95,8 +95,8 @@ namespace allpix {
         void petrifyHistory() override;
 
     private:
-        ReferenceWrapper<DepositedCharge> deposited_charge_;
-        ReferenceWrapper<MCParticle> mc_particle_;
+        PointerWrapper<DepositedCharge> deposited_charge_;
+        PointerWrapper<MCParticle> mc_particle_;
 
         std::map<Pixel::Index, Pulse> pulses_;
     };

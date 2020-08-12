@@ -71,7 +71,7 @@ namespace allpix {
         void petrifyHistory() override;
 
     private:
-        ReferenceWrapper<MCParticle> mc_particle_;
+        PointerWrapper<MCParticle> mc_particle_;
     };
 
     /**

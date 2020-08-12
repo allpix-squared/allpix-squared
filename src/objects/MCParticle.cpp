@@ -66,7 +66,7 @@ double MCParticle::getTime() const {
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ = ReferenceWrapper<MCParticle>(mc_particle);
+    parent_ = PointerWrapper<MCParticle>(mc_particle);
 }
 
 /**
@@ -77,7 +77,7 @@ const MCParticle* MCParticle::getParent() const {
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
-    track_ = ReferenceWrapper<MCTrack>(mc_track); // NOLINT
+    track_ = PointerWrapper<MCTrack>(mc_track);
 }
 
 /**

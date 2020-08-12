@@ -80,26 +80,26 @@ namespace allpix {
         }
 
     public:
-        template <class T> class ReferenceWrapper {
+        template <class T> class PointerWrapper {
         public:
-            ReferenceWrapper() = default;
-            ReferenceWrapper(const T* obj) : ptr_(reinterpret_cast<uintptr_t>(obj)) {}
-            virtual ~ReferenceWrapper() = default;
+            PointerWrapper() = default;
+            PointerWrapper(const T* obj) : ptr_(reinterpret_cast<uintptr_t>(obj)) {}
+            virtual ~PointerWrapper() = default;
 
             /// @{
             /**
              * @brief Use default copy behaviour
              */
-            ReferenceWrapper(const ReferenceWrapper& rhs) = default;
-            ReferenceWrapper& operator=(const ReferenceWrapper& rhs) = default;
+            PointerWrapper(const PointerWrapper& rhs) = default;
+            PointerWrapper& operator=(const PointerWrapper& rhs) = default;
             /// @}
 
             /// @{
             /**
              * @brief Use default move behaviour
              */
-            ReferenceWrapper(ReferenceWrapper&& rhs) = default;
-            ReferenceWrapper& operator=(ReferenceWrapper&& rhs) = default;
+            PointerWrapper(PointerWrapper&& rhs) = default;
+            PointerWrapper& operator=(PointerWrapper&& rhs) = default;
             /// @}
 
             T* get() const {
@@ -115,7 +115,7 @@ namespace allpix {
                 ptr_ = 0;
             }
 
-            ClassDef(ReferenceWrapper, 1);
+            ClassDef(PointerWrapper, 1);
 
         private:
             mutable uintptr_t ptr_{};

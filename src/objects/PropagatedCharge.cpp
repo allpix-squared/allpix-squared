@@ -22,7 +22,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double event_time,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
-    deposited_charge_ = ReferenceWrapper<DepositedCharge>(deposited_charge);
+    deposited_charge_ = PointerWrapper<DepositedCharge>(deposited_charge);
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
     }

@@ -19,7 +19,7 @@ using namespace allpix;
 
 PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
     : pixel_(std::move(pixel)), time_(time), signal_(signal) {
-    pixel_charge_ = ReferenceWrapper<PixelCharge>(pixel_charge); // NOLINT
+    pixel_charge_ = PointerWrapper<PixelCharge>(pixel_charge);
     // Get the unique set of MC particles
     std::set<const MCParticle*> unique_particles;
     for(auto& mc_particle : pixel_charge->mc_particles_) {

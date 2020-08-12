@@ -152,7 +152,7 @@ namespace allpix {
         double initial_tot_E_{};
         double final_tot_E_{};
 
-        ReferenceWrapper<MCTrack> parent_;
+        PointerWrapper<MCTrack> parent_;
     };
 
     /**
