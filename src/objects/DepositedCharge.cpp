@@ -37,7 +37,7 @@ const MCParticle* DepositedCharge::getMCParticle() const {
 }
 
 void DepositedCharge::setMCParticle(const MCParticle* mc_particle) {
-    mc_particle_.set(mc_particle); // NOLINT
+    mc_particle_ = ReferenceWrapper<MCParticle>(mc_particle); // NOLINT
 }
 
 void DepositedCharge::print(std::ostream& out) const {

@@ -82,11 +82,8 @@ namespace allpix {
     public:
         template <class T> class ReferenceWrapper {
         public:
-            ReferenceWrapper() { std::cout << "Construct: " << this << std::endl; };
-            ReferenceWrapper(const T* obj) {
-                std::cout << "Construct: " << this << std::endl;
-                set(obj);
-            }
+            ReferenceWrapper() = default;
+            ReferenceWrapper(const T* obj) : ptr_(reinterpret_cast<uintptr_t>(obj)) {}
             virtual ~ReferenceWrapper() = default;
 
             /**
@@ -110,7 +107,6 @@ namespace allpix {
             ReferenceWrapper& operator=(ReferenceWrapper&& rhs) = default;
             /// @}
 
-            void set(const T* obj) { ptr_ = reinterpret_cast<uintptr_t>(obj); }
             T* get() const {
                 if(ptr_ == 0) {
                     std::cout << "Loading" << std::endl;
