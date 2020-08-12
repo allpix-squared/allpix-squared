@@ -110,10 +110,7 @@ namespace allpix {
                 return reinterpret_cast<T*>(ptr_);
             };
 
-            void store() {
-                ref_ = reinterpret_cast<T*>(ptr_);
-                ptr_ = 0;
-            }
+            void store() { ref_ = reinterpret_cast<T*>(ptr_); }
 
             ClassDef(PointerWrapper, 1);
 
