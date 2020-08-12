@@ -118,7 +118,7 @@ namespace allpix {
             ClassDef(PointerWrapper, 1);
 
         private:
-            mutable uintptr_t ptr_{};
+            mutable uintptr_t ptr_{}; //! transient value
             TRef ref_{};
         };
     };
