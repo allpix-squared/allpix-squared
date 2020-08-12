@@ -86,16 +86,11 @@ namespace allpix {
             ReferenceWrapper(const T* obj) : ptr_(reinterpret_cast<uintptr_t>(obj)) {}
             virtual ~ReferenceWrapper() = default;
 
-            /**
-             * Custom copy constructor to not copu the pointer but update it from the TRef object
-             * @param rhs Object to be copied
-             */
-            ReferenceWrapper(const ReferenceWrapper& rhs) = default;
-
             /// @{
             /**
-             * @brief Use default assignment behaviour
+             * @brief Use default copy behaviour
              */
+            ReferenceWrapper(const ReferenceWrapper& rhs) = default;
             ReferenceWrapper& operator=(const ReferenceWrapper& rhs) = default;
             /// @}
 
@@ -109,7 +104,6 @@ namespace allpix {
 
             T* get() const {
                 if(ptr_ == 0) {
-                    std::cout << "Loading" << std::endl;
                     ptr_ = reinterpret_cast<uintptr_t>(ref_.GetObject());
                 }
 
@@ -117,7 +111,6 @@ namespace allpix {
             };
 
             void store() {
-                std::cout << "Storing" << std::endl;
                 ref_ = reinterpret_cast<T*>(ptr_);
                 ptr_ = 0;
             }
@@ -127,12 +120,6 @@ namespace allpix {
         private:
             mutable uintptr_t ptr_{};
             TRef ref_{};
-
-            void print(const ReferenceWrapper* wrp) const {
-                std::cout << "\t TRef resolved " << wrp->ref_.GetObject() << std::endl;
-                std::cout << "\t uintptr_t     0x" << std::hex << wrp->ptr_ << std::dec << std::endl;
-                std::cout << "\t ptr           " << reinterpret_cast<T*>(wrp->ptr_) << std::endl;
-            }
         };
     };
 
