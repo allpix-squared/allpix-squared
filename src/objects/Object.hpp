@@ -81,7 +81,10 @@ namespace allpix {
         template <class T> class ReferenceWrapper {
         public:
             ReferenceWrapper() = default;
-            ReferenceWrapper(const T* obj) { set(obj); }
+            ReferenceWrapper(const T* obj) {
+                std::cout << "Construct: " << obj << std::endl;
+                set(obj);
+            }
             virtual ~ReferenceWrapper() = default;
 
             /**
@@ -89,16 +92,23 @@ namespace allpix {
              * @param rhs Object to be copied
              */
             ReferenceWrapper(const ReferenceWrapper& rhs) {
+                std::cout << "Copy constructor " << &rhs << " to " << this << std::endl;
+                print(&rhs);
+
                 if(rhs.ref_.IsValid()) {
+                    std::cout << "TRef valid, updating pointer" << std::endl;
                     // If the TRef is set, update ptr and unset TRef
                     ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
                 } else if(rhs.ptr_ != 0) {
+                    std::cout << "Pointer valid, updating TRef" << std::endl;
                     // Otherwise, if the pointer is set, create a TRef
                     ref_ = const_cast<T*>(rhs.get());
                     ptr_ = rhs.ptr_;
                 } else {
                     throw std::runtime_error("argl");
                 }
+
+                print(this);
             }
 
             /// @{
@@ -116,15 +126,30 @@ namespace allpix {
             ReferenceWrapper& operator=(ReferenceWrapper&& rhs) = default;
             /// @}
 
-            void set(const T* obj) { ptr_ = reinterpret_cast<uintptr_t>(obj); }
+            void set(const T* obj) {
+                std::cout << "Set: " << obj << std::endl;
+                ptr_ = reinterpret_cast<uintptr_t>(obj);
+                // ref_ = const_cast<T*>(obj);
+                print(this);
+            }
 
-            T* get() const { return reinterpret_cast<T*>(ptr_); };
+            T* get() const {
+                std::cout << "Get: " << this << std::endl;
+                print(this);
+                return reinterpret_cast<T*>(ptr_);
+            };
 
             ClassDef(ReferenceWrapper, 1);
 
         private:
             uintptr_t ptr_{};
             TRef ref_{};
+
+            void print(const ReferenceWrapper* wrp) const {
+                std::cout << "\t TRef resolved " << wrp->ref_.GetObject() << std::endl;
+                std::cout << "\t uintptr_t     0x" << std::hex << wrp->ptr_ << std::dec << std::endl;
+                std::cout << "\t ptr           " << reinterpret_cast<T*>(wrp->ptr_) << std::endl;
+            }
         };
     };
 
