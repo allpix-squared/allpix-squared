@@ -129,8 +129,8 @@ namespace allpix {
         int particle_id_{};
         double time_{};
 
-        mutable ReferenceWrapper<MCParticle> parent_;
-        mutable ReferenceWrapper<MCTrack> track_;
+        ReferenceWrapper<MCParticle> parent_;
+        ReferenceWrapper<MCTrack> track_;
     };
 
     /**

@@ -102,8 +102,8 @@ namespace allpix {
         unsigned int charge_{};
         Pulse pulse_{};
 
-        mutable std::vector<ReferenceWrapper<PropagatedCharge>> propagated_charges_;
-        mutable std::vector<ReferenceWrapper<MCParticle>> mc_particles_;
+        std::vector<ReferenceWrapper<PropagatedCharge>> propagated_charges_;
+        std::vector<ReferenceWrapper<MCParticle>> mc_particles_;
     };
 
     /**

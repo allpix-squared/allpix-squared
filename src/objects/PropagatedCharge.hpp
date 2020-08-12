@@ -93,8 +93,8 @@ namespace allpix {
         PropagatedCharge() = default;
 
     private:
-        mutable ReferenceWrapper<DepositedCharge> deposited_charge_;
-        mutable ReferenceWrapper<MCParticle> mc_particle_;
+        ReferenceWrapper<DepositedCharge> deposited_charge_;
+        ReferenceWrapper<MCParticle> mc_particle_;
 
         std::map<Pixel::Index, Pulse> pulses_;
     };
