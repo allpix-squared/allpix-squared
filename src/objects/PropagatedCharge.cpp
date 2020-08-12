@@ -82,3 +82,8 @@ void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
     SensorCharge::print(out);
 }
+
+void PropagatedCharge::petrifyHistory() {
+    deposited_charge_.store();
+    mc_particle_.store();
+}

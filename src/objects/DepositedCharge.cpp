@@ -44,3 +44,7 @@ void DepositedCharge::print(std::ostream& out) const {
     out << "--- Deposited charge information\n";
     SensorCharge::print(out);
 }
+
+void DepositedCharge::petrifyHistory() {
+    mc_particle_.store();
+}

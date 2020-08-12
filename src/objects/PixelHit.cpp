@@ -99,3 +99,8 @@ void PixelHit::print(std::ostream& out) const {
     out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
         << this->getTime();
 }
+
+void PixelHit::petrifyHistory() {
+    pixel_charge_.store();
+    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
+}

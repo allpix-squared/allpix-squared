@@ -61,6 +61,8 @@ namespace allpix {
          */
         ClassDefOverride(Object, 3);
 
+        virtual void petrifyHistory() = 0;
+
     protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream
@@ -91,21 +93,7 @@ namespace allpix {
              * Custom copy constructor to not copu the pointer but update it from the TRef object
              * @param rhs Object to be copied
              */
-            ReferenceWrapper(const ReferenceWrapper& rhs) {
-                std::cout << "Copy constructor " << &rhs << " to " << this << std::endl;
-                print(&rhs);
-
-                if(!rhs.ref_.IsValid()) {
-                    std::cout << "We have no TRef, creating" << std::endl;
-                    ref_ = reinterpret_cast<T*>(rhs.ptr_);
-                    ptr_ = rhs.ptr_;
-                } else {
-                    ref_ = rhs.ref_;
-                    ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
-                }
-
-                print(this);
-            }
+            ReferenceWrapper(const ReferenceWrapper& rhs) = default;
 
             /// @{
             /**
@@ -123,13 +111,25 @@ namespace allpix {
             /// @}
 
             void set(const T* obj) { ptr_ = reinterpret_cast<uintptr_t>(obj); }
+            T* get() const {
+                if(ptr_ == 0) {
+                    std::cout << "Loading" << std::endl;
+                    ptr_ = reinterpret_cast<uintptr_t>(ref_.GetObject());
+                }
 
-            T* get() const { return reinterpret_cast<T*>(ptr_); };
+                return reinterpret_cast<T*>(ptr_);
+            };
+
+            void store() {
+                std::cout << "Storing" << std::endl;
+                ref_ = reinterpret_cast<T*>(ptr_);
+                ptr_ = 0;
+            }
 
             ClassDef(ReferenceWrapper, 1);
 
         private:
-            uintptr_t ptr_{};
+            mutable uintptr_t ptr_{};
             TRef ref_{};
 
             void print(const ReferenceWrapper* wrp) const {

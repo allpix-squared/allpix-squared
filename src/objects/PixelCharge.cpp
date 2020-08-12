@@ -103,3 +103,8 @@ void PixelCharge::print(std::ostream& out) const {
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
         << global_center_location.Z() << ") mm\n";
 }
+
+void PixelCharge::petrifyHistory() {
+    std::for_each(propagated_charges_.begin(), propagated_charges_.end(), [](auto& n) { n.store(); });
+    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
+}

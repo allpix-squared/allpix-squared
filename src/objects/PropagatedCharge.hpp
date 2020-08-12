@@ -92,6 +92,8 @@ namespace allpix {
          */
         PropagatedCharge() = default;
 
+        void petrifyHistory() override;
+
     private:
         ReferenceWrapper<DepositedCharge> deposited_charge_;
         ReferenceWrapper<MCParticle> mc_particle_;

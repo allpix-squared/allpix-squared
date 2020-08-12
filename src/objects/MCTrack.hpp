@@ -135,6 +135,8 @@ namespace allpix {
          */
         MCTrack() = default;
 
+        void petrifyHistory() override;
+
     private:
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};

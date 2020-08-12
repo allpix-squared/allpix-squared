@@ -68,6 +68,8 @@ namespace allpix {
          */
         DepositedCharge() = default;
 
+        void petrifyHistory() override;
+
     private:
         ReferenceWrapper<MCParticle> mc_particle_;
     };

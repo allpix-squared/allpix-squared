@@ -88,6 +88,8 @@ namespace allpix {
          */
         PixelHit() = default;
 
+        void petrifyHistory() override;
+
     private:
         Pixel pixel_;
         double time_{};

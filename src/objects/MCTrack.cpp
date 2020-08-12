@@ -118,3 +118,7 @@ void MCTrack::print(std::ostream& out) const {
     }
     out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
+
+void MCTrack::petrifyHistory() {
+    parent_.store();
+}

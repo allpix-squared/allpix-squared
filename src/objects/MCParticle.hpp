@@ -120,6 +120,8 @@ namespace allpix {
          */
         void print(std::ostream& out) const override;
 
+        void petrifyHistory() override;
+
     private:
         ROOT::Math::XYZPoint local_start_point_{};
         ROOT::Math::XYZPoint global_start_point_{};

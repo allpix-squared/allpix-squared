@@ -97,6 +97,8 @@ namespace allpix {
          */
         PixelCharge() = default;
 
+        void petrifyHistory() override;
+
     private:
         Pixel pixel_;
         unsigned int charge_{};
