@@ -52,7 +52,7 @@ void abort_handler(int) {
 void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(apx_ready) {
-        LOG(STATUS) << "Interrupted! Finishing up current event...";
+        LOG(STATUS) << "Interrupted! Finishing up queued events...";
         apx->terminate();
     }
 }
