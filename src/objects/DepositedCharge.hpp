@@ -69,7 +69,7 @@ namespace allpix {
         DepositedCharge() = default;
 
     private:
-        ReferenceWrapper<MCParticle> mc_particle_;
+        mutable ReferenceWrapper<MCParticle> mc_particle_;
     };
 
     /**

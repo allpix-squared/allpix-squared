@@ -93,8 +93,8 @@ namespace allpix {
         double time_{};
         double signal_{};
 
-        ReferenceWrapper<PixelCharge> pixel_charge_;
-        std::vector<ReferenceWrapper<MCParticle>> mc_particles_;
+        mutable ReferenceWrapper<PixelCharge> pixel_charge_;
+        mutable std::vector<ReferenceWrapper<MCParticle>> mc_particles_;
     };
 
     /**

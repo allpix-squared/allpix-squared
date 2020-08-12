@@ -81,10 +81,7 @@ namespace allpix {
         template <class T> class ReferenceWrapper {
         public:
             ReferenceWrapper() = default;
-            ReferenceWrapper(const T* obj) {
-                std::cout << "Construct: " << obj << std::endl;
-                set(obj);
-            }
+            ReferenceWrapper(const T* obj) { set(obj); }
             virtual ~ReferenceWrapper() = default;
 
             /**
@@ -92,13 +89,8 @@ namespace allpix {
              * @param rhs Object to be copied
              */
             ReferenceWrapper(const ReferenceWrapper& rhs) {
-                std::cout << "Copy constructor " << &rhs << " to " << this << std::endl;
-                print(&rhs);
-
                 ref_ = rhs.ref_;
-                ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
-
-                print(this);
+                ptr_ = 0;
             }
 
             /// @{
@@ -117,15 +109,14 @@ namespace allpix {
             /// @}
 
             void set(const T* obj) {
-                std::cout << "Set: " << obj << std::endl;
                 ptr_ = reinterpret_cast<uintptr_t>(obj);
                 ref_ = const_cast<T*>(obj);
-                print(this);
             }
 
-            T* get() const {
-                std::cout << "Get: " << this << std::endl;
-                print(this);
+            T* get() {
+                if(ptr_ == 0) {
+                    ptr_ = reinterpret_cast<uintptr_t>(ref_.GetObject());
+                }
                 return reinterpret_cast<T*>(ptr_);
             };
 
@@ -134,12 +125,6 @@ namespace allpix {
         private:
             uintptr_t ptr_{};
             TRef ref_{};
-
-            void print(const ReferenceWrapper* wrp) const {
-                std::cout << "\t TRef resolved " << wrp->ref_.GetObject() << std::endl;
-                std::cout << "\t uintptr_t     0x" << std::hex << wrp->ptr_ << std::dec << std::endl;
-                std::cout << "\t ptr           " << reinterpret_cast<T*>(wrp->ptr_) << std::endl;
-            }
         };
     };
 
