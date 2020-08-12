@@ -76,7 +76,7 @@ namespace allpix {
 
     private:
         std::vector<double> pulse_;
-        double bin_;
+        double bin_{};
         bool initialized_{};
     };
 
