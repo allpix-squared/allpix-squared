@@ -82,8 +82,18 @@ namespace allpix {
     public:
         template <class T> class PointerWrapper {
         public:
+            /**
+             * @brief Required default constructor
+             */
             PointerWrapper() = default;
-            PointerWrapper(const T* obj) : ptr_(reinterpret_cast<uintptr_t>(obj)) {}
+            /**
+             * @brief Constructor with object pointer to be wrapped
+             * @param obj Pointer to object
+             */
+            PointerWrapper(const T* obj) : ptr_(const_cast<T*>(obj)) {}
+            /**
+             * @brief Required virtual destructor
+             */
             virtual ~PointerWrapper() = default;
 
             /// @{
@@ -102,20 +112,31 @@ namespace allpix {
             PointerWrapper& operator=(PointerWrapper&& rhs) = default;
             /// @}
 
+            /**
+             * @brief Getter function to retrieve pointer from wrapper object
+             *
+             * This function implements lazy loading and fetches the pointer from the TRef object in case the pointer is not
+             * initialized yet
+             *
+             * @return Pointer to object
+             */
             T* get() const {
                 if(ptr_ == 0) {
-                    ptr_ = reinterpret_cast<uintptr_t>(ref_.GetObject());
+                    ptr_ = static_cast<T*>(ref_.GetObject());
                 }
 
-                return reinterpret_cast<T*>(ptr_);
+                return ptr_;
             };
 
-            void store() { ref_ = reinterpret_cast<T*>(ptr_); }
+            /**
+             * @brief Function to construct TRef object fro wrapped pointer for persistent storage
+             */
+            void store() { ref_ = ptr_; }
 
             ClassDef(PointerWrapper, 1);
 
         private:
-            mutable uintptr_t ptr_{}; //! transient value
+            mutable T* ptr_{}; //! transient value
             TRef ref_{};
         };
     };
