@@ -95,8 +95,18 @@ namespace allpix {
                 std::cout << "Copy constructor " << &rhs << " to " << this << std::endl;
                 print(&rhs);
 
-                ref_ = rhs.ref_;
-                ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
+                if(rhs.ref_.IsValid()) {
+                    std::cout << "TRef valid, updating pointer" << std::endl;
+                    // If the TRef is set, update ptr and unset TRef
+                    ptr_ = reinterpret_cast<uintptr_t>(rhs.ref_.GetObject());
+                } else if(rhs.ptr_ != 0) {
+                    std::cout << "Pointer valid, updating TRef" << std::endl;
+                    // Otherwise, if the pointer is set, create a TRef
+                    ref_ = const_cast<T*>(rhs.get());
+                    ptr_ = rhs.ptr_;
+                } else {
+                    throw std::runtime_error("argl");
+                }
 
                 print(this);
             }
@@ -119,7 +129,7 @@ namespace allpix {
             void set(const T* obj) {
                 std::cout << "Set: " << obj << std::endl;
                 ptr_ = reinterpret_cast<uintptr_t>(obj);
-                ref_ = const_cast<T*>(obj);
+                // ref_ = const_cast<T*>(obj);
                 print(this);
             }
 
