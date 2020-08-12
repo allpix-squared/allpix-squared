@@ -16,6 +16,7 @@
 #define ALLPIX_OBJECT_H
 
 #include <iostream>
+#include <mutex>
 
 #include <TObject.h>
 #include <TRef.h>
@@ -121,9 +122,7 @@ namespace allpix {
              * @return Pointer to object
              */
             T* get() const {
-                if(ptr_ == 0) {
-                    ptr_ = static_cast<T*>(ref_.GetObject());
-                }
+                std::call_once(load_, [&]() { ptr_ = static_cast<T*>(ref_.GetObject()); });
 
                 return ptr_;
             };
@@ -136,7 +135,8 @@ namespace allpix {
             ClassDef(PointerWrapper, 1);
 
         private:
-            mutable T* ptr_{}; //! transient value
+            mutable T* ptr_{};            //! transient value
+            mutable std::once_flag load_; //! transient value
             TRef ref_{};
         };
     };
