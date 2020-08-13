@@ -101,16 +101,30 @@ namespace allpix {
             /**
              * @brief Use default copy behaviour
              */
-            PointerWrapper(const PointerWrapper& rhs) = default;
-            PointerWrapper& operator=(const PointerWrapper& rhs) = default;
+            PointerWrapper(const PointerWrapper& rhs) {
+                ptr_ = rhs.ptr_;
+                ref_ = rhs.ref_;
+            };
+            PointerWrapper& operator=(const PointerWrapper& rhs) {
+                ptr_ = rhs.ptr_;
+                ref_ = rhs.ref_;
+                return *this;
+            };
             /// @}
 
             /// @{
             /**
              * @brief Use default move behaviour
              */
-            PointerWrapper(PointerWrapper&& rhs) = default;
-            PointerWrapper& operator=(PointerWrapper&& rhs) = default;
+            PointerWrapper(PointerWrapper&& rhs) {
+                ptr_ = rhs.ptr_;
+                ref_ = rhs.ref_;
+            };
+            PointerWrapper& operator=(PointerWrapper&& rhs) {
+                ptr_ = rhs.ptr_;
+                ref_ = rhs.ref_;
+                return *this;
+            };
             /// @}
 
             /**
@@ -123,7 +137,6 @@ namespace allpix {
              */
             T* get() const {
                 std::call_once(load_, [&]() { ptr_ = static_cast<T*>(ref_.GetObject()); });
-
                 return ptr_;
             };
 
