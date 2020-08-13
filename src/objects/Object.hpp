@@ -91,7 +91,7 @@ namespace allpix {
              * @brief Constructor with object pointer to be wrapped
              * @param obj Pointer to object
              */
-            PointerWrapper(const T* obj) : ptr_(const_cast<T*>(obj)) {}
+            PointerWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {}
             /**
              * @brief Required virtual destructor
              */
@@ -101,30 +101,16 @@ namespace allpix {
             /**
              * @brief Use default copy behaviour
              */
-            PointerWrapper(const PointerWrapper& rhs) {
-                ptr_ = rhs.ptr_;
-                ref_ = rhs.ref_;
-            };
-            PointerWrapper& operator=(const PointerWrapper& rhs) {
-                ptr_ = rhs.ptr_;
-                ref_ = rhs.ref_;
-                return *this;
-            };
+            PointerWrapper(const PointerWrapper& rhs) = default;
+            PointerWrapper& operator=(const PointerWrapper& rhs) = default;
             /// @}
 
             /// @{
             /**
              * @brief Use default move behaviour
              */
-            PointerWrapper(PointerWrapper&& rhs) {
-                ptr_ = rhs.ptr_;
-                ref_ = rhs.ref_;
-            };
-            PointerWrapper& operator=(PointerWrapper&& rhs) {
-                ptr_ = rhs.ptr_;
-                ref_ = rhs.ref_;
-                return *this;
-            };
+            PointerWrapper(PointerWrapper&& rhs) = default;
+            PointerWrapper& operator=(PointerWrapper&& rhs) = default;
             /// @}
 
             /**
@@ -136,7 +122,11 @@ namespace allpix {
              * @return Pointer to object
              */
             T* get() const {
-                std::call_once(load_, [&]() { ptr_ = static_cast<T*>(ref_.GetObject()); });
+                // Lazy loading of pointer from TRef
+                if(!loaded_) {
+                    ptr_ = static_cast<T*>(ref_.GetObject());
+                    loaded_ = true;
+                }
                 return ptr_;
             };
 
@@ -148,8 +138,8 @@ namespace allpix {
             ClassDef(PointerWrapper, 1);
 
         private:
-            mutable T* ptr_{};            //! transient value
-            mutable std::once_flag load_; //! transient value
+            mutable T* ptr_{};           //! transient value
+            mutable bool loaded_{false}; //! transient value
             TRef ref_{};
         };
     };
