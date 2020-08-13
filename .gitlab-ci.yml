@@ -65,7 +65,7 @@ cmp:cc7-docker:
     script:
         - mkdir build
         - cd build
-        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make
         - make install
 

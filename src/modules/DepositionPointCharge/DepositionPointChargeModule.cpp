@@ -68,8 +68,8 @@ void DepositionPointChargeModule::init() {
 
     // Set up the different source types
     if(type_ == SourceType::MIP) {
-        // Calculate voxel size:
-        auto granularity = config_.get<unsigned int>("number_of_steps");
+        // Calculate voxel size and ensure granularity is not zero:
+        auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
         step_size_z_ = model->getSensorSize().z() / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):

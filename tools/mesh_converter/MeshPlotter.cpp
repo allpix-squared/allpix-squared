@@ -30,102 +30,103 @@ void interrupt_handler(int) {
 
 int main(int argc, char** argv) {
 
-    // Register the default set of units with this executable:
-    allpix::register_units();
+    try {
 
-    // Set ROOT params
-    gStyle->SetOptStat(0);
-    gStyle->SetNumberContours(999);
+        // Register the default set of units with this executable:
+        allpix::register_units();
 
-    bool print_help = false;
-    int return_code = 0;
-    if(argc == 1) {
-        print_help = true;
-        return_code = 1;
-    }
+        // Set ROOT params
+        gStyle->SetOptStat(0);
+        gStyle->SetNumberContours(999);
 
-    // Add stream and set default logging level
-    allpix::Log::addStream(std::cout);
-
-    // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
-    std::signal(SIGQUIT, interrupt_handler);
-    std::signal(SIGINT, interrupt_handler);
-
-    // Read parameters
-    std::string file_name;
-    std::string output_file_name;
-    std::string output_name_log;
-    std::string plane = "yz";
-    std::string units;
-    bool flag_cut = false;
-    size_t slice_cut = 0;
-    bool log_scale = false;
-    allpix::LogLevel log_level = allpix::LogLevel::INFO;
-
-    for(int i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "-h") == 0) {
-            print_help = true;
-        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
-            try {
-                log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
-            } catch(std::invalid_argument& e) {
-                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
-                return_code = 1;
-            }
-        } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
-            file_name = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
-            output_file_name = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
-            plane = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-u") == 0 && (i + 1 < argc)) {
-            units = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-            slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
-            flag_cut = true;
-        } else if(strcmp(argv[i], "-l") == 0) {
-            log_scale = true;
-        } else {
-            std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
+        bool print_help = false;
+        int return_code = 0;
+        if(argc == 1) {
             print_help = true;
             return_code = 1;
         }
-    }
 
-    // Set log level:
-    allpix::Log::setReportingLevel(log_level);
+        // Add stream and set default logging level
+        allpix::Log::addStream(std::cout);
 
-    if(file_name.empty()) {
-        print_help = true;
-        return_code = 1;
-    }
+        // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
+        std::signal(SIGQUIT, interrupt_handler);
+        std::signal(SIGINT, interrupt_handler);
 
-    if(print_help) {
-        std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
-        std::cout << "Required parameters:" << std::endl;
-        std::cout << "\t -f <file_name>         name of the interpolated file in INIT or APF format" << std::endl;
-        std::cout << "Optional parameters:" << std::endl;
-        std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
-        std::cout << "\t -h                     display this help text" << std::endl;
-        std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
-        std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
-        std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
-        std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
-        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+        // Read parameters
+        std::string file_name;
+        std::string output_file_name;
+        std::string output_name_log;
+        std::string plane = "yz";
+        std::string units;
+        bool flag_cut = false;
+        size_t slice_cut = 0;
+        bool log_scale = false;
+        allpix::LogLevel log_level = allpix::LogLevel::INFO;
 
-        allpix::Log::finish();
-        return return_code;
-    }
+        for(int i = 1; i < argc; i++) {
+            if(strcmp(argv[i], "-h") == 0) {
+                print_help = true;
+            } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+                try {
+                    log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                } catch(std::invalid_argument& e) {
+                    LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+                    return_code = 1;
+                }
+            } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
+                file_name = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+                output_file_name = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-p") == 0 && (i + 1 < argc)) {
+                plane = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-u") == 0 && (i + 1 < argc)) {
+                units = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+                slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
+                flag_cut = true;
+            } else if(strcmp(argv[i], "-l") == 0) {
+                log_scale = true;
+            } else {
+                std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
+                print_help = true;
+                return_code = 1;
+            }
+        }
 
-    // Read file
-    LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
-    LOG(STATUS) << "Reading file: " << file_name;
+        // Set log level:
+        allpix::Log::setReportingLevel(log_level);
 
-    size_t firstindex = file_name.find_last_of('_');
-    size_t lastindex = file_name.find_last_of('.');
-    std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+        if(file_name.empty()) {
+            print_help = true;
+            return_code = 1;
+        }
 
-    try {
+        if(print_help) {
+            std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
+            std::cout << "Required parameters:" << std::endl;
+            std::cout << "\t -f <file_name>         name of the interpolated file in INIT or APF format" << std::endl;
+            std::cout << "Optional parameters:" << std::endl;
+            std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
+            std::cout << "\t -h                     display this help text" << std::endl;
+            std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
+            std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
+            std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
+            std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
+            std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+
+            allpix::Log::finish();
+            return return_code;
+        }
+
+        // Read file
+        LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
+        LOG(STATUS) << "Reading file: " << file_name;
+
+        size_t firstindex = file_name.find_last_of('_');
+        size_t lastindex = file_name.find_last_of('.');
+        std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+
         // FIXME this should be done in a more elegant way
         FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
 
@@ -271,7 +272,7 @@ int main(int argc, char** argv) {
 
         allpix::Log::finish();
         return 0;
-    } catch(std::runtime_error& e) {
+    } catch(std::exception& e) {
         LOG(FATAL) << "Failed to plot mesh:\n" << e.what();
         allpix::Log::finish();
         return 1;
