@@ -233,10 +233,12 @@ namespace allpix {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<double> field_data;
 
-            // Parse the file with cereal, add manual scope to ensure flushing:
-            {
+            // Parse the file with cereal, scope ensures flushing:
+            try {
                 cereal::PortableBinaryInputArchive archive(file);
                 archive(field_data);
+            } catch(cereal::Exception& e) {
+                throw std::runtime_error(e.what());
             }
 
             // Check that we have the right number of vector entries
@@ -419,8 +421,12 @@ namespace allpix {
             std::ofstream file(file_name, std::ios::binary);
 
             // Write the file with cereal:
-            cereal::PortableBinaryOutputArchive archive(file);
-            archive(field_data);
+            try {
+                cereal::PortableBinaryOutputArchive archive(file);
+                archive(field_data);
+            } catch(cereal::Exception& e) {
+                throw std::runtime_error(e.what());
+            }
         }
 
         /**

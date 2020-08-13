@@ -136,7 +136,6 @@ void DatabaseWriterModule::run(Event* event) {
     int depositedcharge_nr = -1;
     int propagatedcharge_nr = -1;
     int pixelcharge_nr = -1;
-    int pixelhit_nr = -1;
 
     LOG(TRACE) << "Writing new objects to database";
 
@@ -189,7 +188,6 @@ void DatabaseWriterModule::run(Event* event) {
                 insertionLine << "'" << detectorName << "', " << hit.getIndex().X() << ", " << hit.getIndex().Y() << ", "
                               << hit.getSignal() << ", " << hit.getTime() << ") RETURNING pixelHit_nr;";
                 insertionResult = W_->exec(insertionLine.str());
-                pixelhit_nr = atoi(insertionResult[0][0].c_str());
             } else if(class_name == "PixelCharge") {
                 LOG(TRACE) << "inserting PixelCharge" << std::endl;
                 PixelCharge charge = static_cast<PixelCharge&>(current_object);

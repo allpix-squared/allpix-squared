@@ -97,7 +97,7 @@ namespace allpix {
 
         Configuration config_;
         GeometryManager* geo_manager_;
-        double max_size_;
+        double max_size_{};
 
         std::string name_;
         ROOT::Math::Rotation3D orientation_;

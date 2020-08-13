@@ -44,6 +44,7 @@ namespace allpix {
          * @brief Add a new unit to the system
          * @param str Identifier of the unit
          * @param value Multiplication factor from the base unit
+         * @throws std::invalid_argument if unit is already defined
          */
         static void add(std::string str, UnitType value);
 
