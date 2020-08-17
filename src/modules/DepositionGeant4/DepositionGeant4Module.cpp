@@ -49,8 +49,6 @@ using namespace allpix;
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1), run_manager_g4_(nullptr) {
-    // Create user limits for maximum step length in the sensor
-    user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
@@ -58,11 +56,18 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
+    config_.setDefault<double>("max_step_length", Units::get(1.0, "um"));
+    // Default value chosen to ensure proper gamma generation for Cs137 decay
+    config_.setDefault<double>("decay_cutoff_time", 2.21e+11);
 
     // Set alias for support of old particle source definition
     config_.setAlias("source_position", "beam_position");
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
+
+    // Create user limits for maximum step length in the sensor
+    user_limits_ = std::make_unique<G4UserLimits>(
+        config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("decay_cutoff_time"));
 
     // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
     if(config.get<std::string>("source_type") == "macro") {
@@ -206,11 +211,8 @@ void DepositionGeant4Module::init() {
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
-    // Default value chosen to ensure proper gamma generation for Cs137 decay
-    auto decay_cutoff_time = config_.get<double>("decay_cutoff_time", 2.21e+11);
-
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get(), decay_cutoff_time);
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
