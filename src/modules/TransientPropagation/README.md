@@ -13,7 +13,7 @@ module_ouput: "PropagatedCharge"
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled via the `charge_per_step` parameter. The maximum number of charge groups to be propagated for a single deposit position can be controlled via the `max_charge_groups` parameter.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
-Impact ionisation is implemented via the Massey model [@massey] but is switched off by default.
+Impact ionisation is implemented via either the Massey model [@massey] or the extended van Overstraeten - de Man Model model that is implemented in Sentaurus TCAD [@overstraeten]. Impact ionisation is switched off by default.
 
 A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
@@ -56,6 +56,7 @@ The module can produces a variety of plots such as total integrated charge plots
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `enable_charge_multiplication`: Enables charge multiplication. Defaults to false.
 * `charge_multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to 1e-2 MV mm^-1 (corresponds to 100 kV cm^-1).
+* `charge_multiplication_model`: Model used to calculate impact ionisation parameters. Possible values are 'massey' and 'overstraeten'. Defaults to 'massey'.
 
 
 ## Usage
@@ -71,3 +72,4 @@ timestep = 0.02ns
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757
 [@massey]: https://ieeexplore.ieee.org/document/1677871
+[@overstraeten]: http://www.sentaurus.dsod.pl/manuals/data/sdevice_ug.pdf
