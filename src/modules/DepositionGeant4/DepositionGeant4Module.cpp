@@ -65,10 +65,11 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
 
-    // Create user limits for maximum step length in the sensor
+    // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ = std::make_unique<G4UserLimits>(
         config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("decay_cutoff_time"));
 
+    // Create user limits for maximum event time in the world volume:
     user_limits_world_ = std::make_unique<G4UserLimits>(DBL_MAX, DBL_MAX, config_.get<double>("decay_cutoff_time"));
 
     // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
@@ -201,6 +202,8 @@ void DepositionGeant4Module::init() {
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
+        LOG(DEBUG) << "Setting world volume user limits to constrain event time to "
+                   << Units::display(config_.get<double>("decay_cutoff_time"), {"ns", "us", "ms", "s"});
         world_log_volume->SetUserLimits(user_limits_world_.get());
     }
 
