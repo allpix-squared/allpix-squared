@@ -54,6 +54,7 @@ A range cut-off threshold for the production of gammas, electrons and positrons 
 By default, Geant4 sets this value to 700um or even 1mm, which is most likely too coarse for precise detector simulation.
 In this module, the range cut-off is automatically calculated as a fifth of the minimal feature size of a single pixel, i.e. either to a fifth of the smallest pitch of a fifth of the sensor thickness, if smaller.
 This behavior can be overwritten by explicitly specifying the range cut via the `range_cut` parameter.
+The propagation of any particle is stopped at the value of the parameter `cutoff_time`. In case the particle is stopped in a sensitive volume, the remaining kinetic energy is deposited in this sensor.
 
 The module supports the propagation of charged particles in a magnetic field if defined via the MagneticFieldReader module.
 
