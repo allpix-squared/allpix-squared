@@ -64,7 +64,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setAlias("source_position", "beam_position");
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
-    config_.setAlias("cutoff_time", "decay_cutoff_time");
+    config_.setAlias("cutoff_time", "decay_cutoff_time", true);
 
     // Create user limits for maximum step length in the sensor
     user_limits_ =
