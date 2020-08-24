@@ -86,8 +86,6 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
-Please note that the old parameter `decay_cutoff_time` from version v1.5.1 and before is still supported but it is recommended to use the new corresponding key (`cutoff_time`).
-
 #### Parameters for source `beam`
 * `beam_size` : Width of the Gaussian beam profile.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
