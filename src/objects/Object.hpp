@@ -81,36 +81,32 @@ namespace allpix {
         }
 
     public:
-        template <class T> class PointerWrapper {
+        template <class T> class BaseWrapper {
         public:
             /**
              * @brief Required default constructor
              */
-            PointerWrapper() = default;
+            BaseWrapper() = default;
             /**
              * @brief Constructor with object pointer to be wrapped
              * @param obj Pointer to object
              */
-            PointerWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {}
-            /**
-             * @brief Required virtual destructor
-             */
-            virtual ~PointerWrapper() = default;
+            BaseWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {}
 
             /// @{
             /**
              * @brief Use default copy behaviour
              */
-            PointerWrapper(const PointerWrapper& rhs) = default;
-            PointerWrapper& operator=(const PointerWrapper& rhs) = default;
+            BaseWrapper(const BaseWrapper& rhs) = default;
+            BaseWrapper& operator=(const BaseWrapper& rhs) = default;
             /// @}
 
             /// @{
             /**
              * @brief Use default move behaviour
              */
-            PointerWrapper(PointerWrapper&& rhs) = default;
-            PointerWrapper& operator=(PointerWrapper&& rhs) = default;
+            BaseWrapper(BaseWrapper&& rhs) = default;
+            BaseWrapper& operator=(BaseWrapper&& rhs) = default;
             /// @}
 
             /**
@@ -121,26 +117,83 @@ namespace allpix {
              *
              * @return Pointer to object
              */
-            T* get() const {
-                // Lazy loading of pointer from TRef
-                if(!loaded_) {
-                    ptr_ = static_cast<T*>(ref_.GetObject());
-                    loaded_ = true;
-                }
-                return ptr_;
-            };
+            virtual T* get() const = 0;
 
             /**
              * @brief Function to construct TRef object for wrapped pointer for persistent storage
              */
             void store() { ref_ = ptr_; }
 
-            ClassDef(PointerWrapper, 1);
+            ClassDef(BaseWrapper, 1);
 
-        private:
+        protected:
+            /**
+             * @brief Required virtual destructor
+             */
+            virtual ~BaseWrapper() = default;
+
             mutable T* ptr_{};           //! transient value
             mutable bool loaded_{false}; //! transient value
             TRef ref_{};
+        };
+
+        template <class T> class PointerWrapper : public BaseWrapper<T> {
+        public:
+            /**
+             * @brief Using implicit and explicit constructors from base class
+             */
+            using BaseWrapper<T>::BaseWrapper;
+
+            /**
+             * @brief Required virtual destructor
+             */
+            virtual ~PointerWrapper() = default;
+
+            /**
+             * @brief Explicit copy constructor to avoid copying std::once_flag
+             */
+            PointerWrapper(const PointerWrapper& rhs) : BaseWrapper<T>(rhs){};
+
+            /**
+             * @brief Explicit copy assignment operator to avoid copying std::once_flag
+             */
+            PointerWrapper& operator=(const PointerWrapper& rhs) {
+                BaseWrapper<T>::operator=(rhs);
+                return *this;
+            };
+
+            /**
+             * @brief Explicit move constructor to avoid copying std::once_flag
+             */
+            PointerWrapper(PointerWrapper&& rhs) : BaseWrapper<T>(rhs){};
+
+            /**
+             * @brief Explicit move assignment to avoid copying std::once_flag
+             */
+            PointerWrapper& operator=(PointerWrapper&& rhs) {
+                BaseWrapper<T>::operator=(rhs);
+                return *this;
+            };
+
+            /**
+             * @brief Implementation of base class lazy loading mechanism with thread-safe call_once
+             * @return Pointer to object
+             */
+            T* get() const override {
+                // Lazy loading of pointer from TRef
+                std::call_once(load_flag_, [&]() {
+                    if(!this->loaded_) {
+                        this->ptr_ = static_cast<T*>(this->ref_.GetObject());
+                        this->loaded_ = true;
+                    }
+                });
+                return this->ptr_;
+            };
+
+            ClassDefOverride(PointerWrapper, 1);
+
+        private:
+            mutable std::once_flag load_flag_; //! transient value
         };
     };
 
