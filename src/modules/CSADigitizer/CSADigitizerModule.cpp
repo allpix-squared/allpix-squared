@@ -192,15 +192,14 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
         // TOA and TOT logic
-        double toa{}, tot{};
-        compare_with_threshold(toa, tot, timestep, amplified_pulse_with_noise);
-        LOG(TRACE) << "TOA " << toa << " ns, TOT " << tot << " ns";
+        std::pair<double, double> compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
+        LOG(TRACE) << "TOA " << compare_result.first << " ns, TOT " << compare_result.second << " ns";
 
         // Fill histograms if requested
         if(output_plots_) {
-            h_tot->Fill(tot);
-            h_toa->Fill(toa);
-            h_pxq_vs_tot->Fill(inputcharge / 1e3, tot);
+            h_tot->Fill(compare_result.second);
+            h_toa->Fill(compare_result.first);
+            h_pxq_vs_tot->Fill(inputcharge / 1e3, compare_result.second);
         }
 
         // Fill a graphs with the individual pixel pulses:
@@ -225,12 +224,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Add the hit to the hitmap
         if(store_tot_) {
-            hits.emplace_back(pixel, toa, tot, &pixel_charge);
+            hits.emplace_back(pixel, compare_result.first, compare_result.second, &pixel_charge);
         } else {
             // calculate pulse integral with noise
             auto amplified_pulse_integral =
                 std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
-            hits.emplace_back(pixel, toa, amplified_pulse_integral, &pixel_charge);
+            hits.emplace_back(pixel, compare_result.first, amplified_pulse_integral, &pixel_charge);
         }
     }
 
@@ -245,12 +244,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
 }
 
 // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
-void CSADigitizerModule::compare_with_threshold(double& toa,
-                                                double& tot,
-                                                double timestep,
-                                                std::vector<double> amplified_pulse_with_noise) {
+std::pair<double, double> CSADigitizerModule::compare_with_threshold(double timestep,
+                                                                     std::vector<double> amplified_pulse_with_noise) {
 
     bool is_over_threshold = false;
+    double toa{}, tot{};
     double jtoa{}, jtot{};
     // first find the point where the signal crosses the threshold, latch toa
     while(jtoa < tmax_) {
@@ -273,6 +271,8 @@ void CSADigitizerModule::compare_with_threshold(double& toa,
         }
         jtot += clockToT_;
     }
+
+    return {toa, tot};
 }
 
 void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_num,
