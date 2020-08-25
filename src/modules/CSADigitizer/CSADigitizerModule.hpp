@@ -68,21 +68,6 @@ namespace allpix {
          */
         void finalize() override;
 
-        /**
-         * @brief Compare output pulse with threshold for ToA/ToT
-         */
-        void compareWithThreshold(double& toa, double& tot, double timestep, std::vector<double> amplified_pulse_with_noise);
-
-        /**
-         * @brief Create output plots of the pulses
-         */
-        void createOutputPulsegraphs(const std::string& s_event_num,
-                                     const std::string& s_pixel_index,
-                                     const std::string& s_name,
-                                     const std::string& s_title,
-                                     double timestep,
-                                     std::vector<double> plot_pulse_vec);
-
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
@@ -110,6 +95,22 @@ namespace allpix {
         // Output histograms
         TH1D *h_tot{}, *h_toa{};
         TH2D* h_pxq_vs_tot{};
+
+        /**
+         * @brief Compare output pulse with threshold for ToA/ToT
+         */
+        void
+        compare_with_threshold(double& toa, double& tot, double timestep, std::vector<double> amplified_pulse_with_noise);
+
+        /**
+         * @brief Create output plots of the pulses
+         */
+        void create_output_pulsegraphs(const std::string& s_event_num,
+                                       const std::string& s_pixel_index,
+                                       const std::string& s_name,
+                                       const std::string& s_title,
+                                       double timestep,
+                                       std::vector<double> plot_pulse_vec);
     };
 } // namespace allpix
 
