@@ -76,6 +76,7 @@ namespace allpix {
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
+        std::unique_ptr<G4UserLimits> user_limits_world_;
 
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
         G4RunManager* run_manager_g4_;
