@@ -153,8 +153,8 @@ void WeightingPotentialReaderModule::create_output_plots() {
     auto histogram2Dy = new TH2F("potential_y",
                                  "#phi_{w}/V_{w};y (mm); z (mm); unit potential",
                                  static_cast<int>(steps),
-                                 -1.5 * model->getPixelSize().x(),
-                                 1.5 * model->getPixelSize().x(),
+                                 -1.5 * model->getPixelSize().y(),
+                                 1.5 * model->getPixelSize().y(),
                                  static_cast<int>(steps),
                                  min,
                                  max);
