@@ -122,7 +122,7 @@ namespace allpix {
             /**
              * @brief Function to construct TRef object for wrapped pointer for persistent storage
              */
-            void store() { ref_ = ptr_; }
+            void store() { ref_ = get(); }
 
             ClassDef(BaseWrapper, 1);
 
