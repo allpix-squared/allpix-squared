@@ -48,8 +48,7 @@ namespace allpix {
         void PostUserTrackingAction(const G4Track* aTrack) override;
 
     private:
-        // Raw ptr to track info manager to create instances of TrackInfoG4
-        // TrackInfoManager* track_info_mgr_ptr_;
+        // Raw ptr to module holding track info manager to create instances of TrackInfoG4
         DepositionGeant4Module* module_;
     };
 
