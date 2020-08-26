@@ -28,6 +28,9 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
+    // Allow to use similar syntax as in DepositionGeant4:
+    config_.setAlias("position", "source_position");
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
