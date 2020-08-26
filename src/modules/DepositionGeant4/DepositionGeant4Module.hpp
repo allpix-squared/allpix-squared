@@ -100,6 +100,7 @@ namespace allpix {
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
+        std::unique_ptr<G4UserLimits> user_limits_world_;
 
         // Configuration of decay cut-off time
         double decay_cutoff_time_{};

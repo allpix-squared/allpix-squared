@@ -62,14 +62,16 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(DepositedCharge, 2);
+        ClassDefOverride(DepositedCharge, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
         DepositedCharge() = default;
 
+        void petrifyHistory() override;
+
     private:
-        TRef mc_particle_;
+        PointerWrapper<MCParticle> mc_particle_;
     };
 
     /**

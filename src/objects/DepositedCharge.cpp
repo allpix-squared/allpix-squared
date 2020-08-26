@@ -29,7 +29,7 @@ DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* DepositedCharge::getMCParticle() const {
-    auto mc_particle = dynamic_cast<MCParticle*>(mc_particle_.GetObject());
+    auto mc_particle = mc_particle_.get();
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
@@ -37,10 +37,14 @@ const MCParticle* DepositedCharge::getMCParticle() const {
 }
 
 void DepositedCharge::setMCParticle(const MCParticle* mc_particle) {
-    mc_particle_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+    mc_particle_ = PointerWrapper<MCParticle>(mc_particle);
 }
 
 void DepositedCharge::print(std::ostream& out) const {
     out << "--- Deposited charge information\n";
     SensorCharge::print(out);
+}
+
+void DepositedCharge::petrifyHistory() {
+    mc_particle_.store();
 }

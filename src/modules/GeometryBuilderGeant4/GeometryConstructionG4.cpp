@@ -113,6 +113,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
+    geo_manager_->setExternalObject("", "world_log", world_log_);
 
     // Place the world at the center
     world_phys_ =

@@ -265,7 +265,7 @@ void BufferedModule::flush_buffered_events() {
             cond_var_.notify_one();
         }
 
-        LOG(TRACE) << "Writing buffered event " << iter->first;
+        LOG(TRACE) << "Writing buffered event " << iter->first << ", " << buffered_events_.size() << " left in buffer";
 
         // set the buffered event RNG
         event->set_and_seed_random_engine(&random_generator);
