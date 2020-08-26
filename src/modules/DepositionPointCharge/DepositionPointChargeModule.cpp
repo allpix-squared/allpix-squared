@@ -33,7 +33,6 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", "point");
-    config_.setDefault("model", "fixed");
 
     // Read type:
     auto type = config_.get<std::string>("source_type");
