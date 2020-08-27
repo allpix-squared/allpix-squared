@@ -245,7 +245,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
 // to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
 std::pair<double, double> CSADigitizerModule::compare_with_threshold(double timestep,
-                                                                     std::vector<double> amplified_pulse_with_noise) {
+                                                                     const std::vector<double>& amplified_pulse_with_noise) {
 
     bool is_over_threshold = false;
     double toa{}, tot{};
@@ -280,7 +280,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
                                                    const std::string& s_name,
                                                    const std::string& s_title,
                                                    double timestep,
-                                                   std::vector<double> plot_pulse_vec) {
+                                                   const std::vector<double>& plot_pulse_vec) {
 
     // Generate x-axis:
     std::vector<double> amptime(plot_pulse_vec.size());

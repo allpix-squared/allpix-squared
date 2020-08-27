@@ -99,7 +99,8 @@ namespace allpix {
         /**
          * @brief Compare output pulse with threshold for ToA/ToT
          */
-        std::pair<double, double> compare_with_threshold(double timestep, std::vector<double> amplified_pulse_with_noise);
+        std::pair<double, double> compare_with_threshold(double timestep,
+                                                         const std::vector<double>& amplified_pulse_with_noise);
 
         /**
          * @brief Create output plots of the pulses
@@ -109,7 +110,7 @@ namespace allpix {
                                        const std::string& s_name,
                                        const std::string& s_title,
                                        double timestep,
-                                       std::vector<double> plot_pulse_vec);
+                                       const std::vector<double>& plot_pulse_vec);
     };
 } // namespace allpix
 
