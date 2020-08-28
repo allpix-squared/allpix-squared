@@ -73,7 +73,9 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
     parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 
     // Update the local time with the arrival time of the parent:
-    local_time_ = global_time_ - mc_particle->getGlobalTime();
+    if(mc_particle != nullptr) {
+        local_time_ = global_time_ - mc_particle->getGlobalTime();
+    }
 }
 
 /**
