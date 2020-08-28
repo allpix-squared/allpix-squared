@@ -266,9 +266,13 @@ A sketch of the actual coordinate transformations performed, including the order
 \begin{figure}[tbp]
   \center
   \input{tikz/transformations}
-  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the respective coordinate systems in top view, the second row in side view.}
+  \caption{Coordinate transformations from global to local and revers. The first row shows the detector positions in the respective coordinate systems in top view, the second row in side view.}
   \label{fig:transformations}
 \end{figure}
+
+The global reference for time measurements is the beginning of the event, i.e.\ the start of the particle tracking through the setup.
+The local time reference is the entry of the primary particle into the sensor.
+This means that secondary particles created within the sensor inherit the local time reference from their parent particles in order to have a uniform time reference in the sensor.
 
 \subsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
