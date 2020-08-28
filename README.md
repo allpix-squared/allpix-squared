@@ -100,6 +100,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
+* Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
 * Andy Wharton, Lancaster University, @awharton
 * Morag Williams, University of Glasgow, @williamm
