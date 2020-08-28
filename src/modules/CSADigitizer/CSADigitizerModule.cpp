@@ -220,12 +220,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Add the hit to the hitmap
         if(store_tot_) {
-            hits.emplace_back(pixel, compare_result.first, compare_result.second, &pixel_charge);
+            hits.emplace_back(pixel, compare_result.first, compare_result.first, compare_result.second, &pixel_charge);
         } else {
             // calculate pulse integral with noise
             auto amplified_pulse_integral =
                 std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
-            hits.emplace_back(pixel, compare_result.first, amplified_pulse_integral, &pixel_charge);
+            hits.emplace_back(pixel, compare_result.first, compare_result.first, amplified_pulse_integral, &pixel_charge);
         }
     }
 
