@@ -186,7 +186,7 @@ void DatabaseWriterModule::run(unsigned int event_num) {
                 if(pixelcharge_nr >= 0)
                     insertionLine << pixelcharge_nr << ", ";
                 insertionLine << "'" << detectorName << "', " << hit.getIndex().X() << ", " << hit.getIndex().Y() << ", "
-                              << hit.getSignal() << ", " << hit.getTime() << ") RETURNING pixelHit_nr;";
+                              << hit.getSignal() << ", " << hit.getLocalTime() << ") RETURNING pixelHit_nr;";
                 insertionResult = W_->exec(insertionLine.str());
             } else if(class_name == "PixelCharge") {
                 LOG(TRACE) << "inserting PixelCharge" << std::endl;

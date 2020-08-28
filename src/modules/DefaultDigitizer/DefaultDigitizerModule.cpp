@@ -232,7 +232,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         auto time = time_of_arrival(pixel_charge, threshold);
-        LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"});
+        LOG(DEBUG) << "Time of arrival (local): " << Units::display(time, {"ns", "ps"});
         if(config_.get<bool>("output_plots")) {
             h_px_toa->Fill(time);
         }
@@ -266,7 +266,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
