@@ -180,8 +180,8 @@ void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& posit
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
 
-    charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
-    charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
+    charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
+    charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
     LOG(DEBUG) << "Deposited " << carriers_ << " charge carriers of both types at global position "
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
@@ -223,8 +223,9 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
         position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 
-        charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
-        charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., &(mcparticles.back()));
+        charges.emplace_back(
+            position_local, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
+        charges.emplace_back(position_local, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
         LOG(TRACE) << "Deposited " << carriers_ << " charge carriers of both types at global position "
                    << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
     }

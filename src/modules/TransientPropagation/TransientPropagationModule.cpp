@@ -182,7 +182,8 @@ void TransientPropagationModule::run(unsigned int) {
                                                global_position,
                                                deposit.getType(),
                                                px_map,
-                                               deposit.getEventTime() + prop_pair.second,
+                                               deposit.getLocalTime() + prop_pair.second,
+                                               deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})

@@ -277,7 +277,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
             // Only add if within requested integration time:
-            auto event_time = deposit.getEventTime() + propagation_time;
+            auto event_time = deposit.getGlobalTime() + propagation_time;
             if(propagation_time > integration_time_) {
                 LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
                            << Units::display(event_time, "ns");
@@ -299,8 +299,13 @@ void ProjectionPropagationModule::run(unsigned int) {
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
-            propagated_charges.emplace_back(
-                local_position, global_position, deposit.getType(), charge_per_step, event_time, &deposit);
+            propagated_charges.emplace_back(local_position,
+                                            global_position,
+                                            deposit.getType(),
+                                            charge_per_step,
+                                            deposit.getLocalTime() + propagation_time,
+                                            event_time,
+                                            &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " " << type << " to "
                        << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(event_time, "ns")

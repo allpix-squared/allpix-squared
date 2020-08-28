@@ -231,12 +231,17 @@ void DepositionReaderModule::run(unsigned int event) {
             LOG(DEBUG) << "Found MCParticle with track id " << track_id;
         }
 
+        // Get time of first seeing the MCParticle:
+        auto mcp_time = mc_particles[detector].at(track_id_to_mcparticle[detector].at(track_id)).getGlobalTime();
+
         // Deposit electron
-        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time);
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time - mcp_time, time);
         particles_to_deposits[detector].push_back(track_id);
 
         // Deposit hole
-        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, time);
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::HOLE, charge, time - mcp_time, time);
         particles_to_deposits[detector].push_back(track_id);
     } while(true);
 

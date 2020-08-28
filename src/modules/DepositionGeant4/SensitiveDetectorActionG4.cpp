@@ -113,11 +113,17 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
 
     // Deposit electron
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, step_time);
+    deposits_.emplace_back(deposit_position,
+                           global_deposit_position,
+                           CarrierType::ELECTRON,
+                           charge,
+                           step_time - track_time_[trackID],
+                           step_time);
     deposit_to_id_.push_back(trackID);
 
     // Deposit hole
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, step_time);
+    deposits_.emplace_back(
+        deposit_position, global_deposit_position, CarrierType::HOLE, charge, step_time - track_time_[trackID], step_time);
     deposit_to_id_.push_back(trackID);
 
     LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(step_pos, {"mm", "um"})
