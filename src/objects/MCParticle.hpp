@@ -74,9 +74,15 @@ namespace allpix {
 
         /**
          * @brief Get the arrival time for the particle
-         * @return Arrival time of the particle in the respective sensor
+         * @return Arrival time of the particle in the respective sensor in global reference system
          */
-        double getTime() const;
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get the local time for the particle in the respective sensor
+         * @return Arrival time of the particle in the respective sensor in the local system
+         */
+        double getLocalTime() const;
 
         /**
          * @brief Set the Monte-Carlo particle
@@ -108,7 +114,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 6);
+        ClassDefOverride(MCParticle, 7);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -127,7 +133,8 @@ namespace allpix {
         ROOT::Math::XYZPoint global_end_point_{};
 
         int particle_id_{};
-        double time_{};
+        double local_time_{};
+        double global_time_{};
 
         TRef parent_;
         TRef track_;

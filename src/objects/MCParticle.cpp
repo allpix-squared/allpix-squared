@@ -22,7 +22,7 @@ MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        double time)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
       local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
-      particle_id_(particle_id), time_(time) {
+      particle_id_(particle_id), local_time_(0), global_time_(time) {
     setParent(nullptr);
     setTrack(nullptr);
 }
@@ -61,8 +61,12 @@ int MCParticle::getParticleID() const {
     return particle_id_;
 }
 
-double MCParticle::getTime() const {
-    return time_;
+double MCParticle::getGlobalTime() const {
+    return global_time_;
+}
+
+double MCParticle::getLocalTime() const {
+    return local_time_;
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
