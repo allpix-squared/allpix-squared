@@ -116,7 +116,7 @@ void PulseTransferModule::run(unsigned int event_num) {
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
-            pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getGlobalTime());
+            pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
             pixel_pulse_map[pixel_index] += pulse;
 
             auto px = pixel_charge_map[pixel_index];
