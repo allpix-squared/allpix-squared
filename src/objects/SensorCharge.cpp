@@ -15,9 +15,10 @@ SensorCharge::SensorCharge(ROOT::Math::XYZPoint local_position,
                            ROOT::Math::XYZPoint global_position,
                            CarrierType type,
                            unsigned int charge,
-                           double event_time)
-    : local_position_(std::move(local_position)), global_position_(std::move(global_position)), type_(type), charge_(charge),
-      event_time_(event_time) {}
+                           double local_time,
+                           double global_time)
+    : local_position_(std::move(local_position)), global_position_(std::move(global_position)), local_time_(local_time),
+      global_time_(global_time), type_(type), charge_(charge) {}
 
 ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const {
     return local_position_;
@@ -35,8 +36,12 @@ unsigned int SensorCharge::getCharge() const {
     return charge_;
 }
 
-double SensorCharge::getEventTime() const {
-    return event_time_;
+double SensorCharge::getGlobalTime() const {
+    return global_time_;
+}
+
+double SensorCharge::getLocalTime() const {
+    return local_time_;
 }
 
 void SensorCharge::print(std::ostream& out) const {

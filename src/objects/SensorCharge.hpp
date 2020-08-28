@@ -38,13 +38,15 @@ namespace allpix {
          * @param global_position Global position of the set of charges in the sensor
          * @param type Type of the carrier
          * @param charge Total charge at position
-         * @param event_time Total time after event start
+         * @param local_time Time in local sensor reference
+         * @param global_time Total time after event start in global referene system
          */
         SensorCharge(ROOT::Math::XYZPoint local_position,
                      ROOT::Math::XYZPoint global_position,
                      CarrierType type,
                      unsigned int charge,
-                     double event_time);
+                     double local_time,
+                     double global_time);
 
         /**
          * @brief Get local position of the set of charges in the sensor
@@ -67,11 +69,19 @@ namespace allpix {
          * @return Total charge stored
          */
         unsigned int getCharge() const;
+
         /**
-         * @brief Get time after start of event
+         * @brief Get time after start of event in global reference frame
          * @return Time from start event
          */
-        double getEventTime() const;
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get local time in the sensor
+         * @return Time with respect to local sensor
+         */
+        double getLocalTime() const;
+
         /**
          * @brief Print an ASCII representation of SensorCharge to the given stream
          * @param out Stream to print to
@@ -81,7 +91,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(SensorCharge, 2);
+        ClassDefOverride(SensorCharge, 3);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -91,9 +101,11 @@ namespace allpix {
         ROOT::Math::XYZPoint local_position_;
         ROOT::Math::XYZPoint global_position_;
 
+        double local_time_{};
+        double global_time_{};
+
         CarrierType type_{};
         unsigned int charge_{};
-        double event_time_{};
     };
 } // namespace allpix
 
