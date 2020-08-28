@@ -11,7 +11,8 @@ $`H(s) = \frac{R_f}{((1+ \tau_f s) * (1 + \tau_r s))}, `$
 with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$ 
 
 The impulse response function of this transfer function is convoluted with the charge pulse.
-This module can be steered by either entering all contributions to the transfer function as parameters, or a simplified parametrisation in which the other parameters are calculated by the software (see e.g. [@binkley] for calculation of transconductance).
+This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrisation providing rise time and feedback time. 
+In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
 Noise can be applied to the pulse, drawn from a normal distribution.
 For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be counted.
