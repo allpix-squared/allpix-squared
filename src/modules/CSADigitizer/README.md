@@ -53,15 +53,15 @@ Two examples how to use this module:
 ```ini
 [CSADigitizer]
 model = "csa"
-feedback_capacitance = 10e-15 C/V
-detector_capacitance = 100e-15 C/V
-krummenacher_current = 25e-9 C/s
-amp_output_capacitance = 15e-15 C/V
-transconductance = 50e-6 C/s/V
+feedback_capacitance = 10e-15C/V
+detector_capacitance = 100e-15C/V
+krummenacher_current = 25e-9C/s
+amp_output_capacitance = 15e-15C/V
+transconductance = 50e-6C/s/V
 temperature = 298
-integration_time = 0.5e-6 s
-threshold = 10e-3 V
-sigma_noise = 0.1e-3 V
+integration_time = 0.5e-6s
+threshold = 10e-3V
+sigma_noise = 0.1e-3V
 ```
 
 
@@ -69,13 +69,13 @@ sigma_noise = 0.1e-3 V
 ```ini
 [CSADigitizer]
 model = "simple"
-feedback_capacitance = 5e-15 C/V
-rise_time_constant = 1e-9 s  
+feedback_capacitance = 5e-15C/V
+rise_time_constant = 1e-9s  
 feedback_time_constant = 10e-9 s
-integration_time = 0.5e-6 s
-threshold = 10e-3 V
-clock_bin_toa = 1.5625 ns
-clock_bin_tot = 25.0 ns
+integration_time = 0.5e-6s
+threshold = 10e-3V
+clock_bin_toa = 1.5625ns
+clock_bin_tot = 25.0ns
 ```
 
 

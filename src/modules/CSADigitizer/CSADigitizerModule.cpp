@@ -151,10 +151,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
             impulse_response_function_.reserve(ntimepoints);
-            // impulse response of the CSA from Kleczek 2016 JINST11 C12001
-            // H(s) = Rf / ((1+ tau_f s) * (1 + tau_r s)), with
-            // tau_f = Rf Cf , rise time constant tau_r = (C_det * C_out) / ( gm_ * C_F )
-            // inverse Laplace transform R/((1+a*s)*(1+s*b)) is (wolfram alpha) (R (e^(-t/a) - e^(-t/b))) /(a - b)
             auto calculate_impulse_response = [&](double x) {
                 return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
             };
@@ -243,7 +239,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
     }
 }
 
-// to emulate e.g. Timepix3: fine ToA clock (e.g 640MHz) and coarse clock (e.g. 40MHz) also for ToT
 std::pair<double, double> CSADigitizerModule::compare_with_threshold(double timestep,
                                                                      const std::vector<double>& amplified_pulse_with_noise) {
 
