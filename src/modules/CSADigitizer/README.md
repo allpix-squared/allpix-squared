@@ -14,7 +14,7 @@ The impulse response function of this transfer function is convoluted with the c
 This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrisation providing rise time and feedback time. 
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
-Noise can be applied to the pulse, drawn from a normal distribution.
+Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
 For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be counted.
 
 
