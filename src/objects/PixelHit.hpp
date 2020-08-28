@@ -30,27 +30,38 @@ namespace allpix {
         /**
          * @brief Construct a digitized pixel hit
          * @param pixel Object holding the information of the pixel
-         * @param time Timing of the occurrence of the hit
+         * @param local_time Timing of the occurrence of the hit in local reference frame
+         * @param global_time Timing of the occurrence of the hit in global reference frame
          * @param signal Signal data produced by the digitizer
          * @param pixel_charge Optional pointer to the related pixel charge
          */
-        PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge = nullptr);
+        PixelHit(
+            Pixel pixel, double local_time, double global_time, double signal, const PixelCharge* pixel_charge = nullptr);
 
         /**
          * @brief Get the pixel hit
          * @return Pixel indices in the grid
          */
         const Pixel& getPixel() const;
+
         /**
          * @brief Shortcut to retrieve the pixel indices
          * @return Index of the pixel
          */
         Pixel::Index getIndex() const;
+
         /**
-         * @brief Get the timing data of the hit
-         * @return Timestamp
+         * @brief Get the timing data of the hit in the global reference frame
+         * @return Timestamp from event start
          */
-        double getTime() const { return time_; }
+        double getGlobalTime() const { return global_time_; }
+
+        /**
+         * @brief Get the timing data of the hit in the local reference frame
+         * @return Timestamp from primary particle arrival
+         */
+        double getLocalTime() const { return local_time_; }
+
         /**
          * @brief Get the signal data for the hit
          * @return Digitized signal
@@ -62,17 +73,20 @@ namespace allpix {
          * @return Possible related pixel charge
          */
         const PixelCharge* getPixelCharge() const;
+
         /**
          * @brief Get the Monte-Carlo particles resulting in this pixel hit
          * @return List of all related Monte-Carlo particles
          */
         std::vector<const MCParticle*> getMCParticles() const;
+
         /**
          * @brief Get all primary Monte-Carlo particles resulting in this pixel hit. A particle is considered primary if it
          * has no parent particle set.
          * @return List of all related primary Monte-Carlo particles
          */
         std::vector<const MCParticle*> getPrimaryMCParticles() const;
+
         /**
          * @brief Print an ASCII representation of PixelHit to the given stream
          * @param out Stream to print to
@@ -82,7 +96,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 4);
+        ClassDefOverride(PixelHit, 5);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -90,7 +104,8 @@ namespace allpix {
 
     private:
         Pixel pixel_;
-        double time_{};
+        double local_time_{};
+        double global_time_{};
         double signal_{};
 
         TRef pixel_charge_;
