@@ -39,7 +39,7 @@ namespace allpix {
          * @param type Type of the carrier
          * @param charge Total charge at position
          * @param local_time Time in local sensor reference
-         * @param global_time Total time after event start in global referene system
+         * @param global_time Total time after event start in global reference system
          */
         SensorCharge(ROOT::Math::XYZPoint local_position,
                      ROOT::Math::XYZPoint global_position,
