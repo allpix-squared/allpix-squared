@@ -15,7 +15,7 @@ This module can be steered by either providing all contributions to the transfer
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
-For the amplified pulse signal, Time-of-Arrival and Time-over-Threshold can be counted.
+For the amplified pulse signal, alongside the Time-of-Arrival either the determined Time-over-Threshold, or the integral of the amplified pulse can be stored in the `PixelHit`.
 
 
 
