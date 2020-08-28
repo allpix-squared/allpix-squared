@@ -1,6 +1,6 @@
 # CSADigitizer
 **Maintainer**: Annika Vauth (<annika.vauth@desy.de>)
-**Status**: Immature
+**Status**: Functional
 **Input**: PixelCharge  
 **Output**: PixelHit  
 
