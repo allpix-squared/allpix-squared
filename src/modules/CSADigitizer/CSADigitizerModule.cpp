@@ -163,8 +163,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
                 impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
-            LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_
-                       << ", ntimepoints " << ntimepoints;
+            LOG(DEBUG) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
+                       << " and integration time  " << Units::display(integration_time_, {"ns", "us", "ms"})
+                       << ", samples: " << ntimepoints;
         });
 
         std::vector<double> amplified_pulse_vec(ntimepoints);
@@ -195,7 +196,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // TOA and TOT logic
         std::pair<double, double> compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
-        LOG(TRACE) << "TOA " << compare_result.first << " ns, TOT " << compare_result.second << " ns";
+        LOG(DEBUG) << "Pixel " << pixel_index << ": ToA = " << Units::display(compare_result.first, {"ps", "ns", "us"})
+                   << ", ToT = " << Units::display(compare_result.second, {"ps", "ns", "us"});
 
         // Fill histograms if requested
         if(output_plots_) {
