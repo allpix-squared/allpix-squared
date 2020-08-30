@@ -74,7 +74,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     }
 
     // Copy some variables from configuration to avoid lookups:
-    tmax_ = config_.get<double>("integration_time");
+    integration_time_ = config_.get<double>("integration_time");
     clockToA_ = config_.get<double>("clock_bin_toa");
     clockToT_ = config_.get<double>("clock_bin_tot");
     sigmaNoise_ = config_.get<double>("sigma_noise");
@@ -126,10 +126,16 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, tmax_);
-        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, tmax_);
-        h_pxq_vs_tot =
-            new TH2D("pxqvstot", "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]", nbins, 0, maximum, nbins, 0, tmax_);
+        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, integration_time_);
+        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, integration_time_);
+        h_pxq_vs_tot = new TH2D("pxqvstot",
+                                "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
+                                nbins,
+                                0,
+                                maximum,
+                                nbins,
+                                0,
+                                integration_time_);
     }
 }
 
@@ -146,7 +152,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
         auto pulse_vec = pulse.getPulse();           // the vector of the charges
         auto timestep = pulse.getBinning();
-        auto ntimepoints = static_cast<size_t>(ceil(tmax_ / timestep));
+        auto ntimepoints = static_cast<size_t>(ceil(integration_time_ / timestep));
 
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
@@ -243,7 +249,7 @@ std::pair<double, double> CSADigitizerModule::compare_with_threshold(double time
     double toa{}, tot{};
     double jtoa{}, jtot{};
     // first find the point where the signal crosses the threshold, latch toa
-    while(jtoa < tmax_) {
+    while(jtoa < integration_time_) {
         if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
             is_over_threshold = true;
             toa = jtoa;
@@ -255,7 +261,7 @@ std::pair<double, double> CSADigitizerModule::compare_with_threshold(double time
     // only look for ToT if the threshold was crossed in the ToA loop
     // start from the next tot clock cycle following toa
     jtot = clockToT_ * (ceil(toa / clockToT_));
-    while(is_over_threshold && jtot < tmax_) {
+    while(is_over_threshold && jtot < integration_time_) {
         if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
             tot += clockToT_;
         } else {

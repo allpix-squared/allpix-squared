@@ -88,7 +88,7 @@ namespace allpix {
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
         // helper variables for transfer function
-        double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
+        double transconductance_feedback_{}, resistance_feedback_{}, integration_time_{};
         std::vector<double> impulse_response_function_;
         std::once_flag first_event_flag_;
 
