@@ -163,9 +163,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
                 impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
-            LOG(DEBUG) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
-                       << " and integration time  " << Units::display(integration_time_, {"ns", "us", "ms"})
-                       << ", samples: " << ntimepoints;
+            LOG(INFO) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
+                      << " and integration time " << Units::display(integration_time_, {"ns", "us", "ms"})
+                      << ", samples: " << ntimepoints;
         });
 
         std::vector<double> amplified_pulse_vec(ntimepoints);
