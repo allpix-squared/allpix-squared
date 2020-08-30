@@ -28,12 +28,14 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
+    // Allow to use similar syntax as in DepositionGeant4:
+    config_.setAlias("position", "source_position");
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", "point");
-    config_.setDefault("model", "fixed");
 
     // Read type:
     auto type = config_.get<std::string>("source_type");

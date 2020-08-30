@@ -135,8 +135,8 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : output_plot_points) {
             for(auto& point : deposit_points.second) {
-                point.SetX((point.x() / model_->getPixelSize().x()) + 1);
-                point.SetY((point.y() / model_->getPixelSize().y()) + 1);
+                point.SetX(point.x() / model_->getPixelSize().x());
+                point.SetY(point.y() / model_->getPixelSize().y());
             }
         }
     }

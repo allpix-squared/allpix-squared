@@ -155,8 +155,8 @@ void WeightingPotentialReaderModule::create_output_plots() {
     auto histogram2Dy = new TH2F("potential_y",
                                  "#phi_{w}/V_{w};y (mm); z (mm); unit potential",
                                  static_cast<int>(steps),
-                                 -1.5 * model->getPixelSize().x(),
-                                 1.5 * model->getPixelSize().x(),
+                                 -1.5 * model->getPixelSize().y(),
+                                 1.5 * model->getPixelSize().y(),
                                  static_cast<int>(steps),
                                  min,
                                  max);
@@ -271,8 +271,8 @@ void WeightingPotentialReaderModule::check_detector_match(std::array<double, 3> 
         }
 
         // Check that the total field size is n*pitch:
-        if(std::fmod(xpixsz, model->getPixelSize().x()) > std::numeric_limits<double>::epsilon() ||
-           std::fmod(ypixsz, model->getPixelSize().y()) > std::numeric_limits<double>::epsilon()) {
+        if(std::fabs(std::remainder(xpixsz, model->getPixelSize().x())) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(std::remainder(ypixsz, model->getPixelSize().y())) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Potential map size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
                          << Units::display(ypixsz, {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
                          << Units::display(model->getPixelSize().x(), {"um", "mm"}) << ", "
