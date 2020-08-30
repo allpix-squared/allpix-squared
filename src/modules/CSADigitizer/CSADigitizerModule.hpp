@@ -61,7 +61,7 @@ namespace allpix {
         /**
          * @brief Simulate digitization process
          */
-        void run(unsigned int) override;
+        void run(Event* event) override;
 
         /**
          * @brief Finalize and write optional histograms
@@ -71,13 +71,7 @@ namespace allpix {
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
-
-        std::mt19937_64 random_generator_;
-
         Messenger* messenger_;
-
-        // Input message with the charges on the pixels
-        std::shared_ptr<PixelChargeMessage> pixel_message_;
 
         DigitizerType model_;
         // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance,

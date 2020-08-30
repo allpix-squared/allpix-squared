@@ -23,15 +23,12 @@
 using namespace allpix;
 
 CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
+    : Module(config, std::move(detector)), messenger_(messenger) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
     // Require PixelCharge message for single detector
-    messenger_->bindSingle(this, &CSADigitizerModule::pixel_message_, MsgFlags::REQUIRED);
-
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
+    messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Read model
     auto model = config_.get<std::string>("model");
@@ -133,10 +130,12 @@ void CSADigitizerModule::init() {
     }
 }
 
-void CSADigitizerModule::run(unsigned int event_num) {
+void CSADigitizerModule::run(Event* event) {
+    auto pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
+
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(auto& pixel_charge : pixel_message_->getData()) {
+    for(auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
@@ -185,7 +184,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         std::transform(amplified_pulse_vec.begin(),
                        amplified_pulse_vec.end(),
                        amplified_pulse_with_noise.begin(),
-                       [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
+                       [&pulse_smearing, &event](auto& c) { return c + (pulse_smearing(event->getRandomEngine())); });
 
         // TOA and TOT logic
         std::pair<double, double> compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
@@ -200,7 +199,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            const std::string s_event_num = std::to_string(event_num);
+            const std::string s_event_num = std::to_string(event->number);
             const std::string s_pixel_index = std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y());
             const std::string s_name_without = "csa_pulse_before_noise";
             const std::string s_title_without = "Amplifier signal without noise";
@@ -210,7 +209,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
             create_output_pulsegraphs(
                 s_event_num, s_pixel_index, s_name_without, s_title_without, timestep, amplified_pulse_vec);
 
-            create_output_pulsegraphs(std::to_string(event_num),
+            create_output_pulsegraphs(std::to_string(event->number),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
                                       s_name_with,
                                       s_title_with,
@@ -235,7 +234,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
     if(!hits.empty()) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        messenger_->dispatchMessage(this, hits_message);
+        messenger_->dispatchMessage(this, hits_message, event);
     }
 }
 
