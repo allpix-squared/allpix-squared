@@ -19,6 +19,8 @@
 #include <random>
 #include <vector>
 
+#include "core/utils/prng.h"
+
 namespace allpix {
     class Module;
     class Messenger;
@@ -62,7 +64,7 @@ namespace allpix {
          * @brief Access the random engine of this event
          * @return Reference to this event's random engine
          */
-        std::mt19937_64& getRandomEngine() { return *random_engine_; }
+        MersenneTwister& getRandomEngine() { return *random_engine_; }
 
         /**
          * @brief Advances the random engine's state one step
@@ -75,10 +77,10 @@ namespace allpix {
          * @brief Sets the random engine and seed it to be used by this event
          * @param random_engine Pointer to RNG for this event
          */
-        void set_and_seed_random_engine(std::mt19937_64* random_engine);
+        void set_and_seed_random_engine(MersenneTwister* random_engine);
 
         // The random number engine associated with this event
-        std::mt19937_64* random_engine_{nullptr};
+        MersenneTwister* random_engine_{nullptr};
 
         // Seed for Random number generator
         uint64_t seed_;

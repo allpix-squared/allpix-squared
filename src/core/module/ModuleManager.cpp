@@ -523,7 +523,7 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
  * Sets the section header and logging settings before executing the  \ref Module::init() function.
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
-void ModuleManager::init(std::mt19937_64& seeder) {
+void ModuleManager::init(MersenneTwister& seeder) {
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
@@ -593,7 +593,7 @@ void ModuleManager::init(std::mt19937_64& seeder) {
 /**
  * Initializes the thread pool and executes each event in parallel.
  */
-void ModuleManager::run(std::mt19937_64& seeder) {
+void ModuleManager::run(MersenneTwister& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
@@ -675,7 +675,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
         auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
             // The RNG to be used by all events running on this thread
-            static thread_local std::mt19937_64 random_engine;
+            static thread_local MersenneTwister random_engine;
 
             // Create the event data
             std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);

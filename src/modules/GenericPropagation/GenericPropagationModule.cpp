@@ -652,7 +652,7 @@ void GenericPropagationModule::run(Event* event) {
  */
 std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                                                             const CarrierType& type,
-                                                                            std::mt19937_64& random_generator,
+                                                                            MersenneTwister& random_generator,
                                                                             OutputPlotPoints& output_plot_points) const {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());

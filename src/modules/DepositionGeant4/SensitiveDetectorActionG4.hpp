@@ -91,7 +91,7 @@ namespace allpix {
         double fano_factor_;
 
         // Random number generator for e/h pair creation fluctuation
-        std::mt19937_64 random_generator_;
+        MersenneTwister random_generator_;
 
         // Statistics of total and per-event deposited charge
         unsigned int total_deposited_charge_{};

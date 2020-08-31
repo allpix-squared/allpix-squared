@@ -26,6 +26,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
+#include "core/utils/prng.h"
 #include "exceptions.h"
 
 namespace allpix {
@@ -233,8 +234,8 @@ namespace allpix {
          * @brief Set the random number generator for this module
          * @param random_generator Generator to produce random numbers
          */
-        void set_random_generator(std::mt19937_64* random_generator);
-        std::mt19937_64* random_generator_{nullptr};
+        void set_random_generator(MersenneTwister* random_generator);
+        MersenneTwister* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
 

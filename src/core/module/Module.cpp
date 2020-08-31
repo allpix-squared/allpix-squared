@@ -132,7 +132,7 @@ uint64_t Module::getRandomSeed() {
 
     return (*random_generator_)();
 }
-void Module::set_random_generator(std::mt19937_64* random_generator) {
+void Module::set_random_generator(MersenneTwister* random_generator) {
     random_generator_ = random_generator;
 }
 
@@ -241,7 +241,7 @@ void BufferedModule::finalize_buffer() {
 
 void BufferedModule::flush_buffered_events() {
     // Special random generator for events executed out of order
-    static thread_local std::mt19937_64 random_generator;
+    static thread_local MersenneTwister random_generator;
 
     std::map<uint64_t, std::shared_ptr<Event>>::iterator iter;
     std::shared_ptr<Event> event;
