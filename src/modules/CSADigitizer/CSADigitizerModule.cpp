@@ -195,7 +195,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
         // TOA and TOT logic
-        std::pair<double, double> compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
+        auto compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
         LOG(DEBUG) << "Pixel " << pixel_index << ": ToA = " << Units::display(compare_result.first, {"ps", "ns", "us"})
                    << ", ToT = " << Units::display(compare_result.second, {"ps", "ns", "us"});
 
