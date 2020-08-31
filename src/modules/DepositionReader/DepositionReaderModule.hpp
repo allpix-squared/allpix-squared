@@ -111,9 +111,6 @@ namespace allpix {
                        int& track_id,
                        int& parent_id);
 
-        // Random number generator for e/h pair creation fluctuation
-        std::mt19937_64 random_generator_;
-
         // Vector of histogram pointers for debugging plots
         std::map<std::string, TH1D*> charge_per_event_;
 

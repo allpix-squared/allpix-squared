@@ -20,9 +20,6 @@ using namespace allpix;
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
 
-    // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(getRandomSeed());
-
     config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
     config_.setDefault<double>("fano_factor", 0.115);
     config_.setDefault<size_t>("detector_name_chars", 0);
@@ -210,7 +207,7 @@ void DepositionReaderModule::run(Event* event) {
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = static_cast<unsigned int>(energy / charge_creation_energy_);
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = charge_fluctuation(random_generator_);
+        auto charge = charge_fluctuation(event->getRandomEngine());
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
