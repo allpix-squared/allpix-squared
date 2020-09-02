@@ -74,7 +74,7 @@ This module requires an installation Geant4.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
-* `source_energy` : Mean energy of the generated particles.
+* `source_energy` : Mean kinetic energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
