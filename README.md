@@ -91,6 +91,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
+* Sanchit Sharma, Kansas State University, @SanchitKratos
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, KIT, @nurnberg
 * Sebastian Pape, TU Dortmund University, @spape
