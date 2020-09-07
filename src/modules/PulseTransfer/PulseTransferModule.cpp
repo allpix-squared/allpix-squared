@@ -187,7 +187,7 @@ void PulseTransferModule::run(unsigned int event_num) {
             std::vector<double> current_vec;
             double current = 0;
             for(const auto& c_bin : pulse_vec) {
-                current = c_bin * (-1.602e-13)/(time[1] * 1e-9);
+                current = c_bin * (1.602e-13)/(time[1] * 1e-9);
                 current_vec.push_back(current);
             }
 
@@ -199,7 +199,7 @@ void PulseTransferModule::run(unsigned int event_num) {
             current_graph->GetYaxis()->SetTitle("I_{ind} [uA]");
             current_graph->SetTitle(("Induced current in pixel (" + std::to_string(index.x()) + "," +
                                    std::to_string(index.y()) +
-                                   "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e (" + std::to_string(pixel_index_pulse.second.getCharge() * (-1.602e-4)) + " fC)")
+                                   "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e (" + std::to_string(pixel_index_pulse.second.getCharge() * (1.602e-4)) + " fC)")
                                       .c_str());
             getROOTDirectory()->WriteTObject(current_graph, name.c_str());
 
@@ -218,7 +218,7 @@ void PulseTransferModule::run(unsigned int event_num) {
             charge_graph->GetYaxis()->SetTitle("Q_{tot} [e]");
             charge_graph->SetTitle(("Accumulated induced charge in pixel (" + std::to_string(index.x()) + "," +
                                     std::to_string(index.y()) +
-                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e (" + std::to_string(pixel_index_pulse.second.getCharge() * (-1.602e-4)) + " fC)")
+                                    "), Q_{tot} = " + std::to_string(pixel_index_pulse.second.getCharge()) + " e (" + std::to_string(pixel_index_pulse.second.getCharge() * (1.602e-4)) + " fC)")
                                        .c_str());
             getROOTDirectory()->WriteTObject(charge_graph, name.c_str());
         }
