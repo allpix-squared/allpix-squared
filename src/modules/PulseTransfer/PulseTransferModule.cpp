@@ -178,8 +178,8 @@ void PulseTransferModule::run(unsigned int event_num) {
             auto pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
             pulse_graph->GetXaxis()->SetTitle("t [ns]");
             pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
-            pulse_graph->SetTitle(("Induced charge carriers per unit step time in pixel (" + std::to_string(index.x()) +
-                                   "," + std::to_string(index.y()) +
+            pulse_graph->SetTitle(("Induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
+                                   std::to_string(index.y()) +
                                    "), Q_{tot} = " + Units::display(pixel_index_pulse.second.getCharge(), {"e", "ke"}) +
                                    " (" + Units::display(pixel_index_pulse.second.getCharge(), "fC") + ")")
                                       .c_str());
