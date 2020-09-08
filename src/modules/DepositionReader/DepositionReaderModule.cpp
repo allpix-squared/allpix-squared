@@ -119,10 +119,10 @@ void DepositionReaderModule::init() {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
 
-    for(auto& detector : geo_manager_->getDetectors()) {
-        // If requested, prepare output plots
-        if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
+    // If requested, prepare output plots
+    if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+        for(auto& detector : geo_manager_->getDetectors()) {
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
