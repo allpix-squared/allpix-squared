@@ -186,7 +186,10 @@ void PulseTransferModule::run(unsigned int event_num) {
             getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
             std::vector<double> current_vec = pulse_vec;
-            std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) { bin = bin / step * 1.602e-4; });
+            // Convert charge bins to current in uA
+            std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) {
+                bin = static_cast<double>(Units::convert(bin, "fC") / Units::convert(step, "ns"));
+            });
 
             // Generate graphs of induced current over time:
             name = "current_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" +
