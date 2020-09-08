@@ -7,14 +7,14 @@
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
-Within the module, clustering of the input hits is performed. 
-Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster. 
-Clusters are merged if there are multiple adjacent clusters. 
+Within the module, clustering of the input hits is performed.
+Looping over the PixelHits, hits being adjacent to an existing cluster are added to this cluster.
+Clusters are merged if there are multiple adjacent clusters.
 If the PixelHit is free-standing, a new cluster is created.
 
 This module serves as a quick "mini-analysis" and creates the histograms listed below.
 The Monte Carlo truth position provided by the `MCParticle` objects is used as track reference position.
-An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convoled. 
+An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convoled.
 For technical reasons, this offset is drawn randomly from a Gauss distribution independently for the resolution and the efficiency measurement.
 
 * A hitmap of all pixels in the pixel grid, displaying the number of times a pixel has been hit during the simulation run.
@@ -24,10 +24,11 @@ For technical reasons, this offset is drawn randomly from a Gauss distribution i
 * Distributions of the cluster size in x, y and the total cluster size.
 * Mean cluster size and cluster sizes in x and y as function of the in-pixel impact position of the primary particle.
 * Residual distribution in x and y between the center-of-gravity position of the cluster and the primary particle.
+* Residual map for residuals in x, y, and combined between the center-of-gravity position of the cluster and the primary particle. These maps allow to see if the residuals are smaller or larger on some part of the detector compared to others.
 * Mean absolute deviations of the residual as function of the in-pixel impact position of the primary particle. Histograms both for a 2D representation of the pixel cell as well as the projections (residual X vs position X, residual Y vs position Y, residual X vs position Y, residual Y vs position X) are produced.
 * Efficiency map of the detector
 * Efficiency as function of the in-pixel impact position of the primary particle. Histograms both for a 2D representation of the pixel cell as well as the projections (efficiency vs position X, efficiency vs position Y) are produced.
-* Total cluster charge distribution.
+* Total cluster, pixel and event charge distributions.
 * Mean total cluster charge as function of the in-pixel impact position of the primary particle.
 * Mean seed pixel charge as a function  of the in-pixel impact position of the primary particle.
 
