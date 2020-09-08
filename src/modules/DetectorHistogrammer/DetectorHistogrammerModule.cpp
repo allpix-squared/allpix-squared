@@ -160,16 +160,42 @@ void DetectorHistogrammerModule::init() {
                                      ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
     residual_map = new TProfile2D(
         "residual_map", residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_detector_title = "Mean absolute deviation of residual of " + detector_->getName() +
+                                          ";x (pixels);y (pixels);MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    residual_detector = new TProfile2D(
+        "residual_detector", residual_detector_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
+
     std::string residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_map = new TProfile2D(
         "residual_x_map", residual_x_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_x_detector_title =
+        "Mean absolute deviation of residual in X of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltax) [#mum]";
+    residual_x_detector = new TProfile2D("residual_x_detector",
+                                         residual_x_detector_title.c_str(),
+                                         xpixels,
+                                         -0.5,
+                                         xpixels - 0.5,
+                                         ypixels,
+                                         -0.5,
+                                         ypixels - 0.5);
+
     std::string residual_y_map_title =
         "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_map = new TProfile2D(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_y_detector_title =
+        "Mean absolute deviation of residual in Y of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltay) [#mum]";
+    residual_y_detector = new TProfile2D("residual_y_detector",
+                                         residual_y_detector_title.c_str(),
+                                         xpixels,
+                                         -0.5,
+                                         xpixels - 0.5,
+                                         ypixels,
+                                         -0.5,
+                                         ypixels - 0.5);
 
     // Efficiency maps:
     std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
@@ -289,6 +315,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
 
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+
             cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
@@ -322,6 +349,10 @@ void DetectorHistogrammerModule::run(unsigned int) {
                                std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
             residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
             residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
+            residual_detector->Fill(
+                xpixel, ypixel, std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+            residual_x_detector->Fill(xpixel, ypixel, std::fabs(residual_um_x));
+            residual_y_detector->Fill(xpixel, ypixel, std::fabs(residual_um_y));
         }
     }
 
@@ -467,6 +498,9 @@ void DetectorHistogrammerModule::finalize() {
     residual_map->Write();
     residual_x_map->Write();
     residual_y_map->Write();
+    residual_detector->Write();
+    residual_x_detector->Write();
+    residual_y_detector->Write();
     efficiency_vs_x->Write();
     efficiency_vs_y->Write();
     efficiency_detector->Write();
