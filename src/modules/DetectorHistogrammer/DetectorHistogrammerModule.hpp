@@ -101,7 +101,7 @@ namespace allpix {
         TH1D* event_size;
         TH1D *cluster_size, *cluster_size_x, *cluster_size_y;
         TH1D* n_cluster;
-        TH1D* cluster_charge;
+        TH1D *cluster_charge, *pixel_charge, *total_charge;
     };
 } // namespace allpix
 

@@ -204,6 +204,13 @@ void DetectorHistogrammerModule::init() {
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge =
         new TH1D("cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
+    std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
+    pixel_charge = new TH1D("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
+    std::string total_charge_title = "Total charge per event for " + detector_->getName() + ";total charge [ke];clusters";
+    total_charge =
+        new TH1D("total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 }
 
 void DetectorHistogrammerModule::run(unsigned int) {
@@ -221,6 +228,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
             charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
+            pixel_charge->Fill(static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
 
             // Update statistics
             total_vector_ += pixel_idx;
@@ -243,6 +251,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
 
     // Evaluate the clusters
+    double charge_sum = 0;
     for(const auto& clus : clusters) {
         // Fill cluster histograms
         cluster_size->Fill(static_cast<double>(clus.getSize()));
@@ -254,6 +263,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
         LOG(DEBUG) << "Cluster at coordinates " << clusterPos << " with charge " << Units::display(clus.getCharge(), "ke");
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
         cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
+        charge_sum += clus.getCharge();
 
         auto cluster_particles = clus.getMCParticles();
         LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
@@ -314,6 +324,9 @@ void DetectorHistogrammerModule::run(unsigned int) {
             residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
         }
     }
+
+    // Store total charge in event:
+    total_charge->Fill(static_cast<double>(Units::convert(charge_sum, "ke")));
 
     // Calculate efficiency: search for matching clusters for all primary MCParticles
     for(auto& particle : primary_particles) {
@@ -460,8 +473,10 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_map->Write();
     n_cluster->Write();
     cluster_charge->Write();
+    pixel_charge->Write();
     cluster_charge_map->Write();
     seed_charge_map->Write();
+    total_charge->Write();
 }
 
 std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
