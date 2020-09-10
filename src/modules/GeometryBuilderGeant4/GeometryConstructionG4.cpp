@@ -31,6 +31,7 @@
 #include <G4VisAttributes.hh>
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
