@@ -136,7 +136,7 @@ void SimpleTransferModule::run(unsigned int) {
     for(auto& pixel_index_charge : pixel_map) {
         long charge = 0;
         for(auto& propagated_charge : pixel_index_charge.second) {
-            charge += propagated_charge->getCharge();
+            charge += propagated_charge->getCharge() * static_cast<long>(propagated_charge->getSign());
         }
 
         // Get pixel object from detector
