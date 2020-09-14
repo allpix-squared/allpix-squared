@@ -191,6 +191,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
             }
             amplified_pulse_vec.at(k) = outsum;
         }
+        LOG(TRACE) << "Amplified pulse.";
 
         // apply noise on the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
@@ -259,12 +260,13 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
 std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse) const {
 
+    LOG(TRACE) << "Calculating time-of-arrival";
     bool threshold_crossed = false;
     unsigned int toa_clock_cycles = 0;
     double arrival_time = 0;
 
     // Find the point where the signal crosses the threshold, latch ToA
-    for(; arrival_time < integration_time_; arrival_time += clockToA_) {
+    for(; arrival_time < integration_time_; arrival_time += (store_toa_ ? clockToA_ : timestep)) {
         if(pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep))) > threshold_) {
             threshold_crossed = true;
             break;
@@ -275,6 +277,8 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
 }
 
 unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const {
+
+    LOG(TRACE) << "Calculating time-over-threshold";
     unsigned int tot_clock_cycles = 0;
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
