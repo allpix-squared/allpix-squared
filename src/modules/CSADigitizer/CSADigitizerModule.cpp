@@ -83,31 +83,31 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
         tauR_ = config_.get<double>("rise_time_constant");
-        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
-        resistance_feedback_ = tauF_ / capacitance_feedback_;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback_, "C/V") << ", rf "
+        auto capacitance_feedback = config_.get<double>("feedback_capacitance");
+        resistance_feedback_ = tauF_ / capacitance_feedback;
+        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback, "C/V") << ", rf "
                    << Units::display(resistance_feedback_, "V*s/C") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
                    << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
-        ikrum_ = config_.get<double>("krummenacher_current");
-        capacitance_detector_ = config_.get<double>("detector_capacitance");
-        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
-        capacitance_output_ = config_.get<double>("amp_output_capacitance");
-        gm_ = config_.get<double>("transconductance");
-        boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
+        auto ikrum = config_.get<double>("krummenacher_current");
+        auto capacitance_detector = config_.get<double>("detector_capacitance");
+        auto capacitance_feedback = config_.get<double>("feedback_capacitance");
+        auto capacitance_output = config_.get<double>("amp_output_capacitance");
+        auto gm = config_.get<double>("transconductance");
+        auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        transconductance_feedback_ = ikrum_ / (2.0 * 1.5 * boltzmann_kT_);
-        resistance_feedback_ = 2. / transconductance_feedback_; // feedback resistor
-        tauF_ = resistance_feedback_ * capacitance_feedback_;
-        tauR_ = (capacitance_detector_ * capacitance_output_) / (gm_ * capacitance_feedback_);
-        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback_ "
-                   << Units::display(capacitance_feedback_, "C/V") << ", capacitance_detector_ "
-                   << Units::display(capacitance_detector_, "C/V") << ", capacitance_output_ "
-                   << Units::display(capacitance_output_, "C/V") << ", gm_ " << Units::display(gm_, "C/s/V") << ", tauF_ "
+        auto transconductance_feedback = ikrum / (2.0 * 1.5 * boltzmann_kT);
+        resistance_feedback_ = 2. / transconductance_feedback; // feedback resistor
+        tauF_ = resistance_feedback_ * capacitance_feedback;
+        tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback "
+                   << Units::display(capacitance_feedback, "C/V") << ", capacitance_detector "
+                   << Units::display(capacitance_detector, "C/V") << ", capacitance_output "
+                   << Units::display(capacitance_output, "C/V") << ", gm " << Units::display(gm, "C/s/V") << ", tauF_ "
                    << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s") << ", temperature "
                    << config_.get<double>("temperature") << "K";
     }
