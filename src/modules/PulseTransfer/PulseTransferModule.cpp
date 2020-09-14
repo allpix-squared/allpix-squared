@@ -71,8 +71,7 @@ void PulseTransferModule::run(unsigned int event_num) {
         auto pulses = propagated_charge.getPulses();
 
         if(pulses.empty()) {
-            LOG_ONCE(TRACE)
-                << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
+            LOG(TRACE) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
 
             auto model = detector_->getModel();
             auto position = propagated_charge.getLocalPosition();
