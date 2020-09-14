@@ -192,7 +192,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
             }
             amplified_pulse_vec.at(k) = outsum;
         }
-        LOG(TRACE) << "Amplified pulse.";
 
         if(output_pulsegraphs_) {
             // Fill a graph with the pulse:
@@ -206,6 +205,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Apply noise to the amplified pulse
         std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
+        LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigmaNoise_, {"mV", "V"});
         std::transform(amplified_pulse_vec.begin(),
                        amplified_pulse_vec.end(),
                        amplified_pulse_vec.begin(),
