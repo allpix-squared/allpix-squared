@@ -194,33 +194,35 @@ void CSADigitizerModule::run(unsigned int event_num) {
         }
         LOG(TRACE) << "Amplified pulse.";
 
-        // apply noise on the amplified pulse
-        std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
-        std::vector<double> amplified_pulse_with_noise(amplified_pulse_vec.size());
-        std::transform(amplified_pulse_vec.begin(),
-                       amplified_pulse_vec.end(),
-                       amplified_pulse_with_noise.begin(),
-                       [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
-
-        // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
+            // Fill a graph with the pulse:
             create_output_pulsegraphs(std::to_string(event_num),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
                                       "amp_pulse",
                                       "Amplifier signal without noise",
                                       timestep,
                                       amplified_pulse_vec);
+        }
 
+        // Apply noise to the amplified pulse
+        std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
+        std::transform(amplified_pulse_vec.begin(),
+                       amplified_pulse_vec.end(),
+                       amplified_pulse_vec.begin(),
+                       [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
+
+        // Fill a graphs with the individual pixel pulses:
+        if(output_pulsegraphs_) {
             create_output_pulsegraphs(std::to_string(event_num),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
                                       "amp_pulse_noise",
                                       "Amplifier signal with added noise",
                                       timestep,
-                                      amplified_pulse_with_noise);
+                                      amplified_pulse_vec);
         }
 
         // Find threshold crossing - if any:
-        auto arrival = get_toa(timestep, amplified_pulse_with_noise);
+        auto arrival = get_toa(timestep, amplified_pulse_vec);
         if(!std::get<0>(arrival)) {
             LOG(DEBUG) << "Amplified signal never crossed threshold, continuing.";
             continue;
@@ -230,9 +232,8 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto time = (store_toa_ ? static_cast<double>(std::get<1>(arrival)) : std::get<2>(arrival));
 
         // Decide whether to store ToT or the pulse integral:
-        auto charge =
-            (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse_with_noise))
-                        : std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0));
+        auto charge = (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse_vec))
+                                  : std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0));
 
         LOG(DEBUG) << "Pixel " << pixel_index
                    << ": ToA = " << (store_toa_ ? std::to_string(time) : Units::display(time, {"ps", "ns", "us"}))
