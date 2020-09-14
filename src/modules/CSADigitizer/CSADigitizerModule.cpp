@@ -56,8 +56,6 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
 
-    config_.setDefault<bool>("store_tot", true);
-
     if(model_ == DigitizerType::SIMPLE) {
         // defaults for the "simple" parametrisation
         config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));
