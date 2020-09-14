@@ -18,7 +18,6 @@
 #include <Eigen/Core>
 
 #include "core/utils/log.h"
-#include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
