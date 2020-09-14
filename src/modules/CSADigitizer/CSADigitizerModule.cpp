@@ -50,8 +50,6 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
-    config_.setDefault<double>("clock_bin_toa", Units::get(1.5625, "ns"));
-    config_.setDefault<double>("clock_bin_tot", Units::get(25.0, "ns"));
 
     config_.setDefault<bool>("output_pulsegraphs", false);
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
@@ -75,8 +73,18 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     // Copy some variables from configuration to avoid lookups:
     integration_time_ = config_.get<double>("integration_time");
-    clockToA_ = config_.get<double>("clock_bin_toa");
-    clockToT_ = config_.get<double>("clock_bin_tot");
+
+    // Time-of-Arrival
+    if(config_.has("clock_bin_toa")) {
+        store_toa_ = true;
+        clockToA_ = config_.get<double>("clock_bin_toa");
+    }
+    // Time-over-Threshold
+    if(config_.has("clock_bin_tot")) {
+        store_tot_ = true;
+        clockToT_ = config_.get<double>("clock_bin_tot");
+    }
+
     sigmaNoise_ = config_.get<double>("sigma_noise");
     threshold_ = config_.get<double>("threshold");
 
@@ -111,7 +119,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s") << ", temperature "
                    << config_.get<double>("temperature") << "K";
     }
-    store_tot_ = config_.get<bool>("store_tot");
+
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
 }
@@ -223,15 +231,13 @@ void CSADigitizerModule::run(unsigned int event_num) {
                                       amplified_pulse_with_noise);
         }
 
+        // Decide whether to store ToT or the pulse integral:
+        double charge =
+            (store_tot_ ? compare_result.second
+                        : std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0));
+
         // Add the hit to the hitmap
-        if(store_tot_) {
-            hits.emplace_back(pixel, compare_result.first, compare_result.second, &pixel_charge);
-        } else {
-            // calculate pulse integral with noise
-            auto amplified_pulse_integral =
-                std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0);
-            hits.emplace_back(pixel, compare_result.first, amplified_pulse_integral, &pixel_charge);
-        }
+        hits.emplace_back(pixel, compare_result.first, charge, &pixel_charge);
     }
 
     // Output summary and update statistics

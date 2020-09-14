@@ -70,7 +70,8 @@ namespace allpix {
 
     private:
         // Control of module output settings
-        bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
+        bool output_plots_{}, output_pulsegraphs_{};
+        bool store_tot_{false}, store_toa_{false};
 
         std::mt19937_64 random_generator_;
 
