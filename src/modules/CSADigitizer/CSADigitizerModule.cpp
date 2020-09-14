@@ -206,14 +206,14 @@ void CSADigitizerModule::run(unsigned int event_num) {
         if(output_pulsegraphs_) {
             create_output_pulsegraphs(std::to_string(event_num),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                      "csa_pulse_before_noise",
+                                      "amp_pulse",
                                       "Amplifier signal without noise",
                                       timestep,
                                       amplified_pulse_vec);
 
             create_output_pulsegraphs(std::to_string(event_num),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                      "csa_pulse_with_noise",
+                                      "amp_pulse_noise",
                                       "Amplifier signal with added noise",
                                       timestep,
                                       amplified_pulse_with_noise);
