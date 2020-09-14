@@ -97,10 +97,22 @@ namespace allpix {
         TH2D* h_pxq_vs_tot{};
 
         /**
-         * @brief Compare output pulse with threshold for ToA/ToT
+         * @brief Calculate time of first threshold crossing
+         * @param timestep Step size of the input pulse
+         * @param pulse    Pulse after amplification and electronics noise
+         * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
+         *         of ToA clock cycles before crossing) and double (time of crossing)
          */
-        std::pair<double, double> compare_with_threshold(double timestep,
-                                                         const std::vector<double>& amplified_pulse_with_noise);
+        std::tuple<bool, unsigned int, double> get_toa(double timestep, const std::vector<double>& pulse) const;
+
+        /**
+         * @brief Calculate time-over-threshold
+         * @param  timestep    Step size of the input pulse
+         * @param arrival_time Time of crossing the threshold
+         * @param  pulse       Pulse after amplification and electronics noise
+         * @return             Number of clock cycles signal was over threshold
+         */
+        unsigned int get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const;
 
         /**
          * @brief Create output plots of the pulses

@@ -200,18 +200,6 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        amplified_pulse_with_noise.begin(),
                        [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
-        // TOA and TOT logic
-        auto compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
-        LOG(DEBUG) << "Pixel " << pixel_index << ": ToA = " << Units::display(compare_result.first, {"ps", "ns", "us"})
-                   << ", ToT = " << Units::display(compare_result.second, {"ps", "ns", "us"});
-
-        // Fill histograms if requested
-        if(output_plots_) {
-            h_tot->Fill(compare_result.second);
-            h_toa->Fill(compare_result.first);
-            h_pxq_vs_tot->Fill(inputcharge / 1e3, compare_result.second);
-        }
-
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
             create_output_pulsegraphs(std::to_string(event_num),
@@ -229,13 +217,34 @@ void CSADigitizerModule::run(unsigned int event_num) {
                                       amplified_pulse_with_noise);
         }
 
+        // Find threshold crossing - if any:
+        auto arrival = get_toa(timestep, amplified_pulse_with_noise);
+        if(!std::get<0>(arrival)) {
+            LOG(DEBUG) << "Amplified signal never crossed threshold, continuing.";
+            continue;
+        }
+
+        // Decide whether to store ToA or arrival time:
+        auto time = (store_toa_ ? static_cast<double>(std::get<1>(arrival)) : std::get<2>(arrival));
+
         // Decide whether to store ToT or the pulse integral:
-        double charge =
-            (store_tot_ ? compare_result.second
+        auto charge =
+            (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse_with_noise))
                         : std::accumulate(amplified_pulse_with_noise.begin(), amplified_pulse_with_noise.end(), 0.0));
 
+        LOG(DEBUG) << "Pixel " << pixel_index
+                   << ": ToA = " << (store_toa_ ? std::to_string(time) : Units::display(time, {"ps", "ns", "us"}))
+                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"ps", "ns", "us"}));
+
+        // Fill histograms if requested
+        if(output_plots_) {
+            h_tot->Fill(charge);
+            h_toa->Fill(time);
+            h_pxq_vs_tot->Fill(inputcharge / 1e3, charge);
+        }
+
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, compare_result.first, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
@@ -248,35 +257,35 @@ void CSADigitizerModule::run(unsigned int event_num) {
     }
 }
 
-std::pair<double, double> CSADigitizerModule::compare_with_threshold(double timestep,
-                                                                     const std::vector<double>& amplified_pulse_with_noise) {
+std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse) const {
 
-    bool is_over_threshold = false;
-    double toa{}, tot{};
-    double jtoa{}, jtot{};
-    // first find the point where the signal crosses the threshold, latch toa
-    while(jtoa < integration_time_) {
-        if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
-            is_over_threshold = true;
-            toa = jtoa;
+    bool threshold_crossed = false;
+    unsigned int toa_clock_cycles = 0;
+    double arrival_time = 0;
+
+    // Find the point where the signal crosses the threshold, latch ToA
+    for(; arrival_time < integration_time_; arrival_time += clockToA_) {
+        if(pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep))) > threshold_) {
+            threshold_crossed = true;
             break;
         };
-        jtoa += clockToA_;
+        toa_clock_cycles++;
     }
+    return {threshold_crossed, toa_clock_cycles, arrival_time};
+}
 
-    // only look for ToT if the threshold was crossed in the ToA loop
-    // start from the next tot clock cycle following toa
-    jtot = clockToT_ * (ceil(toa / clockToT_));
-    while(is_over_threshold && jtot < integration_time_) {
-        if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
-            tot += clockToT_;
-        } else {
-            is_over_threshold = false;
+unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const {
+    unsigned int tot_clock_cycles = 0;
+
+    // Start calculation from the next ToT clock cycle following the threshold crossing
+    auto jtot = clockToT_ * std::ceil(arrival_time / clockToT_);
+    for(double tot_time = jtot; tot_time < integration_time_; tot_time += clockToT_) {
+        if(pulse.at(static_cast<size_t>(std::floor(jtot / timestep))) < threshold_) {
+            break;
         }
-        jtot += clockToT_;
+        tot_clock_cycles++;
     }
-
-    return {toa, tot};
+    return tot_clock_cycles;
 }
 
 void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_num,
