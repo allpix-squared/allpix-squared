@@ -91,9 +91,10 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauR_ = config_.get<double>("rise_time_constant");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         resistance_feedback_ = tauF_ / capacitance_feedback;
-        LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, "C/V")
-                   << ", rf = " << Units::display(resistance_feedback_, "V*s/C") << ", tauF = " << Units::display(tauF_, "s")
-                   << ", tauR = " << Units::display(tauR_, "s");
+        LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
+                   << ", rf = " << Units::display(resistance_feedback_, "V*s/C")
+                   << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
+                   << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"});
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
         auto capacitance_detector = config_.get<double>("detector_capacitance");
@@ -111,11 +112,12 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauF_ = resistance_feedback_ * capacitance_feedback;
         tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
         LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback_, "V*s/C")
-                   << ", capacitance_feedback = " << Units::display(capacitance_feedback, "C/V")
-                   << ", capacitance_detector = " << Units::display(capacitance_detector, "C/V")
-                   << ", capacitance_output = " << Units::display(capacitance_output, "C/V")
-                   << ", gm = " << Units::display(gm, "C/s/V") << ", tauF = " << Units::display(tauF_, "s")
-                   << ", tauR = " << Units::display(tauR_, "s")
+                   << ", capacitance_feedback = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
+                   << ", capacitance_detector = " << Units::display(capacitance_detector, {"C/V", "fC/mV"})
+                   << ", capacitance_output = " << Units::display(capacitance_output, {"C/V", "fC/mV"})
+                   << ", gm = " << Units::display(gm, "C/s/V")
+                   << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
+                   << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"})
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     }
 
@@ -237,7 +239,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         LOG(DEBUG) << "Pixel " << pixel_index
                    << ": ToA = " << (store_toa_ ? std::to_string(time) : Units::display(time, {"ps", "ns", "us"}))
-                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"e", "ke", "fC"}));
+                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"V", "mV"}));
 
         // Fill histograms if requested
         if(output_plots_) {
