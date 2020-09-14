@@ -91,9 +91,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauR_ = config_.get<double>("rise_time_constant");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         resistance_feedback_ = tauF_ / capacitance_feedback;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback, "C/V") << ", rf "
-                   << Units::display(resistance_feedback_, "V*s/C") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
-                   << Units::display(tauR_, "s");
+        LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, "C/V")
+                   << ", rf = " << Units::display(resistance_feedback_, "V*s/C") << ", tauF = " << Units::display(tauF_, "s")
+                   << ", tauR = " << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
         auto capacitance_detector = config_.get<double>("detector_capacitance");
@@ -110,12 +110,13 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         resistance_feedback_ = 2. / transconductance_feedback; // feedback resistor
         tauF_ = resistance_feedback_ * capacitance_feedback;
         tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
-        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback "
-                   << Units::display(capacitance_feedback, "C/V") << ", capacitance_detector "
-                   << Units::display(capacitance_detector, "C/V") << ", capacitance_output "
-                   << Units::display(capacitance_output, "C/V") << ", gm " << Units::display(gm, "C/s/V") << ", tauF_ "
-                   << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s") << ", temperature "
-                   << config_.get<double>("temperature") << "K";
+        LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback_, "V*s/C")
+                   << ", capacitance_feedback = " << Units::display(capacitance_feedback, "C/V")
+                   << ", capacitance_detector = " << Units::display(capacitance_detector, "C/V")
+                   << ", capacitance_output = " << Units::display(capacitance_output, "C/V")
+                   << ", gm = " << Units::display(gm, "C/s/V") << ", tauF = " << Units::display(tauF_, "s")
+                   << ", tauR = " << Units::display(tauR_, "s")
+                   << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -235,7 +236,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         LOG(DEBUG) << "Pixel " << pixel_index
                    << ": ToA = " << (store_toa_ ? std::to_string(time) : Units::display(time, {"ps", "ns", "us"}))
-                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"ps", "ns", "us"}));
+                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"e", "ke", "fC"}));
 
         // Fill histograms if requested
         if(output_plots_) {
@@ -278,7 +279,7 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
 
 unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const {
 
-    LOG(TRACE) << "Calculating time-over-threshold";
+    LOG(TRACE) << "Calculating time-over-threshold, starting at " << Units::display(arrival_time, {"ps", "ns", "us"});
     unsigned int tot_clock_cycles = 0;
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
