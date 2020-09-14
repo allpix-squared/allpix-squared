@@ -191,7 +191,7 @@ void PulseTransferModule::finalize() {
     }
 }
 
-void PulseTransferModule::create_pulsegraphs(unsigned int event_num, Pixel::Index index, const Pulse& pulse) const {
+void PulseTransferModule::create_pulsegraphs(unsigned int event_num, const Pixel::Index& index, const Pulse& pulse) const {
     auto step = pulse.getBinning();
     auto pulse_vec = pulse.getPulse();
     LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "
