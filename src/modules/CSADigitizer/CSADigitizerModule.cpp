@@ -90,6 +90,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
+        if(ikrum <= 0) {
+            InvalidValueError(
+                config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
+        }
+
         auto capacitance_detector = config_.get<double>("detector_capacitance");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
