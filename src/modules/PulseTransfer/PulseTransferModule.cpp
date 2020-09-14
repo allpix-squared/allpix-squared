@@ -214,6 +214,19 @@ void PulseTransferModule::create_pulsegraphs(unsigned int event_num, Pixel::Inde
                               .c_str());
     getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
+    std::vector<double> abs_vec = pulse_vec;
+    std::for_each(abs_vec.begin(), abs_vec.end(), [](auto& bin) { bin = std::fabs(bin); });
+    name = "pulse_abs_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
+    auto pulse_abs_graph = new TGraph(static_cast<int>(abs_vec.size()), &time[0], &abs_vec[0]);
+    pulse_abs_graph->GetXaxis()->SetTitle("t [ns]");
+    pulse_abs_graph->GetYaxis()->SetTitle("|Q_{ind}| [e]");
+    pulse_abs_graph->SetTitle(("Absolute induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
+                               std::to_string(index.y()) +
+                               "), |Q_{tot}| = " + Units::display(pulse.getCharge(), {"e", "ke"}) + " (" +
+                               Units::display(pulse.getCharge(), "fC") + ")")
+                                  .c_str());
+    getROOTDirectory()->WriteTObject(pulse_abs_graph, name.c_str());
+
     std::vector<double> current_vec = pulse_vec;
     // Convert charge bins to current in uA
     std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) {
