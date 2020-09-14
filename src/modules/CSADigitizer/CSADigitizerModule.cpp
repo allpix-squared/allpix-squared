@@ -47,7 +47,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Set defaults for config variables
     config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
 
-    config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
+    config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
     config_.setDefault<double>("clock_bin_toa", Units::get(1.5625, "ns"));
