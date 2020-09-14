@@ -308,9 +308,8 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
 
     // scale the y-axis values to be in mV instead of MV
     std::vector<double> pulse_in_mV(plot_pulse_vec.size());
-    double scale = 1e9;
     std::transform(
-        plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [&scale](auto& c) { return c * scale; });
+        plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
     auto csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), &amptime[0], &pulse_in_mV[0]);
