@@ -55,6 +55,8 @@ namespace allpix {
         bool output_plots_{}, output_pulsegraphs_{};
         double timestep_{};
 
+        void create_pulsegraphs(unsigned int event_num, Pixel::Index index, const Pulse& pulse) const;
+
         // General module members
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
