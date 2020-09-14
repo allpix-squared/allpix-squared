@@ -286,7 +286,7 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     // Start calculation from the next ToT clock cycle following the threshold crossing
     auto jtot = clockToT_ * std::ceil(arrival_time / clockToT_);
     for(double tot_time = jtot; tot_time < integration_time_; tot_time += clockToT_) {
-        if(pulse.at(static_cast<size_t>(std::floor(jtot / timestep))) < threshold_) {
+        if(pulse.at(static_cast<size_t>(std::floor(tot_time / timestep))) < threshold_) {
             break;
         }
         tot_clock_cycles++;
