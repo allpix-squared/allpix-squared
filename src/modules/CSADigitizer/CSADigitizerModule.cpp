@@ -135,8 +135,17 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, integration_time_);
-        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, integration_time_);
+        h_tot = new TH1D("signal",
+                         (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
+                         nbins,
+                         0,
+                         (store_tot_ ? integration_time_ / clockToT_ : 1000));
+        h_toa = new TH1D(
+            "time",
+            (store_toa_ ? "Time-of-Arrival;time of arrival [clk];pixels" : "Time-of-Arrival;time of arrival [ns];pixels"),
+            nbins,
+            0,
+            (store_toa_ ? integration_time_ / clockToA_ : integration_time_));
         h_pxq_vs_tot = new TH2D("pxqvstot",
                                 "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
                                 nbins,
@@ -237,9 +246,12 @@ void CSADigitizerModule::run(unsigned int event_num) {
         auto charge = (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse_vec))
                                   : std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0));
 
-        LOG(DEBUG) << "Pixel " << pixel_index
-                   << ": ToA = " << (store_toa_ ? std::to_string(time) : Units::display(time, {"ps", "ns", "us"}))
-                   << ", ToT = " << (store_tot_ ? std::to_string(charge) : Units::display(charge, {"V", "mV"}));
+        LOG(DEBUG) << "Pixel " << pixel_index << ": time "
+                   << (store_toa_ ? std::to_string(static_cast<int>(time)) + "clk"
+                                  : Units::display(time, {"ps", "ns", "us"}))
+                   << ", signal "
+                   << (store_tot_ ? std::to_string(static_cast<int>(charge)) + "clk"
+                                  : Units::display(charge, {"V*s", "mV*s"}));
 
         // Fill histograms if requested
         if(output_plots_) {
