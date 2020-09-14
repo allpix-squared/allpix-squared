@@ -67,6 +67,13 @@ namespace allpix {
          * @return Total charge stored
          */
         unsigned int getCharge() const;
+
+        /**
+         * @brief Get the sign of the charge for set of charge carriers
+         * @return Sign of the charge
+         */
+        int getSign() const;
+
         /**
          * @brief Get time after start of event
          * @return Time from start event
