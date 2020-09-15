@@ -186,6 +186,8 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         os << "\x1B[32;1m"; // GREEN
     } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
         os << "\x1B[36m"; // NON-BOLD CYAN
+    } else if(level == LogLevel::PRNG) {
+        os << "\x1B[90m"; // NON-BOLD GREY
     } else {
         os << "\x1B[36;1m"; // CYAN
     }
