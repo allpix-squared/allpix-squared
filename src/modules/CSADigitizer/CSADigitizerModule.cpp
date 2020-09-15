@@ -47,7 +47,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Set defaults for config variables
     config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
 
-    config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
+    config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
 
@@ -97,6 +97,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"});
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
+        if(ikrum <= 0) {
+            InvalidValueError(
+                config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
+        }
+
         auto capacitance_detector = config_.get<double>("detector_capacitance");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
@@ -181,6 +186,22 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
                 impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
+
+            if(output_plots_) {
+                // Generate x-axis:
+                std::vector<double> time(impulse_response_function_.size());
+                // clang-format off
+                std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+                // clang-format on
+
+                auto response_graph = new TGraph(
+                    static_cast<int>(impulse_response_function_.size()), &time[0], &impulse_response_function_[0]);
+                response_graph->GetXaxis()->SetTitle("t [ns]");
+                response_graph->GetYaxis()->SetTitle("amp. response");
+                response_graph->SetTitle("Amplifier response function");
+                getROOTDirectory()->WriteTObject(response_graph, "response_function");
+            }
+
             LOG(INFO) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
                       << " and integration time " << Units::display(integration_time_, {"ns", "us", "ms"})
                       << ", samples: " << ntimepoints;
