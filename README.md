@@ -93,11 +93,13 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, KIT, @nurnberg
+* Sebastian Pape, TU Dortmund University, @spape
 * Marko Petric, CERN, @mpetric
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
+* Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
 * Ondrej Theiner, Charles University, @otheiner
