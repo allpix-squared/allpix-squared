@@ -21,6 +21,18 @@ namespace allpix {
      */
     class RandomNumberGenerator : public std::mt19937_64 {
     public:
+        /// @{
+        /**
+         * @brief Disallow copy-assignment
+         */
+        RandomNumberGenerator& operator=(const RandomNumberGenerator&) = delete;
+
+        /// @{
+        /**
+         * @brief Disallow move assignment
+         */
+        RandomNumberGenerator& operator=(RandomNumberGenerator&&) = delete;
+
         std::uint_fast64_t operator()() {
             // Only copy if we want to log it
             IFLOG(PRNG) {
