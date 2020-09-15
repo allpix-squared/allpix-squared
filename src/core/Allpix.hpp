@@ -93,7 +93,7 @@ namespace allpix {
 
         // Random generators
         RandomNumberGenerator seeder_modules_;
-        std::mt19937_64 seeder_core_;
+        RandomNumberGenerator seeder_core_;
     };
 } // namespace allpix
 
