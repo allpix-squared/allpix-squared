@@ -47,7 +47,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Set defaults for config variables
     config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
 
-    config_.setDefault<double>("integration_time", Units::get(0.5e-6, "s"));
+    config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
     config_.setDefault<double>("clock_bin_toa", Units::get(1.5625, "ns"));
@@ -74,7 +74,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     }
 
     // Copy some variables from configuration to avoid lookups:
-    tmax_ = config_.get<double>("integration_time");
+    integration_time_ = config_.get<double>("integration_time");
     clockToA_ = config_.get<double>("clock_bin_toa");
     clockToT_ = config_.get<double>("clock_bin_tot");
     sigmaNoise_ = config_.get<double>("sigma_noise");
@@ -83,31 +83,36 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
         tauR_ = config_.get<double>("rise_time_constant");
-        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
-        resistance_feedback_ = tauF_ / capacitance_feedback_;
-        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback_, "C/V") << ", rf "
+        auto capacitance_feedback = config_.get<double>("feedback_capacitance");
+        resistance_feedback_ = tauF_ / capacitance_feedback;
+        LOG(DEBUG) << "Parameters: cf " << Units::display(capacitance_feedback, "C/V") << ", rf "
                    << Units::display(resistance_feedback_, "V*s/C") << ", tauF_ " << Units::display(tauF_, "s") << ", tauR_ "
                    << Units::display(tauR_, "s");
     } else if(model_ == DigitizerType::CSA) {
-        ikrum_ = config_.get<double>("krummenacher_current");
-        capacitance_detector_ = config_.get<double>("detector_capacitance");
-        capacitance_feedback_ = config_.get<double>("feedback_capacitance");
-        capacitance_output_ = config_.get<double>("amp_output_capacitance");
-        gm_ = config_.get<double>("transconductance");
-        boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
+        auto ikrum = config_.get<double>("krummenacher_current");
+        if(ikrum <= 0) {
+            InvalidValueError(
+                config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
+        }
+
+        auto capacitance_detector = config_.get<double>("detector_capacitance");
+        auto capacitance_feedback = config_.get<double>("feedback_capacitance");
+        auto capacitance_output = config_.get<double>("amp_output_capacitance");
+        auto gm = config_.get<double>("transconductance");
+        auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        transconductance_feedback_ = ikrum_ / (2.0 * 1.5 * boltzmann_kT_);
-        resistance_feedback_ = 2. / transconductance_feedback_; // feedback resistor
-        tauF_ = resistance_feedback_ * capacitance_feedback_;
-        tauR_ = (capacitance_detector_ * capacitance_output_) / (gm_ * capacitance_feedback_);
-        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback_ "
-                   << Units::display(capacitance_feedback_, "C/V") << ", capacitance_detector_ "
-                   << Units::display(capacitance_detector_, "C/V") << ", capacitance_output_ "
-                   << Units::display(capacitance_output_, "C/V") << ", gm_ " << Units::display(gm_, "C/s/V") << ", tauF_ "
+        auto transconductance_feedback = ikrum / (2.0 * 1.5 * boltzmann_kT);
+        resistance_feedback_ = 2. / transconductance_feedback; // feedback resistor
+        tauF_ = resistance_feedback_ * capacitance_feedback;
+        tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+        LOG(DEBUG) << "Parameters: rf " << Units::display(resistance_feedback_, "V*s/C") << ", capacitance_feedback "
+                   << Units::display(capacitance_feedback, "C/V") << ", capacitance_detector "
+                   << Units::display(capacitance_detector, "C/V") << ", capacitance_output "
+                   << Units::display(capacitance_output, "C/V") << ", gm " << Units::display(gm, "C/s/V") << ", tauF_ "
                    << Units::display(tauF_, "s") << ", tauR_ " << Units::display(tauR_, "s") << ", temperature "
                    << config_.get<double>("temperature") << "K";
     }
@@ -126,10 +131,16 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, tmax_);
-        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, tmax_);
-        h_pxq_vs_tot =
-            new TH2D("pxqvstot", "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]", nbins, 0, maximum, nbins, 0, tmax_);
+        h_tot = new TH1D("tot", "time over threshold;time over threshold [ns];pixels", nbins, 0, integration_time_);
+        h_toa = new TH1D("toa", "time of arrival;time of arrival [ns];pixels", nbins, 0, integration_time_);
+        h_pxq_vs_tot = new TH2D("pxqvstot",
+                                "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
+                                nbins,
+                                0,
+                                maximum,
+                                nbins,
+                                0,
+                                integration_time_);
     }
 }
 
@@ -146,7 +157,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
         auto pulse_vec = pulse.getPulse();           // the vector of the charges
         auto timestep = pulse.getBinning();
-        auto ntimepoints = static_cast<size_t>(ceil(tmax_ / timestep));
+        auto ntimepoints = static_cast<size_t>(ceil(integration_time_ / timestep));
 
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
@@ -157,8 +168,25 @@ void CSADigitizerModule::run(unsigned int event_num) {
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
                 impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
             }
-            LOG(TRACE) << "impulse response initialised. timestep  : " << timestep << ", tmax_ : " << tmax_
-                       << ", ntimepoints " << ntimepoints;
+
+            if(output_plots_) {
+                // Generate x-axis:
+                std::vector<double> time(impulse_response_function_.size());
+                // clang-format off
+                std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
+                // clang-format on
+
+                auto response_graph = new TGraph(
+                    static_cast<int>(impulse_response_function_.size()), &time[0], &impulse_response_function_[0]);
+                response_graph->GetXaxis()->SetTitle("t [ns]");
+                response_graph->GetYaxis()->SetTitle("amp. response");
+                response_graph->SetTitle("Amplifier response function");
+                getROOTDirectory()->WriteTObject(response_graph, "response_function");
+            }
+
+            LOG(INFO) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
+                      << " and integration time " << Units::display(integration_time_, {"ns", "us", "ms"})
+                      << ", samples: " << ntimepoints;
         });
 
         std::vector<double> amplified_pulse_vec(ntimepoints);
@@ -188,8 +216,9 @@ void CSADigitizerModule::run(unsigned int event_num) {
                        [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
 
         // TOA and TOT logic
-        std::pair<double, double> compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
-        LOG(TRACE) << "TOA " << compare_result.first << " ns, TOT " << compare_result.second << " ns";
+        auto compare_result = compare_with_threshold(timestep, amplified_pulse_with_noise);
+        LOG(DEBUG) << "Pixel " << pixel_index << ": ToA = " << Units::display(compare_result.first, {"ps", "ns", "us"})
+                   << ", ToT = " << Units::display(compare_result.second, {"ps", "ns", "us"});
 
         // Fill histograms if requested
         if(output_plots_) {
@@ -200,20 +229,17 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            const std::string s_event_num = std::to_string(event_num);
-            const std::string s_pixel_index = std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y());
-            const std::string s_name_without = "csa_pulse_before_noise";
-            const std::string s_title_without = "Amplifier signal without noise";
-            const std::string s_name_with = "csa_pulse_with_noise";
-            const std::string s_title_with = "Amplifier signal with added noise";
-
-            create_output_pulsegraphs(
-                s_event_num, s_pixel_index, s_name_without, s_title_without, timestep, amplified_pulse_vec);
+            create_output_pulsegraphs(std::to_string(event_num),
+                                      std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
+                                      "csa_pulse_before_noise",
+                                      "Amplifier signal without noise",
+                                      timestep,
+                                      amplified_pulse_vec);
 
             create_output_pulsegraphs(std::to_string(event_num),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
-                                      s_name_with,
-                                      s_title_with,
+                                      "csa_pulse_with_noise",
+                                      "Amplifier signal with added noise",
                                       timestep,
                                       amplified_pulse_with_noise);
         }
@@ -246,7 +272,7 @@ std::pair<double, double> CSADigitizerModule::compare_with_threshold(double time
     double toa{}, tot{};
     double jtoa{}, jtot{};
     // first find the point where the signal crosses the threshold, latch toa
-    while(jtoa < tmax_) {
+    while(jtoa < integration_time_) {
         if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtoa / timestep))) > threshold_) {
             is_over_threshold = true;
             toa = jtoa;
@@ -258,7 +284,7 @@ std::pair<double, double> CSADigitizerModule::compare_with_threshold(double time
     // only look for ToT if the threshold was crossed in the ToA loop
     // start from the next tot clock cycle following toa
     jtot = clockToT_ * (ceil(toa / clockToT_));
-    while(is_over_threshold && jtot < tmax_) {
+    while(is_over_threshold && jtot < integration_time_) {
         if(amplified_pulse_with_noise.at(static_cast<size_t>(floor(jtot / timestep))) > threshold_) {
             tot += clockToT_;
         } else {
