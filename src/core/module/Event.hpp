@@ -64,13 +64,13 @@ namespace allpix {
          * @brief Access the random engine of this event
          * @return Reference to this event's random engine
          */
-        RandomNumberGenerator& getRandomEngine() { return *random_engine_; }
+        RandomNumberGenerator& getRandomEngine();
 
         /**
          * @brief Advances the random engine's state one step
          * @return The generated value
          */
-        uint64_t getRandomNumber() { return (*random_engine_)(); }
+        uint64_t getRandomNumber() { return getRandomEngine()(); }
 
     private:
         /**

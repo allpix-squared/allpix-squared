@@ -72,6 +72,22 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
+     * @brief Informs that an event is in a state it should never be
+     *
+     * The event does for example not have a random number engine available.
+     */
+    class InvalidEventStateException : public LogicError {
+    public:
+        /**
+         * @brief Constructs error with a description
+         * @param message Text explaining the problem
+         */
+        // TODO [doc] the event itself is missing
+        explicit InvalidEventStateException(std::string message) { error_message_ = std::move(message); }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief Informs that a module executes an action is it not allowed to do in particular state
      *
      * A module for example tries to accesses special methods as Module::getOutputPath which are not allowed in the

@@ -34,6 +34,13 @@ void Event::set_and_seed_random_engine(RandomNumberGenerator* random_engine) {
     random_engine_->seed(seed_);
 }
 
+RandomNumberGenerator& Event::getRandomEngine() {
+    if(random_engine_ == nullptr) {
+        throw InvalidEventStateException("No PRNG available");
+    }
+    return *random_engine_;
+}
+
 void Event::store_random_engine_state() {
     if(random_engine_ != nullptr && state_.rdbuf()->in_avail() == 0) {
         LOG(PRNG) << "Storing PRNG state in event";
