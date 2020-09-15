@@ -23,9 +23,9 @@ namespace allpix {
     public:
         std::uint_fast64_t operator()() {
             // Only copy if we want to log it
-            IFLOG(TRACE) {
+            IFLOG(PRNG) {
                 auto prn = std::mt19937_64::operator()();
-                LOG(TRACE) << "Using random number " << prn;
+                LOG(PRNG) << "Using random number " << prn;
                 return prn;
             }
             else {
