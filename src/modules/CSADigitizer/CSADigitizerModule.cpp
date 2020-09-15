@@ -282,12 +282,13 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
     double arrival_time = 0;
 
     // Find the point where the signal crosses the threshold, latch ToA
-    for(; arrival_time < integration_time_; arrival_time += (store_toa_ ? clockToA_ : timestep)) {
+    while(arrival_time < integration_time_) {
         if(pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep))) > threshold_) {
             threshold_crossed = true;
             break;
         };
         toa_clock_cycles++;
+        arrival_time += (store_toa_ ? clockToA_ : timestep);
     }
     return {threshold_crossed, toa_clock_cycles, arrival_time};
 }
@@ -298,12 +299,13 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     unsigned int tot_clock_cycles = 0;
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
-    auto jtot = clockToT_ * std::ceil(arrival_time / clockToT_);
-    for(double tot_time = jtot; tot_time < integration_time_; tot_time += clockToT_) {
+    auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
+    while(tot_time < integration_time_) {
         if(pulse.at(static_cast<size_t>(std::floor(tot_time / timestep))) < threshold_) {
             break;
         }
         tot_clock_cycles++;
+        tot_time += clockToT_;
     }
     return tot_clock_cycles;
 }
