@@ -36,15 +36,16 @@ void Event::set_and_seed_random_engine(RandomNumberGenerator* random_engine) {
 
 void Event::store_random_engine_state() {
     if(random_engine_ != nullptr && state_.rdbuf()->in_avail() == 0) {
-        LOG(PRNG) << "Storing PRNG state in event.";
+        LOG(PRNG) << "Storing PRNG state in event";
         state_ << *random_engine_;
     }
 }
 
 void Event::restore_random_engine_state() {
     if(random_engine_ != nullptr && state_.rdbuf()->in_avail() != 0) {
-        LOG(PRNG) << "Restoring PRNG state from event.";
+        LOG(PRNG) << "Restoring PRNG state from event";
         state_ >> *random_engine_;
+        state_.clear();
     }
 }
 
