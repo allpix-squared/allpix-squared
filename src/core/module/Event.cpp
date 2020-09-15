@@ -29,7 +29,7 @@ Event::Event(Messenger& messenger, uint64_t event_num, uint64_t seed) : number(e
     local_messenger_ = std::make_unique<LocalMessenger>(messenger);
 }
 
-void Event::set_and_seed_random_engine(MersenneTwister* random_engine) {
+void Event::set_and_seed_random_engine(RandomNumberGenerator* random_engine) {
     random_engine_ = random_engine;
     random_engine_->seed(seed_);
 }

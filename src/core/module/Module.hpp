@@ -234,8 +234,8 @@ namespace allpix {
          * @brief Set the random number generator for this module
          * @param random_generator Generator to produce random numbers
          */
-        void set_random_generator(MersenneTwister* random_generator);
-        MersenneTwister* random_generator_{nullptr};
+        void set_random_generator(RandomNumberGenerator* random_generator);
+        RandomNumberGenerator* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
 

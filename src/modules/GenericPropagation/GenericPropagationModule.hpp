@@ -85,7 +85,7 @@ namespace allpix {
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
                                                           const CarrierType& type,
-                                                          MersenneTwister& random_generator,
+                                                          RandomNumberGenerator& random_generator,
                                                           OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:

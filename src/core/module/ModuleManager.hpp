@@ -86,14 +86,14 @@ namespace allpix {
          * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::load "load function"
          */
-        void init(MersenneTwister& seeder);
+        void init(RandomNumberGenerator& seeder);
 
         /**
          * @brief Run all modules for the number of events
          * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::init "init function"
          */
-        void run(MersenneTwister& seeder);
+        void run(RandomNumberGenerator& seeder);
 
         /**
          * @brief Finalize all modules after the event sequence

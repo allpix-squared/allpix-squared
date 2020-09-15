@@ -64,7 +64,7 @@ namespace allpix {
          * @brief Access the random engine of this event
          * @return Reference to this event's random engine
          */
-        MersenneTwister& getRandomEngine() { return *random_engine_; }
+        RandomNumberGenerator& getRandomEngine() { return *random_engine_; }
 
         /**
          * @brief Advances the random engine's state one step
@@ -77,7 +77,7 @@ namespace allpix {
          * @brief Sets the random engine and seed it to be used by this event
          * @param random_engine Pointer to RNG for this event
          */
-        void set_and_seed_random_engine(MersenneTwister* random_engine);
+        void set_and_seed_random_engine(RandomNumberGenerator* random_engine);
 
         /**
          * @brief Store the state of the PRNG
@@ -90,7 +90,7 @@ namespace allpix {
         void restore_random_engine_state();
 
         // The random number engine associated with this event
-        MersenneTwister* random_engine_{nullptr};
+        RandomNumberGenerator* random_engine_{nullptr};
 
         // Seed for random number generator
         uint64_t seed_;
