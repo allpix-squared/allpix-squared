@@ -194,7 +194,7 @@ void PulseTransferModule::run(Event* event) {
             });
 
             // Generate graphs of induced current over time:
-            name = "current_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" +
+            name = "current_ev" + std::to_string(event->number) + "_px" + std::to_string(index.x()) + "-" +
                    std::to_string(index.y());
             auto current_graph = new TGraph(static_cast<int>(current_vec.size()), &time[0], &current_vec[0]);
             current_graph->GetXaxis()->SetTitle("t [ns]");
