@@ -72,17 +72,16 @@ namespace allpix {
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
         Messenger* messenger_;
-
         DigitizerType model_;
-        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance,
-        // transconductance, Boltzmann kT, feedback time constant, risetime time constant
-        double ikrum_{}, capacitance_detector_{}, capacitance_feedback_{}, capacitance_output_;
-        double gm_{}, boltzmann_kT_{}, tauF_{}, tauR_{};
-        // parameters of the electronics: noise, time-over-threshold logic
+
+        // Parameters of the amplifier: Feedback time constant, risetime time constant
+        double tauF_{}, tauR_{};
+
+        // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
-        // helper variables for transfer function
-        double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
+        // Helper variables for transfer function
+        double resistance_feedback_{}, integration_time_{};
         std::vector<double> impulse_response_function_;
         std::once_flag first_event_flag_;
 
