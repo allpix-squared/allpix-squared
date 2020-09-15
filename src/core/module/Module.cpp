@@ -212,6 +212,8 @@ void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
         });
 
         LOG(TRACE) << "Buffering event " << event->number;
+        // Let's store this event's PRNG state:
+        event->store_random_engine_state();
 
         // Buffer out of order events to write them later
         buffered_events_.insert(std::make_pair(event_number, event));
@@ -269,6 +271,8 @@ void BufferedModule::flush_buffered_events() {
 
         // set the buffered event RNG
         event->set_and_seed_random_engine(&random_generator);
+        // Restore this event's PRNG state:
+        event->restore_random_engine_state();
 
         // Process the buffered event
         run(event.get());

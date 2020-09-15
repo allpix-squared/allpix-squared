@@ -79,11 +79,24 @@ namespace allpix {
          */
         void set_and_seed_random_engine(MersenneTwister* random_engine);
 
+        /**
+         * @brief Store the state of the PRNG
+         */
+        void store_random_engine_state();
+
+        /**
+         * @brief Restore the state of the PRNG from the stored internal state
+         */
+        void restore_random_engine_state();
+
         // The random number engine associated with this event
         MersenneTwister* random_engine_{nullptr};
 
-        // Seed for Random number generator
+        // Seed for random number generator
         uint64_t seed_;
+
+        // State of the random number generator
+        std::stringstream state_;
 
         /**
          * @brief Returns a pointer to the event local messenger
