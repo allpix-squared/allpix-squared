@@ -21,16 +21,18 @@ namespace allpix {
      */
     class RandomNumberGenerator : public std::mt19937_64 {
     public:
-        std::uint_fast64_t operator()(){// Only copy if we want to log it
-                                        IFLOG(PRNG){auto prn = std::mt19937_64::operator()();
-        LOG(PRNG) << "Using random number " << prn;
-        return prn;
-    } else {
-        return std::mt19937_64::operator()();
-    }
-}; // namespace allpix
-}
-;
+        std::uint_fast64_t operator()() {
+            // Only copy if we want to log it
+            IFLOG(PRNG) {
+                auto prn = std::mt19937_64::operator()();
+                LOG(PRNG) << "Using random number " << prn;
+                return prn;
+            }
+            else {
+                return std::mt19937_64::operator()();
+            }
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_PRNG_H */
