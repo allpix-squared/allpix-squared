@@ -299,7 +299,7 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
 
     LOG(TRACE) << "Calculating time-of-arrival";
     bool threshold_crossed = false;
-    unsigned int toa_clock_cycles = 0;
+    unsigned int comparator_cycles = 0;
     double arrival_time = 0;
 
     // Find the point where the signal crosses the threshold, latch ToA
@@ -308,10 +308,10 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
             threshold_crossed = true;
             break;
         };
-        toa_clock_cycles++;
+        comparator_cycles++;
         arrival_time += (store_toa_ ? clockToA_ : timestep);
     }
-    return {threshold_crossed, toa_clock_cycles, arrival_time};
+    return {threshold_crossed, comparator_cycles, arrival_time};
 }
 
 unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const {
