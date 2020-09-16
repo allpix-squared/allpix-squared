@@ -17,6 +17,8 @@ In the latter case, the parameters are used to derive the contributions to the t
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
 For the amplified pulse signal, alongside the Time-of-Arrival either the determined Time-over-Threshold, or the integral of the amplified pulse can be stored in the `PixelHit`.
 
+Since the input pulse may have different polarity, it is important to set the threshold accordingly to a positive or negative value, otherwise it may not trigger at all.
+If this behavior is not desired, the 'Ignore_Polarity' parameter can be set to compare only the absolute values of the input and the threshold value.
 
 
 ### Parameters
@@ -25,6 +27,7 @@ For the amplified pulse signal, alongside the Time-of-Arrival either the determi
 * `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
+* `ignore_polarity`: Select whether polarity of the threshold is ignored, i.e. the absolute values are compared, or if polarity is taken into account. Defaults to `false`.
 * `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival (ToA) clock. If set, the output timestamp is delivered in units of ToA clock cycles, otherwise in nanoseconds.
 * `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold (ToT) clock. If set, the output charge is delivered as time over threshold in units of ToT clock cycles, otherwise the pulse integral is stored instead.
 
