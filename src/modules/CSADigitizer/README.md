@@ -1,17 +1,17 @@
 # CSADigitizer
 **Maintainer**: Annika Vauth (<annika.vauth@desy.de>)
 **Status**: Functional
-**Input**: PixelCharge  
-**Output**: PixelHit  
+**Input**: PixelCharge
+**Output**: PixelHit
 
 ### Description
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
-For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from [@kleczek] : 
+For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from [@kleczek] :
 $`H(s) = \frac{R_f}{((1+ \tau_f s) * (1 + \tau_r s))}, `$
-with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$ 
+with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$
 
 The impulse response function of this transfer function is convoluted with the charge pulse.
-This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrisation providing rise time and feedback time. 
+This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrisation providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
@@ -25,12 +25,11 @@ For the amplified pulse signal, alongside the Time-of-Arrival either the determi
 * `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
-* `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival clock. Defaults to 1.5625 ns (i.e. a 640MHz clock).
-* `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold clock. Defaults to 25 ns (i.e. a 40MHz clock).
-* `store_tot`: Determines if the output of this module is Time-over-Threshold. Defaults to true. Otherwise, the pulse integral is stored instead.
+* `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival (ToA) clock. If set, the output timestamp is delivered in units of ToA clock cycles, otherwise in nanoseconds.
+* `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold (ToT) clock. If set, the output charge is delivered as time over threshold in units of ToT clock cycles, otherwise the pulse integral is stored instead.
 
 #### Parameters for the simplified model
-* `rise_time_constant` : Rise time constant of CSA output. Defaults to 1 ns.  
+* `rise_time_constant` : Rise time constant of CSA output. Defaults to 1 ns.
 * `feedback_time_constant` : Feedback time constant of CSA output. Defaults to 10 ns.
 
 #### Parameters for the CSA model
@@ -70,7 +69,7 @@ sigma_noise = 0.1e-3V
 [CSADigitizer]
 model = "simple"
 feedback_capacitance = 5e-15C/V
-rise_time_constant = 1e-9s  
+rise_time_constant = 1e-9s
 feedback_time_constant = 10e-9 s
 integration_time = 0.5e-6s
 threshold = 10e-3V
