@@ -1,28 +1,72 @@
 # GeometryBuilderGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>)  
+**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)
 **Status**: Functional  
 
 ### Description
-Constructs the Geant4 geometry from the internal geometry description. First constructs the world frame with a configurable margin and material. Then continues to create all the detectors using their internal detector models and to place them within the world frame.
+Constructs the Geant4 geometry from the internal geometry description.
+First, the world frame with a configurable margin and material is constructed.
+Then all passive materials and detectors using their internal detector models and passive material models are created and placed within the world frame or a specified mother volume (only for passive materials), which corresponds to another passive volume.
+The descriptions of all detectors and passive volumes have to be specified within the geometry configuration.
 
-All available detector models are fully supported. This builder can create extra support layers of the following materials:
+All available detector models are fully supported.
 
-* Air
-* Aluminum
-* Carbonfiber (a mixture of carbon and epoxy)
-* Copper
-* Epoxy
-* G10 (PCB material)
-* Kapton (using the `G4_KAPTON` definition)
-* Lead
-* Plexiglass (using the `G4_PLEXIGLASS` definition)
-* Silicon
-* Solder (a mixture of tin and lead)
-* Tungsten
+For passive materials, the implemented models are "box", "cylinder" and "sphere".
+The dimensions of the individual volumes are defined by the following parameters for the specific models and to be set within the corresponding section of the geometry configuration:
+
+For each model, a set of specific size parameters need to be given, of which some are optional.\\
+#### Box:
+A rectangular box which can be massive or have an hole in the middle along the z-axis.
+* The `size` of the box is an XYZ vector which defines the total size of the box.
+* (Optional) The `inner_size` of the box is an XYZ vector which defines the size of the volume that will be removed at the center of the original box volume. Defaults to 0mm 0mm 0mm (no volume removed).
+* (Optional) The `thickness` of the box is a value which defines the thickness of the walls of a box. This has a similar effect as the parameter `inner_size`, and such they can't be used together. Defaults to 0mm.
+
+#### Cylinder:
+A cylindrical tube which can be massive or have an hole in the middle along the z-axis.
+* The `outer_radius` of the cylinder is the total radius of the cylinder (in the XY-plane).
+* The `length` of the cylinder is the total length of the cylinder (in the Z-direction).
+* (Optional) The `inner_radius` of the cylinder is the radius of the inner cylinder. Defaults to 0mm.
+* (Optional) The `starting_angle` of the cylinder is the angle at which circumference of the cylinder will start. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+* (Optional) The `arc_length` of the cylinder is the arc-length of the circumference that will be drawn, starting from the given `starting_angle`. Defaults to 360deg which is the full circumference.
+Note that the if the `arc_length` is set to 360 degrees, the \apsq framework will always draw the full circumference, regardless of the value of `starting_angle`.
+
+#### Sphere:
+A full or partly made sphere with an inner- and outer radius.
+* The `outer_radius` of the sphere is the total radius of the sphere in all directions.
+* (Optional) The `inner_radius` of the sphere is the radius of the inner sphere. Defaults to 0mm.
+* (Optional) The `starting_angle_phi` of the sphere is the azimuthal angle at which circumference of the sphere will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+* (Optional) The `arc_length_phi` of the sphere is the arc-length of the circumference that will be drawn, starting from the given `starting_angle_phi` in the XY-plane. Defaults to 360deg which is the full circumference.
+* (Optional) The `starting_angle_theta` of the sphere is the polar angle at which the `arc_length_theta` will start. 0 degrees refers to the point along the positive z-axis. Defaults to 0deg.
+* (Optional) The `arc_length_theta` of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given `starting_angle_theta`. Defaults to 100deg which creates the full circle.\\
+Note that `arc_length_phi` works the same as the `arc_length` from the cylinder, but the `arc_length_theta` works different.
+The \apsq framework will only draw the full circle if `starting_angle_theta` = 0deg, and `arc_length_theta` = 180deg. 
+In all other situations, the sphere will start at `starting_angle_theta` and continue the `arc_length_theta` until `arc_length_theta` + `starting_angle_theta` = 180deg. After this it will stop.
+The necessary module errors and warnings have been included to make sure the user will know will and won't be build.
+Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
+
+This module can create support layers and passive volumes of the following materials:
+
+* Materials listed by Geant4:
+    * air
+    * aluminum
+    * beryllium
+    * copper
+    * kapton
+    * lead
+    * lithium
+    * plexiglass
+    * silicon
+    * tungsten
+* Composite or custom materials:
+    * carbon fiber
+    * epoxy
+    * fused silica
+    * PCB G-10
+    * solder
+    * vacuum
 
 ### Dependencies
 
-This module requires an installation Geant4.
+This module requires an installation of Geant4.
 
 ### Parameters
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief System to support units in the framework
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -44,6 +44,7 @@ namespace allpix {
          * @brief Add a new unit to the system
          * @param str Identifier of the unit
          * @param value Multiplication factor from the base unit
+         * @throws std::invalid_argument if unit is already defined
          */
         static void add(std::string str, UnitType value);
 

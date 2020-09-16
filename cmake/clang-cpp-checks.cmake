@@ -1,16 +1,25 @@
 # Additional targets to perform clang-format/clang-tidy/cppcheck
 
-# Check if the git pre-commit hook for formatting is installed:
+# Check if the git hooks are installed and upt-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-    SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/pre-commit-clang-format-hook")
-    SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
-    IF(NOT EXISTS ${HOOK_DST})
-        MESSAGE(WARNING "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
-    ELSE()
-        EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
-        IF(${HOOKS_DIFFER})
-            MESSAGE(WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    SET(HOOK_MISSING OFF)
+    SET(HOOK_OUTDATED OFF)
+    FOREACH(HOOK pre-commit-clang-format pre-push-tag-version)
+        SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/${HOOK}-hook")
+        SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/${HOOK}")
+        IF(NOT EXISTS ${HOOK_DST})
+            SET(HOOK_MISSING ON)
+        ELSE()
+            EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
+            IF(${HOOKS_DIFFER})
+                SET(HOOK_OUTDATED ON)
+            ENDIF()
         ENDIF()
+    ENDFOREACH()
+    IF(${HOOK_MISSING})
+        MESSAGE(WARNING "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    ELSEIF(${HOOK_OUTDATED})
+        MESSAGE(WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
     ENDIF()
 ENDIF()
 
@@ -87,6 +96,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     FIND_PROGRAM(RUN_CLANG_TIDY NAMES "run-clang-tidy.py" "run-clang-tidy-4.0.py" HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+	# write a .clang-tidy file in the binary dir to disable checks for created files
+	FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
 
         # Set export commands on
         SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)

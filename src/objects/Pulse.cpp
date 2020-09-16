@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of pulse object
- * @copyright Copyright (c) 2018-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -39,6 +39,10 @@ const std::vector<double>& Pulse::getPulse() const {
 
 double Pulse::getBinning() const {
     return bin_;
+}
+
+bool Pulse::isInitialized() const {
+    return initialized_;
 }
 
 Pulse& Pulse::operator+=(const Pulse& rhs) {

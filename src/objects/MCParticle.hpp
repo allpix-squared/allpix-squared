@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of Monte-Carlo particle object
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -55,10 +55,16 @@ namespace allpix {
          */
         ROOT::Math::XYZPoint getLocalEndPoint() const;
         /**
-         * @brief Get the entry point of the particle in global coordinates
-         * @return Particle entry point
+         * @brief Get the exit point of the particle in global coordinates
+         * @return Particle exit point
          */
         ROOT::Math::XYZPoint getGlobalEndPoint() const;
+
+        /**
+         * @brief Get the reference point of the particle in the sensor center plane in local coordinates
+         * @return Particle reference point on the center plane of the sensor
+         */
+        ROOT::Math::XYZPoint getLocalReferencePoint() const;
 
         /**
          * @brief Get PDG particle id for the particle

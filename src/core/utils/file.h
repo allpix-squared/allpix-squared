@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Collection of simple file system utilities
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -78,7 +78,7 @@ namespace allpix {
      * @param path The path to the file to be checked check
      * @return True if the file contains null bytes, false otherwise
      *
-     * This helper function checks the first 256 characters of a file for the occurence of a nullbyte.
+     * This helper function checks the first 256 characters of a file for the occurrence of a nullbyte.
      * For binary files it is very unlikely not to have at least one. This approach is also used e.g. by diff
      */
     inline bool file_is_binary(const std::string& path) {
@@ -192,7 +192,7 @@ namespace allpix {
      * @param path Path to the file
      * @throws std::invalid_argument If the file cannot be removed
      *
-     * Remove a single file at the given path. If the function returns the deletion was successfull.
+     * Remove a single file at the given path. If the function returns the deletion was successful.
      */
     inline void remove_file(const std::string& path) {
         int status = unlink(path.c_str());

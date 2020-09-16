@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of detector model
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -18,7 +18,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     auto config = reader_.getHeaderConfiguration();
 
     // Number of pixels
-    setNPixels(config.get<DisplacementVector2D<Cartesian2D<int>>>("number_of_pixels"));
+    setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
     setPixelSize(pixel_size);
@@ -61,9 +61,11 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
 
         auto material = support_config.get<std::string>("material", "g10");
         std::transform(material.begin(), material.end(), material.begin(), ::tolower);
+        auto hole_type = support_config.get<std::string>("hole_type", "rectangular");
+        std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
-        addSupportLayer(size, thickness, offset, material, location, hole_size, hole_offset);
+        addSupportLayer(size, thickness, offset, material, hole_type, location, hole_size, hole_offset);
     }
 }
 

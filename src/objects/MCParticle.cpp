@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of Monte-Carlo particle object
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -9,6 +9,8 @@
 
 #include "MCParticle.hpp"
 #include <sstream>
+
+#include <Math/Vector3D.h>
 
 using namespace allpix;
 
@@ -37,6 +39,22 @@ ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const {
 }
 ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
     return global_end_point_;
+}
+
+ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
+    // Direction for parametric equation of line through start/end points
+    auto direction =
+        static_cast<ROOT::Math::XYZVector>(local_end_point_) - static_cast<ROOT::Math::XYZVector>(local_start_point_);
+
+    if(direction.z() != 0) {
+        // Calculate parameter for line intersection with plane at z = 0, local coordinates
+        auto t = -1 * local_start_point_.z() / direction.z();
+        // Calculate reference point at z = 0 from parametric line equation
+        return (direction * t + local_start_point_);
+    } else {
+        // Both points are coplanar with x-y plane. SImply return their center:
+        return (static_cast<ROOT::Math::XYZVector>(local_end_point_) + local_start_point_) / 2.0;
+    }
 }
 
 int MCParticle::getParticleID() const {

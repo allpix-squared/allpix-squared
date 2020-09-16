@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of pulse object
- * @copyright Copyright (c) 2018-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -58,6 +58,12 @@ namespace allpix {
         double getBinning() const;
 
         /**
+         * @brief Method to check if this is an initialized or empty pulse
+         * @return Initialization status of the pulse object
+         */
+        bool isInitialized() const;
+
+        /**
          * @brief compound assignment operator to sum different pulses
          * @throws IncompatibleDatatypesException If the binning of the pulses does not match
          */
@@ -70,7 +76,7 @@ namespace allpix {
 
     private:
         std::vector<double> pulse_;
-        double bin_;
+        double bin_{};
         bool initialized_{};
     };
 

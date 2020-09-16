@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of module manager
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -571,8 +571,8 @@ void ModuleManager::init() {
 }
 
 /**
- * Initializes the thread pool for excuting multiple modules and module tasks in parallel. The run for a module is skipped if
- * its delegates are not \ref Module::check_delegates() "satisfied". Sets the section header and logging settings before
+ * Initializes the thread pool for executing multiple modules and module tasks in parallel. The run for a module is skipped
+ * if its delegates are not \ref Module::check_delegates() "satisfied". Sets the section header and logging settings before
  * executing the \ref Module::run() function. \ref Module::reset_delegates() "Resets" the delegates and the logging after
  * initialization
  */
@@ -795,8 +795,9 @@ void ModuleManager::finalize() {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
+    auto total_events = global_config.get<unsigned int>("number_of_events");
+    if(total_events > 0) {
+        processing_time = std::round((1000 * total_time_) / total_events);
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"

@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of string utilities
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -72,7 +72,7 @@ bool allpix::from_string_impl(std::string str, type_tag<bool>) {
         sstream >> ret_value;
     }
 
-    // Check if the reading was succesfull and everything was read
+    // Check if the reading was successful and everything was read
     if(sstream.fail() || sstream.peek() != EOF) {
         throw std::invalid_argument("conversion not possible");
     }

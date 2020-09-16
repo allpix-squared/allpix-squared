@@ -1,10 +1,10 @@
-## TransientPropagation
+# TransientPropagation
 **Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Immature  
+**Status**: Functional  
 **Input**: DepositedCharge  
-**Output**: PixelCharge
+**Output**: PropagatedCharge
 
-#### Description
+### Description
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility parameterization by C. Jacoboni et al. [@jacoboni] and the magnetic field via a calculation of the Lorentz drift.
@@ -20,11 +20,11 @@ For each step, the induced charge on the neighboring pixel implants is calculate
 
 $` Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} = q \left( \phi (x_1) - \phi(x_0) \right)`$
 
-and multiplying it with the charge. The resulting pulses are stored for every pixel individually.
+and multiplying it with the charge. The resulting pulses are stored for every set of charge carriers individually and need to be combined for each pixel using a transfer module.
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
-#### Parameters
+### Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `charge_per_step`: Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
 * `timestep`: Time step for the Runge-Kutta integration, representing the granularity with which the induced charge is calculated. Default value is 0.01ns.
@@ -34,7 +34,7 @@ The module can produces a variety of plots such as total integrated charge plots
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 
 
-#### Usage
+### Usage
 ```toml
 [TransientPropagation]
 temperature = 293K

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Definition of default digitization module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -66,12 +66,21 @@ namespace allpix {
         // Input message with the charges on the pixels
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
+        /**
+         * @brief Helper function to calculate time of crossing the threshold
+         * @param  pixel_charge PixelCharge object to calculate the threshold crossing for
+         * @param  threshold    Threshold to be crossed
+         * @return              Timestamp of threshold crossing in internal units
+         */
+        double time_of_arrival(const PixelCharge& pixel_charge, double threshold) const;
+
         // Statistics
         unsigned long long total_hits_{};
 
         // Output histograms
         TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
-        TH2D* h_calibration{};
+        TH1D *h_px_toa{}, *h_px_tdc_smear{}, *h_px_tdc{};
+        TH2D *h_calibration{}, *h_toa_calibration;
     };
 } // namespace allpix
 

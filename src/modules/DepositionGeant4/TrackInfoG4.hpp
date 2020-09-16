@@ -2,7 +2,7 @@
  * @file
  * @brief Defines a concrete implementation of a G4VUserTrackInformation to carry unique track and parent track IDs as well
  * as create and dispatch MCTracks which are the AP2 representation of a Monte-Carlo trajectory
- * @copyright Copyright (c) 2018-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -58,7 +58,7 @@ namespace allpix {
         ROOT::Math::XYZPoint getStartPoint() const;
 
         /**
-         * @brief Get the point of where the track terminated in global coordiantes
+         * @brief Get the point of where the track terminated in global coordinates
          * @return Track end point
          */
         ROOT::Math::XYZPoint getEndPoint() const;

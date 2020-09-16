@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of charge propagation module with transient behavior simulation
- * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -263,9 +263,8 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
 
     auto carrier_alive = [&](double doping_concentration, double time) -> bool {
         auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                        (1 +
-                         std::fabs(doping_concentration) /
-                             (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+                        (1 + std::fabs(doping_concentration) /
+                                 (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
         return survival_probability > (1 - std::exp(-1 * time / lifetime));
     };
 
@@ -380,7 +379,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
             for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
                 // Ignore if out of pixel grid
-                if(x < 0 || x >= model_->getNPixels().x() || y < 0 || y >= model_->getNPixels().y()) {
+                if(!detector_->isWithinPixelGrid(x, y)) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }

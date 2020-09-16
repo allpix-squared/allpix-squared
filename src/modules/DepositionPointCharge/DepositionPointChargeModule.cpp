@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of a module to deposit charges at a specific point
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -28,12 +28,14 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
+    // Allow to use similar syntax as in DepositionGeant4:
+    config_.setAlias("position", "source_position");
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", "point");
-    config_.setDefault("model", "fixed");
 
     // Read type:
     auto type = config_.get<std::string>("source_type");
@@ -68,13 +70,13 @@ void DepositionPointChargeModule::init() {
 
     // Set up the different source types
     if(type_ == SourceType::MIP) {
-        // Calculate voxel size:
-        auto granularity = config_.get<unsigned int>("number_of_steps");
-        voxel_ = ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / granularity);
+        // Calculate voxel size and ensure granularity is not zero:
+        auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
+        step_size_z_ = model->getSensorSize().z() / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
-        carriers_ = static_cast<unsigned int>(80000 * voxel_.z());
-        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(voxel_.z(), {"um", "mm"}) << ", depositing "
+        carriers_ = static_cast<unsigned int>(80000 * step_size_z_);
+        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step";
     } else {
         carriers_ = config_.get<unsigned int>("number_of_charges");
@@ -130,9 +132,9 @@ void DepositionPointChargeModule::run(unsigned int event) {
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
-        auto ref =
-            model->getGridSize() / 2.0 -
-            ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z() / 2.0);
+        auto ref = config_.get<ROOT::Math::XYZVector>("position") + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+                   ROOT::Math::XYZVector(
+                       model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
         position = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
                                         voxel_.y() * (((event - 1) / root_) % root_),
@@ -184,10 +186,11 @@ void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& posit
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }
 
 void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
@@ -217,7 +220,7 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
     // Deposit the charge carriers:
     auto position_local = start_local;
     while(position_local.z() < model->getSensorSize().z() / 2.0) {
-        position_local += voxel_;
+        position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 
         charges.emplace_back(position_local, position_global, CarrierType::ELECTRON, carriers_, 0., &(mcparticles.back()));
@@ -227,8 +230,9 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
     }
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }

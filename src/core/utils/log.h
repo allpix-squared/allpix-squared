@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Provides a logger and macros for convenient access
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -228,10 +228,12 @@ namespace allpix {
 
     using Log = DefaultLogger;
 
+#ifndef __FILE_NAME__
 /**
  *  @brief Base name of the file without the directory
  */
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
 
 /**
  * @brief Execute a block only if the reporting level is high enough

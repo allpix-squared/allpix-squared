@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Geant4 deposition module
  * @remarks Based on code from Mathieu Benoit
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -49,8 +49,6 @@ using namespace allpix;
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1), run_manager_g4_(nullptr) {
-    // Create user limits for maximum step length in the sensor
-    user_limits_ = std::make_unique<G4UserLimits>(config_.get<double>("max_step_length", Units::get(1.0, "um")));
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
@@ -58,11 +56,21 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
+    config_.setDefault<double>("max_step_length", Units::get(1.0, "um"));
+    // Default value chosen to ensure proper gamma generation for Cs137 decay
+    config_.setDefault<double>("cutoff_time", 2.21e+11);
 
     // Set alias for support of old particle source definition
     config_.setAlias("source_position", "beam_position");
     config_.setAlias("source_energy", "beam_energy");
     config_.setAlias("source_energy_spread", "beam_energy_spread");
+    config_.setAlias("cutoff_time", "decay_cutoff_time", true);
+
+    // Create user limits for maximum step length in the sensor
+    user_limits_ =
+        std::make_unique<G4UserLimits>(config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("cutoff_time"));
+
+    user_limits_world_ = std::make_unique<G4UserLimits>(DBL_MAX, DBL_MAX, config_.get<double>("cutoff_time"));
 
     // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
     if(config.get<std::string>("source_type") == "macro") {
@@ -110,7 +118,7 @@ void DepositionGeant4Module::init() {
 
         for(auto& detector : geo_manager_->getDetectors()) {
             // Get logical volume
-            auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
             if(logical_volume == nullptr) {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
@@ -191,6 +199,12 @@ void DepositionGeant4Module::init() {
     }
     ui_g4->ApplyCommand("/run/setCut " + std::to_string(production_cut));
 
+    // Set user limits on world volume:
+    auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
+    if(world_log_volume != nullptr) {
+        world_log_volume->SetUserLimits(user_limits_world_.get());
+    }
+
     // Initialize the physics list
     LOG(TRACE) << "Initializing physics processes";
     run_manager_g4_->SetUserInitialization(physicsList);
@@ -206,11 +220,8 @@ void DepositionGeant4Module::init() {
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
-    // Default value chosen to ensure proper gamma generation for Cs137 decay
-    auto decay_cutoff_time = config_.get<double>("decay_cutoff_time", 2.21e+11);
-
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get(), decay_cutoff_time);
+    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
@@ -257,7 +268,7 @@ void DepositionGeant4Module::init() {
         // Get model of the sensitive device
         auto sensitive_detector_action = new SensitiveDetectorActionG4(
             this, detector, messenger_, track_info_manager_.get(), charge_creation_energy, fano_factor, getRandomSeed());
-        auto logical_volume = detector->getExternalObject<G4LogicalVolume>("sensor_log");
+        auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
         }
@@ -319,6 +330,8 @@ void DepositionGeant4Module::run(unsigned int event_num) {
     track_info_manager_->createMCTracks();
 
     // Dispatch the necessary messages
+    track_info_manager_->dispatchMessage(this, messenger_);
+
     for(auto& sensor : sensors_) {
         sensor->dispatchMessages();
 
@@ -329,7 +342,6 @@ void DepositionGeant4Module::run(unsigned int event_num) {
         }
     }
 
-    track_info_manager_->dispatchMessage(this, messenger_);
     track_info_manager_->resetTrackInfoManager();
 }
 

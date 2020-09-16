@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of CorryvreckanWriter module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -50,7 +50,7 @@ void CorryvreckanWriterModule::init() {
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
-    LOG(TRACE) << "Creating ouput file \"" << fileName_ << "\"";
+    LOG(TRACE) << "Creating output file \"" << fileName_ << "\"";
     output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -240,7 +240,14 @@ void CorryvreckanWriterModule::finalize() {
                 roles += "dut";
             }
             if(!roles.empty()) {
-                geometry_file << "role = " << roles;
+                geometry_file << "role = " << roles << std::endl;
+            }
+
+            // Get the material budget if available:
+            auto budget = geometryManager_->getExternalObject<double>(detector->getName(), "material_budget");
+            if(budget != nullptr) {
+                LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
+                geometry_file << "material_budget = " << *budget << std::endl;
             }
             geometry_file << std::endl;
         }

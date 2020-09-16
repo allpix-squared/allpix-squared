@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of generic charge propagation module
  * @remarks Based on code from Paul Schuetze
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -145,8 +145,8 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     if(config_.get<bool>("output_plots_use_pixel_units")) {
         for(auto& deposit_points : output_plot_points_) {
             for(auto& point : deposit_points.second) {
-                point.SetX((point.x() / model_->getPixelSize().x()) + 1);
-                point.SetY((point.y() / model_->getPixelSize().y()) + 1);
+                point.SetX(point.x() / model_->getPixelSize().x());
+                point.SetY(point.y() / model_->getPixelSize().y());
             }
         }
     }
@@ -331,9 +331,12 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
         }
 
         // Remove temporary created files
-        remove(file_name_anim.c_str());
+        auto ret = remove(file_name_anim.c_str());
         for(size_t i = 0; i < 3; ++i) {
-            remove(file_name_contour[i].c_str());
+            ret |= remove(file_name_contour[i].c_str());
+        }
+        if(ret != 0) {
+            throw ModuleError("Could not delete temporary animation files.");
         }
 
         // Create color table
@@ -699,9 +702,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
     auto carrier_alive = [&](double doping_concentration, double time) -> bool {
         auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                        (1 +
-                         std::fabs(doping_concentration) /
-                             (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+                        (1 + std::fabs(doping_concentration) /
+                                 (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
         return survival_probability > (1 - std::exp(-1 * time / lifetime));
     };
 

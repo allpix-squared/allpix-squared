@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Loading and execution of all modules
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -142,7 +142,7 @@ namespace allpix {
         ModuleList modules_;
         IdentifierToModuleMap id_to_module_;
 
-        ConfigManager* conf_manager_;
+        ConfigManager* conf_manager_{};
 
         std::unique_ptr<TFile> modules_file_;
 

@@ -7,7 +7,7 @@
  * - ALLPIX_MODULE_HEADER: name of the header defining the module
  * - ALLPIX_MODULE_UNIQUE: true if the module is unique, false otherwise
  *
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -42,8 +42,8 @@ namespace allpix {
     /**
      * @brief Instantiates an unique module
      * @param config Configuration for this module
-     * @param messenger Pointer to the Messenger (guarenteed to be valid until the module is destructed)
-     * @param geo_manager Pointer to the global GeometryManager (guarenteed to be valid until the module is destructed)
+     * @param messenger Pointer to the Messenger (guaranteed to be valid until the module is destructed)
+     * @param geo_manager Pointer to the global GeometryManager (guaranteed to be valid until the module is destructed)
      * @return Instantiation of the module
      *
      * Internal method for the dynamic loading in the ModuleManager. Forwards the supplied arguments to the constructor and
@@ -63,7 +63,7 @@ namespace allpix {
     /**
      * @brief Instantiates a detector module
      * @param config Configuration for this module
-     * @param messenger Pointer to the Messenger (guarenteed to be valid until the module is destructed)
+     * @param messenger Pointer to the Messenger (guaranteed to be valid until the module is destructed)
      * @param detector Pointer to the Detector object this module is bound to
      * @return Instantiation of the module
      *

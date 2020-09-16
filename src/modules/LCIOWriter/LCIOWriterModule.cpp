@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of [LCIOWriter] module
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -276,7 +276,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
 
     if(dump_mc_truth_ == true) {
-        // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same everytime
+        // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same every time
         mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
         mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
         mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
@@ -353,7 +353,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         }
     }
 
-    // Every track will be linked to at leat one (typically multiple) MCParticles and thus TrackerData objets
+    // Every track will be linked to at least one (typically multiple) MCParticles and thus TrackerData objects
     auto mctrk_to_hit_data_vec = std::map<MCTrack const*, std::vector<TrackerHitImpl*>>{};
 
     // A MCParticle will be reflected by an LCIO hit and cluster - the hit is stored in a TrackerHit, the cluster in

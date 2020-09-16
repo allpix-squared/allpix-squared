@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Base for the module implementation
- * @copyright Copyright (c) 2017-2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -40,7 +40,7 @@ namespace allpix {
      * - Module::run(unsigned int): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
-     * The module class also provides a few utility methods and stores internal data of instantations. The internal data is
+     * The module class also provides a few utility methods and stores internal data of instantiations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
     class Module {

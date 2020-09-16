@@ -1,5 +1,15 @@
-#ifndef MCPARTICLE_H
-#define MCPARTICLE_H 1
+/**
+ * @file
+ * @brief Definition of MCParticle object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_MCPARTICLE_H
+#define CORRYVRECKAN_MCPARTICLE_H 1
 
 #include <Math/Point3D.h>
 #include "Object.hpp"
@@ -38,9 +48,9 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint getLocalEnd() const { return m_local_end_point; }
 
     private:
-        int m_particle_id;
-        ROOT::Math::XYZPoint m_local_start_point;
-        ROOT::Math::XYZPoint m_local_end_point;
+        int m_particle_id{};
+        ROOT::Math::XYZPoint m_local_start_point{};
+        ROOT::Math::XYZPoint m_local_end_point{};
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(MCParticle, 3)
@@ -50,4 +60,4 @@ namespace corryvreckan {
     using MCParticleVector = std::vector<MCParticle*>;
 } // namespace corryvreckan
 
-#endif // MCPARTICLE_H
+#endif // CORRYVRECKAN_MCPARTICLE_H

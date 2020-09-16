@@ -1,5 +1,15 @@
-#ifndef PIXEL_H
-#define PIXEL_H 1
+/**
+ * @file
+ * @brief Definition of pixel object
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Corryvreckan authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#ifndef CORRYVRECKAN_PIXEL_H
+#define CORRYVRECKAN_PIXEL_H 1
 
 #include "Object.hpp"
 
@@ -110,4 +120,4 @@ namespace corryvreckan {
     using PixelVector = std::vector<Pixel*>;
 } // namespace corryvreckan
 
-#endif // PIXEL_H
+#endif // CORRYVRECKAN_PIXEL_H
