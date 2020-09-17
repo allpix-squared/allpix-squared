@@ -18,7 +18,7 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : BufferedModule(config), geo_manager_(geo_manager), messenger_(messenger) {
 
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
