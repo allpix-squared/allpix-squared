@@ -172,6 +172,16 @@ namespace allpix {
          */
         void Write() { this->Merge()->Write(); }
     };
+
+    /**
+     * @brief Helper method to instantiate new objects of the type ThreadedHistogram
+     *
+     * @param args Arguments passed to histogram class
+     * @return Unique pointer to newly created object
+     */
+    template <typename T, class... ARGS> std::unique_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
+        return std::make_unique<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */
