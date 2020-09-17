@@ -75,9 +75,6 @@ namespace allpix {
         Messenger* messenger_;
         DigitizerType model_;
 
-        // Input message with the charges on the pixels
-        std::shared_ptr<PixelChargeMessage> pixel_message_;
-
         // Parameters of the amplifier: Feedback time constant, risetime time constant
         double tauF_{}, tauR_{};
 
