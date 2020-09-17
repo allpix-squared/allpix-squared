@@ -257,6 +257,60 @@ This allows to retrieve and e.g. store the configuration actually used for the s
 If a module is interested to run using multi-threading but prefers to execute its run method in the order of event numbers, for example a module that writes to an output file, then the module can inherit from the \textit{BufferedModule} class, without implementing additional functionality, which will take care of sorting the events in the correct order before calling the run method.
 It should be noted that such modules cannot dispatch messages to the framework.
 
+
+\section{Writing Thread-Safe Code}
+\label{sec:module_multithreading}
+
+In \apsq events are processed fully parallel which requires some consideration when writing module code.
+This section briefly lists the most important point to take into account.
+
+\subsection{Member Variables}
+\label{sec:multithreading_members}
+
+While the \command{init()} and \command{finalize()} of the module are guaranteed to be called sequentially, the \command{run()} method will be called simultaneously from different threads and for different events.
+Therefore, no module data members must be altered from within the \command{run()} function, otherwise these changes will affect other events being processed in parallel.
+Configuration parameters cached as member variables should therefore be set only in the \command{init()} function.
+
+\subsection{Histograms}
+
+\apsq uses ROOT histograms for collecting and storing statistics and other additional information about the simulation process.
+ROOT provides the template class \command{ROOT::TThreadedObject} which allows to use histograms in multi-threaded environments but slightly alters the interface of the histogram objects.
+In order to simplify their usage, \apsq provides a thin wrapper class which restores the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way as in a single-threaded environment.
+
+This wrapper class can be used as follows:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+// Declaration of a new histogram of type "TH1D"
+// Internally, this is a std::unique_ptr<ROOT::TThreadedObject<T>>
+Histogram<TH1D> my_histogram;
+
+// Creation of the histogram using the CreateHistogram helper method:
+my_histogram = CreateHistogram<TH1D>("name", "title", 100, 0., 100.);
+
+// Filling, setting bin contents and writing the histogram works as before:
+my_histogram->Fill(12.);
+my_histogram->SetBinContent(15, 23.);
+my_histogram->Write();
+\end{minted}
+
+\subsection{Declaring a Module Thread-Safe}
+
+If a module is thread-safe, i.e. its \command{run()} function can be called from different threads in parallel without locking, it can be declraed as thread-safe to the framework.
+In this case the ModuleManager will allow parallelization of calls to this module.
+
+This declaration is done by placing the following call int he constructor of the module:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+  MyParallelModule::MyParallelModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+      : Module(std::move(config), std::move(detector)) {
+      // This module is thread-safe and can be called from different threads simultaneously:
+      enable_parallelization();
+}
+
+By adding this, the module promises that it will work correctly if its \command{run()} method is executed multiple times in parallel, for different events.
+This means in particular that the module will safely handle access to shared (for example static) variables as described in Section~\ref{sec:multithreading_members} and that it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
+Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
+
+\end{minted}
+
 \section{Adding a New Detector Model}
 \label{sec:adding_detector_model}
 Custom detector models based on the detector classes provided with \apsq can easily be added to the framework.
