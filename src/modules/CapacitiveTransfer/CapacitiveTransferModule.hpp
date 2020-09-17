@@ -98,9 +98,9 @@ namespace allpix {
         double center[2] = {0.0, 0.0};
         double angles[2] = {0.0, 0.0};
 
-        TH2D* coupling_map;
-        TH2D* gap_map;
-        TH2D* capacitance_map;
-        TH2D* relative_capacitance_map;
+        std::unique_ptr<ThreadedHistogram<TH2D>> coupling_map;
+        std::unique_ptr<ThreadedHistogram<TH2D>> gap_map;
+        std::unique_ptr<ThreadedHistogram<TH2D>> capacitance_map;
+        std::unique_ptr<ThreadedHistogram<TH2D>> relative_capacitance_map;
     };
 } // namespace allpix

@@ -58,14 +58,14 @@ void CapacitiveTransferModule::init() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            coupling_map = new TH2D("coupling_map",
-                                    "Coupling;pixel x;pixel y",
-                                    static_cast<int>(max_col),
-                                    -0.5,
-                                    static_cast<int>(max_col) - 0.5,
-                                    static_cast<int>(max_row),
-                                    -0.5,
-                                    static_cast<int>(max_row) - 0.5);
+            coupling_map = CreateHistogram<TH2D>("coupling_map",
+                                                 "Coupling;pixel x;pixel y",
+                                                 static_cast<int>(max_col),
+                                                 -0.5,
+                                                 static_cast<int>(max_col) - 0.5,
+                                                 static_cast<int>(max_row),
+                                                 -0.5,
+                                                 static_cast<int>(max_row) - 0.5);
 
             for(size_t col = 0; col < max_col; col++) {
                 for(size_t row = 0; row < max_row; row++) {
@@ -122,14 +122,14 @@ void CapacitiveTransferModule::init() {
             LOG(TRACE) << "Creating output plots";
 
             // Create histograms if needed
-            coupling_map = new TH2D("coupling_map",
-                                    "Coupling;pixel x;pixel y",
-                                    static_cast<int>(max_col),
-                                    -0.5,
-                                    static_cast<int>(max_col) - 0.5,
-                                    static_cast<int>(max_row),
-                                    -0.5,
-                                    static_cast<int>(max_row) - 0.5);
+            coupling_map = CreateHistogram<TH2D>("coupling_map",
+                                                 "Coupling;pixel x;pixel y",
+                                                 static_cast<int>(max_col),
+                                                 -0.5,
+                                                 static_cast<int>(max_col) - 0.5,
+                                                 static_cast<int>(max_row),
+                                                 -0.5,
+                                                 static_cast<int>(max_row) - 0.5);
 
             for(col = 0; col < max_col; col++) {
                 for(row = 0; row < max_row; row++) {
@@ -207,19 +207,20 @@ void CapacitiveTransferModule::init() {
             auto xpixels = static_cast<int>(model_->getNPixels().x());
             auto ypixels = static_cast<int>(model_->getNPixels().y());
 
-            gap_map = new TH2D("gap_map", "Gap;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
+            gap_map = CreateHistogram<TH2D>(
+                "gap_map", "Gap;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
-            capacitance_map = new TH2D(
+            capacitance_map = CreateHistogram<TH2D>(
                 "capacitance_map", "Capacitance;pixel x;pixel y", xpixels, -0.5, xpixels, ypixels, -0.5, ypixels - 0.5);
 
-            relative_capacitance_map = new TH2D("relative_capacitance_map",
-                                                "Relative Capacitance;pixel x;pixel y",
-                                                xpixels,
-                                                -0.5,
-                                                xpixels,
-                                                ypixels,
-                                                -0.5,
-                                                ypixels - 0.5);
+            relative_capacitance_map = CreateHistogram<TH2D>("relative_capacitance_map",
+                                                             "Relative Capacitance;pixel x;pixel y",
+                                                             xpixels,
+                                                             -0.5,
+                                                             xpixels,
+                                                             ypixels,
+                                                             -0.5,
+                                                             ypixels - 0.5);
 
             for(int col = 0; col < xpixels; col++) {
                 for(int row = 0; row < ypixels; row++) {
