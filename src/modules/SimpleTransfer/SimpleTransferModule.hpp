@@ -67,7 +67,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        std::unique_ptr<ThreadedHistogram<TH1D>> drift_time_histo;
+        Histogram<TH1D> drift_time_histo;
 
         // Flag whether to store output plots:
         bool output_plots_{};

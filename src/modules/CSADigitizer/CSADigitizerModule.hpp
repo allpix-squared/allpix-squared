@@ -87,8 +87,8 @@ namespace allpix {
         std::once_flag first_event_flag_;
 
         // Output histograms
-        std::unique_ptr<ThreadedHistogram<TH1D>> h_tot{}, h_toa{};
-        std::unique_ptr<ThreadedHistogram<TH2D>> h_pxq_vs_tot{};
+        Histogram<TH1D> h_tot{}, h_toa{};
+        Histogram<TH2D> h_pxq_vs_tot{};
 
         /**
          * @brief Calculate time of first threshold crossing

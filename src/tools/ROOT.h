@@ -189,6 +189,8 @@ namespace allpix {
     template <typename T, class... ARGS> std::unique_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
         return std::make_unique<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
     }
+
+    template <class T> using Histogram = std::unique_ptr<ThreadedHistogram<T>>;
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */

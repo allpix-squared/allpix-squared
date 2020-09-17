@@ -85,9 +85,9 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Output plot for drift time
-        std::unique_ptr<ThreadedHistogram<TH1D>> drift_time_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> diffusion_time_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> propagation_time_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> initial_position_histo_;
+        Histogram<TH1D> drift_time_histo_;
+        Histogram<TH1D> diffusion_time_histo_;
+        Histogram<TH1D> propagation_time_histo_;
+        Histogram<TH1D> initial_position_histo_;
     };
 } // namespace allpix

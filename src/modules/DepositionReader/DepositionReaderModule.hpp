@@ -115,7 +115,7 @@ namespace allpix {
         std::mt19937_64 random_generator_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, std::unique_ptr<ThreadedHistogram<TH1D>>> charge_per_event_;
+        std::map<std::string, Histogram<TH1D>> charge_per_event_;
 
         std::mutex mutex_;
     };

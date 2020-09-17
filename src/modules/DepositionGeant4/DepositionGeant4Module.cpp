@@ -327,8 +327,7 @@ void DepositionGeant4Module::run(Event* event) {
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            auto histogram = charge_per_event_[sensor->getName()];
-            histogram->Fill(charge);
+            charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
 

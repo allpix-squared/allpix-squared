@@ -116,10 +116,10 @@ namespace allpix {
         unsigned int total_propagated_charges_{};
         unsigned int total_steps_{};
         long double total_time_{};
-        std::unique_ptr<ThreadedHistogram<TH1D>> step_length_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> drift_time_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> uncertainty_histo_;
-        std::unique_ptr<ThreadedHistogram<TH1D>> group_size_histo_;
+        Histogram<TH1D> step_length_histo_;
+        Histogram<TH1D> drift_time_histo_;
+        Histogram<TH1D> uncertainty_histo_;
+        Histogram<TH1D> group_size_histo_;
         std::mutex stats_mutex_;
     };
 
