@@ -424,7 +424,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = std::make_shared<ThreadedHistogram<TH1D>>(
+                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
                         plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
                 }
             }

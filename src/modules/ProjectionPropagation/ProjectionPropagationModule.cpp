@@ -95,31 +95,30 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plots
-        propagation_time_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "propagation_time_histo",
-            "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
-            static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-            0,
-            static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
-        drift_time_histo_ =
-            std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
-                                                      "Drift time (directed drift only);Drift time [ns];charge carriers",
-                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                      0,
-                                                      static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
-        initial_position_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "initial_position_histo",
-            "Initial position of collected charge carriers;Position z [um];charge carriers",
-            100,
-            static_cast<double>(Units::convert(-top_z_, "um")),
-            static_cast<double>(Units::convert(top_z_, "um")));
+        propagation_time_histo_ =
+            CreateHistogram<TH1D>("propagation_time_histo",
+                                  "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Drift time (directed drift only);Drift time [ns];charge carriers",
+                                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                  0,
+                                                  static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        initial_position_histo_ =
+            CreateHistogram<TH1D>("initial_position_histo",
+                                  "Initial position of collected charge carriers;Position z [um];charge carriers",
+                                  100,
+                                  static_cast<double>(Units::convert(-top_z_, "um")),
+                                  static_cast<double>(Units::convert(top_z_, "um")));
         if(diffuse_deposit_) {
-            diffusion_time_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-                "diffusion_time_histo",
-                "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
-                static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                0,
-                static_cast<double>(Units::convert(integration_time_, "ns")));
+            diffusion_time_histo_ =
+                CreateHistogram<TH1D>("diffusion_time_histo",
+                                      "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
+                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
         }
     }
 }
