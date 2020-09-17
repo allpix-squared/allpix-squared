@@ -514,33 +514,31 @@ void GenericPropagationModule::init() {
     }
 
     if(output_plots_) {
-        step_length_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "step_length_histo",
-            "Step length;length [#mum];integration steps",
-            100,
-            0,
-            static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+        step_length_histo_ =
+            CreateHistogram<TH1D>("step_length_histo",
+                                  "Step length;length [#mum];integration steps",
+                                  100,
+                                  0,
+                                  static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ =
-            std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
-                                                      "Drift time;Drift time [ns];charge carriers",
-                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                      0,
-                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Drift time;Drift time [ns];charge carriers",
+                                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                  0,
+                                                  static_cast<double>(Units::convert(integration_time_, "ns")));
 
-        uncertainty_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "uncertainty_histo",
-            "Position uncertainty;uncertainty [nm];integration steps",
-            100,
-            0,
-            static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
+        uncertainty_histo_ =
+            CreateHistogram<TH1D>("uncertainty_histo",
+                                  "Position uncertainty;uncertainty [nm];integration steps",
+                                  100,
+                                  0,
+                                  static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
 
-        group_size_histo_ =
-            std::make_unique<ThreadedHistogram<TH1D>>("group_size_histo",
-                                                      "Charge carrier group size;group size;number of groups trasnported",
-                                                      config_.get<int>("charge_per_step") - 1,
-                                                      1,
-                                                      static_cast<double>(config_.get<unsigned int>("charge_per_step")));
+        group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
+                                                  "Charge carrier group size;group size;number of groups trasnported",
+                                                  config_.get<int>("charge_per_step") - 1,
+                                                  1,
+                                                  static_cast<double>(config_.get<unsigned int>("charge_per_step")));
     }
 }
 
