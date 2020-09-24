@@ -519,7 +519,6 @@ deploy-documentation:
     # Only run for new tags:
     only:
         - tags
-    needs: ["cmp:usermanual", "cmp:doxygen"]
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -541,7 +540,6 @@ deploy-eos:
     only:
         - tags
         - schedules # Only execute this on scheduled "nightly" pipelines
-    needs: ["pkg:cc7-gcc", "pkg:slc6-gcc"]
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -555,7 +553,6 @@ deploy-eos:
 
 deploy-cvmfs:
     stage: deployment
-    needs: ["pkg:cc7-gcc", "pkg:slc6-gcc"]
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -576,7 +573,6 @@ deploy-docker-latest:
     stage: deployment
     tags:
         - docker-image-build
-    needs: []
     dependencies: []
     only:
         - schedules # Only execute this on scheduled "nightly" pipelines
@@ -589,7 +585,6 @@ deploy-docker-tag:
     stage: deployment
     tags:
         - docker-image-build
-    needs: []
     dependencies: []
     only:
         - tags
