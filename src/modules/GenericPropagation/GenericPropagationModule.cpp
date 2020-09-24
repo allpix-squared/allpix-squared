@@ -587,6 +587,13 @@ void GenericPropagationModule::initialize() {
                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                      0,
                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        if(enable_multiplication_) {
+            gain_histo_ = CreateHistogram<TH1D>("gain_histo",
+                                                "Gain per charge carrier group after propagation;gain;number of groups transported",
+                                                500,
+                                                1,
+                                                25);
+        }
     }
 
     // Prepare mobility model
@@ -1005,6 +1012,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
+    if(output_plots_ && enable_multiplication_) {
+        gain_histo_->Fill(gain);
+    }
+
     if(state == CarrierState::RECOMBINED) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
     } else if(state == CarrierState::TRAPPED) {
@@ -1028,6 +1039,9 @@ void GenericPropagationModule::finalize() {
         trapped_histo_->Write();
         recombination_time_histo_->Write();
         trapping_time_histo_->Write();
+        if(enable_multiplication_) {
+            gain_histo_->Write();
+        }
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /

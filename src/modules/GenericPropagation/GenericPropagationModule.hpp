@@ -145,6 +145,7 @@ namespace allpix {
         Histogram<TH1D> trapped_histo_;
         Histogram<TH1D> recombination_time_histo_;
         Histogram<TH1D> trapping_time_histo_;
+        Histogram<TH1D> gain_histo_;
     };
 
 } // namespace allpix
