@@ -212,9 +212,9 @@ fmt:coverity:
 
 examples:
     extends: .test
-    needs: ["cmp:cc7-gcc"]
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -227,9 +227,9 @@ examples:
 
 mod:slc6-gcc:
     extends: .testmod
-    needs: ["cmp:slc6-gcc"]
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -237,9 +237,9 @@ mod:slc6-gcc:
 
 core:slc6-gcc:
     extends: .testcore
-    needs: ["cmp:slc6-gcc"]
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -247,18 +247,18 @@ core:slc6-gcc:
 
 mod:lxplus-gcc:
     extends: .testmod
-    needs: ["cmp:lxplus-gcc"]
-    dependencies:
-        - cmp:lxplus-gcc
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
 core:lxplus-gcc:
     extends: .testcore
-    needs: ["cmp:lxplus-gcc"]
-    dependencies:
-        - cmp:lxplus-gcc
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
@@ -266,9 +266,9 @@ core:lxplus-gcc:
 # CentOS 7
 mod:cc7-docker:
     extends: .testmod
-    needs: ["cmp:cc7-docker"]
-    dependencies:
-        - cmp:cc7-docker
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
@@ -277,9 +277,9 @@ mod:cc7-docker:
 
 core:cc7-docker:
     extends: .testcore
-    needs: ["cmp:cc7-docker"]
-    dependencies:
-        - cmp:cc7-docker
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
@@ -288,9 +288,9 @@ core:cc7-docker:
 
 mod:cc7-gcc:
     extends: .testmod
-    needs: ["cmp:cc7-gcc"]
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -298,9 +298,9 @@ mod:cc7-gcc:
 
 core:cc7-gcc:
     extends: .testcore
-    needs: ["cmp:cc7-gcc"]
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -308,9 +308,9 @@ core:cc7-gcc:
 
 mod:cc7-llvm:
     extends: .testmod
-    needs: ["cmp:cc7-llvm"]
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -319,9 +319,9 @@ mod:cc7-llvm:
 
 core:cc7-llvm:
     extends: .testcore
-    needs: ["cmp:cc7-llvm"]
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -335,9 +335,9 @@ mod:mac1015-clang:
     extends: .testmod
     tags:
         - mac
-    needs: ["cmp:mac1015-clang"]
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -346,9 +346,9 @@ core:mac1015-clang:
     extends: .testcore
     tags:
         - mac
-    needs: ["cmp:mac1015-clang"]
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -375,9 +375,9 @@ core:mac1015-clang:
 
 perf:cc7-gcc:
     extends: .testperf
-    needs: ["cmp:cc7-gcc"]
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -386,9 +386,9 @@ perf:cc7-gcc:
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
     extends: .testperf
-    needs: ["cmp:cc7-llvm"]
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -398,9 +398,9 @@ perf:cc7-gcc:
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
 .perf:mac1015-clang:
     extends: .testperf
-    needs: ["cmp:mac1015-clang"]
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -484,9 +484,9 @@ cmp:usermanual:
 pkg:slc6-gcc:
     extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    needs: ["cmp:slc6-gcc"]
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
@@ -495,9 +495,9 @@ pkg:slc6-gcc:
 pkg:cc7-gcc:
     extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    needs: ["cmp:cc7-gcc"]
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
