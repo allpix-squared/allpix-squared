@@ -262,6 +262,16 @@ core:lxplus-gcc:
         - source etc/scripts/setup_lxplus.sh
 
 # CentOS 7
+mod:cc7-docker:
+    extends: .testmod
+    needs: ["cmp:cc7-docker"]
+    dependencies:
+        - cmp:cc7-docker
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-7 || echo " "
 
 core:cc7-docker:
     extends: .testcore
