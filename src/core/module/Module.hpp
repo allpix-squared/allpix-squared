@@ -137,6 +137,14 @@ namespace allpix {
         bool canParallelize();
 
         /**
+         * @brief Initialize the module for each thread after the global initialization
+         * @note Useful to prepare thread local objects
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void initializeThread() {}
+
+        /**
          * @brief Initialize the module before the event sequence
          *
          * Does nothing if not overloaded.

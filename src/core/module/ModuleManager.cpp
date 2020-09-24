@@ -634,12 +634,15 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     // Creates the thread pool
     LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
-    // clang-format off
-    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
-        // clang-format on
+    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat(), modules_list = modules_]() {
         // Initialize the threads to the same log level and format as the master setting
         Log::setReportingLevel(log_level);
         Log::setFormat(log_format);
+
+        // Call per-thread initialization of each module
+        for(auto& module : modules_list) {
+            module->initializeThread();
+        }
     };
 
     // Finalize modules for each thread
