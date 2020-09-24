@@ -276,12 +276,12 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(Event* event) {
-    MTRunManager* run_manager_mt = nullptr;
+void DepositionGeant4Module::initializeThread() {
 
+    LOG(DEBUG) << "Initializing run manager";
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        MTRunManager* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
@@ -290,6 +290,15 @@ void DepositionGeant4Module::run(Event* event) {
         }
 
         run_manager_mt->InitializeForThread();
+    }
+}
+
+void DepositionGeant4Module::run(Event* event) {
+    MTRunManager* run_manager_mt = nullptr;
+
+    // Initialize the thread local G4RunManager in case of MT
+    if(canParallelize()) {
+        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     }
 
     // Suppress output stream if not in debugging mode
