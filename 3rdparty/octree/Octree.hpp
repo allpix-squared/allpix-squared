@@ -91,10 +91,10 @@ namespace unibn {
             double diff2 = get<1>(p) - get<1>(q);
             double diff3 = get<2>(p) - get<2>(q);
 
-            return std::pow(diff1, 2) + std::pow(diff2, 2) + std::pow(diff3, 2);
+            return (diff1 * diff1 + diff2 * diff2 + diff3 * diff3);
         }
 
-        static inline double norm(double x, double y, double z) { return std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2); }
+        static inline double norm(double x, double y, double z) { return (x * x + y * y + z * z); }
 
         static inline double sqr(double r) { return r * r; }
 
