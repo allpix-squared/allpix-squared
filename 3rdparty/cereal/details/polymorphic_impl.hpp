@@ -53,6 +53,7 @@
 #include <typeindex>
 #include "cereal/details/polymorphic_impl_fwd.hpp"
 #include "cereal/details/static_object.hpp"
+#include "cereal/details/util.hpp"
 #include "cereal/types/memory.hpp"
 #include "cereal/types/string.hpp"
 
