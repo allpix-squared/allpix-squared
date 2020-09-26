@@ -677,7 +677,7 @@ namespace unibn {
                                                      std::vector<double>& distances) const {
         resultIndices.clear();
         distances.clear();
-        if(root_ == 0) {
+        if(root_ == nullptr) {
             return;
         }
 
@@ -747,6 +747,10 @@ namespace unibn {
     int32_t Octree<PointT, ContainerT>::findNeighbor(const PointT& query, double minDistance) const {
         double maxDistance = std::numeric_limits<double>::infinity();
         int32_t resultIndex = -1;
+        if(root_ == nullptr) {
+            return resultIndex;
+        }
+
         findNeighbor<Distance>(root_, query, minDistance, maxDistance, resultIndex);
 
         return resultIndex;
