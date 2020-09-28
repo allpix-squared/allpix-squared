@@ -15,6 +15,7 @@
 
 #include <TBranchElement.h>
 #include <TClass.h>
+#include <TProcessID.h>
 
 #include "core/config/ConfigReader.hpp"
 #include "core/utils/file.h"
@@ -115,6 +116,9 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 void ROOTObjectWriterModule::run(Event* event) {
     auto messages = messenger_->fetchFilteredMessages(this, event);
 
+    // Retrieve current object count:
+    auto object_count = TProcessID::GetObjectCount();
+
     // Generate trees and index data
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -208,6 +212,9 @@ void ROOTObjectWriterModule::run(Event* event) {
     for(auto& index_data : write_list_) {
         index_data.second->clear();
     }
+
+    // Reset object count:
+    TProcessID::SetObjectCount(object_count);
 }
 
 void ROOTObjectWriterModule::finalize() {
