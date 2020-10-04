@@ -260,10 +260,9 @@ void DepositionGeant4Module::init() {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
     } else {
-        // In MT-mode we register a builder that will be called for each thread to construct the SD
-        // when needed.
-        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
-        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
+        // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
+        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy);
+        run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
     // Disable verbose messages from processes
