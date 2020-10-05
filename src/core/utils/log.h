@@ -283,7 +283,7 @@ namespace allpix {
  * @param  Count Number of allowed counts
  * @return       Local counter variable
  */
-#define GENERATE_LOG_VAR(Count) static std::atomic<int> local___FUNCTION__##Count##__LINE__ = std::atomic<int>(Count)
+#define GENERATE_LOG_VAR(Count) static std::atomic<int> local___FUNCTION__##Count##__LINE__(Count)
 #define GET_LOG_VARIABLE(Count) local___FUNCTION__##Count##__LINE__
 
 /**
