@@ -78,14 +78,15 @@ namespace allpix {
         /**
          * @brief Returns the user's sensitive detector construction.
          */
-        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const {
+        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { // NOLINT
             return sd_field_construction_.get();
         } // NOLINT
 
         /**
          * @brief Sets the user's sensitive detector construction.
          */
-        void SetSDAndFieldConstruction(std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction) {
+        void
+        SetSDAndFieldConstruction(std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction) { // NOLINT
             sd_field_construction_ = std::move(sd_field_construction);
         }
 
