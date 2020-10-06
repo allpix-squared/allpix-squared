@@ -72,9 +72,9 @@ double MCParticle::getLocalTime() const {
 void MCParticle::setParent(const MCParticle* mc_particle) {
     parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
 
-    // Update the local time with the arrival time of the parent:
+    // Update the local time with the arrival time of the primary particle:
     if(mc_particle != nullptr) {
-        local_time_ = global_time_ - mc_particle->getGlobalTime();
+        local_time_ = global_time_ - getPrimary()->getGlobalTime();
     }
 }
 
@@ -83,6 +83,14 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
  */
 const MCParticle* MCParticle::getParent() const {
     return dynamic_cast<MCParticle*>(parent_.GetObject());
+}
+
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCParticle* MCParticle::getPrimary() const {
+    auto parent = dynamic_cast<MCParticle*>(parent_.GetObject());
+    return (parent == nullptr ? this : parent->getPrimary());
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {

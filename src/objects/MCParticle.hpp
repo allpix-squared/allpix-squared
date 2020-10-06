@@ -90,12 +90,20 @@ namespace allpix {
          * @warning Special method because parent can only be set after creation, should not be replaced later.
          */
         void setParent(const MCParticle* mc_particle);
+
         /**
          * @brief Get the parent MCParticle if it has one
          * @return Parent MCParticle or null pointer if it has no parent
          * @warning No \ref MissingReferenceException is thrown, because a particle without parent should always be handled.
          */
         const MCParticle* getParent() const;
+
+        /**
+         * @brief Get the primary MCParticle from which this MCParticle originates
+         * @return Primary MCParticle. If it is a primary itself, returns pointer to self
+         * @warning No \ref MissingReferenceException is thrown, because primary particles should always be handled.
+         */
+        const MCParticle* getPrimary() const;
 
         /**
          * @brief Set the MCParticle's track
