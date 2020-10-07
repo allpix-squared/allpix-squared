@@ -255,7 +255,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                 boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
 
             double drift_time = calc_drift_time();
-            double propagation_time = drift_time + diffusion_time;
+            double propagation_time = deposit.getLocalTime() + drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {

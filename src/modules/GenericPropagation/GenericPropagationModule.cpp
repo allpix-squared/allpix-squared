@@ -593,7 +593,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType());
+            auto prop_pair = propagate(position, deposit.getType(), deposit.getLocalTime());
             position = prop_pair.first;
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
@@ -647,8 +647,8 @@ void GenericPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
-                                                                            const CarrierType& type) {
+std::pair<ROOT::Math::XYZPoint, double>
+GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, const double initial_time) {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -721,7 +721,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     double last_time = 0;
     size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          runge_kutta.getTime() < integration_time_) {
+          (initial_time + runge_kutta.getTime()) < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -806,7 +806,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time);
 }
 
 void GenericPropagationModule::finalize() {
