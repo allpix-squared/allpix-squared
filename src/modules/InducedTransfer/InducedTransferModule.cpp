@@ -120,7 +120,7 @@ void InducedTransferModule::run(unsigned int) {
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
 
-        pixel_charges.emplace_back(pixel, std::round(std::fabs(charge)), prop_charges);
+        pixel_charges.emplace_back(pixel, std::round(charge), prop_charges);
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
 
