@@ -126,9 +126,10 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         deposit_position, global_deposit_position, CarrierType::HOLE, charge, step_time - track_time_[trackID], step_time);
     deposit_to_id_.push_back(trackID);
 
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(step_pos, {"mm", "um"})
-               << " locally on " << Units::display(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
-               << " after " << Units::display(step_time, {"ns", "ps"});
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_deposit_position, {"mm", "um"})
+               << " global / " << Units::display(deposit_position, {"mm", "um"}) << " local in " << detector_->getName()
+               << " after " << Units::display(step_time, {"ns", "ps"}) << " global / "
+               << Units::display(step_time - track_time_[trackID], {"ns", "ps"}) << " local";
 
     LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
     if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
