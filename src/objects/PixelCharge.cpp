@@ -25,6 +25,14 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<con
     }
     // Store the MC particle references
     for(auto& mc_particle : unique_particles) {
+        // Local and global time are set as the earliest time found among the MCParticles:
+        auto particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+        if(particle != nullptr) {
+            auto primary = particle->getPrimary();
+            local_time_ = std::min(local_time_, primary->getLocalTime());
+            global_time_ = std::min(global_time_, primary->getGlobalTime());
+        }
+
         mc_particles_.push_back(mc_particle);
     }
 
@@ -52,6 +60,14 @@ unsigned int PixelCharge::getCharge() const {
 
 const Pulse& PixelCharge::getPulse() const {
     return pulse_;
+}
+
+double PixelCharge::getGlobalTime() const {
+    return global_time_;
+}
+
+double PixelCharge::getLocalTime() const {
+    return local_time_;
 }
 
 /**

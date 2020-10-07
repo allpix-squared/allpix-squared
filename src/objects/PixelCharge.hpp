@@ -83,6 +83,18 @@ namespace allpix {
         const Pulse& getPulse() const;
 
         /**
+         * @brief Get time after start of event in global reference frame
+         * @return Time from start event
+         */
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get local time in the sensor
+         * @return Time with respect to local sensor
+         */
+        double getLocalTime() const;
+
+        /**
          * @brief Print an ASCII representation of PixelCharge to the given stream
          * @param out Stream to print to
          */
@@ -91,7 +103,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 6);
+        ClassDefOverride(PixelCharge, 7);
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -101,6 +113,9 @@ namespace allpix {
         Pixel pixel_;
         unsigned int charge_{};
         Pulse pulse_{};
+
+        double local_time_{};
+        double global_time_{};
 
         std::vector<TRef> propagated_charges_;
         std::vector<TRef> mc_particles_;
