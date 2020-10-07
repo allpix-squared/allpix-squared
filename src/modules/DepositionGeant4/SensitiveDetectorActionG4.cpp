@@ -55,19 +55,23 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // Get the step parameters
     auto edep = step->GetTotalEnergyDeposit();
-    G4StepPoint* preStepPoint = step->GetPreStepPoint();
-    G4StepPoint* postStepPoint = step->GetPostStepPoint();
+    G4StepPoint* preStep = step->GetPreStepPoint();
+    G4StepPoint* postStep = step->GetPostStepPoint();
+    LOG(TRACE) << "Distance of this step: " << (postStep->GetPosition() - preStep->GetPosition()).mag();
 
     // Get Transportaion Matrix
     G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
 
-    // Put the charge deposit in the middle of the step
-    G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
-    double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
+    // Put the charge deposit in the middle of the step unless it is a photon:
+    auto is_photon = (step->GetTrack()->GetDynamicParticle()->GetPDGcode() == 22);
+    LOG(DEBUG) << "Placing energy deposit "
+               << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
+    G4ThreeVector step_pos = is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
+    double step_time = is_photon ? postStep->GetGlobalTime() : (preStep->GetGlobalTime() + postStep->GetGlobalTime()) / 2;
 
     // Calculate the charge deposit at a local position
-    auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(mid_pos));
-    auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(mid_pos);
+    auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(step_pos));
+    auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(step_pos);
 
     // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
     // excitations via the Fano factor. We assume Gaussian statistics here.
@@ -90,15 +94,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
         track_info_manager_->setTrackInfoToBeStored(trackID);
-        auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStepPoint->GetPosition()));
+        auto start_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(preStep->GetPosition()));
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);
-        track_time_.emplace(trackID, mid_time);
+        track_time_.emplace(trackID, step_time);
         track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
     }
 
     // Update current end point with the current last step
-    auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStepPoint->GetPosition()));
+    auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStep->GetPosition()));
     track_end_[trackID] = end_position;
 
     // Add new deposit if the charge is more than zero
@@ -109,16 +113,16 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
 
     // Deposit electron
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, mid_time);
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, step_time);
     deposit_to_id_.push_back(trackID);
 
     // Deposit hole
-    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, mid_time);
+    deposits_.emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, step_time);
     deposit_to_id_.push_back(trackID);
 
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(mid_pos, {"mm", "um"})
+    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(step_pos, {"mm", "um"})
                << " locally on " << Units::display(deposit_position, {"mm", "um"}) << " in " << detector_->getName()
-               << " after " << Units::display(mid_time, {"ns", "ps"});
+               << " after " << Units::display(step_time, {"ns", "ps"});
 
     LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
     if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {

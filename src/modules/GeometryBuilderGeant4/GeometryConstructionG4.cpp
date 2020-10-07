@@ -43,7 +43,7 @@ using namespace allpix;
 
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
     : geo_manager_(geo_manager), config_(config) {
-    passive_builder_ = new PassiveMaterialConstructionG4(geo_manager_);
+    passive_builder_ = std::make_unique<PassiveMaterialConstructionG4>(geo_manager_);
     passive_builder_->registerVolumes();
 }
 
@@ -114,6 +114,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
+    geo_manager_->setExternalObject("", "world_log", world_log_);
 
     // Place the world at the center
     world_phys_ =
