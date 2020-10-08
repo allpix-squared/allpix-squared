@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -265,7 +266,7 @@ void DepositionReaderModule::run(Event* event) {
         // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = energy / charge_creation_energy_;
-        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
         auto charge = static_cast<unsigned int>(charge_fluctuation(event->getRandomEngine()));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "

@@ -15,6 +15,7 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
@@ -143,9 +144,9 @@ void DepositionPointChargeModule::run(Event* event) {
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
-            double dx = std::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dy = std::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dz = std::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
             return ROOT::Math::XYZVector(dx, dy, dz);
         };
 

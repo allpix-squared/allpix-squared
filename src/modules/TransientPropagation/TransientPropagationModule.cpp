@@ -11,12 +11,12 @@
 
 #include <map>
 #include <memory>
-#include <random>
 #include <string>
 #include <utility>
 
 #include <Eigen/Core>
 
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -256,7 +256,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
-        std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+        allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
             diffusion[i] = gauss_distribution(event->getRandomEngine());
