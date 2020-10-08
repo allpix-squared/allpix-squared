@@ -61,7 +61,7 @@ namespace allpix {
 
         /** Parameter type. */
         struct param_type {
-            explicit param_type(T mean = T(0), T stddev = T(1)) : mean_(mean), stddev_(stddev) { assert(stddev_ > T(0)); }
+            explicit param_type(T mean = T(0), T stddev = T(1)) : mean_(mean), stddev_(stddev) {}
 
             T mean() const { return mean_; }
 
