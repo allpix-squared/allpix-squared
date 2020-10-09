@@ -204,7 +204,7 @@ void DepositionGeant4Module::init() {
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
         LOG(DEBUG) << "Setting world volume user limits to constrain event time to "
-                   << Units::display(config_.get<double>("decay_cutoff_time"), {"ns", "us", "ms", "s"});
+                   << Units::display(config_.get<double>("cutoff_time"), {"ns", "us", "ms", "s"});
         world_log_volume->SetUserLimits(user_limits_world_.get());
     }
 
