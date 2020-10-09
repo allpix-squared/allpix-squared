@@ -34,7 +34,7 @@ IF(LATEX_COMPILER)
 
     # Markdown files that should be included in the manual relative to the root of the repository
     SET(DOC_README_FILES
-            tools/tcad_dfise_converter/README.md
+            tools/mesh_converter/README.md
             tools/root_analysis_macros/README.md
     )
 

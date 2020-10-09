@@ -29,7 +29,7 @@ ConfigManager::ConfigManager(std::string file_name,
                              std::initializer_list<std::string> ignore) {
     // Check if the file exists
     std::ifstream file(file_name);
-    if(!file) {
+    if(!file || !allpix::path_is_file(file_name)) {
         throw ConfigFileUnavailableError(file_name);
     }
 

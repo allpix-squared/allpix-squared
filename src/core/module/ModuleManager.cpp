@@ -613,14 +613,14 @@ void ModuleManager::run() {
 
     // Loop over all the events
     auto start_time = std::chrono::steady_clock::now();
-    global_config.setDefault<unsigned long>("number_of_events", 1u);
-    auto number_of_events = global_config.get<unsigned long>("number_of_events");
+    global_config.setDefault<unsigned int>("number_of_events", 1u);
+    auto number_of_events = global_config.get<unsigned int>("number_of_events");
     for(unsigned int i = 0; i < number_of_events; ++i) {
         // Check for termination
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             number_of_events = i;
-            global_config.set<unsigned long>("number_of_events", i);
+            global_config.set<unsigned int>("number_of_events", i);
             break;
         }
 
@@ -795,8 +795,9 @@ void ModuleManager::finalize() {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
-    if(global_config.get<unsigned int>("number_of_events") > 0) {
-        processing_time = std::round((1000 * total_time_) / global_config.get<unsigned int>("number_of_events"));
+    auto total_events = global_config.get<unsigned int>("number_of_events");
+    if(total_events > 0) {
+        processing_time = std::round((1000 * total_time_) / total_events);
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"

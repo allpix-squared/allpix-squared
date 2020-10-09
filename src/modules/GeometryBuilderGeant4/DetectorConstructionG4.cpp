@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <G4Box.hh>
+#include <G4EllipticalTube.hh>
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4NistManager.hh>
@@ -65,6 +66,9 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
     LOG(TRACE) << "Building " << detectors.size() << " device(s)";
 
     for(auto& detector : detectors) {
+        // Material budget:
+        double total_material_budget = 0;
+
         // Get pointer to the model of the detector
         auto model = detector->getModel();
 
@@ -111,10 +115,11 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         geo_manager_->setExternalObject(name, "wrapper_phys", wrapper_phys);
 
         LOG(DEBUG) << " Center of the geometry parts relative to the detector wrapper geometric center:";
-        /*
-                 SENSOR
-                 * the sensitive detector is the part that collects the deposits
-        */
+
+        /**
+         * SENSOR
+         * the sensitive detector is the part that collects the deposits
+         */
 
         // Create the sensor box and logical volume
         auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
@@ -125,6 +130,9 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         auto sensor_log =
             make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
+
+        // Add sensor material to total material budget:
+        total_material_budget += (model->getSensorSize().z() / sensor_log->GetMaterial()->GetRadlen());
 
         // Place the sensor box
         auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
@@ -152,12 +160,12 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                    -model->getGridSize().y() / 2.0,
                                                    0);
         geo_manager_->setExternalObject(name, "pixel_param", pixel_param);
-
         // WARNING: do not place the actual parameterization, only use it if we need it
-        /*
-                 CHIP
-                 * the chip connected to the bumps bond and the support
-        */
+
+        /**
+         * CHIP
+         * the chip connected to the bumps bond and the support
+         */
 
         // Construct the chips only if necessary
         if(model->getChipSize().z() > 1e-9) {
@@ -172,6 +180,9 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             auto chip_log =
                 make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], "chip_" + name + "_log");
             geo_manager_->setExternalObject(name, "chip_log", chip_log);
+
+            // Add chip material to total material budget:
+            total_material_budget += (model->getChipSize().z() / chip_log->GetMaterial()->GetRadlen());
 
             // Place the chip
             auto chip_pos = toG4Vector(model->getChipCenter() - model->getGeometricalCenter());
@@ -199,17 +210,28 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             std::shared_ptr<G4VSolid> support_solid = support_box;
             if(layer.hasHole()) {
                 // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
-                auto hole_box = make_shared_no_delete<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
-                                                             layer.getHoleSize().x() / 2.0,
-                                                             layer.getHoleSize().y() / 2.0,
-                                                             layer.getHoleSize().z());
-                solids_.push_back(hole_box);
+                std::shared_ptr<G4VSolid> hole_solid;
+
+                if(layer.getHoleType() == "cylinder") {
+                    hole_solid =
+                        make_shared_no_delete<G4EllipticalTube>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                                layer.getHoleSize().x() / 2.0,
+                                                                layer.getHoleSize().y() / 2.0,
+                                                                layer.getHoleSize().z());
+                } else {
+                    hole_solid = make_shared_no_delete<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
+                                                              layer.getHoleSize().x() / 2.0,
+                                                              layer.getHoleSize().y() / 2.0,
+                                                              layer.getHoleSize().z());
+                }
+
+                solids_.push_back(hole_solid);
 
                 G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
                 auto subtraction_solid = make_shared_no_delete<G4SubtractionSolid>("support_" + name + "_subtraction_" +
                                                                                        std::to_string(support_idx),
                                                                                    support_box.get(),
-                                                                                   hole_box.get(),
+                                                                                   hole_solid.get(),
                                                                                    transform);
                 solids_.push_back(subtraction_solid);
                 support_solid = subtraction_solid;
@@ -225,6 +247,12 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                        support_material_iter->second,
                                                        "support_" + name + "_log_" + std::to_string(support_idx));
             supports_log->push_back(support_log);
+
+            // Add support layer material to total material budget if it doesn't have a hole:
+            // WARNING: this of course does not take into account where exactly the hole is and how big it is...
+            if(!layer.hasHole()) {
+                total_material_budget += (layer.getSize().z() / support_log->GetMaterial()->GetRadlen());
+            }
 
             // Place the support
             auto support_pos = toG4Vector(layer.getCenter() - model->getGeometricalCenter());
@@ -249,9 +277,10 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
         if(hybrid_model != nullptr) {
 
-            /*   BUMPS
-                    the bump bonds connect the sensor to the readout chip
-                */
+            /**
+             * BUMPS
+             * the bump bonds connect the sensor to the readout chip
+             */
 
             // Get parameters from model
             auto bump_height = hybrid_model->getBumpHeight();
@@ -298,6 +327,12 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                 make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], "bumps_" + name + "_log");
             geo_manager_->setExternalObject(name, "bumps_cell_log", bumps_cell_log);
 
+            // Add bump material equivalent to uniform solder layer to total material budget:
+            auto radius = std::max(hybrid_model->getBumpSphereRadius(), hybrid_model->getBumpCylinderRadius());
+            auto relativeArea = M_PI * radius * radius / model->getPixelSize().x() / model->getPixelSize().y();
+            total_material_budget +=
+                (relativeArea * hybrid_model->getBumpHeight() / bumps_cell_log->GetMaterial()->GetRadlen());
+
             // Place the bump bonds grid
             std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
                 hybrid_model->getNPixels().x(),
@@ -322,6 +357,10 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         }
 
         // ALERT: NO COVER LAYER YET
+
+        // Store the total material budget:
+        LOG(DEBUG) << "Storing total material budget of " << total_material_budget << " x/X0 for detector " << name;
+        geo_manager_->setExternalObject(name, "material_budget", std::make_shared<double>(total_material_budget));
 
         LOG(TRACE) << " Constructed detector " << detector->getName() << " successfully";
     }

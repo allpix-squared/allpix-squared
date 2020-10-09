@@ -376,6 +376,7 @@ Care should be taken to ensure that these support layers and the rest of the mod
 \item \parameter{hole_size}: Adds an optional cut-out hole to the support with the 2D size provided.
 The hole always cuts through the full support thickness.
 No hole will be added if this parameter is not present.
+\item \parameter{hole_type}: Type of hole to be punched into the support layer. Currently supported are \textit{rectangle} and \textit{cylinder}. Defaults to \textit{rectangle}.
 \item \parameter{hole_offset}: If present, the hole is by default placed at the center of the support layer.
 A 2D offset with respect to its default position can be specified using this parameter.
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from; it is up to the modules using this parameter to implement the materials such that they can use it.

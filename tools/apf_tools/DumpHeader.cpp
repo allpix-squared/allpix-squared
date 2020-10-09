@@ -36,72 +36,75 @@ template <typename T> static void print_info(allpix::FieldData<T> field_data, si
  */
 int main(int argc, const char* argv[]) {
 
-    // Register the default set of units with this executable:
-    register_units();
-
-    // Add cout as the default logging stream
-    Log::addStream(std::cout);
-
-    // If no arguments are provided, print the help:
-    bool print_help = false;
     int return_code = 0;
-    if(argc == 1) {
-        print_help = true;
-        return_code = 1;
-    }
+    try {
 
-    // Parse arguments
-    std::vector<std::string> file_names;
-    std::string units;
-    size_t n = 0;
-    for(int i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "-h") == 0) {
+        // Register the default set of units with this executable:
+        register_units();
+
+        // Add cout as the default logging stream
+        Log::addStream(std::cout);
+
+        // If no arguments are provided, print the help:
+        bool print_help = false;
+        if(argc == 1) {
             print_help = true;
-        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
-            try {
-                LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
-                Log::setReportingLevel(log_level);
-            } catch(std::invalid_argument& e) {
-                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+            return_code = 1;
+        }
+
+        // Parse arguments
+        std::vector<std::string> file_names;
+        std::string units;
+        size_t n = 0;
+        for(int i = 1; i < argc; i++) {
+            if(strcmp(argv[i], "-h") == 0) {
+                print_help = true;
+            } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+                try {
+                    LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    Log::setReportingLevel(log_level);
+                } catch(std::invalid_argument& e) {
+                    LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
+                }
+            } else if(strcmp(argv[i], "--values") == 0 && (i + 1 < argc)) {
+                n = static_cast<size_t>(std::atoi(argv[++i]));
+            } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
+                units = std::string(argv[++i]);
+            } else {
+                file_names.emplace_back(std::string(argv[i]));
             }
-        } else if(strcmp(argv[i], "--values") == 0 && (i + 1 < argc)) {
-            n = static_cast<size_t>(std::atoi(argv[++i]));
-        } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
-            units = std::string(argv[++i]);
-        } else {
-            file_names.emplace_back(std::string(argv[i]));
         }
-    }
 
-    // Print help if requested or no arguments given
-    if(print_help) {
-        std::cout << "Allpix Squared APF Field Dump Tool" << std::endl;
-        std::cout << std::endl;
-        std::cout << "Usage: apf_dump <file(s)>" << std::endl;
-        std::cout << std::endl;
-        std::cout << "Options:" << std::endl;
-        std::cout << "  --values <N>     also print the first N values from the file" << std::endl;
-        std::cout << "  --units  <units> units the field should be represented in" << std::endl;
-        std::cout << std::endl;
-        std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
-        return return_code;
-    }
-
-    for(auto& file_input : file_names) {
-        std::cout << "FILE:       " << file_input << std::endl;
-        try {
-            FieldParser<double> field_parser(FieldQuantity::VECTOR);
-            auto field_data = field_parser.getByFileName(file_input);
-            print_info(field_data, n, units);
-        } catch(std::runtime_error& e) {
-            FieldParser<double> field_parser(FieldQuantity::SCALAR);
-            auto field_data = field_parser.getByFileName(file_input);
-            print_info(field_data, n, units);
-        } catch(std::exception& e) {
-            LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
-            return_code = 127;
-            break;
+        // Print help if requested or no arguments given
+        if(print_help) {
+            std::cout << "Allpix Squared APF Field Dump Tool" << std::endl;
+            std::cout << std::endl;
+            std::cout << "Usage: apf_dump <file(s)>" << std::endl;
+            std::cout << std::endl;
+            std::cout << "Options:" << std::endl;
+            std::cout << "  --values <N>     also print the first N values from the file" << std::endl;
+            std::cout << "  --units  <units> units the field should be represented in" << std::endl;
+            std::cout << std::endl;
+            std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
+            return return_code;
         }
+
+        for(auto& file_input : file_names) {
+            std::cout << "FILE:       " << file_input << std::endl;
+            try {
+                FieldParser<double> field_parser(FieldQuantity::VECTOR);
+                auto field_data = field_parser.getByFileName(file_input);
+                print_info(field_data, n, units);
+            } catch(std::runtime_error& e) {
+                FieldParser<double> field_parser(FieldQuantity::SCALAR);
+                auto field_data = field_parser.getByFileName(file_input);
+                print_info(field_data, n, units);
+            }
+        }
+
+    } catch(std::exception& e) {
+        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
+        return_code = 127;
     }
 
     return return_code;

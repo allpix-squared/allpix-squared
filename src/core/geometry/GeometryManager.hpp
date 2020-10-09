@@ -217,7 +217,7 @@ namespace allpix {
          * @return External object or null pointer if it does not exist
          */
         template <typename T>
-        std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id);
+        std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id) const;
 
         /**
          * @brief Sets an external object associated to a detector or passive volume

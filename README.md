@@ -87,18 +87,22 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
+* Lennart Huth, DESY, @lhuth
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, KIT, @nurnberg
+* Sebastian Pape, TU Dortmund University, @spape
 * Marko Petric, CERN, @mpetric
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
+* Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Ondrej Theiner, Charles University, @otheiner
+* Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
 * Andy Wharton, Lancaster University, @awharton
 * Morag Williams, University of Glasgow, @williamm

@@ -28,12 +28,14 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     // Seed the random generator with the global seed
     random_generator_.seed(getRandomSeed());
 
+    // Allow to use similar syntax as in DepositionGeant4:
+    config_.setAlias("position", "source_position");
+
     // Set default value for the number of charges deposited
     config_.setDefault("number_of_charges", 1);
     config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", "point");
-    config_.setDefault("model", "fixed");
 
     // Read type:
     auto type = config_.get<std::string>("source_type");
@@ -68,8 +70,8 @@ void DepositionPointChargeModule::init() {
 
     // Set up the different source types
     if(type_ == SourceType::MIP) {
-        // Calculate voxel size:
-        auto granularity = config_.get<unsigned int>("number_of_steps");
+        // Calculate voxel size and ensure granularity is not zero:
+        auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
         step_size_z_ = model->getSensorSize().z() / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
@@ -184,10 +186,11 @@ void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& posit
                << Units::display(position_global, {"um", "mm"}) << " in detector " << detector_->getName();
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }
 
 void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
@@ -227,8 +230,9 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
     }
 
     // Dispatch the messages to the framework
-    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
     messenger_->dispatchMessage(this, mcparticle_message);
+
+    auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
+    messenger_->dispatchMessage(this, deposit_message);
 }
