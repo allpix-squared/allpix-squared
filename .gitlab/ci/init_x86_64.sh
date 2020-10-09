@@ -57,7 +57,11 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} == "gcc" ]; then
-    COMPILER_VERSION="gcc10"
+    if [ ${OS} == "slc6" ]; then
+        COMPILER_VERSION="gcc8"
+    else
+        COMPILER_VERSION="gcc10"
+    fi
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} == "llvm" ]; then
