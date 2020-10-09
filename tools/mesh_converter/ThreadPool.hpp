@@ -39,7 +39,7 @@ private:
         init_function();
 
         // Safe lambda to increase the atomic run count
-        auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+        auto increase_run_cnt_func = [this]() noexcept { ++run_cnt_; };
 
         // Continue running until the thread pool is finished
         while(!done_) {
