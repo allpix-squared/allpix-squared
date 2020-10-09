@@ -178,6 +178,24 @@ void readTree(TFile* file, std::string detector) {
 A more elaborate example for a data analysis script can be found in the \dir{tools} directory of the repository and in Section~\ref{sec:root_analysis_macros} of this user manual.
 Scripts written in both \CPP and in Python are provided.
 
+\item[How can I convert data from the ROOTObject format to other formats?]
+Since the ROOTObject format is the native format of \apsq, the stored data can be read into the framework again.
+To convert it to another format, a simple pseudo-simulation setup can be used, which reads in data with one module and stores it with another.
+
+In order to convert for example from ROOTObjects to the data format used by the Corryvreckan reconstruction framework, the following configuration could be used:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Allpix]
+number_of_events = 999999999
+detectors_file = "telescope.conf"
+random_seed_core = 0
+
+[ROOTObjectReader]
+file_name = "input_data_rootobjects.root"
+
+[CorryvreckanWriter]
+file_name = "output_data_corryvreckan.root"
+reference = "mydetector0"
+\end{minted}
 \end{description}
 
 \section{Development}
@@ -189,7 +207,7 @@ This function will be called for every new message dispatched within the framewo
 Heavy-duty tasks such as handling data should not be performed in the \command{listener} routine, but deferred to the \command{run} function of the respective output module.
 
 \item[How do I process data from multiple detectors?]
-When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unqiue} as described in Section~\ref{sec:module_manager}.
+When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unique} as described in Section~\ref{sec:module_manager}.
 As a \emph{detector} module, it would always only have access to the information linked to the specific detector is has been instantiated for.
 The module should then request all messages of the desired type using the messenger call \command{bindMulti} as described in Section~\ref{sec:objects_messages}.
 For \emph{PixelHit} messages, an example code would be:

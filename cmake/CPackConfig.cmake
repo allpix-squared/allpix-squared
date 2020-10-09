@@ -13,7 +13,7 @@ ELSE()
     SET(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 ENDIF()
 
-# Set version dervied from project version, or "latest" for untagged:
+# Set version derived from project version, or "latest" for untagged:
 IF(NOT TAG_FOUND)
     SET(CPACK_PACKAGE_VERSION "latest")
 ELSE()

@@ -46,7 +46,7 @@ namespace allpix {
      */
     enum class FileType {
         UNKNOWN = 0, ///< Unknown file format
-        INIT,        ///< Leagcy file format, values stored in plain-text ASCII
+        INIT,        ///< Legacy file format, values stored in plain-text ASCII
         APF,         ///< Binary Allpix Squared format serialized using the cereal library
     };
 
@@ -159,7 +159,7 @@ namespace allpix {
      *
      * This class can be used to deserialize and parse FieldData objects from files of different format. The FieldData
      * objects read from file are cached, and a cache hit will be returned when trying to re-read a file with the same
-     * canoncial path.
+     * canonical path.
      */
     template <typename T = double> class FieldParser {
     public:
@@ -233,10 +233,12 @@ namespace allpix {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<double> field_data;
 
-            // Parse the file with cereal, add manual scope to ensure flushing:
-            {
+            // Parse the file with cereal, scope ensures flushing:
+            try {
                 cereal::PortableBinaryInputArchive archive(file);
                 archive(field_data);
+            } catch(cereal::Exception& e) {
+                throw std::runtime_error(e.what());
             }
 
             // Check that we have the right number of vector entries
@@ -419,8 +421,12 @@ namespace allpix {
             std::ofstream file(file_name, std::ios::binary);
 
             // Write the file with cereal:
-            cereal::PortableBinaryOutputArchive archive(file);
-            archive(field_data);
+            try {
+                cereal::PortableBinaryOutputArchive archive(file);
+                archive(field_data);
+            } catch(cereal::Exception& e) {
+                throw std::runtime_error(e.what());
+            }
         }
 
         /**

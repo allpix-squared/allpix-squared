@@ -71,6 +71,13 @@ namespace allpix {
              * @return True if the support layer has a hole, false otherwise
              */
             bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
+
+            /**
+             * @brief Return the support layer hole type
+             * @return support layer hole type
+             */
+            std::string getHoleType() { return type_; }
+
             /**
              * @brief Get the center of the hole in the support layer
              * @return Center of the hole
@@ -101,16 +108,19 @@ namespace allpix {
             SupportLayer(ROOT::Math::XYZVector size,
                          ROOT::Math::XYZVector offset,
                          std::string material,
+                         std::string type,
                          std::string location,
                          ROOT::Math::XYZVector hole_size,
                          ROOT::Math::XYVector hole_offset)
-                : size_(std::move(size)), material_(std::move(material)), hole_size_(std::move(hole_size)),
-                  offset_(std::move(offset)), hole_offset_(std::move(hole_offset)), location_(std::move(location)) {}
+                : size_(std::move(size)), material_(std::move(material)), type_(std::move(type)),
+                  hole_size_(std::move(hole_size)), offset_(std::move(offset)), hole_offset_(std::move(hole_offset)),
+                  location_(std::move(location)) {}
 
             // Actual parameters returned
             ROOT::Math::XYZPoint center_;
             ROOT::Math::XYZVector size_;
             std::string material_;
+            std::string type_;
             ROOT::Math::XYZVector hole_size_;
 
             // Internal parameters to calculate return parameters
@@ -198,8 +208,8 @@ namespace allpix {
          * @return Size of the detector model
          *
          * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
-         * means that the extend of the model should be calculated using the geometrical center as reference, not the positon
-         * returned by \ref DetectorModel::getCenter.
+         * means that the extend of the model should be calculated using the geometrical center as reference, not the
+         * position returned by \ref DetectorModel::getCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
@@ -208,14 +218,14 @@ namespace allpix {
          * @brief Get number of pixel (replicated blocks in generic sensors)
          * @return Number of two dimensional pixels
          */
-        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> getNPixels() const {
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> getNPixels() const {
             return number_of_pixels_;
         }
         /**
          * @brief Set number of pixels (replicated blocks in generic sensors)
          * @param val Number of two dimensional pixels
          */
-        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> val) {
+        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> val) {
             number_of_pixels_ = std::move(val);
         }
         /**
@@ -355,6 +365,7 @@ namespace allpix {
                              double thickness,
                              ROOT::Math::XYZVector offset,
                              std::string material,
+                             std::string type,
                              std::string location,
                              const ROOT::Math::XYVector& hole_size,
                              ROOT::Math::XYVector hole_offset) {
@@ -363,6 +374,7 @@ namespace allpix {
             support_layers_.push_back(SupportLayer(full_size,
                                                    std::move(offset),
                                                    std::move(material),
+                                                   std::move(type),
                                                    std::move(location),
                                                    full_hole_size,
                                                    std::move(hole_offset)));
@@ -371,7 +383,7 @@ namespace allpix {
     protected:
         std::string type_;
 
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> number_of_pixels_;
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYVector implant_size_;
 

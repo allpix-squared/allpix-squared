@@ -266,7 +266,7 @@ A sketch of the actual coordinate transformations performed, including the order
 \begin{figure}[tbp]
   \center
   \input{tikz/transformations}
-  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the repective coordinate systems in top view, the second row in side view.}
+  \caption{Coordinate transoformations from global to local and revers. The first row shows the detector positions in the respective coordinate systems in top view, the second row in side view.}
   \label{fig:transformations}
 \end{figure}
 
@@ -376,6 +376,7 @@ Care should be taken to ensure that these support layers and the rest of the mod
 \item \parameter{hole_size}: Adds an optional cut-out hole to the support with the 2D size provided.
 The hole always cuts through the full support thickness.
 No hole will be added if this parameter is not present.
+\item \parameter{hole_type}: Type of hole to be punched into the support layer. Currently supported are \textit{rectangle} and \textit{cylinder}. Defaults to \textit{rectangle}.
 \item \parameter{hole_offset}: If present, the hole is by default placed at the center of the support layer.
 A 2D offset with respect to its default position can be specified using this parameter.
 \item \texttt{material}: Material of the support. \apsq does not provide a set of materials to choose from; it is up to the modules using this parameter to implement the materials such that they can use it.
@@ -424,6 +425,7 @@ Communication between modules is performed by the exchange of messages.
 Messages are templated instantiations of the \parameter{Message} class carrying a vector of objects.
 The list of objects available in the \apsq objects library are discussed in Chapter~\ref{ch:objects}.
 The messaging system has a dispatching mechanism to send messages and a receiving part that fetches incoming messages.
+Messages are always received by modules in the order they have been dispatched by preceding modules.
 
 The dispatching module can specify an optional name for the messages, but modules should normally not specify this name directly.
 If the name is not given (or equal to \texttt{-}) the \parameter{output} parameter of the module is used to determine the name of the message, defaulting to an empty string.

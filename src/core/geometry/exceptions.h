@@ -58,7 +58,22 @@ namespace allpix {
          * @param name Name of the detector that is added earlier
          */
         explicit DetectorExistsError(const std::string& name) {
-            error_message_ = "Detector with name " + name + " is already registered, detector names should be unique";
+            error_message_ = "Detector with name " + name + " is already registered, detector names have to be unique";
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates an attempt to add a detector that is already registered before
+     */
+    class PassiveElementExistsError : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs an error for a non unique passive element
+         * @param name Name of the passive element that is added earlier
+         */
+        explicit PassiveElementExistsError(const std::string& name) {
+            error_message_ = "Element with name " + name + " is already registered, element names have to be unique";
         }
     };
 
@@ -73,7 +88,7 @@ namespace allpix {
          * @param name Name of the model that is added earlier
          */
         explicit DetectorModelExistsError(const std::string& name) {
-            error_message_ = "Model with type " + name + " is already registered, detector names should be unique";
+            error_message_ = "Model with type " + name + " is already registered, model names have to be unique";
         }
     };
 

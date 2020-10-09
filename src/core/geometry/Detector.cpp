@@ -37,7 +37,6 @@ Detector::Detector(std::string name,
         throw InvalidModuleActionException("Detector model cannot be a null pointer");
     }
 
-    magnetic_field_on_ = false;
     // Build the transformation matrix
     build_transform();
 }
@@ -49,7 +48,7 @@ Detector::Detector(std::string name,
  * model is added.
  */
 Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::Math::Rotation3D& orientation)
-    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation) {}
+    : name_(std::move(name)), position_(std::move(position)), orientation_(orientation), magnetic_field_on_(false) {}
 
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
@@ -57,7 +56,6 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     // Initialize the detector fields with the model parameters:
     electric_field_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
     weighting_potential_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
-    magnetic_field_on_ = false;
 
     build_transform();
 }
@@ -131,6 +129,21 @@ bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
     return (std::fabs(x_mod_pixel) <= std::fabs(model_->getImplantSize().x() / 2) &&
             std::fabs(y_mod_pixel) <= std::fabs(model_->getImplantSize().y() / 2));
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+    return !(pixel_index.x() >= model_->getNPixels().x() || pixel_index.y() >= model_->getNPixels().y());
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool Detector::isWithinPixelGrid(const int x, const int y) const {
+    return !(x < 0 || x >= static_cast<int>(model_->getNPixels().x()) || y < 0 ||
+             y >= static_cast<int>(model_->getNPixels().y()));
 }
 
 /**

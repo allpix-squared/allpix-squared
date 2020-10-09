@@ -58,6 +58,12 @@ namespace allpix {
         double getBinning() const;
 
         /**
+         * @brief Method to check if this is an initialized or empty pulse
+         * @return Initialization status of the pulse object
+         */
+        bool isInitialized() const;
+
+        /**
          * @brief compound assignment operator to sum different pulses
          * @throws IncompatibleDatatypesException If the binning of the pulses does not match
          */
@@ -70,7 +76,7 @@ namespace allpix {
 
     private:
         std::vector<double> pulse_;
-        double bin_;
+        double bin_{};
         bool initialized_{};
     };
 

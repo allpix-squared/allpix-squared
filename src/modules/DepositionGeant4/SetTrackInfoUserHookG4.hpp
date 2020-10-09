@@ -20,7 +20,7 @@
 
 namespace allpix {
     /**
-     * @brief Assigns every G4Track a TrackInfoG4 which carries various inforamtion, including the custom track id
+     * @brief Assigns every G4Track a TrackInfoG4 which carries various information, including the custom track id
      */
     class SetTrackInfoUserHookG4 : public G4UserTrackingAction {
     public:
@@ -28,8 +28,7 @@ namespace allpix {
          * @brief Constructor taking a TrackInfoManager*
          * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
          */
-        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr, double decay_cutoff_time)
-            : track_info_mgr_ptr_(track_info_mgr_ptr), decay_cutoff_time_(decay_cutoff_time){};
+        explicit SetTrackInfoUserHookG4(TrackInfoManager* track_info_mgr_ptr) : track_info_mgr_ptr_(track_info_mgr_ptr){};
 
         /**
          * @brief Default destructor
@@ -51,7 +50,6 @@ namespace allpix {
     private:
         // Raw ptr to track info manager to create instances of TrackInfoG4
         TrackInfoManager* track_info_mgr_ptr_;
-        double decay_cutoff_time_;
     };
 
 } // namespace allpix
