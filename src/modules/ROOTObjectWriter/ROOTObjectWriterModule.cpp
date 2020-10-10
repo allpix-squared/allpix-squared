@@ -191,6 +191,9 @@ void ROOTObjectWriterModule::run(Event* event) {
 
         // Fill the branch vector
         for(Object& object : object_array) {
+            // Trigger the creation of TRefs for cross-object references to be able to store them to file.
+            // We can reset the TObject count after processing this event because the TRef creation is only done here locally
+            // in one worker thread instead of framew-work wide.
             object.petrifyHistory();
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
