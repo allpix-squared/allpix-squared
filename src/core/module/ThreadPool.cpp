@@ -60,45 +60,44 @@ void ThreadPool::wait() {
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */
-void ThreadPool::worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function) {
-    // Initialize the worker
-    if(init_function) {
-        init_function();
-    }
+void ThreadPool::worker(const std::function<void()>& initialize_function, const std::function<void()>& finalize_function) {
+    try {
+        // Initialize the worker
+        if(initialize_function) {
+            initialize_function();
+        }
 
-    // Increase the atomic run count and notify the master thread that we popped an event
-    auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+        // Increase the atomic run count and notify the master thread that we popped an event
+        auto increase_run_cnt_func = [this]() { ++run_cnt_; };
 
-    while(!done_) {
-        Task task{nullptr};
+        while(!done_) {
+            Task task{nullptr};
 
-        if(queue_.pop(task, true, increase_run_cnt_func)) {
-            // Try to run the task
-            try {
+            if(queue_.pop(task, true, increase_run_cnt_func)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
-            } catch(...) {
-                // Check if the first exception thrown
-                if(has_exception_.test_and_set()) {
-                    // Save the first exceptin
-                    exception_ptr_ = std::current_exception();
-                    // Invalidate the queue to terminate other threads
-                    queue_.invalidate();
-                }
             }
+
+            // Propagate that the task has been finished
+            std::lock_guard<std::mutex> lock{run_mutex_};
+            --run_cnt_;
+            run_condition_.notify_all();
         }
 
-        // Propagate that the task has been finished
-        std::lock_guard<std::mutex> lock{run_mutex_};
-        --run_cnt_;
-        run_condition_.notify_all();
-    }
-
-    // Execute the cleanup function at the end of run
-    if(finalize_function) {
-        finalize_function();
+        // Execute the cleanup function at the end of run
+        if(finalize_function) {
+            finalize_function();
+        }
+    } catch(...) {
+        // Check if the first exception thrown
+        if(has_exception_.test_and_set()) {
+            // Save the first exceptin
+            exception_ptr_ = std::current_exception();
+            // Invalidate the queue to terminate other threads
+            queue_.invalidate();
+        }
     }
 }
 

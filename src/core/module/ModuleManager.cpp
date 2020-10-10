@@ -634,16 +634,20 @@ void ModuleManager::run(std::mt19937_64& seeder) {
 
     // Creates the thread pool
     LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
-    // clang-format off
-    auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
-        // clang-format on
-        // Initialize the threads to the same log level and format as the master setting
-        Log::setReportingLevel(log_level);
-        Log::setFormat(log_format);
-    };
+    auto initialize_function =
+        [log_level = Log::getReportingLevel(), log_format = Log::getFormat(), modules_list = modules_]() {
+            // Initialize the threads to the same log level and format as the master setting
+            Log::setReportingLevel(log_level);
+            Log::setFormat(log_format);
+
+            // Call per-thread initialization of each module
+            for(auto& module : modules_list) {
+                module->initializeThread();
+            }
+        };
 
     // Finalize modules for each thread
-    auto finialize_function = [modules_list = modules_]() {
+    auto finalize_function = [modules_list = modules_]() {
         for(auto& module : modules_list) {
             module->finalizeThread();
         }
@@ -652,7 +656,7 @@ void ModuleManager::run(std::mt19937_64& seeder) {
     // Push 128 events for each worker to maintain enough work
     auto max_queue_size = threads_num * 128;
     std::unique_ptr<ThreadPool> thread_pool =
-        std::make_unique<ThreadPool>(threads_num, max_queue_size, init_function, finialize_function);
+        std::make_unique<ThreadPool>(threads_num, max_queue_size, initialize_function, finalize_function);
 
     // Record the run stage total time
     auto start_time = std::chrono::steady_clock::now();

@@ -59,6 +59,11 @@ namespace allpix {
         void init() override;
 
         /**
+         * @brief Prepare thread-local instances of worker run managers
+         */
+        void initializeThread() override;
+
+        /**
          * @brief Deposit charges for a single event
          */
         void run(Event*) override;
