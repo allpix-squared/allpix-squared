@@ -76,8 +76,6 @@ namespace allpix {
 
         std::shared_ptr<Detector> detector_;
 
-        std::mt19937_64 random_generator_;
-
         DepositionModel model_;
         SourceType type_;
         double spot_size_{};

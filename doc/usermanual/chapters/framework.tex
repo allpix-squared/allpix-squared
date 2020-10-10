@@ -742,6 +742,9 @@ It should be noted that such modules cannot dispatch messages to the framework.
 Using the \texttt{BufferedModule} is suitable for I/O modules which read or write to the file system.
 It e.g.\ allows output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
 
+Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
+This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
+
 \subsection{Geant4 Modules}
 The usage of the Geant4 library in \apsq has some constraints because the Geant4 multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
 Furthermore, Geant4 does not guarantee results reproducibility between both its multi-threaded and sequential run managers.

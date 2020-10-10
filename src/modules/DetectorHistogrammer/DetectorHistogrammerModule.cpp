@@ -229,7 +229,6 @@ void DetectorHistogrammerModule::run(Event* event) {
         pixels_message = nullptr;
     }
 
-    auto random_generator = event->getRandomEngine();
     if(pixels_message != nullptr) {
         LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
 
@@ -255,8 +254,8 @@ void DetectorHistogrammerModule::run(Event* event) {
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
-        double dx = std::normal_distribution<double>(0, residuals.x())(random_generator);
-        double dy = std::normal_distribution<double>(0, residuals.y())(random_generator);
+        double dx = std::normal_distribution<double>(0, residuals.x())(event->getRandomEngine());
+        double dy = std::normal_distribution<double>(0, residuals.y())(event->getRandomEngine());
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
     };
 
