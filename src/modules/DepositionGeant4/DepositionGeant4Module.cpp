@@ -296,7 +296,7 @@ void DepositionGeant4Module::initializeThread() {
 void DepositionGeant4Module::run(Event* event) {
     MTRunManager* run_manager_mt = nullptr;
 
-    // Initialize the thread local G4RunManager in case of MT
+    // Obtain the thread-local G4RunManager in case of MT
     if(canParallelize()) {
         run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     }
