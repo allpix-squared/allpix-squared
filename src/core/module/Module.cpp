@@ -212,7 +212,8 @@ void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
         });
 
         LOG(TRACE) << "Buffering event " << event->number;
-        // Let's store this event's PRNG state:
+        // Store the state of the PRNG to be able to rewind to the same position when we recall the event from the buffer in
+        // another thread:
         event->store_random_engine_state();
 
         // Buffer out of order events to write them later
