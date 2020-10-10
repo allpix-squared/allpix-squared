@@ -18,7 +18,7 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : BufferedModule(config), geo_manager_(geo_manager), messenger_(messenger) {
 
     // Seed the random generator for Fano fluctuations with the seed received
     random_generator_.seed(getRandomSeed());
@@ -130,8 +130,8 @@ void DepositionReaderModule::init() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + detector->getName();
-            charge_per_event_[detector->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
     }
 }
