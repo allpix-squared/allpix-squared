@@ -60,11 +60,11 @@ void ThreadPool::wait() {
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */
-void ThreadPool::worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function) {
+void ThreadPool::worker(const std::function<void()>& initialize_function, const std::function<void()>& finalize_function) {
     try {
         // Initialize the worker
-        if(init_function) {
-            init_function();
+        if(initialize_function) {
+            initialize_function();
         }
 
         // Increase the atomic run count and notify the master thread that we popped an event
