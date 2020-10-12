@@ -433,8 +433,8 @@ cmp:usermanual:
     tags:
         - docker
     only:
-        - tags
-        - schedules
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     script:
         - mkdir -p public/releases
         - cd build
@@ -481,7 +481,7 @@ deploy-documentation:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
+        - tags@allpix-squared/allpix-squared
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -501,8 +501,8 @@ deploy-eos:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -522,8 +522,8 @@ deploy-cvmfs:
     tags:
         - cvmfs-deploy
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     script:
         - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
@@ -538,7 +538,7 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - schedules@allpix-squared/allpix-squared
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
@@ -550,7 +550,7 @@ deploy-docker-tag:
         - docker-image-build
     dependencies: []
     only:
-        - tags
+        - tags@allpix-squared/allpix-squared
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
