@@ -14,10 +14,11 @@
 
 #include <G4MTRunManager.hh>
 
+#include "SensitiveDetectorAndFieldConstruction.hpp"
+
 namespace allpix {
 
     class WorkerRunManager;
-    class SensitiveDetectorAndFieldConstruction;
 
     /**
      * @brief A custom run manager for Geant4 that can work with external threads and be used concurrently.
@@ -77,13 +78,16 @@ namespace allpix {
         /**
          * @brief Returns the user's sensitive detector construction.
          */
-        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { return sd_field_construction_; } // NOLINT
+        SensitiveDetectorAndFieldConstruction* GetSDAndFieldConstruction() const { // NOLINT
+            return sd_field_construction_.get();
+        } // NOLINT
 
         /**
          * @brief Sets the user's sensitive detector construction.
          */
-        void SetSDAndFieldConstruction(SensitiveDetectorAndFieldConstruction* sd_field_construction) { // NOLINT
-            sd_field_construction_ = sd_field_construction;
+        void
+        SetSDAndFieldConstruction(std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction) { // NOLINT
+            sd_field_construction_ = std::move(sd_field_construction);
         }
 
     protected:
@@ -189,7 +193,7 @@ namespace allpix {
         // \ref WorkerRunManager worker manager that run on each thread.
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
-        SensitiveDetectorAndFieldConstruction* sd_field_construction_{nullptr};
+        std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction_{nullptr};
 
         std::unordered_map<G4int, std::pair<long, long>> workers_seeds_;
     };

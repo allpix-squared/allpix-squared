@@ -10,6 +10,7 @@
 #include "CorryvreckanWriterModule.hpp"
 
 #include <Math/RotationZYX.h>
+#include <TProcessID.h>
 
 #include <fstream>
 #include <string>
@@ -79,6 +80,9 @@ void CorryvreckanWriterModule::init() {
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
 void CorryvreckanWriterModule::run(Event* event) {
     auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
+
+    // Retrieve current object count:
+    auto object_count = TProcessID::GetObjectCount();
 
     LOG(TRACE) << "Processing event " << event->number;
 
@@ -188,6 +192,9 @@ void CorryvreckanWriterModule::run(Event* event) {
 
     // Delete the currently stored event object
     delete event_;
+
+    // Reset object count:
+    TProcessID::SetObjectCount(object_count);
 }
 
 // Save the output trees to file

@@ -186,6 +186,8 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         os << "\x1B[32;1m"; // GREEN
     } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
         os << "\x1B[36m"; // NON-BOLD CYAN
+    } else if(level == LogLevel::PRNG) {
+        os << "\x1B[90m"; // NON-BOLD GREY
     } else {
         os << "\x1B[36;1m"; // CYAN
     }
@@ -269,13 +271,17 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    const std::array<std::string, 8> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
+    const std::array<std::string, 9> type = {
+        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE", "PRNG"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
  * @throws std::invalid_argument If the string does not correspond with an existing log level
  */
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+    if(level == "PRNG") {
+        return LogLevel::PRNG;
+    }
     if(level == "TRACE") {
         return LogLevel::TRACE;
     }

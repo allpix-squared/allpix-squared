@@ -263,10 +263,9 @@ void DepositionGeant4Module::init() {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
     } else {
-        // In MT-mode we register a builder that will be called for each thread to construct the SD
-        // when needed.
-        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
-        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
+        // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
+        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy);
+        run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
     // Disable verbose messages from processes
@@ -279,12 +278,12 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(Event* event) {
-    MTRunManager* run_manager_mt = nullptr;
+void DepositionGeant4Module::initializeThread() {
 
+    LOG(DEBUG) << "Initializing run manager";
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
@@ -293,6 +292,15 @@ void DepositionGeant4Module::run(Event* event) {
         }
 
         run_manager_mt->InitializeForThread();
+    }
+}
+
+void DepositionGeant4Module::run(Event* event) {
+    MTRunManager* run_manager_mt = nullptr;
+
+    // Obtain the thread-local G4RunManager in case of MT
+    if(canParallelize()) {
+        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     }
 
     // Suppress output stream if not in debugging mode
@@ -330,8 +338,7 @@ void DepositionGeant4Module::run(Event* event) {
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            auto histogram = charge_per_event_[sensor->getName()];
-            histogram->Fill(charge);
+            charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
 
@@ -427,7 +434,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = std::make_shared<ThreadedHistogram<TH1D>>(
+                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
                         plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
                 }
             }

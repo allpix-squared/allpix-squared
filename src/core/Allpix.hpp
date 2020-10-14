@@ -92,8 +92,8 @@ namespace allpix {
         std::unique_ptr<GeometryManager> geo_mgr_{};
 
         // Random generators
-        std::mt19937_64 seeder_modules_;
-        std::mt19937_64 seeder_core_;
+        RandomNumberGenerator seeder_modules_;
+        RandomNumberGenerator seeder_core_;
     };
 } // namespace allpix
 

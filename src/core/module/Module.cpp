@@ -132,7 +132,7 @@ uint64_t Module::getRandomSeed() {
 
     return (*random_generator_)();
 }
-void Module::set_random_generator(std::mt19937_64* random_generator) {
+void Module::set_random_generator(RandomNumberGenerator* random_generator) {
     random_generator_ = random_generator;
 }
 
@@ -212,6 +212,9 @@ void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
         });
 
         LOG(TRACE) << "Buffering event " << event->number;
+        // Store the state of the PRNG to be able to rewind to the same position when we recall the event from the buffer in
+        // another thread:
+        event->store_random_engine_state();
 
         // Buffer out of order events to write them later
         buffered_events_.insert(std::make_pair(event_number, event));
@@ -241,7 +244,7 @@ void BufferedModule::finalize_buffer() {
 
 void BufferedModule::flush_buffered_events() {
     // Special random generator for events executed out of order
-    static thread_local std::mt19937_64 random_generator;
+    static thread_local RandomNumberGenerator random_generator;
 
     std::map<uint64_t, std::shared_ptr<Event>>::iterator iter;
     std::shared_ptr<Event> event;
@@ -269,6 +272,8 @@ void BufferedModule::flush_buffered_events() {
 
         // set the buffered event RNG
         event->set_and_seed_random_engine(&random_generator);
+        // Restore this event's PRNG state:
+        event->restore_random_engine_state();
 
         // Process the buffered event
         run(event.get());

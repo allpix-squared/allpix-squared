@@ -88,57 +88,53 @@ void DefaultDigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_pxq = std::make_unique<ThreadedHistogram<TH1D>>(
-            "pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_pxq_noise = std::make_unique<ThreadedHistogram<TH1D>>(
+        h_pxq = CreateHistogram<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_pxq_noise = CreateHistogram<TH1D>(
             "pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_gain = std::make_unique<ThreadedHistogram<TH1D>>("gain", "applied gain; gain factor;events", 40, -20, 20);
-        h_pxq_gain = std::make_unique<ThreadedHistogram<TH1D>>(
+        h_gain = CreateHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
+        h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = std::make_unique<ThreadedHistogram<TH1D>>(
-            "threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
-        h_pxq_thr = std::make_unique<ThreadedHistogram<TH1D>>(
+        h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_pxq_thr = CreateHistogram<TH1D>(
             "pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
         if(config_.get<int>("qdc_resolution") > 0) {
-            h_pxq_adc_smear = std::make_unique<ThreadedHistogram<TH1D>>(
+            h_pxq_adc_smear = CreateHistogram<TH1D>(
                 "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
             int adcbins = (1 << config_.get<int>("qdc_resolution"));
-            h_pxq_adc = std::make_unique<ThreadedHistogram<TH1D>>(
+            h_pxq_adc = CreateHistogram<TH1D>(
                 "pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
-            h_calibration = std::make_unique<ThreadedHistogram<TH2D>>(
-                "charge_adc_calibration",
-                "calibration curve of pixel charge to QDC units;pixel charge [ke];pixel charge [QDC]",
-                nbins,
-                0,
-                maximum,
-                adcbins,
-                0,
-                adcbins);
+            h_calibration =
+                CreateHistogram<TH2D>("charge_adc_calibration",
+                                      "calibration curve of pixel charge to QDC units;pixel charge [ke];pixel charge [QDC]",
+                                      nbins,
+                                      0,
+                                      maximum,
+                                      adcbins,
+                                      0,
+                                      adcbins);
         } else {
-            h_pxq_adc = std::make_unique<ThreadedHistogram<TH1D>>(
-                "pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
+            h_pxq_adc =
+                CreateHistogram<TH1D>("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
 
         int time_maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_timescale"), "ns"));
-        h_px_toa = std::make_unique<ThreadedHistogram<TH1D>>(
-            "pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
+        h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
         if(config_.get<int>("tdc_resolution") > 0) {
-            h_px_tdc_smear =
-                std::make_unique<ThreadedHistogram<TH1D>>("pixel_tdc_smeared",
-                                                          "pixel time-of-arrival after TDC smearing;pixel ToA [ns];pixels",
-                                                          nbins,
-                                                          0,
-                                                          time_maximum);
+            h_px_tdc_smear = CreateHistogram<TH1D>("pixel_tdc_smeared",
+                                                   "pixel time-of-arrival after TDC smearing;pixel ToA [ns];pixels",
+                                                   nbins,
+                                                   0,
+                                                   time_maximum);
 
             int adcbins = (1 << config_.get<int>("tdc_resolution"));
-            h_px_tdc = std::make_unique<ThreadedHistogram<TH1D>>(
+            h_px_tdc = CreateHistogram<TH1D>(
                 "pixel_tdc", "pixel time-of-arrival after TDC;pixel ToA [TDC];pixels", adcbins, 0, adcbins);
-            h_toa_calibration = std::make_unique<ThreadedHistogram<TH2D>>(
+            h_toa_calibration = CreateHistogram<TH2D>(
                 "tdc_calibration",
                 "calibration curve of pixel time-of-arrival to TDC units;pixel ToA [ns];pixel ToA [TDC]",
                 nbins,
@@ -148,7 +144,7 @@ void DefaultDigitizerModule::init() {
                 0,
                 adcbins);
         } else {
-            h_px_tdc = std::make_unique<ThreadedHistogram<TH1D>>(
+            h_px_tdc = CreateHistogram<TH1D>(
                 "pixel_tdc", "final pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, time_maximum);
         }
     }

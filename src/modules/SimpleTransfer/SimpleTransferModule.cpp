@@ -67,11 +67,11 @@ void SimpleTransferModule::init() {
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
-        drift_time_histo = std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
-                                                                     "Charge carrier arrival time;t[ns];charge carriers",
-                                                                     time_bins,
-                                                                     0.,
-                                                                     config_.get<double>("output_plots_range"));
+        drift_time_histo = CreateHistogram<TH1D>("drift_time_histo",
+                                                 "Charge carrier arrival time;t[ns];charge carriers",
+                                                 time_bins,
+                                                 0.,
+                                                 config_.get<double>("output_plots_range"));
     }
 }
 
