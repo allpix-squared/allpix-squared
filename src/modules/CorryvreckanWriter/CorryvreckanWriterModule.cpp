@@ -185,6 +185,9 @@ void CorryvreckanWriterModule::run(Event* event) {
 
     // Increment the time till the next event
     time_ += 10;
+
+    // Delete the currently stored event object
+    delete event_;
 }
 
 // Save the output trees to file

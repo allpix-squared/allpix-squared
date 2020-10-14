@@ -1,5 +1,5 @@
 # CMake file for the allpix2 framework
-CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
@@ -92,7 +92,7 @@ IF(APPLE)
 ENDIF()
 
 # If available, use CMake's link-what-you-use feature, not on APPLE
-IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
+IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
   SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
 
