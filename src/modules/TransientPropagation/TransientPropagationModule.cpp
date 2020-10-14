@@ -168,20 +168,18 @@ void TransientPropagationModule::run(unsigned int) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
+            std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto position = deposit.getLocalPosition();
-
-            // Propagate a single charge deposit
-            std::map<Pixel::Index, Pulse> px_map;
-            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
+            auto prop_pair =
+                propagate(deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
             PropagatedCharge propagated_charge(prop_pair.first,
                                                global_position,
                                                deposit.getType(),
-                                               px_map,
+                                               std::move(px_map),
                                                deposit.getLocalTime() + prop_pair.second,
                                                deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
@@ -215,8 +213,6 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                                                                               const unsigned int charge,
                                                                               const double initial_time,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
-
-    // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a lambda function to compute the carrier mobility
