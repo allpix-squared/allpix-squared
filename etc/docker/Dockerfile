@@ -8,7 +8,7 @@ ENV PATH="/opt/allpix-squared/bin:${PATH}"
 WORKDIR "/data"
 
 # Compile Allpix Squared
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p /opt/allpix-squared/build && \
     cd /opt/allpix-squared/build && \
     cmake3 -DCMAKE_INSTALL_PREFIX=../ \
