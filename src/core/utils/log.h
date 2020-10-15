@@ -289,24 +289,17 @@ namespace allpix {
 
 /**
  * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged more than
- *
- * @note This function is not "thread-safe" as in "we guarantee the message is only logged N times across threads". In most
- * cases, that is what happens but since we first read and then decrement the counter concurrent access is possible and the
- * message might get logged a second time by another thread before the decrement is performed. Implementations which work
- * around this are more costly and elaborate since it involves additional mutexes and locking, and it has been decided that a
- * second log message doesn't pose a problem.
- *
  * max_log_count times.
  * @param level The log level of the stream
  * @param max_log_count Maximum number of times this message is allowed to be logged
  */
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
-    if(GET_LOG_VARIABLE(max_log_count) > 0 && GET_LOG_VARIABLE(max_log_count)-- > 0)                                        \
+    if(GET_LOG_VARIABLE(max_log_count) > 0)                                                                                 \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
     allpix::Log().getStream(                                                                                                \
         allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
-        << std::string(GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
+        << std::string(--GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
 
     /**
      * @brief Suppress an stream from writing any output
