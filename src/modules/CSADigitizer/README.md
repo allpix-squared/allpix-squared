@@ -1,7 +1,7 @@
 # CSADigitizer
-**Maintainer**: Annika Vauth (<annika.vauth@desy.de>)
-**Status**: Functional
-**Input**: PixelCharge
+**Maintainer**: Annika Vauth (<annika.vauth@desy.de>), Simon Spannagel (<simon.spannagel@desy.de>)  
+**Status**: Functional  
+**Input**: PixelCharge  
 **Output**: PixelHit
 
 ### Description
@@ -11,18 +11,18 @@ $`H(s) = \frac{R_f}{((1+ \tau_f s) * (1 + \tau_r s))}, `$
 with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$
 
 The impulse response function of this transfer function is convoluted with the charge pulse.
-This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrisation providing rise time and feedback time.
+This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrization providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
 For the amplified pulse signal, alongside the Time-of-Arrival either the determined Time-over-Threshold, or the integral of the amplified pulse can be stored in the `PixelHit`.
 
 Since the input pulse may have different polarity, it is important to set the threshold accordingly to a positive or negative value, otherwise it may not trigger at all.
-If this behavior is not desired, the 'Ignore_Polarity' parameter can be set to compare only the absolute values of the input and the threshold value.
+If this behavior is not desired, the `ignore_polarity` parameter can be set to compare only the absolute values of the input and the threshold value.
 
 
 ### Parameters
-* `model` :  Choice between different CSA models. Currently implemented are two parametrisations of the circuit from [@kleczek], `simple` and `csa`.
+* `model` :  Choice between different CSA models. Currently implemented are two parametrization of the circuit from [@kleczek], `simple` and `csa`.
 * `feedback_capacitance` :  The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
