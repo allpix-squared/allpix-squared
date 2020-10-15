@@ -54,9 +54,9 @@ void PulseTransferModule::init() {
 
         // Create histograms if needed
         h_total_induced_charge_ =
-            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, 0, maximum);
+            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, -maximum, maximum);
         h_induced_pixel_charge_ =
-            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, 0, maximum);
+            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, -maximum, maximum);
     }
 }
 
