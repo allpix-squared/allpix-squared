@@ -14,7 +14,7 @@ If the PixelHit is free-standing, a new cluster is created.
 
 This module serves as a quick "mini-analysis" and creates the histograms listed below.
 The Monte Carlo truth position provided by the `MCParticle` objects is used as track reference position.
-An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convoled.
+An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convolved.
 For technical reasons, this offset is drawn randomly from a Gauss distribution independently for the resolution and the efficiency measurement.
 
 * A hitmap of all pixels in the pixel grid, displaying the number of times a pixel has been hit during the simulation run.
