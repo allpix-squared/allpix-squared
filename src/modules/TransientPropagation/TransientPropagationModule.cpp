@@ -108,43 +108,41 @@ void TransientPropagationModule::init() {
     }
 
     if(output_plots_) {
-        potential_difference_ = std::make_unique<ThreadedHistogram<TH1D>>(
+        potential_difference_ = CreateHistogram<TH1D>(
             "potential_difference",
             "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
             500,
             0,
             1);
-        induced_charge_histo_ =
-            std::make_unique<ThreadedHistogram<TH1D>>("induced_charge_histo",
+        induced_charge_histo_ = CreateHistogram<TH1D>("induced_charge_histo",
                                                       "Induced charge per time, all pixels;Drift time [ns];charge [e]",
                                                       static_cast<int>(integration_time_ / timestep_),
                                                       0,
                                                       static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_e_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "induced_charge_e_histo",
-            "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
-            static_cast<int>(integration_time_ / timestep_),
-            0,
-            static_cast<double>(Units::convert(integration_time_, "ns")));
-        induced_charge_h_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "induced_charge_h_histo",
-            "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
-            static_cast<int>(integration_time_ / timestep_),
-            0,
-            static_cast<double>(Units::convert(integration_time_, "ns")));
-        step_length_histo_ = std::make_unique<ThreadedHistogram<TH1D>>(
-            "step_length_histo",
-            "Step length;length [#mum];integration steps",
-            100,
-            0,
-            static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+        induced_charge_e_histo_ =
+            CreateHistogram<TH1D>("induced_charge_e_histo",
+                                  "Induced charge per time, electrons only, all pixels;Drift time [ns];charge [e]",
+                                  static_cast<int>(integration_time_ / timestep_),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_h_histo_ =
+            CreateHistogram<TH1D>("induced_charge_h_histo",
+                                  "Induced charge per time, holes only, all pixels;Drift time [ns];charge [e]",
+                                  static_cast<int>(integration_time_ / timestep_),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        step_length_histo_ =
+            CreateHistogram<TH1D>("step_length_histo",
+                                  "Step length;length [#mum];integration steps",
+                                  100,
+                                  0,
+                                  static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ =
-            std::make_unique<ThreadedHistogram<TH1D>>("drift_time_histo",
-                                                      "Drift time;Drift time [ns];charge carriers",
-                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                      0,
-                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Drift time;Drift time [ns];charge carriers",
+                                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                  0,
+                                                  static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -171,20 +169,17 @@ void TransientPropagationModule::run(Event* event) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
+            std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto position = deposit.getLocalPosition();
-
-            // Propagate a single charge deposit
-            std::map<Pixel::Index, Pulse> px_map;
-            auto prop_pair = propagate(event, position, deposit.getType(), charge_per_step, px_map);
+            auto prop_pair = propagate(event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
             PropagatedCharge propagated_charge(prop_pair.first,
                                                global_position,
                                                deposit.getType(),
-                                               px_map,
+                                               std::move(px_map),
                                                deposit.getEventTime() + prop_pair.second,
                                                &deposit);
 
@@ -217,8 +212,6 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
-
-    // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a lambda function to compute the carrier mobility

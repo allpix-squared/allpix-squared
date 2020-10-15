@@ -19,6 +19,8 @@
 #include <random>
 #include <vector>
 
+#include "core/utils/prng.h"
+
 namespace allpix {
     class Module;
     class Messenger;
@@ -62,26 +64,39 @@ namespace allpix {
          * @brief Access the random engine of this event
          * @return Reference to this event's random engine
          */
-        std::mt19937_64& getRandomEngine() { return *random_engine_; }
+        RandomNumberGenerator& getRandomEngine();
 
         /**
          * @brief Advances the random engine's state one step
          * @return The generated value
          */
-        uint64_t getRandomNumber() { return (*random_engine_)(); }
+        uint64_t getRandomNumber() { return getRandomEngine()(); }
 
     private:
         /**
          * @brief Sets the random engine and seed it to be used by this event
          * @param random_engine Pointer to RNG for this event
          */
-        void set_and_seed_random_engine(std::mt19937_64* random_engine);
+        void set_and_seed_random_engine(RandomNumberGenerator* random_engine);
+
+        /**
+         * @brief Store the state of the PRNG
+         */
+        void store_random_engine_state();
+
+        /**
+         * @brief Restore the state of the PRNG from the stored internal state
+         */
+        void restore_random_engine_state();
 
         // The random number engine associated with this event
-        std::mt19937_64* random_engine_{nullptr};
+        RandomNumberGenerator* random_engine_{nullptr};
 
-        // Seed for Random number generator
+        // Seed for random number generator
         uint64_t seed_;
+
+        // State of the random number generator
+        std::stringstream state_;
 
         /**
          * @brief Returns a pointer to the event local messenger

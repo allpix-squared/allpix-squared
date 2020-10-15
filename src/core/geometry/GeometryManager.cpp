@@ -40,7 +40,7 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by looping over all defined detectors
  */
-void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder) {
+void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& seeder) {
     // Set up a random number generator and seed it with the global seed:
     random_generator_.seed(seeder());
 

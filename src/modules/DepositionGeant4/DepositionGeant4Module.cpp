@@ -73,10 +73,11 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setAlias("source_energy_spread", "beam_energy_spread");
     config_.setAlias("cutoff_time", "decay_cutoff_time", true);
 
-    // Create user limits for maximum step length in the sensor
+    // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("cutoff_time"));
 
+    // Create user limits for maximum event time in the world volume:
     user_limits_world_ = std::make_unique<G4UserLimits>(DBL_MAX, DBL_MAX, config_.get<double>("cutoff_time"));
 
     // If macro, parse for positions of sources and add these as points to the GeoManager to extend the world:
@@ -218,6 +219,8 @@ void DepositionGeant4Module::init() {
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
+        LOG(DEBUG) << "Setting world volume user limits to constrain event time to "
+                   << Units::display(config_.get<double>("cutoff_time"), {"ns", "us", "ms", "s"});
         world_log_volume->SetUserLimits(user_limits_world_.get());
     }
 
@@ -260,10 +263,9 @@ void DepositionGeant4Module::init() {
         track_info_manager_ = std::make_unique<TrackInfoManager>();
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
     } else {
-        // In MT-mode we register a builder that will be called for each thread to construct the SD
-        // when needed.
-        auto detector_construction = new SDAndFieldConstruction(this, fano_factor, charge_creation_energy);
-        run_manager_mt->SetSDAndFieldConstruction(detector_construction);
+        // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
+        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy);
+        run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
     // Disable verbose messages from processes
@@ -276,12 +278,12 @@ void DepositionGeant4Module::init() {
     RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(Event* event) {
-    MTRunManager* run_manager_mt = nullptr;
+void DepositionGeant4Module::initializeThread() {
 
+    LOG(DEBUG) << "Initializing run manager";
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
@@ -290,6 +292,15 @@ void DepositionGeant4Module::run(Event* event) {
         }
 
         run_manager_mt->InitializeForThread();
+    }
+}
+
+void DepositionGeant4Module::run(Event* event) {
+    MTRunManager* run_manager_mt = nullptr;
+
+    // Obtain the thread-local G4RunManager in case of MT
+    if(canParallelize()) {
+        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     }
 
     // Suppress output stream if not in debugging mode
@@ -327,8 +338,7 @@ void DepositionGeant4Module::run(Event* event) {
         // Fill output plots if requested:
         if(config_.get<bool>("output_plots")) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            auto histogram = charge_per_event_[sensor->getName()];
-            histogram->Fill(charge);
+            charge_per_event_[sensor->getName()]->Fill(charge);
         }
     }
 
@@ -424,7 +434,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = std::make_shared<ThreadedHistogram<TH1D>>(
+                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
                         plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
                 }
             }

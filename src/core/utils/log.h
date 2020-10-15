@@ -34,6 +34,7 @@ namespace allpix {
         DEBUG,     ///< Detailed information about physics process
         NONE,      ///< Indicates the log level has not been set (cannot be selected by the user)
         TRACE,     ///< Software debugging information about what part is currently running
+        PRNG,      ///< Logging level printing every pseudo-random number requested
     };
     /**
      * @brief Format of the logger

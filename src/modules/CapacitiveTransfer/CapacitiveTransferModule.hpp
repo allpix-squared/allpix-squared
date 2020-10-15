@@ -98,9 +98,9 @@ namespace allpix {
         double center[2] = {0.0, 0.0};
         double angles[2] = {0.0, 0.0};
 
-        TH2D* coupling_map;
-        TH2D* gap_map;
-        TH2D* capacitance_map;
-        TH2D* relative_capacitance_map;
+        Histogram<TH2D> coupling_map;
+        Histogram<TH2D> gap_map;
+        Histogram<TH2D> capacitance_map;
+        Histogram<TH2D> relative_capacitance_map;
     };
 } // namespace allpix

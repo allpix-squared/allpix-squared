@@ -195,20 +195,12 @@ If multiple instantiations with the same unique name and the same priority exist
 \label{sec:multithreading}
 The framework supports running several events in parallel.
 This feature is disabled for new modules by default, and has to be both supported by all modules in the simulation and enabled by the user as described in Section~\ref{sec:framework_parameters}.
-When enabled this feature can provides a significant speed improvement.
+When enabled this feature can provide a significant speed improvement, depending on the simulation chain.
 
 The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
 Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
 
-To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-// Enable parallelization of this module if multi-threading is enabled
-enable_parallelization();
-\end{minted}
-By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, for different events.
-This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
-Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
-Detailed description of how the framework implements the multi-threading feature can be found in Section~\ref{sec:multithreading_approach}.
+Detailed description of how the framework implements the multi-threading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -730,10 +722,10 @@ In case, one or more modules do not support multi-threading, a warning is printe
 
 \subsection{Seed Distribution}
 A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to exactly reproduce a simulation result from the same inputs even when the number of workers is different.
-Each event holds a random engine that can be used by a module in it's \texttt{run()} method.
+Each event holds a random engine that can be used by a module in its \texttt{run()} method.
 \apsq has a master random engine that is used to seed such engines for every event in a sequential manner, in order of increasing event number.
 
-To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such objects is thus made static thread local.
+To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such objects is thus made static and thread-local, and is only provided to the event for temporary usage.
 This way ensures that the framework maintains the minimum number of such heavy objects equal to the number of workers used.
 When a worker starts to execute a new event, it seeds its local random engine first and passes it to the event object.
 
@@ -743,20 +735,18 @@ Each event has its own local messenger which stores all messages that was produc
 The \texttt{Messenger} owns the global message subscription information and internally forwards the module's requests to dispatch or fetch messages to the local messenger of the event in a thread-safe manner.
 
 \subsection{Running Events in order using BufferedModule}
-The \texttt{BufferedModule} class is made available for modules that are interested in running events in the correct order without disabling multi-threading.
+The \texttt{BufferedModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
 Inheriting from this class will allow the module to transparently check if the given event is in order and decide whether to execute it immediately or to store it in a buffer if it is out of order.
 It should be noted that such modules cannot dispatch messages to the framework.
 
-Using the \texttt{BufferedModule} is more suitable for the writer modules that runs at the end of each event.
-It allows the writers to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
+Using the \texttt{BufferedModule} is suitable for I/O modules which read or write to the file system.
+It e.g.\ allows output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
+
+Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
+This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
 
 \subsection{Geant4 Modules}
 The usage of the Geant4 library in \apsq has some constraints because the Geant4 multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
 Furthermore, Geant4 does not guarantee results reproducibility between both its multi-threaded and sequential run managers.
 Modules that would like to use the Geant4 library shall not use the run managers provided by Geant4.
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
-
-\subsection{Issues with ROOT Dependency}
-ROOT \texttt{TObject} and \text{TRef} classes are used by all objects in \apsq to relate to other events.
-Because of legacy reasons, they do not scale well to a high number of threads.
-Starting from ROOT 6.12, it is not currently recommended to use more than 8 workers during simulation as this will greatly impact performance negatively.

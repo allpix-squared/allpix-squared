@@ -18,10 +18,7 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
-
-    // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(getRandomSeed());
+    : BufferedModule(config), geo_manager_(geo_manager), messenger_(messenger) {
 
     config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
     config_.setDefault<double>("fano_factor", 0.115);
@@ -130,8 +127,8 @@ void DepositionReaderModule::init() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + detector->getName();
-            charge_per_event_[detector->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
     }
 }
@@ -210,7 +207,7 @@ void DepositionReaderModule::run(Event* event) {
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = static_cast<unsigned int>(energy / charge_creation_energy_);
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = charge_fluctuation(random_generator_);
+        auto charge = charge_fluctuation(event->getRandomEngine());
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "

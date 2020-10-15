@@ -26,6 +26,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
+#include "core/utils/prng.h"
 #include "exceptions.h"
 
 namespace allpix {
@@ -137,6 +138,14 @@ namespace allpix {
         bool canParallelize();
 
         /**
+         * @brief Initialize the module for each thread after the global initialization
+         * @note Useful to prepare thread local objects
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void initializeThread() {}
+
+        /**
          * @brief Initialize the module before the event sequence
          *
          * Does nothing if not overloaded.
@@ -233,8 +242,8 @@ namespace allpix {
          * @brief Set the random number generator for this module
          * @param random_generator Generator to produce random numbers
          */
-        void set_random_generator(std::mt19937_64* random_generator);
-        std::mt19937_64* random_generator_{nullptr};
+        void set_random_generator(RandomNumberGenerator* random_generator);
+        RandomNumberGenerator* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
 

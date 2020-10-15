@@ -137,25 +137,26 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = new TH1D("signal",
-                         (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
-                         nbins,
-                         0,
-                         (store_tot_ ? integration_time_ / clockToT_ : 1000));
-        h_toa = new TH1D(
+        h_tot = CreateHistogram<TH1D>(
+            "signal",
+            (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
+            nbins,
+            0,
+            (store_tot_ ? integration_time_ / clockToT_ : 1000));
+        h_toa = CreateHistogram<TH1D>(
             "time",
             (store_toa_ ? "Time-of-Arrival;time of arrival [clk];pixels" : "Time-of-Arrival;time of arrival [ns];pixels"),
             nbins,
             0,
             (store_toa_ ? integration_time_ / clockToA_ : integration_time_));
-        h_pxq_vs_tot = new TH2D("pxqvstot",
-                                "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
-                                nbins,
-                                0,
-                                maximum,
-                                nbins,
-                                0,
-                                integration_time_);
+        h_pxq_vs_tot = CreateHistogram<TH2D>("pxqvstot",
+                                             "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
+                                             nbins,
+                                             0,
+                                             maximum,
+                                             nbins,
+                                             0,
+                                             integration_time_);
     }
 }
 

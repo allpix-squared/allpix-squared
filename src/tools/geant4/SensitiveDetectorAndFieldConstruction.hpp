@@ -17,6 +17,11 @@ namespace allpix {
     class SensitiveDetectorAndFieldConstruction {
     public:
         /**
+         * @brief Required virtual destructor
+         */
+        virtual ~SensitiveDetectorAndFieldConstruction() = default;
+
+        /**
          * @brief Constructs the sensitive detectors and field for each worker.
          */
         virtual void ConstructSDandField() {} // NOLINT

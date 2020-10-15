@@ -170,12 +170,14 @@
 #define CEREAL_FORCE_DYNAMIC_INIT(LibName)                                                                                  \
     namespace cereal {                                                                                                      \
         namespace detail {                                                                                                  \
-            void dynamic_init_dummy_##LibName();                                                                            \
+            void CEREAL_DLL_EXPORT dynamic_init_dummy_##LibName();                                                          \
         } /* end detail */                                                                                                  \
-        namespace {                                                                                                         \
-            void dynamic_init_##LibName() { ::cereal::detail::dynamic_init_dummy_##LibName(); }                             \
-        }                                                                                                                   \
-    } /* end namespaces */
+    }     /* end cereal */                                                                                                  \
+    namespace {                                                                                                             \
+        struct dynamic_init_##LibName {                                                                                     \
+            dynamic_init_##LibName() { ::cereal::detail::dynamic_init_dummy_##LibName(); }                                  \
+        } dynamic_init_instance_##LibName;                                                                                  \
+    } /* end anonymous namespace */
 
 namespace cereal {
     namespace polymorphic_detail {
@@ -292,7 +294,7 @@ namespace cereal {
                                         "a load_and_construct function");
             return false;
         }
-    } // polymorphic_detail
+    } // namespace polymorphic_detail
 
     // ######################################################################
     // Pointer serialization for polymorphic types

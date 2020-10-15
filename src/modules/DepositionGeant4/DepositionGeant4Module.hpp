@@ -59,6 +59,11 @@ namespace allpix {
         void init() override;
 
         /**
+         * @brief Prepare thread-local instances of worker run managers
+         */
+        void initializeThread() override;
+
+        /**
          * @brief Deposit charges for a single event
          */
         void run(Event*) override;
@@ -109,7 +114,7 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, std::shared_ptr<ThreadedHistogram<TH1D>>> charge_per_event_;
+        std::map<std::string, Histogram<TH1D>> charge_per_event_;
 
         // Total deposited charges
         std::atomic_uint total_charges_{0};
