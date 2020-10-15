@@ -135,6 +135,12 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
 void CSADigitizerModule::init() {
 
+    // Check for sensible configuration of threshold:
+    if(ignore_polarity_ && threshold_ < 0) {
+        LOG(WARNING)
+            << "Negative threshold configured but signal polarity is ignored, this might lead to unexpected results.";
+    }
+
     if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
 
