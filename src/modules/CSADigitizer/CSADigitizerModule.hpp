@@ -70,25 +70,25 @@ namespace allpix {
 
     private:
         // Control of module output settings
-        bool output_plots_{}, output_pulsegraphs_{}, store_tot_{true};
+        bool output_plots_{}, output_pulsegraphs_{};
+        bool store_tot_{false}, store_toa_{false};
 
         std::mt19937_64 random_generator_;
 
         Messenger* messenger_;
+        DigitizerType model_;
 
         // Input message with the charges on the pixels
         std::shared_ptr<PixelChargeMessage> pixel_message_;
 
-        DigitizerType model_;
-        // krummenacher current, detector capacitance, feedback capacitance, amp output capacitance,
-        // transconductance, Boltzmann kT, feedback time constant, risetime time constant
-        double ikrum_{}, capacitance_detector_{}, capacitance_feedback_{}, capacitance_output_;
-        double gm_{}, boltzmann_kT_{}, tauF_{}, tauR_{};
-        // parameters of the electronics: noise, time-over-threshold logic
+        // Parameters of the amplifier: Feedback time constant, risetime time constant
+        double tauF_{}, tauR_{};
+
+        // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
 
-        // helper variables for transfer function
-        double transconductance_feedback_{}, resistance_feedback_{}, tmax_{};
+        // Helper variables for transfer function
+        double resistance_feedback_{}, integration_time_{};
         std::vector<double> impulse_response_function_;
         std::once_flag first_event_flag_;
 
@@ -97,10 +97,22 @@ namespace allpix {
         TH2D* h_pxq_vs_tot{};
 
         /**
-         * @brief Compare output pulse with threshold for ToA/ToT
+         * @brief Calculate time of first threshold crossing
+         * @param timestep Step size of the input pulse
+         * @param pulse    Pulse after amplification and electronics noise
+         * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
+         *         of ToA clock cycles before crossing) and double (time of crossing)
          */
-        std::pair<double, double> compare_with_threshold(double timestep,
-                                                         const std::vector<double>& amplified_pulse_with_noise);
+        std::tuple<bool, unsigned int, double> get_toa(double timestep, const std::vector<double>& pulse) const;
+
+        /**
+         * @brief Calculate time-over-threshold
+         * @param  timestep    Step size of the input pulse
+         * @param arrival_time Time of crossing the threshold
+         * @param  pulse       Pulse after amplification and electronics noise
+         * @return             Number of clock cycles signal was over threshold
+         */
+        unsigned int get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const;
 
         /**
          * @brief Create output plots of the pulses
