@@ -91,10 +91,10 @@ namespace unibn {
             double diff2 = get<1>(p) - get<1>(q);
             double diff3 = get<2>(p) - get<2>(q);
 
-            return std::pow(diff1, 2) + std::pow(diff2, 2) + std::pow(diff3, 2);
+            return (diff1 * diff1 + diff2 * diff2 + diff3 * diff3);
         }
 
-        static inline double norm(double x, double y, double z) { return std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2); }
+        static inline double norm(double x, double y, double z) { return (x * x + y * y + z * z); }
 
         static inline double sqr(double r) { return r * r; }
 
@@ -677,7 +677,7 @@ namespace unibn {
                                                      std::vector<double>& distances) const {
         resultIndices.clear();
         distances.clear();
-        if(root_ == 0) {
+        if(root_ == nullptr) {
             return;
         }
 
@@ -747,6 +747,10 @@ namespace unibn {
     int32_t Octree<PointT, ContainerT>::findNeighbor(const PointT& query, double minDistance) const {
         double maxDistance = std::numeric_limits<double>::infinity();
         int32_t resultIndex = -1;
+        if(root_ == nullptr) {
+            return resultIndex;
+        }
+
         findNeighbor<Distance>(root_, query, minDistance, maxDistance, resultIndex);
 
         return resultIndex;

@@ -48,7 +48,7 @@ namespace cereal {
         template <class Base, class Derived> struct RegisterPolymorphicBaseClass<Base, Derived, true> {
             static void bind() { detail::RegisterPolymorphicCaster<Base, Derived>::bind(); }
         };
-    }
+    } // namespace base_class_detail
 
     //! Casts a derived class to its non-virtual base class in a way that safely supports abstract classes
     /*! This should be used in cases when a derived type needs to serialize its base type. This is better than directly
@@ -56,7 +56,8 @@ namespace cereal {
 
         This also automatically registers polymorphic relation between the base and derived class, assuming they
         are indeed polymorphic. Note this is not the same as polymorphic type registration. For more information
-        see the documentation on polymorphism.
+        see the documentation on polymorphism. If using a polymorphic class, be sure to include support for
+        polymorphism (cereal/types/polymorphic.hpp).
 
         \sa virtual_base_class
 
@@ -109,7 +110,8 @@ namespace cereal {
 
         This also automatically registers polymorphic relation between the base and derived class, assuming they
         are indeed polymorphic. Note this is not the same as polymorphic type registration. For more information
-        see the documentation on polymorphism.
+        see the documentation on polymorphism. If using a polymorphic class, be sure to include support for
+        polymorphism (cereal/types/polymorphic.hpp).
 
         \sa base_class
 

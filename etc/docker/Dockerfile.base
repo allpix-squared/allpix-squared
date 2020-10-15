@@ -4,7 +4,7 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 # Add layer for development tools
 RUN yum makecache fast && \
     yum -y install \
-    devtoolset-7 \
+    devtoolset-8 \
     cmake3 cmake \
     centos-release-scl \
     scl-utils \
@@ -25,5 +25,5 @@ RUN yum makecache fast && \
     pip3 install --upgrade pip && \
     pip3 install numpy matplotlib scipy pandas
 
-ENTRYPOINT ["scl", "enable", "devtoolset-7"]
+ENTRYPOINT ["scl", "enable", "devtoolset-8"]
 CMD ["bash"]
