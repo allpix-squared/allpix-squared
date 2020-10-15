@@ -234,7 +234,7 @@ void DetectorHistogrammerModule::init() {
     std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
     pixel_charge = new TH1D("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
-    std::string total_charge_title = "Total charge per event for " + detector_->getName() + ";total charge [ke];clusters";
+    std::string total_charge_title = "Total charge per event for " + detector_->getName() + ";total charge [ke];events";
     total_charge =
         new TH1D("total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 }
