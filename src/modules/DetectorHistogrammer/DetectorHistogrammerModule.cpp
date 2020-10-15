@@ -344,13 +344,12 @@ void DetectorHistogrammerModule::run(unsigned int) {
             residual_y_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_y));
             residual_x_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_x));
             residual_y_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_y));
-            residual_map->Fill(inPixel_um_x,
-                               inPixel_um_y,
-                               std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+            residual_map->Fill(
+                inPixel_um_x, inPixel_um_y, std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y));
             residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
             residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
             residual_detector->Fill(
-                xpixel, ypixel, std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+                xpixel, ypixel, std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y));
             residual_x_detector->Fill(xpixel, ypixel, std::fabs(residual_um_x));
             residual_y_detector->Fill(xpixel, ypixel, std::fabs(residual_um_y));
         }
