@@ -61,7 +61,7 @@ cmp:cc7-docker:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps-mt:latest
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
@@ -260,7 +260,7 @@ core:cc7-docker:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps-mt:latest
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
 
 mod:cc7-gcc:
     extends: .testmod
