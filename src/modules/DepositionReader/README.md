@@ -90,7 +90,7 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
 * `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
-* `assign_timestamps`: Boolean to select whether or not time information should be read and assigned to energy deposits. Dfeaults to `true`.
+* `assign_timestamps`: Boolean to select whether or not time information should be read and assigned to energy deposits. If `false`, all timestamps of deposits are set to 0. Defaults to `true`.
 * `create_mcparticles`: Boolean to select whether or not Monte Carlo particle IDs should be read and MCParticle objects created, defaults to `true`.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
