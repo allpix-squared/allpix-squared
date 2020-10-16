@@ -66,7 +66,7 @@ void DepositionReaderModule::init() {
         LOG(WARNING) << "No time information provided, all energy deposition will be assigned to t = 0";
     }
     if(!create_mcparticles_) {
-        LOG(ERROR) << "No MCParticle objects will be produced";
+        LOG(WARNING) << "No MCParticle objects will be produced";
     }
 
     // Check which file type we want to read:
