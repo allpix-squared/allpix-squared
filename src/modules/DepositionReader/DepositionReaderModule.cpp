@@ -95,26 +95,54 @@ void DepositionReaderModule::init() {
                   << " entries";
 
         // Check if we have branch names configured and use the default values otherwise:
-        auto branches = config_.getArray<std::string>("branch_names");
-        if(branches.size() != 10) {
-            throw InvalidValueError(
-                config_, "branch_names", "Parameter requires exactly 10 entries, one for each branch to be read");
+        auto branch_list = config_.getArray<std::string>("branch_names");
+
+        // Exactly 10 branch names are required unless time or monte carlo particles are left out:
+        size_t required_list_size =
+            10 - static_cast<size_t>(time_available_ ? 0 : 1) - static_cast<size_t>(create_mcparticles_ ? 0 : 2);
+        if(branch_list.size() != required_list_size) {
+            throw InvalidValueError(config_,
+                                    "branch_names",
+                                    "With the current configuration, this parameter requires exactly " +
+                                        std::to_string(required_list_size) + " entries, one for each branch to be read");
+        }
+
+        // Convert list to map for easier lookup:
+        size_t it = (time_available_ ? 3 : 2);
+        std::map<std::string, std::string> branches = {{"event", branch_list.at(0)},
+                                                       {"energy", branch_list.at(1)},
+                                                       {"px", branch_list.at(it++)},
+                                                       {"py", branch_list.at(it++)},
+                                                       {"pz", branch_list.at(it++)},
+                                                       {"volume", branch_list.at(it++)},
+                                                       {"pdg", branch_list.at(it++)}};
+        if(time_available_) {
+            branches["time"] = branch_list.at(2);
+        }
+        if(create_mcparticles_) {
+            branches["track_id"] = branch_list.at(it++);
+            branches["parent_id"] = branch_list.at(it++);
+        }
+
+        LOG(DEBUG) << "List of configured branches and their names:";
+        for(const auto& branch : branches) {
+            LOG(DEBUG) << branch.first << ": \"" << branch.second << "\"";
         }
 
         // Set up branch pointers
-        create_tree_reader(event_, branches.at(0));
-        create_tree_reader(edep_, branches.at(1));
+        create_tree_reader(event_, branches.at("event"));
+        create_tree_reader(edep_, branches.at("energy"));
         if(time_available_) {
-            create_tree_reader(time_, branches.at(2));
+            create_tree_reader(time_, branches.at("time"));
         }
-        create_tree_reader(px_, branches.at(3));
-        create_tree_reader(py_, branches.at(4));
-        create_tree_reader(pz_, branches.at(5));
-        create_tree_reader(volume_, branches.at(6));
-        create_tree_reader(pdg_code_, branches.at(7));
+        create_tree_reader(px_, branches.at("px"));
+        create_tree_reader(py_, branches.at("py"));
+        create_tree_reader(pz_, branches.at("pz"));
+        create_tree_reader(volume_, branches.at("volume"));
+        create_tree_reader(pdg_code_, branches.at("pdg"));
         if(create_mcparticles_) {
-            create_tree_reader(track_id_, branches.at(8));
-            create_tree_reader(parent_id_, branches.at(9));
+            create_tree_reader(track_id_, branches.at("track_id"));
+            create_tree_reader(parent_id_, branches.at("parent_id"));
         }
 
         // Advance to first entry of the tree:
