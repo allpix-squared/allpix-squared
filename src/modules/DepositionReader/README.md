@@ -45,7 +45,7 @@ By default the expected branch names and types are:
 
 Entries are read from all branches synchronously and accumulated in the same event until the event id read from the `event` branch changes.
 
-If the parameters `assign_timestamps` or `create_mcparticles` are set to `true`, no attempt is made in reading the respective branches, independently whether they are present or not.
+If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`, no attempt is made in reading the respective branches, independently whether they are present or not.
 
 Different branch names can be configured using the `branch_names` parameter.
 It should be noted that new names have to be provided for all branches, i.e. ten names, and that the order of the names has to reflect the order of the branches as listed here to allow for correct assignment.
