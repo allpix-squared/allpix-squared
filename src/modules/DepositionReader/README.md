@@ -75,7 +75,7 @@ where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], 
 The values are interpreted in the default framework units unless specified otherwise via the configuration parameters of this module.
 `<TRK>` represents the track id of the particle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
-If the parameters `assign_timestamps` or `create_mcparticles` are set to `true`, the parsing assumes that the respective columns `<T>` and `<TRK>`, `<PRT>` are not present in the CSV file.
+If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`, the parsing assumes that the respective columns `<T>` and `<TRK>`, `<PRT>` are not present in the CSV file.
 
 The file should have its end-of-file marker (EOF) in a new line, otherwise the last entry will be ignored.
 
