@@ -58,7 +58,7 @@ namespace cereal {
             /*! Specialization for when we actually have an enum
                 @internal */
             template <class T> struct enum_underlying_type<T, true> { using type = typename std::underlying_type<T>::type; };
-        } // anon namespace
+        } // namespace
 
         //! Checks if a type is an enum
         /*! This is needed over simply calling std::is_enum because the type
@@ -77,7 +77,7 @@ namespace cereal {
             using type = StrippedT;
             using base_type = typename enum_underlying_type<StrippedT, value>::type;
         };
-    }
+    } // namespace common_detail
 
     //! Saving for enum types
     template <class Archive, class T>

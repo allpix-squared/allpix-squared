@@ -1,8 +1,14 @@
-/*! \file util.hpp
-    \brief Internal misc utilities
-    \ingroup Internal */
+/*! \file version.hpp
+    \brief Macros to detect cereal version
+
+    These macros can assist in determining the version of cereal. Be
+    warned that cereal is not guaranteed to be compatible across
+    different versions. For more information on releases of cereal,
+    see https://github.com/USCiLab/cereal/releases.
+
+    \ingroup utility */
 /*
-  Copyright (c) 2014, Randolph Voorhies, Shane Grant
+  Copyright (c) 2018, Shane Grant
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -27,48 +33,18 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef CEREAL_DETAILS_UTIL_HPP_
-#define CEREAL_DETAILS_UTIL_HPP_
 
-#include <string>
-#include <typeinfo>
+#ifndef CEREAL_VERSION_HPP_
+#define CEREAL_VERSION_HPP_
 
-#ifdef _MSC_VER
-namespace cereal {
-    namespace util {
-        //! Demangles the type encoded in a string
-        /*! @internal */
-        inline std::string demangle(std::string const& name) { return name; }
+//! The major version
+#define CEREAL_VERSION_MAJOR 1
+//! The minor version
+#define CEREAL_VERSION_MINOR 3
+//! The patch version
+#define CEREAL_VERSION_PATCH 0
 
-        //! Gets the demangled name of a type
-        /*! @internal */
-        template <class T> inline std::string demangledName() { return typeid(T).name(); }
-    } // namespace util
-} // namespace cereal
-#else // clang or gcc
-#include <cstdlib>
-#include <cxxabi.h>
-namespace cereal {
-    namespace util {
-        //! Demangles the type encoded in a string
-        /*! @internal */
-        inline std::string demangle(std::string mangledName) {
-            int status = 0;
-            char* demangledName = nullptr;
-            std::size_t len;
+//! The full version as a single number
+#define CEREAL_VERSION (CEREAL_VERSION_MAJOR * 10000 + CEREAL_VERSION_MINOR * 100 + CEREAL_VERSION_PATCH)
 
-            demangledName = abi::__cxa_demangle(mangledName.c_str(), 0, &len, &status);
-
-            std::string retName(demangledName);
-            free(demangledName);
-
-            return retName;
-        }
-
-        //! Gets the demangled name of a type
-        /*! @internal */
-        template <class T> inline std::string demangledName() { return demangle(typeid(T).name()); }
-    } // namespace util
-} // namespace cereal
-#endif // clang or gcc branch of _MSC_VER
-#endif // CEREAL_DETAILS_UTIL_HPP_
+#endif // CEREAL_VERSION_HPP_
