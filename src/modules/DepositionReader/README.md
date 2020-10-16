@@ -48,7 +48,8 @@ Entries are read from all branches synchronously and accumulated in the same eve
 If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`, no attempt is made in reading the respective branches, independently whether they are present or not.
 
 Different branch names can be configured using the `branch_names` parameter.
-It should be noted that new names have to be provided for all branches, i.e. ten names, and that the order of the names has to reflect the order of the branches as listed here to allow for correct assignment.
+It should be noted that new names have to be provided for all branches, i.e. ten names, and that the order of the names has to reflect the order of the branches as listed above to allow for correct assignment.
+If `assign_timestamps` or `create_mcparticles` are set to `false`, their branch names (`time` and `track_id`, `parent_id`, respectively) should be omitted from the branch name list.
 Individual leafs of branches can be assigned using the dot notation, e.g. `energy.Edep` to access a leaf of the branch `energy` to retrieve the energy deposit information.
 
 
