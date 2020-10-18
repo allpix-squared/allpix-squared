@@ -73,6 +73,10 @@ void PulseTransferModule::init() {
                                         nbins,
                                         0,
                                         config_.get<int>("output_plots_scale"));
+        p_induced_pulses_ =
+            new TProfile("pulses_induced_profile", "Induced charge per pixel;t [ns];Q_{ind} [e]", nbins, 0, 10.);
+        p_integrated_pulses_ = new TProfile(
+            "pulses_integrated_profile", "Accumulated induced charge per pixel;t [ns];Q_{ind} [e]", nbins, 0, 10.);
     }
 }
 
@@ -181,9 +185,11 @@ void PulseTransferModule::run(unsigned int event_num) {
             for(auto bin = pulse_vec.begin(); bin != pulse_vec.end(); ++bin) {
                 auto time = step * static_cast<double>(std::distance(pulse_vec.begin(), bin));
                 h_induced_pulses_->Fill(time, *bin);
+                p_induced_pulses_->Fill(time, *bin);
 
                 charge += *bin;
                 h_integrated_pulses_->Fill(time, charge);
+                p_integrated_pulses_->Fill(time, charge);
             }
         }
 
@@ -279,5 +285,7 @@ void PulseTransferModule::finalize() {
         h_total_induced_charge_->Write();
         h_induced_pulses_->Write();
         h_integrated_pulses_->Write();
+        p_induced_pulses_->Write();
+        p_integrated_pulses_->Write();
     }
 }
