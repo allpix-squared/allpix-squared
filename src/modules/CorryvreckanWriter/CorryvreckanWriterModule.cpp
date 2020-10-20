@@ -26,7 +26,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
-    // Require PixelCharge messages for single detector
+    // Require PixelHit messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");

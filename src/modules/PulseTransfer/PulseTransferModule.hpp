@@ -59,6 +59,8 @@ namespace allpix {
 
         Messenger* messenger_;
 
+        void create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const;
+
         // General module members
         std::shared_ptr<Detector> detector_;
 
