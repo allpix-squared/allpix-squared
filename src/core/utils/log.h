@@ -284,7 +284,7 @@ namespace allpix {
  * @param  Count Number of allowed counts
  * @return       Local counter variable
  */
-#define GENERATE_LOG_VAR(Count) thread_local size_t local___FUNCTION__##Count##__LINE__ = Count
+#define GENERATE_LOG_VAR(Count) static std::atomic<int> local___FUNCTION__##Count##__LINE__(Count)
 #define GET_LOG_VARIABLE(Count) local___FUNCTION__##Count##__LINE__
 
 /**
@@ -295,11 +295,11 @@ namespace allpix {
  */
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
-    if(GET_LOG_VARIABLE(max_log_count) != 0 && GET_LOG_VARIABLE(max_log_count)-- != 0)                                      \
+    if(GET_LOG_VARIABLE(max_log_count) > 0)                                                                                 \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
     allpix::Log().getStream(                                                                                                \
         allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
-        << std::string(GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages will be suppressed] " : "")
+        << std::string(--GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
 
     /**
      * @brief Suppress an stream from writing any output
