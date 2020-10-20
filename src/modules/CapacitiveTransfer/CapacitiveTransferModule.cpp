@@ -322,7 +322,8 @@ void CapacitiveTransferModule::run(unsigned int) {
                 unique_pixels_.insert(pixel_index);
 
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
-                neighbour_charge = propagated_charge.getCharge() * ccpd_factor;
+                neighbour_charge =
+                    static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) * ccpd_factor;
 
                 LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to neighbour "
                            << col << "," << row << " pixel " << pixel_index << "with cross-coupling of " << ccpd_factor * 100

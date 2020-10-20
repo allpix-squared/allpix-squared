@@ -71,7 +71,7 @@ namespace allpix {
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};
-        bool store_tot_{false}, store_toa_{false};
+        bool store_tot_{false}, store_toa_{false}, ignore_polarity_{};
 
         std::mt19937_64 random_generator_;
 

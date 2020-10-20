@@ -88,8 +88,8 @@ void InducedTransferModule::run(unsigned int) {
                 auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);
 
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = propagated_charge.getCharge() * (ramo_end - ramo_start) *
-                               (-static_cast<std::underlying_type<CarrierType>::type>(propagated_charge.getType()));
+                auto induced = static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) *
+                               (ramo_end - ramo_start);
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo_end - ramo_start) << ", induced "
                            << propagated_charge.getType() << " q = " << Units::display(induced, "e");
 
@@ -120,7 +120,7 @@ void InducedTransferModule::run(unsigned int) {
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());
 
-        pixel_charges.emplace_back(pixel, std::round(std::fabs(charge)), prop_charges);
+        pixel_charges.emplace_back(pixel, std::round(charge), prop_charges);
         LOG(DEBUG) << "Set of " << charge << " charges combined at " << pixel.getIndex();
     }
 
