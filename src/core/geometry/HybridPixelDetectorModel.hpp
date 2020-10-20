@@ -105,6 +105,15 @@ namespace allpix {
         void setChipExcessLeft(double val) { chip_excess_.at(3) = val; }
 
         /**
+         * @brief extend the total size for the detector wrapper by potential shifts of the bump bond grid
+         * @return Size of the hybrid pixel detector model
+         */
+        ROOT::Math::XYZVector getSize() const override {
+            return (DetectorModel::getSize() +
+                    2 * ROOT::Math::XYZVector(std::fabs(bump_offset_.x()), std::fabs(bump_offset_.y()), 0));
+        }
+
+        /**
          * @brief Return all layers of support
          * @return List of all the support layers
          *
