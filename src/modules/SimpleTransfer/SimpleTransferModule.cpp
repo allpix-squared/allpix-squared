@@ -134,9 +134,9 @@ void SimpleTransferModule::run(unsigned int) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
-        unsigned int charge = 0;
+        long charge = 0;
         for(auto& propagated_charge : pixel_index_charge.second) {
-            charge += propagated_charge->getCharge();
+            charge += propagated_charge->getSign() * propagated_charge->getCharge();
         }
 
         // Get pixel object from detector
