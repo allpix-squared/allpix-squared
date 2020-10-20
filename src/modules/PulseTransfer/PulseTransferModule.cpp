@@ -24,8 +24,6 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
                                          Messenger* messenger,
                                          const std::shared_ptr<Detector>& detector)
     : Module(config, detector), messenger_(messenger), detector_(detector) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
 
     // Set default value for config variables
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
@@ -40,6 +38,13 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
     timestep_ = config_.get<double>("timestep");
+
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!output_pulsegraphs_) {
+        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
+        enable_parallelization();
+    }
 
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
