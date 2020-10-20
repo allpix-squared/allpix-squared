@@ -182,26 +182,7 @@ namespace allpix {
          * @note This returns the center of the geometry model, i.e. including all support layers, passive readout chips et
          * cetera.
          */
-        virtual ROOT::Math::XYZPoint getGeometricalCenter() const {
-            // Get the distance, on the z axis, between the sensor center and the detector (box) geometrical center
-            double detector_thickness = getSize().z();
-            double min_support_center =
-                -getSensorSize().Z() / 2; // center (on the z axis) of the support (sensor side) with smallest z coordinate
-            double min_support_size = 0.; // z size of the support (sensor side) with smallest z coordinate
-            for(auto& support_layer : getSupportLayers()) {
-                double centers_zDistance = (support_layer.getCenter()).z() - getSensorCenter().z();
-                if(centers_zDistance < min_support_center) { // selects supports on the sensor side only
-                    min_support_center = centers_zDistance;
-                    min_support_size = (support_layer.getSize()).z();
-                }
-            }
-            double support_sensorSide_thickness =
-                std::abs(min_support_center) + min_support_size / 2 -
-                getSensorSize().Z() / 2; // total thickness of support layers (including empty spaces) on the sensor side
-            double zDistanceToGeoCenter = detector_thickness / 2 - support_sensorSide_thickness - getSensorSize().Z() / 2;
-
-            return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), zDistanceToGeoCenter);
-        }
+        virtual ROOT::Math::XYZPoint getGeometricalCenter() const;
 
         /**
          * @brief Get size of the wrapper box around the model that contains all elements
