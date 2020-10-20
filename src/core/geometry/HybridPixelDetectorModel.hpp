@@ -50,7 +50,13 @@ namespace allpix {
             setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
             setBumpHeight(config.get<double>("bump_height"));
             setBumpSphereRadius(config.get<double>("bump_sphere_radius", 0));
-            setBumpOffset(config.get<ROOT::Math::XYVector>("bump_offset", {0, 0}));
+
+            auto pitch = config.get<ROOT::Math::XYVector>("pixel_size");
+            auto bump_offset = config.get<ROOT::Math::XYVector>("bump_offset", {0, 0});
+            if(std::fabs(bump_offset.x()) > pitch.x() / 2.0 || std::fabs(bump_offset.y()) > pitch.y() / 2.0) {
+                throw InvalidValueError(config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
+            }
+            setBumpOffset(bump_offset);
         }
 
         /**
