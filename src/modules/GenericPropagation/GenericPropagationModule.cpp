@@ -695,14 +695,14 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time, final state: " << allpix::to_string(state);
+                       << " in " << Units::display(time, "ns") << " time, gain " << gain << ", final state: " << allpix::to_string(state);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(final_position);
             PropagatedCharge propagated_charge(final_position,
                                                global_position,
                                                deposit.getType(),
-                                               static_cast<unsigned int>(charge_per_step * gain),
+                                               static_cast<unsigned int>(std::round(charge_per_step * gain)),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
                                                state,
@@ -823,8 +823,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 // ionisation coefficient for holes
                 double b_p = c_p + d_p * temperature_;
                 double beta_ = a_p * std::exp(-(b_p / efield_mag));
-                
-                return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
+                auto g = std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
+                LOG(TRACE) << "Massey gain " << g << " for field " << abs(efield_mag);
+                return g;
             }
             
             else if (multiplication_model_ == "overstraeten") {
@@ -920,6 +921,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Get the current result and timestep
         auto timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
+        LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um"}) << " to "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
 
         // Get electric field at current position and fall back to empty field if it does not exist
         auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
