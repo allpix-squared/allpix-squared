@@ -22,7 +22,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 
 ### Parameters
-* `model` :  Choice between different CSA models. Currently implemented are two parametrization of the circuit from [@kleczek], `simple` and `csa`.
+* `model` :  Choice between different CSA models. Currently implemented are two parametrizations of the circuit from [@kleczek], `simple` and `csa`.
 * `feedback_capacitance` :  The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
