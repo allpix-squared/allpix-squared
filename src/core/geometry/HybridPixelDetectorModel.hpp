@@ -109,8 +109,13 @@ namespace allpix {
          * @return Size of the hybrid pixel detector model
          */
         ROOT::Math::XYZVector getSize() const override {
-            return (DetectorModel::getSize() +
-                    2 * ROOT::Math::XYZVector(std::fabs(bump_offset_.x()), std::fabs(bump_offset_.y()), 0));
+            auto size = DetectorModel::getSize();
+            auto bump_grid =
+                getSensorSize() + 2 * ROOT::Math::XYZVector(std::fabs(bump_offset_.x()), std::fabs(bump_offset_.y()), 0);
+
+            // Extend size unless it's already large enough to cover shifted bump bond grid:
+            return ROOT::Math::XYZVector(
+                std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
         }
 
         /**
