@@ -3,8 +3,8 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
 # Add layer for Geant4
 
-ENV GEANT4_VERSION 10.06.p01
-ENV GEANT4_VERSION_PATH 10.6.1
+ENV GEANT4_VERSION 10.06.p02
+ENV GEANT4_VERSION_PATH 10.6.2
 
 ENV GEANT4DIR="/opt/geant4"
 ENV PATH="$GEANT4DIR/bin:$PATH"
@@ -20,7 +20,7 @@ ENV G4ABLADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ABLA3.1"
 ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ENSDFSTATE2.2"
 ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PARTICLEXS2.1"
 
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${GEANT4DIR}/{src,build} && \
     curl -o ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz \
             http://geant4-data.web.cern.ch/geant4-data/releases/source/geant4.${GEANT4_VERSION}.tar.gz && \
@@ -43,7 +43,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for ROOT6
 
-ENV ROOT6_VERSION 6.20.00
+ENV ROOT6_VERSION 6.22.02
 
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
@@ -52,7 +52,7 @@ ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
 ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
 ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
 
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${ROOTSYS}/{src,build} && \
     curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
             https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
@@ -78,7 +78,7 @@ RUN source scl_source enable devtoolset-7 && \
 
 # Add layer for LCIO
 
-ENV LCIO_VERSION 02-13-02
+ENV LCIO_VERSION 02-15-03
 
 ENV LCIODIR="/opt/lcio"
 ENV PATH="$LCIODIR/bin:$PATH"
@@ -86,7 +86,7 @@ ENV LD_LIBRARY_PATH="$LCIODIR/lib:$LD_LIBRARY_PATH"
 ENV LIBPATH="$LCIODIR/lib:$LIBPATH"
 ENV CMAKE_PREFIX_PATH="$LCIODIR:$CMAKE_PREFIX_PATH"
 
-RUN source scl_source enable devtoolset-7 && \
+RUN source scl_source enable devtoolset-8 && \
     mkdir -p ${LCIODIR}/{src,build} && \
     curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
             https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \

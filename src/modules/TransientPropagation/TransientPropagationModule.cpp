@@ -18,7 +18,6 @@
 #include <Eigen/Core>
 
 #include "core/utils/log.h"
-#include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
@@ -359,7 +358,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                     detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = charge * (ramo - last_ramo) * (-static_cast<std::underlying_type<CarrierType>::type>(type));
+                auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 

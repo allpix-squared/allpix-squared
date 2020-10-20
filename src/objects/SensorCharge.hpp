@@ -71,6 +71,12 @@ namespace allpix {
         unsigned int getCharge() const;
 
         /**
+         * @brief Get the sign of the charge for set of charge carriers
+         * @return Sign of the charge
+         */
+        long getSign() const;
+
+        /**
          * @brief Get time after start of event in global reference frame
          * @return Time from start event
          */

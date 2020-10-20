@@ -36,6 +36,10 @@ unsigned int SensorCharge::getCharge() const {
     return charge_;
 }
 
+long SensorCharge::getSign() const {
+    return static_cast<std::underlying_type<CarrierType>::type>(type_);
+}
+
 double SensorCharge::getGlobalTime() const {
     return global_time_;
 }

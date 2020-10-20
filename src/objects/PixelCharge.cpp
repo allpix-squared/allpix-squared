@@ -14,7 +14,7 @@
 
 using namespace allpix;
 
-PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<const PropagatedCharge*>& propagated_charges)
+PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const PropagatedCharge*>& propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
     std::set<TRef> unique_particles;
@@ -37,12 +37,12 @@ PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<con
     }
 
     // No pulse provided, set full charge in first bin:
-    pulse_.addCharge(charge, 0);
+    pulse_.addCharge(static_cast<double>(charge), 0);
 }
 
 // WARNING PixelCharge always returns a positive "collected" charge...
 PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, const std::vector<const PropagatedCharge*>& propagated_charges)
-    : PixelCharge(std::move(pixel), static_cast<unsigned int>(std::abs(pulse.getCharge())), propagated_charges) {
+    : PixelCharge(std::move(pixel), static_cast<long>(pulse.getCharge()), propagated_charges) {
     pulse_ = std::move(pulse);
 }
 
@@ -54,8 +54,12 @@ Pixel::Index PixelCharge::getIndex() const {
     return getPixel().getIndex();
 }
 
-unsigned int PixelCharge::getCharge() const {
+long PixelCharge::getCharge() const {
     return charge_;
+}
+
+unsigned long PixelCharge::getAbsoluteCharge() const {
+    return static_cast<unsigned long>(std::abs(charge_));
 }
 
 const Pulse& PixelCharge::getPulse() const {
