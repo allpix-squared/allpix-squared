@@ -36,7 +36,8 @@ namespace allpix {
                    ROOT::Math::XYZPoint local_end_point,
                    ROOT::Math::XYZPoint global_end_point,
                    int particle_id,
-                   double time);
+                   double local_time,
+                   double global_time);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
@@ -122,7 +123,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 7);
+        ClassDefOverride(MCParticle, 8);
         /**
          * @brief Default constructor for ROOT I/O
          */

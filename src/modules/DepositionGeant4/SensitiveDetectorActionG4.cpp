@@ -165,7 +165,7 @@ void SensitiveDetectorActionG4::dispatchMessages() {
 
         auto global_begin = detector_->getGlobalPosition(local_begin);
         auto global_end = detector_->getGlobalPosition(local_end);
-        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code, track_time);
+        mc_particles.emplace_back(local_begin, global_begin, local_end, global_end, pdg_code, 0., track_time);
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 

@@ -216,7 +216,7 @@ void DepositionReaderModule::run(unsigned int event) {
             // We have not yet seen this MCParticle, let's store it and keep track of the track id
             LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
             mc_particles[detector].emplace_back(
-                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, 0, time);
             track_id_to_mcparticle[detector][track_id] = (mc_particles[detector].size() - 1);
 
             // Check if we know the parent - and set it:
