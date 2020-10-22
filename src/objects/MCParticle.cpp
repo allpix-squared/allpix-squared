@@ -130,6 +130,10 @@ void MCParticle::print(std::ostream& out) const {
         << global_end_point_.X() << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Y()
         << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Z() << std::setw(small_gap)
         << " mm  \n"
+        << std::left << std::setw(big_gap) << "Local time:" << std::right << std::setw(med_gap) << local_time_
+        << std::setw(small_gap) << " ns \n"
+        << std::left << std::setw(big_gap) << "Global time:" << std::right << std::setw(med_gap) << global_time_
+        << std::setw(small_gap) << " ns \n"
         << std::left << std::setw(big_gap) << "Linked parent:";
     if(parent != nullptr) {
         out << std::right << std::setw(small_gap) << parent << '\n';
