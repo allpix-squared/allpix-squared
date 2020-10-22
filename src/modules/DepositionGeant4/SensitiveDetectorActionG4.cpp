@@ -114,8 +114,6 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     deposit_position_.push_back(deposit_position);
     deposit_charge_.push_back(charge);
     deposit_time_.push_back(step_time);
-
-    deposit_to_id_.push_back(trackID);
     deposit_to_id_.push_back(trackID);
 
     LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
@@ -210,11 +208,16 @@ void SensitiveDetectorActionG4::dispatchMessages() {
             charges += 2 * charge;
             total_deposited_charge_ += 2 * charge;
 
+            // Match deposit with mc particle if possible
+            auto track_id = deposit_to_id_.at(i);
+
             // Deposit electron
             deposits.emplace_back(local_position, global_position, CarrierType::ELECTRON, charge, local_time, global_time);
+            deposits.back().setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
 
             // Deposit hole
             deposits.emplace_back(local_position, global_position, CarrierType::HOLE, charge, local_time, global_time);
+            deposits.back().setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
 
             LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_position, {"mm", "um"})
                        << " global / " << Units::display(local_position, {"mm", "um"}) << " local in "
@@ -223,12 +226,6 @@ void SensitiveDetectorActionG4::dispatchMessages() {
         }
 
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
-
-        // Match deposit with mc particle if possible
-        for(size_t i = 0; i < deposits.size(); ++i) {
-            auto track_id = deposit_to_id_.at(i);
-            deposits.at(i).setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
-        }
 
         // Create a new charge deposit message
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits), detector_);
