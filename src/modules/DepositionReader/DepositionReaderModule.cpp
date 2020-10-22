@@ -209,9 +209,9 @@ void DepositionReaderModule::run(unsigned int event) {
 
         // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
         // excitations via the Fano factor. We assume Gaussian statistics here.
-        auto mean_charge = static_cast<unsigned int>(energy / charge_creation_energy_);
+        auto mean_charge = energy / charge_creation_energy_;
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = charge_fluctuation(random_generator_);
+        auto charge = static_cast<unsigned int>(charge_fluctuation(random_generator_));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
