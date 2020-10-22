@@ -194,36 +194,34 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     track_pdg_.clear();
     track_time_.clear();
 
-    // Prepare charge deposits for this event
-    std::vector<DepositedCharge> deposits;
-    for(size_t i = 0; i < deposit_position_.size(); i++) {
-        auto local_position = deposit_position_.at(i);
-        auto global_position = detector_->getGlobalPosition(local_position);
-
-        auto global_time = deposit_time_.at(i);
-        auto local_time = global_time - time_reference;
-
-        auto charge = deposit_charge_.at(i);
-
-        // Deposit electron
-        deposits.emplace_back(local_position, global_position, CarrierType::ELECTRON, charge, local_time, global_time);
-
-        // Deposit hole
-        deposits.emplace_back(local_position, global_position, CarrierType::HOLE, charge, local_time, global_time);
-
-        LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_position, {"mm", "um"})
-                   << " global / " << Units::display(local_position, {"mm", "um"}) << " local in " << detector_->getName()
-                   << " after " << Units::display(global_time, {"ns", "ps"}) << " global / "
-                   << Units::display(local_time, {"ns", "ps"}) << " local";
-    }
-
     // Send a deposit message if we have any deposits
     unsigned int charges = 0;
-    if(!deposits.empty()) {
-        for(auto& ch : deposits) {
-            charges += ch.getCharge();
-            total_deposited_charge_ += ch.getCharge();
+    if(!deposit_position_.empty()) {
+        // Prepare charge deposits for this event
+        std::vector<DepositedCharge> deposits;
+        for(size_t i = 0; i < deposit_position_.size(); i++) {
+            auto local_position = deposit_position_.at(i);
+            auto global_position = detector_->getGlobalPosition(local_position);
+
+            auto global_time = deposit_time_.at(i);
+            auto local_time = global_time - time_reference;
+
+            auto charge = deposit_charge_.at(i);
+            charges += 2 * charge;
+            total_deposited_charge_ += 2 * charge;
+
+            // Deposit electron
+            deposits.emplace_back(local_position, global_position, CarrierType::ELECTRON, charge, local_time, global_time);
+
+            // Deposit hole
+            deposits.emplace_back(local_position, global_position, CarrierType::HOLE, charge, local_time, global_time);
+
+            LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_position, {"mm", "um"})
+                       << " global / " << Units::display(local_position, {"mm", "um"}) << " local in "
+                       << detector_->getName() << " after " << Units::display(global_time, {"ns", "ps"}) << " global / "
+                       << Units::display(local_time, {"ns", "ps"}) << " local";
         }
+
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
 
         // Match deposit with mc particle if possible
