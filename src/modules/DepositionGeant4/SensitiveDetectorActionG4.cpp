@@ -152,6 +152,12 @@ unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
 }
 
 void SensitiveDetectorActionG4::dispatchMessages() {
+
+    auto time_reference = std::min_element(track_time_.begin(), track_time_.end(), [](const auto& l, const auto& r) {
+                              return l.second < r.second;
+                          })->second;
+    LOG(TRACE) << "Earliest MCParticle arrived at " << Units::display(time_reference, {"ns", "ps"}) << " global";
+
     // Create the mc particles
     std::vector<MCParticle> mc_particles;
     for(auto& track_id_point : track_begin_) {
