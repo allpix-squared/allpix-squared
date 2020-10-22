@@ -63,7 +63,8 @@ namespace allpix {
             }
 
             // Create the G4VSolids which make the cylinder
-            solid_ = new G4Tubs(name + "_volume", inner_radius_, outer_radius_, length_ / 2, starting_angle_, arc_length_);
+            solid_ = std::make_shared<G4Tubs>(
+                name + "_volume", inner_radius_, outer_radius_, length_ / 2, starting_angle_, arc_length_);
 
             // Get the maximum of the size parameters
             max_size_ = std::max(2 * outer_radius_, length_);
@@ -73,12 +74,12 @@ namespace allpix {
         }
 
         // Set the override functions of PassiveMaterialModel
-        G4Tubs* getSolid() const override { return solid_; }
+        std::shared_ptr<G4VSolid> getSolid() const override { return solid_; }
         double getMaxSize() const override { return max_size_; }
 
     private:
         // G4VSolid returnables
-        G4Tubs* solid_;
+        std::shared_ptr<G4VSolid> solid_;
 
         // G4VSolid specifications
         double inner_radius_;
