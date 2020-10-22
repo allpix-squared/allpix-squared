@@ -271,8 +271,9 @@ A sketch of the actual coordinate transformations performed, including the order
 \end{figure}
 
 The global reference for time measurements is the beginning of the event, i.e.\ the start of the particle tracking through the setup.
-The local time reference is the entry of the primary particle into the sensor.
+The local time reference is the time of entry of the \emph{first} primary particle of the event into the sensor.
 This means that secondary particles created within the sensor inherit the local time reference from their parent particles in order to have a uniform time reference in the sensor.
+It should be noted that Monte Carlo particles that start the local time frame on different detectors do not necessarily have to belong to the same particle track.
 
 \subsection{Changing and accessing the geometry}
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained in Section~\ref{sec:module_instantiation}.
