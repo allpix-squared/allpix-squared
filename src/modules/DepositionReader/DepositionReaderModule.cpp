@@ -246,6 +246,14 @@ void DepositionReaderModule::run(unsigned int event) {
     // Loop over all known detectors and dispatch messages for them
     for(const auto& detector : geo_manager_->getDetectors()) {
 
+        if(mc_particle_start[detector].empty()) {
+            continue;
+        }
+
+        auto time_reference = *std::min_element(mc_particle_time[detector].begin(), mc_particle_time[detector].end());
+        LOG(DEBUG) << "Earliest MCParticle arrived on detector " << detector->getName() << " at "
+                   << Units::display(time_reference, {"ns", "ps"}) << " global";
+
         std::vector<MCParticle> mc_particles;
         for(size_t i = 0; i < mc_particle_start[detector].size(); i++) {
             auto start_global = mc_particle_start[detector].at(i);
@@ -257,7 +265,8 @@ void DepositionReaderModule::run(unsigned int event) {
             auto time = mc_particle_time[detector].at(i);
             auto parent_id = mc_particle_parent[detector].at(i);
 
-            mc_particles.emplace_back(start_local, start_global, end_local, end_global, pdg_code, 0, time);
+            mc_particles.emplace_back(
+                start_local, start_global, end_local, end_global, pdg_code, time - time_reference, time);
 
             // Check if we know the parent - and set it:
             auto parent = track_id_to_mcparticle[detector].find(parent_id);
@@ -286,12 +295,13 @@ void DepositionReaderModule::run(unsigned int event) {
 
                 // Deposit electron
                 deposits[detector].emplace_back(
-                    local_position, global_position, CarrierType::ELECTRON, charge, time - 0, time);
+                    local_position, global_position, CarrierType::ELECTRON, charge, time - time_reference, time);
                 deposits[detector].back().setMCParticle(&mc_particle_message->getData().at(
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
 
                 // Deposit hole
-                deposits[detector].emplace_back(local_position, global_position, CarrierType::HOLE, charge, time - 0, time);
+                deposits[detector].emplace_back(
+                    local_position, global_position, CarrierType::HOLE, charge, time - time_reference, time);
                 deposits[detector].back().setMCParticle(&mc_particle_message->getData().at(
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
