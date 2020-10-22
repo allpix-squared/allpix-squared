@@ -27,9 +27,6 @@
 #include <G4ThreeVector.hh>
 #include <G4VisAttributes.hh>
 
-#include "Passive_Material_Models/BoxModel.hpp"
-#include "Passive_Material_Models/CylinderModel.hpp"
-#include "Passive_Material_Models/SphereModel.hpp"
 #include "core/module/exceptions.h"
 #include "tools/ROOT.h"
 #include "tools/geant4.h"

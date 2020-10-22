@@ -18,16 +18,9 @@
 #include <Math/RotationZYX.h>
 #include <Math/Vector3D.h>
 
-#include <G4Box.hh>
-#include <G4IntersectionSolid.hh>
-#include <G4Sphere.hh>
-#include <G4SubtractionSolid.hh>
-#include <G4Tubs.hh>
-#include <G4UnionSolid.hh>
-#include "G4Material.hh"
-
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
+#include <G4Material.hh>
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
@@ -38,9 +31,9 @@
 #include "tools/geant4.h"
 
 #include "PassiveMaterialModel.hpp"
-#include "Passive_Material_Models/BoxModel.hpp"
-#include "Passive_Material_Models/CylinderModel.hpp"
-#include "Passive_Material_Models/SphereModel.hpp"
+#include "passive_models/BoxModel.hpp"
+#include "passive_models/CylinderModel.hpp"
+#include "passive_models/SphereModel.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
