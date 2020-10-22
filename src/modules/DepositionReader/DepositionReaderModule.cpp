@@ -156,7 +156,6 @@ void DepositionReaderModule::run(unsigned int event) {
     std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> mc_particle_end;
     std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_code;
     std::map<std::shared_ptr<Detector>, std::vector<double>> mc_particle_time;
-    std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_id;
     std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_parent;
 
     std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
@@ -226,7 +225,6 @@ void DepositionReaderModule::run(unsigned int event) {
             mc_particle_end[detector].push_back(global_deposit_position);
             mc_particle_time[detector].push_back(time);
             mc_particle_code[detector].push_back(pdg_code);
-            mc_particle_id[detector].push_back(track_id);
             mc_particle_parent[detector].push_back(parent_id);
             track_id_to_mcparticle[detector][track_id] = (mc_particle_start[detector].size() - 1);
         } else {
