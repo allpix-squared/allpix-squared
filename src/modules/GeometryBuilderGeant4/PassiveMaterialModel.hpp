@@ -67,12 +67,12 @@ namespace allpix {
          * @brief Virtual function that will return a G4VSolid corresponding to the specific model
          * @return Nullptr if no valid model type is defined
          */
-        virtual G4VSolid* getSolid() const { return nullptr; }
+        virtual std::shared_ptr<G4VSolid> getSolid() const = 0;
         /**
          * @brief Virtual function that will return the maximum size parameter of the model
          * @return 0 if no valid model type is defined
          */
-        virtual double getMaxSize() const { return 0; }
+        virtual double getMaxSize() const = 0;
 
         void buildVolume(const std::map<std::string, G4Material*>& materials,
                          const std::shared_ptr<G4LogicalVolume>& world_log);
