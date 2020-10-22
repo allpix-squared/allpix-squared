@@ -42,8 +42,9 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
     if(!output_pulsegraphs_) {
-        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
         enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
     }
 
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
