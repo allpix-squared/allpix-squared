@@ -150,8 +150,10 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
 
 void DepositionReaderModule::run(unsigned int event) {
 
-    // Set of deposited charges in this event
-    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> deposit_position;
+    std::map<std::shared_ptr<Detector>, std::vector<unsigned int>> deposit_charge;
+    std::map<std::shared_ptr<Detector>, std::vector<double>> deposit_time;
+
     std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> mc_particle_start;
     std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> mc_particle_end;
     std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_code;
@@ -167,16 +169,16 @@ void DepositionReaderModule::run(unsigned int event) {
 
     do {
         bool read_status = false;
-        ROOT::Math::XYZPoint global_deposit_position;
+        ROOT::Math::XYZPoint global_position;
         std::string volume;
         double energy, time;
         int pdg_code, track_id, parent_id;
 
         try {
             if(file_model_ == "csv") {
-                read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_csv(event, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             } else if(file_model_ == "root") {
-                read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_root(event, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             }
         } catch(EndOfRunException& e) {
             end_of_run = true;
@@ -199,10 +201,10 @@ void DepositionReaderModule::run(unsigned int event) {
         auto detector = (*pos);
         LOG(DEBUG) << "Found detector \"" << detector->getName() << "\"";
 
-        auto deposit_position = detector->getLocalPosition(global_deposit_position);
-        if(!detector->isWithinSensor(deposit_position)) {
-            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(deposit_position, {"mm", "um"})
-                         << ", global " << Units::display(global_deposit_position, {"mm", "um"}) << ". Skipping.";
+        auto local_position = detector->getLocalPosition(global_position);
+        if(!detector->isWithinSensor(local_position)) {
+            LOG(WARNING) << "Found deposition outside sensor at " << Units::display(local_position, {"mm", "um"})
+                         << ", global " << Units::display(global_position, {"mm", "um"}) << ". Skipping.";
             continue;
         }
 
@@ -213,33 +215,29 @@ void DepositionReaderModule::run(unsigned int event) {
         auto charge = static_cast<unsigned int>(charge_fluctuation(random_generator_));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
-                   << Units::display(deposit_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
-                   << Units::display(global_deposit_position, {"mm", "um"}) << ", particleID " << pdg_code;
+                   << Units::display(local_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
+                   << Units::display(global_position, {"mm", "um"}) << ", particleID " << pdg_code;
 
         // MCParticle:
         auto iter = track_id_to_mcparticle[detector].find(track_id);
         if(iter == track_id_to_mcparticle[detector].end()) {
             // We have not yet seen this MCParticle, let's store it and keep track of the track id
             LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
-            mc_particle_start[detector].push_back(global_deposit_position);
-            mc_particle_end[detector].push_back(global_deposit_position);
+            mc_particle_start[detector].push_back(global_position);
+            mc_particle_end[detector].push_back(global_position);
             mc_particle_time[detector].push_back(time);
             mc_particle_code[detector].push_back(pdg_code);
             mc_particle_parent[detector].push_back(parent_id);
             track_id_to_mcparticle[detector][track_id] = (mc_particle_start[detector].size() - 1);
         } else {
             LOG(DEBUG) << "Found MCParticle with track id " << track_id << ", updating position";
-            mc_particle_end[detector].at(iter->second) = global_deposit_position;
+            mc_particle_end[detector].at(iter->second) = global_position;
         }
 
-        // Deposit electron
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time - 0, time);
-        particles_to_deposits[detector].push_back(track_id);
-
-        // Deposit hole
-        deposits[detector].emplace_back(
-            deposit_position, global_deposit_position, CarrierType::HOLE, charge, time - 0, time);
+        // Store information about deposited charge carriers
+        deposit_position[detector].push_back(global_position);
+        deposit_charge[detector].push_back(charge);
+        deposit_time[detector].push_back(time);
         particles_to_deposits[detector].push_back(track_id);
     } while(true);
 
@@ -275,13 +273,26 @@ void DepositionReaderModule::run(unsigned int event) {
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector);
         messenger_->dispatchMessage(this, mc_particle_message);
 
-        if(!deposits[detector].empty()) {
+        if(!deposit_position[detector].empty()) {
+            std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
             double total_deposits = 0;
 
-            // Assign MCParticles:
-            for(size_t i = 0; i < deposits[detector].size(); ++i) {
-                total_deposits += deposits[detector].at(i).getCharge();
-                deposits[detector].at(i).setMCParticle(&mc_particle_message->getData().at(
+            for(size_t i = 0; i < deposit_position[detector].size(); i++) {
+                auto global_position = deposit_position[detector].at(i);
+                auto local_position = detector->getLocalPosition(global_position);
+                auto time = deposit_time[detector].at(i);
+                auto charge = deposit_charge[detector].at(i);
+                total_deposits += 2 * charge;
+
+                // Deposit electron
+                deposits[detector].emplace_back(
+                    local_position, global_position, CarrierType::ELECTRON, charge, time - 0, time);
+                deposits[detector].back().setMCParticle(&mc_particle_message->getData().at(
+                    track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
+
+                // Deposit hole
+                deposits[detector].emplace_back(local_position, global_position, CarrierType::HOLE, charge, time - 0, time);
+                deposits[detector].back().setMCParticle(&mc_particle_message->getData().at(
                     track_id_to_mcparticle[detector].at(particles_to_deposits[detector].at(i))));
             }
 
