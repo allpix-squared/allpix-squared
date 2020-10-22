@@ -8,7 +8,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "exceptions.h"
+#include "core/messenger/exceptions.h"
 
 namespace allpix {
     template <typename T> Message<T>::Message(std::vector<T> data) : BaseMessage(), data_(std::move(data)) {}

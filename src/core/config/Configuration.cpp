@@ -14,9 +14,9 @@
 #include <stdexcept>
 #include <string>
 
+#include "core/config/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace allpix;
 

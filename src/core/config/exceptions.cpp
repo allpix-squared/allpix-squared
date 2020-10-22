@@ -8,7 +8,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "exceptions.h"
+#include "core/config/exceptions.h"
 #include "Configuration.hpp"
 
 using namespace allpix;

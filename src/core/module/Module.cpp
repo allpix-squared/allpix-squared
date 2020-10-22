@@ -16,9 +16,9 @@
 #include <utility>
 
 #include "core/messenger/Messenger.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace allpix;
 
