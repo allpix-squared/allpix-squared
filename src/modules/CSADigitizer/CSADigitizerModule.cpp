@@ -24,8 +24,6 @@ using namespace allpix;
 
 CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, std::move(detector)), messenger_(messenger) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
 
     // Require PixelCharge message for single detector
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
@@ -128,6 +126,14 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
+
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!output_pulsegraphs_) {
+        enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
+    }
 }
 
 void CSADigitizerModule::init() {
