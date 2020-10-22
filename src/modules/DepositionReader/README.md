@@ -18,6 +18,7 @@ If these are outside the sensor, the energy deposit is discarded and a warning i
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy `charge_creation_energy` [@chargecreation], fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics [@fano].
 
 Track and parent ids of the individual particles which created the energy depositions allow to carry on some of the Monte Carlo particle information from the original simulation.
+Monte Carlo particle objects are created for each unique track id, the start and end positions are set to the first and last appearance of the particle, respectively.
 A parent id of zero should be used for the primary particle of the simulation, and all track ids have to be recorded before they can be used as parent id.
 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
