@@ -23,7 +23,7 @@ using namespace allpix;
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
     : Module(config), messenger_(messenger), geometryManager_(geoManager) {
 
-    // Require PixelCharge messages for single detector
+    // Require PixelHit messages for single detector
     messenger_->bindMulti(this, &CorryvreckanWriterModule::pixel_messages_, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
@@ -182,6 +182,9 @@ void CorryvreckanWriterModule::run(unsigned int event) {
 
     // Increment the time till the next event
     time_ += 10;
+
+    // Delete the currently stored event object
+    delete event_;
 }
 
 // Save the output trees to file

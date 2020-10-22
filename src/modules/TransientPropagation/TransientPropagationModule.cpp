@@ -18,7 +18,6 @@
 #include <Eigen/Core>
 
 #include "core/utils/log.h"
-#include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
@@ -168,20 +167,17 @@ void TransientPropagationModule::run(unsigned int) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
+            std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto position = deposit.getLocalPosition();
-
-            // Propagate a single charge deposit
-            std::map<Pixel::Index, Pulse> px_map;
-            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, px_map);
+            auto prop_pair = propagate(deposit.getLocalPosition(), deposit.getType(), charge_per_step, px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
             PropagatedCharge propagated_charge(prop_pair.first,
                                                global_position,
                                                deposit.getType(),
-                                               px_map,
+                                               std::move(px_map),
                                                deposit.getEventTime() + prop_pair.second,
                                                &deposit);
 
@@ -213,8 +209,6 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
-
-    // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a lambda function to compute the carrier mobility
@@ -361,7 +355,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                     detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = charge * (ramo - last_ramo) * (-static_cast<std::underlying_type<CarrierType>::type>(type));
+                auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 
