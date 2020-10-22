@@ -8,15 +8,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include <memory>
 #include <string>
-#include <utility>
-
-#include <Math/RotationX.h>
-#include <Math/RotationY.h>
-#include <Math/RotationZ.h>
-#include <Math/RotationZYX.h>
-#include <Math/Vector3D.h>
 
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>

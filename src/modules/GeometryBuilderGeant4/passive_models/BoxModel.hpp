@@ -12,13 +12,6 @@
 #define ALLPIX_PASSIVE_MATERIAL_BOX_H
 
 #include <string>
-#include <utility>
-
-#include <Math/Cartesian2D.h>
-#include <Math/DisplacementVector2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector2D.h>
-#include <Math/Vector3D.h>
 
 #include <G4Box.hh>
 #include <G4SubtractionSolid.hh>

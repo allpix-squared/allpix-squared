@@ -16,22 +16,13 @@
 #ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_MODEL_H
 #define ALLPIX_MODULE_PASSIVE_MATERIAL_MODEL_H
 
-#include <array>
-#include <string>
-#include <utility>
-
-#include <Math/Point2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector2D.h>
-#include <Math/Vector3D.h>
-
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
-#include "G4VSolid.hh"
+#include <G4VSolid.hh>
 
 namespace allpix {
     /**
@@ -65,12 +56,13 @@ namespace allpix {
 
         /**
          * @brief Virtual function that will return a G4VSolid corresponding to the specific model
-         * @return Nullptr if no valid model type is defined
+         * @return Shared pointer to the model solid
          */
         virtual std::shared_ptr<G4VSolid> getSolid() const = 0;
+
         /**
          * @brief Virtual function that will return the maximum size parameter of the model
-         * @return 0 if no valid model type is defined
+         * @return Maximum size of the model
          */
         virtual double getMaxSize() const = 0;
 
