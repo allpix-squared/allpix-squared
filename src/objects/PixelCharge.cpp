@@ -10,7 +10,7 @@
 #include "PixelCharge.hpp"
 
 #include <set>
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 

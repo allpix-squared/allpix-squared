@@ -11,7 +11,7 @@
 
 #include "PropagatedCharge.hpp"
 
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
