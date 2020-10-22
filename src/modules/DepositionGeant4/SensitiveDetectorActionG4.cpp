@@ -110,26 +110,13 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         return false;
     }
 
-    auto global_deposit_position = detector_->getGlobalPosition(deposit_position);
+    // Store relevant quantities to create charge deposits:
+    deposit_position_.push_back(deposit_position);
+    deposit_charge_.push_back(charge);
+    deposit_time_.push_back(step_time);
 
-    // Deposit electron
-    deposits_.emplace_back(deposit_position,
-                           global_deposit_position,
-                           CarrierType::ELECTRON,
-                           charge,
-                           step_time - track_time_[trackID],
-                           step_time);
     deposit_to_id_.push_back(trackID);
-
-    // Deposit hole
-    deposits_.emplace_back(
-        deposit_position, global_deposit_position, CarrierType::HOLE, charge, step_time - track_time_[trackID], step_time);
     deposit_to_id_.push_back(trackID);
-
-    LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_deposit_position, {"mm", "um"})
-               << " global / " << Units::display(deposit_position, {"mm", "um"}) << " local in " << detector_->getName()
-               << " after " << Units::display(step_time, {"ns", "ps"}) << " global / "
-               << Units::display(step_time - track_time_[trackID], {"ns", "ps"}) << " local";
 
     LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
     if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
@@ -207,23 +194,46 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     track_pdg_.clear();
     track_time_.clear();
 
+    // Prepare charge deposits for this event
+    std::vector<DepositedCharge> deposits;
+    for(size_t i = 0; i < deposit_position_.size(); i++) {
+        auto local_position = deposit_position_.at(i);
+        auto global_position = detector_->getGlobalPosition(local_position);
+
+        auto global_time = deposit_time_.at(i);
+        auto local_time = global_time - time_reference;
+
+        auto charge = deposit_charge_.at(i);
+
+        // Deposit electron
+        deposits.emplace_back(local_position, global_position, CarrierType::ELECTRON, charge, local_time, global_time);
+
+        // Deposit hole
+        deposits.emplace_back(local_position, global_position, CarrierType::HOLE, charge, local_time, global_time);
+
+        LOG(DEBUG) << "Created deposit of " << charge << " charges at " << Units::display(global_position, {"mm", "um"})
+                   << " global / " << Units::display(local_position, {"mm", "um"}) << " local in " << detector_->getName()
+                   << " after " << Units::display(global_time, {"ns", "ps"}) << " global / "
+                   << Units::display(local_time, {"ns", "ps"}) << " local";
+    }
+
     // Send a deposit message if we have any deposits
     unsigned int charges = 0;
-    if(!deposits_.empty()) {
-        for(auto& ch : deposits_) {
+    if(!deposits.empty()) {
+        for(auto& ch : deposits) {
             charges += ch.getCharge();
             total_deposited_charge_ += ch.getCharge();
         }
         LOG(INFO) << "Deposited " << charges << " charges in sensor of detector " << detector_->getName();
 
         // Match deposit with mc particle if possible
-        for(size_t i = 0; i < deposits_.size(); ++i) {
+        for(size_t i = 0; i < deposits.size(); ++i) {
             auto track_id = deposit_to_id_.at(i);
-            deposits_.at(i).setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
+            deposits.at(i).setMCParticle(&mc_particle_message->getData().at(id_to_particle_.at(track_id)));
         }
 
         // Create a new charge deposit message
-        auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits_), detector_);
+        auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits), detector_);
 
         // Dispatch the message
         messenger_->dispatchMessage(module_, deposit_message);
@@ -231,8 +241,10 @@ void SensitiveDetectorActionG4::dispatchMessages() {
     // Store the number of charge carriers:
     deposited_charge_ = charges;
 
-    // Clear deposits for next event
-    deposits_ = std::vector<DepositedCharge>();
+    // Clear deposit information for next event
+    deposit_position_.clear();
+    deposit_charge_.clear();
+    deposit_time_.clear();
 
     // Clear link tables for next event
     deposit_to_id_.clear();
