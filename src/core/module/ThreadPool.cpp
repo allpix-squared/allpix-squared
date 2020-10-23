@@ -31,7 +31,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
     }
 
     // Add module module queues
-    for(auto& module : modules) {
+    for(const auto& module : modules) {
         // Default constructs a queue for all modules
         // NOTE: this is the only valid method due to SafeTask not being movable
         task_queues_[module];
@@ -75,7 +75,7 @@ bool ThreadPool::execute(Module* module) {
 bool ThreadPool::execute_all() {
     while(true) {
         // Run tasks until the queue is empty
-        SafeQueue<Task>* queue_ptr;
+        SafeQueue<Task>* queue_ptr = nullptr;
         while(all_queue_.pop(queue_ptr, false)) {
             Task task{nullptr};
             if(queue_ptr->pop(task, false)) {
@@ -128,7 +128,7 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
 
     // Continue running until the thread pool is finished
     while(!done_) {
-        SafeQueue<Task>* queue_ptr;
+        SafeQueue<Task>* queue_ptr = nullptr;
         if(all_queue_.pop(queue_ptr, true, increase_run_cnt_func)) {
             Task task{nullptr};
             if(queue_ptr->pop(task, false)) {

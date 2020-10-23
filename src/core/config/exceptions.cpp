@@ -32,7 +32,7 @@ InvalidCombinationError::InvalidCombinationError(const Configuration& config,
         section_str = "in global section";
     }
     error_message_ = "Combination of keys ";
-    for(auto& key : keys) {
+    for(const auto& key : keys) {
         if(!config.has(key)) {
             continue;
         }

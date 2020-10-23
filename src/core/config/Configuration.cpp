@@ -32,7 +32,7 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
     }
 
     unsigned int found = 0;
-    for(auto& key : keys) {
+    for(const auto& key : keys) {
         if(has(key)) {
             found++;
         }
@@ -170,7 +170,7 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
     std::vector<std::pair<std::string, std::string>> result;
 
     // Loop over all configuration keys
-    for(auto& key_value : config_) {
+    for(const auto& key_value : config_) {
         // Skip internal keys starting with an underscore
         if(!key_value.first.empty() && key_value.first.front() == '_') {
             continue;

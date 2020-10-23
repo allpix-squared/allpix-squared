@@ -116,7 +116,7 @@ DefaultLogger::~DefaultLogger() {
     }
 
     // Print output to streams
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << out;
         } else {
@@ -147,7 +147,7 @@ void DefaultLogger::finish() {
     last_message_ = "";
 
     // Enable cursor again if stream supports it
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << "\x1B[?25h";
             (*stream).flush();

@@ -188,7 +188,7 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
-bool Module::canParallelize() {
+bool Module::canParallelize() const {
     return parallelize_;
 }
 void Module::enable_parallelization() {
