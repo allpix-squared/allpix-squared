@@ -137,7 +137,7 @@ void DefaultLogger::finish() {
 
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
-        for(auto stream : get_streams()) {
+        for(auto* stream : get_streams()) {
             (*stream) << std::endl;
             (*stream).flush();
         }

@@ -424,7 +424,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
         flag.setBit(LCIO::TRBIT_HITS);
         mc_track_vec->setFlag(flag.getFlag());
         for(auto& pair : mctrk_to_hit_data_vec) {
-            auto track = new TrackImpl();
+            auto* track = new TrackImpl();
             for(auto& hit : pair.second) {
                 // std::cout << "Got hit: " << hit << " z-pos: " << hit->getPosition()[2] << '\n';
                 track->addHit(hit);

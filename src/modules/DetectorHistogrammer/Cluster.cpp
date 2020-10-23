@@ -26,7 +26,7 @@ Cluster::Cluster(const PixelHit* seedPixelHit) : seedPixelHit_(seedPixelHit) {
     minY_ = seedPixelHit->getPixel().getIndex().y();
     maxY_ = minY_;
 
-    for(auto mc_particle : seedPixelHit->getMCParticles()) {
+    for(const auto* mc_particle : seedPixelHit->getMCParticles()) {
         mc_particles_.insert(mc_particle);
     }
 }
