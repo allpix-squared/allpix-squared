@@ -138,7 +138,7 @@ namespace corryvreckan {
         std::map<uint32_t, double> trigger_list_{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDefOverride(Event, 6)
+        ClassDefOverride(Event, 6); // NOLINT
     };
 } // namespace corryvreckan
 

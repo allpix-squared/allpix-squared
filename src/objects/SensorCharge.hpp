@@ -88,7 +88,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(SensorCharge, 2);
+        ClassDefOverride(SensorCharge, 2); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
