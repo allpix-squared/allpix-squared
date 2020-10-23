@@ -150,7 +150,7 @@ void DefaultDigitizerModule::init() {
 void DefaultDigitizerModule::run(unsigned int) {
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(auto& pixel_charge : pixel_message_->getData()) {
+    for(const auto& pixel_charge : pixel_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());

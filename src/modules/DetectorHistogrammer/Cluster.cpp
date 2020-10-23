@@ -42,7 +42,7 @@ bool Cluster::addPixelHit(const PixelHit* pixelHit) {
         minY_ = std::min(pixY, minY_);
         maxY_ = std::max(pixY, maxY_);
 
-        for(auto mc_particle : pixelHit->getMCParticles()) {
+        for(const auto* mc_particle : pixelHit->getMCParticles()) {
             mc_particles_.insert(mc_particle);
         }
 
@@ -53,7 +53,7 @@ bool Cluster::addPixelHit(const PixelHit* pixelHit) {
 
 ROOT::Math::XYVectorD Cluster::getPosition() const {
     ROOT::Math::XYVectorD meanPos = ROOT::Math::XYVectorD(0., 0.);
-    for(auto& pixel : this->getPixelHits()) {
+    for(const auto& pixel : this->getPixelHits()) {
         meanPos += ROOT::Math::XYVectorD(pixel->getPixel().getIndex().x() * pixel->getSignal(),
                                          pixel->getPixel().getIndex().y() * pixel->getSignal());
     }
@@ -74,7 +74,7 @@ std::set<const MCParticle*> Cluster::getMCParticles() const {
 }
 
 const PixelHit* Cluster::getPixelHit(unsigned int x, unsigned int y) const {
-    for(auto& pixel : this->getPixelHits()) {
+    for(const auto& pixel : this->getPixelHits()) {
         if(pixel->getPixel().getIndex().x() == x && pixel->getPixel().getIndex().y() == y) {
             return pixel;
         }

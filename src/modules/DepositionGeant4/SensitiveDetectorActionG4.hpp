@@ -49,19 +49,19 @@ namespace allpix {
         /**
          * @brief Get total number of charges deposited in the sensitive device bound to this action
          */
-        unsigned int getTotalDepositedCharge();
+        unsigned int getTotalDepositedCharge() const;
 
         /**
          * @brief Get the number of charges deposited in the sensitive device for this event only.
          * @warning The correct number is only available after dispatching the message, before it refers to the previous
          * event.
          */
-        unsigned int getDepositedCharge();
+        unsigned int getDepositedCharge() const;
 
         /**
          * @brief Get the name of the sensitive device bound to this action
          */
-        std::string getName();
+        std::string getName() const;
 
         /**
          * @brief Process a single step of a particle passage through this sensor

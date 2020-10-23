@@ -128,7 +128,7 @@ void ROOTObjectReaderModule::init() {
     for(auto&& object : *keys) {
         auto& key = dynamic_cast<TKey&>(*object);
         if(std::string(key.GetClassName()) == "TTree") {
-            auto tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
+            auto* tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
 
             // Check if a version of this tree has already been read
             if(tree_names.find(tree->GetName()) != tree_names.end()) {
@@ -266,7 +266,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
 
     // Loop through all branches
     for(const auto& message_inf : message_info_array_) {
-        auto objects = message_inf.objects;
+        auto* objects = message_inf.objects;
 
         // Skip empty objects in current event
         if(objects->empty()) {
@@ -274,7 +274,7 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
         }
 
         // Check if a pointer to a dispatcher method exist
-        auto first_object = (*objects)[0];
+        auto* first_object = (*objects)[0];
         auto iter = message_creator_map_.find(typeid(*first_object));
         if(iter == message_creator_map_.end()) {
             LOG(INFO) << "Cannot dispatch message with object " << allpix::demangle(typeid(*first_object).name())

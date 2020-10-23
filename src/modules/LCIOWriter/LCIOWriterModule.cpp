@@ -360,11 +360,11 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // a TrackerPulse linked to a TrackerData object
     if(dump_mc_truth_ == true) {
         for(auto& mcp_pixel_data_vec_pair : mcp_to_pixel_data_vec) {
-            auto mc_tracker_data = new TrackerDataImpl();
-            auto mc_tracker_pulse = new TrackerPulseImpl();
-            auto mc_tracker_hit = new TrackerHitImpl();
+            auto* mc_tracker_data = new TrackerDataImpl();
+            auto* mc_tracker_pulse = new TrackerPulseImpl();
+            auto* mc_tracker_hit = new TrackerHitImpl();
 
-            auto& mc_particle = mcp_pixel_data_vec_pair.first;
+            const auto& mc_particle = mcp_pixel_data_vec_pair.first;
 
             // Every detected pixel hit which had charge contribution from this MCParticle will be added to the cluster
             std::vector<float> truth_cluster_charge_vec;
@@ -410,7 +410,7 @@ void LCIOWriterModule::run(unsigned int eventNb) {
     // Fill hitvector with event data
     for(auto const& det_id_name_pair : detector_names_to_id_) {
         auto det_id = det_id_name_pair.second;
-        auto hit = new TrackerDataImpl();
+        auto* hit = new TrackerDataImpl();
         hit->setChargeValues(charges[det_id]);
         auto col_index = detector_ids_to_colllection_index_[det_id];
         (*output_col_encoder_vec[col_index])["sensorID"] = det_id;

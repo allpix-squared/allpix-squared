@@ -129,7 +129,7 @@ void ProjectionPropagationModule::run(unsigned int) {
     double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
-    for(auto& deposit : deposits_message_->getData()) {
+    for(const auto& deposit : deposits_message_->getData()) {
 
         auto type = deposit.getType();
         auto initial_position = deposit.getLocalPosition();
@@ -165,7 +165,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Define a lambda function to compute the carrier mobility
             auto carrier_mobility = [&](double efield_magn) {
                 // Compute carrier mobility from constants and electric field magnitude
-                double numerator, denominator;
+                double numerator = NAN, denominator = NAN;
                 if(type == CarrierType::ELECTRON) {
                     numerator = electron_Vm_ / electron_Ec_;
                     denominator = std::pow(1. + std::pow(efield_magn / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);

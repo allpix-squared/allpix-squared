@@ -143,7 +143,7 @@ void CapacitiveTransferModule::init() {
                     << config_.get<std::string>("coupling_file");
 
     } else if(config_.has("coupling_scan_file")) {
-        TFile* root_file = new TFile(config_.getPath("coupling_scan_file", true).c_str());
+        auto* root_file = new TFile(config_.getPath("coupling_scan_file", true).c_str());
         if(root_file->IsZombie()) {
             throw InvalidValueError(config_, "coupling_scan_file", "ROOT file is corrupted. Please, check it");
         }
@@ -257,7 +257,7 @@ void CapacitiveTransferModule::run(unsigned int) {
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
-    for(auto& propagated_charge : propagated_message_->getData()) {
+    for(const auto& propagated_charge : propagated_message_->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
