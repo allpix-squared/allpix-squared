@@ -123,7 +123,7 @@ void DepositionGeant4Module::init() {
     }
 
     // Suppress all output from G4
-    SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
@@ -281,6 +281,10 @@ void DepositionGeant4Module::init() {
 void DepositionGeant4Module::initializeThread() {
 
     LOG(DEBUG) << "Initializing run manager";
+
+    // Suppress output stream if not in debugging mode
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
+
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
         auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
@@ -293,6 +297,9 @@ void DepositionGeant4Module::initializeThread() {
 
         run_manager_mt->InitializeForThread();
     }
+
+    // Release the output stream
+    RELEASE_STREAM(G4cout);
 }
 
 void DepositionGeant4Module::run(Event* event) {
@@ -304,10 +311,7 @@ void DepositionGeant4Module::run(Event* event) {
     }
 
     // Suppress output stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
-    }
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Seed the sensitive detectors RNG
     for(auto& sensor : sensors_) {
