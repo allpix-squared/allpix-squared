@@ -644,7 +644,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             for(auto& module : modules_list) {
                 // Set run module section header
                 std::string old_section_name = Log::getSection();
-                std::string section_name = "IT:";
+                std::string section_name = "T:";
                 section_name += module->get_identifier().getUniqueName();
                 Log::setSection(section_name);
 
@@ -652,7 +652,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 auto old_settings =
                     ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
-                LOG(TRACE) << "Initializing thread";
+                LOG(TRACE) << "Initializing thread " << std::this_thread::get_id();
                 module->initializeThread();
 
                 // Reset logging
@@ -666,7 +666,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         for(auto& module : modules_list) {
             // Set run module section header
             std::string old_section_name = Log::getSection();
-            std::string section_name = "FT:";
+            std::string section_name = "T:";
             section_name += module->get_identifier().getUniqueName();
             Log::setSection(section_name);
 
@@ -674,7 +674,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             auto old_settings =
                 ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
 
-            LOG(TRACE) << "Finalizing thread";
+            LOG(TRACE) << "Finalizing thread " << std::this_thread::get_id();
             module->finalizeThread();
 
             // Reset logging

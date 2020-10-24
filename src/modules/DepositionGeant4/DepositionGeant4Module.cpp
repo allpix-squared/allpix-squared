@@ -422,7 +422,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
 
         // If requested, prepare output plots
         if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
+            LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
