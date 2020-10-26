@@ -121,5 +121,7 @@ void PixelCharge::print(std::ostream& out) const {
         << "Local Position: (" << local_center_location.X() << ", " << local_center_location.Y() << ", "
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
-        << global_center_location.Z() << ") mm\n";
+        << global_center_location.Z() << ") mm\n"
+        << "Local time:" << local_time_ << " ns\n"
+        << "Global time:" << global_time_ << " ns\n";
 }

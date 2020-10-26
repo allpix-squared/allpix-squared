@@ -93,6 +93,8 @@ namespace allpix {
         size_t volume_chars_{};
         std::string unit_length_{}, unit_time_{}, unit_energy_{};
 
+        bool create_mcparticles_{}, time_available_{};
+
         bool read_csv(unsigned int event_num,
                       std::string& volume,
                       ROOT::Math::XYZPoint& position,

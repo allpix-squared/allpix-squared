@@ -53,5 +53,7 @@ void SensorCharge::print(std::ostream& out) const {
         << "\nLocal Position: (" << local_position_.X() << ", " << local_position_.Y() << ", " << local_position_.Z()
         << ") mm\n"
         << "Global Position: (" << global_position_.X() << ", " << global_position_.Y() << ", " << global_position_.Z()
-        << ") mm\n";
+        << ") mm\n"
+        << "Local time:" << local_time_ << " ns\n"
+        << "Global time:" << global_time_ << " ns\n";
 }

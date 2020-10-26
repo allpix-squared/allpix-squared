@@ -29,6 +29,8 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     config_.setDefault<std::string>("unit_length", "mm");
     config_.setDefault<std::string>("unit_time", "ns");
     config_.setDefault<std::string>("unit_energy", "MeV");
+    config_.setDefault<bool>("assign_timestamps", true);
+    config_.setDefault<bool>("create_mcparticles", true);
 
     config_.setDefaultArray<std::string>("branch_names",
                                          {"event",
@@ -53,9 +55,19 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     unit_length_ = config_.get<std::string>("unit_length");
     unit_time_ = config_.get<std::string>("unit_time");
     unit_energy_ = config_.get<std::string>("unit_energy");
+
+    time_available_ = config_.get<bool>("assign_timestamps");
+    create_mcparticles_ = config.get<bool>("create_mcparticles");
 }
 
 void DepositionReaderModule::init() {
+
+    if(!time_available_) {
+        LOG(WARNING) << "No time information provided, all energy deposition will be assigned to t = 0";
+    }
+    if(!create_mcparticles_) {
+        LOG(WARNING) << "No MCParticle objects will be produced";
+    }
 
     // Check which file type we want to read:
     file_model_ = config_.get<std::string>("model");
@@ -83,23 +95,55 @@ void DepositionReaderModule::init() {
                   << " entries";
 
         // Check if we have branch names configured and use the default values otherwise:
-        auto branches = config_.getArray<std::string>("branch_names");
-        if(branches.size() != 10) {
-            throw InvalidValueError(
-                config_, "branch_names", "Parameter requires exactly 10 entries, one for each branch to be read");
+        auto branch_list = config_.getArray<std::string>("branch_names");
+
+        // Exactly 10 branch names are required unless time or monte carlo particles are left out:
+        size_t required_list_size =
+            10 - static_cast<size_t>(time_available_ ? 0 : 1) - static_cast<size_t>(create_mcparticles_ ? 0 : 2);
+        if(branch_list.size() != required_list_size) {
+            throw InvalidValueError(config_,
+                                    "branch_names",
+                                    "With the current configuration, this parameter requires exactly " +
+                                        std::to_string(required_list_size) + " entries, one for each branch to be read");
+        }
+
+        // Convert list to map for easier lookup:
+        size_t it = (time_available_ ? 3 : 2);
+        std::map<std::string, std::string> branches = {{"event", branch_list.at(0)},
+                                                       {"energy", branch_list.at(1)},
+                                                       {"px", branch_list.at(it++)},
+                                                       {"py", branch_list.at(it++)},
+                                                       {"pz", branch_list.at(it++)},
+                                                       {"volume", branch_list.at(it++)},
+                                                       {"pdg", branch_list.at(it++)}};
+        if(time_available_) {
+            branches["time"] = branch_list.at(2);
+        }
+        if(create_mcparticles_) {
+            branches["track_id"] = branch_list.at(it++);
+            branches["parent_id"] = branch_list.at(it++);
+        }
+
+        LOG(DEBUG) << "List of configured branches and their names:";
+        for(const auto& branch : branches) {
+            LOG(DEBUG) << branch.first << ": \"" << branch.second << "\"";
         }
 
         // Set up branch pointers
-        create_tree_reader(event_, branches.at(0));
-        create_tree_reader(edep_, branches.at(1));
-        create_tree_reader(time_, branches.at(2));
-        create_tree_reader(px_, branches.at(3));
-        create_tree_reader(py_, branches.at(4));
-        create_tree_reader(pz_, branches.at(5));
-        create_tree_reader(volume_, branches.at(6));
-        create_tree_reader(pdg_code_, branches.at(7));
-        create_tree_reader(track_id_, branches.at(8));
-        create_tree_reader(parent_id_, branches.at(9));
+        create_tree_reader(event_, branches.at("event"));
+        create_tree_reader(edep_, branches.at("energy"));
+        if(time_available_) {
+            create_tree_reader(time_, branches.at("time"));
+        }
+        create_tree_reader(px_, branches.at("px"));
+        create_tree_reader(py_, branches.at("py"));
+        create_tree_reader(pz_, branches.at("pz"));
+        create_tree_reader(volume_, branches.at("volume"));
+        create_tree_reader(pdg_code_, branches.at("pdg"));
+        if(create_mcparticles_) {
+            create_tree_reader(track_id_, branches.at("track_id"));
+            create_tree_reader(parent_id_, branches.at("parent_id"));
+        }
 
         // Advance to first entry of the tree:
         tree_reader_->Next();
@@ -107,22 +151,27 @@ void DepositionReaderModule::init() {
         // Only after loading the first entry we can actually check the branch status:
         check_tree_reader(event_);
         check_tree_reader(edep_);
-        check_tree_reader(time_);
+        if(time_available_) {
+            check_tree_reader(time_);
+        }
         check_tree_reader(px_);
         check_tree_reader(py_);
         check_tree_reader(pz_);
         check_tree_reader(volume_);
         check_tree_reader(pdg_code_);
-        check_tree_reader(track_id_);
-        check_tree_reader(parent_id_);
+        if(create_mcparticles_) {
+            check_tree_reader(track_id_);
+            check_tree_reader(parent_id_);
+        }
+
     } else {
         throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
 
-    for(auto& detector : geo_manager_->getDetectors()) {
-        // If requested, prepare output plots
-        if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
+    // If requested, prepare output plots
+    if(config_.get<bool>("output_plots")) {
+        LOG(TRACE) << "Creating output plots";
+        for(auto& detector : geo_manager_->getDetectors()) {
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
@@ -150,16 +199,9 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
 
 void DepositionReaderModule::run(unsigned int event) {
 
-    std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> deposit_position;
-    std::map<std::shared_ptr<Detector>, std::vector<unsigned int>> deposit_charge;
-    std::map<std::shared_ptr<Detector>, std::vector<double>> deposit_time;
-
-    std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> mc_particle_start;
-    std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> mc_particle_end;
-    std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_code;
-    std::map<std::shared_ptr<Detector>, std::vector<double>> mc_particle_time;
-    std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_parent;
-
+    // Set of deposited charges in this event
+    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposits;
+    std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
     std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
@@ -169,16 +211,16 @@ void DepositionReaderModule::run(unsigned int event) {
 
     do {
         bool read_status = false;
-        ROOT::Math::XYZPoint global_position;
+        ROOT::Math::XYZPoint global_deposit_position;
         std::string volume;
         double energy, time;
         int pdg_code, track_id, parent_id;
 
         try {
             if(file_model_ == "csv") {
-                read_status = read_csv(event, volume, global_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_csv(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
             } else if(file_model_ == "root") {
-                read_status = read_root(event, volume, global_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_root(event, volume, global_deposit_position, time, energy, pdg_code, track_id, parent_id);
             }
         } catch(EndOfRunException& e) {
             end_of_run = true;
@@ -365,13 +407,17 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     // Read other information, interpret in framework units:
     position = ROOT::Math::XYZPoint(
         Units::get(*px_->Get(), unit_length_), Units::get(*py_->Get(), unit_length_), Units::get(*pz_->Get(), unit_length_));
-    time = Units::get(*time_->Get(), unit_time_);
+
+    // Attempt to read time only if available:
+    time = (time_available_ ? Units::get(*time_->Get(), unit_time_) : 0);
     energy = Units::get(*edep_->Get(), unit_energy_);
 
     // Read PDG code and track ids
     pdg_code = (*pdg_code_->Get());
-    track_id = (*track_id_->Get());
-    parent_id = (*parent_id_->Get());
+    if(create_mcparticles_) {
+        track_id = (*track_id_->Get());
+        parent_id = (*parent_id_->Get());
+    }
 
     // Return and advance to next tree entry:
     tree_reader_->Next();
@@ -419,8 +465,10 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> pdg_code;
 
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> time;
+    if(time_available_) {
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> time;
+    }
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> energy;
@@ -435,10 +483,12 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     std::getline(ls, volume, ',');
     volume = allpix::trim(volume);
 
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> track_id;
-    std::getline(ls, tmp, ',');
-    std::istringstream(tmp) >> parent_id;
+    if(create_mcparticles_) {
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> track_id;
+        std::getline(ls, tmp, ',');
+        std::istringstream(tmp) >> parent_id;
+    }
 
     // Select the detector name from this:
     if(volume_chars_ != 0) {
@@ -449,7 +499,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
     // Calculate the charge deposit at a global position and convert the proper units
     position =
         ROOT::Math::XYZPoint(Units::get(px, unit_length_), Units::get(py, unit_length_), Units::get(pz, unit_length_));
-    time = Units::get(time, unit_time_);
+    time = (time_available_ ? Units::get(time, unit_time_) : 0);
     energy = Units::get(energy, unit_energy_);
 
     return true;
