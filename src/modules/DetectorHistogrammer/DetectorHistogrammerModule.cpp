@@ -453,6 +453,8 @@ void DetectorHistogrammerModule::finalize() {
     auto cluster_charge_histogram = cluster_charge->Merge();
     auto cluster_charge_map_histogram = cluster_charge_map->Merge();
     auto seed_charge_map_histogram = seed_charge_map->Merge();
+    auto pixel_charge_histogram = pixel_charge->Merge();
+    auto total_charge_histogram = total_charge->Merge();
 
     // FIXME Set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
