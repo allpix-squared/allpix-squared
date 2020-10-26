@@ -76,7 +76,7 @@ void InducedTransferModule::run(Event* event) {
         LOG(TRACE) << "Calculating induced charge from carriers below pixel "
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << ", moved from "
                    << Units::display(position_start, {"um", "mm"}) << " to " << Units::display(position_end, {"um", "mm"})
-                   << ", " << Units::display(propagated_charge.getEventTime() - deposited_charge->getEventTime(), "ns");
+                   << ", " << Units::display(propagated_charge.getGlobalTime() - deposited_charge->getGlobalTime(), "ns");
 
         // Loop over NxN pixels:
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {

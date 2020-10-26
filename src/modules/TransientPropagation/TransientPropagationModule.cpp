@@ -171,7 +171,8 @@ void TransientPropagationModule::run(Event* event) {
             std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto prop_pair = propagate(event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, px_map);
+            auto prop_pair = propagate(
+                event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
@@ -179,7 +180,8 @@ void TransientPropagationModule::run(Event* event) {
                                                global_position,
                                                deposit.getType(),
                                                std::move(px_map),
-                                               deposit.getEventTime() + prop_pair.second,
+                                               deposit.getLocalTime() + prop_pair.second,
+                                               deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
@@ -210,6 +212,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
                                                                               const ROOT::Math::XYZPoint& pos,
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
+                                                                              const double initial_time,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -279,7 +282,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     bool within_sensor = true;
-    while(within_sensor && runge_kutta.getTime() < integration_time_) {
+    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_) {
         // Save previous position and time
         last_position = position;
 
@@ -340,7 +343,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
-                   << Units::display(runge_kutta.getTime(), "ns");
+                   << Units::display(initial_time + runge_kutta.getTime(), "ns");
 
         // Loop over NxN pixels:
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
@@ -363,15 +366,15 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
 
                 // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
                 auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
-                pixel_map_iterator.first->second.addCharge(induced, runge_kutta.getTime());
+                pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
 
                 if(output_plots_) {
                     potential_difference_->Fill(std::fabs(ramo - last_ramo));
-                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
+                    induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     if(type == CarrierType::ELECTRON) {
-                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     } else {
-                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     }
                 }
             }
@@ -379,7 +382,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime());
 }
 
 void TransientPropagationModule::finalize() {

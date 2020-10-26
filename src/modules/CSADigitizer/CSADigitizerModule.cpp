@@ -291,7 +291,7 @@ void CSADigitizerModule::run(Event* event) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
