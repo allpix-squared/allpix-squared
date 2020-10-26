@@ -216,7 +216,7 @@ void DepositionReaderModule::run(unsigned int event) {
             // We have not yet seen this MCParticle, let's store it and keep track of the track id
             LOG(DEBUG) << "Adding new MCParticle, track id " << track_id << ", PDG code " << pdg_code;
             mc_particles[detector].emplace_back(
-                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, time);
+                deposit_position, global_deposit_position, deposit_position, global_deposit_position, pdg_code, 0, time);
             track_id_to_mcparticle[detector][track_id] = (mc_particles[detector].size() - 1);
 
             // Check if we know the parent - and set it:
@@ -231,12 +231,17 @@ void DepositionReaderModule::run(unsigned int event) {
             LOG(DEBUG) << "Found MCParticle with track id " << track_id;
         }
 
+        // Get time of first seeing the MCParticle:
+        auto mcp_time = mc_particles[detector].at(track_id_to_mcparticle[detector].at(track_id)).getGlobalTime();
+
         // Deposit electron
-        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time);
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::ELECTRON, charge, time - mcp_time, time);
         particles_to_deposits[detector].push_back(track_id);
 
         // Deposit hole
-        deposits[detector].emplace_back(deposit_position, global_deposit_position, CarrierType::HOLE, charge, time);
+        deposits[detector].emplace_back(
+            deposit_position, global_deposit_position, CarrierType::HOLE, charge, time - mcp_time, time);
         particles_to_deposits[detector].push_back(track_id);
     } while(true);
 

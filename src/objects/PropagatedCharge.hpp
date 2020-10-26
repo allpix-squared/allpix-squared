@@ -33,14 +33,16 @@ namespace allpix {
          * @param global_position Global position of the propagated set of charges in the sensor
          * @param type Type of the carrier to propagate
          * @param charge Total charge propagated
-         * @param event_time Total time of propagation arrival after event start
+         * @param local_time Time of propagation arrival after energy deposition, local reference frame
+         * @param global_time Total time of propagation arrival after event start, global reference frame
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
                          ROOT::Math::XYZPoint global_position,
                          CarrierType type,
                          unsigned int charge,
-                         double event_time,
+                         double local_time,
+                         double global_time,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -49,14 +51,16 @@ namespace allpix {
          * @param global_position Global position of the propagated set of charges in the sensor
          * @param type Type of the carrier to propagate
          * @param pulses Map of pulses induced at electrodes identified by their index
-         * @param event_time Total time of propagation arrival after event start
+         * @param local_time Time of propagation arrival after energy deposition, local reference frame
+         * @param global_time Total time of propagation arrival after event start, global reference frame
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
                          ROOT::Math::XYZPoint global_position,
                          CarrierType type,
                          std::map<Pixel::Index, Pulse> pulses,
-                         double event_time,
+                         double local_time,
+                         double global_time,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
