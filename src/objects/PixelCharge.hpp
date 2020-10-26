@@ -36,7 +36,7 @@ namespace allpix {
          * @param propagated_charges Optional pointer to the related propagated charges
          */
         PixelCharge(Pixel pixel,
-                    unsigned int charge,
+                    long charge,
                     const std::vector<const PropagatedCharge*>& propagated_charges = std::vector<const PropagatedCharge*>());
 
         /**
@@ -54,22 +54,31 @@ namespace allpix {
          * @return Pixel indices in the grid
          */
         const Pixel& getPixel() const;
+
         /**
          * @brief Shortcut to retrieve the pixel indices
          * @return Index of the pixel
          */
         Pixel::Index getIndex() const;
+
         /**
          * @brief Get the charge at the pixel
          * @return Total charge stored
          */
-        unsigned int getCharge() const;
+        long getCharge() const;
+
+        /**
+         * @brief Get the absolute charge value at the pixel
+         * @return Absolute total charge stored
+         */
+        unsigned long getAbsoluteCharge() const;
 
         /**
          * @brief Get related propagated charges
          * @return Possible set of pointers to propagated charges
          */
         std::vector<const PropagatedCharge*> getPropagatedCharges() const;
+
         /**
          * @brief Get the Monte-Carlo particles resulting in this pixel hit
          * @return List of all related Monte-Carlo particles
@@ -83,6 +92,18 @@ namespace allpix {
         const Pulse& getPulse() const;
 
         /**
+         * @brief Get time after start of event in global reference frame
+         * @return Time from start event
+         */
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get local time in the sensor
+         * @return Time with respect to local sensor
+         */
+        double getLocalTime() const;
+
+        /**
          * @brief Print an ASCII representation of PixelCharge to the given stream
          * @param out Stream to print to
          */
@@ -91,7 +112,8 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 6);
+        ClassDefOverride(PixelCharge, 7);
+
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -99,8 +121,11 @@ namespace allpix {
 
     private:
         Pixel pixel_;
-        unsigned int charge_{};
+        long charge_{};
         Pulse pulse_{};
+
+        double local_time_{};
+        double global_time_{};
 
         std::vector<TRef> propagated_charges_;
         std::vector<TRef> mc_particles_;

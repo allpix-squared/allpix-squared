@@ -119,7 +119,7 @@ void SimpleTransferModule::run(unsigned int) {
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
-            drift_time_histo->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
+            drift_time_histo->Fill(propagated_charge.getGlobalTime(), propagated_charge.getCharge());
         }
 
         LOG(TRACE) << "Set of " << propagated_charge.getCharge() << " propagated charges at "
@@ -134,9 +134,9 @@ void SimpleTransferModule::run(unsigned int) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
-        unsigned int charge = 0;
+        long charge = 0;
         for(auto& propagated_charge : pixel_index_charge.second) {
-            charge += propagated_charge->getCharge();
+            charge += propagated_charge->getSign() * propagated_charge->getCharge();
         }
 
         // Get pixel object from detector

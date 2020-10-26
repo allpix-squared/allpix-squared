@@ -6,6 +6,7 @@
 
 ### Description
 Simple digitization module which translates the collected charges into a digitized signal proportional to the input charge. It simulates noise contributions from the readout electronics as Gaussian noise and allows for a configurable threshold. Furthermore, the linear response of an QDC as well as a TDC with configurable resolution can be simulated.
+For maximum simplicity only the absolute of the charge is used and compared to a positive threshold.
 
 In detail, the following steps are performed for every pixel charge:
 

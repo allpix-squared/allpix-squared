@@ -49,6 +49,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
+    config_.setDefault<bool>("ignore_polarity", false);
+
     config_.setDefault<double>("sigma_noise", Units::get(1e-4, "V"));
 
     config_.setDefault<bool>("output_pulsegraphs", false);
@@ -85,6 +87,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     sigmaNoise_ = config_.get<double>("sigma_noise");
     threshold_ = config_.get<double>("threshold");
+    ignore_polarity_ = config.get<bool>("ignore_polarity");
 
     if(model_ == DigitizerType::SIMPLE) {
         tauF_ = config_.get<double>("feedback_time_constant");
@@ -131,6 +134,12 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 }
 
 void CSADigitizerModule::init() {
+
+    // Check for sensible configuration of threshold:
+    if(ignore_polarity_ && threshold_ < 0) {
+        LOG(WARNING)
+            << "Negative threshold configured but signal polarity is ignored, this might lead to unexpected results.";
+    }
 
     if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
@@ -282,7 +291,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
@@ -302,9 +311,19 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
     unsigned int comparator_cycles = 0;
     double arrival_time = 0;
 
+    // Lambda for threshold calculation:
+    auto is_above_threshold = [](double bin, double threshold, bool ignore_polarity) {
+        if(ignore_polarity) {
+            return (std::fabs(bin) > std::fabs(threshold));
+        } else {
+            return (threshold > 0 ? bin > threshold : bin < threshold);
+        }
+    };
+
     // Find the point where the signal crosses the threshold, latch ToA
     while(arrival_time < integration_time_) {
-        if(pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep))) > threshold_) {
+        auto bin = pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep)));
+        if(is_above_threshold(bin, threshold_, ignore_polarity_)) {
             threshold_crossed = true;
             break;
         };
@@ -319,10 +338,20 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     LOG(TRACE) << "Calculating time-over-threshold, starting at " << Units::display(arrival_time, {"ps", "ns", "us"});
     unsigned int tot_clock_cycles = 0;
 
+    // Lambda for threshold calculation:
+    auto is_below_threshold = [](double bin, double threshold, bool ignore_polarity) {
+        if(ignore_polarity) {
+            return (std::fabs(bin) < std::fabs(threshold));
+        } else {
+            return (threshold > 0 ? bin < threshold : bin > threshold);
+        }
+    };
+
     // Start calculation from the next ToT clock cycle following the threshold crossing
     auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
     while(tot_time < integration_time_) {
-        if(pulse.at(static_cast<size_t>(std::floor(tot_time / timestep))) < threshold_) {
+        auto bin = pulse.at(static_cast<size_t>(std::floor(tot_time / timestep)));
+        if(is_below_threshold(bin, threshold_, ignore_polarity_)) {
             break;
         }
         tot_clock_cycles++;

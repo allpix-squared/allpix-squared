@@ -392,13 +392,13 @@ void RCEWriterModule::run(unsigned int event_id) {
             sensor.pix_y_[i] = static_cast<Int_t>(hit.getPixel().getIndex().y()); // NOLINT
             sensor.value_[i] = static_cast<Int_t>(hit.getSignal());               // NOLINT
             // Assumes that time is correctly digitized
-            sensor.timing_[i] = static_cast<Int_t>(hit.getTime()); // NOLINT
+            sensor.timing_[i] = static_cast<Int_t>(hit.getLocalTime()); // NOLINT
             // This contains no useful information but it expected to be present
             sensor.hit_in_cluster_[i] = 0; // NOLINT
             sensor.nhits_ += 1;
 
             LOG(TRACE) << detector_name << " x=" << hit.getPixel().getIndex().x() << " y=" << hit.getPixel().getIndex().y()
-                       << " t=" << hit.getTime() << " signal=" << hit.getSignal();
+                       << " t=" << hit.getLocalTime() << " signal=" << hit.getSignal();
         }
     }
 

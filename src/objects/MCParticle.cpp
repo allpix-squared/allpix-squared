@@ -19,10 +19,11 @@ MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
                        ROOT::Math::XYZPoint local_end_point,
                        ROOT::Math::XYZPoint global_end_point,
                        int particle_id,
-                       double time)
+                       double local_time,
+                       double global_time)
     : local_start_point_(std::move(local_start_point)), global_start_point_(std::move(global_start_point)),
       local_end_point_(std::move(local_end_point)), global_end_point_(std::move(global_end_point)),
-      particle_id_(particle_id), time_(time) {
+      particle_id_(particle_id), local_time_(local_time), global_time_(global_time) {
     setParent(nullptr);
     setTrack(nullptr);
 }
@@ -61,8 +62,12 @@ int MCParticle::getParticleID() const {
     return particle_id_;
 }
 
-double MCParticle::getTime() const {
-    return time_;
+double MCParticle::getGlobalTime() const {
+    return global_time_;
+}
+
+double MCParticle::getLocalTime() const {
+    return local_time_;
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
@@ -74,6 +79,14 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
  */
 const MCParticle* MCParticle::getParent() const {
     return dynamic_cast<MCParticle*>(parent_.GetObject());
+}
+
+/**
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const MCParticle* MCParticle::getPrimary() const {
+    auto parent = dynamic_cast<MCParticle*>(parent_.GetObject());
+    return (parent == nullptr ? this : parent->getPrimary());
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
@@ -117,6 +130,10 @@ void MCParticle::print(std::ostream& out) const {
         << global_end_point_.X() << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Y()
         << std::setw(small_gap) << " mm |" << std::setw(med_gap) << global_end_point_.Z() << std::setw(small_gap)
         << " mm  \n"
+        << std::left << std::setw(big_gap) << "Local time:" << std::right << std::setw(med_gap) << local_time_
+        << std::setw(small_gap) << " ns \n"
+        << std::left << std::setw(big_gap) << "Global time:" << std::right << std::setw(med_gap) << global_time_
+        << std::setw(small_gap) << " ns \n"
         << std::left << std::setw(big_gap) << "Linked parent:";
     if(parent != nullptr) {
         out << std::right << std::setw(small_gap) << parent << '\n';
