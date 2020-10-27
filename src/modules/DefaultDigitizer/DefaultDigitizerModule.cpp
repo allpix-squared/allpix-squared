@@ -153,9 +153,9 @@ void DefaultDigitizerModule::run(unsigned int) {
     for(auto& pixel_charge : pixel_message_->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
-        auto charge = static_cast<double>(pixel_charge.getCharge());
+        auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(charge, "e");
+        LOG(DEBUG) << "Received pixel " << pixel_index << ", (absolute) charge " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -232,7 +232,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         auto time = time_of_arrival(pixel_charge, threshold);
-        LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"});
+        LOG(DEBUG) << "Local time of arrival: " << Units::display(time, {"ns", "ps"});
         if(config_.get<bool>("output_plots")) {
             h_px_toa->Fill(time);
         }
@@ -266,7 +266,7 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
