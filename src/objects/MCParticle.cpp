@@ -85,7 +85,7 @@ const MCParticle* MCParticle::getParent() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getPrimary() const {
-    auto parent = dynamic_cast<MCParticle*>(parent_.GetObject());
+    auto* parent = dynamic_cast<MCParticle*>(parent_.GetObject());
     return (parent == nullptr ? this : parent->getPrimary());
 }
 
