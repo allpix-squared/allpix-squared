@@ -516,13 +516,13 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
     };
 
     // Get the position and apply potential misalignment
-    auto position = config.get<XYZPoint>("position", XYZPoint());
+    auto position = config.get<XYZPoint>("position");
     LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
     position += misalignment(config.get<XYZPoint>("alignment_precision_position", XYZPoint()));
     LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
 
     // Get the orientation and apply misalignment to the individual angles before combining them
-    auto orient_vec = config.get<XYZVector>("orientation", XYZVector());
+    auto orient_vec = config.get<XYZVector>("orientation");
     LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
     orient_vec += misalignment(config.get<XYZVector>("alignment_precision_orientation", XYZVector()));
     LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});
