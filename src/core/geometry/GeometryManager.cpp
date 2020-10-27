@@ -136,7 +136,7 @@ std::vector<std::string> GeometryManager::getModelsPath() {
 }
 
 /**
- * Returnes the pre-calculated position and orientation of a passive element in global coordinates
+ * Returns the pre-calculated position and orientation of a passive element in global coordinates
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
     if(passive_orientations_.count(passive_element) == 0) {
