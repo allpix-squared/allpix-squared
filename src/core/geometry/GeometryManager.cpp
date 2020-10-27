@@ -276,7 +276,7 @@ std::vector<std::shared_ptr<DetectorModel>> GeometryManager::getModels() const {
  */
 std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name) const {
     // FIXME: this is not a very nice way to implement this
-    for(auto& model : models_) {
+    for(const auto& model : models_) {
         if(model->getType() == name) {
             return model;
         }

@@ -53,7 +53,7 @@ namespace corryvreckan {
         ROOT::Math::XYZPoint m_local_end_point{};
 
         // ROOT I/O class definition - update version number when you change this class!
-        ClassDef(MCParticle, 3)
+        ClassDef(MCParticle, 3); // NOLINT
     };
 
     // Vector type declaration

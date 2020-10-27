@@ -133,7 +133,7 @@ namespace allpix {
          * @brief Returns if parallelization of this module is enabled
          * @return True if parallelization is enabled, false otherwise (the default)
          */
-        bool canParallelize();
+        bool canParallelize() const;
 
         /**
          * @brief Initialize the module before the event sequence

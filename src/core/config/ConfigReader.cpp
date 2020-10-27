@@ -230,7 +230,7 @@ std::vector<Configuration> ConfigReader::getConfigurations(std::string name) con
     }
 
     std::vector<Configuration> result;
-    for(auto& iter : conf_map_.at(name)) {
+    for(const auto& iter : conf_map_.at(name)) {
         result.push_back(*iter);
     }
     return result;

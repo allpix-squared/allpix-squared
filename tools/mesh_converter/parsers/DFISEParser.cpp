@@ -220,11 +220,11 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         } break;
         case DFSection::FACES: {
             // Get vertex indices for every face
-            size_t n;
+            size_t n = 0;
             sstr >> n;
             std::vector<long unsigned int> face;
             for(size_t i = 0; i < n; ++i) {
-                long edge_idx;
+                long edge_idx = 0;
                 sstr >> edge_idx;
 
                 bool swap = false;
@@ -263,7 +263,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             faces.push_back(face);
         } break;
         case DFSection::ELEMENTS: {
-            int k;
+            int k = 0;
             sstr >> k;
             std::vector<long unsigned int> element;
 
@@ -298,7 +298,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             }
 
             for(size_t i = 0; i < size; ++i) {
-                long element_idx;
+                long element_idx = 0;
                 sstr >> element_idx;
 
                 bool reverse = false;
@@ -337,7 +337,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             if(sub_section != DFSection::ELEMENTS) {
                 continue;
             }
-            long unsigned int elem_idx;
+            long unsigned int elem_idx = 0;
             while(sstr >> elem_idx) {
                 if(elem_idx >= elements.size()) {
                     throw std::runtime_error("element index is higher than number of elements");
@@ -672,7 +672,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name) {
             main_section == DFSection::ACCEPTOR_CONCENTRATION) &&
            sub_section == DFSection::VALUES) {
             std::stringstream sstr(line);
-            double num;
+            double num = NAN;
             while(sstr >> num) {
                 region_electric_field_num.push_back(num);
             }
