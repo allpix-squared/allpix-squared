@@ -134,8 +134,9 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
 std::vector<std::string> GeometryManager::getModelsPath() {
     return model_paths_;
 }
+
 /**
- * Calls the calculate_orientation function for a given configuration
+ * Returnes the pre-calculated position and orientation of a passive element in global coordinates
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
     if(passive_orientations_.count(passive_element) == 0) {
