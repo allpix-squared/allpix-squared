@@ -17,9 +17,10 @@ DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint local_position,
                                  ROOT::Math::XYZPoint global_position,
                                  CarrierType type,
                                  unsigned int charge,
-                                 double event_time,
+                                 double local_time,
+                                 double global_time,
                                  const MCParticle* mc_particle)
-    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
+    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time) {
     setMCParticle(mc_particle);
 }
 

@@ -119,7 +119,7 @@ void SimpleTransferModule::run(unsigned int) {
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
-            drift_time_histo->Fill(propagated_charge.getEventTime(), propagated_charge.getCharge());
+            drift_time_histo->Fill(propagated_charge.getGlobalTime(), propagated_charge.getCharge());
         }
 
         LOG(TRACE) << "Set of " << propagated_charge.getCharge() << " propagated charges at "

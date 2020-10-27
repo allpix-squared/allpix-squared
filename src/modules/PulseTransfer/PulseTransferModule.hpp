@@ -17,6 +17,8 @@
 #include "objects/PropagatedCharge.hpp"
 
 #include <TH1D.h>
+#include <TH2D.h>
+#include <TProfile.h>
 
 namespace allpix {
     /**
@@ -64,5 +66,7 @@ namespace allpix {
 
         // Output histograms
         TH1D *h_total_induced_charge_{}, *h_induced_pixel_charge_{};
+        TH2D *h_induced_pulses_{}, *h_integrated_pulses_{};
+        TProfile *p_induced_pulses_{}, *p_integrated_pulses_{};
     };
 } // namespace allpix
