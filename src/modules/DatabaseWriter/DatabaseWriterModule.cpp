@@ -34,16 +34,22 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
+    config_.setDefault("global_timing", false);
+    config_.setDefault("run_id", "none");
+}
+
+void DatabaseWriterModule::init() {
+
     // retrieving configuration parameters
     host_ = config_.get<std::string>("host");
     port_ = config_.get<std::string>("port");
     database_name_ = config_.get<std::string>("database_name");
     user_ = config_.get<std::string>("user");
     password_ = config_.get<std::string>("password");
-    run_id_ = config_.get<std::string>("run_id", "none");
-}
+    run_id_ = config_.get<std::string>("run_id");
 
-void DatabaseWriterModule::init() {
+    // Select pixel hit timing information to be saved:
+    timing_global_ = config_.get<bool>("global_timing");
 
     // Establishing connection to the database
     conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ +
@@ -186,7 +192,8 @@ void DatabaseWriterModule::run(Event* event) {
                 if(pixelcharge_nr >= 0)
                     insertionLine << pixelcharge_nr << ", ";
                 insertionLine << "'" << detectorName << "', " << hit.getIndex().X() << ", " << hit.getIndex().Y() << ", "
-                              << hit.getSignal() << ", " << hit.getTime() << ") RETURNING pixelHit_nr;";
+                              << hit.getSignal() << ", " << (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime())
+                              << ") RETURNING pixelHit_nr;";
                 insertionResult = W_->exec(insertionLine.str());
             } else if(class_name == "PixelCharge") {
                 LOG(TRACE) << "inserting PixelCharge" << std::endl;

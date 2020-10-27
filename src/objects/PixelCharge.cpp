@@ -25,6 +25,12 @@ PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const Propa
     }
     // Store the MC particle references
     for(auto& mc_particle : unique_particles) {
+        // Local and global time are set as the earliest time found among the MCParticles:
+        if(mc_particle != nullptr) {
+            auto primary = mc_particle->getPrimary();
+            local_time_ = std::min(local_time_, primary->getLocalTime());
+            global_time_ = std::min(global_time_, primary->getGlobalTime());
+        }
         mc_particles_.emplace_back(mc_particle);
     }
 
@@ -56,6 +62,14 @@ unsigned long PixelCharge::getAbsoluteCharge() const {
 
 const Pulse& PixelCharge::getPulse() const {
     return pulse_;
+}
+
+double PixelCharge::getGlobalTime() const {
+    return global_time_;
+}
+
+double PixelCharge::getLocalTime() const {
+    return local_time_;
 }
 
 /**
@@ -105,7 +119,9 @@ void PixelCharge::print(std::ostream& out) const {
         << "Local Position: (" << local_center_location.X() << ", " << local_center_location.Y() << ", "
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
-        << global_center_location.Z() << ") mm\n";
+        << global_center_location.Z() << ") mm\n"
+        << "Local time:" << local_time_ << " ns\n"
+        << "Global time:" << global_time_ << " ns\n";
 }
 
 void PixelCharge::petrifyHistory() {

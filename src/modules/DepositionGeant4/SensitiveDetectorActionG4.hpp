@@ -97,8 +97,10 @@ namespace allpix {
         unsigned int total_deposited_charge_{};
         unsigned int deposited_charge_{};
 
-        // Set of deposited charges in this event
-        std::vector<DepositedCharge> deposits_;
+        // List of positions for deposits
+        std::vector<ROOT::Math::XYZPoint> deposit_position_;
+        std::vector<unsigned int> deposit_charge_;
+        std::vector<double> deposit_time_;
 
         // List of begin points for tracks
         std::map<int, ROOT::Math::XYZPoint> track_begin_;

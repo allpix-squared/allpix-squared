@@ -260,7 +260,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
 
             double drift_time = calc_drift_time();
-            double propagation_time = drift_time + diffusion_time;
+            double propagation_time = deposit.getLocalTime() + drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
@@ -281,11 +281,14 @@ void ProjectionPropagationModule::run(Event* event) {
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
 
+            auto global_time = deposit.getGlobalTime() + propagation_time;
+            auto local_time = deposit.getLocalTime() + propagation_time;
+
             // Only add if within requested integration time:
-            auto event_time = deposit.getEventTime() + propagation_time;
             if(propagation_time > integration_time_) {
                 LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
-                           << Units::display(event_time, "ns");
+                           << Units::display(global_time, "ns") << "global / " << Units::display(local_time, {"ns", "ps"})
+                           << " local";
                 continue;
             }
 
@@ -305,11 +308,11 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Produce charge carrier at this position
             propagated_charges.emplace_back(
-                local_position, global_position, deposit.getType(), charge_per_step, event_time, &deposit);
+                local_position, global_position, deposit.getType(), charge_per_step, local_time, global_time, &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " " << type << " to "
-                       << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(event_time, "ns")
-                       << " time";
+                       << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(global_time, "ns")
+                       << " global / " << Units::display(local_time, {"ns", "ps"}) << " local";
 
             projected_charge += charge_per_step;
         }

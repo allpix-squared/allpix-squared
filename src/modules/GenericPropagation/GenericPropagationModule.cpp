@@ -156,7 +156,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             minY = std::min(minY, point.y());
             maxY = std::max(maxY, point.y());
         }
-        start_time = std::min(start_time, deposit_points.first.getEventTime());
+        start_time = std::min(start_time, deposit_points.first.getGlobalTime());
         total_charge += deposit_points.first.getCharge();
         max_charge = std::max(max_charge, deposit_points.first.getCharge());
 
@@ -378,7 +378,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             for(auto& deposit_points : output_plot_points) {
                 auto points = deposit_points.second;
 
-                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
+                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getGlobalTime() - start_time) /
                                                                   config_.get<long double>("output_plots_step")));
                 if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
@@ -586,13 +586,18 @@ void GenericPropagationModule::run(Event* event) {
             if(output_linegraphs_) {
                 auto global_position = detector_->getGlobalPosition(position);
                 std::lock_guard<std::mutex> lock{stats_mutex_};
-                output_plot_points.emplace_back(
-                    PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
-                    std::vector<ROOT::Math::XYZPoint>());
+                output_plot_points.emplace_back(PropagatedCharge(position,
+                                                                 global_position,
+                                                                 deposit.getType(),
+                                                                 charge_per_step,
+                                                                 deposit.getLocalTime(),
+                                                                 deposit.getGlobalTime()),
+                                                std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType(), event->getRandomEngine(), output_plot_points);
+            auto prop_pair =
+                propagate(position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
             position = prop_pair.first;
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
@@ -604,7 +609,8 @@ void GenericPropagationModule::run(Event* event) {
                                                global_position,
                                                deposit.getType(),
                                                charge_per_step,
-                                               deposit.getEventTime() + prop_pair.second,
+                                               deposit.getLocalTime() + prop_pair.second,
+                                               deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
 
             propagated_charges.push_back(std::move(propagated_charge));
@@ -650,6 +656,7 @@ void GenericPropagationModule::run(Event* event) {
  */
 std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                                                             const CarrierType& type,
+                                                                            const double initial_time,
                                                                             RandomNumberGenerator& random_generator,
                                                                             OutputPlotPoints& output_plot_points) const {
     // Create a runge kutta solver using the electric field as step function
@@ -724,7 +731,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     double last_time = 0;
     size_t next_idx = 0;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          runge_kutta.getTime() < integration_time_) {
+          (initial_time + runge_kutta.getTime()) < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -809,7 +816,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time);
 }
 
 void GenericPropagationModule::finalize() {
