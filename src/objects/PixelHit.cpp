@@ -17,8 +17,8 @@
 
 using namespace allpix;
 
-PixelHit::PixelHit(Pixel pixel, double time, double signal, const PixelCharge* pixel_charge)
-    : pixel_(std::move(pixel)), time_(time), signal_(signal) {
+PixelHit::PixelHit(Pixel pixel, double local_time, double global_time, double signal, const PixelCharge* pixel_charge)
+    : pixel_(std::move(pixel)), local_time_(local_time), global_time_(global_time), signal_(signal) {
     pixel_charge_ = PointerWrapper<PixelCharge>(pixel_charge);
     // Get the unique set of MC particles
     std::set<const MCParticle*> unique_particles;
@@ -97,7 +97,7 @@ std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
 
 void PixelHit::print(std::ostream& out) const {
     out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
-        << this->getTime();
+        << this->getLocalTime() << ", " << this->getGlobalTime();
 }
 
 void PixelHit::petrifyHistory() {

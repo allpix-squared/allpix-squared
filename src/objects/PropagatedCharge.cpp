@@ -19,9 +19,10 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    ROOT::Math::XYZPoint global_position,
                                    CarrierType type,
                                    unsigned int charge,
-                                   double event_time,
+                                   double local_time,
+                                   double global_time,
                                    const DepositedCharge* deposited_charge)
-    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, event_time) {
+    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time) {
     deposited_charge_ = PointerWrapper<DepositedCharge>(deposited_charge);
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
@@ -32,7 +33,8 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    ROOT::Math::XYZPoint global_position,
                                    CarrierType type,
                                    std::map<Pixel::Index, Pulse> pulses,
-                                   double event_time,
+                                   double local_time,
+                                   double global_time,
                                    const DepositedCharge* deposited_charge)
     : PropagatedCharge(std::move(local_position),
                        std::move(global_position),
@@ -43,7 +45,8 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                        [](const unsigned int prev, const auto& elem) {
                                            return prev + static_cast<unsigned int>(std::abs(elem.second.getCharge()));
                                        }),
-                       event_time,
+                       local_time,
+                       global_time,
                        deposited_charge) {
     pulses_ = std::move(pulses);
 }

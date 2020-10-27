@@ -31,6 +31,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 
     config_.setDefault("file_name", "corryvreckanOutput.root");
     config_.setDefault("geometry_file", "corryvreckanGeometry.conf");
+    config_.setDefault("global_timing", false);
     config_.setDefault("output_mctruth", true);
 }
 
@@ -50,6 +51,9 @@ void CorryvreckanWriterModule::init() {
             throw InvalidValueError(config_, "dut", "detector not defined");
         }
     }
+
+    // Select pixel hit timing information to be saved:
+    timing_global_ = config_.get<bool>("global_timing");
 
     // Create output file and directories
     fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
@@ -136,12 +140,13 @@ void CorryvreckanWriterModule::run(Event* event) {
 
         // Fill the branch vector
         for(auto& apx_pixel : message->getData()) {
-            auto corry_pixel = new corryvreckan::Pixel(detector_name,
-                                                       static_cast<int>(apx_pixel.getPixel().getIndex().X()),
-                                                       static_cast<int>(apx_pixel.getPixel().getIndex().Y()),
-                                                       static_cast<int>(apx_pixel.getSignal()),
-                                                       apx_pixel.getSignal(),
-                                                       event_->start());
+            auto corry_pixel = new corryvreckan::Pixel(
+                detector_name,
+                static_cast<int>(apx_pixel.getPixel().getIndex().X()),
+                static_cast<int>(apx_pixel.getPixel().getIndex().Y()),
+                static_cast<int>(apx_pixel.getSignal()),
+                apx_pixel.getSignal(),
+                (timing_global_ ? event_->start() + apx_pixel.getGlobalTime() : apx_pixel.getLocalTime()));
             write_list_px_[detector_name]->push_back(corry_pixel);
 
             // If writing MC truth then also write out associated particle info
@@ -153,11 +158,12 @@ void CorryvreckanWriterModule::run(Event* event) {
             auto mcp = apx_pixel.getMCParticles();
             LOG(DEBUG) << "Received " << mcp.size() << " Monte Carlo particles from pixel hit";
             for(auto& particle : mcp) {
-                auto mcParticle = new corryvreckan::MCParticle(detector_name,
-                                                               particle->getParticleID(),
-                                                               particle->getLocalStartPoint(),
-                                                               particle->getLocalEndPoint(),
-                                                               event_->start());
+                auto mcParticle = new corryvreckan::MCParticle(
+                    detector_name,
+                    particle->getParticleID(),
+                    particle->getLocalStartPoint(),
+                    particle->getLocalEndPoint(),
+                    (timing_global_ ? event_->start() + particle->getGlobalTime() : particle->getLocalTime()));
                 write_list_mcp_[detector_name]->push_back(mcParticle);
             }
         }

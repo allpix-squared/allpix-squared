@@ -168,16 +168,42 @@ void DetectorHistogrammerModule::init() {
                                      ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
     residual_map = CreateHistogram<TProfile2D>(
         "residual_map", residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_detector_title = "Mean absolute deviation of residual of " + detector_->getName() +
+                                          ";x (pixels);y (pixels);MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    residual_detector = CreateHistogram<TProfile2D>(
+        "residual_detector", residual_detector_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
+
     std::string residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_map = CreateHistogram<TProfile2D>(
         "residual_x_map", residual_x_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_x_detector_title =
+        "Mean absolute deviation of residual in X of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltax) [#mum]";
+    residual_x_detector = CreateHistogram<TProfile2D>("residual_x_detector",
+                                                      residual_x_detector_title.c_str(),
+                                                      xpixels,
+                                                      -0.5,
+                                                      xpixels - 0.5,
+                                                      ypixels,
+                                                      -0.5,
+                                                      ypixels - 0.5);
+
     std::string residual_y_map_title =
         "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
         ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_map = CreateHistogram<TProfile2D>(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
+    std::string residual_y_detector_title =
+        "Mean absolute deviation of residual in Y of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltay) [#mum]";
+    residual_y_detector = CreateHistogram<TProfile2D>("residual_y_detector",
+                                                      residual_y_detector_title.c_str(),
+                                                      xpixels,
+                                                      -0.5,
+                                                      xpixels - 0.5,
+                                                      ypixels,
+                                                      -0.5,
+                                                      ypixels - 0.5);
 
     // Efficiency maps:
     std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
@@ -214,6 +240,14 @@ void DetectorHistogrammerModule::init() {
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge = CreateHistogram<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
+    std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
+    pixel_charge =
+        CreateHistogram<TH1D>("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
+    std::string total_charge_title = "Total charge per event for " + detector_->getName() + ";total charge [ke];events";
+    total_charge = CreateHistogram<TH1D>(
+        "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 }
 
 void DetectorHistogrammerModule::run(Event* event) {
@@ -233,14 +267,13 @@ void DetectorHistogrammerModule::run(Event* event) {
         LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
-        for(auto& pixel_charge : pixels_message->getData()) {
-            auto pixel_idx = pixel_charge.getPixel().getIndex();
-            LOG(DEBUG) << " PIXEL X=" << pixel_idx.x() << " Y=" << pixel_idx.y() << " CHARGE=" << pixel_charge.getSignal();
+        for(auto& pixel_hit : pixels_message->getData()) {
+            auto pixel_idx = pixel_hit.getPixel().getIndex();
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
-            charge_map->Fill(
-                pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_charge.getSignal(), "ke")));
+            charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
+            pixel_charge->Fill(static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
 
             // Update statistics
             std::lock_guard<std::mutex> lock(mutex_);
@@ -264,6 +297,7 @@ void DetectorHistogrammerModule::run(Event* event) {
     LOG(DEBUG) << "Found " << primary_particles.size() << " primary particles in this event";
 
     // Evaluate the clusters
+    double charge_sum = 0;
     for(const auto& clus : clusters) {
         // Fill cluster histograms
         cluster_size->Fill(static_cast<double>(clus.getSize()));
@@ -275,6 +309,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         LOG(DEBUG) << "Cluster at coordinates " << clusterPos << " with charge " << Units::display(clus.getCharge(), "ke");
         cluster_map->Fill(clusterPos.x(), clusterPos.y());
         cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
+        charge_sum += clus.getCharge();
 
         auto cluster_particles = clus.getMCParticles();
         LOG(DEBUG) << "This cluster is connected to " << cluster_particles.size() << " MC particles";
@@ -300,6 +335,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+
             cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
@@ -328,13 +364,19 @@ void DetectorHistogrammerModule::run(Event* event) {
             residual_y_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_y));
             residual_x_vs_y->Fill(inPixel_um_y, std::fabs(residual_um_x));
             residual_y_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_y));
-            residual_map->Fill(inPixel_um_x,
-                               inPixel_um_y,
-                               std::fabs(std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y)));
+            residual_map->Fill(
+                inPixel_um_x, inPixel_um_y, std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y));
             residual_x_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_x));
             residual_y_map->Fill(inPixel_um_x, inPixel_um_y, std::fabs(residual_um_y));
+            residual_detector->Fill(
+                xpixel, ypixel, std::sqrt(residual_um_x * residual_um_x + residual_um_y * residual_um_y));
+            residual_x_detector->Fill(xpixel, ypixel, std::fabs(residual_um_x));
+            residual_y_detector->Fill(xpixel, ypixel, std::fabs(residual_um_y));
         }
     }
+
+    // Store total charge in event:
+    total_charge->Fill(static_cast<double>(Units::convert(charge_sum, "ke")));
 
     // Calculate efficiency: search for matching clusters for all primary MCParticles
     for(auto& particle : primary_particles) {
@@ -400,6 +442,9 @@ void DetectorHistogrammerModule::finalize() {
     auto residual_map_histogram = residual_map->Merge();
     auto residual_x_map_histogram = residual_x_map->Merge();
     auto residual_y_map_histogram = residual_y_map->Merge();
+    auto residual_detector_histogram = residual_detector->Merge();
+    auto residual_x_detector_histogram = residual_x_detector->Merge();
+    auto residual_y_detector_histogram = residual_y_detector->Merge();
     auto efficiency_vs_x_histogram = efficiency_vs_x->Merge();
     auto efficiency_vs_y_histogram = efficiency_vs_y->Merge();
     auto efficiency_detector_histogram = efficiency_detector->Merge();
@@ -408,6 +453,8 @@ void DetectorHistogrammerModule::finalize() {
     auto cluster_charge_histogram = cluster_charge->Merge();
     auto cluster_charge_map_histogram = cluster_charge_map->Merge();
     auto seed_charge_map_histogram = seed_charge_map->Merge();
+    auto pixel_charge_histogram = pixel_charge->Merge();
+    auto total_charge_histogram = total_charge->Merge();
 
     // FIXME Set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
@@ -510,14 +557,19 @@ void DetectorHistogrammerModule::finalize() {
     residual_map_histogram->Write();
     residual_x_map_histogram->Write();
     residual_y_map_histogram->Write();
+    residual_detector_histogram->Write();
+    residual_x_detector_histogram->Write();
+    residual_y_detector_histogram->Write();
     efficiency_vs_x_histogram->Write();
     efficiency_vs_y_histogram->Write();
     efficiency_detector_histogram->Write();
     efficiency_map_histogram->Write();
     n_cluster_histogram->Write();
     cluster_charge_histogram->Write();
+    pixel_charge_histogram->Write();
     cluster_charge_map_histogram->Write();
     seed_charge_map_histogram->Write();
+    total_charge_histogram->Write();
 }
 
 /**

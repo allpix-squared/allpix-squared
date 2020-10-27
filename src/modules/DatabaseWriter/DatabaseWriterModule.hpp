@@ -76,6 +76,7 @@ namespace allpix {
         std::string password_;
         std::string run_id_;
         int run_nr_;
+        bool timing_global_{};
 
         // Statistical information about number of objects
         std::atomic<unsigned long> write_cnt_{};

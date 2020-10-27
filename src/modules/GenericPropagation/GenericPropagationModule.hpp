@@ -81,10 +81,14 @@ namespace allpix {
          * @brief Propagate a single set of charges through the sensor
          * @param pos Position of the deposit in the sensor
          * @param type Type of the carrier to propagate
+         * @param initial_time Initial time passed before propagation starts in local time coordinates
+         * @param random_generator Reference to the random number engine to be used
+         * @param output_plot_points Reference to vector to hold points for line graph output plots
          * @return Pair of the point where the deposit ended after propagation and the time the propagation took
          */
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
                                                           const CarrierType& type,
+                                                          const double initial_time,
                                                           RandomNumberGenerator& random_generator,
                                                           OutputPlotPoints& output_plot_points) const;
 
