@@ -655,15 +655,12 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
     auto carrier_mobility = [&](double efield_mag) {
         // Compute carrier mobility from constants and electric field magnitude
-        double numerator = NAN, denominator = NAN;
         if(type == CarrierType::ELECTRON) {
-            numerator = electron_Vm_ / electron_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+            return electron_Vm_ / electron_Ec_ /
+                   std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
         } else {
-            numerator = hole_Vm_ / hole_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+            return hole_Vm_ / hole_Ec_ / std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
         }
-        return numerator / denominator;
     };
 
     // Define a function to compute the diffusion
