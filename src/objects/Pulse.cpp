@@ -8,7 +8,7 @@
  */
 
 #include "Pulse.hpp"
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 #include <cmath>
 #include <numeric>

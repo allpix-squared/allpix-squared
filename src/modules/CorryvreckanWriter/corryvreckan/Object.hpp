@@ -64,7 +64,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 5);
+        ClassDefOverride(Object, 5); // NOLINT
 
     protected:
         // Member variables

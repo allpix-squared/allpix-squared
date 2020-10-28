@@ -82,7 +82,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
                 LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
                 std::stringstream sstr(line);
                 std::string command, units;
-                double pos_x, pos_y, pos_z;
+                double pos_x = NAN, pos_y = NAN, pos_z = NAN;
                 sstr >> command >> pos_x >> pos_y >> pos_z >> units;
                 ROOT::Math::XYZPoint source_position(
                     Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
@@ -124,7 +124,7 @@ void DepositionGeant4Module::init() {
                 throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
             }
             // Create region
-            G4Region* region = new G4Region(detector->getName() + "_sensor_region");
+            auto* region = new G4Region(detector->getName() + "_sensor_region");
             region->AddRootLogicalVolume(logical_volume.get());
 
             auto pai_model = config_.get<std::string>("pai_model", "pai");
@@ -177,7 +177,7 @@ void DepositionGeant4Module::init() {
     physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
 
     // Set the range-cut off threshold for secondary production:
-    double production_cut;
+    double production_cut = NAN;
     if(config_.has("range_cut")) {
         production_cut = config_.get<double>("range_cut");
         LOG(INFO) << "Setting configured G4 production cut to " << Units::display(production_cut, {"mm", "um"});
@@ -218,13 +218,13 @@ void DepositionGeant4Module::init() {
 
     // Build particle generator
     LOG(TRACE) << "Constructing particle source";
-    auto generator = new GeneratorActionG4(config_);
+    auto* generator = new GeneratorActionG4(config_);
     run_manager_g4_->SetUserAction(generator);
 
     track_info_manager_ = std::make_unique<TrackInfoManager>();
 
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
+    auto* userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
     run_manager_g4_->SetUserAction(userTrackIDHook);
 
     if(geo_manager_->hasMagneticField()) {
@@ -269,7 +269,7 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto sensitive_detector_action = new SensitiveDetectorActionG4(
+        auto* sensitive_detector_action = new SensitiveDetectorActionG4(
             this, detector, messenger_, track_info_manager_.get(), charge_creation_energy, fano_factor, getRandomSeed());
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {

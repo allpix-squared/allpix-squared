@@ -248,7 +248,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
     if(pixels_message_ != nullptr) {
 
         // Fill 2D hitmap histogram
-        for(auto& pixel_hit : pixels_message_->getData()) {
+        for(const auto& pixel_hit : pixels_message_->getData()) {
             auto pixel_idx = pixel_hit.getPixel().getIndex();
 
             // Add pixel
@@ -329,7 +329,7 @@ void DetectorHistogrammerModule::run(unsigned int) {
             auto ypixel = static_cast<unsigned int>(std::round(particlePos.y() / pitch.y()));
 
             // Retrieve the pixel to which this MCParticle points:
-            auto pixel = clus.getPixelHit(xpixel, ypixel);
+            const auto* pixel = clus.getPixelHit(xpixel, ypixel);
             if(pixel != nullptr) {
                 seed_charge_map->Fill(
                     inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
@@ -536,7 +536,7 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering() {
 
         auto touching = [&](const PixelHit* pixel) {
             auto pxi1 = pixel->getIndex();
-            for(auto& cluster_pixel : cluster.getPixelHits()) {
+            for(const auto& cluster_pixel : cluster.getPixelHits()) {
 
                 auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
 
@@ -571,9 +571,9 @@ std::vector<const MCParticle*> DetectorHistogrammerModule::getPrimaryParticles()
     std::vector<const MCParticle*> primaries;
 
     // Loop over all MCParticles available
-    for(auto& mc_particle : mcparticle_message_->getData()) {
+    for(const auto& mc_particle : mcparticle_message_->getData()) {
         // Check for possible parents:
-        auto parent = mc_particle.getParent();
+        const auto* parent = mc_particle.getParent();
         if(parent != nullptr) {
             LOG(TRACE) << "MCParticle " << mc_particle.getParticleID();
             continue;

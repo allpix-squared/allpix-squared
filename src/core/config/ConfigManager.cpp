@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "Configuration.hpp"
+#include "core/config/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
-#include "exceptions.h"
 
 using namespace allpix;
 
@@ -102,7 +102,7 @@ bool ConfigManager::loadModuleOptions(const std::vector<std::string>& options) {
     bool optionsApplied = false;
 
     // Parse the options
-    for(auto& option : options) {
+    for(const auto& option : options) {
         module_option_parser_.parseOption(option);
     }
 
@@ -129,7 +129,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     OptionParser detector_option_parser;
 
     // Parse the options
-    for(auto& option : options) {
+    for(const auto& option : options) {
         detector_option_parser.parseOption(option);
     }
 

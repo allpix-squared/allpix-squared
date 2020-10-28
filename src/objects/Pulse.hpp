@@ -72,7 +72,7 @@ namespace allpix {
         /**
          * @brief Default constructor for ROOT I/O
          */
-        ClassDef(Pulse, 2);
+        ClassDef(Pulse, 2); // NOLINT
 
     private:
         std::vector<double> pulse_;
