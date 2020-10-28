@@ -237,7 +237,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
  */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     if(initialize_ion_as_particle_) {
-        auto single_source = particle_source_->GetCurrentSource();
+        auto* single_source = particle_source_->GetCurrentSource();
         G4ParticleDefinition* particle = nullptr;
 
         if(isotopes_.find(particle_type_) != isotopes_.end()) {

@@ -82,7 +82,7 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
 }
 
 bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) const {
-    auto local_messenger = event->get_local_messenger();
+    auto* local_messenger = event->get_local_messenger();
     return local_messenger->isSatisfied(delegate);
 }
 
@@ -126,7 +126,7 @@ void Messenger::remove_delegate(BaseDelegate* delegate) {
 std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> Messenger::fetchFilteredMessages(Module* module,
                                                                                                    Event* event) {
     try {
-        auto local_messenger = event->get_local_messenger();
+        auto* local_messenger = event->get_local_messenger();
         return local_messenger->fetchFilteredMessages(module);
     } catch(const std::out_of_range& e) {
         throw MessageNotFoundException(module->getUniqueName(), typeid(BaseMessage));
@@ -176,7 +176,7 @@ bool LocalMessenger::dispatchMessage(Module* source,
         const auto msg_name_iterator = msg_type_iterator->second.find(id);
         if(msg_name_iterator != msg_type_iterator->second.end()) {
             // Send messages only to their specific listeners
-            for(auto& delegate : msg_name_iterator->second) {
+            for(const auto& delegate : msg_name_iterator->second) {
                 if(check_send(message.get(), delegate.get())) {
                     LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
                                << source->getUniqueName() << " to " << delegate->getUniqueName();
@@ -196,7 +196,7 @@ bool LocalMessenger::dispatchMessage(Module* source,
     if(base_msg_type_iterator != global_messenger_.delegates_.end()) {
         const auto msg_name_iterator = base_msg_type_iterator->second.find(id);
         if(msg_name_iterator != base_msg_type_iterator->second.end()) {
-            for(auto& delegate : msg_name_iterator->second) {
+            for(const auto& delegate : msg_name_iterator->second) {
                 if(check_send(message.get(), delegate.get())) {
                     LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
                                << source->getUniqueName() << " to generic listener " << delegate->getUniqueName();

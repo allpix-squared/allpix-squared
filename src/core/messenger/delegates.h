@@ -204,8 +204,6 @@ namespace allpix {
 
     private:
         std::vector<std::shared_ptr<BaseMessage>> messages_;
-
-    private:
         std::mutex mutex_;
     };
 

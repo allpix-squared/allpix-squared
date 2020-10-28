@@ -250,7 +250,7 @@ void DepositionGeant4Module::init() {
     // User hook to store additional information at track initialization and termination as well as custom track ids
     LOG(TRACE) << "Constructing particle source";
 
-    auto action_initialization = new ActionInitializationG4(config_, this);
+    auto* action_initialization = new ActionInitializationG4(config_, this);
     run_manager_g4_->SetUserInitialization(action_initialization);
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
@@ -283,7 +283,7 @@ void DepositionGeant4Module::initializeThread() {
     LOG(DEBUG) << "Initializing run manager";
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
-        auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
@@ -373,7 +373,7 @@ void DepositionGeant4Module::finalizeThread() {
     // Record the number of sensors and the total charges
     record_module_statistics();
 
-    auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+    auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
     run_manager_mt->TerminateForThread();
 }
 
