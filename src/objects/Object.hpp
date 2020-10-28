@@ -105,8 +105,8 @@ namespace allpix {
             /**
              * @brief Use default move behaviour
              */
-            BaseWrapper(BaseWrapper&& rhs) noexcept = default;
-            BaseWrapper& operator=(BaseWrapper&& rhs) noexcept = default;
+            BaseWrapper(BaseWrapper&& rhs) = default;
+            BaseWrapper& operator=(BaseWrapper&& rhs) = default;
             /// @}
 
             /**
@@ -130,7 +130,7 @@ namespace allpix {
             /**
              * @brief Required virtual destructor
              */
-            ~BaseWrapper() override = default;
+            virtual ~BaseWrapper() = default;
 
             mutable T* ptr_{};           //! transient value
             mutable bool loaded_{false}; //! transient value
@@ -165,12 +165,12 @@ namespace allpix {
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
              */
-            PointerWrapper(PointerWrapper&& rhs) : BaseWrapper<T>(rhs) noexcept {};
+            PointerWrapper(PointerWrapper&& rhs) : BaseWrapper<T>(rhs){};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
-            PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
+            PointerWrapper& operator=(PointerWrapper&& rhs) {
                 BaseWrapper<T>::operator=(rhs);
                 return *this;
             };
