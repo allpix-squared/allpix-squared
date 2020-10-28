@@ -152,7 +152,7 @@ void ROOTObjectWriterModule::run(Event* event) {
 
             // Add vector of objects to write to the write list
             write_list_[index_tuple] = new std::vector<Object*>();
-            auto addr = &write_list_[index_tuple];
+            auto* addr = &write_list_[index_tuple];
 
             auto new_tree = (trees_.find(class_name) == trees_.end());
             if(new_tree) {
