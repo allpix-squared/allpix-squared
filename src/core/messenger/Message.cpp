@@ -13,7 +13,7 @@
 #include <memory>
 #include <utility>
 
-#include "exceptions.h"
+#include "core/messenger/exceptions.h"
 
 using namespace allpix;
 

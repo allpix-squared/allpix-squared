@@ -518,7 +518,7 @@ void ModuleManager::init() {
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->get_configuration().getName();
-        auto directory = modules_file_->GetDirectory(module_name.c_str());
+        auto* directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = modules_file_->mkdir(module_name.c_str());
             if(directory == nullptr) {
@@ -580,7 +580,9 @@ void ModuleManager::run() {
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     global_config.setDefault("experimental_multithreading", false);
-    unsigned int threads_num;
+
+    // Default to no additional thread without multithreading
+    unsigned int threads_num = 0;
 
     if(global_config.get<bool>("experimental_multithreading")) {
         // Try to fetch a suitable number of workers if multithreading is enabled
@@ -590,9 +592,6 @@ void ModuleManager::run() {
         }
         LOG(WARNING) << "Experimental multithreading enabled - using " << threads_num << " worker threads.";
         --threads_num;
-    } else {
-        // Default to no additional thread without multithreading
-        threads_num = 0;
     }
 
     // Creates the thread pool

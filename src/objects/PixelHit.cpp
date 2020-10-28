@@ -13,7 +13,7 @@
 
 #include "DepositedCharge.hpp"
 #include "PropagatedCharge.hpp"
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
@@ -22,11 +22,11 @@ PixelHit::PixelHit(Pixel pixel, double local_time, double global_time, double si
     pixel_charge_ = const_cast<PixelCharge*>(pixel_charge); // NOLINT
     // Get the unique set of MC particles
     std::set<TRef> unique_particles;
-    for(auto& mc_particle : pixel_charge->mc_particles_) {
+    for(const auto& mc_particle : pixel_charge->mc_particles_) {
         unique_particles.insert(mc_particle);
     }
     // Store the MC particle references
-    for(auto& mc_particle : unique_particles) {
+    for(const auto& mc_particle : unique_particles) {
         mc_particles_.push_back(mc_particle);
     }
 }
@@ -45,7 +45,7 @@ Pixel::Index PixelHit::getIndex() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const PixelCharge* PixelHit::getPixelCharge() const {
-    auto pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_.GetObject());
+    auto* pixel_charge = dynamic_cast<PixelCharge*>(pixel_charge_.GetObject());
     if(pixel_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(PixelCharge));
     }
@@ -60,7 +60,7 @@ const PixelCharge* PixelHit::getPixelCharge() const {
 std::vector<const MCParticle*> PixelHit::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(const auto& mc_particle : mc_particles_) {
         if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
@@ -78,11 +78,11 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
  */
 std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
     std::vector<const MCParticle*> primary_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(const auto& mc_particle : mc_particles_) {
         if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
-        auto particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+        auto* particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
 
         // Check for possible parents:
         if(particle->getParent() != nullptr) {

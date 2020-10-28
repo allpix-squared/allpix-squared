@@ -127,7 +127,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
     double max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
 
     // Create 1D histograms
-    auto histogram = new TH1F("potential1d", "#phi_{w}/V_{w};z (mm);unit potential", static_cast<int>(steps), min, max);
+    auto* histogram = new TH1F("potential1d", "#phi_{w}/V_{w};z (mm);unit potential", static_cast<int>(steps), min, max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
@@ -140,24 +140,24 @@ void WeightingPotentialReaderModule::create_output_plots() {
     }
 
     // Create 2D histogram
-    auto histogram2Dx = new TH2F("potential_x",
-                                 "#phi_{w}/V_{w};x (mm); z (mm); unit potential",
-                                 static_cast<int>(steps),
-                                 -1.5 * model->getPixelSize().x(),
-                                 1.5 * model->getPixelSize().x(),
-                                 static_cast<int>(steps),
-                                 min,
-                                 max);
+    auto* histogram2Dx = new TH2F("potential_x",
+                                  "#phi_{w}/V_{w};x (mm); z (mm); unit potential",
+                                  static_cast<int>(steps),
+                                  -1.5 * model->getPixelSize().x(),
+                                  1.5 * model->getPixelSize().x(),
+                                  static_cast<int>(steps),
+                                  min,
+                                  max);
 
     // Create 2D histogram
-    auto histogram2Dy = new TH2F("potential_y",
-                                 "#phi_{w}/V_{w};y (mm); z (mm); unit potential",
-                                 static_cast<int>(steps),
-                                 -1.5 * model->getPixelSize().y(),
-                                 1.5 * model->getPixelSize().y(),
-                                 static_cast<int>(steps),
-                                 min,
-                                 max);
+    auto* histogram2Dy = new TH2F("potential_y",
+                                  "#phi_{w}/V_{w};y (mm); z (mm); unit potential",
+                                  static_cast<int>(steps),
+                                  -1.5 * model->getPixelSize().y(),
+                                  1.5 * model->getPixelSize().y(),
+                                  static_cast<int>(steps),
+                                  min,
+                                  max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {

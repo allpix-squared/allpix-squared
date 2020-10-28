@@ -129,7 +129,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 2);
+        ClassDefOverride(MCTrack, 2); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
