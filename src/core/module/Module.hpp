@@ -26,8 +26,8 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
+#include "core/module/exceptions.h"
 #include "core/utils/prng.h"
-#include "exceptions.h"
 
 namespace allpix {
     class Messenger;
@@ -135,7 +135,7 @@ namespace allpix {
          * @brief Returns if parallelization of this module is enabled
          * @return True if parallelization is enabled, false otherwise (the default)
          */
-        bool canParallelize();
+        bool canParallelize() const;
 
         /**
          * @brief Initialize the module for each thread after the global initialization

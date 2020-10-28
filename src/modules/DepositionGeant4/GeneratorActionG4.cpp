@@ -101,7 +101,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     } else {
 
         // Get the source and set the centre coordinate of the source
-        auto single_source = particle_source_->GetCurrentSource();
+        auto* single_source = particle_source_->GetCurrentSource();
         single_source->GetPosDist()->SetCentreCoords(config_.get<G4ThreeVector>("source_position"));
 
         // Set position and direction parameters according to shape
@@ -179,7 +179,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         }
 
         // Find Geant4 particle
-        auto pdg_table = G4ParticleTable::GetParticleTable();
+        auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_type_ = config_.get<std::string>("particle_type", "");
         std::transform(particle_type_.begin(), particle_type_.end(), particle_type_.begin(), ::tolower);
         auto particle_code = config_.get<int>("particle_code", 0);

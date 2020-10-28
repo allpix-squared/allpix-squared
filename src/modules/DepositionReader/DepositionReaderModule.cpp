@@ -221,8 +221,8 @@ void DepositionReaderModule::run(Event* event) {
         bool read_status = false;
         ROOT::Math::XYZPoint global_position;
         std::string volume;
-        double energy, time;
-        int pdg_code, track_id, parent_id;
+        double energy = NAN, time = NAN;
+        int pdg_code = 0, track_id = 0, parent_id = 0;
 
         try {
             if(file_model_ == "csv") {
@@ -471,7 +471,7 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
         // Check for event header:
         if(line.front() == 'E') {
             std::stringstream lse(line);
-            uint64_t event_read;
+            uint64_t event_read = 0;
             lse >> tmp >> event_read;
             if(event_read + 1 > event_num) {
                 return false;
@@ -482,7 +482,7 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
     } while(line.empty() || line.front() == '#' || line.front() == 'E');
 
     std::istringstream ls(line);
-    double px, py, pz;
+    double px = NAN, py = NAN, pz = NAN;
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> pdg_code;

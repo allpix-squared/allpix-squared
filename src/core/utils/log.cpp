@@ -116,7 +116,7 @@ DefaultLogger::~DefaultLogger() {
     }
 
     // Print output to streams
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << out;
         } else {
@@ -137,7 +137,7 @@ void DefaultLogger::finish() {
 
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
-        for(auto stream : get_streams()) {
+        for(auto* stream : get_streams()) {
             (*stream) << std::endl;
             (*stream).flush();
         }
@@ -147,7 +147,7 @@ void DefaultLogger::finish() {
     last_message_ = "";
 
     // Enable cursor again if stream supports it
-    for(auto stream : get_streams()) {
+    for(auto* stream : get_streams()) {
         if(is_terminal(*stream)) {
             (*stream) << "\x1B[?25h";
             (*stream).flush();
@@ -387,8 +387,7 @@ uint64_t& DefaultLogger::get_event_num() {
 
     // Make sure event_num is initialized to zero.
     thread_local std::once_flag flag;
-    std::call_once(
-        flag, []() noexcept { event_num = 0; });
+    std::call_once(flag, []() noexcept { event_num = 0; });
 
     return event_num;
 }

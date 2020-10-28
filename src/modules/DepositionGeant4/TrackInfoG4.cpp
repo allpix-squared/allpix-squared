@@ -15,7 +15,7 @@ using namespace allpix;
 
 TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack)
     : custom_track_id_(custom_track_id), parent_track_id_(parent_track_id) {
-    auto G4Process = aTrack->GetCreatorProcess();
+    const auto* G4Process = aTrack->GetCreatorProcess();
     origin_g4_process_type_ = (G4Process != nullptr) ? G4Process->GetProcessType() : -1;
     particle_id_ = aTrack->GetDynamicParticle()->GetPDGcode();
     start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());

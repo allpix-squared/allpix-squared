@@ -23,7 +23,7 @@
 
 #include "Message.hpp"
 #include "core/geometry/Detector.hpp"
-#include "exceptions.h"
+#include "core/messenger/exceptions.h"
 
 // TODO [doc] This should partly move to a source file
 

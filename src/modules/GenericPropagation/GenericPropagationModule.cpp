@@ -190,8 +190,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             maxX = std::ceil(maxX - 0.5) + 0.5;
             maxY = std::ceil(maxY + 0.5) - 0.5;
         } else {
-            double div;
-            div = minX / model_->getPixelSize().x();
+            double div = minX / model_->getPixelSize().x();
             minX = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().x();
             div = minY / model_->getPixelSize().y();
             minY = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().y();
@@ -556,7 +555,7 @@ void GenericPropagationModule::run(Event* event) {
     unsigned int propagated_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
-    for(auto& deposit : deposits_message->getData()) {
+    for(const auto& deposit : deposits_message->getData()) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
@@ -666,7 +665,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
     auto carrier_mobility = [&](double efield_mag) {
         // Compute carrier mobility from constants and electric field magnitude
-        double numerator, denominator;
+        double numerator = NAN, denominator = NAN;
         if(type == CarrierType::ELECTRON) {
             numerator = electron_Vm_ / electron_Ec_;
             denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);

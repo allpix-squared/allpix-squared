@@ -123,7 +123,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 8);
+        ClassDefOverride(MCParticle, 8); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */

@@ -55,7 +55,7 @@ void InducedTransferModule::run(Event* event) {
     bool found_electrons = false, found_holes = false;
 
     std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
-    for(auto& propagated_charge : propagated_message->getData()) {
+    for(const auto& propagated_charge : propagated_message->getData()) {
 
         // Make sure both electrons and holes are present in the input data
         if(propagated_charge.getType() == CarrierType::ELECTRON) {
@@ -64,7 +64,7 @@ void InducedTransferModule::run(Event* event) {
             found_holes = true;
         }
 
-        auto deposited_charge = propagated_charge.getDepositedCharge();
+        const auto* deposited_charge = propagated_charge.getDepositedCharge();
 
         // Get start and end point by looking at deposited and propagated charge local positions
         auto position_end = propagated_charge.getLocalPosition();

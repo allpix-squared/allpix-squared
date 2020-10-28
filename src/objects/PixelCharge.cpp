@@ -10,7 +10,7 @@
 #include "PixelCharge.hpp"
 
 #include <set>
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
@@ -19,15 +19,15 @@ PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const Propa
     // Unique set of MC particles
     std::set<const MCParticle*> unique_particles;
     // Store all propagated charges and their MC particles
-    for(auto& propagated_charge : propagated_charges) {
+    for(const auto& propagated_charge : propagated_charges) {
         propagated_charges_.emplace_back(propagated_charge);
         unique_particles.insert(propagated_charge->mc_particle_.get());
     }
     // Store the MC particle references
-    for(auto& mc_particle : unique_particles) {
+    for(const auto& mc_particle : unique_particles) {
         // Local and global time are set as the earliest time found among the MCParticles:
         if(mc_particle != nullptr) {
-            auto primary = mc_particle->getPrimary();
+            const auto* primary = mc_particle->getPrimary();
             local_time_ = std::min(local_time_, primary->getLocalTime());
             global_time_ = std::min(global_time_, primary->getGlobalTime());
         }
@@ -80,7 +80,7 @@ double PixelCharge::getLocalTime() const {
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
-    for(auto& propagated_charge : propagated_charges_) {
+    for(const auto& propagated_charge : propagated_charges_) {
         if(propagated_charge.get() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
@@ -97,7 +97,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
 std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(const auto& mc_particle : mc_particles_) {
         if(mc_particle.get() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }

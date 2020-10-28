@@ -77,7 +77,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
-    const auto userTrackInfo = dynamic_cast<TrackInfoG4*>(step->GetTrack()->GetUserInformation());
+    const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(step->GetTrack()->GetUserInformation());
     if(userTrackInfo == nullptr) {
         throw ModuleError("No track information attached to track.");
     }
@@ -117,15 +117,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     return true;
 }
 
-std::string SensitiveDetectorActionG4::getName() {
+std::string SensitiveDetectorActionG4::getName() const {
     return detector_->getName();
 }
 
-unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() {
+unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() const {
     return total_deposited_charge_;
 }
 
-unsigned int SensitiveDetectorActionG4::getDepositedCharge() {
+unsigned int SensitiveDetectorActionG4::getDepositedCharge() const {
     return deposited_charge_;
 }
 

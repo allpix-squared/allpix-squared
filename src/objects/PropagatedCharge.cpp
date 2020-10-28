@@ -11,7 +11,7 @@
 
 #include "PropagatedCharge.hpp"
 
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
@@ -57,7 +57,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
-    auto deposited_charge = deposited_charge_.get();
+    auto* deposited_charge = deposited_charge_.get();
     if(deposited_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
     }
@@ -70,7 +70,7 @@ const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* PropagatedCharge::getMCParticle() const {
-    auto mc_particle = mc_particle_.get();
+    auto* mc_particle = mc_particle_.get();
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }

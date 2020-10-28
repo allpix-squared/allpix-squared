@@ -535,7 +535,7 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
         std::string module_name = module->get_configuration().getName();
-        auto directory = modules_file_->GetDirectory(module_name.c_str());
+        auto* directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = modules_file_->mkdir(module_name.c_str());
             if(directory == nullptr) {
@@ -597,7 +597,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
-    size_t threads_num;
+
+    // Default to no additional thread without multithreading
+    size_t threads_num = 0;
 
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
@@ -626,9 +628,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             global_config.set<bool>("multithreading", false);
             LOG(WARNING) << "Multithreading disabled since the current module configuration doesn't support it";
         }
-
-        // Default to no additional thread without multithreading
-        threads_num = 0;
     }
     global_config.set<size_t>("workers", threads_num);
 

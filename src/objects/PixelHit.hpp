@@ -96,7 +96,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 5);
+        ClassDefOverride(PixelHit, 5); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */

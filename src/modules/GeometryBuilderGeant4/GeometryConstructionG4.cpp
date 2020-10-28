@@ -167,47 +167,47 @@ void GeometryConstructionG4::init_materials() {
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
 
     // Create required elements:
-    G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
-    G4Element* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
-    G4Element* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
-    G4Element* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
-    G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
-    G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
-    G4Element* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
+    auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
+    auto* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
+    auto* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
+    auto* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
+    auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
+    auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
+    auto* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
 
     // Create Epoxy material
-    G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
+    auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
     Epoxy->AddElement(H, 44);
     Epoxy->AddElement(C, 15);
     Epoxy->AddElement(O, 7);
     materials_["epoxy"] = Epoxy;
 
     // Create Carbon Fiber material:
-    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
+    auto* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
     CarbonFiber->AddMaterial(Epoxy, 0.4);
     CarbonFiber->AddElement(C, 0.6);
     materials_["carbonfiber"] = CarbonFiber;
 
-    G4Material* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
+    auto* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
     FusedSilica->AddElement(O, 0.53);
     FusedSilica->AddElement(Si, 0.47);
     materials_["fusedsilica"] = FusedSilica;
 
     // Create PCB G-10 material
-    G4Material* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
+    auto* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
     GTen->AddMaterial(nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE"), 0.773);
     GTen->AddMaterial(Epoxy, 0.147);
     GTen->AddElement(Cl, 0.08);
     materials_["g10"] = GTen;
 
     // Create solder material
-    G4Material* Solder = new G4Material("Solder", 8.4 * CLHEP::g / CLHEP::cm3, 2);
+    auto* Solder = new G4Material("Solder", 8.4 * CLHEP::g / CLHEP::cm3, 2);
     Solder->AddElement(Sn, 0.63);
     Solder->AddElement(Pb, 0.37);
     materials_["solder"] = Solder;
 
     // Create paper material (cellulose C6H10O5)
-    G4Material* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
+    auto* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
     Paper->AddElement(C, 6);
     Paper->AddElement(O, 10);
     Paper->AddElement(H, 5);
@@ -223,7 +223,7 @@ void GeometryConstructionG4::check_overlaps() {
     bool overlapFlag = false;
     // Release Geant4 output for better error description
     IFLOG(WARNING) { RELEASE_STREAM(G4cout); }
-    for(auto volume : (*phys_volume_store)) {
+    for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
     // Suppress again to prevent further complications

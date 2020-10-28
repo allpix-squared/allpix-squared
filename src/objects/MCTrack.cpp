@@ -87,7 +87,7 @@ void MCTrack::print(std::ostream& out) const {
     static const size_t small_gap = 6;
     static const size_t largest_output = 2 * big_gap + 2 * med_gap + 2 * small_gap;
 
-    auto parent = getParent();
+    const auto* parent = getParent();
 
     auto title = std::stringstream();
     title << "--- Printing MCTrack information for track (" << this << ") ";

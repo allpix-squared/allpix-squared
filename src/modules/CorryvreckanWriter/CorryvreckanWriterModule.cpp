@@ -139,8 +139,8 @@ void CorryvreckanWriterModule::run(Event* event) {
         }
 
         // Fill the branch vector
-        for(auto& apx_pixel : message->getData()) {
-            auto corry_pixel = new corryvreckan::Pixel(
+        for(const auto& apx_pixel : message->getData()) {
+            auto* corry_pixel = new corryvreckan::Pixel(
                 detector_name,
                 static_cast<int>(apx_pixel.getPixel().getIndex().X()),
                 static_cast<int>(apx_pixel.getPixel().getIndex().Y()),
@@ -158,7 +158,7 @@ void CorryvreckanWriterModule::run(Event* event) {
             auto mcp = apx_pixel.getMCParticles();
             LOG(DEBUG) << "Received " << mcp.size() << " Monte Carlo particles from pixel hit";
             for(auto& particle : mcp) {
-                auto mcParticle = new corryvreckan::MCParticle(
+                auto* mcParticle = new corryvreckan::MCParticle(
                     detector_name,
                     particle->getParticleID(),
                     particle->getLocalStartPoint(),

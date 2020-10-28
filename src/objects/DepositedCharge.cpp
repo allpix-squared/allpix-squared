@@ -9,7 +9,7 @@
 
 #include "DepositedCharge.hpp"
 
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
@@ -30,7 +30,7 @@ DepositedCharge::DepositedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* DepositedCharge::getMCParticle() const {
-    auto mc_particle = mc_particle_.get();
+    auto* mc_particle = mc_particle_.get();
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }

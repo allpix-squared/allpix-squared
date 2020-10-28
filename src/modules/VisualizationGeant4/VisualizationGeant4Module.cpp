@@ -74,7 +74,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     if(!has_run_ && vis_manager_g4_ != nullptr && vis_manager_g4_->GetCurrentViewer() != nullptr && driver == "VRML2FILE") {
         LOG(TRACE) << "Invoking VRML workaround to prevent visualization under error conditions";
 
-        auto str = getenv("G4VRMLFILE_VIEWER");
+        auto* str = getenv("G4VRMLFILE_VIEWER");
         if(str != nullptr) {
             setenv("G4VRMLFILE_VIEWER", "NONE", 1);
         }
@@ -136,8 +136,8 @@ void VisualizationGeant4Module::init() {
     if(check_driver != 0) {
         RELEASE_STREAM(G4cout);
         std::set<G4String> candidates;
-        for(auto system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
-            for(auto& nickname : system->GetNicknames()) {
+        for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
+            for(const auto& nickname : system->GetNicknames()) {
                 if(!nickname.contains("FALLBACK")) {
                     candidates.insert(nickname);
                 }
@@ -145,7 +145,7 @@ void VisualizationGeant4Module::init() {
         }
 
         std::string candidate_str;
-        for(auto& candidate : candidates) {
+        for(const auto& candidate : candidates) {
             candidate_str += candidate;
             candidate_str += ", ";
         }
@@ -374,7 +374,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 
     // Apply the visualization attributes to all elements that exist
-    for(auto& name : geo_manager_->getExternalObjectNames()) {
+    for(const auto& name : geo_manager_->getExternalObjectNames()) {
 
         auto set_vis_attribute = [this, name](const std::string& volume, const G4VisAttributes& attr) {
             auto log = geo_manager_->getExternalObject<G4LogicalVolume>(name, volume);

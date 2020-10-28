@@ -153,7 +153,7 @@ void TransientPropagationModule::run(Event* event) {
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
-    for(auto& deposit : deposits_message->getData()) {
+    for(const auto& deposit : deposits_message->getData()) {
 
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
@@ -220,7 +220,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
     auto carrier_mobility = [&](double efield_mag) {
         // Compute carrier mobility from constants and electric field magnitude
-        double numerator, denominator;
+        double numerator = NAN, denominator = NAN;
         if(type == CarrierType::ELECTRON) {
             numerator = electron_Vm_ / electron_Ec_;
             denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);

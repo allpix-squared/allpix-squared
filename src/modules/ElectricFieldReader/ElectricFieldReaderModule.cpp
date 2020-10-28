@@ -210,8 +210,8 @@ void ElectricFieldReaderModule::create_output_plots() {
     double z_max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
-    double min1, max1;
-    double min2, max2;
+    double min1 = NAN, max1 = NAN;
+    double min2 = NAN, max2 = NAN;
     if(project == 'x') {
         min1 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
         max1 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
@@ -230,29 +230,29 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     // Create 2D histograms
-    auto histogram = new TH2F("field_magnitude",
-                              "electric field magnitude",
-                              static_cast<int>(steps),
-                              min1,
-                              max1,
-                              static_cast<int>(steps),
-                              min2,
-                              max2);
+    auto* histogram = new TH2F("field_magnitude",
+                               "electric field magnitude",
+                               static_cast<int>(steps),
+                               min1,
+                               max1,
+                               static_cast<int>(steps),
+                               min2,
+                               max2);
     histogram->SetMinimum(0);
     histogram->SetOption("colz");
 
-    auto histogram_x = new TH2F(
+    auto* histogram_x = new TH2F(
         "field_x", "electric field (x-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
-    auto histogram_y = new TH2F(
+    auto* histogram_y = new TH2F(
         "field_y", "electric field (y-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
-    auto histogram_z = new TH2F(
+    auto* histogram_z = new TH2F(
         "field_z", "electric field (z-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_x->SetOption("colz");
     histogram_y->SetOption("colz");
     histogram_z->SetOption("colz");
 
     // Create 1D histogram
-    auto histogram1D = new TH1F(
+    auto* histogram1D = new TH1F(
         "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
 
     // Determine the coordinate to use for projection

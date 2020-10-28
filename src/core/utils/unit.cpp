@@ -152,7 +152,7 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     // Find best unit
     int best_exponent = std::numeric_limits<int>::min();
     std::string best_unit;
-    for(auto& unit : units) {
+    for(const auto& unit : units) {
         Units::UnitType value = convert(input, unit);
         int exponent = 0;
         std::frexp(value, &exponent);

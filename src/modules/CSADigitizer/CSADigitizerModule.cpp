@@ -174,7 +174,7 @@ void CSADigitizerModule::run(Event* event) {
 
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(auto& pixel_charge : pixel_message->getData()) {
+    for(const auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
@@ -203,7 +203,7 @@ void CSADigitizerModule::run(Event* event) {
                 std::generate(time.begin(), time.end(), [n = 0.0, timestep]() mutable {  auto now = n; n += timestep; return now; });
                 // clang-format on
 
-                auto response_graph = new TGraph(
+                auto* response_graph = new TGraph(
                     static_cast<int>(impulse_response_function_.size()), &time[0], &impulse_response_function_[0]);
                 response_graph->GetXaxis()->SetTitle("t [ns]");
                 response_graph->GetYaxis()->SetTitle("amp. response");
@@ -379,7 +379,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
         plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
-    auto csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), &amptime[0], &pulse_in_mV[0]);
+    auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), &amptime[0], &pulse_in_mV[0]);
     csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
     csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
     csa_pulse_graph->SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());

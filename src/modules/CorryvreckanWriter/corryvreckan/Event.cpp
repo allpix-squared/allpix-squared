@@ -104,7 +104,7 @@ void Event::print(std::ostream& out) const {
     out << "End:   " << end();
     if(!trigger_list_.empty()) {
         out << std::endl << "Trigger list: ";
-        for(auto& trg : trigger_list_) {
+        for(const auto& trg : trigger_list_) {
             out << std::endl << trg.first << ": " << trg.second;
         }
     }

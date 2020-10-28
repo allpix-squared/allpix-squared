@@ -85,7 +85,7 @@ const MCParticle* MCParticle::getParent() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getPrimary() const {
-    auto parent = parent_.get();
+    auto* parent = parent_.get();
     return (parent == nullptr ? this : parent->getPrimary());
 }
 
@@ -106,8 +106,8 @@ void MCParticle::print(std::ostream& out) const {
     static const size_t small_gap = 6;
     static const size_t largest_output = big_gap + 3 * med_gap + 3 * small_gap;
 
-    auto track = getTrack();
-    auto parent = getParent();
+    const auto* track = getTrack();
+    const auto* parent = getParent();
 
     auto title = std::stringstream();
     title << "--- Printing MCParticle information (" << this << ") ";

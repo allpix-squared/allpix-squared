@@ -60,7 +60,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 3);
+        ClassDefOverride(Object, 3); // NOLINT
 
         virtual void petrifyHistory() = 0;
 
