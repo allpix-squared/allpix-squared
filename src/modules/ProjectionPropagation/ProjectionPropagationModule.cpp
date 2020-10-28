@@ -165,15 +165,13 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Define a lambda function to compute the carrier mobility
             auto carrier_mobility = [&](double efield_magn) {
                 // Compute carrier mobility from constants and electric field magnitude
-                double numerator = NAN, denominator = NAN;
                 if(type == CarrierType::ELECTRON) {
-                    numerator = electron_Vm_ / electron_Ec_;
-                    denominator = std::pow(1. + std::pow(efield_magn / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+                    return electron_Vm_ / electron_Ec_ /
+                           std::pow(1. + std::pow(efield_magn / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
                 } else {
-                    numerator = hole_Vm_ / hole_Ec_;
-                    denominator = std::pow(1. + std::pow(efield_magn / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+                    return hole_Vm_ / hole_Ec_ /
+                           std::pow(1. + std::pow(efield_magn / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
                 }
-                return numerator / denominator;
             };
 
             double diffusion_time = 0;
