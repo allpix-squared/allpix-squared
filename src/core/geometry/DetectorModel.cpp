@@ -69,6 +69,31 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     }
 }
 
+ROOT::Math::XYZPoint DetectorModel::getGeometricalCenter() const {
+
+    // Prepare detector assembly stack (sensor, chip, supports) with z-positions and thicknesses:
+    std::vector<std::pair<double, double>> stack = {{getSensorCenter().z(), getSensorSize().z()},
+                                                    {getChipCenter().z(), getChipSize().z()}};
+    for(auto& support_layer : getSupportLayers()) {
+        stack.emplace_back(support_layer.getCenter().z(), support_layer.getSize().z());
+    }
+
+    // Find first and last element of detector assembly stack:
+    auto boundaries = std::minmax_element(
+        stack.begin(), stack.end(), [](std::pair<double, double> const& s1, std::pair<double, double> const& s2) {
+            return s1.first < s2.first;
+        });
+
+    auto element_first = *boundaries.first;
+    auto element_last = *boundaries.second;
+
+    // Calculate geometrical center as mid-point between boundaries (first element minus half thickness, last element plus
+    // half thickness)
+    auto center =
+        ((element_first.first - element_first.second / 2.0) + (element_last.first + element_last.second / 2.0)) / 2.0;
+    return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), center);
+}
+
 std::vector<Configuration> DetectorModel::getConfigurations() const {
     std::vector<Configuration> configurations;
     // Initialize global base configuration
