@@ -165,13 +165,13 @@ namespace allpix {
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
              */
-            PointerWrapper(PointerWrapper&& rhs) : BaseWrapper<T>(rhs){};
+            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(std::move(rhs)){};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
-            PointerWrapper& operator=(PointerWrapper&& rhs) {
-                BaseWrapper<T>::operator=(rhs);
+            PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
+                BaseWrapper<T>::operator=(std::move(rhs));
                 return *this;
             };
 
