@@ -89,6 +89,7 @@ namespace allpix {
         auto base_messages = messages_.at(module->getUniqueName()).at(type_idx).multi;
 
         std::vector<std::shared_ptr<T>> derived_messages;
+        derived_messages.reserve(base_messages.size());
         for(auto& message : base_messages) {
             derived_messages.push_back(std::static_pointer_cast<T>(message));
         }
