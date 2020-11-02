@@ -30,7 +30,7 @@ namespace allpix {
         /**
          * @brief Constructs passive material construction module
          */
-        PassiveMaterialConstructionG4(GeometryManager* geo_manager);
+        explicit PassiveMaterialConstructionG4(GeometryManager* geo_manager);
 
         /**
          * @brief Registers the passive material
