@@ -158,7 +158,8 @@ namespace allpix {
     template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
     class ThreadedHistogram : public ROOT::TThreadedObject<T> {
     public:
-        template <class... ARGS> ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
+        template <class... ARGS>
+        explicit ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
             this->Get();
         }
 
