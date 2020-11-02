@@ -166,19 +166,21 @@ namespace allpix {
         /**
          * @brief An easy way to fill a histogram
          */
-        template <class... ARGS> Int_t Fill(ARGS&&... args) { return this->Get()->Fill(std::forward<ARGS>(args)...); }
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { // NOLINT
+            return this->Get()->Fill(std::forward<ARGS>(args)...);
+        }
 
         /**
          * @brief An easy way to set bin contents
          */
-        template <class... ARGS> void SetBinContent(ARGS&&... args) {
+        template <class... ARGS> void SetBinContent(ARGS&&... args) { // NOLINT
             this->Get()->SetBinContent(std::forward<ARGS>(args)...);
         }
 
         /**
          * @brief An easy way to write a histogram
          */
-        void Write() { this->Merge()->Write(); }
+        void Write() { this->Merge()->Write(); } // NOLINT
     };
 
     /**
