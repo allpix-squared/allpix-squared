@@ -105,8 +105,8 @@ namespace allpix {
             /**
              * @brief Use default move behaviour
              */
-            BaseWrapper(BaseWrapper&& rhs) = default;
-            BaseWrapper& operator=(BaseWrapper&& rhs) = default;
+            BaseWrapper(BaseWrapper&& rhs) = default;            // NOLINT
+            BaseWrapper& operator=(BaseWrapper&& rhs) = default; // NOLINT
             /// @}
 
             /**
