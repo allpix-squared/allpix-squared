@@ -94,6 +94,10 @@ namespace allpix {
         Messenger* messenger_;
         GeometryManager* geo_manager_;
 
+        // Configuration parameters:
+        bool output_plots_{};
+        unsigned int number_of_particles_{};
+
         // The track manager which this module uses to assign custom track IDs and manage & create MCTracks
         static thread_local std::unique_ptr<TrackInfoManager> track_info_manager_;
 

@@ -75,8 +75,8 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
         std::string name = detector->getName();
         LOG(DEBUG) << "Creating Geant4 model for " << name;
         LOG(DEBUG) << " Wrapper dimensions of model: " << Units::display(model->getSize(), {"mm", "um"});
-        LOG(TRACE) << " Sensor dimensions: " << model->getSensorSize();
-        LOG(TRACE) << " Chip dimensions: " << model->getChipSize();
+        LOG(TRACE) << " Sensor dimensions: " << Units::display(model->getSensorSize(), {"mm", "um"});
+        LOG(TRACE) << " Chip dimensions: " << Units::display(model->getChipSize(), {"mm", "um"});
         LOG(DEBUG) << " Global position and orientation of the detector:";
 
         // Create the wrapper box and logical volume

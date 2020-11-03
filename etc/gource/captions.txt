@@ -45,3 +45,12 @@
 1585551840|MR!278: New module DatabaseWriter to Store Data in PostgreSQL
 1586440834|MR!306: Add Alpide sensor model
 1586861106|Stable Release: Allpix Squared v1.5
+1589567694|MR!311: Add passive volumes
+1589975695|MR!317: Add diffusion prior to projection propagation
+1591953595|MR!322: New examples: Beam Telescopes & passive volumes
+1596113703|MR!310: Store material budget in CorryvreckanWriter
+1598264973|MR!342: Photon energy deposited at end of step
+1598608151|MR!335: New module CSADigitizer
+1603198652|MR!360: Improve handling of charge polarity
+1603720244|MR!363: Distinguish between Global and Local Timeframe
+1603975380|Stable Release: Allpix Squared v1.6
