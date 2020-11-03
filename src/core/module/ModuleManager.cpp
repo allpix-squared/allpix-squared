@@ -641,14 +641,44 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
             // Call per-thread initialization of each module
             for(auto& module : modules_list) {
+                // Set run module section header
+                std::string old_section_name = Log::getSection();
+                std::string section_name = "T:";
+                section_name += module->get_identifier().getUniqueName();
+                Log::setSection(section_name);
+
+                // Set module specific settings
+                auto old_settings =
+                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+                LOG(TRACE) << "Initializing thread " << std::this_thread::get_id();
                 module->initializeThread();
+
+                // Reset logging
+                Log::setSection(old_section_name);
+                ModuleManager::set_module_after(old_settings);
             }
         };
 
     // Finalize modules for each thread
     auto finalize_function = [modules_list = modules_]() {
         for(auto& module : modules_list) {
+            // Set run module section header
+            std::string old_section_name = Log::getSection();
+            std::string section_name = "T:";
+            section_name += module->get_identifier().getUniqueName();
+            Log::setSection(section_name);
+
+            // Set module specific settings
+            auto old_settings =
+                ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+            LOG(TRACE) << "Finalizing thread " << std::this_thread::get_id();
             module->finalizeThread();
+
+            // Reset logging
+            Log::setSection(old_section_name);
+            ModuleManager::set_module_after(old_settings);
         }
     };
 

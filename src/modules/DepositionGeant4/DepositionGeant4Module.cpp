@@ -109,6 +109,9 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
 void DepositionGeant4Module::init() {
     MTRunManager* run_manager_mt = nullptr;
 
+    number_of_particles_ = config_.get<unsigned int>("number_of_particles", 1);
+    output_plots_ = config_.get<bool>("output_plots");
+
     // Load the G4 run manager (which is owned by the geometry builder)
     if(canParallelize()) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
@@ -123,7 +126,7 @@ void DepositionGeant4Module::init() {
     }
 
     // Suppress all output from G4
-    SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
@@ -281,6 +284,10 @@ void DepositionGeant4Module::init() {
 void DepositionGeant4Module::initializeThread() {
 
     LOG(DEBUG) << "Initializing run manager";
+
+    // Suppress output stream if not in debugging mode
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
+
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
         auto run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
@@ -293,6 +300,9 @@ void DepositionGeant4Module::initializeThread() {
 
         run_manager_mt->InitializeForThread();
     }
+
+    // Release the output stream
+    RELEASE_STREAM(G4cout);
 }
 
 void DepositionGeant4Module::run(Event* event) {
@@ -304,10 +314,7 @@ void DepositionGeant4Module::run(Event* event) {
     }
 
     // Suppress output stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
-    }
+    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Seed the sensitive detectors RNG
     for(auto& sensor : sensors_) {
@@ -317,10 +324,9 @@ void DepositionGeant4Module::run(Event* event) {
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
     if(run_manager_mt == nullptr) {
-        run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+        run_manager_g4_->BeamOn(static_cast<int>(number_of_particles_));
     } else {
-        run_manager_mt->Run(static_cast<G4int>(event->number),
-                            static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
+        run_manager_mt->Run(static_cast<G4int>(event->number), static_cast<int>(number_of_particles_));
     }
 
     uint64_t last_event_num = last_event_num_.load();
@@ -336,7 +342,7 @@ void DepositionGeant4Module::run(Event* event) {
         sensor->dispatchMessages(this, messenger_, event);
 
         // Fill output plots if requested:
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
             charge_per_event_[sensor->getName()]->Fill(charge);
         }
@@ -346,7 +352,7 @@ void DepositionGeant4Module::run(Event* event) {
 }
 
 void DepositionGeant4Module::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         for(auto& histogram : charge_per_event_) {
@@ -421,8 +427,8 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         sensors_.push_back(sensitive_detector_action);
 
         // If requested, prepare output plots
-        if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
+        if(output_plots_) {
+            LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
