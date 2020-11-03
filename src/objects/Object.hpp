@@ -142,7 +142,7 @@ namespace allpix {
             /**
              * @brief Using implicit and explicit constructors from base class
              */
-            using BaseWrapper<T>::BaseWrapper;
+            using BaseWrapper<T>::BaseWrapper; // NOLINT
 
             /**
              * @brief Required virtual destructor
