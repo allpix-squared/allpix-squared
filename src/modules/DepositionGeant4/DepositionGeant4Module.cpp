@@ -59,6 +59,11 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
+    config_.setDefault("pai_model", "pai");
+
+    // Set defaults for charge carrier creation
+    config_.setDefault("fano_factor", 0.115);
+    config_.setDefault("charge_creation_energy", Units::get(3.64, "eV"));
 
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
@@ -146,7 +151,7 @@ void DepositionGeant4Module::init() {
             auto* region = new G4Region(detector->getName() + "_sensor_region");
             region->AddRootLogicalVolume(logical_volume.get());
 
-            auto pai_model = config_.get<std::string>("pai_model", "pai");
+            auto pai_model = config_.get<std::string>("pai_model");
             auto lcase_model = pai_model;
             std::transform(lcase_model.begin(), lcase_model.end(), lcase_model.begin(), ::tolower);
             if(lcase_model == "pai") {
@@ -257,8 +262,8 @@ void DepositionGeant4Module::init() {
     run_manager_g4_->SetUserInitialization(action_initialization);
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
-    auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    auto fano_factor = config_.get<double>("fano_factor", 0.115);
+    auto charge_creation_energy = config_.get<double>("charge_creation_energy");
+    auto fano_factor = config_.get<double>("fano_factor");
     auto cutoff_time = config_.get<double>("cutoff_time");
 
     // Construct the sensitive detectors and fields.
