@@ -339,6 +339,7 @@ This is the only \underline{required} argument, the simulation will fail to star
 \item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
+\item \texttt{-j <workers>}: Enables multithreaded event processing with the given number of worker threads. This is equivalent to passing the framework parameters \mbox{\texttt{-o multithreading=true -o workers=<workers>}} to the executable.
 \item \texttt{-{}-version}: Prints the version and build time of the executable and terminates the program.
 \item \texttt{-o <option>}: Passes extra framework or module options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.
