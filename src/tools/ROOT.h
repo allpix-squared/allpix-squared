@@ -158,26 +158,29 @@ namespace allpix {
     template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
     class ThreadedHistogram : public ROOT::TThreadedObject<T> {
     public:
-        template <class... ARGS> ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
+        template <class... ARGS>
+        explicit ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
             this->Get();
         }
 
         /**
          * @brief An easy way to fill a histogram
          */
-        template <class... ARGS> Int_t Fill(ARGS&&... args) { return this->Get()->Fill(std::forward<ARGS>(args)...); }
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { // NOLINT
+            return this->Get()->Fill(std::forward<ARGS>(args)...);
+        }
 
         /**
          * @brief An easy way to set bin contents
          */
-        template <class... ARGS> void SetBinContent(ARGS&&... args) {
+        template <class... ARGS> void SetBinContent(ARGS&&... args) { // NOLINT
             this->Get()->SetBinContent(std::forward<ARGS>(args)...);
         }
 
         /**
          * @brief An easy way to write a histogram
          */
-        void Write() { this->Merge()->Write(); }
+        void Write() { this->Merge()->Write(); } // NOLINT
     };
 
     /**

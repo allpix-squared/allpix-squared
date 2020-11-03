@@ -71,12 +71,12 @@ namespace allpix {
             }
 
             // Create the G4VSolids which make the Box
-            auto outer_volume =
+            auto* outer_volume =
                 new G4Box(name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
             if(inner_size_ == ROOT::Math::XYZVector()) {
                 solid_ = outer_volume;
             } else {
-                auto inner_volume =
+                auto* inner_volume =
                     new G4Box(name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, inner_size_.z() / 2);
 
                 solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);

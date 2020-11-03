@@ -20,7 +20,7 @@ G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
 void MTRunManager::FillWorkerSeedsMap(G4int n_event) { // NOLINT
     // Fill the auxiliary array with new random numbers drawn from the main engine
-    auto engine = G4Random::getTheEngine();
+    auto* engine = G4Random::getTheEngine();
     engine->flatArray(nSeedsPerEvent * n_event, randDbl);
 
     // Fill the mapping between event number and pair of seeds to be used
