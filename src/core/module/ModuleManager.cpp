@@ -626,7 +626,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
             global_config.set<bool>("multithreading", false);
-            LOG(WARNING) << "Multithreading disabled since the current module configuration doesn't support it";
+            LOG(ERROR) << "Multithreading disabled since the current module configuration does not support it";
+        } else {
+            LOG(STATUS) << "Multithreading disabled";
         }
     }
     global_config.set<size_t>("workers", threads_num);
