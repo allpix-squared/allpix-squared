@@ -74,7 +74,7 @@ void WorkerRunManager::InitializeGeometry() {
     kernel->WorkerDefineWorldVolume(worldVol, false);
     kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
     // Step3: Call user's ConstructSDandField()
-    auto master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
+    auto* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if(detector_construction == nullptr) {
         G4Exception(
@@ -125,7 +125,7 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
     }
 
     G4Event* anEvent = nullptr;
-    long s1, s2;
+    long s1 = 0, s2 = 0;
 
     if(numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted) {
         anEvent = new G4Event(numberOfEventProcessed);

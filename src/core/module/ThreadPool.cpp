@@ -68,7 +68,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         }
 
         // Increase the atomic run count and notify the master thread that we popped an event
-        auto increase_run_cnt_func = [this]() { ++run_cnt_; };
+        auto increase_run_cnt_func = [this]() noexcept { ++run_cnt_; };
 
         while(!done_) {
             Task task{nullptr};

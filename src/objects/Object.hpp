@@ -91,7 +91,7 @@ namespace allpix {
              * @brief Constructor with object pointer to be wrapped
              * @param obj Pointer to object
              */
-            BaseWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {}
+            explicit BaseWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {} // NOLINT
 
             /// @{
             /**
@@ -105,8 +105,8 @@ namespace allpix {
             /**
              * @brief Use default move behaviour
              */
-            BaseWrapper(BaseWrapper&& rhs) = default;
-            BaseWrapper& operator=(BaseWrapper&& rhs) = default;
+            BaseWrapper(BaseWrapper&& rhs) = default;            // NOLINT
+            BaseWrapper& operator=(BaseWrapper&& rhs) = default; // NOLINT
             /// @}
 
             /**
@@ -124,7 +124,7 @@ namespace allpix {
              */
             void store() { ref_ = get(); }
 
-            ClassDef(BaseWrapper, 1);
+            ClassDef(BaseWrapper, 1); // NOLINT
 
         protected:
             /**
@@ -142,12 +142,12 @@ namespace allpix {
             /**
              * @brief Using implicit and explicit constructors from base class
              */
-            using BaseWrapper<T>::BaseWrapper;
+            using BaseWrapper<T>::BaseWrapper; // NOLINT
 
             /**
              * @brief Required virtual destructor
              */
-            virtual ~PointerWrapper() = default;
+            ~PointerWrapper() override = default;
 
             /**
              * @brief Explicit copy constructor to avoid copying std::once_flag
@@ -165,13 +165,13 @@ namespace allpix {
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
              */
-            PointerWrapper(PointerWrapper&& rhs) : BaseWrapper<T>(rhs){};
+            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(std::move(rhs)){};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
-            PointerWrapper& operator=(PointerWrapper&& rhs) {
-                BaseWrapper<T>::operator=(rhs);
+            PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
+                BaseWrapper<T>::operator=(std::move(rhs));
                 return *this;
             };
 
@@ -190,7 +190,7 @@ namespace allpix {
                 return this->ptr_;
             };
 
-            ClassDefOverride(PointerWrapper, 1);
+            ClassDefOverride(PointerWrapper, 1); // NOLINT
 
         private:
             mutable std::once_flag load_flag_; //! transient value

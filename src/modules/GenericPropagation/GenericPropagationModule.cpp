@@ -109,6 +109,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     // FIXME: Review if this is really the case or we can still use multithreading
     if(!(output_animations_ || output_linegraphs_)) {
         enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
     }
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)

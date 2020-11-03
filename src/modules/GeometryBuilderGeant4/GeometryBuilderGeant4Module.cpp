@@ -85,7 +85,7 @@ void GeometryBuilderGeant4Module::init() {
 
     // Suppress all output (also stdout due to a part in Geant4 where G4cout is not used)
     SUPPRESS_STREAM(std::cout);
-    SUPPRESS_STREAM(G4cout);
+    SUPPRESS_STREAM_EXCEPT(TRACE, G4cout);
 
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.

@@ -302,12 +302,21 @@ namespace allpix {
         << std::string(--GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
 
     /**
-     * @brief Suppress an stream from writing any output
+     * @brief Suppress a stream from writing any output
      * @param stream The stream to suppress
      */
     // suppress a (logging) stream
     // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void SUPPRESS_STREAM(std::ostream& stream) { stream.setstate(std::ios::failbit); }
+
+/**
+ * @brief Suppress a stream from writing output unless logging is below \ref level
+ * @param  level  The log level of the stream
+ * @param  stream Stream to suppress
+ */
+#define SUPPRESS_STREAM_EXCEPT(level, stream)                                                                               \
+    IFLOG(level);                                                                                                           \
+    else SUPPRESS_STREAM(stream);
 
     /**
      * @brief Release an suppressed stream so it can write again

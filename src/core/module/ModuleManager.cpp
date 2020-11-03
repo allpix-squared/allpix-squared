@@ -640,15 +640,45 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             Log::setFormat(log_format);
 
             // Call per-thread initialization of each module
-            for(auto& module : modules_list) {
+            for(const auto& module : modules_list) {
+                // Set run module section header
+                std::string old_section_name = Log::getSection();
+                std::string section_name = "T:";
+                section_name += module->get_identifier().getUniqueName();
+                Log::setSection(section_name);
+
+                // Set module specific settings
+                auto old_settings =
+                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+                LOG(TRACE) << "Initializing thread " << std::this_thread::get_id();
                 module->initializeThread();
+
+                // Reset logging
+                Log::setSection(old_section_name);
+                ModuleManager::set_module_after(old_settings);
             }
         };
 
     // Finalize modules for each thread
     auto finalize_function = [modules_list = modules_]() {
-        for(auto& module : modules_list) {
+        for(const auto& module : modules_list) {
+            // Set run module section header
+            std::string old_section_name = Log::getSection();
+            std::string section_name = "T:";
+            section_name += module->get_identifier().getUniqueName();
+            Log::setSection(section_name);
+
+            // Set module specific settings
+            auto old_settings =
+                ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+            LOG(TRACE) << "Finalizing thread " << std::this_thread::get_id();
             module->finalizeThread();
+
+            // Reset logging
+            Log::setSection(old_section_name);
+            ModuleManager::set_module_after(old_settings);
         }
     };
 
@@ -714,7 +744,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 // Run module
                 try {
                     if(module->is_buffered()) {
-                        auto buffered_module = static_cast<BufferedModule*>(module.get());
+                        auto* buffered_module = static_cast<BufferedModule*>(module.get());
                         buffered_module->run_in_order(event);
                     } else {
                         module->run(event.get());
@@ -804,7 +834,7 @@ void ModuleManager::finalize() {
         module->getROOTDirectory()->cd();
         // Finalize module
         if(module->is_buffered()) {
-            auto buffered_module = static_cast<BufferedModule*>(module.get());
+            auto* buffered_module = static_cast<BufferedModule*>(module.get());
             buffered_module->finalize_buffer();
         } else {
             module->finalize();

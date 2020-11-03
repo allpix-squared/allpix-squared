@@ -29,7 +29,7 @@ namespace allpix {
          * @brief Constructs geometry construction module
          * @param geo_manager Pointer to the geometry manager, containing the detectors
          */
-        DetectorConstructionG4(GeometryManager* geo_manager);
+        explicit DetectorConstructionG4(GeometryManager* geo_manager);
 
         /**
          * @brief Constructs the world geometry with all detectors

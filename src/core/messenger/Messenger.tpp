@@ -50,14 +50,14 @@ namespace allpix {
         if(module->is_buffered()) {
             throw InvalidModuleActionException("Can not call dispatchMessage from a BufferedModule");
         } else {
-            auto local_messenger = event->get_local_messenger();
+            auto* local_messenger = event->get_local_messenger();
             local_messenger->dispatchMessage(module, message, name);
         }
     }
 
     template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module, Event* event) {
         try {
-            auto local_messenger = event->get_local_messenger();
+            auto* local_messenger = event->get_local_messenger();
             return local_messenger->fetchMessage<T>(module);
         } catch(const std::out_of_range& e) {
             throw MessageNotFoundException(module->getUniqueName(), typeid(T));
@@ -66,7 +66,7 @@ namespace allpix {
 
     template <typename T> std::vector<std::shared_ptr<T>> Messenger::fetchMultiMessage(Module* module, Event* event) {
         try {
-            auto local_messenger = event->get_local_messenger();
+            auto* local_messenger = event->get_local_messenger();
             return local_messenger->fetchMultiMessage<T>(module);
         } catch(const std::out_of_range& e) {
             throw MessageNotFoundException(module->getUniqueName(), typeid(T));
@@ -89,6 +89,7 @@ namespace allpix {
         auto base_messages = messages_.at(module->getUniqueName()).at(type_idx).multi;
 
         std::vector<std::shared_ptr<T>> derived_messages;
+        derived_messages.reserve(base_messages.size());
         for(auto& message : base_messages) {
             derived_messages.push_back(std::static_pointer_cast<T>(message));
         }
