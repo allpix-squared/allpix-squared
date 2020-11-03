@@ -39,10 +39,11 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(Module* module,
                                                      TrackInfoManager* track_info_manager,
                                                      double charge_creation_energy,
                                                      double fano_factor,
+                                                     double cutoff_time,
                                                      uint64_t random_seed)
     : G4VSensitiveDetector("SensitiveDetector_" + detector->getName()), module_(module), detector_(detector),
       messenger_(msg), track_info_manager_(track_info_manager), charge_creation_energy_(charge_creation_energy),
-      fano_factor_(fano_factor) {
+      fano_factor_(fano_factor), cutoff_time_(cutoff_time) {
 
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
@@ -68,6 +69,11 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
     G4ThreeVector step_pos = is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
     double step_time = is_photon ? postStep->GetGlobalTime() : (preStep->GetGlobalTime() + postStep->GetGlobalTime()) / 2;
+
+    // If this arrives very late, skip MCParticle and DepositedCharge creation:
+    if(step_time > cutoff_time_) {
+        return false;
+    }
 
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(step_pos));

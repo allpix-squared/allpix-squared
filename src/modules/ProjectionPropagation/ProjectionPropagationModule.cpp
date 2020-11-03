@@ -280,7 +280,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             // Only add if within requested integration time:
             if(propagation_time > integration_time_) {
                 LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
-                           << Units::display(global_time, "ns") << "global / " << Units::display(local_time, {"ns", "ps"})
+                           << Units::display(global_time, "ns") << " global / " << Units::display(local_time, {"ns", "ps"})
                            << " local";
                 continue;
             }
