@@ -691,7 +691,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
-    std::atomic<uint64_t> finished_events{0};
+    std::atomic<uint64_t> dispatched_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
     for(uint64_t i = 1; i <= number_of_events; i++) {
@@ -699,14 +699,14 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             thread_pool->destroy();
-            global_config.set<uint64_t>("number_of_events", finished_events);
+            global_config.set<uint64_t>("number_of_events", dispatched_events);
             break;
         }
 
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
+        auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &dispatched_events]() mutable {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -714,6 +714,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
             event->set_and_seed_random_engine(&random_engine);
 
+            size_t buffered_events = 0;
             for(auto& module : modules_) {
                 LOG_PROGRESS(TRACE, "EVENT_LOOP")
                     << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
@@ -745,7 +746,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 try {
                     if(module->is_buffered()) {
                         auto* buffered_module = static_cast<BufferedModule*>(module.get());
-                        buffered_module->run_in_order(event);
+                        buffered_events += buffered_module->run_in_order(event);
                     } else {
                         module->run(event.get());
                     }
@@ -767,8 +768,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     static_cast<std::chrono::duration<long double>>(end - start).count();
             }
 
-            finished_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
+            dispatched_events++;
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << (dispatched_events - buffered_events) << ", buffered "
+                                               << buffered_events << " of " << number_of_events << " events";
         };
         thread_pool->submit(event_function);
         thread_pool->checkException();
@@ -782,7 +784,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Check exception for last events
     thread_pool->checkException();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << dispatched_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 

@@ -201,8 +201,9 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
 
 size_t BufferedModule::max_buffer_size_ = 128;
 
-void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
+size_t BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
     auto event_number = event->number;
+    size_t buffer_level = 0;
 
     {
         // Store the event in the buffer
@@ -218,6 +219,7 @@ void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
 
         // Buffer out of order events to write them later
         buffered_events_.insert(std::make_pair(event_number, event));
+        buffer_level = buffered_events_.size();
     }
 
     // Allow only one write to run at a time
@@ -226,6 +228,8 @@ void BufferedModule::run_in_order(std::shared_ptr<Event> event) { // NOLINT
         flush_buffered_events();
         writer_mutex_.unlock();
     }
+
+    return buffer_level;
 }
 
 void BufferedModule::finalize_buffer() {
