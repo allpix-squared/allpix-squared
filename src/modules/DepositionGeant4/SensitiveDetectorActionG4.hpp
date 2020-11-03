@@ -43,7 +43,8 @@ namespace allpix {
         SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                   TrackInfoManager* track_info_manager,
                                   double charge_creation_energy,
-                                  double fano_factor);
+                                  double fano_factor,
+                                  double cutoff_time);
 
         /**
          * @brief Get total number of charges deposited in the sensitive device bound to this action
@@ -89,6 +90,7 @@ namespace allpix {
 
         double charge_creation_energy_;
         double fano_factor_;
+        double cutoff_time_;
 
         // Random number generator for e/h pair creation fluctuation
         RandomNumberGenerator random_generator_;

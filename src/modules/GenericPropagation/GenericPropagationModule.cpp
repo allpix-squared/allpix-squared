@@ -566,6 +566,14 @@ void GenericPropagationModule::run(Event* event) {
             continue;
         }
 
+        // Only process if within requested integration time:
+        if(deposit.getLocalTime() > integration_time_) {
+            LOG(DEBUG) << "Skipping charge carriers deposited beyond integration time: "
+                       << Units::display(deposit.getGlobalTime(), "ns") << " global / "
+                       << Units::display(deposit.getLocalTime(), {"ns", "ps"}) << " local";
+            continue;
+        }
+
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 

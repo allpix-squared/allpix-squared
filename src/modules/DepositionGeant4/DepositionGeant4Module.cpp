@@ -259,15 +259,17 @@ void DepositionGeant4Module::init() {
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
     auto fano_factor = config_.get<double>("fano_factor", 0.115);
+    auto cutoff_time = config_.get<double>("cutoff_time");
 
     // Construct the sensitive detectors and fields.
     if(run_manager_mt == nullptr) {
         // Create the info track manager for the main thread before creating the Sensitive detectors.
         track_info_manager_ = std::make_unique<TrackInfoManager>();
-        construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy);
+        construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy, cutoff_time);
     } else {
         // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
-        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy);
+        auto detector_construction =
+            std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy, cutoff_time);
         run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
@@ -383,7 +385,9 @@ void DepositionGeant4Module::finalizeThread() {
     run_manager_mt->TerminateForThread();
 }
 
-void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy) {
+void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor,
+                                                                      double charge_creation_energy,
+                                                                      double cutoff_time) {
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
@@ -412,8 +416,8 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto* sensitive_detector_action =
-            new SensitiveDetectorActionG4(detector, track_info_manager_.get(), charge_creation_energy, fano_factor);
+        auto* sensitive_detector_action = new SensitiveDetectorActionG4(
+            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");

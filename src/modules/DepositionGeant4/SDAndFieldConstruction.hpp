@@ -18,8 +18,12 @@ namespace allpix {
      */
     class SDAndFieldConstruction : public SensitiveDetectorAndFieldConstruction {
     public:
-        SDAndFieldConstruction(DepositionGeant4Module* module, double fano_factor, double charge_creation_energy)
-            : module_(module), fano_factor_(fano_factor), charge_creation_energy_(charge_creation_energy){};
+        SDAndFieldConstruction(DepositionGeant4Module* module,
+                               double fano_factor,
+                               double charge_creation_energy,
+                               double cutoff_time)
+            : module_(module), fano_factor_(fano_factor), charge_creation_energy_(charge_creation_energy),
+              cutoff_time_(cutoff_time){};
 
         /**
          * @brief Constructs the SD and field.
@@ -30,6 +34,7 @@ namespace allpix {
         DepositionGeant4Module* module_;
         double fano_factor_;
         double charge_creation_energy_;
+        double cutoff_time_;
     };
 } // namespace allpix
 

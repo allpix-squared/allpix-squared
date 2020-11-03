@@ -13,5 +13,5 @@
 using namespace allpix;
 
 void SDAndFieldConstruction::ConstructSDandField() {
-    module_->construct_sensitive_detectors_and_fields(fano_factor_, charge_creation_energy_);
+    module_->construct_sensitive_detectors_and_fields(fano_factor_, charge_creation_energy_, cutoff_time_);
 }
