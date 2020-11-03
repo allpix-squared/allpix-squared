@@ -6,7 +6,7 @@ REPLACE=("pre-commit-clang-format" "pre-push-tag-version")
 WARNING=("pre-commit" "pre-push")
 
 SRCDIR=$(git rev-parse --show-toplevel)/etc/git-hooks
-TGTDIR=$(git rev-parse --absolute-git-dir)/hooks
+TGTDIR=$(readlink -f $(git rev-parse --git-dir))/hooks
 
 ##---
 
