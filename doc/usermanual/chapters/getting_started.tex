@@ -325,6 +325,7 @@ See Section~\ref{sec:module_instantiation} for details.
 Refer to Section~\ref{sec:detector_models} for more information.
 \item \parameter{multithreading}: Enable multi-threading for the framework. More information about multi-threading can be found in Section~\ref{sec:multithreading}.
 \item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
+\item \parameter{module_buffer_depth}: Specify the buffer depth available per worker for buffered modules to cache partially processed events until execution in the correct order can be guaranteed (see Section~\ref{sec:multithreading_approach}). Defaults to 128.
 \end{itemize}
 
 \section{The \textit{allpix} Executable}
