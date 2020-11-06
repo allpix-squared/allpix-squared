@@ -591,18 +591,6 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
-
-    // Book performance histograms
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
-    if(global_config.get<bool>("performance_plots")) {
-        event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
-        for(auto& module : modules_) {
-            auto identifier = module->get_identifier().getIdentifier();
-            auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
-            auto title = "event processing time " + (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
-            module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
-        }
-    }
 }
 
 /**
@@ -646,6 +634,19 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
     }
     global_config.set<size_t>("workers", threads_num);
+
+    // Book performance histograms
+    if(global_config.get<bool>("performance_plots")) {
+        buffer_fill_level_ = CreateHistogram<TH1D>(
+            "buffer_fill_level", "Buffer fill level;# buffered events;# events", 128 * threads_num, 0, 128 * threads_num);
+        event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
+        for(auto& module : modules_) {
+            auto identifier = module->get_identifier().getIdentifier();
+            auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
+            auto title = "event processing time " + (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
+            module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
+        }
+    }
 
     // Creates the thread pool
     LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
@@ -793,6 +794,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 if(plot) {
+                    this->buffer_fill_level_->Fill(buffered_events);
                     event_time_->Fill(static_cast<double>(event_time));
                 }
 
@@ -892,6 +894,8 @@ void ModuleManager::finalize() {
         perf_dir->cd();
 
         event_time_->Write();
+        buffer_fill_level_->Write();
+
         for(auto& module : modules_) {
             auto module_name = module->get_configuration().getName();
             auto* mod_dir = perf_dir->GetDirectory(module_name.c_str());

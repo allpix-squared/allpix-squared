@@ -154,6 +154,8 @@ namespace allpix {
         std::map<Module*, long double> module_execution_time_;
         std::map<Module*, Histogram<TH1D>> module_event_time_;
         Histogram<TH1D> event_time_;
+        Histogram<TH1D> buffer_fill_level_;
+
         long double total_time_{};
 
         std::map<std::string, void*> loaded_libraries_;
