@@ -595,12 +595,12 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
     // Book performance histograms
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     if(global_config.get<bool>("performance_plots")) {
-        event_time_ = CreateHistogram<TH1D>("event_time", "event processing time", 1000, 0, 10);
+        event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
         for(auto& module : modules_) {
             auto identifier = module->get_identifier().getIdentifier();
-            auto title = (identifier.empty() ? module->get_configuration().getName() : identifier);
-            module_event_time_.emplace(module.get(),
-                                       CreateHistogram<TH1D>(title.c_str(), "event processing time", 1000, 0, 1));
+            auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
+            auto title = "event processing time " + (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
+            module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
 }
