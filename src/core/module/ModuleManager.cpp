@@ -707,7 +707,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
-    std::atomic<uint64_t> finished_events{0};
+    std::atomic<uint64_t> dispatched_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
     for(uint64_t i = 1; i <= number_of_events; i++) {
@@ -715,88 +715,91 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             thread_pool->destroy();
-            global_config.set<uint64_t>("number_of_events", finished_events);
+            global_config.set<uint64_t>("number_of_events", dispatched_events);
             break;
         }
 
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
-            // The RNG to be used by all events running on this thread
-            static thread_local RandomNumberGenerator random_engine;
+        auto event_function =
+            [this, plot, number_of_events, event_num = i, event_seed = seed, &dispatched_events]() mutable {
+                // The RNG to be used by all events running on this thread
+                static thread_local RandomNumberGenerator random_engine;
 
-            // Create the event data
-            std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
-            event->set_and_seed_random_engine(&random_engine);
+                // Create the event data
+                std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
+                event->set_and_seed_random_engine(&random_engine);
 
-            long double event_time = 0;
-            for(auto& module : modules_) {
-                LOG_PROGRESS(TRACE, "EVENT_LOOP")
-                    << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
+                long double event_time = 0;
+                size_t buffered_events = 0;
+                for(auto& module : modules_) {
+                    LOG_PROGRESS(TRACE, "EVENT_LOOP")
+                        << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
 
-                // Check if the module is satisfied to run
-                if(!module->check_delegates(this->messenger_, event.get())) {
-                    LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                               << ", skipping module!";
-                    module->skip_event(event->number);
-                    continue;
-                }
-
-                // Get current time
-                auto start = std::chrono::steady_clock::now();
-
-                // Set run module section header
-                std::string old_section_name = Log::getSection();
-                uint64_t old_event_num = Log::getEventNum();
-                std::string section_name = "R:";
-                section_name += module->get_identifier().getUniqueName();
-                Log::setSection(section_name);
-                Log::setEventNum(event->number);
-
-                // Set module specific settings
-                auto old_settings =
-                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-
-                // Run module
-                try {
-                    if(module->is_buffered()) {
-                        auto* buffered_module = static_cast<BufferedModule*>(module.get());
-                        buffered_module->run_in_order(event);
-                    } else {
-                        module->run(event.get());
+                    // Check if the module is satisfied to run
+                    if(!module->check_delegates(this->messenger_, event.get())) {
+                        LOG(TRACE) << "Not all required messages are received for "
+                                   << module->get_identifier().getUniqueName() << ", skipping module!";
+                        module->skip_event(event->number);
+                        continue;
                     }
-                } catch(const EndOfRunException& e) {
-                    // Terminate if the module threw the EndOfRun request exception:
-                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-                    this->terminate_ = true;
+
+                    // Get current time
+                    auto start = std::chrono::steady_clock::now();
+
+                    // Set run module section header
+                    std::string old_section_name = Log::getSection();
+                    uint64_t old_event_num = Log::getEventNum();
+                    std::string section_name = "R:";
+                    section_name += module->get_identifier().getUniqueName();
+                    Log::setSection(section_name);
+                    Log::setEventNum(event->number);
+
+                    // Set module specific settings
+                    auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(),
+                                                                         module->get_configuration());
+
+                    // Run module
+                    try {
+                        if(module->is_buffered()) {
+                            auto* buffered_module = static_cast<BufferedModule*>(module.get());
+                            buffered_events += buffered_module->run_in_order(event);
+                        } else {
+                            module->run(event.get());
+                        }
+                    } catch(const EndOfRunException& e) {
+                        // Terminate if the module threw the EndOfRun request exception:
+                        LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                        this->terminate_ = true;
+                    }
+
+                    // Reset logging
+                    Log::setSection(old_section_name);
+                    Log::setEventNum(old_event_num);
+                    ModuleManager::set_module_after(old_settings);
+
+                    // Update execution time
+                    auto end = std::chrono::steady_clock::now();
+                    std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+
+                    auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
+                    event_time += duration;
+                    this->module_execution_time_[module.get()] += duration;
+
+                    if(plot) {
+                        this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                    }
                 }
-
-                // Reset logging
-                Log::setSection(old_section_name);
-                Log::setEventNum(old_event_num);
-                ModuleManager::set_module_after(old_settings);
-
-                // Update execution time
-                auto end = std::chrono::steady_clock::now();
-                std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
-
-                auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
-                event_time += duration;
-                this->module_execution_time_[module.get()] += duration;
 
                 if(plot) {
-                    this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                    event_time_->Fill(static_cast<double>(event_time));
                 }
-            }
 
-            if(plot) {
-                event_time_->Fill(static_cast<double>(event_time));
-            }
-
-            finished_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << finished_events << " of " << number_of_events << " events";
-        };
+                dispatched_events++;
+                LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << (dispatched_events - buffered_events) << ", buffered "
+                                                   << buffered_events << " of " << number_of_events << " events";
+            };
         thread_pool->submit(event_function);
         thread_pool->checkException();
     }
@@ -809,7 +812,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Check exception for last events
     thread_pool->checkException();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << dispatched_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
@@ -843,7 +846,6 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
-
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
