@@ -794,7 +794,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 if(plot) {
-                    this->buffer_fill_level_->Fill(buffered_events);
+                    this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
                     event_time_->Fill(static_cast<double>(event_time));
                 }
 
