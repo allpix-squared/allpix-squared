@@ -19,11 +19,13 @@
 
 #include <TDirectory.h>
 #include <TFile.h>
+#include <TH1D.h>
 
 #include "Module.hpp"
 #include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 
 namespace allpix {
 
@@ -150,6 +152,8 @@ namespace allpix {
         std::unique_ptr<TFile> modules_file_;
 
         std::map<Module*, long double> module_execution_time_;
+        std::map<Module*, Histogram<TH1D>> module_event_time_;
+        Histogram<TH1D> event_time_;
         long double total_time_{};
 
         std::map<std::string, void*> loaded_libraries_;

@@ -62,6 +62,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     global_config.setDefault("multithreading", false);
     multithreading_flag_ = global_config.get<bool>("multithreading");
 
+    // Set default for performance plot creation:
+    global_config.setDefault("performance_plots", false);
+
     // Store the messenger
     messenger_ = messenger;
 
@@ -588,6 +591,18 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+
+    // Book performance histograms
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    if(global_config.get<bool>("performance_plots")) {
+        event_time_ = CreateHistogram<TH1D>("event_time", "event processing time", 1000, 0, 10);
+        for(auto& module : modules_) {
+            auto identifier = module->get_identifier().getIdentifier();
+            auto title = (identifier.empty() ? module->get_configuration().getName() : identifier);
+            module_event_time_.emplace(module.get(),
+                                       CreateHistogram<TH1D>(title.c_str(), "event processing time", 1000, 0, 1));
+        }
+    }
 }
 
 /**
@@ -597,6 +612,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    auto plot = global_config.get<bool>("performance_plots");
 
     // Default to no additional thread without multithreading
     size_t threads_num = 0;
@@ -706,7 +722,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
+        auto event_function = [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events]() mutable {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -714,6 +730,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
             event->set_and_seed_random_engine(&random_engine);
 
+            long double event_time = 0;
             for(auto& module : modules_) {
                 LOG_PROGRESS(TRACE, "EVENT_LOOP")
                     << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
@@ -763,8 +780,18 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 // Update execution time
                 auto end = std::chrono::steady_clock::now();
                 std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
-                this->module_execution_time_[module.get()] +=
-                    static_cast<std::chrono::duration<long double>>(end - start).count();
+
+                auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
+                event_time += duration;
+                this->module_execution_time_[module.get()] += duration;
+
+                if(plot) {
+                    this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                }
+            }
+
+            if(plot) {
+                event_time_->Fill(static_cast<double>(event_time));
             }
 
             finished_events++;
@@ -816,6 +843,7 @@ static std::string seconds_to_time(long double seconds) {
  * after finalization. No method will be called after finalizing the module (except the destructor).
  */
 void ModuleManager::finalize() {
+
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(TRACE, "FINALIZE_LOOP") << "Finalizing module instantiations";
     for(auto& module : modules_) {
@@ -850,6 +878,35 @@ void ModuleManager::finalize() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
+
+    // Store performance plots
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    if(global_config.get<bool>("performance_plots")) {
+
+        auto* perf_dir = modules_file_->mkdir("performance");
+        if(perf_dir == nullptr) {
+            throw RuntimeError("Cannot create or access ROOT directory for performance plots");
+        }
+        perf_dir->cd();
+
+        event_time_->Write();
+        for(auto& module : modules_) {
+            auto module_name = module->get_configuration().getName();
+            auto* mod_dir = perf_dir->GetDirectory(module_name.c_str());
+            if(mod_dir == nullptr) {
+                mod_dir = perf_dir->mkdir(module_name.c_str());
+                if(mod_dir == nullptr) {
+                    throw RuntimeError("Cannot create or access ROOT directory for performance plots of module " +
+                                       module_name);
+                }
+            }
+            mod_dir->cd();
+
+            // Write the histogram
+            module_event_time_[module.get()]->Write();
+        }
+    }
+
     // Close module ROOT file
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
@@ -873,7 +930,6 @@ void ModuleManager::finalize() {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
 
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
     auto total_events = global_config.get<uint64_t>("number_of_events");
     if(total_events > 0) {
