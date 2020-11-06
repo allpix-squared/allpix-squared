@@ -769,8 +769,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             }
 
             dispatched_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << (dispatched_events - buffered_events) << ", buffered "
-                                               << buffered_events << " of " << number_of_events << " events";
+            LOG_PROGRESS(STATUS, "EVENT_LOOP")
+                << "Buffered " << buffered_events << ", finished " << (dispatched_events - buffered_events) << " of "
+                << number_of_events << " events";
         };
         thread_pool->submit(event_function);
         thread_pool->checkException();
