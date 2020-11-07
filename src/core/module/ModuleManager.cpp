@@ -643,7 +643,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         for(auto& module : modules_) {
             auto identifier = module->get_identifier().getIdentifier();
             auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
-            auto title = "event processing time " + (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
+            auto title = module->get_configuration().getName() + " event processing time " +
+                         (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
             module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
