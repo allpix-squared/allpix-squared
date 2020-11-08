@@ -207,10 +207,14 @@ fmt:coverity:
         - cd build/
         - ctest -R test_core --no-compress-output --test-action Test -j4
     after_script:
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - pip install --trusted-host=pypi.org --user lxml
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml JUnitTestsCore.xml
     artifacts:
         when: always
+        expire_in: 1 day
+        name: "apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
         paths:
             - JUnitTestsCore.xml
         reports:
