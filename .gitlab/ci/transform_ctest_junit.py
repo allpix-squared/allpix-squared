@@ -1,11 +1,12 @@
 import lxml.etree as etree
+import sys
 
 # Check if we got token:
 if len(sys.argv) != 3:
   sys.exit(1)
 
 input_xml = sys.argv[1]
-output_xml = sys.argv[1]
+output_xml = sys.argv[2]
 
 print "Reading XML input file"
 dom = etree.parse(input_xml)
