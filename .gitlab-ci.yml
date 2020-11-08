@@ -206,6 +206,7 @@ fmt:coverity:
     script:
         - cd build/
         - ctest -R test_core --no-compress-output --test-action Test -j4
+    after_script:
         - ./.gitlab/ci/transform_ctest_junit.py Testing/`head -n 1 Testing/TAG`/Test.xml JUnitTestsCore.xml
     artifacts:
         when: always
