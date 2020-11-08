@@ -1,5 +1,7 @@
-import lxml.etree as etree
+#!/usr/bin/env python
+
 import sys
+import lxml.etree as et
 
 # Check if we got token:
 if len(sys.argv) != 3:
@@ -9,13 +11,13 @@ input_xml = sys.argv[1]
 output_xml = sys.argv[2]
 
 print "Reading XML input file"
-dom = etree.parse(input_xml)
+dom = et.parse(input_xml)
 
 print "Reading XSLT file"
-xslt = etree.parse("ctest-to-junit.xsl")
+xslt = et.parse("ctest-to-junit.xsl")
 
 print "Transforming DOM"
-transform = etree.XSLT(xslt)
+transform = et.XSLT(xslt)
 newdom = transform(dom)
 
 print "Writing XML output file"
