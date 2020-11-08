@@ -205,7 +205,13 @@ fmt:coverity:
     extends: .test
     script:
         - cd build/
-        - ctest -R test_core --output-on-failure -j4
+        - ctest -R test_core --no-compress-output --test-action Test -j4
+    artifacts:
+        when: always
+        paths:
+            - build/Testing/*/Test.xml
+        reports:
+            junit: build/Testing/*/Test.xml
 
 
 # Test if examples still execute fine:
