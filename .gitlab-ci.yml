@@ -207,6 +207,7 @@ fmt:coverity:
         - cd build/
         - ctest -R test_core --no-compress-output --test-action Test -j4
     after_script:
+        - pip install --trusted-host=pypi.org --user lxml
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml JUnitTestsCore.xml
     artifacts:
         when: always
