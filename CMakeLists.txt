@@ -109,6 +109,13 @@ SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
+# Use CCache if available
+FIND_PROGRAM(CCACHE_FOUND ccache)
+IF(CCACHE_FOUND)
+  MESSAGE(STATUS "Using Ccache: ${CCACHE_FOUND}")
+  SET(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_FOUND}" CACHE PATH "CCache program" FORCE)
+ENDIF()
+
 # Check for C++17 and require C++17 if available else fallback to C++14 (should currently be sufficient)
 CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
 IF(SUPPORT_STD_CXX17)
