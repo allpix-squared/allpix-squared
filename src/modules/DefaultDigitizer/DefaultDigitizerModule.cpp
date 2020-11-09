@@ -29,12 +29,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
-    config_.setAlias("qdc_resolution", "adc_resolution", true);
-    config_.setAlias("qdc_smearing", "adc_smearing", true);
-    config_.setAlias("qdc_offset", "adc_offset", true);
-    config_.setAlias("qdc_slope", "adc_slope", true);
-    config_.setAlias("allow_zero_qdc", "allow_zero_adc", true);
-
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<double>("gain", 1.0);

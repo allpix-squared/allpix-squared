@@ -54,5 +54,5 @@ The default configuration is equal to the following:
 electronics_noise = 110e
 threshold = 600e
 threshold_smearing = 30e
-adc_smearing = 300e
+qdc_smearing = 300e
 ```

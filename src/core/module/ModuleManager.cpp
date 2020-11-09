@@ -58,7 +58,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Set alias for backward compatibility with the previous keyword for multithreading
-    global_config.setAlias("multithreading", "experimental_multithreading");
     global_config.setDefault("multithreading", false);
     multithreading_flag_ = global_config.get<bool>("multithreading");
 
@@ -625,7 +624,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        BufferedModule::set_max_buffer_size(128 * threads_num);
+        auto buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
+        LOG(STATUS) << "Allocating a total of " << buffer_size << " event slots for buffered modules";
+        BufferedModule::set_max_buffer_size(buffer_size);
     } else {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
@@ -800,8 +801,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 dispatched_events++;
-                LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished " << (dispatched_events - buffered_events) << ", buffered "
-                                                   << buffered_events << " of " << number_of_events << " events";
+                LOG_PROGRESS(STATUS, "EVENT_LOOP")
+                    << "Buffered " << buffered_events << ", finished " << (dispatched_events - buffered_events) << " of "
+                    << number_of_events << " events";
             };
         thread_pool->submit(event_function);
         thread_pool->checkException();
