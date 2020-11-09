@@ -603,6 +603,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     // Default to no additional thread without multithreading
     size_t threads_num = 0;
+    size_t buffer_size = 1;
 
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
@@ -624,7 +625,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        auto buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
+        buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
         LOG(STATUS) << "Allocating a total of " << buffer_size << " event slots for buffered modules";
         BufferedModule::set_max_buffer_size(buffer_size);
     } else {
@@ -639,7 +640,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Book performance histograms
     if(global_config.get<bool>("performance_plots")) {
         buffer_fill_level_ = CreateHistogram<TH1D>(
-            "buffer_fill_level", "Buffer fill level;# buffered events;# events", 128 * threads_num, 0, 128 * threads_num);
+            "buffer_fill_level", "Buffer fill level;# buffered events;# events", buffer_size, 0, buffer_size);
         event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
         for(auto& module : modules_) {
             auto identifier = module->get_identifier().getIdentifier();
