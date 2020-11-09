@@ -72,12 +72,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // Default value chosen to ensure proper gamma generation for Cs137 decay
     config_.setDefault<double>("cutoff_time", 2.21e+11);
 
-    // Set alias for support of old particle source definition
-    config_.setAlias("source_position", "beam_position");
-    config_.setAlias("source_energy", "beam_energy");
-    config_.setAlias("source_energy_spread", "beam_energy_spread");
-    config_.setAlias("cutoff_time", "decay_cutoff_time", true);
-
     // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("cutoff_time"));
