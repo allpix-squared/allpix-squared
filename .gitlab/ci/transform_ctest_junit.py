@@ -10,15 +10,15 @@ if len(sys.argv) != 3:
 input_xml = sys.argv[1]
 output_xml = sys.argv[2]
 
-print "Reading XML input file"
+print("Reading XML input file")
 dom = et.parse(input_xml)
 
-print "Reading XSLT file"
+print("Reading XSLT file")
 xslt = et.parse("ctest-to-junit.xsl")
 
-print "Transforming DOM"
+print("Transforming DOM")
 transform = et.XSLT(xslt)
 newdom = transform(dom)
 
-print "Writing XML output file"
+print("Writing XML output file")
 newdom.write(output_xml, pretty_print=True)
