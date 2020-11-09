@@ -194,18 +194,6 @@ fmt:coverity:
     stage: testing
     tags:
         - docker
-
-.testmod:
-    extends: .test
-    script:
-        - cd build/
-        - ctest -R test_modules --output-on-failure -j4
-
-.testcore:
-    extends: .test
-    script:
-        - cd build/
-        - ctest -R test_core --no-compress-output --test-action Test -j4
     after_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -218,6 +206,18 @@ fmt:coverity:
             - apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
         reports:
             junit: apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+.testmod:
+    extends: .test
+    script:
+        - cd build/
+        - ctest -R test_modules --no-compress-output --test-action Test -j4
+
+.testcore:
+    extends: .test
+    script:
+        - cd build/
+        - ctest -R test_core --no-compress-output --test-action Test -j4
 
 
 # Test if examples still execute fine:
@@ -233,7 +233,7 @@ examples:
         - source .gitlab/ci/load_deps.sh
     script:
         - cd build/
-        - ctest -R examples --output-on-failure -j4
+        - ctest -R examples --no-compress-output --test-action Test -j4
 
 # SLC 6
 
