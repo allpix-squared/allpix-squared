@@ -604,13 +604,13 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     if(multithreading_flag_ && can_parallelize_) {
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
-        if(available_hardware_concurrency > 0u) {
+        if(available_hardware_concurrency > 1u) {
             // Try to be graceful and leave one core out if the number of workers was not specified
             available_hardware_concurrency -= 1u;
         }
         threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
-        if(threads_num == 0) {
-            throw InvalidValueError(global_config, "workers", "number of workers should be strictly more than zero");
+        if(threads_num < 2) {
+            throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
         }
         LOG(STATUS) << "Multithreading enabled, processing events in parallel on " << threads_num << " worker threads";
 
@@ -627,13 +627,15 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
             global_config.set<bool>("multithreading", false);
-            LOG(WARNING) << "Multithreading disabled since the current module configuration doesn't support it";
+            LOG(ERROR) << "Multithreading disabled since the current module configuration does not support it";
+        } else {
+            LOG(STATUS) << "Multithreading disabled";
         }
     }
     global_config.set<size_t>("workers", threads_num);
 
     // Creates the thread pool
-    LOG(TRACE) << "Initializing thread pool with " << threads_num << " thread";
+    LOG(TRACE) << "Initializing thread pool with " << threads_num << " threads";
     auto initialize_function =
         [log_level = Log::getReportingLevel(), log_format = Log::getFormat(), modules_list = modules_]() {
             // Initialize the threads to the same log level and format as the master setting
