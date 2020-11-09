@@ -61,6 +61,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     global_config.setDefault("multithreading", false);
     multithreading_flag_ = global_config.get<bool>("multithreading");
 
+    // Set default for performance plot creation:
+    global_config.setDefault("performance_plots", false);
+
     // Store the messenger
     messenger_ = messenger;
 
@@ -596,9 +599,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    auto plot = global_config.get<bool>("performance_plots");
 
     // Default to no additional thread without multithreading
     size_t threads_num = 0;
+    size_t buffer_size = 1;
 
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
@@ -620,7 +625,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        auto buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
+        buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
         LOG(STATUS) << "Allocating a total of " << buffer_size << " event slots for buffered modules";
         BufferedModule::set_max_buffer_size(buffer_size);
     } else {
@@ -633,6 +638,20 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
     }
     global_config.set<size_t>("workers", threads_num);
+
+    // Book performance histograms
+    if(global_config.get<bool>("performance_plots")) {
+        buffer_fill_level_ = CreateHistogram<TH1D>(
+            "buffer_fill_level", "Buffer fill level;# buffered events;# events", buffer_size, 0, buffer_size);
+        event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
+        for(auto& module : modules_) {
+            auto identifier = module->get_identifier().getIdentifier();
+            auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
+            auto title = module->get_configuration().getName() + " event processing time " +
+                         (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
+            module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
+        }
+    }
 
     // Creates the thread pool
     LOG(TRACE) << "Initializing thread pool with " << threads_num << " threads";
@@ -709,73 +728,86 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
-        auto event_function = [this, number_of_events, event_num = i, event_seed = seed, &dispatched_events]() mutable {
-            // The RNG to be used by all events running on this thread
-            static thread_local RandomNumberGenerator random_engine;
+        auto event_function =
+            [this, plot, number_of_events, event_num = i, event_seed = seed, &dispatched_events]() mutable {
+                // The RNG to be used by all events running on this thread
+                static thread_local RandomNumberGenerator random_engine;
 
-            // Create the event data
-            std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
-            event->set_and_seed_random_engine(&random_engine);
+                // Create the event data
+                std::shared_ptr<Event> event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
+                event->set_and_seed_random_engine(&random_engine);
 
-            size_t buffered_events = 0;
-            for(auto& module : modules_) {
-                LOG_PROGRESS(TRACE, "EVENT_LOOP")
-                    << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
+                long double event_time = 0;
+                size_t buffered_events = 0;
+                for(auto& module : modules_) {
+                    LOG_PROGRESS(TRACE, "EVENT_LOOP")
+                        << "Running event " << event->number << " [" << module->get_identifier().getUniqueName() << "]";
 
-                // Check if the module is satisfied to run
-                if(!module->check_delegates(this->messenger_, event.get())) {
-                    LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
-                               << ", skipping module!";
-                    module->skip_event(event->number);
-                    continue;
-                }
-
-                // Get current time
-                auto start = std::chrono::steady_clock::now();
-
-                // Set run module section header
-                std::string old_section_name = Log::getSection();
-                uint64_t old_event_num = Log::getEventNum();
-                std::string section_name = "R:";
-                section_name += module->get_identifier().getUniqueName();
-                Log::setSection(section_name);
-                Log::setEventNum(event->number);
-
-                // Set module specific settings
-                auto old_settings =
-                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
-
-                // Run module
-                try {
-                    if(module->is_buffered()) {
-                        auto* buffered_module = static_cast<BufferedModule*>(module.get());
-                        buffered_events += buffered_module->run_in_order(event);
-                    } else {
-                        module->run(event.get());
+                    // Check if the module is satisfied to run
+                    if(!module->check_delegates(this->messenger_, event.get())) {
+                        LOG(TRACE) << "Not all required messages are received for "
+                                   << module->get_identifier().getUniqueName() << ", skipping module!";
+                        module->skip_event(event->number);
+                        continue;
                     }
-                } catch(const EndOfRunException& e) {
-                    // Terminate if the module threw the EndOfRun request exception:
-                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
-                    this->terminate_ = true;
+
+                    // Get current time
+                    auto start = std::chrono::steady_clock::now();
+
+                    // Set run module section header
+                    std::string old_section_name = Log::getSection();
+                    uint64_t old_event_num = Log::getEventNum();
+                    std::string section_name = "R:";
+                    section_name += module->get_identifier().getUniqueName();
+                    Log::setSection(section_name);
+                    Log::setEventNum(event->number);
+
+                    // Set module specific settings
+                    auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(),
+                                                                         module->get_configuration());
+
+                    // Run module
+                    try {
+                        if(module->is_buffered()) {
+                            auto* buffered_module = static_cast<BufferedModule*>(module.get());
+                            buffered_events += buffered_module->run_in_order(event);
+                        } else {
+                            module->run(event.get());
+                        }
+                    } catch(const EndOfRunException& e) {
+                        // Terminate if the module threw the EndOfRun request exception:
+                        LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                        this->terminate_ = true;
+                    }
+
+                    // Reset logging
+                    Log::setSection(old_section_name);
+                    Log::setEventNum(old_event_num);
+                    ModuleManager::set_module_after(old_settings);
+
+                    // Update execution time
+                    auto end = std::chrono::steady_clock::now();
+                    std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+
+                    auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
+                    event_time += duration;
+                    this->module_execution_time_[module.get()] += duration;
+
+                    if(plot) {
+                        this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                    }
                 }
 
-                // Reset logging
-                Log::setSection(old_section_name);
-                Log::setEventNum(old_event_num);
-                ModuleManager::set_module_after(old_settings);
+                if(plot) {
+                    this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
+                    event_time_->Fill(static_cast<double>(event_time));
+                }
 
-                // Update execution time
-                auto end = std::chrono::steady_clock::now();
-                std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
-                this->module_execution_time_[module.get()] +=
-                    static_cast<std::chrono::duration<long double>>(end - start).count();
-            }
-
-            dispatched_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP")
-                << "Buffered " << buffered_events << ", finished " << (dispatched_events - buffered_events) << " of "
-                << number_of_events << " events";
-        };
+                dispatched_events++;
+                LOG_PROGRESS(STATUS, "EVENT_LOOP")
+                    << "Buffered " << buffered_events << ", finished " << (dispatched_events - buffered_events) << " of "
+                    << number_of_events << " events";
+            };
         thread_pool->submit(event_function);
         thread_pool->checkException();
     }
@@ -856,6 +888,37 @@ void ModuleManager::finalize() {
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
     }
+
+    // Store performance plots
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    if(global_config.get<bool>("performance_plots")) {
+
+        auto* perf_dir = modules_file_->mkdir("performance");
+        if(perf_dir == nullptr) {
+            throw RuntimeError("Cannot create or access ROOT directory for performance plots");
+        }
+        perf_dir->cd();
+
+        event_time_->Write();
+        buffer_fill_level_->Write();
+
+        for(auto& module : modules_) {
+            auto module_name = module->get_configuration().getName();
+            auto* mod_dir = perf_dir->GetDirectory(module_name.c_str());
+            if(mod_dir == nullptr) {
+                mod_dir = perf_dir->mkdir(module_name.c_str());
+                if(mod_dir == nullptr) {
+                    throw RuntimeError("Cannot create or access ROOT directory for performance plots of module " +
+                                       module_name);
+                }
+            }
+            mod_dir->cd();
+
+            // Write the histogram
+            module_event_time_[module.get()]->Write();
+        }
+    }
+
     // Close module ROOT file
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
@@ -879,7 +942,6 @@ void ModuleManager::finalize() {
         LOG(INFO) << " Module " << module->getUniqueName() << " took " << module_execution_time_[module.get()] << " seconds";
     }
 
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
     long double processing_time = 0;
     auto total_events = global_config.get<uint64_t>("number_of_events");
     if(total_events > 0) {
