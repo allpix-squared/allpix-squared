@@ -605,7 +605,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     if(multithreading_flag_ && can_parallelize_) {
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
-        if(available_hardware_concurrency > 0u) {
+        if(available_hardware_concurrency > 1u) {
             // Try to be graceful and leave one core out if the number of workers was not specified
             available_hardware_concurrency -= 1u;
         }
