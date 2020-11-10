@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
         };
 
         ThreadPool pool(num_threads, num_threads * 1024, init_function);
-        std::vector<std::future<std::vector<double>>> wp_futures;
+        std::vector<std::shared_future<std::vector<double>>> wp_futures;
 
         // Loop over x coordinate, add tasks for each coordinate to the queue
         for(size_t x = 1; x <= binning.x(); x++) {
