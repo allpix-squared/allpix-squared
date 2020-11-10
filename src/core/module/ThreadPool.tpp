@@ -87,20 +87,24 @@ namespace allpix {
     }
 
     template <typename Func, typename... Args> auto ThreadPool::submit(Func&& func, Args&&... args) {
+
         // Bind the arguments to the tasks
         auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
 
-        // Construct packaged task with correct return type
-        using PackagedTask = std::packaged_task<decltype(bound_task())()>;
-        PackagedTask task(bound_task);
+        // Construct shared pointer with packaged task of correct return type
+        using TaskType = decltype(bound_task());
+        auto task = std::make_shared<std::packaged_task<TaskType()>>(bound_task);
 
-        // Get future and wrapper to add to vector
-        auto future = task.get_future();
-        auto task_function = [task = std::move(task)]() mutable { task(); };
+        // Obtain a shared future with correct return type
+        auto future = std::shared_future<TaskType>(task->get_future());
+
         if(threads_.empty()) {
-            task_function();
+            // Execute the task directly
+            (*task)();
         } else {
-            queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+            // Wrap the task and its future in anonymous functions and push it to the queue
+            queue_.push(std::make_pair<std::function<void()>, std::function<void()>>([t = std::move(task)] { (*t)(); },
+                                                                                     [f = future] { f.get(); }));
         }
         return future;
     }
