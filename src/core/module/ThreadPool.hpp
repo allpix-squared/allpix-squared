@@ -152,7 +152,8 @@ namespace allpix {
          */
         void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
 
-        using Task = std::unique_ptr<std::packaged_task<void()>>;
+        // The queue holds a task function and a function to evaluate its future:
+        using Task = std::pair<std::function<void()>, std::function<void()>>;
 
         std::atomic_bool done_{false};
 

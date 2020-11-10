@@ -71,13 +71,14 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         auto increase_run_cnt_func = [this]() noexcept { ++run_cnt_; };
 
         while(!done_) {
-            Task task{nullptr};
+            Task task{nullptr, nullptr};
 
             if(queue_.pop(task, true, increase_run_cnt_func)) {
                 // Execute task
-                (*task)();
+                task.first();
+
                 // Fetch the future to propagate exceptions
-                task->get_future().get();
+                task.second();
             }
 
             // Propagate that the task has been finished
