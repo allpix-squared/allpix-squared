@@ -109,6 +109,7 @@ cmp:mac1015-clang:
     stage: formatting
     tags:
         - docker
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
         - source .gitlab/ci/init_x86_64.sh
@@ -117,7 +118,6 @@ fmt:cc7-llvm-format:
     extends: .format
     needs: []
     dependencies: []
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - mkdir -p build
         - cd build/
@@ -128,7 +128,6 @@ fmt:cc7-llvm-lint:
     extends: .format
     needs: []
     dependencies: []
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - mkdir -p build
         - cd build/
@@ -138,7 +137,6 @@ fmt:cc7-llvm-lint:
 
 fmt:coverage:
     extends: .format
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     needs: []
     dependencies: []
     before_script:
@@ -157,7 +155,6 @@ fmt:coverage:
 
 fmt:codespell:
     extends: .format
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     needs: []
     dependencies: []
     script:
@@ -168,7 +165,6 @@ fmt:codespell:
 
 fmt:coverity:
     extends: .format
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     needs: []
     dependencies: []
     only:
@@ -412,6 +408,8 @@ perf:cc7-gcc:
 
 .doc:
     stage: documentation
+    needs: []
+    dependencies: []
     tags:
         - docker
     artifacts:
@@ -424,8 +422,6 @@ perf:cc7-gcc:
 cmp:doxygen:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    needs: []
-    dependencies: []
     script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -440,8 +436,6 @@ cmp:doxygen:
 cmp:usermanual:
     extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
-    needs: []
-    dependencies: []
     script:
         - mkdir -p public/usermanual
         - mkdir build
@@ -470,6 +464,10 @@ cmp:usermanual:
     only:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
     script:
         - mkdir -p public/releases
         - cd build
@@ -487,10 +485,6 @@ pkg:slc6-gcc:
     needs:
         - job: cmp:slc6-gcc
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -498,10 +492,6 @@ pkg:cc7-gcc:
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
 
 
 ############################
