@@ -154,10 +154,9 @@ namespace allpix {
 
         // The queue holds a task function and a function to evaluate its future:
         using Task = std::pair<std::function<void()>, std::function<void()>>;
+        SafeQueue<Task> queue_;
 
         std::atomic_bool done_{false};
-
-        SafeQueue<Task> queue_;
 
         std::atomic<unsigned int> run_cnt_;
         mutable std::mutex run_mutex_;
