@@ -136,11 +136,14 @@ namespace allpix {
         /**
          * @brief Set module specific log setting before running init/run/finalize
          */
-        static std::tuple<LogLevel, LogFormat> set_module_before(const std::string& mod_name, const Configuration& config);
+        static std::tuple<LogLevel, LogFormat, std::string, uint64_t> set_module_before(const std::string& mod_name,
+                                                                                        const Configuration& config,
+                                                                                        const std::string& prefix = "",
+                                                                                        const uint64_t event = 0);
         /**
          * @brief Reset global log setting after running init/run/finalize
          */
-        static void set_module_after(std::tuple<LogLevel, LogFormat> prev);
+        static void set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev);
 
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 

@@ -468,7 +468,10 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
 }
 
 // Helper functions to set the module specific log settings if necessary
-std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::string&, const Configuration& config) {
+std::tuple<LogLevel, LogFormat, std::string, uint64_t> ModuleManager::set_module_before(const std::string& name,
+                                                                                        const Configuration& config,
+                                                                                        const std::string& prefix,
+                                                                                        const uint64_t event) {
     // Set new log level if necessary
     LogLevel prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
@@ -501,9 +504,18 @@ std::tuple<LogLevel, LogFormat> ModuleManager::set_module_before(const std::stri
         }
     }
 
-    return std::make_tuple(prev_level, prev_format);
+    // Set new section name
+    auto prev_section = Log::getSection();
+    Log::setSection(prefix + name);
+
+    // Set new event number:
+    auto prev_event = Log::getEventNum();
+    Log::setEventNum(event);
+
+    return std::make_tuple(prev_level, prev_format, prev_section, prev_event);
 }
-void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
+
+void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev) {
     // Reset the previous log level
     LogLevel cur_level = Log::getReportingLevel();
     LogLevel old_level = std::get<0>(prev);
@@ -519,6 +531,12 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat> prev) {
         Log::setFormat(old_format);
         LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
     }
+
+    // Reset section name
+    Log::setSection(std::get<2>(prev));
+
+    // Reset event number
+    Log::setEventNum(std::get<3>(prev));
 }
 
 /**
