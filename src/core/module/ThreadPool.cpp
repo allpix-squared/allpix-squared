@@ -63,7 +63,7 @@ void ThreadPool::wait() {
 void ThreadPool::worker(const std::function<void()>& initialize_function, const std::function<void()>& finalize_function) {
     try {
         // Initialize the worker
-        if(initialize_function) {
+        if(initialize_function && !exception_ptr_) {
             initialize_function();
         }
 
@@ -88,7 +88,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         }
 
         // Execute the cleanup function at the end of run
-        if(finalize_function) {
+        if(finalize_function && !exception_ptr_) {
             finalize_function();
         }
     } catch(...) {
