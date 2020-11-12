@@ -313,17 +313,11 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
 
     // Get current time
     auto start = std::chrono::steady_clock::now();
-    // Set the log section header
-    std::string old_section_name = Log::getSection();
-    std::string section_name = "C:";
-    section_name += identifier.getUniqueName();
-    Log::setSection(section_name);
     // Set module specific log settings
-    auto old_settings = set_module_before(identifier.getUniqueName(), instance_config);
+    auto old_settings = set_module_before(identifier.getUniqueName(), instance_config, "C:");
     // Build module
     Module* module = module_generator(instance_config, messenger, geo_manager);
     // Reset log
-    Log::setSection(old_section_name);
     set_module_after(old_settings);
     // Update execution time
     auto end = std::chrono::steady_clock::now();
@@ -434,17 +428,11 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
         output_dir += path_mod_name;
 
-        // Set the log section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "C:";
-        section_name += instance.second.getUniqueName();
-        Log::setSection(section_name);
         // Set module specific log settings
-        auto old_settings = set_module_before(instance.second.getUniqueName(), instance_config);
+        auto old_settings = set_module_before(instance.second.getUniqueName(), instance_config, "C:");
         // Build module
         Module* module = module_generator(instance_config, messenger, instance.first);
         // Reset logging
-        Log::setSection(old_section_name);
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
@@ -584,19 +572,13 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
-        // Set init module section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "I:";
-        section_name += module->get_identifier().getUniqueName();
-        Log::setSection(section_name);
         // Set module specific settings
-        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration(), "I:");
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
         module->init();
         // Reset logging
-        Log::setSection(old_section_name);
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
@@ -681,21 +663,14 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
             // Call per-thread initialization of each module
             for(const auto& module : modules_list) {
-                // Set run module section header
-                std::string old_section_name = Log::getSection();
-                std::string section_name = "T:";
-                section_name += module->get_identifier().getUniqueName();
-                Log::setSection(section_name);
-
-                // Set module specific settings
-                auto old_settings =
-                    ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+                // Set module specific log settings
+                auto old_settings = ModuleManager::set_module_before(
+                    module->get_identifier().getUniqueName(), module->get_configuration(), "T:");
 
                 LOG(TRACE) << "Initializing thread " << std::this_thread::get_id();
                 module->initializeThread();
 
                 // Reset logging
-                Log::setSection(old_section_name);
                 ModuleManager::set_module_after(old_settings);
             }
         };
@@ -703,21 +678,14 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Finalize modules for each thread
     auto finalize_function = [modules_list = modules_]() {
         for(const auto& module : modules_list) {
-            // Set run module section header
-            std::string old_section_name = Log::getSection();
-            std::string section_name = "T:";
-            section_name += module->get_identifier().getUniqueName();
-            Log::setSection(section_name);
-
-            // Set module specific settings
-            auto old_settings =
-                ModuleManager::set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+            // Set module specific log settings
+            auto old_settings = ModuleManager::set_module_before(
+                module->get_identifier().getUniqueName(), module->get_configuration(), "T:");
 
             LOG(TRACE) << "Finalizing thread " << std::this_thread::get_id();
             module->finalizeThread();
 
             // Reset logging
-            Log::setSection(old_section_name);
             ModuleManager::set_module_after(old_settings);
         }
     };
@@ -772,17 +740,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     // Get current time
                     auto start = std::chrono::steady_clock::now();
 
-                    // Set run module section header
-                    std::string old_section_name = Log::getSection();
-                    uint64_t old_event_num = Log::getEventNum();
-                    std::string section_name = "R:";
-                    section_name += module->get_identifier().getUniqueName();
-                    Log::setSection(section_name);
-                    Log::setEventNum(event->number);
-
-                    // Set module specific settings
-                    auto old_settings = ModuleManager::set_module_before(module->get_identifier().getUniqueName(),
-                                                                         module->get_configuration());
+                    // Set module specific logging settings
+                    auto old_settings = ModuleManager::set_module_before(
+                        module->get_identifier().getUniqueName(), module->get_configuration(), "R:", event->number);
 
                     // Run module
                     try {
@@ -799,8 +759,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     }
 
                     // Reset logging
-                    Log::setSection(old_section_name);
-                    Log::setEventNum(old_event_num);
                     ModuleManager::set_module_after(old_settings);
 
                     // Update execution time
@@ -879,13 +837,9 @@ void ModuleManager::finalize() {
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
-        // Set finalize module section header
-        std::string old_section_name = Log::getSection();
-        std::string section_name = "F:";
-        section_name += module->get_identifier().getUniqueName();
-        Log::setSection(section_name);
-        // Set module specific settings
-        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration());
+
+        // Set module specific log settings
+        auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration(), "F:");
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
@@ -899,8 +853,6 @@ void ModuleManager::finalize() {
         module->set_ROOT_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
-        // Reset logging
-        Log::setSection(old_section_name);
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
