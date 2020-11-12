@@ -97,13 +97,16 @@ namespace allpix {
         // Obtain a shared future with correct return type
         auto future = std::shared_future<TaskType>(task->get_future());
 
+        auto task_function = [t = std::move(task)]() mutable { (*t)(); };
+        auto task_future = [f = future]() { f.get(); };
+
         if(threads_.empty()) {
             // Execute the task directly
-            (*task)();
+            task_function();
+            task_future();
         } else {
             // Wrap the task and its future in anonymous functions and push it to the queue
-            queue_.push(std::make_pair<std::function<void()>, std::function<void()>>([t = std::move(task)] { (*t)(); },
-                                                                                     [f = future] { f.get(); }));
+            queue_.push(std::make_pair<std::function<void()>, std::function<void()>>(task_function, task_future));
         }
         return future;
     }
