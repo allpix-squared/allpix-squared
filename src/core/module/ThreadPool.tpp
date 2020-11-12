@@ -9,9 +9,8 @@
  */
 
 namespace allpix {
-    template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
 
-    template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue() { invalidate(); }
+    template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
 
     /*
      * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
