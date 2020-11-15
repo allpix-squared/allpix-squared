@@ -84,7 +84,8 @@ namespace allpix {
             std::atomic_bool valid_{true};
             mutable std::mutex mutex_;
             std::queue<T> queue_;
-            std::condition_variable condition_;
+            std::condition_variable push_condition_;
+            std::condition_variable pop_condition_;
             const unsigned int max_size_;
         };
 

@@ -78,12 +78,11 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
+                // Update the run count and propagate update
+                std::lock_guard<std::mutex> lock{run_mutex_};
+                --run_cnt_;
+                run_condition_.notify_all();
             }
-
-            // Propagate that the task has been finished
-            std::lock_guard<std::mutex> lock{run_mutex_};
-            --run_cnt_;
-            run_condition_.notify_all();
         }
 
         // Execute the cleanup function at the end of run
@@ -98,9 +97,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
             // Invalidate the queue to terminate other threads
             queue_.invalidate();
         }
-        // Propagate that the task finished
-        std::lock_guard<std::mutex> lock{run_mutex_};
-        --run_cnt_;
+        // Propagate that the worker terminated
         run_condition_.notify_all();
     }
 }

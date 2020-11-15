@@ -21,7 +21,7 @@ namespace allpix {
         std::unique_lock<std::mutex> lock{mutex_};
         if(queue_.empty() && wait) {
             // Wait for new item in the queue (unlocks the mutex while waiting)
-            condition_.wait(lock, [this]() { return !queue_.empty() || !valid_; });
+            pop_condition_.wait(lock, [this]() { return !queue_.empty() || !valid_; });
         }
         // Check for empty and valid queue
         if(queue_.empty() || !valid_) {
@@ -35,8 +35,8 @@ namespace allpix {
             func();
         }
 
-        // Notify possible producers waiting to fill the queue
-        condition_.notify_all();
+        // Notify possible pusher waiting to fill the queue
+        push_condition_.notify_one();
 
         return true;
     }
@@ -47,7 +47,7 @@ namespace allpix {
         // Check if the queue reached its full size
         if(queue_.size() >= max_size_) {
             // Wait until the queue is below the max size or it was invalidated(shutdown)
-            condition_.wait(lock, [this]() { return queue_.size() < max_size_ || !valid_; });
+            push_condition_.wait(lock, [this]() { return queue_.size() < max_size_ || !valid_; });
         }
 
         // Abort the push operation if conditions not met
@@ -55,9 +55,9 @@ namespace allpix {
             return;
         }
 
-        // Push a new element to the queue and notify consumers
+        // Push a new element to the queue and notify possible consumer
         queue_.push(std::move(value));
-        condition_.notify_one();
+        pop_condition_.notify_one();
     }
 
     template <typename T> bool ThreadPool::SafeQueue<T>::isValid() const {
@@ -83,7 +83,8 @@ namespace allpix {
         std::lock_guard<std::mutex> lock{mutex_};
         std::queue<T>().swap(queue_);
         valid_ = false;
-        condition_.notify_all();
+        push_condition_.notify_all();
+        pop_condition_.notify_all();
     }
 
     template <typename Func, typename... Args> auto ThreadPool::submit(Func&& func, Args&&... args) {
