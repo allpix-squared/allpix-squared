@@ -153,7 +153,7 @@ namespace allpix {
          */
         void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
 
-        // The queue holds a task function and a function to evaluate its future:
+        // The queue holds the task functions to be executed by the workers
         using Task = std::unique_ptr<std::packaged_task<void()>>;
         SafeQueue<Task> queue_;
 
