@@ -40,7 +40,7 @@ namespace allpix {
             /**
              * @brief Erases the queue and release waiting threads on destruction
              */
-            ~SafeQueue() { invalidate(); }
+            ~SafeQueue();
 
             /**
              * @brief Get the top value in the safe queue
@@ -153,7 +153,7 @@ namespace allpix {
         void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
 
         // The queue holds a task function and a function to evaluate its future:
-        using Task = std::pair<std::function<void()>, std::function<void()>>;
+        using Task = std::unique_ptr<std::packaged_task<void()>>;
         SafeQueue<Task> queue_;
 
         std::atomic_bool done_{false};

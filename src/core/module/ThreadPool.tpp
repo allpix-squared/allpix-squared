@@ -9,8 +9,9 @@
  */
 
 namespace allpix {
-
     template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
+
+    template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue() { invalidate(); }
 
     /*
      * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
@@ -86,27 +87,23 @@ namespace allpix {
     }
 
     template <typename Func, typename... Args> auto ThreadPool::submit(Func&& func, Args&&... args) {
-
         // Bind the arguments to the tasks
         auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
 
-        // Construct shared pointer with packaged task of correct return type
-        using TaskType = decltype(bound_task());
-        auto task = std::make_shared<std::packaged_task<TaskType()>>(bound_task);
+        // Construct packaged task with correct return type
+        using PackagedTask = std::packaged_task<decltype(bound_task())()>;
+        PackagedTask task(bound_task);
 
-        // Obtain a shared future with correct return type
-        auto future = std::shared_future<TaskType>(task->get_future());
-
-        auto task_function = [t = std::move(task)]() mutable { (*t)(); };
-        auto task_future = [f = future]() { f.get(); };
-
+        // Get future and wrapper to add to vector
+        auto future = task.get_future().share();
+        auto task_function = [task = std::move(task), future = future]() mutable {
+            task();
+            future.get();
+        };
         if(threads_.empty()) {
-            // Execute the task directly
             task_function();
-            task_future();
         } else {
-            // Wrap the task and its future in anonymous functions and push it to the queue
-            queue_.push(std::make_pair<std::function<void()>, std::function<void()>>(task_function, task_future));
+            queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
         }
         return future;
     }
