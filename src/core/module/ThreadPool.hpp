@@ -158,12 +158,12 @@ namespace allpix {
 
         std::atomic_bool done_{false};
 
-        std::atomic<unsigned int> run_cnt_;
+        std::atomic<unsigned int> run_cnt_{0};
         mutable std::mutex run_mutex_;
         std::condition_variable run_condition_;
         std::vector<std::thread> threads_;
 
-        std::atomic_flag has_exception_;
+        std::atomic_flag has_exception_{false};
         std::exception_ptr exception_ptr_{nullptr};
     };
 } // namespace allpix

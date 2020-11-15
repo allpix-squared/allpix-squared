@@ -54,7 +54,7 @@ void ThreadPool::checkException() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return exception_ptr_ || (queue_.empty() && run_cnt_ == 0); });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (queue_.empty() && run_cnt_ == 0); });
 }
 
 /**
@@ -92,12 +92,16 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         }
     } catch(...) {
         // Check if the first exception thrown
-        if(has_exception_.test_and_set()) {
+        if(!has_exception_.test_and_set()) {
             // Save the first exceptin
             exception_ptr_ = std::current_exception();
             // Invalidate the queue to terminate other threads
             queue_.invalidate();
         }
+        // Propagate that the task finished
+        std::lock_guard<std::mutex> lock{run_mutex_};
+        --run_cnt_;
+        run_condition_.notify_all();
     }
 }
 
