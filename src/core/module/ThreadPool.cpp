@@ -92,7 +92,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
     } catch(...) {
         // Check if the first exception thrown
         if(!has_exception_.test_and_set()) {
-            // Save the first exceptin
+            // Save the first exception
             exception_ptr_ = std::current_exception();
             // Invalidate the queue to terminate other threads
             queue_.invalidate();
