@@ -18,8 +18,11 @@ namespace allpix {
         PackagedTask task(bound_task);
 
         // Get future and wrapper to add to vector
-        auto future = task.get_future();
-        auto task_function = [task = std::move(task)]() mutable { task(); };
+        auto future = task.get_future().share();
+        auto task_function = [task = std::move(task), future = future]() mutable {
+            task();
+            future.get();
+        };
         task_queues_.at(module).push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
         all_queue_.push(&task_queues_.at(module));
         return future;
