@@ -415,7 +415,7 @@ int main(int argc, char** argv) {
         };
 
         ThreadPool pool(num_threads, num_threads * 1024, init_function);
-        std::vector<std::future<std::vector<Point>>> mesh_futures;
+        std::vector<std::shared_future<std::vector<Point>>> mesh_futures;
         // Set starting point
         double x = minx + xstep / 2.0;
         // Loop over x coordinate, add tasks for each coordinate to the queue
