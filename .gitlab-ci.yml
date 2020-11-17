@@ -200,7 +200,7 @@ fmt:coverity:
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
         when: always
-        expire_in: 1 day
+        expire_in: 1 week
         name: "apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
         paths:
             - apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
