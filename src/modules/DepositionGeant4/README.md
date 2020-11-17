@@ -91,8 +91,6 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the beam as a unit vector.
 
-Please note that the old source parameters from version v1.1.2 and before (`beam_energy`, `beam_energy_spread` and `beam_position`) are still supported but it is recommended to use the new corresponding ones.
-
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
 * `square_angle` : Cone opening angle defining the maximum submission angle. Defaults to `180deg`, i.e. emission into one full hemisphere.

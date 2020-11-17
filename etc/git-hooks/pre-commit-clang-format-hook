@@ -7,7 +7,11 @@
 
 ##################################################################
 # SETTINGS
-CLANG_FORMAT_VERSION=10
+# set file containing the clang-format version number:
+VERSIONFILE="CMakeLists.txt"
+
+# retrieve the version number from the VERSIONFILE
+CLANG_FORMAT_VERSION=$(git cat-file blob master:"$VERSIONFILE" | grep -m 1 'CLANG_FORMAT_VERSION' | sed 's/^[^"]*"//;s/"[^"]*$//')
 
 # set path to clang-format binary
 for bin in "clang-format-$CLANG_FORMAT_VERSION" "clang-format";

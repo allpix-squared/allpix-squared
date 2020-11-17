@@ -323,8 +323,10 @@ Can be used to reproduce an earlier simulation run.
 See Section~\ref{sec:module_instantiation} for details.
 \item \parameter{model_paths}: Additional files or directories from which detector models should be read besides the standard search locations.
 Refer to Section~\ref{sec:detector_models} for more information.
+\item \parameter{performance_plots}: Enable the creation of performance plots showing the processing time required per event both for individual modules and the full module stack. Defaults to \texttt{false}.
 \item \parameter{multithreading}: Enable multi-threading for the framework. More information about multi-threading can be found in Section~\ref{sec:multithreading}.
 \item \parameter{workers}: Specify the number of workers to use in total, should be strictly larger than zero. Only used if \parameter{multithreading} is set to true. Defaults to the number of native threads available on the system if this can be determined, otherwise one thread is used.
+\item \parameter{module_buffer_depth}: Specify the buffer depth available per worker for buffered modules to cache partially processed events until execution in the correct order can be guaranteed (see Section~\ref{sec:multithreading_approach}). Defaults to 128.
 \end{itemize}
 
 \section{The \textit{allpix} Executable}
@@ -339,6 +341,7 @@ This is the only \underline{required} argument, the simulation will fail to star
 \item \texttt{-v <level>}: Sets the global log verbosity level, overwriting the value specified in the configuration file described in Section~\ref{sec:framework_parameters}.
 Possible values are \texttt{FATAL}, \texttt{STATUS}, \texttt{ERROR}, \texttt{WARNING}, \texttt{INFO} and \texttt{DEBUG}, where all options are case-insensitive.
 The module specific logging level introduced in Section~\ref{sec:logging_verbosity} is not overwritten.
+\item \texttt{-j <workers>}: Enables multithreaded event processing with the given number of worker threads. This is equivalent to passing the framework parameters \mbox{\texttt{-o multithreading=true -o workers=<workers>}} to the executable.
 \item \texttt{-{}-version}: Prints the version and build time of the executable and terminates the program.
 \item \texttt{-o <option>}: Passes extra framework or module options which are added and overwritten in the main configuration file.
 This argument may be specified multiple times, to add multiple options.

@@ -84,7 +84,8 @@ namespace allpix {
             std::atomic_bool valid_{true};
             mutable std::mutex mutex_;
             std::queue<T> queue_;
-            std::condition_variable condition_;
+            std::condition_variable push_condition_;
+            std::condition_variable pop_condition_;
             const unsigned int max_size_;
         };
 
@@ -152,18 +153,18 @@ namespace allpix {
          */
         void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
 
+        // The queue holds the task functions to be executed by the workers
         using Task = std::unique_ptr<std::packaged_task<void()>>;
+        SafeQueue<Task> queue_;
 
         std::atomic_bool done_{false};
 
-        SafeQueue<Task> queue_;
-
-        std::atomic<unsigned int> run_cnt_;
+        std::atomic<unsigned int> run_cnt_{0};
         mutable std::mutex run_mutex_;
         std::condition_variable run_condition_;
         std::vector<std::thread> threads_;
 
-        std::atomic_flag has_exception_;
+        std::atomic_flag has_exception_{false};
         std::exception_ptr exception_ptr_{nullptr};
     };
 } // namespace allpix

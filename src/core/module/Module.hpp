@@ -282,10 +282,11 @@ namespace allpix {
         /**
          * @brief Run the event in the order of increasing event number
          * @param event The event to run
+         * @return number of events currently in the buffer
          *
          * Execute the event if it is in the correct order, otherwise buffer the event and execute it later
          */
-        virtual void run_in_order(std::shared_ptr<Event> event);
+        virtual size_t run_in_order(std::shared_ptr<Event> event);
 
     private:
         /**
