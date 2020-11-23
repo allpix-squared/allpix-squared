@@ -19,7 +19,7 @@ In addition, more conversions functions are provided together with other useful 
 \label{sec:geant4_interface}
 The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4 as follows:
 \begin{enumerate}
-\item \texttt{MTRunManager}: A run manager that can only be used in parallel. Internally, it creates thread-local managers to handle operations for each calling thread independently. It also maintain a stable seed distribution mechanism to ensure results are the same regardless of the number of threads that used the manager in parallel.
+\item \texttt{MTRunManager}: A run manager that can only be used in parallel. Internally, it creates thread-local managers to handle operations for each calling thread independently. It also maintains a stable seed distribution mechanism to ensure results are the same regardless of the number of threads that use the manager in parallel.
 \item \texttt{RunManager}: A run manager that can not be used in parallel. It uses the same seeding mechanism as the multi-threaded version so they can be used interchangeably depending on whether multi-threading is enabled or not.
 \end{enumerate}
 
