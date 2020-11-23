@@ -110,7 +110,7 @@ void Messenger::add_delegate(const std::type_info& message_type,
 }
 
 /**
- * @throws std::out_of_range If a delegate is removed which is never registered
+ * @throws std::out_of_range if a delegate is removed which is never registered
  */
 void Messenger::remove_delegate(BaseDelegate* delegate) {
     std::lock_guard<std::mutex> lock(mutex_);
