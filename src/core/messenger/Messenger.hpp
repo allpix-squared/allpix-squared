@@ -29,7 +29,7 @@ namespace allpix {
 
     /**
      * @ingroup Managers
-     * @brief Manager responsible for setting up communication between objects and sending messages between them
+     * @brief Manager responsible for setting up communication between modules and sending messages between them
      *
      * Registers and sets up communication (delegates) from modules to other listening modules. Dispatches messages from
      * modules to other listening modules. There are various way to receive the messages using \ref Delegates. Messages are
