@@ -296,7 +296,7 @@ my_histogram->Write();
 
 \subsection{Declaring a Module Thread-Safe}
 
-If a module is thread-safe, i.e. its \command{run()} function can be called from different threads in parallel without locking, it can be declraed as thread-safe to the framework.
+If a module is thread-safe, i.e. its \command{run()} function can be called from different threads in parallel without locking, it can be declared as thread-safe to the framework.
 In this case the ModuleManager will allow parallelization of calls to this module.
 
 This declaration is done by placing the following call in the constructor of the module:
