@@ -44,6 +44,7 @@ namespace allpix {
                                   TrackInfoManager* track_info_manager,
                                   double charge_creation_energy,
                                   double fano_factor,
+                                  double cutoff_time,
                                   uint64_t random_seed);
 
         /**
@@ -85,6 +86,7 @@ namespace allpix {
 
         double charge_creation_energy_;
         double fano_factor_;
+        double cutoff_time_;
 
         // Random number generator for e/h pair creation fluctuation
         std::mt19937_64 random_generator_;
