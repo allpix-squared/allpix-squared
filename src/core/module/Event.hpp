@@ -67,7 +67,7 @@ namespace allpix {
         RandomNumberGenerator& getRandomEngine();
 
         /**
-         * @brief Advances the random engine's state one step
+         * @brief Advances the random engine's state by one step
          * @return The generated value
          */
         uint64_t getRandomNumber() { return getRandomEngine()(); }
