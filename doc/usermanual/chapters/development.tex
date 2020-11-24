@@ -308,7 +308,7 @@ This declaration is done by placing the following call in the constructor of the
 }
 \end{minted}
 
-By adding this, the module promises that it will work correctly if its \command{run()} method is executed multiple times in parallel, for different events.
+By adding this statement, the module certifies to work correctly if its \command{run()} method is executed multiple times in parallel, for different events.
 This means in particular that the module will safely handle access to shared (for example static) variables as described in Section~\ref{sec:multithreading_members} and that it will properly assign and bind ROOT histograms to their respective directories in the output ROOT file before the event processing starts and the \parameter{run()} method is called the first time.
 Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
 
