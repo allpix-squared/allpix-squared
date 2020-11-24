@@ -33,7 +33,7 @@ namespace allpix {
      *
      * Registers and sets up communication (delegates) from modules to other listening modules. Dispatches messages from
      * modules to other listening modules. There are various way to receive the messages using \ref Delegates. Messages are
-     * only send to modules listening to the exact same type of message.
+     * only sent to modules listening to the exact same type of message.
      */
     class Messenger {
         friend class Module;
