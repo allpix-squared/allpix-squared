@@ -295,16 +295,34 @@ Currently implemented tests comprise:
     \item[\file{test_01-6_globalconfig_missing_model.conf}] tests the behavior of the framework in case of a missing detector model file.
     \item[\file{test_01-7_globalconfig_random_seed.conf}] sets a defined random seed to start the simulation with.
     \item[\file{test_01-8_globalconfig_random_seed_core.conf}] sets a defined seed for the core component seed generator, e.g. used for misalignment.
+    \item[\file{test_01-9_globalconfig_librarydirectory.conf}] tests the correct parsing and usage of additional library loading paths.
     \item[\file{test_02-1_specialization_unique_name.conf}] tests the framework behavior for an invalid module configuration: attempt to specialize a unique module for one detector instance.
     \item[\file{test_02-2_specialization_unique_type.conf}] tests the framework behavior for an invalid module configuration: attempt to specialize a unique module for one detector type.
+    \item[\file{test_02-3_specialization_name.conf}] tests module instance specialization by name
+    \item[\file{test_02-4_specialization_type.conf}] tests module instance specialization by type
     \item[\file{test_03-1_geometry_g4_coordinate_system.conf}] ensures that the \apsq and Geant4 coordinate systems and transformations are identical.
     \item[\file{test_03-2_geometry_rotations.conf}] tests the correct interpretation of rotation angles in the detector setup file.
     \item[\file{test_03-3_geometry_misaligned.conf}] tests the correct calculation of misalignments from alignment precisions given in the detector setup file.
     \item[\file{test_03-4_geometry_overwrite.conf}] checks that detector model parameters are overwritten correctly as described in Section~\ref{sec:detector_models}.
+    \item[\file{test_03-5_geometry_invalid_implant.conf}] checks for correct detection of invalid implant size configurations
+    \item[\file{test_03-6_geometry_overlap.conf}] checks for correct detection of volume overlaps in the geometry
+    \item[\file{test_03-7_geometry_wrapper.conf}] checks for correct treatment of geometry wrappers and overlap calculations
+    \item[\file{test_03-8_geometry_noposition.conf}] test the framework behavior with a detector with no position provided in the geometry
     \item[\file{test_04-1_configuration_cli_change.conf}] tests whether single configuration values can be overwritten by options supplied via the command line.
     \item[\file{test_04-2_configuration_cli_nochange.conf}] tests whether command line options are correctly assigned to module instances and do not alter other values.
+    \item[\file{test_04-3_configuration_imbalanced_brackets.conf}] tests whether imbalanced brackets in configuration values are properly detected.
+    \item[\file{test_04-4_detector_config_cli_change.conf}] tests whether detector options can be overwritten from the command line.
+    \item[\file{test_04-5_module_config_cli_detectors.conf}] tests whether framework parameters are properly parsed from the command line.
     \item[\file{test_05-1_overwrite_same_denied.conf}] tests whether two modules writing to the same file is disallowed if overwriting is denied.
     \item[\file{test_05-overwrite_module_allowed.conf}] tests whether two modules writing to the same file is allowed if the last one reenables overwriting locally.
+    \item[\file{test_06-1_multithreading.conf}] checks if multithreading can be enabled.
+    \item[\file{test_06-2_multithreading_cli.conf}] checks if multithreading can be enabled from the command line.
+    \item[\file{test_06-3_multithreading_concurrency.conf}] tests if the number of workers can be configured.
+    \item[\file{test_06-4_multithreading_zeroworkers.conf}] tests the framework response in case too few workers are enabled.
+    \item[\file{test_06-5_multithreading_buffers.conf}] tests if the module buffer depth can be configured properly.
+    \item[\file{test_06-6_multithreading_impossible.conf}] tests the framework response in case a module without multithreading capabilities has been enabled.
+    \item[\file{test_07-1_catch_exception.conf}] checks the correct propagation of exceptions with multithreading enabled.
+    \item[\file{test_07-2_catch_exception_nomt.conf}] checks the correct propagation of exceptions with multithreading disabled.
 \end{description}
 
 
