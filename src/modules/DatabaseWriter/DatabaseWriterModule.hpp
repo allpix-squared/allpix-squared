@@ -24,7 +24,7 @@ namespace allpix {
      * @ingroup Modules
      * @brief Module to write object data to PostgreSQL databases
      *
-     * Listens to all objects dispatched in the framework and stores a representation of every object to the sepcified
+     * Listens to all objects dispatched in the framework and stores a representation of every object to the specified
      * database.
      */
     class DatabaseWriterModule : public BufferedModule {
