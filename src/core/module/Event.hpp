@@ -49,7 +49,7 @@ namespace allpix {
 
         /// @{
         /**
-         * @brief Disallow move because of mutexes and atomics (?)
+         * @brief Disallow move because of mutexes and atomics
          */
         Event(Event&&) = delete;
         Event& operator=(Event&&) = delete;
