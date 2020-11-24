@@ -332,7 +332,7 @@ namespace allpix {
         // The expected in order event to write
         std::atomic_uint64_t next_event_to_write_{1};
 
-        // Maximum buffer size to store events
+        // Maximum buffer size for storing events
         static size_t max_buffer_size_;
 
         /**

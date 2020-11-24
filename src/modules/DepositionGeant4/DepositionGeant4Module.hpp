@@ -82,7 +82,7 @@ namespace allpix {
         /**
          * @brief Construct the sensitive detectors and magnetic fields.
          * @param fano_factor Fano factor for charge carrier creation uncertainty
-         * @param charge_creation_energy Energy required to prodice a single e/h pair
+         * @param charge_creation_energy Energy required to produce a single e/h pair
          * @param cutoff_time Time after which energy deposits and MCParticles are discarded
          */
         void construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy, double cutoff_time);

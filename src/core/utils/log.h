@@ -192,7 +192,7 @@ namespace allpix {
          */
         static void setEventNum(uint64_t event_num);
         /**
-         * @brief Get the current event numbers
+         * @brief Get the current event number
          * @return Event number used
          */
         static uint64_t getEventNum();
