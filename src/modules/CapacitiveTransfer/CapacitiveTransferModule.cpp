@@ -306,7 +306,7 @@ void CapacitiveTransferModule::run(Event* event) {
                     double local_y = pixel_index.y() * model_->getPixelSize().y();
                     pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     pixel_projection = plane.projection(pixel_point);
-                    double pixel_gap = pixel_projection[2];
+                    auto pixel_gap = pixel_projection[2];
 
                     ccpd_factor = capacitances[row * 3 + col]->Eval(
                                       static_cast<double>(Units::convert(pixel_gap, "um")), nullptr, "S") *

@@ -292,6 +292,7 @@ namespace allpix {
         /**
          * @brief Returns the next event number to run
          * @param event Current event number to check from
+         * @return Event number for next event to run
          */
         uint64_t get_next_event(uint64_t);
 
