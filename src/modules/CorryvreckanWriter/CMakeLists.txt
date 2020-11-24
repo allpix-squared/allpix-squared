@@ -20,7 +20,7 @@ ELSE()
 ENDIF()
 
 # Generate the ROOT dictionary
-ROOT_GENERATE_DICTIONARY(CorryvreckanObjectsDictionary
+ROOT_GENERATE_DICTIONARY(CorryvreckanWriterObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Object.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/Pixel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan/MCParticle.hpp
@@ -39,18 +39,18 @@ SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDicti
 
 
 # Define the library adding the object file created above
-ADD_LIBRARY(CorryvreckanObjects SHARED
+ADD_LIBRARY(CorryvreckanWriterObjects SHARED
     corryvreckan/Object.cpp
     corryvreckan/Pixel.cpp
     corryvreckan/Event.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx
+    ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanWriterObjectsDictionary.cxx
 )
 
 # Link the standard dependencies
-TARGET_LINK_LIBRARIES(CorryvreckanObjects ${ALLPIX_DEPS_LIBRARIES})
+TARGET_LINK_LIBRARIES(CorryvreckanWriterObjects ${ALLPIX_DEPS_LIBRARIES})
 
 # Specify install for the messages
-INSTALL(TARGETS CorryvreckanObjects
+INSTALL(TARGETS CorryvreckanWriterObjects
     COMPONENT modules
     EXPORT Allpix
     RUNTIME DESTINATION bin
@@ -58,8 +58,8 @@ INSTALL(TARGETS CorryvreckanObjects
 
 # Also install the dictionary objects
 INSTALL(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanObjects_rdict.pcm
-    ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanObjects.rootmap
+    ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanWriterObjects_rdict.pcm
+    ${CMAKE_CURRENT_BINARY_DIR}/libCorryvreckanWriterObjects.rootmap
     COMPONENT modules
     DESTINATION lib)
 
@@ -68,7 +68,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     CorryvreckanWriterModule.cpp
 )
 
-TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanObjects ROOT::Tree)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} CorryvreckanWriterObjects ROOT::Tree)
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
