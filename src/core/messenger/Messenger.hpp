@@ -31,9 +31,10 @@ namespace allpix {
      * @ingroup Managers
      * @brief Manager responsible for setting up communication between modules and sending messages between them
      *
-     * Registers and sets up communication (delegates) from modules to other listening modules. Dispatches messages from
-     * modules to other listening modules. There are various way to receive the messages using \ref Delegates. Messages are
-     * only sent to modules listening to the exact same type of message.
+     * Registers and sets up communication (delegates) between modules by dispatching messages from one module to all other
+     * modules listening to these message types. The \Messenger implements different way of receiving messages using \ref
+     * Delegates, either through registering a filter or by binding direct to one or multiple message types. Messages are
+     * only sent to modules that have registered to the exact type of message.
      */
     class Messenger {
         friend class Module;
