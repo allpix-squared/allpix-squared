@@ -31,9 +31,9 @@ ROOT_GENERATE_DICTIONARY(CorryvreckanWriterObjectsDictionary
     -inlineInputHeader
     -I${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan
     MODULE
-    CorryvreckanObjects
+    CorryvreckanWriterObjects
 )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanObjectsDictionary.cxx
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanWriterObjectsDictionary.cxx
   PROPERTIES  GENERATED TRUE COMPILE_FLAGS "-w" # or whatever ?
 )
 
