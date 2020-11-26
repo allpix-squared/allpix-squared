@@ -6,7 +6,7 @@ FIND_PACKAGE(Doxygen)
 
 IF(DOXYGEN_FOUND)
     CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/reference/Doxyfile.in ${CMAKE_BINARY_DIR}/reference/Doxyfile @ONLY)
-    ADD_CUSTOM_TARGET(allpix-squared-reference
+    ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}-reference
         ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/reference/Doxyfile
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/reference
         COMMENT "Generating API documentation with Doxygen"
