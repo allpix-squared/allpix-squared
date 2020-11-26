@@ -87,7 +87,7 @@ namespace allpix {
 
         /**
          *  @brief Get recoded charge pulse
-         *  @return Constatnt reference to the full charge pulse
+         *  @return Constant reference to the full charge pulse
          */
         const Pulse& getPulse() const;
 
