@@ -104,6 +104,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
+    propagate_electrons_ = config_.get<bool>("propagate_electrons");
+    propagate_holes_ = config_.get<bool>("propagate_holes");
+    charge_per_step_ = config_.get<unsigned int>("charge_per_step");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -494,10 +497,10 @@ void GenericPropagationModule::init() {
         auto efield = detector->getElectricField(probe_point);
         auto direction = std::signbit(efield.z());
         // Compare with propagated carrier type:
-        if(direction && !config_.get<bool>("propagate_electrons")) {
+        if(direction && !propagate_electrons_) {
             LOG(WARNING) << "Electric field indicates electron collection at implants, but electrons are not propagated!";
         }
-        if(!direction && !config_.get<bool>("propagate_holes")) {
+        if(!direction && !propagate_holes_) {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
@@ -536,10 +539,10 @@ void GenericPropagationModule::init() {
                                   static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
 
         group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
-                                                  "Charge carrier group size;group size;number of groups trasnported",
-                                                  config_.get<int>("charge_per_step") - 1,
+                                                  "Charge carrier group size;group size;number of groups transported",
+                                                  charge_per_step_ - 1,
                                                   1,
-                                                  static_cast<double>(config_.get<unsigned int>("charge_per_step")));
+                                                  static_cast<double>(charge_per_step_));
     }
 }
 
@@ -559,8 +562,8 @@ void GenericPropagationModule::run(Event* event) {
     long double total_time = 0;
     for(const auto& deposit : deposits_message->getData()) {
 
-        if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
-           (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
+        if((deposit.getType() == CarrierType::ELECTRON && !propagate_electrons_) ||
+           (deposit.getType() == CarrierType::HOLE && !propagate_holes_)) {
             LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << Units::display(deposit.getLocalPosition(), {"mm", "um"});
             continue;
@@ -580,7 +583,7 @@ void GenericPropagationModule::run(Event* event) {
         LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
                    << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
-        auto charge_per_step = config_.get<unsigned int>("charge_per_step");
+        auto charge_per_step = charge_per_step_;
         while(charges_remaining > 0) {
             // Define number of charges to be propagated and remove charges of this step from the total
             if(charge_per_step > charges_remaining) {
