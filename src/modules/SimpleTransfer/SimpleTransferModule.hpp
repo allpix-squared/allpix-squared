@@ -69,6 +69,10 @@ namespace allpix {
 
         Histogram<TH1D> drift_time_histo;
 
+        // Configuration parameters:
+        double max_depth_distance_{};
+        bool collect_from_implant_{};
+
         // Flag whether to store output plots:
         bool output_plots_{};
 

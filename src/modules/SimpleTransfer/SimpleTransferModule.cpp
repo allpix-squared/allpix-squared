@@ -46,6 +46,10 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     // Save detector model
     model_ = detector_->getModel();
 
+    // Cache config parameters:
+    max_depth_distance_ = config_.get<double>("max_depth_distance");
+    collect_from_implant_ = config_.get<bool>("collect_from_implant");
+
     // Cache flag for output plots:
     output_plots_ = config_.get<bool>("output_plots");
 
@@ -55,7 +59,7 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
 
 void SimpleTransferModule::init() {
 
-    if(config_.get<bool>("collect_from_implant")) {
+    if(collect_from_implant_) {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         } else {
@@ -87,7 +91,7 @@ void SimpleTransferModule::run(Event* event) {
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
-           config_.get<double>("max_depth_distance")) {
+           max_depth_distance_) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their local position is not in implant range";
@@ -107,7 +111,7 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Ignore if outside the implant region:
-        if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
+        if(collect_from_implant_ && !detector_->isWithinImplant(position)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because it is outside the pixel implant.";
