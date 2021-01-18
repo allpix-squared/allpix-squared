@@ -138,21 +138,22 @@ void ThreadPool::worker(const std::function<void()>& init_function) {
                     (*task)();
                     // Fetch the future to propagate exceptions
                     task->get_future().get();
+                    // Propagate that the task has been finished
+                    std::lock_guard<std::mutex> lock{run_mutex_};
+                    --run_cnt_;
+                    run_condition_.notify_all();
                 } catch(...) {
                     // Check if the first exception thrown
-                    if(has_exception_.test_and_set()) {
+                    if(!has_exception_.test_and_set()) {
                         // Save first exception
                         exception_ptr_ = std::current_exception();
                         // Invalidate the queue to terminate other threads
                         all_queue_.invalidate();
                     }
+                    // Propagate that the worker terminated
+                    run_condition_.notify_all();
                 }
             }
-
-            // Propagate that the task has been finished
-            std::lock_guard<std::mutex> lock{run_mutex_};
-            --run_cnt_;
-            run_condition_.notify_all();
         }
     }
 }
