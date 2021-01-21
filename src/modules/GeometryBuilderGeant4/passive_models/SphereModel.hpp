@@ -12,13 +12,6 @@
 #define ALLPIX_PASSIVE_MATERIAL_SPHERE_H
 
 #include <string>
-#include <utility>
-
-#include <Math/Cartesian2D.h>
-#include <Math/DisplacementVector2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector2D.h>
-#include <Math/Vector3D.h>
 
 #include <G4Sphere.hh>
 
@@ -73,13 +66,13 @@ namespace allpix {
                 setArcLengthTheta(180 * CLHEP::deg - starting_angle_theta_);
             }
             // Create the G4VSolids which make the sphere
-            solid_ = new G4Sphere(name + "_volume",
-                                  inner_radius_,
-                                  outer_radius_,
-                                  starting_angle_phi_,
-                                  arc_length_phi_,
-                                  starting_angle_theta_,
-                                  arc_length_theta_);
+            solid_ = make_shared_no_delete<G4Sphere>(name + "_volume",
+                                                     inner_radius_,
+                                                     outer_radius_,
+                                                     starting_angle_phi_,
+                                                     arc_length_phi_,
+                                                     starting_angle_theta_,
+                                                     arc_length_theta_);
 
             // Get the maximum of the size parameters
             max_size_ = 2 * outer_radius_;
@@ -89,12 +82,12 @@ namespace allpix {
         }
 
         // Set the override functions of PassiveMaterialModel
-        G4Sphere* getSolid() const override { return solid_; }
+        std::shared_ptr<G4VSolid> getSolid() const override { return solid_; }
         double getMaxSize() const override { return max_size_; }
 
     private:
         // G4VSolid returnables
-        G4Sphere* solid_;
+        std::shared_ptr<G4VSolid> solid_;
 
         // G4VSolid specifications
         double inner_radius_;

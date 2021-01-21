@@ -22,6 +22,16 @@
 #include "core/utils/text.h"
 #include "core/utils/type.h"
 
+/**
+ * @brief Version of std::make_shared that does not delete the pointer
+ *
+ * This version is needed because some pointers are deleted by Geant4 internally, but they are stored as std::shared_ptr in
+ * the framework.
+ */
+template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
+    return std::shared_ptr<T>(new T(args...), [](T*) {});
+}
+
 namespace allpix {
     /**
      * @ingroup StringConversions
