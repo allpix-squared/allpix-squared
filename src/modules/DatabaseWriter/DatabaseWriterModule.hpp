@@ -77,6 +77,7 @@ namespace allpix {
         std::string password_;
         std::string run_id_;
         int run_nr_;
+        bool timing_global_{};
 
         // List of messages to keep so they can be stored in the tree
         std::vector<std::shared_ptr<BaseMessage>> keep_messages_;

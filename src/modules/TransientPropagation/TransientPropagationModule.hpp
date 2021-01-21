@@ -76,6 +76,7 @@ namespace allpix {
         std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
                                                           const CarrierType& type,
                                                           const unsigned int charge,
+                                                          const double initial_time,
                                                           std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Random generator for this module

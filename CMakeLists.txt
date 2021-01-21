@@ -1,15 +1,16 @@
 # CMake file for the allpix2 framework
-CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
   CMAKE_POLICY(SET CMP0048 NEW) # set project version
   IF(${CMAKE_VERSION} VERSION_GREATER "3.13")
+    CMAKE_POLICY(SET CMP0077 NEW) # allow overwriting options with normal variables
     CMAKE_POLICY(SET CMP0079 NEW) # Allow lookup of linking libraries in other directories
   ENDIF()
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v1.5.0")
+SET(ALLPIX_VERSION "v1.6.0")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -92,7 +93,7 @@ IF(APPLE)
 ENDIF()
 
 # If available, use CMake's link-what-you-use feature, not on APPLE
-IF(${CMAKE_VERSION} VERSION_GREATER "3.6.3" AND NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
+IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
   SET(CMAKE_LINK_WHAT_YOU_USE TRUE CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
 
@@ -204,7 +205,7 @@ ADD_RUNTIME_DEP(thisroot.sh)
 ###################################
 
 # Set the clang-format version required by the CI for correct formatting:
-SET(CLANG_FORMAT_VERSION "8")
+SET(CLANG_FORMAT_VERSION "10")
 
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE

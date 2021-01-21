@@ -84,6 +84,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, CERN, @tbisanz
 * Koen van den Brandt, Nikhef, @kvandenb
+* Carsten Daniel Burgard, DESY @cburgard
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin

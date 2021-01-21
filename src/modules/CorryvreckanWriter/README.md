@@ -13,7 +13,8 @@ This module writes output compatible with Corryvreckan 1.0 and later.
 * `geometry_file` : Name of the output geometry file in the Corryvreckan format. Defaults to `corryvreckanGeometry.conf`
 * `reference`: Name of the detector used as reference in the reconstruction.
 * `dut`: List of detector names to be treated as device under test in the reconstruction. Defaults to an empty list.
-* `output_mctruth` : Flag to write out MCParticle information for each hit. Defaults to true.
+* `output_mctruth` : Flag to write out MCParticle information for each hit. Defaults to `true`.
+* `global_timing`: Flag to select global timing information to be written to the Corryvreckan file. By default, local information is written, i.e. only the local time information from the pixel hit or MCParticle in question. If enabled, the timestamp is set as the event time plus the global time information of the object with respect to the event begin. Defaults to `false`.
 
 ### Usage
 Typical usage is:

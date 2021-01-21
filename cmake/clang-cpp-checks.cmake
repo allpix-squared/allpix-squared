@@ -30,14 +30,15 @@ IF(NOT CHECK_CXX_SOURCE_FILES)
 ENDIF()
 
 # Adding clang-format check and formatter if found
-FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-8" "clang-format")
+FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-${CLANG_FORMAT_VERSION}" "clang-format")
 IF(CLANG_FORMAT)
     EXEC_PROGRAM(${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR} ARGS --version OUTPUT_VARIABLE CLANG_VERSION)
-    STRING(REGEX REPLACE ".*([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
+    STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
-    # We currently require version 8 - which is not available on OSX...
+    # Let's treat macOS differently because they don't have up-to-date versions
     IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED ${APPLE})
-        IF(DEFINED ${APPLE})
+        # On macOS we might have the right version - or not..
+        IF(NOT ${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION})
             MESSAGE(WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
             MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")

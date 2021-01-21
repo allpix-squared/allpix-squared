@@ -166,7 +166,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             minY = std::min(minY, point.y());
             maxY = std::max(maxY, point.y());
         }
-        start_time = std::min(start_time, deposit_points.first.getEventTime());
+        start_time = std::min(start_time, deposit_points.first.getGlobalTime());
         total_charge += deposit_points.first.getCharge();
         max_charge = std::max(max_charge, deposit_points.first.getCharge());
 
@@ -200,8 +200,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             maxX = std::ceil(maxX - 0.5) + 0.5;
             maxY = std::ceil(maxY + 0.5) - 0.5;
         } else {
-            double div;
-            div = minX / model_->getPixelSize().x();
+            double div = minX / model_->getPixelSize().x();
             minX = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().x();
             div = minY / model_->getPixelSize().y();
             minY = (std::floor(div - 0.5) + 0.5) * model_->getPixelSize().y();
@@ -388,7 +387,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             for(auto& deposit_points : output_plot_points_) {
                 auto points = deposit_points.second;
 
-                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getEventTime() - start_time) /
+                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getGlobalTime() - start_time) /
                                                                   config_.get<long double>("output_plots_step")));
                 if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
@@ -566,12 +565,20 @@ void GenericPropagationModule::run(unsigned int event_num) {
     unsigned int recombined_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
-    for(auto& deposit : deposits_message_->getData()) {
+    for(const auto& deposit : deposits_message_->getData()) {
 
         if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
            (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
             LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << Units::display(deposit.getLocalPosition(), {"mm", "um"});
+            continue;
+        }
+
+        // Only process if within requested integration time:
+        if(deposit.getLocalTime() > integration_time_) {
+            LOG(DEBUG) << "Skipping charge carriers deposited beyond integration time: "
+                       << Units::display(deposit.getGlobalTime(), "ns") << " global / "
+                       << Units::display(deposit.getLocalTime(), {"ns", "ps"}) << " local";
             continue;
         }
 
@@ -595,13 +602,17 @@ void GenericPropagationModule::run(unsigned int event_num) {
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
                 auto global_position = detector_->getGlobalPosition(position);
-                output_plot_points_.emplace_back(
-                    PropagatedCharge(position, global_position, deposit.getType(), charge_per_step, deposit.getEventTime()),
-                    std::vector<ROOT::Math::XYZPoint>());
+                output_plot_points_.emplace_back(PropagatedCharge(position,
+                                                                  global_position,
+                                                                  deposit.getType(),
+                                                                  charge_per_step,
+                                                                  deposit.getLocalTime(),
+                                                                  deposit.getGlobalTime()),
+                                                 std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType());
+            auto prop_pair = propagate(position, deposit.getType(), deposit.getLocalTime());
             position = prop_pair.first;
 
             if(prop_pair.second < 0) {
@@ -620,7 +631,8 @@ void GenericPropagationModule::run(unsigned int event_num) {
                                                global_position,
                                                deposit.getType(),
                                                charge_per_step,
-                                               deposit.getEventTime() + prop_pair.second,
+                                               deposit.getLocalTime() + prop_pair.second,
+                                               deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
 
             propagated_charges.push_back(std::move(propagated_charge));
@@ -662,8 +674,8 @@ void GenericPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
-                                                                            const CarrierType& type) {
+std::pair<ROOT::Math::XYZPoint, double>
+GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, const double initial_time) {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -671,15 +683,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
     auto carrier_mobility = [&](double efield_mag) {
         // Compute carrier mobility from constants and electric field magnitude
-        double numerator, denominator;
         if(type == CarrierType::ELECTRON) {
-            numerator = electron_Vm_ / electron_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+            return electron_Vm_ / electron_Ec_ /
+                   std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
         } else {
-            numerator = hole_Vm_ / hole_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+            return hole_Vm_ / hole_Ec_ / std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
         }
-        return numerator / denominator;
     };
 
     // Define a function to compute the diffusion
@@ -748,7 +757,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     size_t next_idx = 0;
     bool is_alive = true;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          runge_kutta.getTime() < integration_time_ && is_alive) {
+          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -845,7 +854,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), time);
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time);
 }
 
 void GenericPropagationModule::finalize() {

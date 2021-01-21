@@ -8,7 +8,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include "exceptions.h"
+#include "core/config/exceptions.h"
 #include "Configuration.hpp"
 
 using namespace allpix;
@@ -32,7 +32,7 @@ InvalidCombinationError::InvalidCombinationError(const Configuration& config,
         section_str = "in global section";
     }
     error_message_ = "Combination of keys ";
-    for(auto& key : keys) {
+    for(const auto& key : keys) {
         if(!config.has(key)) {
             continue;
         }

@@ -59,7 +59,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 2);
+        ClassDefOverride(Object, 2); // NOLINT
 
     protected:
         /**

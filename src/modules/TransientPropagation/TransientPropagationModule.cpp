@@ -164,7 +164,15 @@ void TransientPropagationModule::run(unsigned int) {
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
-    for(auto& deposit : deposits_message_->getData()) {
+    for(const auto& deposit : deposits_message_->getData()) {
+
+        // Only process if within requested integration time:
+        if(deposit.getLocalTime() > integration_time_) {
+            LOG(DEBUG) << "Skipping charge carriers deposited beyond integration time: "
+                       << Units::display(deposit.getGlobalTime(), "ns") << " global / "
+                       << Units::display(deposit.getLocalTime(), {"ns", "ps"}) << " local";
+            continue;
+        }
 
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
@@ -179,21 +187,20 @@ void TransientPropagationModule::run(unsigned int) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
+            std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto position = deposit.getLocalPosition();
-
-            // Propagate a single charge deposit
-            std::map<Pixel::Index, Pulse> px_map;
-            auto prop_pair = propagate(position, deposit.getType(), charge_per_step, px_map);
+            auto prop_pair =
+                propagate(deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(prop_pair.first);
             PropagatedCharge propagated_charge(prop_pair.first,
                                                global_position,
                                                deposit.getType(),
-                                               px_map,
-                                               deposit.getEventTime() + prop_pair.second,
+                                               std::move(px_map),
+                                               deposit.getLocalTime() + prop_pair.second,
+                                               deposit.getGlobalTime() + prop_pair.second,
                                                &deposit);
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
@@ -223,24 +230,20 @@ void TransientPropagationModule::run(unsigned int) {
 std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                                                               const CarrierType& type,
                                                                               const unsigned int charge,
+                                                                              const double initial_time,
                                                                               std::map<Pixel::Index, Pulse>& pixel_map) {
-
-    // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a lambda function to compute the carrier mobility
     // NOTE This function is typically the most frequently executed part of the framework and therefore the bottleneck
     auto carrier_mobility = [&](double efield_mag) {
         // Compute carrier mobility from constants and electric field magnitude
-        double numerator, denominator;
         if(type == CarrierType::ELECTRON) {
-            numerator = electron_Vm_ / electron_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+            return electron_Vm_ / electron_Ec_ /
+                   std::pow(1. + std::pow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
         } else {
-            numerator = hole_Vm_ / hole_Ec_;
-            denominator = std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+            return hole_Vm_ / hole_Ec_ / std::pow(1. + std::pow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
         }
-        return numerator / denominator;
     };
 
     // Define a function to compute the diffusion
@@ -306,7 +309,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
     Eigen::Vector3d last_position = position;
     bool within_sensor = true;
     bool is_alive = true;
-    while(within_sensor && runge_kutta.getTime() < integration_time_ && is_alive) {
+    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
         // Save previous position and time
         last_position = position;
 
@@ -373,7 +376,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
-                   << Units::display(runge_kutta.getTime(), "ns");
+                   << Units::display(initial_time + runge_kutta.getTime(), "ns");
 
         // Loop over NxN pixels:
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
@@ -390,21 +393,21 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
                     detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
                 // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = charge * (ramo - last_ramo) * (-static_cast<std::underlying_type<CarrierType>::type>(type));
+                auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                            << " q = " << Units::display(induced, "e");
 
                 // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
                 auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
-                pixel_map_iterator.first->second.addCharge(induced, runge_kutta.getTime());
+                pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
 
                 if(output_plots_) {
                     potential_difference_->Fill(std::fabs(ramo - last_ramo));
-                    induced_charge_histo_->Fill(runge_kutta.getTime(), induced);
+                    induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     if(type == CarrierType::ELECTRON) {
-                        induced_charge_e_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     } else {
-                        induced_charge_h_histo_->Fill(runge_kutta.getTime(), induced);
+                        induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                     }
                 }
             }
@@ -412,7 +415,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime());
+    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime());
 }
 
 void TransientPropagationModule::finalize() {

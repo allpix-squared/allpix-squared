@@ -50,7 +50,13 @@ namespace allpix {
             setBumpCylinderRadius(config.get<double>("bump_cylinder_radius"));
             setBumpHeight(config.get<double>("bump_height"));
             setBumpSphereRadius(config.get<double>("bump_sphere_radius", 0));
-            setBumpOffset(config.get<ROOT::Math::XYVector>("bump_offset", {0, 0}));
+
+            auto pitch = config.get<ROOT::Math::XYVector>("pixel_size");
+            auto bump_offset = config.get<ROOT::Math::XYVector>("bump_offset", {0, 0});
+            if(std::fabs(bump_offset.x()) > pitch.x() / 2.0 || std::fabs(bump_offset.y()) > pitch.y() / 2.0) {
+                throw InvalidValueError(config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
+            }
+            setBumpOffset(bump_offset);
         }
 
         /**
@@ -97,6 +103,20 @@ namespace allpix {
          * @param val Chip left excess
          */
         void setChipExcessLeft(double val) { chip_excess_.at(3) = val; }
+
+        /**
+         * @brief extend the total size for the detector wrapper by potential shifts of the bump bond grid
+         * @return Size of the hybrid pixel detector model
+         */
+        ROOT::Math::XYZVector getSize() const override {
+            auto size = DetectorModel::getSize();
+            auto bump_grid =
+                getSensorSize() + 2 * ROOT::Math::XYZVector(std::fabs(bump_offset_.x()), std::fabs(bump_offset_.y()), 0);
+
+            // Extend size unless it's already large enough to cover shifted bump bond grid:
+            return ROOT::Math::XYZVector(
+                std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
+        }
 
         /**
          * @brief Return all layers of support

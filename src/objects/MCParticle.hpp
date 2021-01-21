@@ -36,7 +36,8 @@ namespace allpix {
                    ROOT::Math::XYZPoint local_end_point,
                    ROOT::Math::XYZPoint global_end_point,
                    int particle_id,
-                   double time);
+                   double local_time,
+                   double global_time);
 
         /**
          * @brief Get the entry point of the particle in local coordinates
@@ -74,9 +75,15 @@ namespace allpix {
 
         /**
          * @brief Get the arrival time for the particle
-         * @return Arrival time of the particle in the respective sensor
+         * @return Arrival time of the particle in the respective sensor in global reference system
          */
-        double getTime() const;
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get the local time for the particle in the respective sensor
+         * @return Arrival time of the particle in the respective sensor in the local system
+         */
+        double getLocalTime() const;
 
         /**
          * @brief Set the Monte-Carlo particle
@@ -84,12 +91,20 @@ namespace allpix {
          * @warning Special method because parent can only be set after creation, should not be replaced later.
          */
         void setParent(const MCParticle* mc_particle);
+
         /**
          * @brief Get the parent MCParticle if it has one
          * @return Parent MCParticle or null pointer if it has no parent
          * @warning No \ref MissingReferenceException is thrown, because a particle without parent should always be handled.
          */
         const MCParticle* getParent() const;
+
+        /**
+         * @brief Get the primary MCParticle from which this MCParticle originates
+         * @return Primary MCParticle. If it is a primary itself, returns pointer to self
+         * @warning No \ref MissingReferenceException is thrown, because primary particles should always be handled.
+         */
+        const MCParticle* getPrimary() const;
 
         /**
          * @brief Set the MCParticle's track
@@ -108,7 +123,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 6);
+        ClassDefOverride(MCParticle, 8); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -127,7 +142,8 @@ namespace allpix {
         ROOT::Math::XYZPoint global_end_point_{};
 
         int particle_id_{};
-        double time_{};
+        double local_time_{};
+        double global_time_{};
 
         TRef parent_;
         TRef track_;

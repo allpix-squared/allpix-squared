@@ -22,11 +22,11 @@
 
 #include "GeometryManager.hpp"
 #include "core/config/ConfigReader.hpp"
+#include "core/geometry/exceptions.h"
 #include "core/module/exceptions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
-#include "exceptions.h"
 #include "tools/ROOT.h"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
@@ -134,8 +134,9 @@ void GeometryManager::load(ConfigManager* conf_manager, std::mt19937_64& seeder)
 std::vector<std::string> GeometryManager::getModelsPath() {
     return model_paths_;
 }
+
 /**
- * Calls the calculate_orientation function for a given configuration
+ * Returns the pre-calculated position and orientation of a passive element in global coordinates
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
     if(passive_orientations_.count(passive_element) == 0) {
@@ -276,7 +277,7 @@ std::vector<std::shared_ptr<DetectorModel>> GeometryManager::getModels() const {
  */
 std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name) const {
     // FIXME: this is not a very nice way to implement this
-    for(auto& model : models_) {
+    for(const auto& model : models_) {
         if(model->getType() == name) {
             return model;
         }
@@ -515,13 +516,13 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
     };
 
     // Get the position and apply potential misalignment
-    auto position = config.get<XYZPoint>("position", XYZPoint());
+    auto position = config.get<XYZPoint>("position");
     LOG(DEBUG) << "Position:    " << Units::display(position, {"mm", "um"});
     position += misalignment(config.get<XYZPoint>("alignment_precision_position", XYZPoint()));
     LOG(DEBUG) << " misaligned: " << Units::display(position, {"mm", "um"});
 
     // Get the orientation and apply misalignment to the individual angles before combining them
-    auto orient_vec = config.get<XYZVector>("orientation", XYZVector());
+    auto orient_vec = config.get<XYZVector>("orientation");
     LOG(DEBUG) << "Orientation: " << Units::display(orient_vec, {"deg"});
     orient_vec += misalignment(config.get<XYZVector>("alignment_precision_orientation", XYZVector()));
     LOG(DEBUG) << " misaligned: " << Units::display(orient_vec, {"deg"});

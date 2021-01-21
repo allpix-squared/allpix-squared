@@ -154,7 +154,7 @@ namespace cereal {
                 static_assert(detail::delay_static_assert<OutputArchive>::value,
                               "Could not find an associated input archive for output archive.");
             };
-        }
+        } // namespace detail
 
 //! Sets up traits that relate an input archive to an output archive
 #define CEREAL_SETUP_ARCHIVE_TRAITS(InputArchive, OutputArchive)                                                            \
@@ -389,7 +389,7 @@ namespace cereal {
 
             template <class CharT, class Traits, class Alloc>
             struct is_string<std::basic_string<CharT, Traits, Alloc>> : std::true_type {};
-        }
+        } // namespace detail
 
         // Determines if the type is valid for use with a minimal serialize function
         template <class T>
@@ -594,7 +594,7 @@ namespace cereal {
 
                 //! only allow conversion if the types are the same and we are converting into a const reference
                 template <class Dest, class = typename std::enable_if<std::is_same<Source, Dest>::value>::type>
-                operator Dest const&();
+                operator Dest const &();
             };
 
             //! A struct that prevents implicit conversion
@@ -610,7 +610,7 @@ namespace cereal {
 
 #ifdef __clang__
                 template <class Dest, class = typename std::enable_if<std::is_same<Source, Dest>::value>::type>
-                operator Dest const&() = delete;
+                operator Dest const &() = delete;
 #endif // __clang__
 
                 //! only allow conversion if the types are the same and we are converting into a const reference
@@ -622,7 +622,7 @@ namespace cereal {
             struct AnyConvert {
                 template <class Dest> operator Dest&();
 
-                template <class Dest> operator Dest const&() const;
+                template <class Dest> operator Dest const &() const;
             };
         } // namespace detail
 
@@ -768,6 +768,18 @@ namespace cereal {
 
     See notes from member load_minimal implementation.
 
+    Note that there should be an additional const check on load_minimal after the valid check,
+    but this currently interferes with many valid uses of minimal serialization.  It has been
+    removed (see #565 on github) and previously was:
+
+    @code
+    static_assert( check::const_valid || !check::exists,
+        "cereal detected an invalid serialization type parameter in non-member " #test_name ".  "
+        #test_name " non-member functions must accept their serialization type by non-const reference" );
+    @endcode
+
+    See #132, #436, #263, and #565 on https://github.com/USCiLab/cereal for more details.
+
     @param test_name The name to give the test (e.g. load_minimal or versioned_load_minimal)
     @param save_name The corresponding name the save test would have (e.g. save_minimal or versioned_save_minimal)
     @param versioned Either blank or the macro CEREAL_MAKE_VERSIONED_TEST */
@@ -817,10 +829,6 @@ namespace cereal {
                           " functions. \n "                                                                                 \
                           "the paramater to " #test_name " must be a constant reference to the type that " #save_name       \
                           " returns.");                                                                                     \
-            static_assert(check::const_valid || !check::exists,                                                             \
-                          "cereal detected an invalid serialization type parameter in non-member " #test_name               \
-                          ".  " #test_name                                                                                  \
-                          " non-member functions must accept their serialization type by non-const reference");             \
         };                                                                                                                  \
     } /* namespace detail */                                                                                                \
                                                                                                                             \
@@ -845,22 +853,33 @@ namespace cereal {
 #undef CEREAL_MAKE_HAS_NON_MEMBER_LOAD_MINIMAL_TEST
 
         // ######################################################################
+        namespace detail {
+            // const stripped away before reaching here, prevents errors on conversion from
+            // construct<const T> to construct<T>
+            template <typename T, typename A>
+            struct has_member_load_and_construct_impl
+                : std::integral_constant<bool,
+                                         std::is_same<decltype(access::load_and_construct<T>(
+                                                          std::declval<A&>(), std::declval<::cereal::construct<T>&>())),
+                                                      void>::value> {};
+
+            template <typename T, typename A>
+            struct has_member_versioned_load_and_construct_impl
+                : std::integral_constant<bool,
+                                         std::is_same<decltype(access::load_and_construct<T>(
+                                                          std::declval<A&>(), std::declval<::cereal::construct<T>&>(), 0)),
+                                                      void>::value> {};
+        } // namespace detail
+
         //! Member load and construct check
         template <typename T, typename A>
         struct has_member_load_and_construct
-            : std::integral_constant<bool,
-                                     std::is_same<decltype(access::load_and_construct<T>(
-                                                      std::declval<A&>(), std::declval<::cereal::construct<T>&>())),
-                                                  void>::value> {};
+            : detail::has_member_load_and_construct_impl<typename std::remove_const<T>::type, A> {};
 
-        // ######################################################################
         //! Member load and construct check (versioned)
         template <typename T, typename A>
         struct has_member_versioned_load_and_construct
-            : std::integral_constant<bool,
-                                     std::is_same<decltype(access::load_and_construct<T>(
-                                                      std::declval<A&>(), std::declval<::cereal::construct<T>&>(), 0)),
-                                                  void>::value> {};
+            : detail::has_member_versioned_load_and_construct_impl<typename std::remove_const<T>::type, A> {};
 
 // ######################################################################
 //! Creates a test for whether a non-member load_and_construct specialization exists
@@ -880,7 +899,9 @@ namespace cereal {
     } /* end namespace detail */                                                                                            \
     template <class T, class A>                                                                                             \
     struct has_non_member_##test_name                                                                                       \
-        : std::integral_constant<bool, detail::has_non_member_##test_name##_impl<T, A>::value> {};
+        : std::integral_constant<                                                                                           \
+              bool,                                                                                                         \
+              detail::has_non_member_##test_name##_impl<typename std::remove_const<T>::type, A>::value> {};
 
         // ######################################################################
         //! Non member load and construct check
@@ -1089,7 +1110,7 @@ namespace cereal {
                                                    has_non_member_versioned_serialize<T, OutputArchive>::value +
                                                    has_member_versioned_save_minimal<T, OutputArchive>::value +
                                                    has_non_member_versioned_save_minimal<T, OutputArchive>::value> {};
-        }
+        } // namespace detail
 
         template <class T, class OutputArchive>
         struct is_output_serializable
@@ -1117,7 +1138,7 @@ namespace cereal {
                                                    has_non_member_versioned_serialize<T, InputArchive>::value +
                                                    has_member_versioned_load_minimal<T, InputArchive>::value +
                                                    has_non_member_versioned_load_minimal<T, InputArchive>::value> {};
-        }
+        } // namespace detail
 
         template <class T, class InputArchive>
         struct is_input_serializable
@@ -1153,7 +1174,8 @@ namespace cereal {
 
             //! Base class cast, behave as the test
             template <class Cast,
-                      template <class, class> class Test,
+                      template <class, class>
+                      class Test,
                       class Archive,
                       bool IsBaseCast = std::is_base_of<BaseCastBase, Cast>::value>
             struct has_minimal_base_class_serialization_impl : Test<typename get_base_class<Cast>::type, Archive> {};
@@ -1161,7 +1183,7 @@ namespace cereal {
             //! Not a base class cast
             template <class Cast, template <class, class> class Test, class Archive>
             struct has_minimal_base_class_serialization_impl<Cast, Test, Archive, false> : std::false_type {};
-        }
+        } // namespace detail
 
         //! Checks to see if the base class used in a cast has a minimal serialization
         /*! @tparam Cast Either base_class or virtual_base_class wrapped type
@@ -1181,7 +1203,7 @@ namespace cereal {
 
                 template <class U> static auto get(U const& t) -> decltype(t.shared_from_this());
             };
-        }
+        } // namespace detail
 
         //! Determine if T or any base class of T has inherited from std::enable_shared_from_this
         template <class T>
@@ -1232,7 +1254,7 @@ namespace cereal {
         namespace detail {
             //! Removes all qualifiers and minimal wrappers from an archive
             template <class A> using decay_archive = typename std::decay<typename strip_minimal<A>::type>::type;
-        }
+        } // namespace detail
 
         //! Checks if the provided archive type is equal to some cereal archive type
         /*! This automatically does things such as std::decay and removing any other wrappers that may be
@@ -1242,8 +1264,7 @@ namespace cereal {
             @code{cpp}
             // example use to disable a serialization function
             template <class Archive, EnableIf<cereal::traits::is_same_archive<Archive, cereal::BinaryOutputArchive>::value> =
-           sfinae>
-            void save( Archive & ar, MyType const & mt );
+           sfinae> void save( Archive & ar, MyType const & mt );
             @endcode */
         template <class ArchiveT, class CerealArchiveT>
         struct is_same_archive

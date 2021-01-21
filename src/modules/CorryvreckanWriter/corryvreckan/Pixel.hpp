@@ -106,7 +106,7 @@ namespace corryvreckan {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Pixel, 7);
+        ClassDefOverride(Pixel, 7); // NOLINT
 
     private:
         // Member variables

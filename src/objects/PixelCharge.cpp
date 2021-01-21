@@ -10,31 +10,39 @@
 #include "PixelCharge.hpp"
 
 #include <set>
-#include "exceptions.h"
+#include "objects/exceptions.h"
 
 using namespace allpix;
 
-PixelCharge::PixelCharge(Pixel pixel, unsigned int charge, const std::vector<const PropagatedCharge*>& propagated_charges)
+PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const PropagatedCharge*>& propagated_charges)
     : pixel_(std::move(pixel)), charge_(charge) {
     // Unique set of MC particles
     std::set<TRef> unique_particles;
     // Store all propagated charges and their MC particles
-    for(auto& propagated_charge : propagated_charges) {
+    for(const auto& propagated_charge : propagated_charges) {
         propagated_charges_.push_back(const_cast<PropagatedCharge*>(propagated_charge)); // NOLINT
         unique_particles.insert(propagated_charge->mc_particle_);
     }
     // Store the MC particle references
-    for(auto& mc_particle : unique_particles) {
+    for(const auto& mc_particle : unique_particles) {
+        // Local and global time are set as the earliest time found among the MCParticles:
+        auto* particle = dynamic_cast<MCParticle*>(mc_particle.GetObject());
+        if(particle != nullptr) {
+            const auto* primary = particle->getPrimary();
+            local_time_ = std::min(local_time_, primary->getLocalTime());
+            global_time_ = std::min(global_time_, primary->getGlobalTime());
+        }
+
         mc_particles_.push_back(mc_particle);
     }
 
     // No pulse provided, set full charge in first bin:
-    pulse_.addCharge(charge, 0);
+    pulse_.addCharge(static_cast<double>(charge), 0);
 }
 
 // WARNING PixelCharge always returns a positive "collected" charge...
 PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, const std::vector<const PropagatedCharge*>& propagated_charges)
-    : PixelCharge(std::move(pixel), static_cast<unsigned int>(std::abs(pulse.getCharge())), propagated_charges) {
+    : PixelCharge(std::move(pixel), static_cast<long>(pulse.getCharge()), propagated_charges) {
     pulse_ = std::move(pulse);
 }
 
@@ -46,12 +54,24 @@ Pixel::Index PixelCharge::getIndex() const {
     return getPixel().getIndex();
 }
 
-unsigned int PixelCharge::getCharge() const {
+long PixelCharge::getCharge() const {
     return charge_;
+}
+
+unsigned long PixelCharge::getAbsoluteCharge() const {
+    return static_cast<unsigned long>(std::abs(charge_));
 }
 
 const Pulse& PixelCharge::getPulse() const {
     return pulse_;
+}
+
+double PixelCharge::getGlobalTime() const {
+    return global_time_;
+}
+
+double PixelCharge::getLocalTime() const {
+    return local_time_;
 }
 
 /**
@@ -62,7 +82,7 @@ const Pulse& PixelCharge::getPulse() const {
 std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
     // FIXME: This is not very efficient unfortunately
     std::vector<const PropagatedCharge*> propagated_charges;
-    for(auto& propagated_charge : propagated_charges_) {
+    for(const auto& propagated_charge : propagated_charges_) {
         if(!propagated_charge.IsValid() || propagated_charge.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(PropagatedCharge));
         }
@@ -79,7 +99,7 @@ std::vector<const PropagatedCharge*> PixelCharge::getPropagatedCharges() const {
 std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
-    for(auto& mc_particle : mc_particles_) {
+    for(const auto& mc_particle : mc_particles_) {
         if(!mc_particle.IsValid() || mc_particle.GetObject() == nullptr) {
             throw MissingReferenceException(typeid(*this), typeid(MCParticle));
         }
@@ -101,5 +121,7 @@ void PixelCharge::print(std::ostream& out) const {
         << "Local Position: (" << local_center_location.X() << ", " << local_center_location.Y() << ", "
         << local_center_location.Z() << ") mm\n"
         << "Global Position: (" << global_center_location.X() << ", " << global_center_location.Y() << ", "
-        << global_center_location.Z() << ") mm\n";
+        << global_center_location.Z() << ") mm\n"
+        << "Local time:" << local_time_ << " ns\n"
+        << "Global time:" << global_time_ << " ns\n";
 }

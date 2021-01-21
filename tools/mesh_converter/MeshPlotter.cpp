@@ -179,41 +179,41 @@ int main(int argc, char** argv) {
         }
 
         // Create and fill histogram
-        auto efield_map = new TH2D(
+        auto* efield_map = new TH2D(
             Form("%s", observable.c_str()), Form("%s", observable.c_str()), x_bin, 1, x_bin + 1, y_bin, 1, y_bin + 1);
-        auto exfield_map = new TH2D(Form("%s X component", observable.c_str()),
-                                    Form("%s X component", observable.c_str()),
-                                    x_bin + 1,
-                                    1,
-                                    x_bin + 1,
-                                    y_bin + 1,
-                                    1,
-                                    y_bin + 1);
-        auto eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
-                                    Form("%s Y component", observable.c_str()),
-                                    x_bin + 1,
-                                    1,
-                                    x_bin + 1,
-                                    y_bin + 1,
-                                    1,
-                                    y_bin + 1);
-        auto ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
-                                    Form("%s Z component", observable.c_str()),
-                                    x_bin + 1,
-                                    1,
-                                    x_bin + 1,
-                                    y_bin + 1,
-                                    1,
-                                    y_bin + 1);
+        auto* exfield_map = new TH2D(Form("%s X component", observable.c_str()),
+                                     Form("%s X component", observable.c_str()),
+                                     x_bin + 1,
+                                     1,
+                                     x_bin + 1,
+                                     y_bin + 1,
+                                     1,
+                                     y_bin + 1);
+        auto* eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
+                                     Form("%s Y component", observable.c_str()),
+                                     x_bin + 1,
+                                     1,
+                                     x_bin + 1,
+                                     y_bin + 1,
+                                     1,
+                                     y_bin + 1);
+        auto* ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
+                                     Form("%s Z component", observable.c_str()),
+                                     x_bin + 1,
+                                     1,
+                                     x_bin + 1,
+                                     y_bin + 1,
+                                     1,
+                                     y_bin + 1);
 
-        auto c1 = new TCanvas();
+        auto* c1 = new TCanvas();
 
         if(log_scale) {
             c1->SetLogz();
             output_name_log = "_log";
         }
 
-        int plot_x, plot_y;
+        int plot_x = 0, plot_y = 0;
         auto data = field_data.getData();
         for(size_t x = start_x; x < stop_x; x++) {
             for(size_t y = start_y; y < stop_y; y++) {

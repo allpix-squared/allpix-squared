@@ -107,7 +107,7 @@ void ROOTObjectWriterModule::receive(std::shared_ptr<BaseMessage> message, std::
 
                 // Add vector of objects to write to the write list
                 write_list_[index_tuple] = new std::vector<Object*>();
-                auto addr = &write_list_[index_tuple];
+                auto* addr = &write_list_[index_tuple];
 
                 auto new_tree = (trees_.find(class_name) == trees_.end());
                 if(new_tree) {
@@ -197,7 +197,7 @@ void ROOTObjectWriterModule::finalize() {
     ConfigManager* conf_manager = getConfigManager();
 
     // Save the main configuration to the output file
-    auto global_dir = config_dir->mkdir("Allpix");
+    auto* global_dir = config_dir->mkdir("Allpix");
     LOG(TRACE) << "Writing global configuration";
 
     // Loop over all values in the global configuration
@@ -214,7 +214,7 @@ void ROOTObjectWriterModule::finalize() {
             unique_name += ":";
             unique_name += identifier;
         }
-        auto section_dir = config_dir->mkdir(unique_name.c_str());
+        auto* section_dir = config_dir->mkdir(unique_name.c_str());
         LOG(TRACE) << "Writing configuration for: " << unique_name;
 
         // Loop over all values in the section
@@ -228,12 +228,12 @@ void ROOTObjectWriterModule::finalize() {
     }
 
     // Save the detectors to the output file
-    auto detectors_dir = output_file_->mkdir("detectors");
-    auto models_dir = output_file_->mkdir("models");
+    auto* detectors_dir = output_file_->mkdir("detectors");
+    auto* models_dir = output_file_->mkdir("models");
     for(auto& detector : geo_mgr_->getDetectors()) {
         detectors_dir->cd();
         LOG(TRACE) << "Writing detector configuration for: " << detector->getName();
-        auto detector_dir = detectors_dir->mkdir(detector->getName().c_str());
+        auto* detector_dir = detectors_dir->mkdir(detector->getName().c_str());
 
         auto position = detector->getPosition();
         detector_dir->WriteObject(&position, "position");
@@ -245,13 +245,13 @@ void ROOTObjectWriterModule::finalize() {
         std::string model_name = detector->getModel()->getType() + "_" + detector->getName();
         detector_dir->WriteObject(&model_name, "type");
         models_dir->cd();
-        auto model_dir = models_dir->mkdir(model_name.c_str());
+        auto* model_dir = models_dir->mkdir(model_name.c_str());
 
         // Get all sections of the model configuration (maon config plus support layers):
         auto model_configs = detector->getModel()->getConfigurations();
         std::map<std::string, int> count_configs;
         for(auto& model_config : model_configs) {
-            auto model_config_dir = model_dir;
+            auto* model_config_dir = model_dir;
             if(!model_config.getName().empty()) {
                 model_config_dir = model_dir->mkdir(
                     (model_config.getName() + "_" + std::to_string(count_configs[model_config.getName()])).c_str());

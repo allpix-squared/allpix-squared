@@ -18,6 +18,7 @@ stages:
 # Hidden key to define the default compile job:
 .compile:
     stage: compilation
+    needs: []
     tags:
         - docker
     script:
@@ -61,7 +62,7 @@ cmp:cc7-docker:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
@@ -114,26 +115,31 @@ cmp:mac1015-clang:
 
 fmt:cc7-llvm-format:
     extends: .format
-    dependencies:
-        - cmp:cc7-llvm
+    needs: []
+    dependencies: []
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-format
 
 fmt:cc7-llvm-lint:
     extends: .format
-    dependencies:
-        - cmp:cc7-llvm
+    needs: []
+    dependencies: []
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
+        - mkdir -p build
         - cd build/
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-lint
 
 
 fmt:coverage:
     extends: .format
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs: []
     dependencies: []
     before_script:
         - export COMPILER_TYPE="gcc"
@@ -152,6 +158,7 @@ fmt:coverage:
 fmt:codespell:
     extends: .format
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs: []
     dependencies: []
     script:
         - source .gitlab/ci/load_deps.sh
@@ -162,6 +169,7 @@ fmt:codespell:
 fmt:coverity:
     extends: .format
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs: []
     dependencies: []
     only:
         - coverity
@@ -204,8 +212,9 @@ fmt:coverity:
 
 examples:
     extends: .test
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -218,8 +227,9 @@ examples:
 
 mod:slc6-gcc:
     extends: .testmod
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -227,8 +237,9 @@ mod:slc6-gcc:
 
 core:slc6-gcc:
     extends: .testcore
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -236,36 +247,50 @@ core:slc6-gcc:
 
 mod:lxplus-gcc:
     extends: .testmod
-    dependencies:
-        - cmp:lxplus-gcc
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
 core:lxplus-gcc:
     extends: .testcore
-    dependencies:
-        - cmp:lxplus-gcc
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
 # CentOS 7
-
-core:cc7-docker:
-    extends: .testcore
-    dependencies:
-        - cmp:cc7-docker
+mod:cc7-docker:
+    extends: .testmod
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-7 || echo " "
 
+core:cc7-docker:
+    extends: .testcore
+    needs:
+        - job: cmp:cc7-docker
+          artifacts: true
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+        entrypoint: [""]
+    before_script:
+        - source scl_source enable devtoolset-8 || echo " "
+
 mod:cc7-gcc:
     extends: .testmod
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -273,8 +298,9 @@ mod:cc7-gcc:
 
 core:cc7-gcc:
     extends: .testcore
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -282,8 +308,9 @@ core:cc7-gcc:
 
 mod:cc7-llvm:
     extends: .testmod
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -292,8 +319,9 @@ mod:cc7-llvm:
 
 core:cc7-llvm:
     extends: .testcore
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -307,8 +335,9 @@ mod:mac1015-clang:
     extends: .testmod
     tags:
         - mac
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -317,8 +346,9 @@ core:mac1015-clang:
     extends: .testcore
     tags:
         - mac
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -345,8 +375,9 @@ core:mac1015-clang:
 
 perf:cc7-gcc:
     extends: .testperf
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - source .gitlab/ci/init_x86_64.sh
@@ -355,8 +386,9 @@ perf:cc7-gcc:
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
     extends: .testperf
-    dependencies:
-        - cmp:cc7-llvm
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -366,8 +398,9 @@ perf:cc7-gcc:
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
 .perf:mac1015-clang:
     extends: .testperf
-    dependencies:
-        - cmp:mac1015-clang
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
     before_script:
         - source .gitlab/ci/init_x86_64.sh
         - source .gitlab/ci/load_deps.sh
@@ -391,6 +424,7 @@ perf:cc7-gcc:
 cmp:doxygen:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs: []
     dependencies: []
     script:
         - source .gitlab/ci/init_x86_64.sh
@@ -399,13 +433,14 @@ cmp:doxygen:
         - mkdir build
         - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make reference
+        - make Allpix-reference
         - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
 cmp:usermanual:
     extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
+    needs: []
     dependencies: []
     script:
         - mkdir -p public/usermanual
@@ -433,8 +468,8 @@ cmp:usermanual:
     tags:
         - docker
     only:
-        - tags
-        - schedules
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     script:
         - mkdir -p public/releases
         - cd build
@@ -449,8 +484,9 @@ cmp:usermanual:
 pkg:slc6-gcc:
     extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    dependencies:
-        - cmp:slc6-gcc
+    needs:
+        - job: cmp:slc6-gcc
+          artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
@@ -459,8 +495,9 @@ pkg:slc6-gcc:
 pkg:cc7-gcc:
     extends: .pack
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    dependencies:
-        - cmp:cc7-gcc
+    needs:
+        - job: cmp:cc7-gcc
+          artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .gitlab/ci/init_x86_64.sh
@@ -481,7 +518,7 @@ deploy-documentation:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
+        - tags@allpix-squared/allpix-squared
     dependencies:
         - cmp:usermanual
         - cmp:doxygen
@@ -501,8 +538,8 @@ deploy-eos:
         GIT_STRATEGY: none
     # Only run for new tags:
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     dependencies:
         - pkg:cc7-gcc
         - pkg:slc6-gcc
@@ -522,8 +559,8 @@ deploy-cvmfs:
     tags:
         - cvmfs-deploy
     only:
-        - tags
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - tags@allpix-squared/allpix-squared
+        - schedules@allpix-squared/allpix-squared
     script:
         - ./.gitlab/ci/download_artifacts.py $API_TOKEN $CI_PROJECT_ID $CI_PIPELINE_ID
         - export RUNNER_LOCATION=$(pwd)
@@ -538,7 +575,7 @@ deploy-docker-latest:
         - docker-image-build
     dependencies: []
     only:
-        - schedules # Only execute this on scheduled "nightly" pipelines
+        - schedules@allpix-squared/allpix-squared
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
@@ -550,7 +587,7 @@ deploy-docker-tag:
         - docker-image-build
     dependencies: []
     only:
-        - tags
+        - tags@allpix-squared/allpix-squared
     script:
         - "echo" # unused but this line is required by GitLab CI
     variables:
