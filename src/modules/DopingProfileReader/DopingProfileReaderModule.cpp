@@ -53,7 +53,7 @@ void DopingProfileReaderModule::init() {
 
         auto concentration = config_.get<double>("doping_concentration");
         LOG(INFO) << "Set constant doping concentration of " << Units::display(concentration, {"/cm/cm/cm"});
-        FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) { return concentration; };
+        FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) noexcept { return concentration; };
 
         detector_->setDopingProfileFunction(function, type);
     } else if(field_model == "regions") {
