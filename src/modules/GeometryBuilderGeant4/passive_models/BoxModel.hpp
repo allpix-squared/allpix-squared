@@ -64,12 +64,12 @@ namespace allpix {
             }
 
             // Create the G4VSolids which make the Box
-            auto outer_volume = std::make_shared<G4Box>(
+            auto outer_volume = make_shared_no_delete<G4Box>(
                 name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
             if(inner_size_ == ROOT::Math::XYZVector()) {
                 solid_ = outer_volume;
             } else {
-                auto inner_volume = std::make_shared<G4Box>(
+                auto inner_volume = make_shared_no_delete<G4Box>(
                     name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, inner_size_.z() / 2);
 
                 solid_ = std::make_shared<G4SubtractionSolid>(name + "_volume", outer_volume.get(), inner_volume.get());

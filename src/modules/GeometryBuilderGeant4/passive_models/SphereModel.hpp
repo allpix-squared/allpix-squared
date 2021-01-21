@@ -66,13 +66,13 @@ namespace allpix {
                 setArcLengthTheta(180 * CLHEP::deg - starting_angle_theta_);
             }
             // Create the G4VSolids which make the sphere
-            solid_ = std::make_shared<G4Sphere>(name + "_volume",
-                                                inner_radius_,
-                                                outer_radius_,
-                                                starting_angle_phi_,
-                                                arc_length_phi_,
-                                                starting_angle_theta_,
-                                                arc_length_theta_);
+            solid_ = make_shared_no_delete<G4Sphere>(name + "_volume",
+                                                     inner_radius_,
+                                                     outer_radius_,
+                                                     starting_angle_phi_,
+                                                     arc_length_phi_,
+                                                     starting_angle_theta_,
+                                                     arc_length_theta_);
 
             // Get the maximum of the size parameters
             max_size_ = 2 * outer_radius_;

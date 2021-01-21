@@ -56,7 +56,7 @@ namespace allpix {
             }
 
             // Create the G4VSolids which make the cylinder
-            solid_ = std::make_shared<G4Tubs>(
+            solid_ = make_shared_no_delete<G4Tubs>(
                 name + "_volume", inner_radius_, outer_radius_, length_ / 2, starting_angle_, arc_length_);
 
             // Get the maximum of the size parameters
