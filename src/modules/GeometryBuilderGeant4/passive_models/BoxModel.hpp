@@ -12,13 +12,6 @@
 #define ALLPIX_PASSIVE_MATERIAL_BOX_H
 
 #include <string>
-#include <utility>
-
-#include <Math/Cartesian2D.h>
-#include <Math/DisplacementVector2D.h>
-#include <Math/Point3D.h>
-#include <Math/Vector2D.h>
-#include <Math/Vector3D.h>
 
 #include <G4Box.hh>
 #include <G4SubtractionSolid.hh>
@@ -71,15 +64,19 @@ namespace allpix {
             }
 
             // Create the G4VSolids which make the Box
-            auto outer_volume =
-                new G4Box(name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
+            auto outer_volume = make_shared_no_delete<G4Box>(
+                name + "_outer_volume", outer_size_.x() / 2, outer_size_.y() / 2, outer_size_.z() / 2);
             if(inner_size_ == ROOT::Math::XYZVector()) {
                 solid_ = outer_volume;
             } else {
-                auto inner_volume =
-                    new G4Box(name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, inner_size_.z() / 2);
+                auto inner_volume = make_shared_no_delete<G4Box>(
+                    name + "_inner_volume", inner_size_.x() / 2, inner_size_.y() / 2, inner_size_.z() / 2);
 
-                solid_ = new G4SubtractionSolid(name + "_volume", outer_volume, inner_volume);
+                solid_ = std::make_shared<G4SubtractionSolid>(name + "_volume", outer_volume.get(), inner_volume.get());
+
+                // Keep references to the solids created because G4SubtractionSolid does not assume ownership
+                solids_.push_back(outer_volume);
+                solids_.push_back(inner_volume);
             }
             // Get the maximum of the size parameters
             max_size_ = std::max(outer_size_.x(), std::max(outer_size_.y(), outer_size_.z()));
@@ -89,12 +86,12 @@ namespace allpix {
         }
 
         // Set the override functions of PassiveMaterialModel
-        G4VSolid* getSolid() const override { return solid_; }
+        std::shared_ptr<G4VSolid> getSolid() const override { return solid_; }
         double getMaxSize() const override { return max_size_; }
 
     private:
         // G4VSolid returnables
-        G4VSolid* solid_;
+        std::shared_ptr<G4VSolid> solid_;
 
         // G4VSolid specifications
         ROOT::Math::XYZVector outer_size_;
