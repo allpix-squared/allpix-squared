@@ -441,7 +441,7 @@ cmp:doxygen:
         - mkdir build
         - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make reference
+        - make Allpix-reference
         - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
