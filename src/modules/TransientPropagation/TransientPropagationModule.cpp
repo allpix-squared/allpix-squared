@@ -51,12 +51,14 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<double>("auger_coeff", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
     matrix_ = config_.get<XYVectorInt>("induction_matrix");
+    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
         throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
@@ -265,9 +267,19 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
     auto survival_probability = survival(random_generator_);
 
     auto carrier_alive = [&](double doping_concentration, double time) -> bool {
-        auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                        (1 + std::fabs(doping_concentration) /
-                                 (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+        auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                            (1 + std::fabs(doping_concentration) /
+                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+
+        // auger lifetime model
+        auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
+
+        // combine the two
+        auto lifetime = lifetime_srh;
+        if(lifetime_auger != 0.0) {
+            lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
+        }
+
         return survival_probability > (1 - std::exp(-1 * time / lifetime));
     };
 
