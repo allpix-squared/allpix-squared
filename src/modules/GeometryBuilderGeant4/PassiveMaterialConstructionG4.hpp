@@ -10,13 +10,11 @@
 #ifndef ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
 #define ALLPIX_MODULE_PASSIVE_MATERIAL_CONSTRUCTION_H
 
-#include <memory>
-#include <utility>
 #include <vector>
 
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "core/config/Configuration.hpp"
+#include <G4LogicalVolume.hh>
+#include <G4Material.hh>
+
 #include "core/geometry/GeometryManager.hpp"
 
 #include "PassiveMaterialModel.hpp"

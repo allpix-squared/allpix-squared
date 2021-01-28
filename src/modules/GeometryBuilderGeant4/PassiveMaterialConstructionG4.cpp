@@ -9,30 +9,7 @@
  */
 
 #include "PassiveMaterialConstructionG4.hpp"
-#include <functional>
-#include <memory>
-#include <string>
-#include <utility>
-
-#include <Math/RotationX.h>
-#include <Math/RotationY.h>
-#include <Math/RotationZ.h>
-#include <Math/RotationZYX.h>
-#include <Math/Vector3D.h>
-
-#include <G4LogicalVolume.hh>
-#include <G4LogicalVolumeStore.hh>
-#include <G4PVPlacement.hh>
-#include <G4RotationMatrix.hh>
-#include <G4ThreeVector.hh>
-#include <G4VisAttributes.hh>
-
-#include "Passive_Material_Models/BoxModel.hpp"
-#include "Passive_Material_Models/CylinderModel.hpp"
-#include "Passive_Material_Models/SphereModel.hpp"
 #include "core/module/exceptions.h"
-#include "tools/ROOT.h"
-#include "tools/geant4.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
