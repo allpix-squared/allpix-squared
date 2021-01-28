@@ -48,16 +48,6 @@ GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Con
 }
 
 /**
- * @brief Version of std::make_shared that does not delete the pointer
- *
- * This version is needed because some pointers are deleted by Geant4 internally, but they are stored as std::shared_ptr in
- * the framework.
- */
-template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
-    return std::shared_ptr<T>(new T(args...), [](T*) {});
-}
-
-/**
  * First initializes all the materials. Then constructs the world from the internally calculated world size with a certain
  * margin. Finally builds all the individual detectors.
  */
