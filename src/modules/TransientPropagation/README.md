@@ -24,7 +24,7 @@ and multiplying it with the charge. The resulting pulses are stored for every se
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
-If a doping profile has been added, the charge carrier lifetime is simulated using the Shockley-Read-Hall and Auger recombination models. 
+If a doping profile has been added, the charge carrier lifetime is simulated using the Shockley-Read-Hall [@fossum-lee] [@fossum] and Auger recombination models [@haug]. 
 In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
 
 ### Parameters
