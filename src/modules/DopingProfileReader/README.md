@@ -16,8 +16,6 @@ The following models for the doping profile can be used:
 * `model` : Type of the weighting potential model, either **constant**, **regions**  or **mesh**.
 * `file_name` : Location of file containing the doping profile in one of the supported field file formats. 
 Only used if the *model* parameter has the value **mesh**.
-* `doping_depth` : Thickness of the doping region.
-Only used if the *model* parameter has the value **mesh**.
 * `field_scale` :  Scale of the doping profile in x- and y-direction. 
 Only used if the *model* parameter has the value **mesh**.
 * `field_offset` : Offset of the doping file from the pixel edge in x- and y-direction. 
