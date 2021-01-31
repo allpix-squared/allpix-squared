@@ -28,7 +28,14 @@ namespace allpix {
     class ThreadPool {
     public:
         /**
-         * @brief Internal thread-safe queue
+         * @brief Internal thread-safe queuing system
+         *
+         * It internally consists of two separate queues
+         * - A standard queue pushed in order of events to process
+         * - An ordered priority queue for work that need linear processing
+         *
+         * The priority queue is popped if the top of the queue can be directly processed. Otherwise work is popped from the
+         * default queue unless the priority queue size is too large.
          */
         template <typename T> class SafeQueue {
         public:
@@ -43,35 +50,42 @@ namespace allpix {
             ~SafeQueue();
 
             /**
-             * @brief Get the top value in the safe queue
+             * @brief Get the top value from the appropriate queue
              * @param out Reference where the value at the top of the queue will be written to
-             * @param wait If the method should wait for new tasks or should exit (defaults to wait)
              * @param func Optional function to execute before releasing the queue mutex if pop was successful
              * @return True if a task was acquired or false if pop was exited for another reason
              */
-            bool pop(T& out, bool wait = true, const std::function<void()>& func = nullptr);
+            bool pop(T& out, const std::function<void()>& func = nullptr);
 
             /**
-             * @brief Push a new value onto the safe queue
+             * @brief Push a new value onto the standard queue, will block if queue is full
              * @param value Value to push to the queue
+             * @return If the push was stalled because it needed to wait for capacity
              */
-            void push(T value);
+            bool push(T value);
+            /**
+             * @brief Push a new value onto the priority queue
+             * @param Ordering identifier (event number) for the priority
+             * @param value Value to push to the queue
+             * @return If the push was stalled because it needed to wait for capacity
+             */
+            bool push(unsigned int n, T value);
 
             /**
-             * @brief Return if the queue is in a valid state
+             * @brief Return if the queue system in a valid state
              * @return True if the queue is valid, false if \ref SafeQueue::invalidate has been called
              */
             bool isValid() const;
 
             /**
-             * @brief Return if the queue is empty or not
-             * @return True if the queue is empty, false otherwise
+             * @brief Return if all related queues are empty or not
+             * @return True if queues are empty, false otherwise
              */
             bool empty() const;
 
             /**
-             * @brief Return size of internal queue
-             * @return Size of the size of the internal queue
+             * @brief Return total size of events stored in both queues
+             * @return Size of of the internal queues
              */
             size_t size() const;
 
@@ -84,6 +98,8 @@ namespace allpix {
             std::atomic_bool valid_{true};
             mutable std::mutex mutex_;
             std::queue<T> queue_;
+            std::atomic_uint current_id_;
+            std::priority_queue<std::pair<unsigned int, T>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
             const unsigned int max_size_;

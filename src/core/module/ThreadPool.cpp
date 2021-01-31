@@ -73,7 +73,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         while(!done_) {
             Task task{nullptr};
 
-            if(queue_.pop(task, true, increase_run_cnt_func)) {
+            if(queue_.pop(task, increase_run_cnt_func)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions

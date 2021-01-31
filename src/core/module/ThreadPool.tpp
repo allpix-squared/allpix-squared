@@ -8,6 +8,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <cassert>
+
 namespace allpix {
     template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
 
@@ -16,21 +18,40 @@ namespace allpix {
     /*
      * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
      */
-    template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, bool wait, const std::function<void()>& func) {
+    template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, const std::function<void()>& func) {
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
-        if(queue_.empty() && wait) {
-            // Wait for new item in the queue (unlocks the mutex while waiting)
-            pop_condition_.wait(lock, [this]() { return !queue_.empty() || !valid_; });
-        }
-        // Check for empty and valid queue
-        if(queue_.empty() || !valid_) {
+        if(!valid_) {
             return false;
         }
 
-        // Pop the queue and optionally execute the mutex protected function
-        out = std::move(queue_.front());
-        queue_.pop();
+        unsigned int buffer = 0; // TODO: add as param
+        assert(buffer <= max_size_);
+
+        // Wait for one of the queues to be available
+        bool pop_priority = !priority_queue_.empty() && priority_queue_.top().first == current_id_;
+        bool pop_standard = !queue_.empty() && priority_queue_.size() + buffer < max_size_;
+        while(!pop_priority && !pop_standard) {
+            // Wait for new item in the queue (unlocks the mutex while waiting)
+            pop_condition_.wait(lock);
+            if(!valid_) {
+                return false;
+            }
+            pop_priority = !priority_queue_.empty() && priority_queue_.top().first == current_id_;
+            pop_standard = !queue_.empty() && priority_queue_.size() + buffer < max_size_;
+        }
+
+        // Pop the appropriate queue
+        if(pop_priority) {
+            out = std::move(queue_.front());
+            queue_.pop();
+        } else { // pop_standard
+            // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
+            out = std::move(const_cast<std::pair<unsigned int, T>&>(priority_queue_.top())).second; // NOLINT
+            priority_queue_.pop();
+        }
+
+        // Optionally execute the mutex protected function
         if(func != nullptr) {
             func();
         }
@@ -41,23 +62,50 @@ namespace allpix {
         return true;
     }
 
-    template <typename T> void ThreadPool::SafeQueue<T>::push(T value) {
+    template <typename T> bool ThreadPool::SafeQueue<T>::push(T value) {
+        bool wait = false;
+        // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
 
         // Check if the queue reached its full size
         if(queue_.size() >= max_size_) {
             // Wait until the queue is below the max size or it was invalidated(shutdown)
+            wait = true;
             push_condition_.wait(lock, [this]() { return queue_.size() < max_size_ || !valid_; });
         }
 
         // Abort the push operation if conditions not met
         if(queue_.size() >= max_size_ || !valid_) {
-            return;
+            return wait;
         }
 
         // Push a new element to the queue and notify possible consumer
         queue_.push(std::move(value));
         pop_condition_.notify_one();
+        return wait;
+    }
+
+    template <typename T> bool ThreadPool::SafeQueue<T>::push(unsigned int n, T value) {
+        bool wait = false;
+        // Lock the mutex
+        std::unique_lock<std::mutex> lock{mutex_};
+
+        // Check if the queue reached its full size
+        if(priority_queue_.size() >= max_size_) {
+            // Wait until the queue is below the max size or it was invalidated(shutdown)
+            wait = true;
+            push_condition_.wait(lock, [this]() { return priority_queue_.size() < max_size_ || !valid_; });
+        }
+
+        // Abort the push operation if conditions not met
+        if(priority_queue_.size() >= max_size_ || !valid_) {
+            return wait;
+        }
+
+        // Push a new element to the queue and notify possible consumer
+        priority_queue_.push(std::make_pair(n, std::move(value)));
+        pop_condition_.notify_one();
+        return wait;
     }
 
     template <typename T> bool ThreadPool::SafeQueue<T>::isValid() const {
