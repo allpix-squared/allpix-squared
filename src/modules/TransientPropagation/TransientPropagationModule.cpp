@@ -276,7 +276,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
 
         // combine the two
         auto lifetime = lifetime_srh;
-        if(lifetime_auger != 0.0) {
+        if(lifetime_auger > 0) {
             lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
         }
 
