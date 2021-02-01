@@ -95,6 +95,7 @@ namespace allpix {
         double hole_lifetime_reference_;
         double electron_doping_reference_;
         double hole_doping_reference_;
+        double auger_coeff_;
 
         // Output plot for drift time
         TH1D* drift_time_histo_;

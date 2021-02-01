@@ -30,6 +30,9 @@ The survival probability is calculated for the total drift time of the charge ca
 
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
+If a doping profile has been added, the charge carrier lifetime is simulated using the Shockley-Read-Hall [@fossum-lee] [@fossum] and Auger recombination models [@haug]. 
+In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
+
 ### Parameters
 * `temperature`: Temperature in the sensitive device, used to estimate the diffusion constant and therefore the width of the diffusion distribution.
 * `charge_per_step`: Maximum number of electrons placed for which the randomized diffusion is calculated together, i.e. they are placed at the same position. Defaults to 10.
@@ -47,3 +50,7 @@ temperature = 293K
 charge_per_step = 10
 output_plots = 1
 ```
+
+[@fossum] : https://doi.org/10.1016/0038-1101(76)90022-8
+[@fossum-lee] : https://doi.org/10.1016/0038-1101(82)90203-9
+[@haug] : https://doi.org/10.1016/0038-1098(78)90646-4
