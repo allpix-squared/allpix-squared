@@ -105,6 +105,7 @@ namespace allpix {
         double hole_lifetime_reference_;
         double electron_doping_reference_;
         double hole_doping_reference_;
+        double auger_coeff_;
 
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;

@@ -70,6 +70,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
+    config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
@@ -107,6 +108,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
+    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     if(!(output_animations_ || output_linegraphs_)) {
@@ -710,9 +712,19 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
     auto survival_probability = survival(random_generator_);
 
     auto carrier_alive = [&](double doping_concentration, double time) -> bool {
-        auto lifetime = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                        (1 + std::fabs(doping_concentration) /
-                                 (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+        auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                            (1 + std::fabs(doping_concentration) /
+                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+
+        // auger lifetime model
+        auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
+
+        // combine the two
+        auto lifetime = lifetime_srh;
+        if(lifetime_auger > 0) {
+            lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
+        }
+
         return survival_probability > (1 - std::exp(-1 * time / lifetime));
     };
 

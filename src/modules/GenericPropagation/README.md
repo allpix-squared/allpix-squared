@@ -23,12 +23,22 @@ $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
 using the carrier mobility $`\mu`$, the temperature $`T`$ and the time step $`t`$. The propagation stops when the set of charges reaches any surface of the sensor.
 
-Charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
-The life time is then calculated using the relation [@fossum-lee]
+The charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read_Hall relation [@fossum-lee]
 
-$`\tau = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+$`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
 
 where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+
+$`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
+
+where $`C_{a}`$ is the Auger coefficient. 
+The effective life time is then given by
+
+$`\tau^{-1} = \tau_{srh}^{-1} + \ta_{a}^{-1}`$.
+
+In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
 The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
 
 The propagation module also produces a variety of output plots. These include a 3D line plot of the path of all separately propagated charge carrier sets from their point of deposition to the end of their drift, with nearby paths having different colors. In this coloring scheme, electrons are marked in blue colors, while holes are presented in different shades of orange.
@@ -50,6 +60,7 @@ This module requires an installation of Eigen3.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
+* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$. 
 
 ### Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
@@ -81,3 +92,4 @@ charge_per_step = 25
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
 [@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
+[@haug] : https://doi.org/10.1016/0038-1098(78)90646-4
