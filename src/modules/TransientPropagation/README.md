@@ -49,8 +49,8 @@ timestep = 0.02ns
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
-[@fossum] : https://doi.org/10.1016/0038-1101(76)90022-8
-[@fossum-lee] : https://doi.org/10.1016/0038-1101(82)90203-9
-[@haug] : https://doi.org/10.1016/0038-1098(78)90646-4
+[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
+[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
+[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757

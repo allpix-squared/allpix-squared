@@ -24,7 +24,7 @@ $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 using the carrier mobility $`\mu`$, the temperature $`T`$ and the time step $`t`$. The propagation stops when the set of charges reaches any surface of the sensor.
 
 The charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
-The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read_Hall relation [@fossum-lee]
+The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall relation [@fossum-lee]
 
 $`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
 
@@ -36,7 +36,7 @@ $`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
 where $`C_{a}`$ is the Auger coefficient. 
 The effective life time is then given by
 
-$`\tau^{-1} = \tau_{srh}^{-1} + \ta_{a}^{-1}`$.
+$`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
 
 In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
 The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
@@ -92,4 +92,4 @@ charge_per_step = 25
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
 [@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
-[@haug] : https://doi.org/10.1016/0038-1098(78)90646-4
+[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4
