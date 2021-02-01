@@ -137,6 +137,23 @@ namespace allpix {
         // TODO [doc] the module itself is missing
         explicit EndOfRunException(std::string reason) { error_message_ = std::move(reason); }
     };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Exception for modules to request an interrupt because dependencies are missing
+     * @note Non-fatal error used to request the module to be rescheduled later.
+     *
+     * This error can be raised by modules if they cannot handle an event at this point in time, because earlier events have
+     * not been processed yet. The event will then be pushed on a queue to be handled when all earlier events are done
+     * processing.
+     */
+    class MissingDependenciesException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs request to interrupt event processing
+         */
+        MissingDependenciesException() {}
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_MODULE_EXCEPTIONS_H */
