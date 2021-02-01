@@ -69,7 +69,7 @@ namespace allpix {
              * @param value Value to push to the queue
              * @return If the push was stalled because it needed to wait for capacity
              */
-            bool push(unsigned int n, T value);
+            bool push(uint64_t n, T value);
 
             /**
              * @brief Return if the queue system in a valid state
@@ -99,7 +99,7 @@ namespace allpix {
             mutable std::mutex mutex_;
             std::queue<T> queue_;
             std::atomic_uint current_id_;
-            std::priority_queue<std::pair<unsigned int, T>> priority_queue_;
+            std::priority_queue<std::pair<uint64_t, T>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
             const unsigned int max_size_;
@@ -125,14 +125,16 @@ namespace allpix {
         ThreadPool& operator=(const ThreadPool& rhs) = delete;
         /// @}
 
+        template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
         /**
          * @brief Submit a job to be run by the thread pool. In case no workers, the function will be immediately executed.
+         * @param n Priority identified (event number) or UINT64_MAX for non-prioritized submission
          * @param func Function to execute by the pool
          * @param args Parameters to pass to the function
          * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
          *          there are no threads available
          */
-        template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
+        template <typename Func, typename... Args> auto submit(uint64_t n, Func&& func, Args&&... args);
 
         /**
          * @brief Return the number of enqueued events

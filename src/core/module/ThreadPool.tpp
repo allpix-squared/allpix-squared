@@ -9,6 +9,7 @@
  */
 
 #include <cassert>
+#include <climits>
 
 namespace allpix {
     template <typename T> ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_size) : max_size_(max_size) {}
@@ -43,12 +44,12 @@ namespace allpix {
 
         // Pop the appropriate queue
         if(pop_priority) {
+            // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
+            out = std::move(const_cast<std::pair<uint64_t, T>&>(priority_queue_.top())).second; // NOLINT
+            priority_queue_.pop();
+        } else { // pop_standard
             out = std::move(queue_.front());
             queue_.pop();
-        } else { // pop_standard
-            // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
-            out = std::move(const_cast<std::pair<unsigned int, T>&>(priority_queue_.top())).second; // NOLINT
-            priority_queue_.pop();
         }
 
         // Optionally execute the mutex protected function
@@ -58,7 +59,6 @@ namespace allpix {
 
         // Notify possible pusher waiting to fill the queue
         push_condition_.notify_one();
-
         return true;
     }
 
@@ -85,7 +85,7 @@ namespace allpix {
         return wait;
     }
 
-    template <typename T> bool ThreadPool::SafeQueue<T>::push(unsigned int n, T value) {
+    template <typename T> bool ThreadPool::SafeQueue<T>::push(uint64_t n, T value) {
         bool wait = false;
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
@@ -136,6 +136,10 @@ namespace allpix {
     }
 
     template <typename Func, typename... Args> auto ThreadPool::submit(Func&& func, Args&&... args) {
+        return submit(UINT64_MAX, std::forward<Func>(func), std::forward<Args>(args)...);
+    }
+
+    template <typename Func, typename... Args> auto ThreadPool::submit(uint64_t n, Func&& func, Args&&... args) {
         // Bind the arguments to the tasks
         auto bound_task = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
 
@@ -152,7 +156,11 @@ namespace allpix {
         if(threads_.empty()) {
             task_function();
         } else {
-            queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+            if(n == UINT_MAX) {
+                queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+            } else {
+                queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+            }
         }
         return future;
     }
