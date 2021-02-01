@@ -45,7 +45,7 @@ namespace allpix {
         // Pop the appropriate queue
         if(pop_priority) {
             // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
-            out = std::move(const_cast<std::pair<uint64_t, T>&>(priority_queue_.top())).second; // NOLINT
+            out = std::move(const_cast<PQValue&>(priority_queue_.top())).second; // NOLINT
             priority_queue_.pop();
         } else { // pop_standard
             out = std::move(queue_.front());
@@ -89,6 +89,7 @@ namespace allpix {
         bool wait = false;
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
+        assert(n >= current_id_);
 
         // Check if the queue reached its full size
         if(priority_queue_.size() >= max_size_) {
@@ -108,6 +109,22 @@ namespace allpix {
         return wait;
     }
 
+    template <typename T> void ThreadPool::SafeQueue<T>::complete(uint64_t n) {
+        std::lock_guard<std::mutex> lock{mutex_};
+        completed_ids_.insert(n);
+        auto iter = completed_ids_.begin();
+        // TODO reason about performance impact of this loop
+        while(iter != completed_ids_.end()) {
+            if(*iter != current_id_) {
+                return;
+            }
+            completed_ids_.erase(iter);
+            ++current_id_;
+            pop_condition_.notify_all();
+            ++iter;
+        }
+    }
+
     template <typename T> bool ThreadPool::SafeQueue<T>::isValid() const {
         std::lock_guard<std::mutex> lock{mutex_};
         return valid_;
@@ -115,12 +132,12 @@ namespace allpix {
 
     template <typename T> bool ThreadPool::SafeQueue<T>::empty() const {
         std::lock_guard<std::mutex> lock{mutex_};
-        return !valid_ || queue_.empty();
+        return !valid_ || (queue_.empty() && priority_queue_.empty());
     }
 
     template <typename T> size_t ThreadPool::SafeQueue<T>::size() const {
         std::lock_guard<std::mutex> lock{mutex_};
-        return queue_.size();
+        return queue_.size() + priority_queue_.size();
     }
 
     /*
@@ -129,6 +146,7 @@ namespace allpix {
      */
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
         std::lock_guard<std::mutex> lock{mutex_};
+        std::priority_queue<PQValue, std::vector<PQValue>, std::greater<PQValue>>().swap(priority_queue_);
         std::queue<T>().swap(queue_);
         valid_ = false;
         push_condition_.notify_all();
@@ -156,7 +174,7 @@ namespace allpix {
         if(threads_.empty()) {
             task_function();
         } else {
-            if(n == UINT_MAX) {
+            if(n == UINT64_MAX) {
                 queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
             } else {
                 queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)));

@@ -39,6 +39,10 @@ ThreadPool::~ThreadPool() {
     destroy();
 }
 
+void ThreadPool::markComplete(uint64_t n) {
+    queue_.complete(n);
+}
+
 size_t ThreadPool::queueSize() const {
     return queue_.size();
 }

@@ -18,6 +18,7 @@
 #include <future>
 #include <memory>
 #include <queue>
+#include <set>
 #include <thread>
 #include <utility>
 
@@ -65,11 +66,17 @@ namespace allpix {
             bool push(T value);
             /**
              * @brief Push a new value onto the priority queue
-             * @param Ordering identifier (event number) for the priority
+             * @param Ordering identifier for the priority
              * @param value Value to push to the queue
              * @return If the push was stalled because it needed to wait for capacity
              */
             bool push(uint64_t n, T value);
+
+            /**
+             * @brief Mark an identifier as complete
+             * @param n Identifier that is complete
+             */
+            void complete(uint64_t n);
 
             /**
              * @brief Return if the queue system in a valid state
@@ -98,8 +105,10 @@ namespace allpix {
             std::atomic_bool valid_{true};
             mutable std::mutex mutex_;
             std::queue<T> queue_;
-            std::atomic_uint current_id_;
-            std::priority_queue<std::pair<uint64_t, T>> priority_queue_;
+            std::set<uint64_t> completed_ids_;
+            uint64_t current_id_{0};
+            using PQValue = std::pair<uint64_t, T>;
+            std::priority_queue<PQValue, std::vector<PQValue>, std::greater<PQValue>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
             const unsigned int max_size_;
@@ -128,13 +137,19 @@ namespace allpix {
         template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
         /**
          * @brief Submit a job to be run by the thread pool. In case no workers, the function will be immediately executed.
-         * @param n Priority identified (event number) or UINT64_MAX for non-prioritized submission
+         * @param n Priority identifier or UINT64_MAX for non-prioritized submission
          * @param func Function to execute by the pool
          * @param args Parameters to pass to the function
          * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
          *          there are no threads available
          */
         template <typename Func, typename... Args> auto submit(uint64_t n, Func&& func, Args&&... args);
+
+        /**
+         * @brief Mark identifier as completed
+         * @brief n Identifier that is complete
+         */
+        void markComplete(uint64_t n);
 
         /**
          * @brief Return the number of enqueued events
