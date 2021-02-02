@@ -47,6 +47,7 @@ namespace allpix {
             // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
             out = std::move(const_cast<PQValue&>(priority_queue_.top())).second; // NOLINT
             priority_queue_.pop();
+            pop_condition_.notify_one();
         } else { // pop_standard
             out = std::move(queue_.front());
             queue_.pop();
@@ -120,7 +121,7 @@ namespace allpix {
             }
             completed_ids_.erase(iter);
             ++current_id_;
-            pop_condition_.notify_all();
+            pop_condition_.notify_one();
             ++iter;
         }
     }
