@@ -159,7 +159,7 @@ namespace allpix {
      */
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
         std::lock_guard<std::mutex> lock{mutex_};
-        std::priority_queue<PQValue, std::vector<PQValue>, std::greater<PQValue>>().swap(priority_queue_);
+        std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>>().swap(priority_queue_);
         std::queue<T>().swap(queue_);
         valid_ = false;
         push_condition_.notify_all();

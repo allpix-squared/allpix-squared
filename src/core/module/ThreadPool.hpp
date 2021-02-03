@@ -125,7 +125,7 @@ namespace allpix {
             std::set<uint64_t> completed_ids_;
             uint64_t current_id_{0};
             using PQValue = std::pair<uint64_t, T>;
-            std::priority_queue<PQValue, std::vector<PQValue>, std::greater<PQValue>> priority_queue_;
+            std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
             const unsigned int max_standard_size_;
