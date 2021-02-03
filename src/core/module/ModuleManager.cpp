@@ -603,7 +603,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     // Default to no additional thread without multithreading
     size_t threads_num = 0;
-    size_t buffer_size = 1;
+    size_t max_buffer_size = 1;
 
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
@@ -625,9 +625,12 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
-        LOG(STATUS) << "Allocating a total of " << buffer_size << " event slots for buffered modules";
-        BufferedModule::set_max_buffer_size(buffer_size);
+        // TODO Improve the name of this parameter
+        max_buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
+        if(max_buffer_size < threads_num) {
+            throw InvalidValueError(global_config, "module_buffer_depth", "module buffer depth should be larger than one");
+        }
+        LOG(STATUS) << "Allocating a total of " << max_buffer_size << " event slots for buffered modules";
     } else {
         // Issue a warning in case MT was requested but we can't actually run in MT
         if(multithreading_flag_ && !can_parallelize_) {
@@ -642,7 +645,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Book performance histograms
     if(global_config.get<bool>("performance_plots")) {
         buffer_fill_level_ = CreateHistogram<TH1D>(
-            "buffer_fill_level", "Buffer fill level;# buffered events;# events", buffer_size, 0, buffer_size);
+            "buffer_fill_level", "Buffer fill level;# buffered events;# events", max_buffer_size, 0, max_buffer_size);
         event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
         for(auto& module : modules_) {
             auto identifier = module->get_identifier().getIdentifier();
@@ -693,7 +696,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Push 128 events for each worker to maintain enough work
     auto max_queue_size = threads_num * 128;
     std::unique_ptr<ThreadPool> thread_pool =
-        std::make_unique<ThreadPool>(threads_num, max_queue_size, initialize_function, finalize_function);
+        std::make_unique<ThreadPool>(threads_num, max_queue_size, max_buffer_size, initialize_function, finalize_function);
     // Events start at one, mark zero identifier directly as completed
     thread_pool->markComplete(0);
 
@@ -730,7 +733,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
                 event->set_and_seed_random_engine(&random_engine);
             } else {
-                LOG(ERROR) << "Continue with earlier event, restoring random seed";
+                LOG(TRACE) << "Continue with earlier event, restoring random seed";
                 event->set_and_seed_random_engine(&random_engine);
                 event->restore_random_engine_state();
             }
@@ -745,7 +748,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 if(!module->check_delegates(this->messenger_, event.get())) {
                     LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                                << ", skipping module!";
-                    module->skip_event(event->number);
                     continue;
                 }
 
@@ -788,10 +790,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 if(stop) {
-                    LOG(ERROR) << "Event " << event->number
+                    LOG(TRACE) << "Event " << event->number
                                << " was interrupted because of missing dependencies, rescheduling...";
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
-                    thread_pool->submit(event->number, event_function);
+                    auto success = thread_pool->submit(event->number, event_function, false);
+                    assert(success || !thread_pool->valid());
                     auto buffered_events = thread_pool->bufferedQueueSize();
                     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
                                                        << " of " << number_of_events << " events";
@@ -877,12 +880,7 @@ void ModuleManager::finalize() {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Finalize module
-        if(module->is_buffered()) {
-            auto* buffered_module = static_cast<BufferedModule*>(module.get());
-            buffered_module->finalize_buffer();
-        } else {
-            module->finalize();
-        }
+        module->finalize();
         // Remove the pointer to the ROOT directory after finalizing
         module->set_ROOT_directory(nullptr);
         // Remove the config manager

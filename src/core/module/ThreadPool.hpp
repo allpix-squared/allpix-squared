@@ -32,7 +32,7 @@ namespace allpix {
          * @brief Internal thread-safe queuing system
          *
          * It internally consists of two separate queues
-         * - A standard queue pushed in order of events to process
+         * - A standard queue pushed in order of jobs to process
          * - An ordered priority queue for work that need linear processing
          *
          * The priority queue is popped if the top of the queue can be directly processed. Otherwise work is popped from the
@@ -42,8 +42,10 @@ namespace allpix {
         public:
             /**
              * @brief Default constructor, initializes empty queue
+             * @param max_standard_size Max size of the default queue
+             * @param max_priority_size Max size of the priority queue
              */
-            explicit SafeQueue(unsigned int max_size);
+            SafeQueue(unsigned int max_standard_size, unsigned int max_priority_size);
 
             /**
              * @brief Erases the queue and release waiting threads on destruction
@@ -54,23 +56,26 @@ namespace allpix {
              * @brief Get the top value from the appropriate queue
              * @param out Reference where the value at the top of the queue will be written to
              * @param func Optional function to execute before releasing the queue mutex if pop was successful
+             * @param buffer_left Optional number of jobs that should be left in priority buffer without stall
              * @return True if a task was acquired or false if pop was exited for another reason
              */
-            bool pop(T& out, const std::function<void()>& func = nullptr);
+            bool pop(T& out, const std::function<void()>& func = nullptr, size_t buffer_left = 0);
 
             /**
              * @brief Push a new value onto the standard queue, will block if queue is full
              * @param value Value to push to the queue
-             * @return If the push was stalled because it needed to wait for capacity
+             * @param wait If the push is allowed to stall if there is no capacity
+             * @return If the push was successful
              */
-            bool push(T value);
+            bool push(T value, bool wait = true);
             /**
              * @brief Push a new value onto the priority queue
-             * @param Ordering identifier for the priority
+             * @param n Ordering identifier for the priority
              * @param value Value to push to the queue
-             * @return If the push was stalled because it needed to wait for capacity
+             * @param wait If the push is allowed to stall if there is no capacity
+             * @return If the push was succesful
              */
-            bool push(uint64_t n, T value);
+            bool push(uint64_t n, T value, bool wait = true);
 
             /**
              * @brief Mark an identifier as complete
@@ -97,13 +102,13 @@ namespace allpix {
             bool empty() const;
 
             /**
-             * @brief Return total size of events stored in both queues
+             * @brief Return total size of values stored in both queues
              * @return Size of of the internal queues
              */
             size_t size() const;
 
             /**
-             * @brief Return total size of events stored in both queues
+             * @brief Return total size of values stored in both queues
              * @return Size of of the internal queues
              */
             size_t prioritySize() const;
@@ -123,20 +128,35 @@ namespace allpix {
             std::priority_queue<PQValue, std::vector<PQValue>, std::greater<PQValue>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
-            const unsigned int max_size_;
+            const unsigned int max_standard_size_;
+            const unsigned int max_priority_size_;
         };
 
         /**
-         * @brief Construct thread pool with provided number of threads
+         * @brief Construct thread pool with provided number of threads without buffered jobs
          * @param num_threads Number of threads in the pool
-         * @param max_queue_size Maximum size of the task queue
+         * @param max_queue_size Maximum size of the standard job queue
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
          */
-        explicit ThreadPool(unsigned int num_threads,
-                            unsigned int max_queue_size,
-                            const std::function<void()>& worker_init_function = nullptr,
-                            const std::function<void()>& worker_finalize_function = nullptr);
+        ThreadPool(unsigned int num_threads,
+                   unsigned int max_queue_size,
+                   const std::function<void()>& worker_init_function = nullptr,
+                   const std::function<void()>& worker_finalize_function = nullptr);
+
+        /**
+         * @brief Construct thread pool with provided number of threads with buffered jobs
+         * @param num_threads Number of threads in the pool
+         * @param max_queue_size Maximum size of the standard job queue
+         * @param max_buffered_size Maximum size of the buffered job queue (should be at least number of threads)
+         * @param worker_init_function Function run by all the workers to initialize
+         * @param worker_finalize_function Function run by all the workers to cleanup
+         */
+        ThreadPool(unsigned int num_threads,
+                   unsigned int max_queue_size,
+                   unsigned int max_buffered_size,
+                   const std::function<void()>& worker_init_function = nullptr,
+                   const std::function<void()>& worker_finalize_function = nullptr);
 
         /// @{
         /**
@@ -146,9 +166,20 @@ namespace allpix {
         ThreadPool& operator=(const ThreadPool& rhs) = delete;
         /// @}
 
+        /**
+         * @brief Submit a standard job to be run by the thread pool. In case of no workers, the function will be immediately
+         * executed.
+         * @param n Priority identifier or UINT64_MAX for non-prioritized submission
+         * @param func Function to execute by the pool
+         * @param args Parameters to pass to the function
+         * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
+         *          there are no threads available
+         */
         template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
         /**
-         * @brief Submit a job to be run by the thread pool. In case no workers, the function will be immediately executed.
+         * @brief Submit a priority job to be run by the thread pool. In case no workers, the function will be immediately
+         * executed.
+         * @warning This function can only be called if thread pool was initialized with buffered jobs
          * @param n Priority identifier or UINT64_MAX for non-prioritized submission
          * @param func Function to execute by the pool
          * @param args Parameters to pass to the function
@@ -170,14 +201,14 @@ namespace allpix {
         uint64_t minimumUncompleted() const;
 
         /**
-         * @brief Return the total number of enqueued events
-         * @return The number of enqueued events
+         * @brief Return the total number of enqueued jobs
+         * @return The number of enqueued jobs
          */
         size_t queueSize() const;
 
         /**
-         * @brief Return the number of events
-         * @return The number of enqueued events in the normal queue
+         * @brief Return the number of jobs in buffered priority queue
+         * @return The number of enqueued jobs in the buffered queue
          */
         size_t bufferedQueueSize() const;
 
@@ -198,6 +229,11 @@ namespace allpix {
         void destroy();
 
         /**
+         * @brief Returns if the threadpool is in a valid state (has not been invalidated).
+         */
+        bool valid();
+
+        /**
          * @brief Destroy and wait for all threads to finish on destruction
          */
         ~ThreadPool();
@@ -205,14 +241,18 @@ namespace allpix {
     private:
         /**
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
+         * @param num_threads Total number of active threads
          * @param init_function Function to initialize the thread
          * @param init_function Function to finalize the thread
          */
-        void worker(const std::function<void()>& init_function, const std::function<void()>& finalize_function);
+        void worker(size_t num_threads,
+                    const std::function<void()>& init_function,
+                    const std::function<void()>& finalize_function);
 
         // The queue holds the task functions to be executed by the workers
         using Task = std::unique_ptr<std::packaged_task<void()>>;
         SafeQueue<Task> queue_;
+        bool with_buffered_{true};
 
         std::atomic_bool done_{false};
 

@@ -273,73 +273,11 @@ namespace allpix {
         explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
 
-    protected:
-        /**
-         * @brief Finalize the module after the event sequence
-         */
-        virtual void finalize_buffer();
-
-        /**
-         * @brief Run the event in the order of increasing event number
-         * @param event The event to run
-         * @return number of events currently in the buffer
-         *
-         * Execute the event if it is in the correct order, otherwise buffer the event and execute it later
-         */
-        virtual size_t run_in_order(std::shared_ptr<Event> event);
-
     private:
-        /**
-         * @brief Returns the next event number to run
-         * @param event Current event number to check from
-         * @return Event number for next event to run
-         */
-        uint64_t get_next_event(uint64_t);
-
-        /**
-         * @brief Inform the module that a certain event will be skipped
-         * @param event Number of event skipped
-         */
-        void skip_event(uint64_t) override;
-
-        /**
-         * @brief Flush the buffered events
-         */
-        void flush_buffered_events();
-
         /**
          * @brief Checks if object is instance of BufferedModule class
          */
         bool is_buffered() const override { return true; }
-
-        // The buffer that holds out of order events
-        std::map<uint64_t, std::shared_ptr<Event>> buffered_events_;
-
-        // Mutex used to guard access to \ref buffered_events_
-        std::mutex buffer_mutex_;
-
-        // Mutex used to allow only one thread to run the writer module
-        std::mutex writer_mutex_;
-
-        std::condition_variable cond_var_;
-
-        // Set of event numbers that was skipped because not all messages were present
-        std::set<uint64_t> skipped_events_;
-
-        // Mutex to guard access to \ref skipped_events_mutex_
-        std::mutex skipped_events_mutex_;
-
-        // The expected in order event to write
-        std::atomic_uint64_t next_event_to_write_{1};
-
-        // Maximum buffer size for storing events
-        static size_t max_buffer_size_;
-
-        /**
-         * @brief Sets the buffer size.
-         * @param size The new buffer size
-         */
-        static void set_max_buffer_size(size_t size) { max_buffer_size_ = size; }
     };
 
 } // namespace allpix

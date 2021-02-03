@@ -20,11 +20,21 @@ ThreadPool::ThreadPool(unsigned int num_threads,
                        unsigned int max_queue_size,
                        const std::function<void()>& worker_init_function,
                        const std::function<void()>& worker_finalize_function)
-    : queue_(max_queue_size) {
+    : ThreadPool(num_threads, max_queue_size, 0, worker_init_function, worker_finalize_function) {
+    with_buffered_ = false;
+}
+
+ThreadPool::ThreadPool(unsigned int num_threads,
+                       unsigned int max_queue_size,
+                       unsigned int max_buffered_size,
+                       const std::function<void()>& worker_init_function,
+                       const std::function<void()>& worker_finalize_function)
+    : queue_(max_queue_size, max_buffered_size) {
+    assert(max_buffered_size == 0 || max_buffered_size >= num_threads);
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
-            threads_.emplace_back(&ThreadPool::worker, this, worker_init_function, worker_finalize_function);
+            threads_.emplace_back(&ThreadPool::worker, this, num_threads, worker_init_function, worker_finalize_function);
         }
     } catch(...) {
         destroy();
@@ -71,7 +81,9 @@ void ThreadPool::wait() {
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */
-void ThreadPool::worker(const std::function<void()>& initialize_function, const std::function<void()>& finalize_function) {
+void ThreadPool::worker(size_t num_threads,
+                        const std::function<void()>& initialize_function,
+                        const std::function<void()>& finalize_function) {
     try {
         // Initialize the worker
         if(initialize_function) {
@@ -84,7 +96,7 @@ void ThreadPool::worker(const std::function<void()>& initialize_function, const 
         while(!done_) {
             Task task{nullptr};
 
-            if(queue_.pop(task, increase_run_cnt_func)) {
+            if(queue_.pop(task, increase_run_cnt_func, num_threads)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
@@ -122,4 +134,8 @@ void ThreadPool::destroy() {
             thread.join();
         }
     }
+}
+
+bool ThreadPool::valid() {
+    return done_;
 }
