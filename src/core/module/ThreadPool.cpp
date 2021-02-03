@@ -43,8 +43,15 @@ void ThreadPool::markComplete(uint64_t n) {
     queue_.complete(n);
 }
 
+uint64_t ThreadPool::minimumUncompleted() const {
+    return queue_.currentId();
+}
+
 size_t ThreadPool::queueSize() const {
     return queue_.size();
+}
+size_t ThreadPool::bufferedQueueSize() const {
+    return queue_.prioritySize();
 }
 
 void ThreadPool::checkException() {

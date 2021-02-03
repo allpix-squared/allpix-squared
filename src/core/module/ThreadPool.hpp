@@ -79,6 +79,12 @@ namespace allpix {
             void complete(uint64_t n);
 
             /**
+             * @brief Get current identifier (last uncompleted)
+             * @return Current identifier
+             */
+            uint64_t currentId() const;
+
+            /**
              * @brief Return if the queue system in a valid state
              * @return True if the queue is valid, false if \ref SafeQueue::invalidate has been called
              */
@@ -95,6 +101,12 @@ namespace allpix {
              * @return Size of of the internal queues
              */
             size_t size() const;
+
+            /**
+             * @brief Return total size of events stored in both queues
+             * @return Size of of the internal queues
+             */
+            size_t prioritySize() const;
 
             /**
              * @brief Invalidate the queue
@@ -147,15 +159,27 @@ namespace allpix {
 
         /**
          * @brief Mark identifier as completed
-         * @brief n Identifier that is complete
+         * @param n Identifier that is complete
          */
         void markComplete(uint64_t n);
 
         /**
-         * @brief Return the number of enqueued events
+         * @brief Get the lowest ID that is not completely processed yet.
+         * @return n Identifier that is not yet completed
+         */
+        uint64_t minimumUncompleted() const;
+
+        /**
+         * @brief Return the total number of enqueued events
          * @return The number of enqueued events
          */
         size_t queueSize() const;
+
+        /**
+         * @brief Return the number of events
+         * @return The number of enqueued events in the normal queue
+         */
+        size_t bufferedQueueSize() const;
 
         /**
          * @brief Check if any worker thread has thrown an exception

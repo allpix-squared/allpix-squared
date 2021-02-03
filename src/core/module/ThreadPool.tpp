@@ -126,6 +126,11 @@ namespace allpix {
         }
     }
 
+    template <typename T> uint64_t ThreadPool::SafeQueue<T>::currentId() const {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return current_id_;
+    }
+
     template <typename T> bool ThreadPool::SafeQueue<T>::isValid() const {
         std::lock_guard<std::mutex> lock{mutex_};
         return valid_;
@@ -139,6 +144,11 @@ namespace allpix {
     template <typename T> size_t ThreadPool::SafeQueue<T>::size() const {
         std::lock_guard<std::mutex> lock{mutex_};
         return queue_.size() + priority_queue_.size();
+    }
+
+    template <typename T> size_t ThreadPool::SafeQueue<T>::prioritySize() const {
+        std::lock_guard<std::mutex> lock{mutex_};
+        return priority_queue_.size();
     }
 
     /*

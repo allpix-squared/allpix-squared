@@ -701,7 +701,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
-    std::atomic<uint64_t> dispatched_events{0};
+    std::atomic<uint64_t> finished_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
     for(uint64_t i = 1; i <= number_of_events; i++) {
@@ -709,7 +709,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
             thread_pool->destroy();
-            global_config.set<uint64_t>("number_of_events", dispatched_events);
+            global_config.set<uint64_t>("number_of_events", finished_events);
             break;
         }
 
@@ -717,8 +717,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         uint64_t seed = seeder();
 
         auto event_function_with_module =
-            [this, plot, number_of_events, event_num = i, event_seed = seed, &dispatched_events, &thread_pool](
-                std::shared_ptr<Event> event, ModuleList::iterator module_iter, auto&& self_func) mutable -> void {
+            [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &thread_pool](
+                std::shared_ptr<Event> event,
+                ModuleList::iterator module_iter,
+                long double event_time,
+                auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -727,13 +730,10 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
                 event->set_and_seed_random_engine(&random_engine);
             } else {
-                LOG(TRACE) << "Continue with earlier event - restoring random seed" << std::endl;
+                LOG(ERROR) << "Continue with earlier event, restoring random seed";
                 event->set_and_seed_random_engine(&random_engine);
                 event->restore_random_engine_state();
             }
-
-            long double event_time = 0;
-            size_t buffered_events = 0;
 
             while(module_iter != modules_.end()) {
                 auto module = *module_iter;
@@ -757,20 +757,15 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     module->get_identifier().getUniqueName(), module->get_configuration(), "R:", event->number);
 
                 // Run module
+                bool stop = false;
                 try {
-                    if(module->is_buffered()) {
-                        auto* buffered_module = static_cast<BufferedModule*>(module.get());
-                        buffered_events += buffered_module->run_in_order(event);
+                    if(module->is_buffered() && event_num != thread_pool->minimumUncompleted()) {
+                        stop = true;
                     } else {
                         module->run(event.get());
                     }
                 } catch(const MissingDependenciesException& e) {
-                    // TODO Fix event plotting
-                    LOG(TRACE) << "Event " << event->number
-                               << " was interrupted, because of missing dependencies, rescheduling...";
-                    auto event_function = std::bind(self_func, event, module_iter, self_func);
-                    thread_pool->submit(event->number, event_function);
-                    return;
+                    stop = true;
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
                     LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -792,24 +787,36 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
                 }
 
+                if(stop) {
+                    LOG(ERROR) << "Event " << event->number
+                               << " was interrupted because of missing dependencies, rescheduling...";
+                    auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
+                    thread_pool->submit(event->number, event_function);
+                    auto buffered_events = thread_pool->bufferedQueueSize();
+                    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
+                                                       << " of " << number_of_events << " events";
+                    return;
+                }
+
                 ++module_iter;
             }
 
             // All modules finished, mark as complete
             thread_pool->markComplete(event->number);
 
+            auto buffered_events = thread_pool->bufferedQueueSize();
             if(plot) {
                 this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
                 event_time_->Fill(static_cast<double>(event_time));
             }
 
-            dispatched_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP")
-                << "Buffered " << buffered_events << ", finished " << (dispatched_events - buffered_events) << " of "
-                << number_of_events << " events";
+            finished_events++;
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
+                                               << " of " << number_of_events << " events";
         };
 
-        auto event_function = std::bind(event_function_with_module, nullptr, modules_.begin(), event_function_with_module);
+        auto event_function =
+            std::bind(event_function_with_module, nullptr, modules_.begin(), 0, event_function_with_module);
 
         thread_pool->submit(event_function);
         thread_pool->checkException();
@@ -823,7 +830,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Check exception for last events
     thread_pool->checkException();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << dispatched_events << " events";
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
