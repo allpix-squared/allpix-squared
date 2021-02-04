@@ -748,6 +748,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 if(!module->check_delegates(this->messenger_, event.get())) {
                     LOG(TRACE) << "Not all required messages are received for " << module->get_identifier().getUniqueName()
                                << ", skipping module!";
+                    ++module_iter;
                     continue;
                 }
 
