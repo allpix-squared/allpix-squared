@@ -73,7 +73,7 @@ namespace allpix {
              * @param n Ordering identifier for the priority
              * @param value Value to push to the queue
              * @param wait If the push is allowed to stall if there is no capacity
-             * @return If the push was succesful
+             * @return If the push was successful
              */
             bool push(uint64_t n, T value, bool wait = true);
 
