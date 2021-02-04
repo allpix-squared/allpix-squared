@@ -121,10 +121,9 @@ namespace allpix {
             if(*iter != current_id_) {
                 return;
             }
-            completed_ids_.erase(iter);
+            iter = completed_ids_.erase(iter);
             ++current_id_;
             pop_condition_.notify_one();
-            ++iter;
         }
     }
 
