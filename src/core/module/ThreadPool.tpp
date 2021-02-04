@@ -190,16 +190,21 @@ namespace allpix {
             task();
             future.get();
         };
+        bool success = true;
         if(threads_.empty()) {
             task_function();
         } else {
             if(n == UINT64_MAX) {
-                queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+                success = queue_.push(std::make_unique<std::packaged_task<void()>>(std::move(task_function)), true);
             } else {
-                queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)));
+                success = queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)), false);
             }
         }
-        return future;
+        if(success) {
+            return future;
+        } else {
+            return decltype(future)();
+        }
     }
 
 } // namespace allpix

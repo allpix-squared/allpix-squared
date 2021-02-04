@@ -796,8 +796,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     LOG(TRACE) << "Event " << event->number
                                << " was interrupted because of missing dependencies, rescheduling...";
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
-                    auto success = thread_pool->submit(event->number, event_function, false);
-                    assert(success || !thread_pool->valid());
+                    auto future = thread_pool->submit(event->number, event_function, false);
+                    assert(future.valid() || !thread_pool->valid());
                     auto buffered_events = thread_pool->bufferedQueueSize();
                     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
                                                        << " of " << number_of_events << " events";
@@ -825,7 +825,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         auto event_function =
             std::bind(event_function_with_module, nullptr, modules_.begin(), 0, event_function_with_module);
 
-        thread_pool->submit(event_function);
+        auto future = thread_pool->submit(event_function);
+        assert(future.valid() || !thread_pool->valid());
         thread_pool->checkException();
     }
 
