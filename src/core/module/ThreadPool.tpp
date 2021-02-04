@@ -21,6 +21,8 @@ namespace allpix {
     /*
      * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
      */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
     template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, const std::function<void()>& func, size_t buffer_left) {
         assert(buffer_left <= max_priority_size_);
         // Lock the mutex
@@ -62,6 +64,7 @@ namespace allpix {
         push_condition_.notify_one();
         return true;
     }
+#pragma GCC diagnostic pop
 
     template <typename T> bool ThreadPool::SafeQueue<T>::push(T value, bool wait) {
         // Lock the mutex
@@ -87,6 +90,8 @@ namespace allpix {
         return true;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
     template <typename T> bool ThreadPool::SafeQueue<T>::push(uint64_t n, T value, bool wait) {
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
@@ -107,10 +112,11 @@ namespace allpix {
         }
 
         // Push a new element to the queue and notify possible consumer
-        priority_queue_.push(std::make_pair(n, std::move(value)));
+        priority_queue_.emplace(n, std::move(value));
         pop_condition_.notify_one();
         return true;
     }
+#pragma GCC diagnostic pop
 
     template <typename T> void ThreadPool::SafeQueue<T>::complete(uint64_t n) {
         std::lock_guard<std::mutex> lock{mutex_};

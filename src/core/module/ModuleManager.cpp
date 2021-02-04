@@ -719,6 +719,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Get a new seed for the new event
         uint64_t seed = seeder();
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
         auto event_function_with_module =
             [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &thread_pool](
                 std::shared_ptr<Event> event,
@@ -804,6 +806,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 ++module_iter;
             }
+#pragma GCC diagnostic pop
 
             // All modules finished, mark as complete
             thread_pool->markComplete(event->number);

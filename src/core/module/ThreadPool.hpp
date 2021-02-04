@@ -128,8 +128,8 @@ namespace allpix {
             std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>> priority_queue_;
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
-            const unsigned int max_standard_size_;
-            const unsigned int max_priority_size_;
+            const size_t max_standard_size_;
+            const size_t max_priority_size_;
         };
 
         /**
