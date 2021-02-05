@@ -307,13 +307,9 @@ FieldType Detector::getDopingProfileType() const {
 void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> sizes,
                                     std::array<double, 2> scales,
-                                    std::array<double, 2> offset) {
-    doping_profile_.setGrid(std::move(field),
-                            sizes,
-                            scales,
-                            offset,
-                            {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0,
-                             model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0});
+                                    std::array<double, 2> offset,
+                                    std::pair<double, double> thickness_domain) {
+    doping_profile_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
 }
 
 void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {

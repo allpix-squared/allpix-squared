@@ -25,6 +25,15 @@ void DopingProfileReaderModule::init() {
     // Check field strength
     auto field_model = config_.get<std::string>("model");
 
+    // set depth of doping profile
+    auto model = detector_->getModel();
+    auto depletion_depth = config_.get<double>("depletion_depth", model->getSensorSize().z());
+    if(depletion_depth - model->getSensorSize().z() > 1e-9) {
+        throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
+    }
+    auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+    auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
+
     // Calculate the field depending on the configuration
     if(field_model == "mesh") {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
@@ -45,7 +54,8 @@ void DopingProfileReaderModule::init() {
         std::array<double, 2> field_offset{{offset.x(), offset.y()}};
 
         auto field_data = read_field(field_scale);
-        detector_->setDopingProfileGrid(field_data.getData(), field_data.getDimensions(), field_scale, field_offset);
+        detector_->setDopingProfileGrid(
+            field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
 
     } else if(field_model == "constant") {
         LOG(TRACE) << "Adding constant doping concentration";
