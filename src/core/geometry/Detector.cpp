@@ -288,7 +288,8 @@ bool Detector::hasDopingProfile() const {
  * stage). Outside of the sensor the doping profile is strictly zero by definition.
  */
 double Detector::getDopingProfile(const ROOT::Math::XYZPoint& pos) const {
-    return doping_profile_.get(pos);
+    // Extrapolate doping profile if outside defined field:
+    return doping_profile_.get(pos, true);
 }
 
 /**
