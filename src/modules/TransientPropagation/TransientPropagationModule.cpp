@@ -274,12 +274,11 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
         // auger lifetime model
         auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
 
-        auto minorityType = doping_concentration > 0;
-        auto carrierType = (type == CarrierType::ELECTRON ? 0 : 1);
+        auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
 
         // combine the two
         auto lifetime = lifetime_srh;
-        if(lifetime_auger > 0 && minorityType == carrierType) {
+        if(minorityType == type) {
             lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
         }
 
