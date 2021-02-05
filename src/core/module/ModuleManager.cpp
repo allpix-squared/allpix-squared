@@ -626,9 +626,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
         // Adjust the modules buffer size according to the number of threads used
         // TODO Improve the name of this parameter
-        max_buffer_size = global_config.get<size_t>("module_buffer_depth", 128) * threads_num;
+        max_buffer_size = global_config.get<size_t>("buffer_per_worker", 128) * threads_num;
         if(max_buffer_size < threads_num) {
-            throw InvalidValueError(global_config, "module_buffer_depth", "module buffer depth should be larger than one");
+            throw InvalidValueError(global_config, "buffer_per_worker", "module buffer depth should be larger than one");
         }
         LOG(STATUS) << "Allocating a total of " << max_buffer_size << " event slots for buffered modules";
     } else {
