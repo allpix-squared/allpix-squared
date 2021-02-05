@@ -27,12 +27,12 @@ void DopingProfileReaderModule::init() {
 
     // set depth of doping profile
     auto model = detector_->getModel();
-    auto depletion_depth = config_.get<double>("depletion_depth", model->getSensorSize().z());
-    if(depletion_depth - model->getSensorSize().z() > 1e-9) {
-        throw InvalidValueError(config_, "depletion_depth", "depletion depth can not be larger than the sensor thickness");
+    auto doping_depth = config_.get<double>("doping_depth", model->getSensorSize().z());
+    if(doping_depth - model->getSensorSize().z() > 1e-9) {
+        throw InvalidValueError(config_, "doping_depth", "doping depth can not be larger than the sensor thickness");
     }
     auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
-    auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
+    auto thickness_domain = std::make_pair(sensor_max_z - doping_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
     if(field_model == "mesh") {
