@@ -21,6 +21,7 @@ Depending on the parameter `diffuse_deposit`, deposited charge carriers in a sen
 Charge carriers diffusing into the electric field will be placed at the border between the undepleted and the depleted regions with the corresponding offset in time and then be propagated to the sensor surface.
 
 Charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+This module only supports doping profiles of type **constant**. 
 The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall relation [@fossum-lee]
 
 $`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
@@ -35,7 +36,8 @@ The effective life time is then given by
 
 $`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
 
-The survival probability is calculated for the total drift time of the charge carrier by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the previously estimated drift time.
+The survival probability is calculated for the total drift time of the charge carrier by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the previously estimated drift time. 
+Since charge carriers are projected to the sensor surface instead of propagated, only a single survival probability for each charge carrier is calculated. 
 
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
