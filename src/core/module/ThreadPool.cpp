@@ -137,5 +137,5 @@ void ThreadPool::destroy() {
 }
 
 bool ThreadPool::valid() {
-    return done_;
+    return queue_.valid() && !done_;
 }

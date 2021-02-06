@@ -93,7 +93,7 @@ namespace allpix {
              * @brief Return if the queue system in a valid state
              * @return True if the queue is valid, false if \ref SafeQueue::invalidate has been called
              */
-            bool isValid() const;
+            bool valid() const;
 
             /**
              * @brief Return if all related queues are empty or not

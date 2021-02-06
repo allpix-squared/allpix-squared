@@ -138,7 +138,7 @@ namespace allpix {
         return current_id_;
     }
 
-    template <typename T> bool ThreadPool::SafeQueue<T>::isValid() const {
+    template <typename T> bool ThreadPool::SafeQueue<T>::valid() const {
         std::lock_guard<std::mutex> lock{mutex_};
         return valid_;
     }
