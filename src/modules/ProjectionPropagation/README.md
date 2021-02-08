@@ -37,7 +37,7 @@ The effective life time is then given by
 $`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
 
 The survival probability is calculated for the total drift time of the charge carrier by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the previously estimated drift time. 
-Since charge carriers are projected to the sensor surface instead of propagated, only a single survival probability for each charge carrier is calculated. 
+Since charge carriers are projected to the sensor surface, only a single survival probability for each charge carrier is calculated. 
 
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
