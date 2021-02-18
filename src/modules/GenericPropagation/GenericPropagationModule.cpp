@@ -588,11 +588,12 @@ void GenericPropagationModule::initialize() {
                                                      0,
                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
         if(enable_multiplication_) {
-            gain_histo_ = CreateHistogram<TH1D>("gain_histo",
-                                                "Gain per charge carrier group after propagation;gain;number of groups transported",
-                                                500,
-                                                1,
-                                                25);
+            gain_histo_ =
+                CreateHistogram<TH1D>("gain_histo",
+                                      "Gain per charge carrier group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
         }
     }
 
@@ -793,16 +794,16 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     auto carrier_multiplication = [&](double efield_mag, double step_length) -> double {
         
         // experimental parameters from van Overstraeten – de Man model
-        double a_n_low = 7.03e4;        // in mm^-1
-        double a_n_high = 7.03e4;       // in mm^-1
-        double a_p_low = 1.582e5;       // in mm^-1
-        double a_p_high = 6.71e4;       // in mm^-1
-        double b_n_low = 1.231e-1;       // in MV mm^-1
-        double b_n_high = 1.231e-1;      // in MV mm^-1
-        double b_p_low = 2.036e-1;       // in MV mm^-1
-        double b_p_high = 1.693e-1;      // in MV mm^-1
-        double e_zero = 4.0e-2;          // in MV mm^-1
-        
+        double a_n_low = 7.03e4;    // in mm^-1
+        double a_n_high = 7.03e4;   // in mm^-1
+        double a_p_low = 1.582e5;   // in mm^-1
+        double a_p_high = 6.71e4;   // in mm^-1
+        double b_n_low = 1.231e-1;  // in MV mm^-1
+        double b_n_high = 1.231e-1; // in MV mm^-1
+        double b_p_low = 2.036e-1;  // in MV mm^-1
+        double b_p_high = 1.693e-1; // in MV mm^-1
+        double e_zero = 4.0e-2;     // in MV mm^-1
+
         // experimental parameters from Massey model
         double a_n = 4.43e4;  // in mm^-1
         double a_p = 1.13e5;  // in mm^-1
@@ -813,13 +814,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Compute the gain
         if(abs(efield_mag) > threshold_field_) {
-            
-            if (multiplication_model_ == "massey") {
-                
+
+            if(multiplication_model_ == "massey") {
+
                 // ionisation coefficient for electrons
                 double b_n = c_n + d_n * temperature_;
                 double alpha_ = a_n * std::exp(-(b_n / efield_mag));
-                
+
                 // ionisation coefficient for holes
                 double b_p = c_p + d_p * temperature_;
                 double beta_ = a_p * std::exp(-(b_p / efield_mag));
@@ -827,26 +828,28 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 LOG(TRACE) << "Massey gain " << g << " for field " << abs(efield_mag);
                 return g;
             }
-            
-            else if (multiplication_model_ == "overstraeten") {
-                
-	            // ionisation coefficient for electrons
-                if (std::abs(efield_mag) > e_zero) {
-                    double alpha_ = gamma_Overstraeten_ * a_n_high * std::exp( - (gamma_Overstraeten_ * b_n_high / efield_mag));
-                    double beta_ = gamma_Overstraeten_ * a_p_high * std::exp( - (gamma_Overstraeten_ * b_p_high / efield_mag));
+
+            else if(multiplication_model_ == "overstraeten") {
+
+                // ionisation coefficient for electrons
+                if(std::abs(efield_mag) > e_zero) {
+                    double alpha_ =
+                        gamma_Overstraeten_ * a_n_high * std::exp(-(gamma_Overstraeten_ * b_n_high / efield_mag));
+                    double beta_ = gamma_Overstraeten_ * a_p_high * std::exp(-(gamma_Overstraeten_ * b_p_high / efield_mag));
                     return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
                 }
-                
+
                 // ionisation coefficient for holes
                 else {
-                    double alpha_ = gamma_Overstraeten_ * a_n_low * std::exp( - (gamma_Overstraeten_ * b_n_low / efield_mag));
-                    double beta_ = gamma_Overstraeten_ * a_p_low * std::exp( - (gamma_Overstraeten_ * b_p_low / efield_mag));
+                    double alpha_ = gamma_Overstraeten_ * a_n_low * std::exp(-(gamma_Overstraeten_ * b_n_low / efield_mag));
+                    double beta_ = gamma_Overstraeten_ * a_p_low * std::exp(-(gamma_Overstraeten_ * b_p_low / efield_mag));
                     return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
                 }
             }
-            
+
             else {
-                throw ModuleError("Charge multiplication is enabled but no valid model is set. Possible values are 'massey' and 'overstraeten'.");
+                throw ModuleError("Charge multiplication is enabled but no valid model is set. Possible values are 'massey' "
+                                  "and 'overstraeten'.");
             }
         } else {
             return 1.0;
@@ -968,7 +971,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double step_length = step.value.norm();
 
         // Apply multiplication step, fully deterministic from local efield and step length
-        if (enable_multiplication_){
+        if(enable_multiplication_) {
             gain *= carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
         }
 
