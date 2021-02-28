@@ -198,13 +198,11 @@ namespace allpix {
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
             // Store the message and mark as processed
-            std::lock_guard<std::mutex> lock{mutex_};
             messages_.push_back(msg);
         }
 
     private:
         std::vector<std::shared_ptr<BaseMessage>> messages_;
-        std::mutex mutex_;
     };
 
     /**
@@ -236,7 +234,6 @@ namespace allpix {
             assert(typeid(*inst) == typeid(R));
 #endif
             // Filter the message, and store it if it should be kept
-            std::lock_guard<std::mutex> lock{mutex_};
             if((this->obj_->*filter_)(std::static_pointer_cast<R>(msg))) {
                 dest.filter_multi.emplace_back(std::static_pointer_cast<R>(msg), "");
             }
@@ -244,7 +241,6 @@ namespace allpix {
 
     private:
         FilterFunction filter_;
-        std::mutex mutex_;
     };
 
     /**
@@ -272,7 +268,6 @@ namespace allpix {
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string name, DelegateTypes& dest) override {
             // Filter the message, and store it if it should be kept
-            std::lock_guard<std::mutex> lock{mutex_};
             if((this->obj_->*filter_)(std::static_pointer_cast<BaseMessage>(msg), name)) {
                 dest.filter_multi.emplace_back(std::static_pointer_cast<BaseMessage>(msg), name);
             }
@@ -280,7 +275,6 @@ namespace allpix {
 
     private:
         FilterFunction filter_;
-        std::mutex mutex_;
     };
 
     /**
@@ -319,9 +313,6 @@ namespace allpix {
             // Save the message
             dest.single = std::static_pointer_cast<R>(msg);
         }
-
-    private:
-        std::mutex mutex_;
     };
 
     /**
