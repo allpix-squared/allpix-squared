@@ -124,17 +124,18 @@ namespace allpix {
 #pragma GCC diagnostic pop
 
     template <typename T> void ThreadPool::SafeQueue<T>::complete(uint64_t n) {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::unique_lock<std::mutex> lock{mutex_};
         completed_ids_.insert(n);
         auto iter = completed_ids_.begin();
-        // TODO reason about performance impact of this loop
         while(iter != completed_ids_.end()) {
             if(*iter != current_id_) {
                 return;
             }
             iter = completed_ids_.erase(iter);
             ++current_id_;
+            lock.unlock();
             pop_condition_.notify_one();
+            lock.lock();
         }
     }
 
