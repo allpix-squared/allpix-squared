@@ -102,7 +102,6 @@ void ThreadPool::worker(size_t num_threads,
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
-                std::lock_guard<std::mutex> lock{run_mutex_};
                 --run_cnt_;
                 run_condition_.notify_all();
             }

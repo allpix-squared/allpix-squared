@@ -49,7 +49,6 @@ namespace allpix {
             // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
             out = std::move(const_cast<PQValue&>(priority_queue_.top())).second; // NOLINT
             priority_queue_.pop();
-            pop_condition_.notify_one();
         } else { // pop_standard
             out = std::move(queue_.front());
             queue_.pop();
@@ -61,6 +60,10 @@ namespace allpix {
         }
 
         // Notify possible pusher waiting to fill the queue
+        lock.unlock();
+        if(pop_priority) {
+            pop_condition_.notify_one();
+        }
         push_condition_.notify_one();
         return true;
     }
@@ -86,6 +89,7 @@ namespace allpix {
 
         // Push a new element to the queue and notify possible consumer
         queue_.push(std::move(value));
+        lock.unlock();
         pop_condition_.notify_one();
         return true;
     }
@@ -113,6 +117,7 @@ namespace allpix {
 
         // Push a new element to the queue and notify possible consumer
         priority_queue_.emplace(n, std::move(value));
+        lock.unlock();
         pop_condition_.notify_one();
         return true;
     }
@@ -163,10 +168,11 @@ namespace allpix {
      * is invalid after calling this method and it is an error to continue using a queue after this method has been called.
      */
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
-        std::lock_guard<std::mutex> lock{mutex_};
+        std::unique_lock<std::mutex> lock{mutex_};
         std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>>().swap(priority_queue_);
         std::queue<T>().swap(queue_);
         valid_ = false;
+        lock.unlock();
         push_condition_.notify_all();
         pop_condition_.notify_all();
     }
