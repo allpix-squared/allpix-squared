@@ -10,8 +10,8 @@
 #ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 #define ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 
+#include <atomic>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -78,10 +78,8 @@ namespace allpix {
 
         std::shared_ptr<Detector> detector_;
 
-        // Statistics to compute mean position
-        ROOT::Math::XYVector total_vector_{};
-        unsigned long total_hits_{};
-        std::mutex mutex_;
+        // Statistics
+        std::atomic<unsigned long> total_hits_{};
 
         // Cut criteria for efficiency measurement:
         ROOT::Math::XYVector matching_cut_{};

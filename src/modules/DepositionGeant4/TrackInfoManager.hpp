@@ -12,7 +12,6 @@
 #define TrackInfoManager_H 1
 
 #include <map>
-#include <mutex>
 
 #include "G4Track.hh"
 #include "TrackInfoG4.hpp"

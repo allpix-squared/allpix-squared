@@ -276,8 +276,6 @@ void DetectorHistogrammerModule::run(Event* event) {
             pixel_charge->Fill(static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
 
             // Update statistics
-            std::lock_guard<std::mutex> lock(mutex_);
-            total_vector_ += pixel_idx;
             total_hits_ += 1;
         }
     }
@@ -418,8 +416,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 void DetectorHistogrammerModule::finalize() {
     // Print statistics
     if(total_hits_ != 0) {
-        LOG(INFO) << "Plotted " << total_hits_ << " hits in total, mean position is "
-                  << total_vector_ / static_cast<double>(total_hits_);
+        LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
 
     // Merge the histograms that was possibly filled in parallel
