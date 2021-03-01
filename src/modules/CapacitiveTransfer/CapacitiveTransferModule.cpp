@@ -321,10 +321,6 @@ void CapacitiveTransferModule::run(Event* event) {
                 }
 
                 // Update statistics
-                {
-                    std::lock_guard<std::mutex> lock{stats_mutex_};
-                    unique_pixels_.insert(pixel_index);
-                }
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
                 neighbour_charge =
                     static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) * ccpd_factor;
@@ -363,8 +359,7 @@ void CapacitiveTransferModule::run(Event* event) {
 
 void CapacitiveTransferModule::finalize() {
     // Print statistics
-    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
-              << " different pixels";
+    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges";
 
     if(config_.get<bool>("output_plots")) {
         if(config_.has("coupling_scan_file")) {

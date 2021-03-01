@@ -73,8 +73,6 @@ namespace allpix {
 
         // Statistical information
         std::atomic<unsigned int> total_transferred_charges_{};
-        std::set<Pixel::Index> unique_pixels_;
-        std::mutex stats_mutex_;
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;
