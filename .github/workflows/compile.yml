@@ -10,6 +10,12 @@ jobs:
       with:
         run_local_checkout: 'false'
         release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
-        setup-script: .github/workflows/init_x86_64.sh
+        #setup-script: .github/workflows/init_x86_64.sh
         run: |
-          .github/workflows/compile.sh
+          ls -la
+          mkdir build
+          cd build
+          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
+          make install
+          ninja -k0
+          ninja install
