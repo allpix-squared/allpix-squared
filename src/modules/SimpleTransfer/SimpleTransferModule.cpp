@@ -121,10 +121,6 @@ void SimpleTransferModule::run(Event* event) {
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
-        {
-            std::lock_guard<std::mutex> lock{stats_mutex_};
-            unique_pixels_.insert(pixel_index);
-        }
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
@@ -166,8 +162,7 @@ void SimpleTransferModule::run(Event* event) {
 
 void SimpleTransferModule::finalize() {
     // Print statistics
-    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
-              << " different pixels";
+    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges";
 
     if(output_plots_) {
         drift_time_histo->Write();
