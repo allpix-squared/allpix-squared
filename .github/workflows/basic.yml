@@ -1,0 +1,15 @@
+name: linux
+on: [push, pull_request]
+jobs:
+  run-lcg:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
+        run: |
+          gcc --version
+          which gcc
