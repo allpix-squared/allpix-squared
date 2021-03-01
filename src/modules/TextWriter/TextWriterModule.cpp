@@ -74,15 +74,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
         auto object_array = message->getObjectArray();
         if(!object_array.empty()) {
             const Object& first_object = object_array[0];
-            auto* cls = TClass::GetClass(typeid(first_object));
-
-            // Remove the allpix prefix
-            std::string class_name = cls->GetName();
-            std::string apx_namespace = "allpix::";
-            size_t ap_idx = class_name.find(apx_namespace);
-            if(ap_idx != std::string::npos) {
-                class_name.replace(ap_idx, apx_namespace.size(), "");
-            }
+            std::string class_name = allpix::demangle(typeid(first_object).name());
 
             // Check if this message should be kept
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||
