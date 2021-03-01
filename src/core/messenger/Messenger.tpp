@@ -47,12 +47,8 @@ namespace allpix {
 
     template <typename T>
     void Messenger::dispatchMessage(Module* module, std::shared_ptr<T> message, Event* event, const std::string& name) {
-        if(module->is_buffered()) {
-            throw InvalidModuleActionException("Can not call dispatchMessage from a BufferedModule");
-        } else {
-            auto* local_messenger = event->get_local_messenger();
-            local_messenger->dispatchMessage(module, message, name);
-        }
+        auto* local_messenger = event->get_local_messenger();
+        local_messenger->dispatchMessage(module, message, name);
     }
 
     template <typename T> std::shared_ptr<T> Messenger::fetchMessage(Module* module, Event* event) {
