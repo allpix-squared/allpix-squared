@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <atomic>
 #include <memory>
 #include <random>
 #include <string>
@@ -119,9 +120,9 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Statistical information
-        unsigned int total_propagated_charges_{};
-        unsigned int total_steps_{};
-        long double total_time_{};
+        std::atomic<unsigned int> total_propagated_charges_{};
+        std::atomic<unsigned int> total_steps_{};
+        std::atomic<long unsigned int> total_time_picoseconds_{};
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> uncertainty_histo_;

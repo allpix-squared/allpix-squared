@@ -647,12 +647,9 @@ void GenericPropagationModule::run(Event* event) {
     long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns");
-    {
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_propagated_charges_ += propagated_charges_count;
-        total_steps_ += step_count;
-        total_time_ += total_time;
-    }
+    total_propagated_charges_ += propagated_charges_count;
+    total_steps_ += step_count;
+    total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     // Create a new message with propagated charges
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
@@ -836,7 +833,8 @@ void GenericPropagationModule::finalize() {
         group_size_histo_->Write();
     }
 
-    long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
+    long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
+                               std::max(1u, static_cast<unsigned int>(total_propagated_charges_));
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
 }
