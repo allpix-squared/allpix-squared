@@ -1,7 +1,7 @@
 name: compile
 on: [push, pull_request]
 jobs:
-  cmp.gcc10:
+  cmp-gcc10:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -14,9 +14,36 @@ jobs:
         release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
         #setup-script: .github/workflows/init_x86_64.sh
         run: |
-          ls -la
           mkdir build
           cd build
           cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
           ninja -k0
           ninja install
+    - uses: actions/upload-artifact@v2
+      with:
+        name: artifact-directories
+        path: |
+          build/
+          bin/
+          lib/
+
+  test:
+    needs: cmp-gcc10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: artifact-directories
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
+        #setup-script: .github/workflows/init_x86_64.sh
+        run: |
+          chmod a+x bin/allpix
+          cd build
+          ctest -R test_core --output-on-failure -j4
