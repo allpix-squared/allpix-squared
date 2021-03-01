@@ -1,4 +1,4 @@
-name: linux
+name: lcg-test
 on: [push, pull_request]
 jobs:
   run-lcg:
