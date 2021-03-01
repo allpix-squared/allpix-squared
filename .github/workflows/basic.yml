@@ -1,7 +1,7 @@
 name: lcg-test
 on: [push, pull_request]
 jobs:
-  run-lcg:
+  test-lcg:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
