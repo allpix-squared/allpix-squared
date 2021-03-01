@@ -21,7 +21,7 @@ Only used if the *model* parameter has the value **mesh**.
 * `field_offset` : Offset of the doping file from the pixel edge in x- and y-direction. 
 Only used if the *model* parameter has the value **mesh**.
 * `doping_concentration` : Value for the doping concentration. If the *model* parameter has the value **constant** a single number should be provided. If the *model* parameter has the value **regions** a matrix is expected, which provides the sensor depth and doping concentration in each row.
-* `doping_depth` : Thickness of the doping profile region. 
+* `doping_depth` : Thickness of the doping profile region. The doping profile is extrapolated in the region below the `doping_depth`.
 Only used if the *model* parameter has the value **mesh**.
 
 ### Usage
