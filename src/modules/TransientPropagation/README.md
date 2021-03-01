@@ -24,8 +24,23 @@ and multiplying it with the charge. The resulting pulses are stored for every se
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
-If a doping profile has been added, the charge carrier lifetime is simulated using the Shockley-Read-Hall [@fossum-lee] [@fossum] and Auger recombination models [@haug]. 
+The charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall relation [@fossum-lee]
+
+$`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+
+where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+
+$`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
+
+where $`C_{a}`$ is the Auger coefficient. 
+The effective life time is then given by
+
+$`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
+
 In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
+The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
 
 ### Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
