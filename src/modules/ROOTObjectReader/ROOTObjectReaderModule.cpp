@@ -33,7 +33,7 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 }
@@ -257,8 +257,6 @@ void ROOTObjectReaderModule::init() {
 }
 
 void ROOTObjectReaderModule::run(Event* event) {
-    // We can not read multiple events at the same time so we need to synchronize access
-    std::lock_guard<std::mutex> lock{mutex_};
 
     // Beware: ROOT uses signed entry counters for its trees
     auto event_num = static_cast<int64_t>(event->number);
