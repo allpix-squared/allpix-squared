@@ -23,14 +23,14 @@ else
 fi
 
 # Determine is you have CVMFS installed
-if [ "$OS" == "mac1015" ]; then
+if [ "$OS" == mac1015 ]; then
     MAC_PREFIX="/Users/Shared"
 else
     MAC_PREFIX=""
 fi
 
 if [ ! -d "${MAC_PREFIX}/cvmfs" ]; then
-    echo "No CVMFS detected, please install it."
+    echo "No CVMFS detected, please install it. Looking at ${MAC_PREFIX}/cvmfs"
     exit 1
 fi
 

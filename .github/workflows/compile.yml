@@ -38,6 +38,8 @@ jobs:
         compiler: [gcc10, clang10]
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
     - uses: actions/download-artifact@v2
       with:
