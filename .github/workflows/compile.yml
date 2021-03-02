@@ -11,7 +11,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
+        release-platform: "LCG_98python3/x86_64-centos7-gcc10-opt"
         #setup-script: .github/workflows/init_x86_64.sh
         run: |
           mkdir build
@@ -44,7 +44,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_99/x86_64-centos7-gcc10-opt"
+        release-platform: "LCG_98python3/x86_64-centos7-gcc10-opt"
         #setup-script: .github/workflows/init_x86_64.sh
         run: |
           chmod a+x bin/allpix
