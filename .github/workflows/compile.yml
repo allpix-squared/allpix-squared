@@ -49,4 +49,4 @@ jobs:
         run: |
           chmod a+x bin/allpix
           cd build
-          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
+          ctest -R ${{matrix.whichtest}} --output-on-failure
