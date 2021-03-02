@@ -23,16 +23,22 @@ else
 fi
 
 # Determine is you have CVMFS installed
-if [ ! -d "/cvmfs" ]; then
+if [ "$OS" == "mac1015" ]; then
+    MAC_PREFIX="/Users/Shared"
+else
+    MAC_PREFIX=""
+fi
+
+if [ ! -d "${MAC_PREFIX}/cvmfs" ]; then
     echo "No CVMFS detected, please install it."
     exit 1
 fi
 
-if [ ! -d "/cvmfs/sft.cern.ch" ]; then
+if [ ! -d "${MAC_PREFIX}/cvmfs/sft.cern.ch" ]; then
     echo "No SFT CVMFS repository detected, please make sure it is available."
     exit 1
 fi
-if [ ! -d "/cvmfs/geant4.cern.ch" ]; then
+if [ ! -d "${MAC_PREFIX}/cvmfs/geant4.cern.ch" ]; then
     echo "No Geant4 CVMFS repository detected, please make sure it is available."
     exit 1
 fi
