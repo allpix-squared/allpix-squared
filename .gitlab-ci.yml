@@ -471,6 +471,8 @@ cmp:usermanual:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
     script:
+        - source .gitlab/ci/init_x86_64.sh
+        - source .gitlab/ci/load_deps.sh
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -489,8 +491,6 @@ pkg:slc6-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -500,8 +500,15 @@ pkg:cc7-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+
+pkg:cc7-llvm:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
 
 
 ############################
@@ -555,6 +562,7 @@ deploy-cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
+        - pkg:cc7-llvm
         - pkg:slc6-gcc
     tags:
         - cvmfs-deploy
