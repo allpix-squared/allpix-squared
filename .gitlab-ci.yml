@@ -510,6 +510,16 @@ pkg:cc7-llvm:
     before_script:
         - export COMPILER_TYPE="llvm"
 
+pkg:mac1015-clang:
+    extends: .pack
+    tags:
+        - mac
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
+
 
 ############################
 # Documentation Deployment #
@@ -564,6 +574,7 @@ deploy-cvmfs:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:slc6-gcc
+        - pkg:mac1015-clang
     tags:
         - cvmfs-deploy
     only:
