@@ -16,6 +16,8 @@ namespace allpix {
     Message<T>::Message(std::vector<T> data, const std::shared_ptr<const Detector>& detector)
         : BaseMessage(detector), data_(std::move(data)) {}
 
+    template <typename T> Message<T>::~Message() { skip_object_cleanup(); }
+
     template <typename T> const std::vector<T>& Message<T>::getData() const { return data_; }
 
     /**
@@ -47,4 +49,22 @@ namespace allpix {
     Message<T>::get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type*) {
         throw MessageWithoutObjectException(typeid(*this));
     }
+
+    /**
+     * Pass the data as a copy of the internal vector referencing the same data as the internal vector
+     *
+     * @warning Data through this method can only be accessed for as long as this message exists
+     */
+    template <typename T>
+    template <typename U>
+    void Message<T>::skip_object_cleanup(typename std::enable_if<std::is_base_of<Object, U>::value>::type*) {
+        auto objects = get_object_array();
+        for(auto& object : objects) {
+            // We handle cleanup of objects ourselves, we therefore can deactivate the RecursiveRemove functionality of
+            // the TObject we are referencing. Otherwise this calls locks in ROOT to clean up the hash table - and stalls
+            // our threads.
+            object.get().ResetBit(kMustCleanup);
+        }
+    }
+
 } // namespace allpix
