@@ -101,12 +101,15 @@ jobs:
       with:
         run_local_checkout: 'false'
         release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
-        #setup-script: .github/workflows/init_x86_64.sh
         run: |
-          pwd
-          ls -ltrh
-          ls -ltrh .github
-          ls -ltrh .github/workflows
+          echo "-- ls -la ."
+          ls -la .
+          echo "-- ls -la .github"
+          ls -la .github
+          echo "-- ls -la .github/workflows"
+          ls -la .github/workflows
+          echo "-- source .github/workflows/init_x86_64.sh"
+          source .github/workflows/init_x86_64.sh
           chmod a+x bin/allpix
           cd build
           ctest -R ${{matrix.whichtest}} --output-on-failure -j4
