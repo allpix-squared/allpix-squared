@@ -20,6 +20,7 @@
 #include <Math/EulerAngles.h>
 #include <Math/PositionVector2D.h>
 #include <Math/PositionVector3D.h>
+#include <TProcessID.h>
 #include <TString.h>
 
 #include <ROOT/TThreadedObject.hxx>
@@ -194,6 +195,19 @@ namespace allpix {
     }
 
     template <class T> using Histogram = std::unique_ptr<ThreadedHistogram<T>>;
+
+    /**
+     * @brief Lock for TProcessID simultaneous action
+     */
+    inline std::unique_lock<std::mutex> root_process_lock() {
+        static std::mutex process_id_mutex;
+        auto pids = TProcessID::GetPIDs();
+        for(int i = 0; i < pids->GetEntries(); ++i) {
+            auto pid_ptr = static_cast<TProcessID*>((*pids)[i]);
+            pid_ptr->Clear();
+        }
+        return std::unique_lock<std::mutex>(process_id_mutex);
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_ROOT_H */

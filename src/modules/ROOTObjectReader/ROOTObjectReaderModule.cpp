@@ -28,7 +28,7 @@
 #include "objects/Object.hpp"
 #include "objects/objects.h"
 
-#include "core/utils/type.h"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -257,6 +257,7 @@ void ROOTObjectReaderModule::init() {
 }
 
 void ROOTObjectReaderModule::run(Event* event) {
+    auto root_lock = root_process_lock();
 
     // Beware: ROOT uses signed entry counters for its trees
     auto event_num = static_cast<int64_t>(event->number);

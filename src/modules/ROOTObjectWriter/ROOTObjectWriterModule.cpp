@@ -25,6 +25,8 @@
 #include "objects/Object.hpp"
 #include "objects/objects.h"
 
+#include "tools/ROOT.h"
+
 using namespace allpix;
 
 ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
@@ -106,6 +108,8 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 }
 
 void ROOTObjectWriterModule::run(Event* event) {
+    auto root_lock = root_process_lock();
+
     auto messages = messenger_->fetchFilteredMessages(this, event);
 
     // Generate trees and index data
