@@ -123,7 +123,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 8); // NOLINT
+        ClassDefOverride(MCParticle, 9); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -135,6 +135,7 @@ namespace allpix {
          */
         void print(std::ostream& out) const override;
 
+        void loadHistory() override;
         void petrifyHistory() override;
 
     private:

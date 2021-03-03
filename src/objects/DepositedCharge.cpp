@@ -46,6 +46,9 @@ void DepositedCharge::print(std::ostream& out) const {
     SensorCharge::print(out);
 }
 
+void DepositedCharge::loadHistory() {
+    mc_particle_.get();
+}
 void DepositedCharge::petrifyHistory() {
     mc_particle_.store();
 }

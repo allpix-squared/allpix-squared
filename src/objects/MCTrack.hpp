@@ -129,12 +129,13 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 3); // NOLINT
+        ClassDefOverride(MCTrack, 4); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         MCTrack() = default;
 
+        void loadHistory() override;
         void petrifyHistory() override;
 
     private:

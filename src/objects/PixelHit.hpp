@@ -96,12 +96,13 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 5); // NOLINT
+        ClassDefOverride(PixelHit, 6); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         PixelHit() = default;
 
+        void loadHistory() override;
         void petrifyHistory() override;
 
     private:

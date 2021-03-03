@@ -60,8 +60,15 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(Object, 3); // NOLINT
+        ClassDefOverride(Object, 4); // NOLINT
 
+        /**
+         * @brief Resolve all the history to standard pointers
+         */
+        virtual void loadHistory() = 0;
+        /**
+         * @brief Petrify all the pointers to prepare for persistent storage
+         */
         virtual void petrifyHistory() = 0;
 
     protected:

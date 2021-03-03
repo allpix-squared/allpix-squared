@@ -64,12 +64,13 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(DepositedCharge, 3); // NOLINT
+        ClassDefOverride(DepositedCharge, 4); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         DepositedCharge() = default;
 
+        void loadHistory() override;
         void petrifyHistory() override;
 
     private:

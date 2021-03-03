@@ -112,12 +112,13 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelCharge, 8); // NOLINT
+        ClassDefOverride(PixelCharge, 9); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         PixelCharge() = default;
 
+        void loadHistory() override;
         void petrifyHistory() override;
 
     private:
