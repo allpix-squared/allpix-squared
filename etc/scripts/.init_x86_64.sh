@@ -85,7 +85,7 @@ if [ -z ${BUILD_TYPE} ]; then
 fi
 
 # General variables
-SFTREPO=/cvmfs/sft.cern.ch
+SFTREPO=${MAC_PREFIX}/cvmfs/sft.cern.ch
 export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
@@ -96,6 +96,9 @@ source $ROOTSYS/bin/thisroot.sh
 cd $G4INSTALL/bin/
 source geant4.sh
 cd -
+
+export LCG_VIEW=${SFTREPO}/lcg/views/${ALLPIX_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
+source ${LCG_VIEW} || echo "yes"
 
 # Fix LCIO path for LCG_96, cmake configs are not properly placed:
 export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))

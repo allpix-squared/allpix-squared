@@ -10,5 +10,5 @@ ABSOLUTE_PATH=`dirname $(readlink -f ${BASH_SOURCE[0]})`
 export COMPILER_TYPE="llvm"
 
 # Load default configuration
-source $ABSOLUTE_PATH/../../.gitlab/ci/init_x86_64.sh
+source $ABSOLUTE_PATH/../../etc/scripts/.init_x86_64.sh
 
