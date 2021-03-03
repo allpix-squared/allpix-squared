@@ -102,6 +102,7 @@ jobs:
         run_local_checkout: 'false'
         release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
         run: |
+          chmod -R a+x .github
           echo "-- ls -la ."
           ls -la .
           echo "-- ls -la .github"

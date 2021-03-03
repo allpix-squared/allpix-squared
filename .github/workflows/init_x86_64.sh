@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Determine which OS you are using
-if [ "$(uname)" == "Linux" ]; then
+if [ "$(uname)" = "Linux" ]; then
     if [ "$( cat /etc/*-release | grep Scientific )" ]; then
         OS=slc6
     elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
@@ -10,8 +10,8 @@ if [ "$(uname)" == "Linux" ]; then
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
     fi
-elif [ "$(uname)" == "Darwin" ]; then
-    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') == "10.15" ]; then
+elif [ "$(uname)" = "Darwin" ]; then
+    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') = "10.15" ]; then
         OS=mac1015
     else
         echo "Bootstrap only works on macOS Catalina (10.15)"
@@ -23,7 +23,7 @@ else
 fi
 
 # Determine is you have CVMFS installed
-if [ "$OS" == mac1015 ]; then
+if [ "$OS" = mac1015 ]; then
     MAC_PREFIX="/Users/Shared"
 else
     MAC_PREFIX=""
@@ -54,7 +54,7 @@ fi
 
 # Determine which compiler to use
 if [ -z ${COMPILER_TYPE} ]; then
-    if [ "$(uname)" == "Darwin" ]; then
+    if [ "$(uname)" = "Darwin" ]; then
         COMPILER_TYPE="llvm"
         echo "No compiler type set, falling back to AppleClang."
     else
@@ -62,16 +62,16 @@ if [ -z ${COMPILER_TYPE} ]; then
         COMPILER_TYPE="gcc"
     fi
 fi
-if [ ${COMPILER_TYPE} == "gcc" ]; then
-    if [ ${OS} == "slc6" ]; then
+if [ ${COMPILER_TYPE} = "gcc" ]; then
+    if [ ${OS} = "slc6" ]; then
         COMPILER_VERSION="gcc8"
     else
         COMPILER_VERSION="gcc10"
     fi
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
-if [ ${COMPILER_TYPE} == "llvm" ]; then
-    if [ "$(uname)" == "Darwin" ]; then
+if [ ${COMPILER_TYPE} = "llvm" ]; then
+    if [ "$(uname)" = "Darwin" ]; then
         COMPILER_VERSION="clang110"
     else
         COMPILER_VERSION="clang10"
