@@ -75,6 +75,7 @@ namespace allpix {
             std::vector<Object*>* objects;
             std::shared_ptr<Detector> detector;
             std::string name;
+            std::shared_ptr<BaseMessage> message;
         };
 
         // Object names to include or exclude from reading

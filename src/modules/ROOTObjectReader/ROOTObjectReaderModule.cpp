@@ -271,8 +271,8 @@ void ROOTObjectReaderModule::run(Event* event) {
     }
     LOG(TRACE) << "Building messages from stored objects";
 
-    // Loop through all branches
-    for(const auto& message_inf : message_info_array_) {
+    // Loop through all branches to construct messages
+    for(auto& message_inf : message_info_array_) {
         auto* objects = message_inf.objects;
 
         // Skip empty objects in current event
@@ -293,10 +293,19 @@ void ROOTObjectReaderModule::run(Event* event) {
         read_cnt_ += objects->size();
 
         // Create a message
-        std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
+        message_inf.message = iter->second(*objects, message_inf.detector);
+    }
 
-        // Dispatch the message
-        messenger_->dispatchMessage(this, message, event, message_inf.name);
+    // Resolve history
+    for(const auto& message_inf : message_info_array_) {
+        for(auto& object : message_inf.message->getObjectArray()) {
+            object.get().loadHistory();
+        }
+    }
+
+    // Dispatch the messages
+    for(const auto& message_inf : message_info_array_) {
+        messenger_->dispatchMessage(this, message_inf.message, event, message_inf.name);
     }
 }
 
