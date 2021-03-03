@@ -51,7 +51,7 @@ jobs:
         run: |
           chmod a+x bin/allpix
           cd build
-          ctest -R ${{matrix.whichtest}} --output-on-failure
+          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
 
 
   compile-mac:
@@ -109,7 +109,7 @@ jobs:
           ls -ltrh .github/workflows
           chmod a+x bin/allpix
           cd build
-          ctest -R ${{matrix.whichtest}} --output-on-failure
+          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
 
 
   format:
