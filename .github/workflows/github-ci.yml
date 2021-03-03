@@ -115,6 +115,23 @@ jobs:
           cd build
           ctest -R ${{matrix.whichtest}} --output-on-failure -j4
 
+  lcg-mac:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+      with:
+        cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
+        run: |
+          echo "-- source .github/workflows/init_x86_64.sh"
+          source .github/workflows/init_x86_64.sh
+
 
   format:
     runs-on: ubuntu-latest

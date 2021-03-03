@@ -93,7 +93,9 @@ export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 #--------------------------------------------------------------------------------
 
 source $ROOTSYS/bin/thisroot.sh
-source $G4INSTALL/bin/geant4.sh
+cd $G4INSTALL/bin/
+source geant4.sh
+cd -
 
 # Fix LCIO path for LCG_96, cmake configs are not properly placed:
 export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))
