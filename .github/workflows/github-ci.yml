@@ -1,5 +1,7 @@
 name: github-ci
 on: [push, pull_request]
+env:
+  LCG_VERSION: LCG_98python3
 jobs:
   compile-centos7:
     strategy:
@@ -14,7 +16,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-centos7-${{matrix.compiler}}-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
         run: |
           mkdir build
           cd build
@@ -47,7 +49,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-centos7-${{matrix.compiler}}-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
         run: |
           chmod a+x bin/allpix
           cd build
@@ -66,7 +68,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
         run: |
           mkdir build
           cd build
@@ -100,7 +102,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
         run: |
           chmod -R a+x .github
           echo "-- ls -la ."
@@ -127,7 +129,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-mac1015-clang110-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
         run: |
           echo "-- source etc/scripts/.init_x86_64.sh"
           source etc/scripts/.init_x86_64.sh
@@ -143,7 +145,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "LCG_98python3/x86_64-centos7-clang10-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang10-opt"
         run: |
           mkdir build
           cd build
