@@ -95,7 +95,7 @@ export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 export LCG_VIEW=${SFTREPO}/lcg/views/${ALLPIX_LCG_VERSION}/${BUILD_FLAVOUR}/setup.sh
 source ${LCG_VIEW} || echo "yes"
 
-if [ -n "${CI}" ] && [ "$(uname)" == "Darwin" ]; then
+if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
     source $ROOTSYS/bin/thisroot.sh
     cd $G4INSTALL/bin/
     source geant4.sh
