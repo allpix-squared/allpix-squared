@@ -90,7 +90,7 @@ namespace allpix {
         /**
          * @brief Destructs messages, skipping optional cleanup of objects
          */
-        ~Message();
+        ~Message() override;
 
         /**
          * @brief Get a reference to the data in this message
