@@ -201,12 +201,15 @@ namespace allpix {
      */
     inline std::unique_lock<std::mutex> root_process_lock() {
         static std::mutex process_id_mutex;
+        std::unique_lock<std::mutex> lock(process_id_mutex);
+
         auto pids = TProcessID::GetPIDs();
         for(int i = 0; i < pids->GetEntries(); ++i) {
             auto pid_ptr = static_cast<TProcessID*>((*pids)[i]);
             pid_ptr->Clear();
         }
-        return std::unique_lock<std::mutex>(process_id_mutex);
+
+        return lock;
     }
 } // namespace allpix
 
