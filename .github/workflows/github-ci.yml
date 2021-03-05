@@ -1,0 +1,136 @@
+name: github-ci
+on:
+  pull_request:
+    types: [opened, reopened, edited, ready_for_review]
+env:
+  LCG_VERSION: LCG_98python3
+jobs:
+  compile-centos7:
+    strategy:
+      matrix:
+        compiler: [gcc10, clang10]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
+          ninja -k0
+          ninja install
+    - uses: actions/upload-artifact@v2
+      with:
+        name: allpix-artifacts-centos7-${{matrix.compiler}}
+        path: |
+          build/
+          bin/
+          lib/
+
+  test-centos7:
+    needs: compile-centos7
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        whichtest: [test_core, test_modules, examples]
+        compiler: [gcc10, clang10]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: allpix-artifacts-centos7-${{matrix.compiler}}
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
+        run: |
+          chmod a+x bin/allpix
+          cd build
+          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
+
+  compile-mac:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+      with:
+        cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
+          ninja -k0
+          ninja install
+    - uses: actions/upload-artifact@v2
+      with:
+        name: allpix-artifacts-mac
+        path: |
+          build/
+          bin/
+          lib/
+
+  test-mac:
+    needs: compile-mac
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        whichtest: [test_core, test_modules, examples]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+      with:
+        cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
+    - uses: actions/download-artifact@v2
+      with:
+        name: allpix-artifacts-mac
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
+        run: |
+          chmod -R a+x .github
+          echo "-- ls -la ."
+          ls -la .
+          echo "-- ls -la .github"
+          ls -la .github
+          echo "-- ls -la .github/workflows"
+          ls -la .github/workflows
+          echo "-- source .ci/init_x86_64.sh"
+          source .ci/init_x86_64.sh
+          chmod a+x bin/allpix
+          cd build
+          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang10-opt"
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
+          ninja check-format
