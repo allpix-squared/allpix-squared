@@ -1,5 +1,7 @@
 name: github-ci
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, reopened, edited, ready_for_review]
 env:
   LCG_VERSION: LCG_98python3
 jobs:
