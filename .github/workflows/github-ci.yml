@@ -1,5 +1,5 @@
 name: github-ci
-on: [push, pull_request]
+on: [pull_request]
 env:
   LCG_VERSION: LCG_98python3
 jobs:
