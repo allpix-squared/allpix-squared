@@ -23,10 +23,9 @@ else
 fi
 
 # Determine is you have CVMFS installed
+CVMFS_MOUNT=""
 if [ "$OS" = mac1015 ]; then
     CVMFS_MOUNT="/Users/Shared"
-else
-    CVMFS_MOUNT=""
 fi
 
 if [ ! -d "${CVMFS_MOUNT}/cvmfs" ]; then
