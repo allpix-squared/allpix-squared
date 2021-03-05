@@ -454,6 +454,7 @@ cmp:usermanual:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
     script:
+        - source .ci/init_x86_64.sh
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -472,7 +473,6 @@ pkg:slc6-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -482,7 +482,25 @@ pkg:cc7-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
+
+pkg:cc7-llvm:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
+
+pkg:mac1015-clang:
+    extends: .pack
+    tags:
+        - mac
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
 
 
 ############################
@@ -523,7 +541,9 @@ deploy-eos:
         - schedules@allpix-squared/allpix-squared
     dependencies:
         - pkg:cc7-gcc
+        - pkg:cc7-llvm
         - pkg:slc6-gcc
+        - pkg:mac1015-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
@@ -536,7 +556,9 @@ deploy-cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
+        - pkg:cc7-llvm
         - pkg:slc6-gcc
+        - pkg:mac1015-clang
     tags:
         - cvmfs-deploy
     only:
