@@ -39,7 +39,7 @@ cmp:slc6-gcc:
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
@@ -74,21 +74,21 @@ cmp:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 cmp:cc7-llvm:
     extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 cmp:mac1015-clang:
     extends: .compile
     tags:
         - mac
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
     script:
         - mkdir build
         - cd build
@@ -108,7 +108,7 @@ cmp:mac1015-clang:
         - docker
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 fmt:cc7-llvm-format:
     extends: .format
@@ -140,7 +140,7 @@ fmt:coverage:
     dependencies: []
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
         - export PATH=$PATH:/home/sftnight/.local/bin
     script:
         - pip install --trusted-host=pypi.org --user gcovr
@@ -212,7 +212,7 @@ examples:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
     script:
         - cd build/
         - ctest -R examples --output-on-failure -j4
@@ -226,7 +226,7 @@ mod:slc6-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 core:slc6-gcc:
     extends: .testcore
@@ -235,7 +235,7 @@ core:slc6-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 mod:lxplus-gcc:
     extends: .testmod
@@ -285,7 +285,7 @@ mod:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 core:cc7-gcc:
     extends: .testcore
@@ -294,7 +294,7 @@ core:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 mod:cc7-llvm:
     extends: .testmod
@@ -304,7 +304,7 @@ mod:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 core:cc7-llvm:
     extends: .testcore
@@ -314,7 +314,7 @@ core:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 
 # Mac OS X
@@ -327,7 +327,7 @@ mod:mac1015-clang:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 core:mac1015-clang:
     extends: .testcore
@@ -337,7 +337,7 @@ core:mac1015-clang:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 
 #####################
@@ -366,7 +366,7 @@ perf:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
@@ -377,7 +377,7 @@ perf:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
@@ -387,7 +387,7 @@ perf:cc7-gcc:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 
 #############################
@@ -411,7 +411,7 @@ cmp:doxygen:
     needs: []
     dependencies: []
     script:
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
@@ -472,7 +472,7 @@ pkg:slc6-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -482,7 +482,7 @@ pkg:cc7-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source etc/scripts/.init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 
 ############################

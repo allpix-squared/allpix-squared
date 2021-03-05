@@ -110,8 +110,8 @@ jobs:
           ls -la .github
           echo "-- ls -la .github/workflows"
           ls -la .github/workflows
-          echo "-- source etc/scripts/.init_x86_64.sh"
-          source etc/scripts/.init_x86_64.sh
+          echo "-- source .ci/init_x86_64.sh"
+          source .ci/init_x86_64.sh
           chmod a+x bin/allpix
           cd build
           ctest -R ${{matrix.whichtest}} --output-on-failure -j4
