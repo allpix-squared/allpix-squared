@@ -24,21 +24,21 @@ fi
 
 # Determine is you have CVMFS installed
 if [ "$OS" = mac1015 ]; then
-    MAC_PREFIX="/Users/Shared"
+    CVMFS_MOUNT="/Users/Shared"
 else
-    MAC_PREFIX=""
+    CVMFS_MOUNT=""
 fi
 
-if [ ! -d "${MAC_PREFIX}/cvmfs" ]; then
-    echo "No CVMFS detected, please install it. Looking at ${MAC_PREFIX}/cvmfs"
+if [ ! -d "${CVMFS_MOUNT}/cvmfs" ]; then
+    echo "No CVMFS detected, please install it. Looking at ${CVMFS_MOUNT}/cvmfs"
     exit 1
 fi
 
-if [ ! -d "${MAC_PREFIX}/cvmfs/sft.cern.ch" ]; then
+if [ ! -d "${CVMFS_MOUNT}/cvmfs/sft.cern.ch" ]; then
     echo "No SFT CVMFS repository detected, please make sure it is available."
     exit 1
 fi
-if [ ! -d "${MAC_PREFIX}/cvmfs/geant4.cern.ch" ]; then
+if [ ! -d "${CVMFS_MOUNT}/cvmfs/geant4.cern.ch" ]; then
     echo "No Geant4 CVMFS repository detected, please make sure it is available."
     exit 1
 fi
@@ -85,7 +85,7 @@ if [ -z ${BUILD_TYPE} ]; then
 fi
 
 # General variables
-SFTREPO=${MAC_PREFIX}/cvmfs/sft.cern.ch
+SFTREPO=${CVMFS_MOUNT}/cvmfs/sft.cern.ch
 export BUILD_FLAVOUR=x86_64-${OS}-${COMPILER_VERSION}-${BUILD_TYPE}
 
 #--------------------------------------------------------------------------------
