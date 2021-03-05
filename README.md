@@ -1,5 +1,5 @@
 [![](doc/logo_small.png)](https://cern.ch/allpix-squared)
-
+THIS IS A DUMMY MR
 # Allpix<sup>2</sup>
 ### Generic Pixel Detector Simulation Framework
 
