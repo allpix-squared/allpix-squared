@@ -423,7 +423,9 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
 
     // Read detector name
     // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
-    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, volume_->GetSize()) : volume_->GetSize());
+    // NOTE the string is a C string ending with \0, so we have to remove the last character
+    auto full_length = volume_->GetSize() - 1;
+    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, full_length) : full_length);
     volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
 
     // Read other information, interpret in framework units:
