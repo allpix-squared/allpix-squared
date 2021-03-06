@@ -297,16 +297,22 @@ void ROOTObjectReaderModule::run(Event* event) {
         message_inf.message = iter->second(*objects, message_inf.detector);
     }
 
-    // Resolve history
-    for(const auto& message_inf : message_info_array_) {
+    for(auto& message_inf : message_info_array_) {
+        // We might not have every message, so just continue
+        if(!message_inf.message) {
+            continue;
+        }
+
+        // Resolve history
         for(auto& object : message_inf.message->getObjectArray()) {
             object.get().loadHistory();
         }
-    }
 
-    // Dispatch the messages
-    for(const auto& message_inf : message_info_array_) {
+        // Dispatch the messages
         messenger_->dispatchMessage(this, message_inf.message, event, message_inf.name);
+
+        // Reset the message pointer:
+        message_inf.message.reset();
     }
 }
 
