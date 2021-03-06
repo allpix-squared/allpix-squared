@@ -31,7 +31,7 @@ namespace allpix {
      * Reads the tree of objects in the data format of the \ref ROOTObjectWriterModule. Converts all the stored objects that
      * are supported back to messages containing those objects and dispatches those messages.
      */
-    class ROOTObjectReaderModule : public BufferedModule {
+    class ROOTObjectReaderModule : public Module {
     public:
         using MessageCreatorMap =
             std::map<std::type_index,

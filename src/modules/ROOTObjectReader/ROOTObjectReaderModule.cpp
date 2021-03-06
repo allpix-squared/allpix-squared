@@ -33,7 +33,7 @@
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 }
