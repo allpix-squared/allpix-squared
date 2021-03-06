@@ -17,8 +17,8 @@
 using namespace allpix;
 
 std::map<std::thread::id, unsigned int> ThreadPool::thread_nums_;
-std::atomic_uint ThreadPool::thread_cnt_ = 1;
-std::atomic_uint ThreadPool::thread_total_ = 1;
+std::atomic_uint ThreadPool::thread_cnt_{1u};
+std::atomic_uint ThreadPool::thread_total_{1u};
 
 /**
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
