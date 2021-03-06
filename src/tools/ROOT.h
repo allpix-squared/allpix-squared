@@ -26,8 +26,11 @@
 #include <ROOT/TThreadedObject.hxx>
 #include <TH1.h>
 
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/text.h"
 #include "core/utils/type.h"
+
+#include "core/utils/log.h"
 
 namespace allpix {
     /**
@@ -156,13 +159,9 @@ namespace allpix {
      *
      * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
-    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr>
-    class ThreadedHistogram : public ROOT::TThreadedObject<T> {
+    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr> class ThreadedHistogram {
     public:
-        template <class... ARGS>
-        explicit ThreadedHistogram(ARGS&&... args) : ROOT::TThreadedObject<T>(std::forward<ARGS>(args)...) {
-            this->Get();
-        }
+        template <class... ARGS> explicit ThreadedHistogram(ARGS&&... args) { this->init(std::forward<ARGS>(args)...); }
 
         /**
          * @brief An easy way to fill a histogram
@@ -182,6 +181,64 @@ namespace allpix {
          * @brief An easy way to write a histogram
          */
         void Write() { this->Merge()->Write(); } // NOLINT
+
+        /**
+         * @brief Get the thread local instance of the histogram
+         *
+         * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
+         */
+        std::shared_ptr<T> Get() {
+            auto idx = ThreadPool::threadNum();
+            auto& object = objects_[idx];
+            if(!object) {
+                object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
+            }
+            return object;
+        }
+
+        /**
+         * @brief Merge the threaded histograms into final object
+         *
+         * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
+         */
+        std::shared_ptr<T> Merge() {
+            ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
+            if(is_merged_) {
+                return objects_[0];
+            }
+            mergeFunction(objects_[0], objects_);
+            is_merged_ = true;
+            return objects_[0];
+        }
+
+    private:
+        /**
+         * @brief Initialize the threaded histogram
+         *
+         * Based on initializtion as in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, modified to
+         * initialize based on number of preregistered threads.
+         */
+        template <class... ARGS> void init(ARGS&&... args) {
+            const auto num_slots = ThreadPool::threadCount();
+            objects_.resize(num_slots);
+
+            // create at least one directory (we need it for model), plus others as needed by the size of objects
+            directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
+            for(auto i = 1u; i < num_slots; ++i) {
+                directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
+            }
+
+            TDirectory::TContext ctxt(directories_[0]);
+            model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
+
+            // initialize at least base object
+            objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
+        }
+
+        std::unique_ptr<T> model_;
+        std::vector<std::shared_ptr<T>> objects_;
+        std::vector<TDirectory*> directories_;
+        bool is_merged_{false};
     };
 
     /**
