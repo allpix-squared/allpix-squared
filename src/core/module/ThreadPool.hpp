@@ -16,6 +16,7 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <map>
 #include <memory>
 #include <queue>
 #include <set>
@@ -138,6 +139,7 @@ namespace allpix {
          * @param max_queue_size Maximum size of the standard job queue
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
+         * @warning Total count of threads need to be preregistered via \ref ThreadPool::addThreadCount
          */
         ThreadPool(unsigned int num_threads,
                    unsigned int max_queue_size,
@@ -151,6 +153,7 @@ namespace allpix {
          * @param max_buffered_size Maximum size of the buffered job queue (should be at least number of threads)
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
+         * @warning Total count of threads need to be preregistered via \ref ThreadPool::addThreadCount
          */
         ThreadPool(unsigned int num_threads,
                    unsigned int max_queue_size,
@@ -195,7 +198,7 @@ namespace allpix {
         void markComplete(uint64_t n);
 
         /**
-         * @brief Get the lowest ID that is not completely processed yet.
+         * @brief Get the lowest ID that is not completely processed yet
          * @return n Identifier that is not yet completed
          */
         uint64_t minimumUncompleted() const;
@@ -224,12 +227,12 @@ namespace allpix {
         void wait();
 
         /**
-         * @brief Invalidate all queues and joins all running threads when the pool is destroyed.
+         * @brief Invalidate all queues and joins all running threads when the pool is destroyed
          */
         void destroy();
 
         /**
-         * @brief Returns if the threadpool is in a valid state (has not been invalidated).
+         * @brief Returns if the threadpool is in a valid state (has not been invalidated)
          */
         bool valid();
 
@@ -237,6 +240,24 @@ namespace allpix {
          * @brief Destroy and wait for all threads to finish on destruction
          */
         ~ThreadPool();
+
+        /**
+         * @brief Get the unique number of the current thread between 0 and number of threads
+         * @return Num of the current thread
+         */
+        static unsigned int threadNum();
+
+        /**
+         * @brief Get the number of thread including the main thread (thus always at least one)
+         * @return Total count of threads
+         */
+        static unsigned int threadCount();
+
+        /**
+         * @brief Add number to the total count of threads that could be used
+         * @param cnt Additional number of thread to preregister
+         */
+        static void registerThreadCount(unsigned int cnt);
 
     private:
         /**
@@ -263,6 +284,10 @@ namespace allpix {
 
         std::atomic_flag has_exception_{false};
         std::exception_ptr exception_ptr_{nullptr};
+
+        static std::map<std::thread::id, unsigned int> thread_nums_;
+        static std::atomic_uint thread_cnt_;
+        static std::atomic_uint thread_total_;
     };
 } // namespace allpix
 

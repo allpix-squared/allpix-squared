@@ -9,9 +9,16 @@
  */
 
 #include "ThreadPool.hpp"
+
+#include <cassert>
+
 #include "Module.hpp"
 
 using namespace allpix;
+
+std::map<std::thread::id, unsigned int> ThreadPool::thread_nums_;
+std::atomic_uint ThreadPool::thread_cnt_ = 1;
+std::atomic_uint ThreadPool::thread_total_ = 1;
 
 /**
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
@@ -85,6 +92,11 @@ void ThreadPool::worker(size_t num_threads,
                         const std::function<void()>& initialize_function,
                         const std::function<void()>& finalize_function) {
     try {
+        // Register the thread
+        unsigned int threadNum = thread_cnt_++;
+        assert(threadNum >= thread_total_);
+        thread_nums_[std::this_thread::get_id()] = threadNum;
+
         // Initialize the worker
         if(initialize_function) {
             initialize_function();
@@ -137,4 +149,19 @@ void ThreadPool::destroy() {
 
 bool ThreadPool::valid() {
     return queue_.valid() && !done_;
+}
+
+unsigned int ThreadPool::threadNum() {
+    auto iter = thread_nums_.find(std::this_thread::get_id());
+    if(iter != thread_nums_.end())
+        return 0;
+    return iter->second;
+}
+
+unsigned int ThreadPool::threadCount() {
+    return thread_total_;
+}
+
+void ThreadPool::registerThreadCount(unsigned int cnt) {
+    thread_total_ += cnt;
 }
