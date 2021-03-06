@@ -151,6 +151,7 @@ int main(int argc, char** argv) {
 
         // Start potential generation on many threads:
         auto num_threads = std::max(std::thread::hardware_concurrency(), 1u);
+        ThreadPool::registerThreadCount(num_threads);
         LOG(STATUS) << "Starting weighting potential generation with " << num_threads << " threads.";
         auto weighting_potential = std::make_shared<std::vector<double>>();
 

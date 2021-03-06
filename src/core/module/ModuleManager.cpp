@@ -532,6 +532,27 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat, std::string
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
 void ModuleManager::init(RandomNumberGenerator& seeder) {
+
+    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    LOG(TRACE) << "Register number of workers for possible multithreading";
+    unsigned int threads_num = 0;
+    if(multithreading_flag_ && can_parallelize_) {
+        // Try to fetch a suitable number of workers if multithreading is enabled
+        auto available_hardware_concurrency = std::thread::hardware_concurrency();
+        if(available_hardware_concurrency > 1u) {
+            // Try to be graceful and leave one core out if the number of workers was not specified
+            available_hardware_concurrency -= 1u;
+        }
+        threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
+        if(threads_num < 2) {
+            throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
+        }
+    }
+    global_config.set<size_t>("workers", threads_num);
+    if(threads_num > 0) {
+        ThreadPool::registerThreadCount(threads_num);
+    }
+
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
@@ -602,21 +623,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto plot = global_config.get<bool>("performance_plots");
 
     // Default to no additional thread without multithreading
-    size_t threads_num = 0;
+    auto threads_num = global_config.get<size_t>("workers");
     size_t max_buffer_size = 1;
 
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
-        // Try to fetch a suitable number of workers if multithreading is enabled
-        auto available_hardware_concurrency = std::thread::hardware_concurrency();
-        if(available_hardware_concurrency > 1u) {
-            // Try to be graceful and leave one core out if the number of workers was not specified
-            available_hardware_concurrency -= 1u;
-        }
-        threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
-        if(threads_num < 2) {
-            throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
-        }
         LOG(STATUS) << "Multithreading enabled, processing events in parallel on " << threads_num << " worker threads";
 
         if(threads_num > std::thread::hardware_concurrency()) {
@@ -625,10 +636,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Adjust the modules buffer size according to the number of threads used
-        // TODO Improve the name of this parameter
         max_buffer_size = global_config.get<size_t>("buffer_per_worker", 128) * threads_num;
         if(max_buffer_size < threads_num) {
-            throw InvalidValueError(global_config, "buffer_per_worker", "module buffer depth should be larger than one");
+            throw InvalidValueError(global_config, "buffer_per_worker", "buffer per worker should be larger than one");
         }
         LOG(STATUS) << "Allocating a total of " << max_buffer_size << " event slots for buffered modules";
     } else {
@@ -640,7 +650,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             LOG(STATUS) << "Multithreading disabled";
         }
     }
-    global_config.set<size_t>("workers", threads_num);
 
     // Book performance histograms
     if(global_config.get<bool>("performance_plots")) {

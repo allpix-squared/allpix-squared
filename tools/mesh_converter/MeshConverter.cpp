@@ -403,6 +403,7 @@ int main(int argc, char** argv) {
 
         // Start the interpolation on many threads:
         auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        ThreadPool::registerThreadCount(num_threads);
         LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
         std::vector<Point> e_field_new_mesh;
 
