@@ -540,7 +540,7 @@ void GenericPropagationModule::init() {
 
         group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
                                                   "Charge carrier group size;group size;number of groups transported",
-                                                  charge_per_step_ - 1,
+                                                  static_cast<int>(charge_per_step_ - 1),
                                                   1,
                                                   static_cast<double>(charge_per_step_));
     }
