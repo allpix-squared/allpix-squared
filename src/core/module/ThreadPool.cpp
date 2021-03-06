@@ -94,7 +94,7 @@ void ThreadPool::worker(size_t num_threads,
     try {
         // Register the thread
         unsigned int threadNum = thread_cnt_++;
-        assert(threadNum >= thread_total_);
+        assert(threadNum < thread_total_);
         thread_nums_[std::this_thread::get_id()] = threadNum;
 
         // Initialize the worker
