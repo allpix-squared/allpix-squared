@@ -15,6 +15,7 @@
 #ifndef ALLPIX_OBJECT_H
 #define ALLPIX_OBJECT_H
 
+#include <atomic>
 #include <iostream>
 #include <mutex>
 
@@ -98,7 +99,7 @@ namespace allpix {
              * @brief Constructor with object pointer to be wrapped
              * @param obj Pointer to object
              */
-            explicit BaseWrapper(const T* obj) : ptr_(const_cast<T*>(obj)), loaded_(true) {} // NOLINT
+            explicit BaseWrapper(const T* obj) : ptr_(const_cast<T*>(obj)) {} // NOLINT
 
             /// @{
             /**
@@ -139,17 +140,22 @@ namespace allpix {
              */
             virtual ~BaseWrapper() = default;
 
-            mutable T* ptr_{};           //! transient value
-            mutable bool loaded_{false}; //! transient value
+            mutable T* ptr_{}; //! transient value
             TRef ref_{};
         };
 
         template <class T> class PointerWrapper : public BaseWrapper<T> {
         public:
             /**
-             * @brief Using implicit and explicit constructors from base class
+             * @brief Required default constructor
              */
-            using BaseWrapper<T>::BaseWrapper; // NOLINT
+            PointerWrapper() = default;
+
+            /**
+             * @brief Constructor with object pointer to be wrapped
+             * @param obj Pointer to object
+             */
+            explicit PointerWrapper(const T* obj) : BaseWrapper<T>(obj), loaded_(true) {} // NOLINT
 
             /**
              * @brief Required virtual destructor
@@ -159,26 +165,28 @@ namespace allpix {
             /**
              * @brief Explicit copy constructor to avoid copying std::once_flag
              */
-            PointerWrapper(const PointerWrapper& rhs) : BaseWrapper<T>(rhs){};
+            PointerWrapper(const PointerWrapper& rhs) : BaseWrapper<T>(rhs), loaded_(rhs.loaded_.load()){};
 
             /**
              * @brief Explicit copy assignment operator to avoid copying std::once_flag
              */
             PointerWrapper& operator=(const PointerWrapper& rhs) {
                 BaseWrapper<T>::operator=(rhs);
+                loaded_ = rhs.loaded_.load();
                 return *this;
             };
 
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
              */
-            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(std::move(rhs)){};
+            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(rhs), loaded_(rhs.loaded_.load()){};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
              */
             PointerWrapper& operator=(PointerWrapper&& rhs) noexcept {
                 BaseWrapper<T>::operator=(std::move(rhs));
+                loaded_ = rhs.loaded_.load();
                 return *this;
             };
 
@@ -188,19 +196,20 @@ namespace allpix {
              */
             T* get() const override {
                 // Lazy loading of pointer from TRef
-                std::call_once(load_flag_, [&]() {
-                    if(!this->loaded_) {
+                if(!this->loaded_) {
+                    std::call_once(load_flag_, [&]() {
                         this->ptr_ = static_cast<T*>(this->ref_.GetObject());
                         this->loaded_ = true;
-                    }
-                });
+                    });
+                }
                 return this->ptr_;
             };
 
             ClassDefOverride(PointerWrapper, 1); // NOLINT
 
         private:
-            mutable std::once_flag load_flag_; //! transient value
+            mutable std::once_flag load_flag_;        //! transient value
+            mutable std::atomic<bool> loaded_{false}; //! transient value
         };
     };
 
