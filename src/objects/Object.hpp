@@ -179,7 +179,7 @@ namespace allpix {
             /**
              * @brief Explicit move constructor to avoid copying std::once_flag
              */
-            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(rhs), loaded_(rhs.loaded_.load()){};
+            PointerWrapper(PointerWrapper&& rhs) noexcept : BaseWrapper<T>(std::move(rhs)), loaded_(rhs.loaded_.load()){};
 
             /**
              * @brief Explicit move assignment to avoid copying std::once_flag
