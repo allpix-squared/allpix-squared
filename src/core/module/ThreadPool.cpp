@@ -153,8 +153,9 @@ bool ThreadPool::valid() {
 
 unsigned int ThreadPool::threadNum() {
     auto iter = thread_nums_.find(std::this_thread::get_id());
-    if(iter != thread_nums_.end())
+    if(iter != thread_nums_.end()) {
         return 0;
+    }
     return iter->second;
 }
 
