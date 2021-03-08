@@ -28,7 +28,7 @@ void DopingProfileReaderModule::init() {
     // set depth of doping profile
     auto model = detector_->getModel();
     auto doping_depth = config_.get<double>("doping_depth", model->getSensorSize().z());
-    if(doping_depth - model->getSensorSize().z() > 1e-9) {
+    if(doping_depth - model->getSensorSize().z() > std::numeric_limits<double>::epsilon()) {
         throw InvalidValueError(config_, "doping_depth", "doping depth can not be larger than the sensor thickness");
     }
     auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
