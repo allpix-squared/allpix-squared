@@ -5,6 +5,7 @@
 ### Description
 Adds a doping profile to the detector from one of the supported sources. By default, detectors do not have a doping profile applied.
 A doping profile is required for simulating the lifetime of charge carriers. 
+It is not used for the calculation of the electric field inside the sensor. 
 
 The following models for the doping profile can be used:
 
@@ -16,9 +17,9 @@ The following models for the doping profile can be used:
 * `model` : Type of the weighting potential model, either **constant**, **regions**  or **mesh**.
 * `file_name` : Location of file containing the doping profile in one of the supported field file formats. 
 Only used if the *model* parameter has the value **mesh**.
-* `field_scale` :  Scale of the doping profile in x- and y-direction. 
+* `field_scale` :  Scale of the doping profile in x- and y-direction in units of pixels. 
 Only used if the *model* parameter has the value **mesh**.
-* `field_offset` : Offset of the doping file from the pixel edge in x- and y-direction. 
+* `field_offset` : Offset of the doping file from the pixel edge in x- and y-direction in units of pixels. 
 Only used if the *model* parameter has the value **mesh**.
 * `doping_concentration` : Value for the doping concentration. If the *model* parameter has the value **constant** a single number should be provided. If the *model* parameter has the value **regions** a matrix is expected, which provides the sensor depth and doping concentration in each row.
 * `doping_depth` : Thickness of the doping profile region. The doping profile is extrapolated in the region below the `doping_depth`.
