@@ -208,8 +208,8 @@ namespace allpix {
             ClassDefOverride(PointerWrapper, 1); // NOLINT
 
         private:
-            mutable std::once_flag load_flag_;        //! transient value
-            mutable std::atomic<bool> loaded_{false}; //! transient value
+            mutable std::once_flag load_flag_;       //! transient value
+            mutable std::atomic_bool loaded_{false}; //! transient value
         };
     };
 
