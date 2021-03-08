@@ -242,8 +242,8 @@ namespace allpix {
         ~ThreadPool();
 
         /**
-         * @brief Get the unique number of the current thread between 0 and number of threads
-         * @return Num of the current thread
+         * @brief Get the unique number of the current thread between 0 and the total number of threads
+         * @return Number of the current thread
          */
         static unsigned int threadNum();
 
