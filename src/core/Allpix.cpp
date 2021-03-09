@@ -182,9 +182,6 @@ void Allpix::load() {
     // Required for spawned threads, even with a single worker
     ROOT::EnableThreadSafety();
 
-    // Enable implicit multithreading to force ROOT versions < 6.22 to allocate enough slots for TThreadedObjects
-    ROOT::EnableImplicitMT();
-
     // Set the default units to use
     register_units();
 
