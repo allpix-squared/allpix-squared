@@ -273,11 +273,20 @@ namespace allpix {
         explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
 
+    protected:
+        /**
+         * @brief Release strict sequence processing requirement
+         */
+        void waive_sequence_requirement();
+
     private:
         /**
-         * @brief Checks if object is instance of SequentialModule class
+         * @brief Checks if this module needs to be executed in correct event sequence
+         *
+         * @return true if strict event sequence is required and false if any processing order is valid
          */
-        bool require_sequence() const override { return true; }
+        bool require_sequence() const override { return sequence_required_; }
+        bool sequence_required_{true};
     };
 
 } // namespace allpix
