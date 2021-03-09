@@ -215,14 +215,14 @@ namespace allpix {
         /**
          * @brief Initialize the threaded histogram
          *
-         * Based on initializtion as in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, modified to
+         * Based on initialization in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, modified to
          * initialize based on number of preregistered threads.
          */
         template <class... ARGS> void init(ARGS&&... args) {
             const auto num_slots = ThreadPool::threadCount();
             objects_.resize(num_slots);
 
-            // create at least one directory (we need it for model), plus others as needed by the size of objects
+            // create at least one directory (we need it for the model), plus others as needed by the size of objects
             directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
             for(auto i = 1u; i < num_slots; ++i) {
                 directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
@@ -231,7 +231,7 @@ namespace allpix {
             TDirectory::TContext ctxt(directories_[0]);
             model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
 
-            // initialize at least base object
+            // initialize at least the base object
             objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
         }
 
