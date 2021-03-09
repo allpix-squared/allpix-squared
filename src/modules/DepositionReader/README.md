@@ -46,6 +46,8 @@ By default the expected branch names and types are:
 
 Entries are read from all branches synchronously and accumulated in the same event until the event id read from the `event` branch changes.
 
+By default, the event numbers need to be sorted with ascending order. This can be disabled by setting `require_sequential_events` to `false`. This is useful when running simulations in mutli-threading mode and merging datasets in the end. Currently only supported in ROOT files.
+
 If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`, no attempt is made in reading the respective branches, independently whether they are present or not.
 
 Different branch names can be configured using the `branch_names` parameter.

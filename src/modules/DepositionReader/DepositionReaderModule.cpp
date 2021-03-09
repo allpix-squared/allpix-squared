@@ -28,6 +28,7 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     config_.setDefault<std::string>("unit_length", "mm");
     config_.setDefault<std::string>("unit_time", "ns");
     config_.setDefault<std::string>("unit_energy", "MeV");
+    config_.setDefault<bool>("require_sequential_events", true);
     config_.setDefault<bool>("assign_timestamps", true);
     config_.setDefault<bool>("create_mcparticles", true);
 
@@ -55,6 +56,7 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     unit_time_ = config_.get<std::string>("unit_time");
     unit_energy_ = config_.get<std::string>("unit_energy");
 
+    require_sequential_events_ = config_.get<bool>("require_sequential_events");
     time_available_ = config_.get<bool>("assign_timestamps");
     create_mcparticles_ = config.get<bool>("create_mcparticles");
 }
@@ -216,6 +218,7 @@ void DepositionReaderModule::run(Event* event) {
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
     LOG(DEBUG) << "Start reading event " << event_num;
+    int64_t curr_event_id = -1;
     bool end_of_run = false;
     std::string eof_message;
 
@@ -230,7 +233,8 @@ void DepositionReaderModule::run(Event* event) {
             if(file_model_ == "csv") {
                 read_status = read_csv(event_num, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             } else if(file_model_ == "root") {
-                read_status = read_root(event_num, volume, global_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_root(
+                    event_num, curr_event_id, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             }
         } catch(EndOfRunException& e) {
             end_of_run = true;
@@ -403,6 +407,7 @@ void DepositionReaderModule::finalize() {
     }
 }
 bool DepositionReaderModule::read_root(uint64_t event_num,
+                                       int64_t& curr_event_id,
                                        std::string& volume,
                                        ROOT::Math::XYZPoint& position,
                                        double& time,
@@ -418,14 +423,31 @@ bool DepositionReaderModule::read_root(uint64_t event_num,
         throw EndOfRunException("Problem reading from tree, error: " + std::to_string(static_cast<int>(status)));
     }
 
-    // Separate individual events
-    if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
-        return false;
+    if(require_sequential_events_) {
+        // sequential read, return if eventID is larger than allpix-squared event number
+        if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
+            return false;
+        }
+    } else {
+        // non-sequential read, return if eventID changes (requires events to be in blocks)
+        if(curr_event_id == -1) {
+            // first entry in event, save eventID for later
+            curr_event_id = *event_->Get();
+            LOG(TRACE) << "Read eventID " << curr_event_id;
+        } else {
+            // check if eventID changed compared to last entry, if yes reset curr_event_id
+            if(*event_->Get() != curr_event_id) {
+                curr_event_id = -1;
+                return false;
+            }
+        }
     }
 
     // Read detector name
     // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
-    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, volume_->GetSize()) : volume_->GetSize());
+    // NOTE the string is a C string ending with \0, so we have to remove the last character
+    auto full_length = volume_->GetSize() - 1;
+    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, full_length) : full_length);
     volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
 
     // Read other information, interpret in framework units:

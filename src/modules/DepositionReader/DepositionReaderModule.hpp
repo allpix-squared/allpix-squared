@@ -94,7 +94,7 @@ namespace allpix {
         size_t volume_chars_{};
         std::string unit_length_{}, unit_time_{}, unit_energy_{};
 
-        bool create_mcparticles_{}, time_available_{};
+        bool require_sequential_events_{}, create_mcparticles_{}, time_available_{};
 
         bool read_csv(uint64_t event_num,
                       std::string& volume,
@@ -105,6 +105,7 @@ namespace allpix {
                       int& track_id,
                       int& parent_id);
         bool read_root(uint64_t event_num,
+                       int64_t& curr_event_id,
                        std::string& volume,
                        ROOT::Math::XYZPoint& position,
                        double& time,

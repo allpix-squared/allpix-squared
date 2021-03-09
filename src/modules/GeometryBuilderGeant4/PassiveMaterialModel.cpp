@@ -8,26 +8,11 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#include <memory>
 #include <string>
-#include <utility>
-
-#include <Math/RotationX.h>
-#include <Math/RotationY.h>
-#include <Math/RotationZ.h>
-#include <Math/RotationZYX.h>
-#include <Math/Vector3D.h>
-
-#include <G4Box.hh>
-#include <G4IntersectionSolid.hh>
-#include <G4Sphere.hh>
-#include <G4SubtractionSolid.hh>
-#include <G4Tubs.hh>
-#include <G4UnionSolid.hh>
-#include "G4Material.hh"
 
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
+#include <G4Material.hh>
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
@@ -38,22 +23,12 @@
 #include "tools/geant4/geant4.h"
 
 #include "PassiveMaterialModel.hpp"
-#include "Passive_Material_Models/BoxModel.hpp"
-#include "Passive_Material_Models/CylinderModel.hpp"
-#include "Passive_Material_Models/SphereModel.hpp"
+#include "passive_models/BoxModel.hpp"
+#include "passive_models/CylinderModel.hpp"
+#include "passive_models/SphereModel.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
-
-/**
- * @brief Version of std::make_shared that does not delete the pointer
- *
- * This version is needed because some pointers are deleted by Geant4 internally, but they are stored as std::shared_ptr in
- * the framework.
- */
-template <typename T, typename... Args> static std::shared_ptr<T> make_shared_no_delete(Args... args) {
-    return std::shared_ptr<T>(new T(args...), [](T*) {});
-}
 
 std::shared_ptr<PassiveMaterialModel>
 allpix::PassiveMaterialModel::factory(const std::string& type, const Configuration& config, GeometryManager* geo_manager) {
@@ -119,11 +94,7 @@ void PassiveMaterialModel::buildVolume(const std::map<std::string, G4Material*>&
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
-    auto solid = std::shared_ptr<G4VSolid>(getSolid());
-    if(solid == nullptr) {
-        throw ModuleError("Passive Material '" + getName() + "' does not have a solid associated with its model");
-    }
-    solids_.push_back(solid);
+    auto solid = getSolid();
 
     // Place the logical volume of the passive material
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(material), getName() + "_log");
