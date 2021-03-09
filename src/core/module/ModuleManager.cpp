@@ -547,6 +547,11 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
         if(threads_num < 2) {
             throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
         }
+
+        if(threads_num > std::thread::hardware_concurrency()) {
+            LOG(WARNING) << "Using more workers (" << threads_num << ") than supported concurrent threads on this system ("
+                         << std::thread::hardware_concurrency() << ") may impact simulation performance";
+        }
     }
     global_config.set<size_t>("workers", threads_num);
     if(threads_num > 0) {
@@ -629,11 +634,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // See if we can run in parallel with how many workers
     if(multithreading_flag_ && can_parallelize_) {
         LOG(STATUS) << "Multithreading enabled, processing events in parallel on " << threads_num << " worker threads";
-
-        if(threads_num > std::thread::hardware_concurrency()) {
-            LOG(WARNING) << "Using more workers (" << threads_num << ") than supported concurrent threads on this system ("
-                         << std::thread::hardware_concurrency() << ") may impact simulation performance";
-        }
 
         // Adjust the modules buffer size according to the number of threads used
         max_buffer_size = global_config.get<size_t>("buffer_per_worker", 1024) * threads_num;
