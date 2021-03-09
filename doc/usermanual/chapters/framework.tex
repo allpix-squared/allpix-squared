@@ -739,12 +739,11 @@ The \texttt{Messenger} handles communication in different events concurrently. I
 Each event has its own local messenger which stores all messages that was produced in this event.
 The \texttt{Messenger} owns the global message subscription information and internally forwards the module's requests to dispatch or fetch messages to the local messenger of the event in a thread-safe manner.
 
-\subsection{Running Events in order using BufferedModule}
-The \texttt{BufferedModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
-Inheriting from this class will allow the module to transparently check if the given event is in order and decide whether to execute it immediately or to store it in a buffer if it is out of order.
-It should be noted that such modules cannot dispatch messages to the framework.
+\subsection{Running Events in order using SequentialModule}
+The \texttt{SequentialModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
+Inheriting from this class will allow the module to transparently check if the given event is in order and decide whether to execute it immediately or to request buffering if it is out of order.
 
-Using the \texttt{BufferedModule} is suitable for I/O modules which read or write to the file system.
+Using the \texttt{SequentialModule} is suitable for I/O modules which read or write to the file system.
 It e.g.\ allows output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
 
 Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
