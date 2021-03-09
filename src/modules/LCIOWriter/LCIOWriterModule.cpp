@@ -91,7 +91,7 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
 }
 
 LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo)
-    : BufferedModule(config), messenger_(messenger), geo_mgr_(geo) {
+    : SequentialModule(config), messenger_(messenger), geo_mgr_(geo) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 

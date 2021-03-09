@@ -22,7 +22,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : BufferedModule(config), messenger_(messenger), geometryManager_(geoManager) {
+    : SequentialModule(config), messenger_(messenger), geometryManager_(geoManager) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 

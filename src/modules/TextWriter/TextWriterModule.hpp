@@ -25,7 +25,7 @@ namespace allpix {
      *
      * Listens to all objects dispatched in the framework and stores an ASCII representation of every object to file.
      */
-    class TextWriterModule : public BufferedModule {
+    class TextWriterModule : public SequentialModule {
     public:
         /**
          * @brief Constructor for this unique module

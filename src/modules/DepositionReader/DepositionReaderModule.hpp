@@ -37,7 +37,7 @@ namespace allpix {
      * individual events with a list of energy deposits at specific position given in local coordinates of the respective
      * detector.
      */
-    class DepositionReaderModule : public BufferedModule {
+    class DepositionReaderModule : public SequentialModule {
     public:
         /**
          * @brief Constructor for this unique module

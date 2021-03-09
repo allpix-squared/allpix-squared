@@ -27,7 +27,7 @@
 using namespace allpix;
 
 DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
-    : BufferedModule(config), messenger_(messenger) {
+    : SequentialModule(config), messenger_(messenger) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 

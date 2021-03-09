@@ -254,7 +254,7 @@ namespace allpix {
         bool parallelize_{false};
 
         /**
-         * @brief Checks if object is instance of BufferedModule class
+         * @brief Checks if object is instance of SequentialModule class
          */
         virtual bool is_buffered() const { return false; }
     };
@@ -263,19 +263,19 @@ namespace allpix {
      * @brief A Module that always ensure to execute events in the order of event numbers. It
      * implements buffering out of the box so interested modules can directly use it
      */
-    class BufferedModule : public Module {
+    class SequentialModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
 
     public:
-        explicit BufferedModule(Configuration& config) : Module(config) {}
-        explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
+        explicit SequentialModule(Configuration& config) : Module(config) {}
+        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
 
     private:
         /**
-         * @brief Checks if object is instance of BufferedModule class
+         * @brief Checks if object is instance of SequentialModule class
          */
         bool is_buffered() const override { return true; }
     };
