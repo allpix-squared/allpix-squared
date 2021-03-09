@@ -776,7 +776,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 // Run module
                 bool stop = false;
                 try {
-                    if(module->is_buffered() && event_num != thread_pool->minimumUncompleted()) {
+                    if(module->require_sequence() && event_num != thread_pool->minimumUncompleted()) {
                         stop = true;
                     } else {
                         module->run(event.get());

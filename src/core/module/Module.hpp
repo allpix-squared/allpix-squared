@@ -256,7 +256,7 @@ namespace allpix {
         /**
          * @brief Checks if object is instance of SequentialModule class
          */
-        virtual bool is_buffered() const { return false; }
+        virtual bool require_sequence() const { return false; }
     };
 
     /**
@@ -277,7 +277,7 @@ namespace allpix {
         /**
          * @brief Checks if object is instance of SequentialModule class
          */
-        bool is_buffered() const override { return true; }
+        bool require_sequence() const override { return true; }
     };
 
 } // namespace allpix
