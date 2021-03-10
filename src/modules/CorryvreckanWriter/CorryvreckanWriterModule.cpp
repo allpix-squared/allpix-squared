@@ -83,6 +83,8 @@ void CorryvreckanWriterModule::initialize() {
 
 // Make instantiations of Corryvreckan pixels, and store these in the trees during run time
 void CorryvreckanWriterModule::run(Event* event) {
+    auto root_lock = root_process_lock();
+
     auto pixel_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
 
     // Retrieve current object count:
