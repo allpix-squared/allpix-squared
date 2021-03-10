@@ -273,6 +273,8 @@ While the \command{initialize()} and \command{finalize()} of the module are guar
 Therefore, no module data members must be altered from within the \command{run()} function, otherwise these changes will affect other events being processed in parallel.
 Configuration parameters cached as member variables should therefore be set only in the \command{initialize()} function.
 
+For initialization and finalization of thread-local data members, i.e.\ structures which have to be configured for each of the worker threads the module is executed on, the \command{initializeThread()} and \command{finalizeThread()} methods are available. They are called once on each worker thread after the \command{initialize()} and before the \command{finalize()} methods, respectively.
+
 \subsection{Histograms}
 
 \apsq uses ROOT histograms for collecting and storing statistics and other additional information about the simulation process.
