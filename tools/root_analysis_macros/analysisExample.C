@@ -72,8 +72,8 @@ void analysisExample(TFile* file, std::string detector) {
         double position_mcparts_x = 0.;
         double position_mcparts_y = 0.;
         for(auto& mc_part : input_particles) {
-            position_mcparts_x += mc_part->getLocalEndPoint().x();
-            position_mcparts_y += mc_part->getLocalEndPoint().y();
+            position_mcparts_x += mc_part->getLocalReferencePoint().x();
+            position_mcparts_y += mc_part->getLocalReferencePoint().y();
         }
         position_mcparts_x /= input_particles.size();
         position_mcparts_y /= input_particles.size();
@@ -88,8 +88,8 @@ void analysisExample(TFile* file, std::string detector) {
             double position_mcparts_related_x = 0.;
             double position_mcparts_related_y = 0.;
             for(auto& part : parts) {
-                position_mcparts_related_x += part->getLocalEndPoint().x();
-                position_mcparts_related_y += part->getLocalEndPoint().y();
+                position_mcparts_related_x += part->getLocalReferencePoint().x();
+                position_mcparts_related_y += part->getLocalReferencePoint().y();
             }
             position_mcparts_related_x /= parts.size();
             position_mcparts_related_y /= parts.size();
