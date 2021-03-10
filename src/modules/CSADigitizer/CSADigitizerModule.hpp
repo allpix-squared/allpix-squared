@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Initialize optional ROOT histograms
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Simulate digitization process

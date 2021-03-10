@@ -47,7 +47,7 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
     }
 }
 
-void ROOTObjectWriterModule::init() {
+void ROOTObjectWriterModule::initialize() {
     // Create output file
     output_file_name_ =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);

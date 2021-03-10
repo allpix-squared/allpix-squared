@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief Initialize - create plots if needed
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Projection of the electrons to the surface

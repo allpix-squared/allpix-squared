@@ -46,7 +46,7 @@ namespace allpix {
         /**
          * @brief Initializes Geant4 and construct the Geant4 geometry from the internal geometry
          */
-        void init() override;
+        void initialize() override;
 
     private:
         GeometryManager* geo_manager_;

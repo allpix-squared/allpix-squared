@@ -136,7 +136,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     }
 }
 
-void CSADigitizerModule::init() {
+void CSADigitizerModule::initialize() {
 
     // Check for sensible configuration of threshold:
     if(ignore_polarity_ && threshold_ < 0) {

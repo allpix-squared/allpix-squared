@@ -105,7 +105,7 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
 /**
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
-void DepositionGeant4Module::init() {
+void DepositionGeant4Module::initialize() {
     MTRunManager* run_manager_mt = nullptr;
 
     number_of_particles_ = config_.get<unsigned int>("number_of_particles", 1);

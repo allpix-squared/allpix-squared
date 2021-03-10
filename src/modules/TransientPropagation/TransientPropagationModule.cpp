@@ -77,7 +77,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void TransientPropagationModule::init() {
+void TransientPropagationModule::initialize() {
 
     auto detector = getDetector();
 

@@ -194,7 +194,7 @@ int main(int argc, const char* argv[]) {
         apx->load();
 
         // Initialize modules (pre-run)
-        apx->init();
+        apx->initialize();
 
         // Run modules and event-loop
         apx->run();

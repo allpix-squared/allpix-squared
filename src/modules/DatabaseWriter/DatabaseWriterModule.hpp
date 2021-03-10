@@ -47,7 +47,7 @@ namespace allpix {
         /**
          * @brief Opens the database to write the objects to
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.

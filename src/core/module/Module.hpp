@@ -41,7 +41,7 @@ namespace allpix {
      *
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
      * defines the methods the children can implement:
-     * - Module::init(): for initializing the module at the start
+     * - Module::initialize(): for initializing the module at the start
      * - Module::run(Event*): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
@@ -150,7 +150,7 @@ namespace allpix {
          *
          * Does nothing if not overloaded.
          */
-        virtual void init() {}
+        virtual void initialize() {}
 
         /**
          * @brief Execute the function of the module for every event

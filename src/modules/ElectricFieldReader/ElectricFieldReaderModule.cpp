@@ -42,7 +42,7 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     }
 }
 
-void ElectricFieldReaderModule::init() {
+void ElectricFieldReaderModule::initialize() {
     FieldType type = FieldType::GRID;
 
     // Check field strength

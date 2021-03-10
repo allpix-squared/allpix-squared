@@ -39,7 +39,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void InducedTransferModule::init() {
+void InducedTransferModule::initialize() {
 
     // This module requires a weighting potential - otherwise everything is lost...
     if(!detector_->hasWeightingPotential()) {

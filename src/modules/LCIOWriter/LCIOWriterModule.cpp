@@ -234,7 +234,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     }
 }
 
-void LCIOWriterModule::init() {
+void LCIOWriterModule::initialize() {
     // Create the output GEAR file for the detector geometry
     geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
     // Open LCIO file and write run header

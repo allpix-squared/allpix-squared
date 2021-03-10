@@ -66,7 +66,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
-void ProjectionPropagationModule::init() {
+void ProjectionPropagationModule::initialize() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }

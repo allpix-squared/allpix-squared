@@ -85,7 +85,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     }
 }
 
-void VisualizationGeant4Module::init() {
+void VisualizationGeant4Module::initialize() {
     // Suppress all geant4 output
     SUPPRESS_STREAM(G4cout);
 

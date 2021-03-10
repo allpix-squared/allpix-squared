@@ -36,7 +36,7 @@ CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messen
 }
 
 // Set up the output trees
-void CorryvreckanWriterModule::init() {
+void CorryvreckanWriterModule::initialize() {
 
     // Check if MC data to be saved
     output_mc_truth_ = config_.get<bool>("output_mctruth");

@@ -39,7 +39,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                          ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
 }
 
-void DetectorHistogrammerModule::init() {
+void DetectorHistogrammerModule::initialize() {
     using namespace ROOT::Math;
 
     // Fetch detector model

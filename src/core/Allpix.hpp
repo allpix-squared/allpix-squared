@@ -53,7 +53,7 @@ namespace allpix {
          * @brief Initialize all modules (pre-run)
          * @warning Should be called after the \ref Allpix::load "load function"
          */
-        void init();
+        void initialize();
 
         /**
          * @brief Run all modules for the number of events (run)

@@ -528,10 +528,10 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat, std::string
 }
 
 /**
- * Sets the section header and logging settings before executing the  \ref Module::init() function.
+ * Sets the section header and logging settings before executing the  \ref Module::initialize() function.
  *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
-void ModuleManager::init(RandomNumberGenerator& seeder) {
+void ModuleManager::initialize(RandomNumberGenerator& seeder) {
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
     LOG(TRACE) << "Register number of workers for possible multithreading";
@@ -603,7 +603,7 @@ void ModuleManager::init(RandomNumberGenerator& seeder) {
         // Change to our ROOT directory
         module->getROOTDirectory()->cd();
         // Init module
-        module->init();
+        module->initialize();
         // Reset logging
         set_module_after(old_settings);
         // Update execution time

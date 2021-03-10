@@ -241,7 +241,7 @@ Unique modules can access the GeometryManager to fetch all detector descriptions
 
 In addition to the constructor, each module can override the following methods:
 \begin{itemize}
-\item \parameter{init()}: Called once per module from the main thread after loading and constructing all modules and before starting the event loop.
+\item \parameter{initialize()}: Called once per module from the main thread after loading and constructing all modules and before starting the event loop.
 This method can for example be used to initialize histograms.
 \item \parameter{initializeThread()}: Called after global initialization but before event processing and gives the possibility to initialize worker thread-specific members for modules if multi-threading is used.
 \item \parameter{run(Event* event)}: Called for every event in the simulation, with a pointer to the current event object as parameter.
@@ -269,9 +269,9 @@ This section briefly lists the most important aspects to take into account.
 \subsection{Member Variables}
 \label{sec:multithreading_members}
 
-While the \command{init()} and \command{finalize()} of the module are guaranteed to be called sequentially, the \command{run()} method will be called simultaneously from different threads and for different events.
+While the \command{initialize()} and \command{finalize()} of the module are guaranteed to be called sequentially, the \command{run()} method will be called simultaneously from different threads and for different events.
 Therefore, no module data members must be altered from within the \command{run()} function, otherwise these changes will affect other events being processed in parallel.
-Configuration parameters cached as member variables should therefore be set only in the \command{init()} function.
+Configuration parameters cached as member variables should therefore be set only in the \command{initialize()} function.
 
 \subsection{Histograms}
 

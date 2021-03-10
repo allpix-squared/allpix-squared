@@ -57,7 +57,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<int>("output_plots_bins", 100);
 }
 
-void DefaultDigitizerModule::init() {
+void DefaultDigitizerModule::initialize() {
     // Conversion to ADC units requested:
     if(config_.get<int>("qdc_resolution") > 31) {
         throw InvalidValueError(config_, "qdc_resolution", "precision higher than 31bit is not possible");

@@ -64,7 +64,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     }
 }
 
-void DepositionPointChargeModule::init() {
+void DepositionPointChargeModule::initialize() {
 
     auto model = detector_->getModel();
 

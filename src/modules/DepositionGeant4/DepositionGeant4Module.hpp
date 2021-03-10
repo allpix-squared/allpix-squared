@@ -56,7 +56,7 @@ namespace allpix {
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Prepare thread-local instances of worker run managers

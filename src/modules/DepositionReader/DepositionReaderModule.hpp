@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initialize the input file stream
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Read the deposited energy for a given event and create a corresponding DepositedCharge message

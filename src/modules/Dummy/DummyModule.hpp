@@ -41,7 +41,7 @@ namespace allpix {
         /**
          * @brief [Initialise this module]
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief [Run the function of this module]

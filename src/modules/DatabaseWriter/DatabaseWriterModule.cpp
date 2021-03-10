@@ -38,7 +38,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     config_.setDefault("run_id", "none");
 }
 
-void DatabaseWriterModule::init() {
+void DatabaseWriterModule::initialize() {
 
     // retrieving configuration parameters
     host_ = config_.get<std::string>("host");

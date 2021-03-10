@@ -39,7 +39,7 @@ namespace allpix {
         /**
          * @brief Initializes Geant4 and construct the GDML output file from the internal geometry
          */
-        void init() override;
+        void initialize() override;
 
     private:
         std::string output_file_name_{};

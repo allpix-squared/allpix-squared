@@ -309,7 +309,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     config_.setDefault("geometry_file", "geometry.toml");
 }
 
-void RCEWriterModule::init() {
+void RCEWriterModule::initialize() {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
     for(const auto& detector : geo_mgr_->getDetectors()) {

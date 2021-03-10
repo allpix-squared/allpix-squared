@@ -49,7 +49,7 @@ namespace allpix {
         /**
          * @brief Initialize - check for field configuration and implants
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Transfer the propagated charges to the pixels

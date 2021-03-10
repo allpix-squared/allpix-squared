@@ -43,7 +43,7 @@ GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*
     enable_parallelization();
 }
 
-void GDMLOutputWriterModule::init() {
+void GDMLOutputWriterModule::initialize() {
 
     std::string GDML_output_file =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);

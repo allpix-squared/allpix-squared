@@ -42,7 +42,7 @@ namespace allpix {
         /**
          * @brief Initial check for the presence of a weighting potential
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Calculation of the individual total induced charge and combination for all pixels

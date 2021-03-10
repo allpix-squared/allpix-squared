@@ -200,12 +200,12 @@ void Allpix::load() {
 }
 
 /**
- * Runs the Module::init() method linearly for every module
+ * Runs the Module::initialize() method linearly for every module
  */
-void Allpix::init() {
+void Allpix::initialize() {
     if(!terminate_) {
         LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->init(seeder_modules_);
+        mod_mgr_->initialize(seeder_modules_);
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
     }

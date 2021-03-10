@@ -61,7 +61,7 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     create_mcparticles_ = config.get<bool>("create_mcparticles");
 }
 
-void DepositionReaderModule::init() {
+void DepositionReaderModule::initialize() {
 
     if(!time_available_) {
         LOG(WARNING) << "No time information provided, all energy deposition will be assigned to t = 0";

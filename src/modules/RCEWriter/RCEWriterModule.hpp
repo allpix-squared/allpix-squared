@@ -49,7 +49,7 @@ namespace allpix {
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree

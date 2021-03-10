@@ -35,7 +35,7 @@ TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, 
     messenger_->registerFilter(this, &TextWriterModule::filter);
 }
 
-void TextWriterModule::init() {
+void TextWriterModule::initialize() {
     // Create output file
     output_file_name_ =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "txt"), true);

@@ -88,7 +88,7 @@ namespace allpix {
          * @param seeder Reference to the seeder
          * @warning Should be called after the \ref ModuleManager::load "load function"
          */
-        void init(RandomNumberGenerator& seeder);
+        void initialize(RandomNumberGenerator& seeder);
 
         /**
          * @brief Run all modules for the number of events

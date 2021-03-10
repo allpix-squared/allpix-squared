@@ -34,7 +34,7 @@ MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config, Mess
     enable_parallelization();
 }
 
-void MagneticFieldReaderModule::init() {
+void MagneticFieldReaderModule::initialize() {
     MagneticFieldType type = MagneticFieldType::NONE;
 
     // Check field strength

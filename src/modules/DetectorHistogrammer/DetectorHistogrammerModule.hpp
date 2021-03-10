@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Initialize the histograms
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Fill the histograms

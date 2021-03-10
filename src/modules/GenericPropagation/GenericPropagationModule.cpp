@@ -477,7 +477,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     }
 }
 
-void GenericPropagationModule::init() {
+void GenericPropagationModule::initialize() {
 
     auto detector = getDetector();
 
