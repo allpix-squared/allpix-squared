@@ -72,6 +72,11 @@ namespace allpix {
          */
         virtual void petrifyHistory() = 0;
 
+        void markForStorage() {
+            // Using bit 14 of the TObject bit field, unused by ROOT:
+            this->SetBit(1ull << 14);
+        }
+
     protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream
@@ -131,6 +136,8 @@ namespace allpix {
              * @brief Function to construct TRef object for wrapped pointer for persistent storage
              */
             void store() { ref_ = get(); }
+
+            bool markedForStorage() { return get()->TestBit(1ull << 14); }
 
             ClassDef(BaseWrapper, 1); // NOLINT
 

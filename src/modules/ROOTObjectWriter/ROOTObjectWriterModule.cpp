@@ -112,6 +112,15 @@ void ROOTObjectWriterModule::run(Event* event) {
 
     auto messages = messenger_->fetchFilteredMessages(this, event);
 
+    // Mark objects to be stored:
+    for(auto& pair : messages) {
+        auto& message = pair.first;
+        auto object_array = message->getObjectArray();
+        for(Object& object : object_array) {
+            object.markForStorage();
+        }
+    }
+
     // Generate trees and index data
     for(auto& pair : messages) {
         auto& message = pair.first;

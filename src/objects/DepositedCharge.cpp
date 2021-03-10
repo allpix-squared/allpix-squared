@@ -50,5 +50,7 @@ void DepositedCharge::loadHistory() {
     mc_particle_.get();
 }
 void DepositedCharge::petrifyHistory() {
-    mc_particle_.store();
+    if(mc_particle_.markedForStorage()) {
+        mc_particle_.store();
+    }
 }

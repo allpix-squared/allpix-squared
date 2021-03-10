@@ -123,5 +123,7 @@ void MCTrack::loadHistory() {
     parent_.get();
 }
 void MCTrack::petrifyHistory() {
-    parent_.store();
+    if(parent_.markedForStorage()) {
+        parent_.store();
+    }
 }

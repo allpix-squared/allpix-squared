@@ -105,6 +105,13 @@ void PixelHit::loadHistory() {
     std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.get(); });
 }
 void PixelHit::petrifyHistory() {
-    pixel_charge_.store();
-    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
+    if(pixel_charge_.markedForStorage()) {
+        pixel_charge_.store();
+    }
+
+    std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) {
+        if(n.markedForStorage()) {
+            n.store();
+        }
+    });
 }
