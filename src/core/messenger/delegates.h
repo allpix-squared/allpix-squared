@@ -342,9 +342,6 @@ namespace allpix {
             // Add the message to the vector
             dest.multi.push_back(std::static_pointer_cast<R>(msg));
         }
-
-    private:
-        std::mutex mutex_;
     };
 } // namespace allpix
 
