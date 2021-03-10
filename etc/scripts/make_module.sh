@@ -74,10 +74,10 @@ sed -e "s/Dummy/$MODNAME/g" "$MODDIR/Dummy/DummyModule.cpp" > "$MODDIR/$MODNAME/
 # Options for sed vary slightly between mac and linux
 opt=-i
 platform=`uname`
-if [ "$platform" == "Darwin" ]; then opt="-i \"\""; fi
+if [ "$platform" = "Darwin" ]; then opt="-i \"\""; fi
 
 # Change to detector module type if necessary:
-if [ "$type" == 2 ]; then
+if [ "$type" = 2 ]; then
 
   # Prepare sed commands to change to per detector module
   # Change module type in CMakeLists
@@ -120,6 +120,6 @@ FINALPATH=`realpath $MODDIR/$MODNAME`
 echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
 echo "Path:   $FINALPATH"
-echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" == 2 ] && echo "one detector" || echo "all detectors")
+echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
 echo
 echo "Re-run CMake in order to build your new module."
