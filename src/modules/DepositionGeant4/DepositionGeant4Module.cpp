@@ -327,7 +327,7 @@ void DepositionGeant4Module::run(Event* event) {
     if(run_manager_mt == nullptr) {
         run_manager_g4_->BeamOn(static_cast<int>(number_of_particles_));
     } else {
-        run_manager_mt->Run(static_cast<G4int>(event->number), static_cast<int>(number_of_particles_));
+        run_manager_mt->Run(static_cast<int>(number_of_particles_), event->getRandomNumber(), event->getRandomNumber());
     }
 
     uint64_t last_event_num = last_event_num_.load();

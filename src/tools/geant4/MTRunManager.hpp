@@ -40,14 +40,15 @@ namespace allpix {
 
         /**
          * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
-         * @param allpix_event The allpix event number
          * @param n_event number of events to simulate in one run.
+         * @param seed1 First seed for worker run manager for this event
+         * @param seed2 Second seed for worker run manager for this event
          *
          * Run the specified number of events on a separate worker that is associated with the calling thread.
          * The worker will be initialized with a new set of seeds to be used specifically for this event run such
          * that events are seeded in the order of creation which ensures that results can be reproduced.
          */
-        void Run(G4int allpix_event, G4int n_event); // NOLINT
+        void Run(G4int n_event, uint64_t seed1, uint64_t seed2); // NOLINT
 
         /**
          * @brief Initialize the run manager to be ready for run.
@@ -106,12 +107,6 @@ namespace allpix {
         void CreateAndStartWorkers() override {}
 
         /**
-         * @brief Fills the helper map with new seeds for new events
-         * @param n_event The number of events to fill seeds for
-         */
-        void FillWorkerSeedsMap(G4int n_event); // NOLINT
-
-        /**
          * @brief Previously used to issue a new command to the workers.
          *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
@@ -120,9 +115,10 @@ namespace allpix {
 
         /**
          * @brief Initialize the workers seeds for the given number of events.
-         * @param nevts Number of events
+         *
+         * @note does nothing.
          */
-        G4bool InitializeSeeds(G4int nevts) override;
+        G4bool InitializeSeeds(G4int) override { return true; };
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
@@ -194,8 +190,6 @@ namespace allpix {
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
         std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction_{nullptr};
-
-        std::unordered_map<G4int, std::pair<long, long>> workers_seeds_;
     };
 } // namespace allpix
 
