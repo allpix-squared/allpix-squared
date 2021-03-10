@@ -807,6 +807,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 if(stop) {
                     LOG(TRACE) << "Event " << event->number
                                << " was interrupted because of missing dependencies, rescheduling...";
+                    // Store state of PRNG engine:
+                    event->store_random_engine_state();
+                    // Reschedule the event:
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
                     auto future = thread_pool->submit(event->number, event_function, false);
                     assert(future.valid() || !thread_pool->valid());
