@@ -15,6 +15,16 @@ select yn in "unique" "detector"; do
     esac
 done
 
+# Ask for module type:
+echo -e "Event order requirements?\n"
+sequence=0
+select yn in "Module" "BufferedModule"; do
+    case $yn in
+        Module ) sequence=0; break;;
+        BufferedModule ) sequence=1; break;;
+    esac
+done
+
 # Ask for the message type to run over
 echo ""
 read -p "Input message type? " MESSAGETYPE
@@ -108,6 +118,20 @@ if [ "$type" = 2 ]; then
   eval $command
 fi
 
+# Change to BufferedModule if required
+if [ "$sequence" = 1 ]; then
+  # Change header file
+  command="sed ${opt} \
+      -e 's/ Module/ BufferedModule/g' \
+      $MODDIR/$MODNAME/${MODNAME}Module.hpp"
+  eval $command
+  # Change implementation file
+  command="sed ${opt} \
+      -e 's/ Module/ BufferedModule/g' \
+      $MODDIR/$MODNAME/${MODNAME}Module.cpp"
+  eval $command
+fi
+
 # Replace the corresponding message type in the header and source file
 command="sed ${opt} \
 -e 's/PixelHit/${MESSAGETYPE}/g' \
@@ -120,5 +144,8 @@ echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
 echo "Path:   $FINALPATH"
 echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
+if [ "$sequence" = 1 ]; then
+  echo "This module requires sequential processing of events in multithreaded environments."
+fi
 echo
 echo "Re-run CMake in order to build your new module."
