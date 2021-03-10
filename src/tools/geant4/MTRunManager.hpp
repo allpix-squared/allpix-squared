@@ -114,13 +114,6 @@ namespace allpix {
         void NewActionRequest(WorkerActionRequest) override {}
 
         /**
-         * @brief Initialize the workers seeds for the given number of events.
-         *
-         * @note does nothing.
-         */
-        G4bool InitializeSeeds(G4int) override { return true; };
-
-        /**
          * @brief Previously used to tell workers to execute UI commands.
          *
          * Send commands to workers to execute the UI commands stored in master. It will now do nothing.
