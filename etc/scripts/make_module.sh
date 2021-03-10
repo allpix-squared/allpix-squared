@@ -18,10 +18,10 @@ done
 # Ask for module type:
 echo -e "Event order requirements?\n"
 sequence=0
-select yn in "Module" "BufferedModule"; do
+select yn in "Module" "SequentialModule"; do
     case $yn in
         Module ) sequence=0; break;;
-        BufferedModule ) sequence=1; break;;
+        SequentialModule ) sequence=1; break;;
     esac
 done
 
@@ -118,16 +118,16 @@ if [ "$type" = 2 ]; then
   eval $command
 fi
 
-# Change to BufferedModule if required
+# Change to SequentialModule if required
 if [ "$sequence" = 1 ]; then
   # Change header file
   command="sed ${opt} \
-      -e 's/ Module/ BufferedModule/g' \
+      -e 's/ Module/ SequentialModule/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
   # Change implementation file
   command="sed ${opt} \
-      -e 's/ Module/ BufferedModule/g' \
+      -e 's/ Module/ SequentialModule/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.cpp"
   eval $command
 fi
