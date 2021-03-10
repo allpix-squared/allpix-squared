@@ -89,7 +89,6 @@ if [ "$type" = 2 ]; then
       -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
       -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/GeometryManager/DetectorModel/g' \
-      -e 's/std::vector<std::shared_ptr<PixelHitMessage>> messages_/std::shared_ptr<PixelHitMessage> message_/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
   # Change implementation file
@@ -97,14 +96,14 @@ if [ "$type" = 2 ]; then
       -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
       -e 's/Module(config)/Module\(config\, detector\)/g' \
       -e 's/bindMulti/bindSingle/g' \
-      -e 's/messages_/message_/g' \
       -e '/for(auto/d' \
-      -e 's/message->get/message_->get/g' \
       -e 's/geo_manager_(geo_manager)/detector_(detector)/g' \
       -e '/geo_manager_/d' \
       -e 's/detector->get/detector_->get/g' \
       -e '/    }/d' \
       -e '/Loop/d' \
+      -e 's/auto messages/auto message/g' \
+      -e 's/fetchMultiMessage/fetchMessage/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.cpp"
   eval $command
 fi
