@@ -17,7 +17,7 @@ To construct a comparison tree using this macro, follow these steps:
 * Write the tree with `tree->Write()`
 
 ### Analysis example
-Analysis example demonstrating how to read data from ROOT TTrees, access attributes and access object history. The macro for this reads TTrees of `PixelHit` and `MCParticle` objects from an Allpix Squared data file created using the `ROOTObjectWriter`. Iterating over individual events, the position of every `PixelHit` is compared to the center of gravity position of all `MCParticles` and then only to those that are retreived from the history of the `PixelHit`. Produces graphs for a 2D hitmap, the mentioned residuals and the signal spectrum. As this macro does not perform a clustering, it is only a starting point for a data analysis.
+Analysis example demonstrating how to read data from ROOT TTrees, access attributes and access object history. The macro for this reads TTrees of `PixelHit` and `MCParticle` objects from an Allpix Squared data file created using the `ROOTObjectWriter`. Iterating over individual events, the position of every `PixelHit` is compared to the center of gravity position of all `MCParticles` and then only to those that are retrieved from the history of the `PixelHit`. Produces graphs for a 2D hitmap, the mentioned residuals and the signal spectrum. As this macro does not perform a clustering, it is only a starting point for a data analysis.
 
 Usage:
 * Open root with the data file attached like `root -l /path/to/data.root`
