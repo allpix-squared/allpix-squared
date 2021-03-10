@@ -137,7 +137,7 @@ namespace allpix {
              */
             void store() { ref_ = get(); }
 
-            bool markedForStorage() { return get()->TestBit(1ull << 14); }
+            bool markedForStorage() { return get() == nullptr ? false : get()->TestBit(1ull << 14); }
 
             ClassDef(BaseWrapper, 1); // NOLINT
 
