@@ -33,7 +33,7 @@ namespace allpix {
     class Event {
         friend class ModuleManager;
         friend class Messenger;
-        friend class BufferedModule;
+        friend class SequentialModule;
 
     public:
         /**

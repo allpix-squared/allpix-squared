@@ -34,7 +34,7 @@ namespace allpix {
      * More detailed explanation of module
      */
 
-    class CorryvreckanWriterModule : public BufferedModule {
+    class CorryvreckanWriterModule : public SequentialModule {
     public:
         /**
          * @brief Constructor for this unique module

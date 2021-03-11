@@ -198,3 +198,7 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
         return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
     });
 }
+
+void SequentialModule::waive_sequence_requirement() {
+    sequence_required_ = false;
+}

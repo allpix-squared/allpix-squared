@@ -254,30 +254,39 @@ namespace allpix {
         bool parallelize_{false};
 
         /**
-         * @brief Checks if object is instance of BufferedModule class
+         * @brief Checks if object is instance of SequentialModule class
          */
-        virtual bool is_buffered() const { return false; }
+        virtual bool require_sequence() const { return false; }
     };
 
     /**
      * @brief A Module that always ensure to execute events in the order of event numbers. It
      * implements buffering out of the box so interested modules can directly use it
      */
-    class BufferedModule : public Module {
+    class SequentialModule : public Module {
         friend class Event;
         friend class ModuleManager;
         friend class Messenger;
 
     public:
-        explicit BufferedModule(Configuration& config) : Module(config) {}
-        explicit BufferedModule(Configuration& config, std::shared_ptr<Detector> detector)
+        explicit SequentialModule(Configuration& config) : Module(config) {}
+        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
             : Module(config, std::move(detector)) {}
+
+    protected:
+        /**
+         * @brief Release strict sequence processing requirement
+         */
+        void waive_sequence_requirement();
 
     private:
         /**
-         * @brief Checks if object is instance of BufferedModule class
+         * @brief Checks if this module needs to be executed in correct event sequence
+         *
+         * @return true if strict event sequence is required and false if any processing order is valid
          */
-        bool is_buffered() const override { return true; }
+        bool require_sequence() const override { return sequence_required_; }
+        bool sequence_required_{true};
     };
 
 } // namespace allpix
