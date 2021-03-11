@@ -34,6 +34,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
 
 #include "ActionInitializationG4.hpp"
@@ -307,12 +308,6 @@ void DepositionGeant4Module::initializeThread() {
 }
 
 void DepositionGeant4Module::run(Event* event) {
-    MTRunManager* run_manager_mt = nullptr;
-
-    // Obtain the thread-local G4RunManager in case of MT
-    if(canParallelize()) {
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-    }
 
     // Suppress output stream if not in debugging mode
     SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
@@ -324,10 +319,12 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
-    if(run_manager_mt == nullptr) {
-        run_manager_g4_->BeamOn(static_cast<int>(number_of_particles_));
-    } else {
+    if(canParallelize()) {
+        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
         run_manager_mt->Run(static_cast<int>(number_of_particles_), event->getRandomNumber(), event->getRandomNumber());
+    } else {
+        auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
+        run_manager->Run(static_cast<int>(number_of_particles_), event->getRandomNumber(), event->getRandomNumber());
     }
 
     uint64_t last_event_num = last_event_num_.load();
