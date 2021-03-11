@@ -10,6 +10,7 @@
 #include "WorkerRunManager.hpp"
 #include "MTRunManager.hpp"
 #include "SensitiveDetectorAndFieldConstruction.hpp"
+#include "core/module/exceptions.h"
 
 #include <atomic>
 
@@ -57,11 +58,7 @@ void WorkerRunManager::BeamOn(G4int n_event, const char* macroFile, G4int n_sele
 
 void WorkerRunManager::InitializeGeometry() {
     if(userDetector == nullptr) {
-        G4Exception("WorkerRunManager::InitializeGeometry",
-                    "Run0033",
-                    FatalException,
-                    "G4VUserDetectorConstruction is not defined!");
-        return;
+        throw ModuleError("G4VUserDetectorConstruction is not defined!");
     }
     if(fGeometryHasBeenDestroyed) {
         G4TransportationManager::GetTransportationManager()->ClearParallelWorlds();
@@ -77,9 +74,7 @@ void WorkerRunManager::InitializeGeometry() {
     auto* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if(detector_construction == nullptr) {
-        G4Exception(
-            "WorkerRunManager::InitializeGeometry", "Run0033", FatalException, "DetectorConstruction is not defined!");
-        return;
+        throw ModuleError("DetectorConstruction is not defined!");
     }
     detector_construction->ConstructSDandField();
     // userDetector->ConstructParallelSD();
@@ -88,8 +83,7 @@ void WorkerRunManager::InitializeGeometry() {
 
 void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n_select) { // NOLINT
     if(userPrimaryGeneratorAction == nullptr) {
-        G4Exception(
-            "WorkerRunManager::GenerateEvent()", "Run0032", FatalException, "G4VUserPrimaryGeneratorAction is not defined!");
+        throw ModuleError("G4VUserPrimaryGeneratorAction is not defined!");
     }
 
     InitializeEventLoop(n_event, macroFile, n_select);
@@ -119,9 +113,7 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
 G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
     (void)i_event;
     if(userPrimaryGeneratorAction == nullptr) {
-        G4Exception(
-            "WorkerRunManager::GenerateEvent()", "Run0032", FatalException, "G4VUserPrimaryGeneratorAction is not defined!");
-        return nullptr;
+        throw ModuleError("G4VUserPrimaryGeneratorAction is not defined!");
     }
 
     G4Event* anEvent = nullptr;
