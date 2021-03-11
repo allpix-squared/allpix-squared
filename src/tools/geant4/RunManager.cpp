@@ -13,7 +13,7 @@
 
 using namespace allpix;
 
-void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) {
+void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
     // Set the event seeds - with a zero-terminated list:
     std::array<long, 3> seeds{static_cast<long>(seed1), static_cast<long>(seed2), 0};
