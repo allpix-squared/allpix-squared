@@ -12,22 +12,13 @@
 
 using namespace allpix;
 
-namespace {
-    G4Mutex worker_seed_mutex = G4MUTEX_INITIALIZER;
-}
-
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
-    {
-        G4AutoLock l(&worker_seed_mutex);
 
-        worker_run_manager_->seedsQueue.push(static_cast<long>(seed1));
-        worker_run_manager_->seedsQueue.push(static_cast<long>(seed2));
-
-        // for book keeping
-        numberOfEventProcessed += n_event;
-    }
+    // Seed the worker run manager for this event:
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed1));
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed2));
 
     // redirect the call to the correct manager responsible for this thread
     worker_run_manager_->BeamOn(n_event);
@@ -40,11 +31,6 @@ void MTRunManager::Initialize() {
     if(cond) {
         G4MTRunManager::ConstructScoringWorlds();
         G4MTRunManager::RunInitialization();
-
-        // This is needed to draw random seeds and fill the internal seed array
-        // use nSeedsMax to fill as much as possible now and hopefully avoid
-        // refilling later
-        G4MTRunManager::DoEventLoop(nSeedsMax, nullptr, 0);
 
         // Prepare UI commands for workers
         PrepareCommandsStack();
