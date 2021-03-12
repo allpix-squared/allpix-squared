@@ -72,6 +72,11 @@ namespace allpix {
          */
         virtual void petrifyHistory() = 0;
 
+        void markForStorage() {
+            // Using bit 14 of the TObject bit field, unused by ROOT:
+            this->SetBit(1ull << 14);
+        }
+
     protected:
         /**
          * @brief Print an ASCII representation of this Object to the given stream
@@ -129,8 +134,14 @@ namespace allpix {
 
             /**
              * @brief Function to construct TRef object for wrapped pointer for persistent storage
+             *
+             * @note A TRef is only constructed if the object the wrapped pointer is referring to has been marked for storage
              */
-            void store() { ref_ = get(); }
+            void store() {
+                if(markedForStorage()) {
+                    ref_ = get();
+                }
+            }
 
             ClassDef(BaseWrapper, 1); // NOLINT
 
@@ -139,6 +150,12 @@ namespace allpix {
              * @brief Required virtual destructor
              */
             virtual ~BaseWrapper() = default;
+
+            /**
+             * @brief Helper to determine whether the pointed object will be stored
+             * @return True if object will be stored, false otherwise
+             */
+            bool markedForStorage() const { return get() == nullptr ? false : get()->TestBit(1ull << 14); }
 
             mutable T* ptr_{}; //! transient value
             TRef ref_{};
