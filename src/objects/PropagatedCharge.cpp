@@ -91,10 +91,6 @@ void PropagatedCharge::loadHistory() {
     mc_particle_.get();
 }
 void PropagatedCharge::petrifyHistory() {
-    if(deposited_charge_.markedForStorage()) {
-        deposited_charge_.store();
-    }
-    if(mc_particle_.markedForStorage()) {
-        mc_particle_.store();
-    }
+    deposited_charge_.store();
+    mc_particle_.store();
 }

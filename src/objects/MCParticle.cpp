@@ -154,11 +154,6 @@ void MCParticle::loadHistory() {
     track_.get();
 }
 void MCParticle::petrifyHistory() {
-    if(parent_.markedForStorage()) {
-        parent_.store();
-    }
-
-    if(track_.markedForStorage()) {
-        track_.store();
-    }
+    parent_.store();
+    track_.store();
 }
