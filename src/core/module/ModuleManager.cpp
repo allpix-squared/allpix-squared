@@ -709,8 +709,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto max_queue_size = threads_num * 128;
     std::unique_ptr<ThreadPool> thread_pool =
         std::make_unique<ThreadPool>(threads_num, max_queue_size, max_buffer_size, initialize_function, finalize_function);
-    // Events start at one, mark zero identifier directly as completed
-    thread_pool->markComplete(0);
 
     // Record the run stage total time
     auto start_time = std::chrono::steady_clock::now();
@@ -719,7 +717,17 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     std::atomic<uint64_t> finished_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
-    for(uint64_t i = 1; i <= number_of_events; i++) {
+
+    // Skip first N events and discard their event seed from the seeder engine:
+    auto skip_events = global_config.get<uint64_t>("skip_events", 0);
+    seeder.discard(skip_events);
+
+    // Events start at one, mark zero identifier directly as completed
+    for(size_t n = 0; n <= skip_events; n++) {
+        thread_pool->markComplete(n);
+    }
+
+    for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << i << " events because of request to terminate";
