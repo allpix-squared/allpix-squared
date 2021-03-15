@@ -719,9 +719,11 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
         // auger lifetime model
         auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
 
+        auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
+
         // combine the two
         auto lifetime = lifetime_srh;
-        if(lifetime_auger > 0) {
+        if(minorityType == type) {
             lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
         }
 
