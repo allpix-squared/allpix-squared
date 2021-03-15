@@ -38,7 +38,7 @@ The effective life time is then given by
 
 $`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
 
-In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
+In each step, the doping-dependent charge carrier life time is determined, from which a survival probability is calculated.
 The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
 
 The propagation module also produces a variety of output plots. These include a 3D line plot of the path of all separately propagated charge carrier sets from their point of deposition to the end of their drift, with nearby paths having different colors. In this coloring scheme, electrons are marked in blue colors, while holes are presented in different shades of orange.
