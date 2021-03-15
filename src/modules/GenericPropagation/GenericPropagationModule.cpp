@@ -802,7 +802,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
 
         // Check if charge carrier is still alive:
         if(has_doping_profile_) {
-            is_alive = carrier_alive(detector_->getDopingProfile(static_cast<ROOT::Math::XYZPoint>(position)),
+            is_alive = carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
                                      runge_kutta.getTime());
         }
 

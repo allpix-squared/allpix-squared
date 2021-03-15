@@ -307,7 +307,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
             // Check if charge carrier is still alive:
-            if(has_doping_profile_ && !carrier_alive(detector_->getDopingProfile(position), drift_time)) {
+            if(has_doping_profile_ && !carrier_alive(detector_->getDopingConcentration(position), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
                            << Units::display(position, {"mm", "um"});
                 continue;

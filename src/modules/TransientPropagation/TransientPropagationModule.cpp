@@ -343,7 +343,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(co
 
         // Check if charge carrier is still alive:
         if(has_doping_profile_) {
-            is_alive = carrier_alive(detector_->getDopingProfile(static_cast<ROOT::Math::XYZPoint>(position)),
+            is_alive = carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
                                      runge_kutta.getTime());
         }
 

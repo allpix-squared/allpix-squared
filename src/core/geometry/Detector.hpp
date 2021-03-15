@@ -180,7 +180,7 @@ namespace allpix {
          * @param pos Position in the local frame
          * @return Value of the field at the queried point
          */
-        double getDopingProfile(const ROOT::Math::XYZPoint& local_pos) const;
+        double getDopingConcentration(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Set the doping profile in a single pixel in the detector using a grid

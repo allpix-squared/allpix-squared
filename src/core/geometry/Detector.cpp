@@ -287,7 +287,7 @@ bool Detector::hasDopingProfile() const {
  * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the doping profile is strictly zero by definition.
  */
-double Detector::getDopingProfile(const ROOT::Math::XYZPoint& pos) const {
+double Detector::getDopingConcentration(const ROOT::Math::XYZPoint& pos) const {
     // Extrapolate doping profile if outside defined field:
     return doping_profile_.get(pos, true);
 }
