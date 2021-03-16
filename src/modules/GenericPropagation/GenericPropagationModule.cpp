@@ -864,7 +864,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
     if(!is_alive) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
         // FIXME
-        time = -time;
+        time = -last_time;
     }
 
     // Return the final position of the propagated charge
