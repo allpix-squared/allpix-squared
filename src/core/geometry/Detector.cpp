@@ -56,6 +56,7 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     // Initialize the detector fields with the model parameters:
     electric_field_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
     weighting_potential_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
+    doping_profile_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
 
     build_transform();
 }
@@ -272,4 +273,49 @@ void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
  */
 ROOT::Math::XYZVector Detector::getMagneticField() const {
     return magnetic_field_;
+}
+
+/**
+ * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the doping profile is strictly zero by definition.
+ */
+bool Detector::hasDopingProfile() const {
+    return doping_profile_.isValid();
+}
+
+/**
+ * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
+ * stage). Outside of the sensor the doping profile is strictly zero by definition.
+ */
+double Detector::getDopingConcentration(const ROOT::Math::XYZPoint& pos) const {
+    // Extrapolate doping profile if outside defined field:
+    return doping_profile_.get(pos, true);
+}
+
+/**
+ * The type of the doping profile is set depending on the function used to apply it.
+ */
+FieldType Detector::getDopingProfileType() const {
+    return doping_profile_.getType();
+}
+
+/**
+ * @throws std::invalid_argument If the dpong profile sizes are incorrect
+ *
+ * The doping profile is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and Z_SIZE,
+ * each position (x, y, z) has one index, calculated as x*Y_SIZE*Z_SIZE+y*Z_SIZE+z
+ */
+void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
+                                    std::array<size_t, 3> sizes,
+                                    std::array<double, 2> scales,
+                                    std::array<double, 2> offset,
+                                    std::pair<double, double> thickness_domain) {
+    doping_profile_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
+}
+
+void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {
+    doping_profile_.setFunction(std::move(function),
+                                {model_->getSensorCenter().z() - model_->getSensorSize().z() / 2,
+                                 model_->getSensorCenter().z() + model_->getSensorSize().z() / 2},
+                                type);
 }
