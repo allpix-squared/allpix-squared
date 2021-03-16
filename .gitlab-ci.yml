@@ -39,8 +39,7 @@ cmp:slc6-gcc:
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
@@ -75,23 +74,21 @@ cmp:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 cmp:cc7-llvm:
     extends: .compile
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 cmp:mac1015-clang:
     extends: .compile
     tags:
         - mac
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
     script:
         - mkdir build
         - cd build
@@ -111,7 +108,7 @@ cmp:mac1015-clang:
         - docker
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 fmt:cc7-llvm-format:
     extends: .format
@@ -143,10 +140,9 @@ fmt:coverage:
     dependencies: []
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
+        - source .ci/init_x86_64.sh
         - export PATH=$PATH:/home/sftnight/.local/bin
     script:
-        - source .gitlab/ci/load_deps.sh
         - pip install --trusted-host=pypi.org --user gcovr
         - mkdir build
         - cd build
@@ -161,7 +157,6 @@ fmt:codespell:
     needs: []
     dependencies: []
     script:
-        - source .gitlab/ci/load_deps.sh
         - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty"
@@ -217,8 +212,7 @@ examples:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
     script:
         - cd build/
         - ctest -R examples --output-on-failure -j4
@@ -232,8 +226,7 @@ mod:slc6-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 core:slc6-gcc:
     extends: .testcore
@@ -242,8 +235,7 @@ core:slc6-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/slc6:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 mod:lxplus-gcc:
     extends: .testmod
@@ -293,8 +285,7 @@ mod:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 core:cc7-gcc:
     extends: .testcore
@@ -303,8 +294,7 @@ core:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 mod:cc7-llvm:
     extends: .testmod
@@ -314,8 +304,7 @@ mod:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 core:cc7-llvm:
     extends: .testcore
@@ -325,8 +314,7 @@ core:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 
 # Mac OS X
@@ -339,8 +327,7 @@ mod:mac1015-clang:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 core:mac1015-clang:
     extends: .testcore
@@ -350,8 +337,7 @@ core:mac1015-clang:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 
 #####################
@@ -380,8 +366,7 @@ perf:cc7-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
@@ -392,7 +377,7 @@ perf:cc7-gcc:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
-        - source .gitlab/ci/init_x86_64.sh
+        - source .ci/init_x86_64.sh
 
 # Mac OS X
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
@@ -402,8 +387,7 @@ perf:cc7-gcc:
         - job: cmp:mac1015-clang
           artifacts: true
     before_script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
 
 
 #############################
@@ -427,8 +411,7 @@ cmp:doxygen:
     needs: []
     dependencies: []
     script:
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+        - source .ci/init_x86_64.sh
         - mkdir -p public/usermanual
         - mkdir build
         - cd build
@@ -471,6 +454,7 @@ cmp:usermanual:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
     script:
+        - source .ci/init_x86_64.sh
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -489,8 +473,6 @@ pkg:slc6-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
 
 pkg:cc7-gcc:
     extends: .pack
@@ -500,8 +482,25 @@ pkg:cc7-gcc:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="gcc"
-        - source .gitlab/ci/init_x86_64.sh
-        - source .gitlab/ci/load_deps.sh
+
+pkg:cc7-llvm:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    needs:
+        - job: cmp:cc7-llvm
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
+
+pkg:mac1015-clang:
+    extends: .pack
+    tags:
+        - mac
+    needs:
+        - job: cmp:mac1015-clang
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="llvm"
 
 
 ############################
@@ -542,7 +541,9 @@ deploy-eos:
         - schedules@allpix-squared/allpix-squared
     dependencies:
         - pkg:cc7-gcc
+        - pkg:cc7-llvm
         - pkg:slc6-gcc
+        - pkg:mac1015-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
@@ -555,7 +556,9 @@ deploy-cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
+        - pkg:cc7-llvm
         - pkg:slc6-gcc
+        - pkg:mac1015-clang
     tags:
         - cvmfs-deploy
     only:

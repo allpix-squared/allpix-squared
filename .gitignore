@@ -1,8 +1,9 @@
 # ignore build and install directories
-build/
-bin/
-lib/
-obj/
+/build/
+/bin/
+/lib/
+/include/
+/share/
 
 # root and data files do not belong into the repository
 *.root
