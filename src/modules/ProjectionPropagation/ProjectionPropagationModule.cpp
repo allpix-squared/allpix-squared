@@ -248,11 +248,11 @@ void ProjectionPropagationModule::run(unsigned int) {
                 LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
             }
 
-            // Survival probability of this charge carrier package, evaluated once
-            std::uniform_real_distribution<double> survival(0, 1);
-            auto survival_probability = survival(random_generator_);
-
             auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+                // Survival probability of this charge carrier package, evaluated once
+                std::uniform_real_distribution<double> survival(0, 1);
+                auto survival_probability = survival(random_generator_);
+
                 auto lifetime_srh =
                     (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
                     (1 + std::fabs(doping_concentration) /
