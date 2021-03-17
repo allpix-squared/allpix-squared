@@ -114,6 +114,12 @@ namespace allpix {
         void NewActionRequest(WorkerActionRequest) override {}
 
         /**
+         * @brief Previously used to generate initial seeds. We skip this since we provide seeds to each event directly
+         * It is important to override this function to make sure Geant4 is not seeding itself independently.
+         */
+        G4bool InitializeSeeds(G4int) override { return true; };
+
+        /**
          * @brief Previously used to tell workers to execute UI commands.
          *
          * Send commands to workers to execute the UI commands stored in master. It will now do nothing.
