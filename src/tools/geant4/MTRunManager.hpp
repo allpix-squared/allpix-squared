@@ -94,21 +94,18 @@ namespace allpix {
     protected:
         /**
          * @brief Previously used by workers to wait for master commands.
-         *
          * Worker manager waits on the shared barrier until master issues a new command. It will now do nothing.
          */
         WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
 
         /**
          * @brief Previously used to create threads and start worker managers.
-         *
          * Creates my own threads and start the worker run managers. It will now do nothing.
          */
         void CreateAndStartWorkers() override {}
 
         /**
          * @brief Previously used to issue a new command to the workers.
-         *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
          */
         void NewActionRequest(WorkerActionRequest) override {}
@@ -121,7 +118,6 @@ namespace allpix {
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
-         *
          * Send commands to workers to execute the UI commands stored in master. It will now do nothing.
          */
         void RequestWorkersProcessCommandsStack() override {}
@@ -144,42 +140,36 @@ namespace allpix {
 
         /**
          * @brief Previously used to stop all the workers.
-         *
          * Stop the workers. It will now do nothing.
          */
         void TerminateWorkers() override {}
 
         /**
          * @brief Previously used by workers to signal they finished the event loop.
-         *
          * Synchronize with master about finishing the assigned work. It will now do nothing.
          */
         void ThisWorkerEndEventLoop() override {}
 
         /**
          * @brief Previously used by workers to signal they finished running UI commands.
-         *
          * Synchronize with master about finishing UI commands. It will now do nothing.
          */
         void ThisWorkerProcessCommandsStackDone() override {}
 
         /**
          * @brief Previously used by workers to signal they are ready to do work.
-         *
          * Synchronize with master we finished initialization and ready for work. It will now do nothing.
          */
         void ThisWorkerReady() override {}
 
         /**
          * @brief Previously used to wait until all workers have finished the event loop.
-         *
          * Wait for all the workers to finish and signal the end of event loop. It will now do nothing.
          */
         void WaitForEndEventLoopWorkers() override {}
 
         /**
          * @brief Previously used to wait for workers to finish initialization.
-         *
          * Wait for all the workers to finish initialization. It will now do nothing.
          */
         void WaitForReadyWorkers() override {}

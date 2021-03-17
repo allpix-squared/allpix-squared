@@ -93,12 +93,11 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
 
     // Event loop
     eventLoopOnGoing = true;
-    G4int i_event = -1;
     nevModulo = -1;
     currEvID = -1;
 
     while(eventLoopOnGoing) {
-        ProcessOneEvent(i_event);
+        ProcessOneEvent(-1);
         if(eventLoopOnGoing) {
             TerminateOneEvent();
             if(runAborted) {
@@ -110,14 +109,12 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
     TerminateEventLoop();
 }
 
-G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
-    (void)i_event;
+G4Event* WorkerRunManager::GenerateEvent(G4int) {
     if(userPrimaryGeneratorAction == nullptr) {
         throw ModuleError("G4VUserPrimaryGeneratorAction is not defined!");
     }
 
     G4Event* anEvent = nullptr;
-    long s1 = 0, s2 = 0;
 
     if(numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted) {
         anEvent = new G4Event(numberOfEventProcessed);
@@ -125,9 +122,9 @@ G4Event* WorkerRunManager::GenerateEvent(G4int i_event) {
         if(!runIsSeeded) {
             // Seeds are stored in this queue to ensure we can reproduce the results of events
             // each event will reseed the random number generator
-            s1 = seedsQueue.front();
+            long s1 = seedsQueue.front();
             seedsQueue.pop();
-            s2 = seedsQueue.front();
+            long s2 = seedsQueue.front();
             seedsQueue.pop();
 
             // Seed RNG for this run only once
