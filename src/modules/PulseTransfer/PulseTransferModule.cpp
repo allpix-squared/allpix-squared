@@ -203,6 +203,28 @@ void PulseTransferModule::run(unsigned int event_num) {
         pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_map[index]);
     }
 
+    if(output_pulsegraphs_) {
+        std::string name = "chargemap_ev" + std::to_string(event_num);
+        auto size = detector_->getModel()->getNPixels();
+        std::string title =
+            "Map of accumulated induced charge in event " + std::to_string(event_num) + ";x (pixels);y (pixels);charge";
+        auto* charge_map = new TH2D(name.c_str(),
+                                    title.c_str(),
+                                    static_cast<int>(size.x()),
+                                    -0.5,
+                                    static_cast<int>(size.x()) - 0.5,
+                                    static_cast<int>(size.y()),
+                                    -0.5,
+                                    static_cast<int>(size.y()) - 0.5);
+
+        for(auto& pixel_index_pulse : pixel_pulse_map) {
+            auto index = pixel_index_pulse.first;
+            auto pulse = pixel_index_pulse.second;
+            charge_map->Fill(index.x(), index.y(), pulse.getCharge());
+        }
+        getROOTDirectory()->WriteTObject(charge_map, name.c_str());
+    }
+
     // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
     messenger_->dispatchMessage(this, pixel_charge_message);
