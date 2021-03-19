@@ -17,8 +17,8 @@ G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
     // Seed the worker run manager for this event:
-    worker_run_manager_->seedsQueue.push(static_cast<long>(seed1));
-    worker_run_manager_->seedsQueue.push(static_cast<long>(seed2));
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed1 % LONG_MAX));
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed2 % LONG_MAX));
 
     // redirect the call to the correct manager responsible for this thread
     worker_run_manager_->BeamOn(n_event);
