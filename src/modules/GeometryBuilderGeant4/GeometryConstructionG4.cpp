@@ -206,11 +206,11 @@ void GeometryConstructionG4::init_materials() {
     Paper->AddElement(H, 5);
     materials_["paper"] = Paper;
 
-    // Create polystyrene [(C6H5CHCH2)n] 
+    // Create polystyrene [(C6H5CHCH2)n]
     // https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/polystyrene.html
     auto* Polystyrene = new G4Material("Polystyrene", 1.06 * CLHEP::g / CLHEP::cm3, 2);
-    Polystyrene->AddElement(C,8);
-    Polystyrene->AddElement(H,8);
+    Polystyrene->AddElement(C, 8);
+    Polystyrene->AddElement(H, 8);
     materials_["polystyrene"] = Polystyrene;
 
     // Add vacuum
