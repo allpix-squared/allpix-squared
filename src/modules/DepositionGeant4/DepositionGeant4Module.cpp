@@ -232,20 +232,6 @@ void DepositionGeant4Module::initialize() {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
-    // Prepare seeds for Geant4:
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
-
-    // Set the random seed for Geant4 generation before calling initialize
-    // since it draws random numbers
-    ui_g4->ApplyCommand(seed_command);
-
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
