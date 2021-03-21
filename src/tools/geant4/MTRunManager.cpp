@@ -8,7 +8,10 @@
  */
 
 #include "MTRunManager.hpp"
+#include "G4LoggingDestination.hpp"
 #include "WorkerRunManager.hpp"
+
+#include <G4UImanager.hh>
 
 using namespace allpix;
 
@@ -17,6 +20,11 @@ namespace {
 }
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
+
+MTRunManager::MTRunManager() : G4MTRunManager() {
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+}
 
 void MTRunManager::FillWorkerSeedsMap(G4int n_event) { // NOLINT
     // Fill the auxiliary array with new random numbers drawn from the main engine
