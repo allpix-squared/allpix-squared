@@ -28,14 +28,13 @@ ADD_LIBRARY(AllpixGeant4Interface SHARED
     RunManager.cpp
     WorkerRunManager.cpp
     G4LoggingDestination.cpp
-    ../../core/utils/log.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 TARGET_INCLUDE_DIRECTORIES(AllpixGeant4Interface SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
 # Add Geant4 libraries
-TARGET_LINK_LIBRARIES(AllpixGeant4Interface ${Geant4_LIBRARIES})
+TARGET_LINK_LIBRARIES(AllpixGeant4Interface ${ALLPIX_LIBRARIES} ${Geant4_LIBRARIES})
 
 # Specify install for the messages
 INSTALL(TARGETS AllpixGeant4Interface
