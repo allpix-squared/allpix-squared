@@ -27,6 +27,8 @@ ADD_LIBRARY(AllpixGeant4Interface SHARED
     MTRunManager.cpp
     RunManager.cpp
     WorkerRunManager.cpp
+    G4LoggingDestination.cpp
+    ../../core/utils/log.cpp
 )
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
