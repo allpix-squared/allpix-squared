@@ -72,6 +72,8 @@ This module requires an installation of Geant4.
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.
 * `world_margin_percentage` : Percentage of the world size to add to every dimension compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
 * `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not requiring any minimum margin.
+* `geant4_cerr_log_level`: Target logging level for Geant4 messages from the G4cerr (error) stream. Defaults to `DEBUG`.
+* `geant4_cout_log_level`: Target logging level for Geant4 messages from the G4cout stream. Defaults to `TRACE`.
 
 ### Usage
 To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size in every dimension, the following configuration could be used:

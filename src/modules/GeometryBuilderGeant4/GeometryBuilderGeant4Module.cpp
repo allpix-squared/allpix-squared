@@ -32,6 +32,7 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
 
@@ -43,6 +44,28 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
     geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
+
+    // Read Geant4 verbosity configuration
+    auto g4cerr_log_level = config_.get<std::string>("geant4_cerr_log_level", "DEBUG");
+    std::transform(g4cerr_log_level.begin(), g4cerr_log_level.end(), g4cerr_log_level.begin(), ::toupper);
+    auto g4cout_log_level = config_.get<std::string>("geant4_cout_log_level", "TRACE");
+    std::transform(g4cout_log_level.begin(), g4cout_log_level.end(), g4cout_log_level.begin(), ::toupper);
+
+    // Set Geant4 G4cerr log level
+    try {
+        LogLevel log_level = Log::getLevelFromString(g4cerr_log_level);
+        G4LoggingDestination::setG4cerrReportingLevel(log_level);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(config_, "geant4_cerr_log_level", "invalid log level provided");
+    }
+
+    // Set Geant G4cout log level
+    try {
+        LogLevel log_level = Log::getLevelFromString(g4cout_log_level);
+        G4LoggingDestination::setG4coutReportingLevel(log_level);
+    } catch(std::invalid_argument& e) {
+        throw InvalidValueError(config_, "geant4_cout_log_level", "invalid log level provided");
+    }
 }
 
 /**
