@@ -33,7 +33,7 @@ namespace {
     std::atomic<int> counter;
 } // namespace
 
-WorkerRunManager::WorkerRunManager() : G4WorkerRunManager() {
+WorkerRunManager::WorkerRunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 }
