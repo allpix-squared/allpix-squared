@@ -48,9 +48,6 @@ void GDMLOutputWriterModule::initialize() {
     std::string GDML_output_file =
         createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);
 
-    // Suppress output from G4
-    SUPPRESS_STREAM(G4cout);
-
     G4GDMLParser parser;
     parser.SetRegionExport(true);
     parser.Write(GDML_output_file,
@@ -58,7 +55,4 @@ void GDMLOutputWriterModule::initialize() {
                      ->GetNavigatorForTracking()
                      ->GetWorldVolume()
                      ->GetLogicalVolume());
-
-    // Release output from G4
-    RELEASE_STREAM(G4cout);
 }
