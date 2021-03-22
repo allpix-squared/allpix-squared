@@ -23,30 +23,20 @@ void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) {
     G4LoggingDestination::reporting_level_g4cerr = level;
 }
 
-G4int G4LoggingDestination::ReceiveG4cout(const G4String& msg) {
-    if(!msg.empty() && G4LoggingDestination::reporting_level_g4cout <= allpix::Log::getReportingLevel() &&
-       !allpix::Log::getStreams().empty()) {
+void G4LoggingDestination::process_message(LogLevel level, std::string& msg) const {
+    if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {
         // Remove line-break always added to G4String
-        const_cast<G4String&>(msg).pop_back();
-        allpix::Log().getStream(G4LoggingDestination::reporting_level_g4cout,
-                                __FILE_NAME__,
-                                std::string(static_cast<const char*>(__func__)),
-                                __LINE__)
-            << msg;
+        msg.pop_back();
+        allpix::Log().getStream(level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__) << msg;
     }
+}
+
+G4int G4LoggingDestination::ReceiveG4cout(const G4String& msg) {
+    process_message(G4LoggingDestination::reporting_level_g4cout, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }
 
 G4int G4LoggingDestination::ReceiveG4cerr(const G4String& msg) {
-    if(!msg.empty() && G4LoggingDestination::reporting_level_g4cerr <= allpix::Log::getReportingLevel() &&
-       !allpix::Log::getStreams().empty()) {
-        // Remove line-break always added to G4String
-        const_cast<G4String&>(msg).pop_back();
-        allpix::Log().getStream(G4LoggingDestination::reporting_level_g4cerr,
-                                __FILE_NAME__,
-                                std::string(static_cast<const char*>(__func__)),
-                                __LINE__)
-            << msg;
-    }
+    process_message(G4LoggingDestination::reporting_level_g4cerr, const_cast<G4String&>(msg)); // NOLINT
     return 0;
 }

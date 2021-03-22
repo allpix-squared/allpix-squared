@@ -26,7 +26,10 @@ namespace allpix {
         static void setG4cerrReportingLevel(LogLevel level);
 
     private:
-        G4LoggingDestination(){};
+        G4LoggingDestination() = default;
+
+        void process_message(LogLevel level, std::string& msg) const;
+
         static G4LoggingDestination* instance;
         static LogLevel reporting_level_g4cout;
         static LogLevel reporting_level_g4cerr;
