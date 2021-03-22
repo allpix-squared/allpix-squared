@@ -83,6 +83,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Mathieu Benoit, BNL, @mbenoit
 * Thomas Billoud, Université de Montréal, @tbilloud
 * Tobias Bisanz, CERN, @tbisanz
+* Marco Bomben, Université de Paris, @mbomben
 * Koen van den Brandt, Nikhef, @kvandenb
 * Carsten Daniel Burgard, DESY @cburgard
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
@@ -91,6 +92,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Lennart Huth, DESY, @lhuth
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
+* Stephan Lachnit, Heidelberg University, @stephanlachnit
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, KIT, @nurnberg
