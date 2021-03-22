@@ -139,6 +139,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
  *   - PCB G-10
  *   - solder
  *   - paper
+ *   - polystyrene
  *   - vacuum
  */
 void GeometryConstructionG4::init_materials() {
@@ -202,6 +203,13 @@ void GeometryConstructionG4::init_materials() {
     Paper->AddElement(O, 10);
     Paper->AddElement(H, 5);
     materials_["paper"] = Paper;
+
+    // Create polystyrene [(C6H5CHCH2)n]
+    // https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/polystyrene.html
+    auto* Polystyrene = new G4Material("Polystyrene", 1.06 * CLHEP::g / CLHEP::cm3, 2);
+    Polystyrene->AddElement(C, 8);
+    Polystyrene->AddElement(H, 8);
+    materials_["polystyrene"] = Polystyrene;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
