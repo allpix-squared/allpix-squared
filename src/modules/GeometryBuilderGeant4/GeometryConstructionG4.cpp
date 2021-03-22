@@ -202,8 +202,8 @@ void GeometryConstructionG4::init_materials() {
     // Create paper material (cellulose C6H10O5)
     auto* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
     Paper->AddElement(C, 6);
-    Paper->AddElement(O, 10);
-    Paper->AddElement(H, 5);
+    Paper->AddElement(O, 5);
+    Paper->AddElement(H, 10);
     materials_["paper"] = Paper;
 
     // Create polystyrene [(C6H5CHCH2)n]
