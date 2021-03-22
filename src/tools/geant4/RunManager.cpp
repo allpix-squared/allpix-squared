@@ -14,7 +14,7 @@
 
 using namespace allpix;
 
-RunManager::RunManager() : G4RunManager() {
+RunManager::RunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 }

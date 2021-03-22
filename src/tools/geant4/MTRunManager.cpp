@@ -21,7 +21,7 @@ namespace {
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
 
-MTRunManager::MTRunManager() : G4MTRunManager() {
+MTRunManager::MTRunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 }
