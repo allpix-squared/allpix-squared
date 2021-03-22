@@ -106,7 +106,7 @@ void GeometryBuilderGeant4Module::initialize() {
     check_dataset_g4("G4NEUTRONXSDATA");
 #endif
 
-    // Suppress all output (also stdout due to a part in Geant4 where G4cout is not used)
+    // Suppress all stdout output due to a part in Geant4 where G4cout is not used
     SUPPRESS_STREAM(std::cout);
 
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
