@@ -34,6 +34,7 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
+#include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/geant4.h"
 
 #include "Parameterization2DG4.hpp"
@@ -212,9 +213,12 @@ void GeometryConstructionG4::check_overlaps() {
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
 
+    auto current_level = G4LoggingDestination::getG4coutReportingLevel();
+    G4LoggingDestination::setG4coutReportingLevel(LogLevel::ERROR);
     for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
+    G4LoggingDestination::setG4coutReportingLevel(current_level);
 
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";

@@ -56,6 +56,18 @@ namespace allpix {
          */
         static void setG4cerrReportingLevel(LogLevel level);
 
+        /**
+         * Method to obtain the current logger verbosity level for the cout stream
+         * @return Log level
+         */
+        static LogLevel getG4coutReportingLevel();
+
+        /**
+         * Method to obtain the current logger verbosity level for the cerr stream
+         * @return Log level
+         */
+        static LogLevel getG4cerrReportingLevel();
+
     private:
         /**
          * Private constructor

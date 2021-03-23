@@ -23,6 +23,14 @@ void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) {
     G4LoggingDestination::reporting_level_g4cerr = level;
 }
 
+LogLevel G4LoggingDestination::getG4coutReportingLevel() {
+    return G4LoggingDestination::reporting_level_g4cout;
+}
+
+LogLevel G4LoggingDestination::getG4cerrReportingLevel() {
+    return G4LoggingDestination::reporting_level_g4cerr;
+}
+
 void G4LoggingDestination::process_message(LogLevel level, std::string& msg) const {
     if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {
         // Remove line-break always added to G4String
