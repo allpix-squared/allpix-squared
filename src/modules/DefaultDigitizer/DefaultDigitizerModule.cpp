@@ -191,14 +191,17 @@ void DefaultDigitizerModule::run(unsigned int) {
         }
 
         // Simulate simple front-end saturation if enabled:
-        if(config_.get<bool>("saturation") && charge > config_.get<double>("saturation_mean")) {
+        if(config_.get<bool>("saturation")) {
             std::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
                                                                  config_.get<unsigned int>("saturation_width"));
-            charge = saturation_smearing(random_generator_);
-            LOG(DEBUG) << "Above front-end saturation of "
-                       << Units::display(config_.get<unsigned int>("saturation_mean"), {"e", "ke"})
-                       << ", setting to saturated value of " << Units::display(charge, {"e", "ke"});
+            auto saturation = saturation_smearing(random_generator_);
+            if(charge > saturation) {
+                LOG(DEBUG) << "Above front-end saturation, " << Units::display(charge, {"e", "ke"}) << " > "
+                           << Units::display(saturation, {"e", "ke"}) << ", setting to saturation value";
+                charge = saturation;
+            }
         }
+
         if(config_.get<bool>("output_plots")) {
             h_pxq_sat->Fill(charge / 1e3);
         }
