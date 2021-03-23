@@ -17,6 +17,7 @@
 #include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
+#include <G4NuclearLevelData.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RadioactiveDecayPhysics.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -242,11 +243,16 @@ void DepositionGeant4Module::initialize() {
     // since it draws random numbers
     ui_g4->ApplyCommand(seed_command);
 
-    // Some bits in the physics list initialization do not respect the UIsession target for G4cout, suppressing temporarily:
-    SUPPRESS_STREAM(G4cout);
+    // Disable verbose messages from processes
+    ui_g4->ApplyCommand("/process/verbose 0");
+    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
+    G4EmParameters::Instance()->SetVerbose(0);
+    G4HadronicProcessStore::Instance()->SetVerbose(0);
+    physicsList->SetVerboseLevel(0);
+    G4NuclearLevelData::GetInstance()->GetParameters()->SetVerbose(0);
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
-    RELEASE_STREAM(G4cout);
 
     // Build particle generator
     // User hook to store additional information at track initialization and termination as well as custom track ids
@@ -271,12 +277,6 @@ void DepositionGeant4Module::initialize() {
             std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy, cutoff_time);
         run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
-
-    // Disable verbose messages from processes
-    ui_g4->ApplyCommand("/process/verbose 0");
-    ui_g4->ApplyCommand("/process/em/verbose 0");
-    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
-    G4HadronicProcessStore::Instance()->SetVerbose(0);
 }
 
 void DepositionGeant4Module::initializeThread() {
