@@ -216,7 +216,7 @@ void GeometryConstructionG4::init_materials() {
 
     // Create PPO foam [(C8H8O)n]
     // https://en.wikipedia.org/wiki/Poly(p-phenylene_oxide)
-    // (approximate) material for Dortmund Cold Box (DOBOX) used in 
+    // (approximate) material for Dortmund Cold Box (DOBOX) used in
     // ATLAS ITk Pixels testbeams
     auto* PPOFoam = new G4Material("PPOFoam", 0.05 * CLHEP::g / CLHEP::cm3, 3);
     PPOFoam->AddElement(C, 8);
