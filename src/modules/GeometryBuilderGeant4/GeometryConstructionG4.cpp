@@ -142,6 +142,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
  *   - solder
  *   - paper
  *   - polystyrene
+ *   - ppo foam
  *   - vacuum
  */
 void GeometryConstructionG4::init_materials() {
@@ -212,6 +213,16 @@ void GeometryConstructionG4::init_materials() {
     Polystyrene->AddElement(C, 8);
     Polystyrene->AddElement(H, 8);
     materials_["polystyrene"] = Polystyrene;
+
+    // Create PPO foam [(C8H8O)n]
+    // https://en.wikipedia.org/wiki/Poly(p-phenylene_oxide)
+    // (approximate) material for Dortmund Cold Box (DOBOX) used in 
+    // ATLAS ITk Pixels testbeams
+    auto* PPOFoam = new G4Material("PPOFoam", 0.05 * CLHEP::g / CLHEP::cm3, 3);
+    PPOFoam->AddElement(C, 8);
+    PPOFoam->AddElement(H, 8);
+    PPOFoam->AddElement(O, 1);
+    materials_["ppofoam"] = PPOFoam;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
