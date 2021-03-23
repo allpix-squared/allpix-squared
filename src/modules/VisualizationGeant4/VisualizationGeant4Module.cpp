@@ -86,13 +86,10 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
 }
 
 void VisualizationGeant4Module::initialize() {
-    // Suppress all geant4 output
-    SUPPRESS_STREAM(G4cout);
 
     // Check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
-        RELEASE_STREAM(G4cout);
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
@@ -134,7 +131,6 @@ void VisualizationGeant4Module::initialize() {
     // Initialize the driver and checking it actually exists
     int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
-        RELEASE_STREAM(G4cout);
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
             for(const auto& nickname : system->GetNicknames()) {
@@ -167,16 +163,10 @@ void VisualizationGeant4Module::initialize() {
     auto display_limit = config_.get<std::string>("display_limit", "1000000");
     UI->ApplyCommand("/vis/ogl/set/displayListLimit " + display_limit);
 
-    // Release the stream early in debugging mode
-    IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
-
     // Execute initialization macro if provided
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true));
     }
-
-    // Release the g4 output
-    RELEASE_STREAM(G4cout);
 }
 
 /**
