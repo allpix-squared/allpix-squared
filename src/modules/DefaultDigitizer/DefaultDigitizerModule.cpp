@@ -196,8 +196,8 @@ void DefaultDigitizerModule::run(unsigned int) {
                                                                  config_.get<unsigned int>("saturation_width"));
             charge = saturation_smearing(random_generator_);
             LOG(INFO) << "Above front-end saturation of "
-                      << Units::display(config_.get<unsigned int>("saturation_mean"), "e")
-                      << ", setting to saturated value of " << Units::display(charge, "e");
+                      << Units::display(config_.get<unsigned int>("saturation_mean"), {"e", "ke"})
+                      << ", setting to saturated value of " << Units::display(charge, {"e", "ke"});
         }
         if(config_.get<bool>("output_plots")) {
             h_pxq_sat->Fill(charge / 1e3);
