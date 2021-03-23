@@ -12,7 +12,7 @@ In detail, the following steps are performed for every pixel charge:
 
 * A Gaussian noise is added to the input charge value in order to simulate input noise to the preamplifier circuit.
 * The preamplifier is simulated by multiplying the input charge with a defined gain factor. The actually applied gain is smeared with a Gaussian distribution on an event-by-event basis.
-* An optional, very simplistic, front-end saturation can be simulated which replaces the measured pixel charge with a value drawn from a Gaussian distribution with the configured saturation mean and width.
+* An optional, very simplistic, front-end saturation can be simulated which replaces the measured pixel charge with a value drawn from a Gaussian distribution with the configured saturation mean and width. This follows the approach taken in [@holmestad].
 * A charge threshold is applied. Only if the threshold is surpassed, the pixel is accounted for - for all values below the threshold, the pixel charge is discarded. The actually applied threshold is smeared with a Gaussian distribution on an event-by-event basis allowing for simulating fluctuations of the threshold level.
 * A charge-to-digital converter (QDC) with configurable resolution, given in bit, can be simulated. For this, first an inaccuracy of the QDC is simulated using an additional Gaussian smearing which allows to take QDC noise into account. Then, the charge is converted into QDC units using the `qdc_slope` and `qdc_offset` parameters provided. Finally, the calculated value is clamped to be contained within the QDC resolution, over- and underflows are treated as saturation.
 The QDC implementation also allows to simulate ToT (time-over-threshold) devices by setting the `qdc_offset` parameter to the negative `threshold`. Then, the QDC only converts charge above threshold.
@@ -60,3 +60,5 @@ threshold = 600e
 threshold_smearing = 30e
 adc_smearing = 300e
 ```
+
+[@holmestad]: http://urn.nb.no/URN:NBN:no-67847
