@@ -242,8 +242,11 @@ void DepositionGeant4Module::initialize() {
     // since it draws random numbers
     ui_g4->ApplyCommand(seed_command);
 
+    // Some bits in the physics list initialization do not respect the UIsession target for G4cout, suppressing temporarily:
+    SUPPRESS_STREAM(G4cout);
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
+    RELEASE_STREAM(G4cout);
 
     // Build particle generator
     // User hook to store additional information at track initialization and termination as well as custom track ids
