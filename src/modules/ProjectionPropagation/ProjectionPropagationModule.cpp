@@ -240,6 +240,10 @@ void ProjectionPropagationModule::run(unsigned int) {
 
             // Calculate the drift time
             auto calc_drift_time = [&]() {
+                if(position.z() == top_z_) {
+                    return 0.;
+                }
+
                 double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
                 double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
