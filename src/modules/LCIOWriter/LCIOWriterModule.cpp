@@ -95,10 +95,6 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
-    // Bind pixel hits message
-    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
-    messenger_->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
-
     // Set configuration defaults:
     config_.setDefault("file_name", "output.slcio");
     config_.setDefault("geometry_file", "allpix_squared_gear.xml");
@@ -114,6 +110,13 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
     // provided
     auto has_short_config = config_.has("output_collection_name");
     auto has_long_config = config_.has("detector_assignment");
+
+    // Bind pixel hits message
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    messenger_->bindMulti<MCParticleMessage>(this, MsgFlags::REQUIRED);
+    if(dump_mc_truth_) {
+        messenger_->bindSingle<MCTrackMessage>(this, MsgFlags::REQUIRED);
+    }
 
     if(has_short_config && has_long_config) {
         throw InvalidCombinationError(config_,
