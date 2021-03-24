@@ -80,9 +80,10 @@ namespace allpix {
         /**
          * @brief Get the field value in the sensor at a position provided in local coordinates
          * @param pos Position in the local frame
+         * @param extrapolate_z Extrapolate the field along z when outside the defined region
          * @return Value(s) of the field at the queried point
          */
-        T get(const ROOT::Math::XYZPoint& local_pos) const;
+        T get(const ROOT::Math::XYZPoint& local_pos, const bool extrapolate_z = false) const;
 
         /**
          * @brief Get the value of the field at a position provided in local coordinates with respect to the reference

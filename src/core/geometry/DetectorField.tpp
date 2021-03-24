@@ -89,7 +89,9 @@ namespace allpix {
      * The field is replicated for all pixels and uses flipping at each boundary (edge effects are currently not modeled.
      * Outside of the sensor the field is strictly zero by definition.
      */
-    template <typename T, size_t N> T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos) const {
+    template <typename T, size_t N>
+    T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos, const bool extrapolate_z) const {
+
         // FIXME: We need to revisit this to be faster and not too specific
         if(type_ == FieldType::NONE) {
             return {};
@@ -122,8 +124,11 @@ namespace allpix {
         if(type_ == FieldType::GRID) {
             ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
         } else {
-            // Check if inside the thickness domain
-            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            if(extrapolate_z) {
+                // TODO When moving to C++17, this can be replaced with std::clamp()
+                z = std::max(thickness_domain_.first, std::min(z, thickness_domain_.second));
+            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
                 return {};
             }
 

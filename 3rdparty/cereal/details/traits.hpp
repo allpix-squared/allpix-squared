@@ -594,7 +594,7 @@ namespace cereal {
 
                 //! only allow conversion if the types are the same and we are converting into a const reference
                 template <class Dest, class = typename std::enable_if<std::is_same<Source, Dest>::value>::type>
-                operator Dest const&();
+                operator Dest const &();
             };
 
             //! A struct that prevents implicit conversion
@@ -610,7 +610,7 @@ namespace cereal {
 
 #ifdef __clang__
                 template <class Dest, class = typename std::enable_if<std::is_same<Source, Dest>::value>::type>
-                operator Dest const&() = delete;
+                operator Dest const &() = delete;
 #endif // __clang__
 
                 //! only allow conversion if the types are the same and we are converting into a const reference
@@ -622,7 +622,7 @@ namespace cereal {
             struct AnyConvert {
                 template <class Dest> operator Dest&();
 
-                template <class Dest> operator Dest const&() const;
+                template <class Dest> operator Dest const &() const;
             };
         } // namespace detail
 

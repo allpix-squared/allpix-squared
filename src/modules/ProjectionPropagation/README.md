@@ -20,6 +20,25 @@ Since the approximation of the drift time assumes a linear electric field, this 
 Depending on the parameter `diffuse_deposit`, deposited charge carriers in a sensor region without electric field are either not propagated, or a single, three-dimensional diffusion step prior to the propagation of these charge carriers, corresponding to the `integration_time` is enabled.
 Charge carriers diffusing into the electric field will be placed at the border between the undepleted and the depleted regions with the corresponding offset in time and then be propagated to the sensor surface.
 
+Charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+This module only supports doping profiles of type **constant**. 
+The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall relation [@fossum-lee]
+
+$`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+
+where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+
+$`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
+
+where $`C_{a}`$ is the Auger coefficient. 
+The effective life time is then given by
+
+$`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
+
+The survival probability is calculated for the total drift time of the charge carrier by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the previously estimated drift time. 
+Since charge carriers are projected to the sensor surface, only a single survival probability for each charge carrier is calculated. 
+
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
 ### Parameters
@@ -39,3 +58,7 @@ temperature = 293K
 charge_per_step = 10
 output_plots = 1
 ```
+
+[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
+[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
+[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4
