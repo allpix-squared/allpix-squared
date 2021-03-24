@@ -305,12 +305,16 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
+    auto seed1 = event->getRandomNumber();
+    auto seed2 = event->getRandomNumber();
+    LOG(DEBUG) << "Seeding Geant4 event with seeds " << seed1 << " " << seed2;
+
     if(canParallelize()) {
         auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-        run_manager_mt->Run(static_cast<int>(number_of_particles_), event->getRandomNumber(), event->getRandomNumber());
+        run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
     } else {
         auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
-        run_manager->Run(static_cast<int>(number_of_particles_), event->getRandomNumber(), event->getRandomNumber());
+        run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
     }
 
     uint64_t last_event_num = last_event_num_.load();
