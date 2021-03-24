@@ -755,6 +755,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             if(event == nullptr) {
                 event = std::make_shared<Event>(*this->messenger_, event_num, event_seed);
                 event->set_and_seed_random_engine(&random_engine);
+                LOG(INFO) << "Starting event " << event_num << " with seed " << event_seed;
             } else {
                 LOG(TRACE) << "Continue with earlier event, restoring random seed";
                 event->set_and_seed_random_engine(&random_engine);
