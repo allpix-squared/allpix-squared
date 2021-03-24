@@ -78,8 +78,8 @@ namespace allpix {
         unsigned long long total_hits_{};
 
         // Output histograms
-        TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_adc_smear{}, *h_pxq_adc{};
-        TH1D *h_px_toa{}, *h_px_tdc_smear{}, *h_px_tdc{};
+        TH1D *h_pxq{}, *h_pxq_noise{}, *h_gain{}, *h_pxq_gain{}, *h_thr{}, *h_pxq_thr{}, *h_pxq_sat{}, *h_pxq_adc_smear{};
+        TH1D *h_pxq_adc{}, *h_px_toa{}, *h_px_tdc_smear{}, *h_px_tdc{};
         TH2D *h_calibration{}, *h_toa_calibration;
     };
 } // namespace allpix
