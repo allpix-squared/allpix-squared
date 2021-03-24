@@ -722,7 +722,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     auto skip_events = global_config.get<uint64_t>("skip_events", 0);
     seeder.discard(skip_events);
 
-    // Events start at one, mark zero identifier directly as completed
+    // Mark the first N events as completed for the thread pool. Since events start at one, always mark zero identifier as
+    // completed
     for(size_t n = 0; n <= skip_events; n++) {
         thread_pool->markComplete(n);
     }
