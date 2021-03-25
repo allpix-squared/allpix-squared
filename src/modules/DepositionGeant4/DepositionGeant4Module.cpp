@@ -277,6 +277,9 @@ void DepositionGeant4Module::initialize() {
             std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy, cutoff_time);
         run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
+
+    // Flush the Geant4 stream buffer because some elements in the initialization never do:
+    G4cout << G4endl;
 }
 
 void DepositionGeant4Module::initializeThread() {
