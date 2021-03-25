@@ -123,21 +123,6 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
- * @warning This should not be used in \ref run method to allow reproducing the results
- */
-uint64_t Module::getRandomSeed() {
-    if(random_generator_ == nullptr) {
-        throw InvalidModuleActionException("Cannot use this generator outside of \"init\" method");
-    }
-
-    return (*random_generator_)();
-}
-void Module::set_random_generator(RandomNumberGenerator* random_generator) {
-    random_generator_ = random_generator;
-}
-
-/**
- * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
  * @note It is not needed to change directory to this file explicitly in the module, this is done automatically.

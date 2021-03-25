@@ -593,9 +593,6 @@ void ModuleManager::initialize(RandomNumberGenerator& seeder) {
         local_directory->cd();
         module->set_ROOT_directory(local_directory);
 
-        // Set the RNG to be used by the module initialization
-        module->set_random_generator(&seeder);
-
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set module specific settings
@@ -609,9 +606,6 @@ void ModuleManager::initialize(RandomNumberGenerator& seeder) {
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += static_cast<std::chrono::duration<long double>>(end - start).count();
-
-        // Reset the random number generator for this module
-        module->set_random_generator(nullptr);
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
