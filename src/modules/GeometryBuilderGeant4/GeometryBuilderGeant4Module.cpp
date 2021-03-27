@@ -46,9 +46,9 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
     enable_parallelization();
 
     // Read Geant4 verbosity configuration
-    auto g4cerr_log_level = config_.get<std::string>("geant4_cerr_log_level", "DEBUG");
+    auto g4cerr_log_level = config_.get<std::string>("log_level_g4cerr", "DEBUG");
     std::transform(g4cerr_log_level.begin(), g4cerr_log_level.end(), g4cerr_log_level.begin(), ::toupper);
-    auto g4cout_log_level = config_.get<std::string>("geant4_cout_log_level", "TRACE");
+    auto g4cout_log_level = config_.get<std::string>("log_level_g4cout", "TRACE");
     std::transform(g4cout_log_level.begin(), g4cout_log_level.end(), g4cout_log_level.begin(), ::toupper);
 
     // Set Geant4 G4cerr log level
