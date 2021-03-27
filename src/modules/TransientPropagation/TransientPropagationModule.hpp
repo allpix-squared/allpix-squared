@@ -21,6 +21,7 @@
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/Pulse.hpp"
+#include "physics/Mobility.hpp"
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -89,13 +90,7 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
         unsigned int charge_per_step_{};
 
-        // Precalculated values for electron and hole mobility
-        double electron_Vm_;
-        double electron_Ec_;
-        double electron_Beta_;
-        double hole_Vm_;
-        double hole_Ec_;
-        double hole_Beta_;
+        Mobility mobility_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;

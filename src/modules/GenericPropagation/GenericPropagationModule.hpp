@@ -26,6 +26,8 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "physics/Mobility.hpp"
+
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -101,12 +103,7 @@ namespace allpix {
         unsigned int charge_per_step_{};
 
         // Precalculated values for electron and hole mobility
-        double electron_Vm_;
-        double electron_Ec_;
-        double electron_Beta_;
-        double hole_Vm_;
-        double hole_Ec_;
-        double hole_Beta_;
+        Mobility mobility_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
