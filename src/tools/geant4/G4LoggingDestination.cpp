@@ -35,7 +35,10 @@ void G4LoggingDestination::process_message(LogLevel level, std::string& msg) con
     if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {
         // Remove line-break always added to G4String
         msg.pop_back();
+        auto prev_section = Log::getSection();
+        Log::setSection("Geant4");
         allpix::Log().getStream(level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__) << msg;
+        Log::setSection(prev_section);
     }
 }
 
