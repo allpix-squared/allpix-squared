@@ -40,7 +40,8 @@ namespace allpix {
      * @ingroup Models
      * @brief Jacoboni/Canali mobility model for charge carriers in silicon
      *
-     * Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
+     * Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2). All parameters are taken
+     * from Table 5.
      */
     class JacoboniCanali : public MobilityModel {
     public:
@@ -62,13 +63,29 @@ namespace allpix {
             }
         };
 
-    private:
+    protected:
         double electron_Vm_;
+
+    private:
         double electron_Ec_;
         double electron_Beta_;
         double hole_Vm_;
         double hole_Ec_;
         double hole_Beta_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Canali mobility model
+     *
+     * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
+     * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "priginal".
+     */
+    class Canali2 : public JacoboniCanali {
+    public:
+        Canali2(double temperature) : JacoboniCanali(temperature) {
+            electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
+        }
     };
 
     /**
