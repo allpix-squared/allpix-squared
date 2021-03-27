@@ -16,14 +16,32 @@
 
 namespace allpix {
 
+    /**
+     * @ingroup Models
+     * @brief Charge carrier mobility models
+     */
     class MobilityModel {
     public:
+        /**
+         * Default constructor
+         */
         MobilityModel() = default;
+
+        /**
+         * Function call operator to obtain mobility value for the given carrier type and electric field magnitude
+         * @param type Type of charge carrier (electron or hole)
+         * @param efield_mag Magnitude of the electric field
+         * @return Mobility of the charge carrier
+         */
         virtual double operator()(const CarrierType& type, double efield_mag) const = 0;
     };
 
-    // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
-
+    /**
+     * @ingroup Models
+     * @brief Jacoboni/Canali mobility model for charge carriers in silicon
+     *
+     * Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
+     */
     class JacoboniCanali : public MobilityModel {
     public:
         JacoboniCanali(double temperature)
@@ -53,15 +71,35 @@ namespace allpix {
         double hole_Beta_;
     };
 
+    /**
+     * @brief Wrapper class and factory for mobility models.
+     *
+     * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
+     * call operator. The constructor acts as factory, generating model objects from the model name provided, e.g. from a
+     * configuration file.
+     */
     class Mobility {
     public:
+        /**
+         * Default constructor
+         */
         Mobility() = default;
+
+        /**
+         * Mobility constructor
+         * @param model       Name of the mobility model
+         * @param temperature Temperature for which the mobility model should be initialized
+         */
         Mobility(const std::string& model, double temperature) {
             if(model == "jacoboni") {
                 model_ = std::make_unique<JacoboniCanali>(temperature);
             }
         }
 
+        /**
+         * Function call operator forwarded to the mobility model
+         * @return Mobility value
+         */
         template <class... ARGS> double operator()(ARGS&&... args) const {
             return model_->operator()(std::forward<ARGS>(args)...);
         }
