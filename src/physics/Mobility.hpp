@@ -28,6 +28,11 @@ namespace allpix {
         MobilityModel() = default;
 
         /**
+         * Default virtual destructor
+         */
+        virtual ~MobilityModel() = default;
+
+        /**
          * Function call operator to obtain mobility value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field
