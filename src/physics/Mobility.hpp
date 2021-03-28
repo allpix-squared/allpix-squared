@@ -89,6 +89,49 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Hamburg (Klanner-Scharf) parametrization for <100> silicon
+     *
+     * http://dx.doi.org/10.1016/j.nima.2015.07.057
+     * This implementation takes the parameters from Table 4, irrespective of the electric field strength. No temperature
+     * dependence is assumed on hole mobility parameter c, all other parameters are the reference values at 300K and are
+     * scaled according to Equation (6).
+     */
+    class Hamburg : public MobilityModel {
+    public:
+        Hamburg(double temperature)
+            : electron_mu0_(Units::get(1530 * std::pow(temperature / 300, -2.42), "cm*cm/V/s")),
+              electron_vsat_(Units::get(1.03e7 * std::pow(temperature / 300, -0.226), "cm/s")),
+              hole_mu0_(Units::get(464 * std::pow(temperature / 300, -2.20), "cm*cm/V/s")),
+              hole_param_b_(Units::get(9.57e-8 * std::pow(temperature / 300, -0.101), "s/cm")),
+              hole_param_c_(Units::get(-3.31e-13, "s/V")),
+              hole_E0_(Units::get(2640 * std::pow(temperature / 300, 0.526), "V/cm")) {}
+
+        double operator()(const CarrierType& type, double efield_mag) const override {
+            if(type == CarrierType::ELECTRON) {
+                // Equation (3) of the reference, setting E0 = 0 as suggested
+                return 1 / (1 / electron_mu0_ + 1 / electron_vsat_ * efield_mag);
+            } else {
+                // Equation (5) of the reference
+                if(efield_mag < hole_E0_) {
+                    return hole_mu0_;
+                } else {
+                    return 1 / (1 / hole_mu0_ + hole_param_b_ * (efield_mag - hole_E0_) +
+                                hole_param_c_ * (efield_mag - hole_E0_) * (efield_mag - hole_E0_));
+                }
+            }
+        };
+
+    private:
+        double electron_mu0_;
+        double electron_vsat_;
+        double hole_mu0_;
+        double hole_param_b_;
+        double hole_param_c_;
+        double hole_E0_;
+    };
+
+    /**
      * @brief Wrapper class and factory for mobility models.
      *
      * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
@@ -108,8 +151,12 @@ namespace allpix {
          * @param temperature Temperature for which the mobility model should be initialized
          */
         Mobility(const std::string& model, double temperature) {
-            if(model == "jacoboni") {
+            if(model == "jacoboni" || model == "canali") {
                 model_ = std::make_unique<JacoboniCanali>(temperature);
+            } else if(model == "hamburg" || model == "klanner" || model == "scharf") {
+                model_ = std::make_unique<Hamburg>(temperature);
+            } else {
+                // throw something
             }
         }
 
