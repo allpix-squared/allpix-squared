@@ -34,7 +34,7 @@ namespace allpix {
         /**
          * @brief [Initialise this module]
          */
-        void init() override;
+        void initialize() override;
 
     private:
         // General module members

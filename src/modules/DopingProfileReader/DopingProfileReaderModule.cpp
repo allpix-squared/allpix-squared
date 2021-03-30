@@ -17,9 +17,12 @@
 using namespace allpix;
 
 DopingProfileReaderModule::DopingProfileReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {}
+    : Module(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
-void DopingProfileReaderModule::init() {
+void DopingProfileReaderModule::initialize() {
     FieldType type = FieldType::GRID;
 
     // Check field strength
