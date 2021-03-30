@@ -18,6 +18,7 @@
 #include <Eigen/Core>
 
 #include "core/utils/log.h"
+#include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
@@ -47,12 +48,14 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
     matrix_ = config_.get<XYVectorInt>("induction_matrix");
+    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
         throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
@@ -70,6 +73,14 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     hole_Beta_ = 0.46 * std::pow(temperature_, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+
+    // Reference lifetime and doping concentrations, taken from:
+    // https://doi.org/10.1016/0038-1101(82)90203-9
+    // https://doi.org/10.1016/0038-1101(76)90022-8
+    electron_lifetime_reference_ = Units::get(1e-5, "s");
+    hole_lifetime_reference_ = Units::get(4.0e-4, "s");
+    electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
+    hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -93,6 +104,9 @@ void TransientPropagationModule::initialize() {
     if(detector_->getElectricFieldType() == FieldType::LINEAR) {
         throw ModuleError("This module cannot be used with linear electric fields.");
     }
+
+    // Check for doping profile
+    has_doping_profile_ = detector->hasDopingProfile();
 
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
@@ -250,6 +264,29 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         return diffusion;
     };
 
+    // Survival probability of this charge carrier package, evaluated once
+    std::uniform_real_distribution<double> survival(0, 1);
+    auto survival_probability = survival(event->getRandomEngine());
+
+    auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+        auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                            (1 + std::fabs(doping_concentration) /
+                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+
+        // auger lifetime model
+        auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
+
+        auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
+
+        // combine the two
+        auto lifetime = lifetime_srh;
+        if(minorityType == type) {
+            lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
+        }
+
+        return survival_probability > (1 - std::exp(-1 * time / lifetime));
+    };
+
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
@@ -287,7 +324,8 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     bool within_sensor = true;
-    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_) {
+    bool is_alive = true;
+    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
         // Save previous position and time
         last_position = position;
 
@@ -304,6 +342,12 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep_);
         position += diffusion;
         runge_kutta.setValue(position);
+
+        // Check if charge carrier is still alive:
+        if(has_doping_profile_) {
+            is_alive = carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                                     runge_kutta.getTime());
+        }
 
         // Update step length histogram
         if(output_plots_) {

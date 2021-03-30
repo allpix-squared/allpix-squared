@@ -24,6 +24,24 @@ and multiplying it with the charge. The resulting pulses are stored for every se
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
+The charge carrier life time can be simulated using the doping concentration of the sensor. This feature is only enabled if a doping profile is loaded for the respective detector using the DopingProfileReader module.
+The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall relation [@fossum-lee]
+
+$`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
+
+where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+
+$`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
+
+where $`C_{a}`$ is the Auger coefficient. 
+The effective life time is then given by
+
+$`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
+
+In each step, the doping-dependent charge carrier lifetime is determined, from which a survival probability is calculated.
+The survival probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`t/\tau`$, where $`t`$ is the time since the creation of the charge carrier.
+
 ### Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `charge_per_step`: Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
@@ -31,6 +49,7 @@ The module can produces a variety of plots such as total integrated charge plots
 * `integration_time`: Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `induction_matrix`: Size of the pixel sub-matrix for which the induced charge is calculated, provided as number of pixels in x and y. The numbers have to be odd and default to `3, 3`. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, a 3x3 grid (9 pixels) should suffice since the weighting potential at a distance of more than one pixel pitch normally is small enough to be neglected while time simulation time is almost tripled.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
+* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$. 
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 
 
@@ -45,5 +64,8 @@ timestep = 0.02ns
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
+[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
+[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
+[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757

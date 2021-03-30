@@ -37,10 +37,12 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("diffuse_deposit", false);
+    config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
+    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);
@@ -63,12 +65,25 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
 
+    // Reference lifetime and doping concentrations, taken from:
+    // https://doi.org/10.1016/0038-1101(82)90203-9
+    // https://doi.org/10.1016/0038-1101(76)90022-8
+    electron_lifetime_reference_ = Units::get(1e-5, "s");
+    hole_lifetime_reference_ = Units::get(4.0e-4, "s");
+    electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
+    hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
+    has_doping_profile_ = detector_->hasDopingProfile();
+
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
 void ProjectionPropagationModule::initialize() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
+    }
+
+    if(has_doping_profile_ && detector_->getDopingProfileType() != FieldType::CONSTANT) {
+        throw ModuleError("This module should only be used with constant doping concentration.");
     }
 
     if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
@@ -238,6 +253,30 @@ void ProjectionPropagationModule::run(Event* event) {
                 LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
             }
 
+            auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+                // Survival probability of this charge carrier package, evaluated once
+                std::uniform_real_distribution<double> survival(0, 1);
+                auto survival_probability = survival(event->getRandomEngine());
+
+                auto lifetime_srh =
+                    (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                    (1 + std::fabs(doping_concentration) /
+                             (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+
+                // auger lifetime model
+                auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
+
+                auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
+
+                // combine the two
+                auto lifetime = lifetime_srh;
+                if(minorityType == type) {
+                    lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
+                }
+
+                return survival_probability > (1 - std::exp(-1 * time / lifetime));
+            };
+
             LOG(TRACE) << "Electric field at carrier position / top of the sensor: "
                        << Units::display(efield_mag_top, "V/cm") << " , " << Units::display(efield_mag, "V/cm");
 
@@ -245,6 +284,10 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Calculate the drift time
             auto calc_drift_time = [&]() {
+                if(position.z() == top_z_) {
+                    return 0.;
+                }
+
                 double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
                 double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
@@ -271,6 +314,13 @@ void ProjectionPropagationModule::run(Event* event) {
 
             double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
+
+            // Check if charge carrier is still alive:
+            if(has_doping_profile_ && !carrier_alive(detector_->getDopingConcentration(position), drift_time)) {
+                LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
+                           << Units::display(position, {"mm", "um"});
+                continue;
+            }
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
             double diffusion_x = gauss_distribution(event->getRandomEngine());

@@ -67,6 +67,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
+    config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
@@ -107,6 +108,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
+    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -126,6 +128,14 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Beta_ = 0.46 * std::pow(temperature_, 0.17);
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+
+    // Reference lifetime and doping concentrations, taken from:
+    // https://doi.org/10.1016/0038-1101(82)90203-9
+    // https://doi.org/10.1016/0038-1101(76)90022-8
+    electron_lifetime_reference_ = Units::get(1e-5, "s");
+    hole_lifetime_reference_ = Units::get(4.0e-4, "s");
+    electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
+    hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -544,6 +554,9 @@ void GenericPropagationModule::initialize() {
                                                   1,
                                                   static_cast<double>(charge_per_step_));
     }
+
+    // Check for doping profile
+    has_doping_profile_ = detector->hasDopingProfile();
 }
 
 void GenericPropagationModule::run(Event* event) {
@@ -558,6 +571,7 @@ void GenericPropagationModule::run(Event* event) {
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
     unsigned int propagated_charges_count = 0;
+    unsigned int recombined_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
     for(const auto& deposit : deposits_message->getData()) {
@@ -612,6 +626,13 @@ void GenericPropagationModule::run(Event* event) {
                 propagate(position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
             position = prop_pair.first;
 
+            if(prop_pair.second < 0) {
+                LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(position, {"mm", "um"}) << " in "
+                           << Units::display(-1 * prop_pair.second, "ns") << " time, removing";
+                recombined_charges_count += charge_per_step;
+                continue;
+            }
+
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(position, {"mm", "um"}) << " in "
                        << Units::display(prop_pair.second, "ns") << " time";
 
@@ -646,7 +667,8 @@ void GenericPropagationModule::run(Event* event) {
     // Write summary and update statistics
     long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
-              << Units::display(average_time, "ns");
+              << Units::display(average_time, "ns") << std::endl
+              << "Recombined " << recombined_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
@@ -697,6 +719,29 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
+    // Survival probability of this charge carrier package, evaluated once
+    std::uniform_real_distribution<double> survival(0, 1);
+    auto survival_probability = survival(random_generator);
+
+    auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+        auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
+                            (1 + std::fabs(doping_concentration) /
+                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+
+        // auger lifetime model
+        auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
+
+        auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
+
+        // combine the two
+        auto lifetime = lifetime_srh;
+        if(minorityType == type) {
+            lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
+        }
+
+        return survival_probability > (1 - std::exp(-1 * time / lifetime));
+    };
+
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
@@ -736,8 +781,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     Eigen::Vector3d last_position = position;
     double last_time = 0;
     size_t next_idx = 0;
+    bool is_alive = true;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          (initial_time + runge_kutta.getTime()) < integration_time_) {
+          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -765,6 +811,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep);
         position += diffusion;
         runge_kutta.setValue(position);
+
+        // Check if charge carrier is still alive:
+        if(has_doping_profile_) {
+            is_alive = carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                                     runge_kutta.getTime());
+        }
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
@@ -819,6 +871,12 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
             output_plot_points.pop_back();
         }
+    }
+
+    if(!is_alive) {
+        LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
+        // FIXME
+        time = -last_time;
     }
 
     // Return the final position of the propagated charge

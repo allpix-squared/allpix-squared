@@ -50,6 +50,11 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<double>("tdc_slope", Units::get(10, "ns"));
     config_.setDefault<bool>("allow_zero_tdc", false);
 
+    // Simple front-end saturation
+    config_.setDefault<bool>("saturation", false);
+    config_.setDefault<int>("saturation_mean", Units::get(190, "ke"));
+    config_.setDefault<int>("saturation_width", Units::get(20, "ke"));
+
     // Plotting
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
@@ -89,6 +94,8 @@ void DefaultDigitizerModule::initialize() {
         h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
         h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_pxq_sat = CreateHistogram<TH1D>(
+            "pixelcharge_saturation", "pixel charge with front-end saturation;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_thr = CreateHistogram<TH1D>(
             "pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
 
@@ -180,6 +187,22 @@ void DefaultDigitizerModule::run(Event* event) {
         LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
         if(config_.get<bool>("output_plots")) {
             h_pxq_gain->Fill(charge / 1e3);
+        }
+
+        // Simulate simple front-end saturation if enabled:
+        if(config_.get<bool>("saturation")) {
+            std::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
+                                                                 config_.get<unsigned int>("saturation_width"));
+            auto saturation = saturation_smearing(event->getRandomEngine());
+            if(charge > saturation) {
+                LOG(DEBUG) << "Above front-end saturation, " << Units::display(charge, {"e", "ke"}) << " > "
+                           << Units::display(saturation, {"e", "ke"}) << ", setting to saturation value";
+                charge = saturation;
+            }
+        }
+
+        if(config_.get<bool>("output_plots")) {
+            h_pxq_sat->Fill(charge / 1e3);
         }
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
@@ -311,6 +334,7 @@ void DefaultDigitizerModule::finalize() {
         h_gain->Write();
         h_pxq_gain->Write();
         h_thr->Write();
+        h_pxq_sat->Write();
         h_pxq_thr->Write();
 
         h_pxq_adc->Write();

@@ -33,6 +33,7 @@
 #include <G4UItcsh.hh>
 #include <G4UIterminal.hh>
 #include <G4VPVParameterisation.hh>
+#include <G4Version.hh>
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
@@ -196,6 +197,11 @@ void VisualizationGeant4Module::set_visualization_settings() {
     // Display trajectories if specified
     auto display_trajectories = config_.get<bool>("display_trajectories", true);
     if(display_trajectories) {
+// Work around an issue introduced in G4UIQt v10.7.1 (improper check for string length)
+#if G4VERSION_NUMBER >= 1071
+        RELEASE_STREAM(G4cout);
+#endif
+
         // Add smooth trajectories
         UI->ApplyCommand("/vis/scene/add/trajectories smooth rich");
 
