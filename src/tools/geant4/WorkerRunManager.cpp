@@ -8,6 +8,7 @@
  */
 
 #include "WorkerRunManager.hpp"
+#include "G4LoggingDestination.hpp"
 #include "MTRunManager.hpp"
 #include "SensitiveDetectorAndFieldConstruction.hpp"
 #include "core/module/exceptions.h"
@@ -32,6 +33,11 @@ namespace {
     // counter to give each worker a unique id
     std::atomic<int> counter;
 } // namespace
+
+WorkerRunManager::WorkerRunManager() {
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+}
 
 WorkerRunManager::~WorkerRunManager() {
     G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();

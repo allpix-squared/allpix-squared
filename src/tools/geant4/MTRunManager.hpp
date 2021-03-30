@@ -35,7 +35,7 @@ namespace allpix {
         friend class WorkerRunManager;
 
     public:
-        MTRunManager() = default;
+        MTRunManager();
         ~MTRunManager() override = default;
 
         /**

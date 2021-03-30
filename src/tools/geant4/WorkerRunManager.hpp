@@ -49,7 +49,7 @@ namespace allpix {
         static WorkerRunManager* GetNewInstanceForThread(); // NOLINT
 
     protected:
-        WorkerRunManager() = default;
+        WorkerRunManager();
 
         /**
          * @brief Run the event loop for specified number of events.

@@ -8,10 +8,17 @@
  */
 
 #include "RunManager.hpp"
+#include "G4LoggingDestination.hpp"
 
 #include <array>
 
+#include <G4UImanager.hh>
 using namespace allpix;
+
+RunManager::RunManager() {
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+}
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 

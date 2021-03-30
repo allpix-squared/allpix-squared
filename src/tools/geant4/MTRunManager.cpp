@@ -8,11 +8,19 @@
  */
 
 #include "MTRunManager.hpp"
+#include "G4LoggingDestination.hpp"
 #include "WorkerRunManager.hpp"
+
+#include <G4UImanager.hh>
 
 using namespace allpix;
 
 G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
+
+MTRunManager::MTRunManager() {
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+}
 
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 

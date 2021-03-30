@@ -17,6 +17,7 @@
 #include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
+#include <G4NuclearLevelData.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RadioactiveDecayPhysics.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -125,9 +126,6 @@ void DepositionGeant4Module::initialize() {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
 
-    // Suppress all output from G4
-    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
-
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
 
@@ -232,6 +230,14 @@ void DepositionGeant4Module::initialize() {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
+    // Disable verbose messages from processes
+    ui_g4->ApplyCommand("/process/verbose 0");
+    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
+    G4EmParameters::Instance()->SetVerbose(0);
+    G4HadronicProcessStore::Instance()->SetVerbose(0);
+    physicsList->SetVerboseLevel(0);
+    G4NuclearLevelData::GetInstance()->GetParameters()->SetVerbose(0);
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
@@ -259,22 +265,13 @@ void DepositionGeant4Module::initialize() {
         run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
-    // Disable verbose messages from processes
-    ui_g4->ApplyCommand("/process/verbose 0");
-    ui_g4->ApplyCommand("/process/em/verbose 0");
-    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
-    G4HadronicProcessStore::Instance()->SetVerbose(0);
-
-    // Release the output stream
-    RELEASE_STREAM(G4cout);
+    // Flush the Geant4 stream buffer because some elements in the initialization never do:
+    G4cout << G4endl;
 }
 
 void DepositionGeant4Module::initializeThread() {
 
     LOG(DEBUG) << "Initializing run manager";
-
-    // Suppress output stream if not in debugging mode
-    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Initialize the thread local G4RunManager in case of MT
     if(canParallelize()) {
@@ -288,15 +285,9 @@ void DepositionGeant4Module::initializeThread() {
 
         run_manager_mt->InitializeForThread();
     }
-
-    // Release the output stream
-    RELEASE_STREAM(G4cout);
 }
 
 void DepositionGeant4Module::run(Event* event) {
-
-    // Suppress output stream if not in debugging mode
-    SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
 
     // Seed the sensitive detectors RNG
     for(auto& sensor : sensors_) {
@@ -319,8 +310,6 @@ void DepositionGeant4Module::run(Event* event) {
 
     uint64_t last_event_num = last_event_num_.load();
     last_event_num_.compare_exchange_strong(last_event_num, event->number);
-
-    RELEASE_STREAM(G4cout);
 
     track_info_manager_->createMCTracks();
     track_info_manager_->dispatchMessage(this, messenger_, event);
