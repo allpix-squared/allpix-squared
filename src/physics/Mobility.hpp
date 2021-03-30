@@ -98,9 +98,8 @@ namespace allpix {
      * @brief Hamburg (Klanner-Scharf) parametrization for <100> silicon
      *
      * http://dx.doi.org/10.1016/j.nima.2015.07.057
-     * This implementation takes the parameters from Table 4, irrespective of the electric field strength. No temperature
-     * dependence is assumed on hole mobility parameter c, all other parameters are the reference values at 300K and are
-     * scaled according to Equation (6).
+     * This implementation takes the parameters from Table 4. No temperature dependence is assumed on hole mobility parameter
+     * c, all other parameters are the reference values at 300K and are scaled according to Equation (6).
      */
     class Hamburg : public MobilityModel {
     public:
@@ -127,13 +126,34 @@ namespace allpix {
             }
         };
 
-    private:
+    protected:
         double electron_mu0_;
         double electron_vsat_;
         double hole_mu0_;
         double hole_param_b_;
         double hole_param_c_;
         double hole_E0_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Hamburg (Klanner-Scharf) high-field parametrization for <100> silicon
+     *
+     * http://dx.doi.org/10.1016/j.nima.2015.07.057
+     * This implementation takes the parameters from Table 3, suitable for electric field strengths above 2.5kV/cm. No
+     * temperature dependence is assumed on hole mobility parameter c, all other parameters are the reference values at 300K
+     * and are scaled according to Equation (6).
+     */
+    class HamburgHighField : public Hamburg {
+    public:
+        HamburgHighField(double temperature) : Hamburg(temperature) {
+            electron_mu0_ = Units::get(1430 * std::pow(temperature / 300, -1.99), "cm*cm/V/s");
+            electron_vsat_ = Units::get(1.05e7 * std::pow(temperature / 300, -0.302), "cm/s");
+            hole_mu0_ = Units::get(457 * std::pow(temperature / 300, -2.80), "cm*cm/V/s");
+            hole_param_b_ = Units::get(9.57e-8 * std::pow(temperature / 300, -0.155), "s/cm"),
+            hole_param_c_ = Units::get(-3.24e-13, "s/V");
+            hole_E0_ = Units::get(2970 * std::pow(temperature / 300, 0.563), "V/cm");
+        }
     };
 
     /**
