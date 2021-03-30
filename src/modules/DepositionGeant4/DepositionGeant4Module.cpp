@@ -34,6 +34,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
 
 #include "ActionInitializationG4.hpp"
@@ -231,20 +232,6 @@ void DepositionGeant4Module::initialize() {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
-    // Prepare seeds for Geant4:
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
-
-    // Set the random seed for Geant4 generation before calling initialize
-    // since it draws random numbers
-    ui_g4->ApplyCommand(seed_command);
-
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
@@ -307,12 +294,6 @@ void DepositionGeant4Module::initializeThread() {
 }
 
 void DepositionGeant4Module::run(Event* event) {
-    MTRunManager* run_manager_mt = nullptr;
-
-    // Obtain the thread-local G4RunManager in case of MT
-    if(canParallelize()) {
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-    }
 
     // Suppress output stream if not in debugging mode
     SUPPRESS_STREAM_EXCEPT(DEBUG, G4cout);
@@ -324,10 +305,16 @@ void DepositionGeant4Module::run(Event* event) {
 
     // Start a single event from the beam
     LOG(TRACE) << "Enabling beam";
-    if(run_manager_mt == nullptr) {
-        run_manager_g4_->BeamOn(static_cast<int>(number_of_particles_));
+    auto seed1 = event->getRandomNumber();
+    auto seed2 = event->getRandomNumber();
+    LOG(DEBUG) << "Seeding Geant4 event with seeds " << seed1 << " " << seed2;
+
+    if(canParallelize()) {
+        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
     } else {
-        run_manager_mt->Run(static_cast<G4int>(event->number), static_cast<int>(number_of_particles_));
+        auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
+        run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
     }
 
     uint64_t last_event_num = last_event_num_.load();

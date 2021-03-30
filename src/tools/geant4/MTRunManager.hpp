@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief The MTRunManager class, defines a custom Geant4 RunManager that works with Allpix threads.
- * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2021 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -40,14 +40,15 @@ namespace allpix {
 
         /**
          * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
-         * @param allpix_event The allpix event number
          * @param n_event number of events to simulate in one run.
+         * @param seed1 First event seed for the worker run manager of the calling thread
+         * @param seed2 Second event seed for the worker run manager of the calling thread
          *
          * Run the specified number of events on a separate worker that is associated with the calling thread.
-         * The worker will be initialized with a new set of seeds to be used specifically for this event run such
-         * that events are seeded in the order of creation which ensures that results can be reproduced.
+         * The worker will be initialized with a new set of seeds to be used specifically for this event. The seeds are
+         * obtained from the calling module, thereby ensuring that results can be reproduced.
          */
-        void Run(G4int allpix_event, G4int n_event); // NOLINT
+        void Run(G4int n_event, uint64_t seed1, uint64_t seed2); // NOLINT
 
         /**
          * @brief Initialize the run manager to be ready for run.
@@ -93,40 +94,30 @@ namespace allpix {
     protected:
         /**
          * @brief Previously used by workers to wait for master commands.
-         *
          * Worker manager waits on the shared barrier until master issues a new command. It will now do nothing.
          */
         WorkerActionRequest ThisWorkerWaitForNextAction() override { return WorkerActionRequest::UNDEFINED; }
 
         /**
          * @brief Previously used to create threads and start worker managers.
-         *
          * Creates my own threads and start the worker run managers. It will now do nothing.
          */
         void CreateAndStartWorkers() override {}
 
         /**
-         * @brief Fills the helper map with new seeds for new events
-         * @param n_event The number of events to fill seeds for
-         */
-        void FillWorkerSeedsMap(G4int n_event); // NOLINT
-
-        /**
          * @brief Previously used to issue a new command to the workers.
-         *
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
          */
         void NewActionRequest(WorkerActionRequest) override {}
 
         /**
-         * @brief Initialize the workers seeds for the given number of events.
-         * @param nevts Number of events
+         * @brief Previously used to generate initial seeds. We skip this since we provide seeds to each event directly
+         * It is important to override this function to make sure Geant4 is not seeding itself independently.
          */
-        G4bool InitializeSeeds(G4int nevts) override;
+        G4bool InitializeSeeds(G4int) override { return true; };
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
-         *
          * Send commands to workers to execute the UI commands stored in master. It will now do nothing.
          */
         void RequestWorkersProcessCommandsStack() override {}
@@ -149,42 +140,36 @@ namespace allpix {
 
         /**
          * @brief Previously used to stop all the workers.
-         *
          * Stop the workers. It will now do nothing.
          */
         void TerminateWorkers() override {}
 
         /**
          * @brief Previously used by workers to signal they finished the event loop.
-         *
          * Synchronize with master about finishing the assigned work. It will now do nothing.
          */
         void ThisWorkerEndEventLoop() override {}
 
         /**
          * @brief Previously used by workers to signal they finished running UI commands.
-         *
          * Synchronize with master about finishing UI commands. It will now do nothing.
          */
         void ThisWorkerProcessCommandsStackDone() override {}
 
         /**
          * @brief Previously used by workers to signal they are ready to do work.
-         *
          * Synchronize with master we finished initialization and ready for work. It will now do nothing.
          */
         void ThisWorkerReady() override {}
 
         /**
          * @brief Previously used to wait until all workers have finished the event loop.
-         *
          * Wait for all the workers to finish and signal the end of event loop. It will now do nothing.
          */
         void WaitForEndEventLoopWorkers() override {}
 
         /**
          * @brief Previously used to wait for workers to finish initialization.
-         *
          * Wait for all the workers to finish initialization. It will now do nothing.
          */
         void WaitForReadyWorkers() override {}
@@ -194,8 +179,6 @@ namespace allpix {
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
         std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction_{nullptr};
-
-        std::unordered_map<G4int, std::pair<long, long>> workers_seeds_;
     };
 } // namespace allpix
 
