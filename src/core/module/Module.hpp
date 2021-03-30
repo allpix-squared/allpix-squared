@@ -114,12 +114,6 @@ namespace allpix {
         std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
-         * @brief Get seed to initialize random generators
-         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
-         */
-        uint64_t getRandomSeed();
-
-        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -237,13 +231,6 @@ namespace allpix {
         virtual void skip_event(uint64_t) {}
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
-
-        /**
-         * @brief Set the random number generator for this module
-         * @param random_generator Generator to produce random numbers
-         */
-        void set_random_generator(RandomNumberGenerator* random_generator);
-        RandomNumberGenerator* random_generator_{nullptr};
 
         std::shared_ptr<Detector> detector_;
 

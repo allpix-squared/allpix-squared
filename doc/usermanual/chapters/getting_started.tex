@@ -294,6 +294,7 @@ The \apsq framework provides a set of global parameters which control and alter 
 The only \textit{required} global parameter: the framework will fail to start if it is not specified.
 \item \parameter{number_of_events}: Determines the total number of events the framework should simulate.
 Defaults to one (simulating a single event).
+\item \parameter{skip_events}: A number of events (and therefore event seeds) to be skipped at start of the run. After skipping, the full \parameter{number_of_events} will be processed starting from the new event seed. Defaults to 0, i.e. starting with the first event seed.
 \item \parameter{root_file}: Location relative to the \parameter{output_directory} where the ROOT output data of all modules will be written to. The file extension \texttt{.root} will be appended if not present.
 Default value is \textit{modules.root}.
 Directories within the ROOT file will be created automatically for all module instantiations.
