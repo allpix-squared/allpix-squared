@@ -109,6 +109,9 @@ void GeometryBuilderGeant4Module::initialize() {
     // Suppress all stdout output due to a part in Geant4 where G4cout is not used
     SUPPRESS_STREAM(std::cout);
 
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
     if(canParallelize()) {
