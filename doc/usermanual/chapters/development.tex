@@ -279,12 +279,12 @@ For initialization and finalization of thread-local data members, i.e.\ structur
 
 \apsq uses ROOT histograms for collecting and storing statistics and other additional information about the simulation process.
 ROOT provides the template class \command{ROOT::TThreadedObject} which allows to use histograms in multi-threaded environments but slightly alters the interface of the histogram objects.
-In order to simplify their usage, \apsq provides a thin wrapper class which restores the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way as in a single-threaded environment.
+Furthermore, there have been significant changes to the class between minor release version of ROOT and it doesn't scale very well with a large number of predefined threads.
+Therefore, \apsq provides its own re-implementation of this class, \command{allpix::ThreadedHistogram} which also restores the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way as in a single-threaded environment.
 
-This wrapper class can be used as follows:
+This class can be used as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 // Declaration of a new histogram of type "TH1D"
-// Internally, this is a std::unique_ptr<ROOT::TThreadedObject<T>>
 Histogram<TH1D> my_histogram;
 
 // Creation of the histogram using the CreateHistogram helper method:
