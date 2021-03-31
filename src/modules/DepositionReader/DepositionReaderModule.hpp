@@ -116,7 +116,5 @@ namespace allpix {
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, Histogram<TH1D>> charge_per_event_;
-
-        std::mutex mutex_;
     };
 } // namespace allpix

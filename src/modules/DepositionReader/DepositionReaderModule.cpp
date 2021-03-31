@@ -199,8 +199,6 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
 }
 
 void DepositionReaderModule::run(Event* event) {
-    // We can not read multiple events at the same time so we need to synchronize access
-    std::lock_guard<std::mutex> lock{mutex_};
     auto event_num = event->number;
 
     // Set of deposited charges in this event
