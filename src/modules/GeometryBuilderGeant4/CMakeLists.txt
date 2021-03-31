@@ -5,7 +5,7 @@ ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 FIND_PACKAGE(Geant4)
 IF(NOT Geant4_FOUND)
     MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
-    "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
+                        "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
 ENDIF()
 
 # Add "geant4.sh" as runtime dependency for setup.sh file:
@@ -21,14 +21,14 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 ENDIF()
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
+ALLPIX_MODULE_SOURCES(
+    ${MODULE_NAME}
     GeometryBuilderGeant4Module.cpp
     GeometryConstructionG4.cpp
     Parameterization2DG4.cpp
     DetectorConstructionG4.cpp
     PassiveMaterialConstructionG4.cpp
-    PassiveMaterialModel.cpp
-)
+    PassiveMaterialModel.cpp)
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
