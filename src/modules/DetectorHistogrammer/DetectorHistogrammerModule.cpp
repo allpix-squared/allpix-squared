@@ -253,17 +253,12 @@ void DetectorHistogrammerModule::initialize() {
 void DetectorHistogrammerModule::run(Event* event) {
     using namespace ROOT::Math;
 
-    std::shared_ptr<PixelHitMessage> pixels_message;
+    std::shared_ptr<PixelHitMessage> pixels_message{nullptr};
     auto mcparticle_message = messenger_->fetchMessage<MCParticleMessage>(this, event);
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {
         pixels_message = messenger_->fetchMessage<PixelHitMessage>(this, event);
-    } catch(const MessageNotFoundException&) {
-        pixels_message = nullptr;
-    }
-
-    if(pixels_message != nullptr) {
         LOG(DEBUG) << "Received " << pixels_message->getData().size() << " pixel hits";
 
         // Fill 2D hitmap histogram
@@ -278,10 +273,11 @@ void DetectorHistogrammerModule::run(Event* event) {
             // Update statistics
             total_hits_ += 1;
         }
+    } catch(const MessageNotFoundException&) {
     }
 
     // Perform a clustering
-    std::vector<Cluster> clusters = doClustering(pixels_message);
+    std::vector<Cluster> clusters = (pixels_message != nullptr ? doClustering(pixels_message) : std::vector<Cluster>());
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
@@ -419,7 +415,7 @@ void DetectorHistogrammerModule::finalize() {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
 
-    // Merge the histograms that was possibly filled in parallel
+    // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();
@@ -575,10 +571,6 @@ void DetectorHistogrammerModule::finalize() {
 std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
-
-    if(pixels_message == nullptr) {
-        return clusters;
-    }
 
     auto pixel_it = pixels_message->getData().begin();
     for(; pixel_it != pixels_message->getData().end(); pixel_it++) {
