@@ -37,7 +37,7 @@ namespace allpix {
          * Redefine function operator to retrieve pseudo-random numbers. This allows us to log the number at retrieval.
          * Technically we are shadowing the base class operator since it is non-virtual and explicitly call it from within.
          *
-         * @return 64-bit pseud-random number
+         * @return 64-bit pseudo-random number
          */
         std::uint_fast64_t operator()() {
             // Only copy if we want to log it
