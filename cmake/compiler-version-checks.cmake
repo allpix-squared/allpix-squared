@@ -35,14 +35,23 @@ ENDIF()
 
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_VERSION_MIN)
-        MESSAGE(FATAL_ERROR "Requiring at least GCC version ${GCC_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features")
+        MESSAGE(
+            FATAL_ERROR
+                "Requiring at least GCC version ${GCC_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features"
+        )
     ENDIF()
 ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS CLANG_VERSION_MIN)
-        MESSAGE(FATAL_ERROR "Requiring at least Clang version ${CLANG_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features")
+        MESSAGE(
+            FATAL_ERROR
+                "Requiring at least Clang version ${CLANG_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features"
+        )
     ENDIF()
 ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS AppleClang_VERSION_MIN)
-        MESSAGE(FATAL_ERROR "Requiring at least AppleClang version ${AppleClang_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features")
+        MESSAGE(
+            FATAL_ERROR
+                "Requiring at least AppleClang version ${AppleClang_VERSION_MIN}. Available version ${CMAKE_CXX_COMPILER_VERSION} does not fully support required C++ features"
+        )
     ENDIF()
 ENDIF()
