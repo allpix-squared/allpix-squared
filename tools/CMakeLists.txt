@@ -1,7 +1,7 @@
 # Include set of separate tools shipped with the framework
 OPTION(BUILD_TOOLS "Build additional tools and executables" ON)
 
-if(BUILD_TOOLS)
+IF(BUILD_TOOLS)
     # Build the MeshConverter
     ADD_SUBDIRECTORY(mesh_converter)
 

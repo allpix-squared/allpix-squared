@@ -2,7 +2,7 @@
 OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 
 # reset the saved libraries
-SET(ALLPIX_MODULE_LIBRARIES
+SET(_ALLPIX_MODULE_LIBRARIES
     ""
     CACHE INTERNAL "Module libraries")
 

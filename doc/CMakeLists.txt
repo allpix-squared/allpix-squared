@@ -6,12 +6,12 @@ FIND_PACKAGE(Doxygen)
 
 IF(DOXYGEN_FOUND)
     CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/reference/Doxyfile.in ${CMAKE_BINARY_DIR}/reference/Doxyfile @ONLY)
-    ADD_CUSTOM_TARGET(${CMAKE_PROJECT_NAME}-reference
+    ADD_CUSTOM_TARGET(
+        ${CMAKE_PROJECT_NAME}-reference
         ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/reference/Doxyfile
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/reference
         COMMENT "Generating API documentation with Doxygen"
-        VERBATIM
-        )
+        VERBATIM)
 ENDIF(DOXYGEN_FOUND)
 
 ###############################################
@@ -82,25 +82,31 @@ IF(LATEX_COMPILER)
 
             ADD_PANDOC_DOCUMENT(
                 ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex
-                SOURCES              ${PROJECT_SOURCE_DIR}/${doc_readme_file}
-                PRODUCT_DIRECTORY    usermanual/md/${readme_parent_dir}/
-                PANDOC_DIRECTIVES    -t latex --listings --biblatex
-                NO_EXPORT_PRODUCT
-            )
+                SOURCES
+                ${PROJECT_SOURCE_DIR}/${doc_readme_file}
+                PRODUCT_DIRECTORY
+                usermanual/md/${readme_parent_dir}/
+                PANDOC_DIRECTIVES
+                -t
+                latex
+                --listings
+                --biblatex
+                NO_EXPORT_PRODUCT)
 
-            SET(other_tex_files ${other_tex_files} ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex)
+            SET(_other_tex_files ${_other_tex_files}
+                                 ${CMAKE_BINARY_DIR}/usermanual/md/${readme_parent_dir}/${readme_dir_name}.tex)
         ENDFOREACH()
     ELSE()
-        SET(module_tex_files)
-        SET(example_tex_files)
-        SET(other_tex_files "")
+        SET(_module_tex_files)
+        SET(_example_tex_files)
+        SET(_other_tex_files "")
         MESSAGE(WARNING "No pandoc command, cannot add Markdown documentation to user manual")
     ENDIF()
 
     # Build array of LaTex files to add to the documentation
-    LIST(LENGTH module_tex_files NUM_MODULES)
+    LIST(LENGTH _module_tex_files NUM_MODULES)
     MESSAGE(STATUS "Manual: adding ${NUM_MODULES} module descriptions")
-    FOREACH(module_tex_file ${module_tex_files})
+    FOREACH(module_tex_file ${_module_tex_files})
         IF(NOT ALLPIX_MODULE_FILES)
             SET(ALLPIX_MODULE_FILES "{${module_tex_file}")
         ELSE()
@@ -113,9 +119,9 @@ IF(LATEX_COMPILER)
         SET(ALLPIX_MODULE_FILES "")
     ENDIF()
 
-    LIST(LENGTH example_tex_files NUM_EXAMPLES)
+    LIST(LENGTH _example_tex_files NUM_EXAMPLES)
     MESSAGE(STATUS "Manual: adding ${NUM_EXAMPLES} example descriptions")
-    FOREACH(example_tex_file ${example_tex_files})
+    FOREACH(example_tex_file ${_example_tex_files})
         IF(NOT ALLPIX_EXAMPLE_FILES)
             SET(ALLPIX_EXAMPLE_FILES "{${example_tex_file}")
         ELSE()
@@ -158,9 +164,7 @@ IF(LATEX_COMPILER)
             usermanual/chapters/additional.tex
             usermanual/chapters/acknowledgements.tex
             usermanual/config.tex
-
             usermanual/tikz/transformations.tex
-
             usermanual/html/allpix.cfg
             usermanual/html/tools.sty
             usermanual/html/js/fw.js

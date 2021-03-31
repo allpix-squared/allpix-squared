@@ -19,9 +19,7 @@ SET(ALLPIX_VERSION "v1.6.0")
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE
         "RelWithDebInfo"
-        CACHE STRING
-              "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
-              FORCE)
+        CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
 # Overwrite with the version from git if found
@@ -43,13 +41,12 @@ PROJECT(
     VERSION ${SIMPLE_VERSION}
     LANGUAGES NONE)
 # Access the project name (for install locations) in the source
-ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}"
-                -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}" -DALLPIX_BUILD_TIME="${BUILD_TIME}")
+ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}"
+                -DALLPIX_BUILD_TIME="${BUILD_TIME}")
 
 # Include a generated configuration file
 # FIXME: this should be combined with the ADD_DEFINITIONS
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h"
-               "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
@@ -110,10 +107,7 @@ ENDIF()
 IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
     SET(CMAKE_LINK_WHAT_YOU_USE
         TRUE
-        CACHE
-            STRING
-            "Choose whether to only link libraries which contain symbols actually used by the target."
-            FORCE)
+        CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
 
 # Include allpix cmake functions
@@ -185,13 +179,11 @@ OPTION(SANITIZER "Build with sanitizer flags" OFF)
 OPTION(COVERAGE "Create code coverage report" OFF)
 
 # FIXME: not using the flag checker now because it wrongly rejects a sanitizer flag..
-IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-                                       OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
+IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")))
     # Sanitizer libraries:
     IF(SANITIZER)
         MESSAGE(STATUS "Running debug build, adding extra sanitizer flags")
-        SET(CMAKE_CXX_FLAGS
-            "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
         # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
         SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
     ENDIF()
@@ -200,9 +192,8 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     IF(COVERAGE)
         INCLUDE("cmake/CodeCoverage.cmake")
         APPEND_COVERAGE_COMPILER_FLAGS()
-        SET(COVERAGE_GCOVR_EXCLUDES
-            "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools"
-            "${PROJECT_SOURCE_DIR}/3rdparty" "${PROJECT_BINARY_DIR}")
+        SET(COVERAGE_GCOVR_EXCLUDES "${PROJECT_SOURCE_DIR}/src/modules" "${PROJECT_SOURCE_DIR}/tools"
+                                    "${PROJECT_SOURCE_DIR}/3rdparty" "${PROJECT_BINARY_DIR}")
         SETUP_TARGET_FOR_COVERAGE_GCOVR(
             NAME coverage_gcovr
             EXECUTABLE ctest -L coverage
@@ -243,8 +234,7 @@ ENDIF()
 # Downgrade to C++14 if ROOT is not build with C++17 support
 IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
-        MESSAGE(
-            FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
+        MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
 ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[14y].*")
     SET(CMAKE_CXX_STANDARD 14)
@@ -264,8 +254,7 @@ ALLPIX_SETUP_ROOT_TARGETS()
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES Threads::Threads Boost::random ROOT::Core ROOT::GenVector ROOT::Geom
-                          ROOT::RIO ROOT::Hist)
+SET(ALLPIX_DEPS_LIBRARIES Threads::Threads Boost::random ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
 
 # Add the LCG view as dependency if set:
 IF(DEFINED ENV{LCG_VIEW})
@@ -301,8 +290,7 @@ INCLUDE("cmake/clang-cpp-checks.cmake")
 
 # Set the models directory and provide install if necessary
 ADD_SUBDIRECTORY(models)
-ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}"
-                -DALLPIX_MODEL_SUFFIX="${MODEL_SUFFIX}")
+ADD_DEFINITIONS(-DALLPIX_MODEL_DIRECTORY="${MODEL_DIRECTORY}" -DALLPIX_MODEL_SUFFIX="${_MODEL_SUFFIX}")
 
 # Include third-party libraries as system headers:
 INCLUDE_DIRECTORIES(SYSTEM 3rdparty)
@@ -367,8 +355,7 @@ FOREACH(dep ${ALLPIX_RUNTIME_LIBS})
     SET(SETUP_FILE_DEPS "${SETUP_FILE_DEPS}export LD_LIBRARY_PATH=\"${dep}:$LD_LIBRARY_PATH\"\n")
 ENDFOREACH()
 # Create setup file
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh"
-               "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake.sh" "${CMAKE_CURRENT_BINARY_DIR}/setup/setup.sh" @ONLY)
 
 #######################################
 # Generate CMake Configuration Module #
@@ -379,8 +366,7 @@ SET(ALLPIX_INCLUDE_DIR "include")
 SET(ALLPIX_LIBRARY_DIR "lib")
 SET(ALLPIX_CMAKE_DIR "share/cmake")
 CONFIGURE_PACKAGE_CONFIG_FILE(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AllpixConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/AllpixConfig.cmake
     INSTALL_DESTINATION ${ALLPIX_CMAKE_DIR}
     PATH_VARS ALLPIX_INCLUDE_DIR ALLPIX_LIBRARY_DIR)
 
@@ -388,8 +374,7 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(
     AllpixConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion)
-INSTALL(FILES ${PROJECT_BINARY_DIR}/AllpixConfig.cmake
-              ${PROJECT_BINARY_DIR}/AllpixConfigVersion.cmake
+INSTALL(FILES ${PROJECT_BINARY_DIR}/AllpixConfig.cmake ${PROJECT_BINARY_DIR}/AllpixConfigVersion.cmake
               ${PROJECT_SOURCE_DIR}/cmake/AllpixMacros.cmake DESTINATION ${ALLPIX_CMAKE_DIR})
 
 INSTALL(

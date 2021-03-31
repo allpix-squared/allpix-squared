@@ -34,8 +34,9 @@ ROOT_GENERATE_DICTIONARY(
     -I${CMAKE_CURRENT_SOURCE_DIR}/corryvreckan
     MODULE
     CorryvreckanWriterObjects)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanWriterObjectsDictionary.cxx
-                            PROPERTIES GENERATED TRUE COMPILE_FLAGS "-w" # or whatever ?
+SET_SOURCE_FILES_PROPERTIES(
+    ${CMAKE_CURRENT_BINARY_DIR}/CorryvreckanWriterObjectsDictionary.cxx PROPERTIES GENERATED TRUE COMPILE_FLAGS
+                                                                                                  "-w" # or whatever ?
 )
 
 # Define the library adding the object file created above

@@ -28,7 +28,7 @@ MACRO(_allpix_module_define_common name)
     SET(${name} "AllpixModule${_allpix_module_dir}")
 
     # Save the module library for prelinking in the executable (NOTE: see exec folder)
-    SET(ALLPIX_MODULE_LIBRARIES ${ALLPIX_MODULE_LIBRARIES} ${${name}} CACHE INTERNAL "Module libraries")
+    SET(_ALLPIX_MODULE_LIBRARIES ${_ALLPIX_MODULE_LIBRARIES} ${${name}} CACHE INTERNAL "Module libraries")
 
     # Set default module class name
     SET(_allpix_module_class "${_allpix_module_dir}Module")
