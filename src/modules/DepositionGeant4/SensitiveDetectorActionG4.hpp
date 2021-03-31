@@ -92,7 +92,12 @@ namespace allpix {
         double fano_factor_;
         double cutoff_time_;
 
-        // Random number generator for e/h pair creation fluctuation
+        /**
+         * Random number generator for e/h pair creation fluctuation
+         * @note It is okay to keep a separate random number generator here because instances if this class are thread_local
+         * and the PRNG is re-seeded every event from the event PRNG. See \ref DepositionGeant4Module::run()
+         */
+
         RandomNumberGenerator random_generator_;
 
         // Statistics of total and per-event deposited charge
