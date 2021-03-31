@@ -155,7 +155,12 @@ namespace allpix {
     }
 
     /**
-     * @brief A thin wrapper over ROOT::TThreadedObject for histograms
+     * @brief A re-implementation of ROOT::TThreadedObject
+     *
+     * This class is a re-implementation of TThreadedObject for histograms and profiles, providing better scalability and an
+     * additional thin wrapper to commonly used histogram functions such as Fill() or SetBinContent(). Furthermore, it also
+     * does not depend on ROOT implementation changes that have happened to the original class between minor ROOT versions.
+     * This class scales to an arbitrary number of thread, irrespective of the underlying ROOT version.
      *
      * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
