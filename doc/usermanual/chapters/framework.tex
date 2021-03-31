@@ -446,7 +446,7 @@ void run(Event* event) {
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
     // Send the message using the Messenger object for the given event
-    messenger->dispatchMessage(message, event);
+    messenger->dispatchMessage(this, message, event);
 }
 \end{minted}
 
@@ -454,7 +454,7 @@ void run(Event* event) {
 The message system has multiple methods to process received messages.
 The first two are the most common methods and the third should be avoided in almost every instance.
 \begin{enumerate}
-\item Bind a \textbf{single message}.
+\item Bind a \textbf{single message} to the input of this module.
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
 The following example binds to a message containing an array of objects and is placed in the constructor of a detector-type \parameter{TestModule}:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -463,7 +463,7 @@ TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
     messenger->bindSingle<ExampleMessage>(this, MsgFlags::NONE);
 }
 \end{minted}
-\item Bind a \textbf{set of messages}.
+\item Bind a \textbf{set of messages} to the input of the module.
 This method should be used if the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \parameter{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
@@ -718,19 +718,22 @@ Should be used to request the end of event processing in the current run, e.g. i
 The module manager creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
 Each event is represented by an instance of the \texttt{Event} class which encapsulates the data used during this event.
 The configured number of events are then submitted to the thread pool and executed by the thread pool's workers.
-This thread pool has a fixed queue size so that not all events are submitted at the same time and consume additional memory.
 
-By default, \apsq assumes the module doesn't support parallelization and each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading}.
-To support multi-threading, the module's \texttt{run()} method should be re-entrant and any shared member variables should be protected.
-If multi-threading is enabled, the module manager will check if all the loaded modules support multi-threading.
+The thread pool features two independent queues.
+A FIFO-like unsorted queue for events to be processed, and a second, priority-ordered queue for buffered events.
+The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a SequentialModule.
+
+By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multi-threaded processing of events.
+Therefore each module each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multi-threading capabilities to \apsq.
+To support multi-threading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
+If multi-threading is enabled in the run configuration, the module manager will check if all the loaded modules support multi-threading.
 In case, one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{canParallelize()} method.
 
 \subsection{Seed Distribution}
-A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to exactly reproduce a simulation result from the same inputs even when the number of workers is different.
-Each event holds a random engine that can be used by a module in its \texttt{run()} method.
-\apsq has a master random engine that is used to seed such engines for every event in a sequential manner, in order of increasing event number.
+A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to provide reproducibility of simulation results from the same inputs even when the number of workers is different.
+Each event is seeded upon its creation by the main thread from a central event seed generator, in increasing sequence of event numbers. The event provides access to a random engine that can be used by each module in the \texttt{run()} method.
 
-To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of such objects is thus made static and thread-local, and is only provided to the event for temporary usage.
+To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of the engines is made static and thread-local, and is only provided to the event for temporary usage.
 This way ensures that the framework maintains the minimum number of such heavy objects equal to the number of workers used.
 When a worker starts to execute a new event, it seeds its local random engine first and passes it to the event object.
 
@@ -741,16 +744,16 @@ The \texttt{Messenger} owns the global message subscription information and inte
 
 \subsection{Running Events in order using SequentialModule}
 The \texttt{SequentialModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
-Inheriting from this class will allow the module to transparently check if the given event is in order and decide whether to execute it immediately or to request buffering if it is out of order.
+Inheriting from this class will allow the module to transparently check if the given event is in the correct sequence and decide whether to execute it immediately or to request buffering in the prioritized buffer queue if the thread pool if it is out of order.
 
-Using the \texttt{SequentialModule} is suitable for I/O modules which read or write to the file system.
-It e.g.\ allows output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
+Using the \texttt{SequentialModule} is suitable for I/O modules which read or write to the file system and do not allow random read or write access to events.
+This enables output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
 
 Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
 This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
 
 \subsection{Geant4 Modules}
-The usage of the Geant4 library in \apsq has some constraints because the Geant4 multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
-Furthermore, Geant4 does not guarantee results reproducibility between both its multi-threaded and sequential run managers.
-Modules that would like to use the Geant4 library shall not use the run managers provided by Geant4.
+The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
+Furthermore, \emph{Geant4} does not guarantee results reproducibility between both its multi-threaded and sequential run managers.
+Modules that would like to use the \emph{Geant4} library shall not use the run managers provided by \emph{Geant4}.
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
