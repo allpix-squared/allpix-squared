@@ -32,7 +32,7 @@ namespace allpix {
         DopingProfileReaderModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief [Initialise this module]
+         * @brief Read field maps from file and add to the detector
          */
         void initialize() override;
 
