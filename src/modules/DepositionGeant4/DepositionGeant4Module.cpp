@@ -381,9 +381,10 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
         // Do not add sensitive detector for detectors that have no listeners for the deposited charges
-        // FIXME Probably the MCParticle has to be checked as well
         if(!messenger_->hasReceiver(this,
-                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
+                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector)) &&
+           !messenger_->hasReceiver(this, std::make_shared<MCParticleMessage>(std::vector<MCParticle>(), detector)) &&
+           !messenger_->hasReceiver(this, std::make_shared<MCTrackMessage>(std::vector<MCTrack>()))) {
             LOG(INFO) << "Not depositing charges in " << detector->getName()
                       << " because there is no listener for its output";
             continue;
