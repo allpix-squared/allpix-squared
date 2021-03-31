@@ -1,0 +1,26 @@
+parse:
+  _help_additional_commands:
+  - Specify structure for custom cmake functions
+  additional_commands:
+    SETUP_TARGET_FOR_COVERAGE_GCOVR:
+      kwargs:
+        NAME: '*'
+        EXECUTABLE: '*'
+        DEPENDENCIES: '*'
+    SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML:
+      kwargs:
+        NAME: '*'
+        EXECUTABLE: '*'
+        DEPENDENCIES: '*'
+
+format:
+  line_width: 100
+  tab_size: 4
+  use_tabchars: false
+  command_case: 'upper'
+  keyword_case: 'upper'
+  max_subgroups_hwrap: 2
+
+markup:
+  canonicalize_hashrulers: false
+  enable_markup: false
