@@ -13,7 +13,7 @@ using namespace allpix;
 
 G4LoggingDestination* G4LoggingDestination::instance = nullptr;
 allpix::LogLevel G4LoggingDestination::reporting_level_g4cout = allpix::LogLevel::TRACE;
-allpix::LogLevel G4LoggingDestination::reporting_level_g4cerr = allpix::LogLevel::DEBUG;
+allpix::LogLevel G4LoggingDestination::reporting_level_g4cerr = allpix::LogLevel::WARNING;
 
 void G4LoggingDestination::setG4coutReportingLevel(LogLevel level) {
     G4LoggingDestination::reporting_level_g4cout = level;
