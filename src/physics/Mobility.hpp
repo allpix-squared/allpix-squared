@@ -88,9 +88,9 @@ namespace allpix {
      * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
      * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "priginal".
      */
-    class Canali2 : public JacoboniCanali {
+    class Canali : public JacoboniCanali {
     public:
-        Canali2(double temperature) : JacoboniCanali(temperature) {
+        Canali(double temperature) : JacoboniCanali(temperature) {
             electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
         }
     };
@@ -178,10 +178,14 @@ namespace allpix {
          * @param temperature Temperature for which the mobility model should be initialized
          */
         Mobility(const std::string& model, double temperature) {
-            if(model == "jacoboni" || model == "canali") {
+            if(model == "jacoboni") {
                 model_ = std::make_unique<JacoboniCanali>(temperature);
+            } else if(model == "canali") {
+                model_ = std::make_unique<Canali>(temperature);
             } else if(model == "hamburg" || model == "klanner" || model == "scharf") {
                 model_ = std::make_unique<Hamburg>(temperature);
+            } else if(model == "hamburg_highfield") {
+                model_ = std::make_unique<HamburgHighField>(temperature);
             } else {
                 throw InvalidModelError(model);
             }
