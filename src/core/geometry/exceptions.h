@@ -36,13 +36,13 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Indicates an error that the detector model is not found
      */
-    class InvalidModelError : public RuntimeError {
+    class InvalidDetectorModelError : public RuntimeError {
     public:
         /**
          * @brief Constructs an error with a model that is not found
          * @param name Identifier for the model that is not found
          */
-        explicit InvalidModelError(const std::string& name) {
+        explicit InvalidDetectorModelError(const std::string& name) {
             error_message_ = "Could not find a detector model of type '" + name + "'";
         }
     };
