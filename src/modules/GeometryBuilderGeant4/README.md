@@ -63,6 +63,7 @@ This module can create support layers and passive volumes of the following mater
     * PCB G-10
     * solder
     * polystyrene
+    * ppo foam
     * vacuum
 
 ### Dependencies
