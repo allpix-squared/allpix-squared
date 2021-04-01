@@ -12,9 +12,26 @@ parse:
         NAME: '*'
         EXECUTABLE: '*'
         DEPENDENCIES: '*'
+    ADD_PANDOC_DOCUMENT:
+      flags:
+      - NO_EXPORT_PRODUCT
+      kwargs:
+        SOURCES: '*'
+        PRODUCT_DIRECTORY: '*'
+        PANDOC_DIRECTIVES: '*'
+    ADD_LATEX_DOCUMENT:
+      flags:
+      - USE_BIBLATEX
+      - EXCLUDE_FROM_ALL
+      kwargs:
+        BIBFILES: '*'
+        IMAGES: '*'
+        INPUTS: '*'
+        CONFIGURE: '*'
+        DEPENDS: '*'
 
 format:
-  line_width: 100
+  line_width: 125
   tab_size: 4
   use_tabchars: false
   command_case: 'upper'
