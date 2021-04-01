@@ -1,13 +1,13 @@
 # Retrieve the allpix version string from git describe
-FUNCTION(get_version PROJECT_VERSION)
+FUNCTION(get_version project_version)
     # Check if this is a source tarball build
     IF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-        SET(SOURCE_PACKAGE 1)
+        SET(source_package 1)
     ENDIF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
 
     # Set package version
-    IF(NOT SOURCE_PACKAGE)
-        SET(TAG_FOUND FALSE)
+    IF(NOT source_package)
+        SET(tag_found FALSE)
 
         # Get the version from last git tag plus number of additional commits:
         FIND_PACKAGE(Git QUIET)
@@ -15,9 +15,9 @@ FUNCTION(get_version PROJECT_VERSION)
             EXEC_PROGRAM(
                 git ${CMAKE_CURRENT_SOURCE_DIR}
                 ARGS describe --tags HEAD
-                OUTPUT_VARIABLE ${PROJECT_VERSION})
-            STRING(REGEX REPLACE "^release-" "" ${PROJECT_VERSION} ${${PROJECT_VERSION}})
-            STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1+\\2^\\3" ${PROJECT_VERSION} ${${PROJECT_VERSION}})
+                OUTPUT_VARIABLE ${project_version})
+            STRING(REGEX REPLACE "^release-" "" ${project_version} ${${project_version}})
+            STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1+\\2^\\3" ${project_version} ${${project_version}})
             EXEC_PROGRAM(
                 git ARGS
                 status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}
@@ -31,142 +31,147 @@ FUNCTION(get_version PROJECT_VERSION)
             # Check if commit flag has been set by the CI:
             IF(DEFINED ENV{CI_COMMIT_TAG})
                 MESSAGE(STATUS "Found CI tag flag, building tagged version")
-                SET(TAG_FOUND TRUE)
+                SET(tag_found TRUE)
             ENDIF()
         ELSE(GIT_FOUND)
             MESSAGE(STATUS "Git repository present, but could not find git executable.")
         ENDIF(GIT_FOUND)
-    ELSE(NOT SOURCE_PACKAGE)
+    ELSE(NOT source_package)
         # If we don't have git we can not really do anything
         MESSAGE(STATUS "Source tarball build - no repository present.")
-        SET(TAG_FOUND TRUE)
-    ENDIF(NOT SOURCE_PACKAGE)
+        SET(tag_found TRUE)
+    ENDIF(NOT source_package)
 
     # Set the project version in the parent scope
     SET(TAG_FOUND
-        ${TAG_FOUND}
+        ${tag_found}
         PARENT_SCOPE)
 
     # Set the project version in the parent scope
-    SET(${PROJECT_VERSION}
-        ${${PROJECT_VERSION}}
+    SET(${project_version}
+        ${${project_version}}
         PARENT_SCOPE)
 ENDFUNCTION()
 
-FUNCTION(add_runtime_dep RUNTIME_NAME)
-    GET_FILENAME_COMPONENT(THISPROG ${RUNTIME_NAME} PROGRAM)
-    LIST(APPEND ALLPIX_RUNTIME_DEPS ${THISPROG})
-    LIST(REMOVE_DUPLICATES ALLPIX_RUNTIME_DEPS)
-    SET(ALLPIX_RUNTIME_DEPS
-        ${ALLPIX_RUNTIME_DEPS}
+# Add runtime dependency requirement to the list for generating a bash source file
+FUNCTION(add_runtime_dep runtime_name)
+    GET_FILENAME_COMPONENT(THISPROG ${runtime_name} PROGRAM)
+    LIST(APPEND _ALLPIX_RUNTIME_DEPS ${THISPROG})
+    LIST(REMOVE_DUPLICATES _ALLPIX_RUNTIME_DEPS)
+    SET(_ALLPIX_RUNTIME_DEPS
+        ${_ALLPIX_RUNTIME_DEPS}
         CACHE INTERNAL "ALLPIX_RUNTIME_DEPS")
 ENDFUNCTION()
 
-FUNCTION(add_runtime_lib RUNTIME_NAME)
-    FOREACH(name ${RUNTIME_NAME})
+# Add runtime-library requirement to the list for generating a bash source file
+FUNCTION(add_runtime_lib runtime_name)
+    FOREACH(name ${runtime_name})
         GET_FILENAME_COMPONENT(THISLIB ${name} DIRECTORY)
-        LIST(APPEND ALLPIX_RUNTIME_LIBS ${THISLIB})
-        LIST(REMOVE_DUPLICATES ALLPIX_RUNTIME_LIBS)
-        SET(ALLPIX_RUNTIME_LIBS
-            ${ALLPIX_RUNTIME_LIBS}
+        LIST(APPEND _ALLPIX_RUNTIME_LIBS ${THISLIB})
+        LIST(REMOVE_DUPLICATES _ALLPIX_RUNTIME_LIBS)
+        SET(_ALLPIX_RUNTIME_LIBS
+            ${_ALLPIX_RUNTIME_LIBS}
             CACHE INTERNAL "ALLPIX_RUNTIME_LIBS")
     ENDFOREACH()
 ENDFUNCTION()
 
-FUNCTION(GET_TEST_REGEX INP OUTPUT_PASS OUTPUT_FAIL)
+# Retrieve regular expressions for test output matching from the test's configuration file
+FUNCTION(get_test_regex inp output_pass output_fail)
     IF(NOT OUTPUT_PASS_)
-        FILE(STRINGS ${INP} OUTPUT_PASS_ REGEX "#PASS ")
+        FILE(STRINGS ${inp} OUTPUT_PASS_ REGEX "#PASS ")
     ENDIF()
     IF(NOT OUTPUT_FAIL_)
-        FILE(STRINGS ${INP} OUTPUT_FAIL_ REGEX "#FAIL ")
+        FILE(STRINGS ${inp} OUTPUT_FAIL_ REGEX "#FAIL ")
     ENDIF()
 
     # Check for number of arguments - should only be one:
-    LIST(LENGTH OUTPUT_PASS_ LISTCOUNT_PASS)
-    LIST(LENGTH OUTPUT_FAIL_ LISTCOUNT_FAIL)
-    IF(LISTCOUNT_PASS GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one PASS expressions defined in test ${INP}")
+    LIST(LENGTH OUTPUT_PASS_ listcount_pass)
+    LIST(LENGTH OUTPUT_FAIL_ listcount_fail)
+    IF(listcount_pass GREATER 1)
+        MESSAGE(FATAL_ERROR "More than one PASS expressions defined in test ${inp}")
     ENDIF()
-    IF(LISTCOUNT_FAIL GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one FAIL expressions defined in test ${INP}")
+    IF(listcount_fail GREATER 1)
+        MESSAGE(FATAL_ERROR "More than one FAIL expressions defined in test ${inp}")
     ENDIF()
 
     # Escape possible regex patterns in the expected output:
     ESCAPE_REGEX("${OUTPUT_PASS_}" OUTPUT_PASS_)
     ESCAPE_REGEX("${OUTPUT_FAIL_}" OUTPUT_FAIL_)
 
-    SET(${OUTPUT_PASS}
+    SET(${output_pass}
         "${OUTPUT_PASS_}"
         PARENT_SCOPE)
-    SET(${OUTPUT_FAIL}
+    SET(${output_fail}
         "${OUTPUT_FAIL_}"
         PARENT_SCOPE)
 ENDFUNCTION()
 
-FUNCTION(ESCAPE_REGEX INP OUTPUT)
+# Escape regular expressions in the match strings of tests
+FUNCTION(escape_regex inp output)
     # Escape possible regex patterns in the expected output:
-    STRING(REPLACE "#PASS " "" _TMP_STR "${INP}")
+    STRING(REPLACE "#PASS " "" _TMP_STR "${inp}")
     STRING(REPLACE "#FAIL " "" _TMP_STR "${_TMP_STR}")
     STRING(REGEX REPLACE "([][+.*()^])" "\\\\\\1" _TMP_STR "${_TMP_STR}")
-    SET(${OUTPUT}
+    SET(${output}
         "${_TMP_STR}"
         PARENT_SCOPE)
 ENDFUNCTION()
 
-FUNCTION(ADD_ALLPIX_TEST TEST)
+# Add a test to the unit test suite and parse its configuration file for options
+FUNCTION(add_allpix_test test)
     # Allow the test to specify additional module CLI parameters:
-    FILE(STRINGS ${TEST} OPTS REGEX "#OPTION ")
-    FOREACH(OPT ${OPTS})
-        STRING(REPLACE "#OPTION " "" OPT "${OPT}")
-        SET(CLIOPTIONS "${CLIOPTIONS} -o ${OPT}")
+    FILE(STRINGS ${test} OPTS REGEX "#OPTION ")
+    FOREACH(opt ${OPTS})
+        STRING(REPLACE "#OPTION " "" opt "${opt}")
+        SET(clioptions "${clioptions} -o ${opt}")
     ENDFOREACH()
     # Allow the test to specify additional geometry CLI parameters:
-    FILE(STRINGS ${TEST} OPTS REGEX "#DETOPTION ")
-    FOREACH(OPT ${OPTS})
-        STRING(REPLACE "#DETOPTION " "" OPT "${OPT}")
-        SET(CLIOPTIONS "${CLIOPTIONS} -g ${OPT}")
+    FILE(STRINGS ${test} OPTS REGEX "#DETOPTION ")
+    FOREACH(opt ${OPTS})
+        STRING(REPLACE "#DETOPTION " "" opt "${opt}")
+        SET(clioptions "${clioptions} -g ${opt}")
     ENDFOREACH()
     # Allow the test to specify additional CLI parameters:
-    FILE(STRINGS ${TEST} OPTS REGEX "#CLIOPTION ")
-    FOREACH(OPT ${OPTS})
-        STRING(REPLACE "#CLIOPTION " "" OPT "${OPT}")
-        SET(CLIOPTIONS "${CLIOPTIONS} ${OPT}")
+    FILE(STRINGS ${test} OPTS REGEX "#CLIOPTION ")
+    FOREACH(opt ${OPTS})
+        STRING(REPLACE "#CLIOPTION " "" opt "${opt}")
+        SET(clioptions "${clioptions} ${opt}")
     ENDFOREACH()
 
     ADD_TEST(
-        NAME ${TEST}
+        NAME ${test}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${TEST}"
-                "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST} ${CLIOPTIONS}")
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_directory.sh "output/${test}"
+                "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}")
 
     # Parse configuration file for pass/fail conditions:
-    GET_TEST_REGEX(${TEST} EXPRESSIONS_PASS EXPRESSIONS_FAIL)
+    GET_TEST_REGEX(${test} EXPRESSIONS_PASS EXPRESSIONS_FAIL)
     IF(EXPRESSIONS_PASS)
-        SET_PROPERTY(TEST ${TEST} PROPERTY PASS_REGULAR_EXPRESSION "${EXPRESSIONS_PASS}")
+        SET_PROPERTY(TEST ${test} PROPERTY PASS_REGULAR_EXPRESSION "${EXPRESSIONS_PASS}")
     ENDIF()
     IF(EXPRESSIONS_FAIL)
-        SET_PROPERTY(TEST ${TEST} PROPERTY FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
+        SET_PROPERTY(TEST ${test} PROPERTY FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
     ENDIF()
 
     # Some tests might depend on others:
-    FILE(STRINGS ${TEST} DEPENDENCY REGEX "#DEPENDS ")
+    FILE(STRINGS ${test} DEPENDENCY REGEX "#DEPENDS ")
     IF(DEPENDENCY)
         STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
-        SET_PROPERTY(TEST ${TEST} PROPERTY DEPENDS "${DEPENDENCY}")
+        SET_PROPERTY(TEST ${test} PROPERTY DEPENDS "${DEPENDENCY}")
     ENDIF()
 
     # Add individual timeout criteria:
-    FILE(STRINGS ${TEST} TESTTIMEOUT REGEX "#TIMEOUT ")
+    FILE(STRINGS ${test} TESTTIMEOUT REGEX "#TIMEOUT ")
     IF(TESTTIMEOUT)
         STRING(REPLACE "#TIMEOUT " "" TESTTIMEOUT "${TESTTIMEOUT}")
-        SET_PROPERTY(TEST ${TEST} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Running event")
+        SET_PROPERTY(TEST ${test} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Running event")
     ENDIF()
 
     # Allow to add test labels
-    FILE(STRINGS ${TEST} TESTLABEL REGEX "#LABEL ")
+    FILE(STRINGS ${test} TESTLABEL REGEX "#LABEL ")
     IF(TESTLABEL)
         STRING(REPLACE "#LABEL " "" TESTLABEL "${TESTLABEL}")
-        SET_PROPERTY(TEST ${TEST} PROPERTY LABELS "${TESTLABEL}")
+        SET_PROPERTY(TEST ${test} PROPERTY LABELS "${TESTLABEL}")
     ENDIF()
 
 ENDFUNCTION()

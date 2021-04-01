@@ -1,5 +1,5 @@
 # For every module, build a separate library to be loaded by allpix core
-MACRO(allpix_enable_default val)
+MACRO(ALLPIX_ENABLE_DEFAULT val)
     # Get the name of the module
     GET_FILENAME_COMPONENT(_allpix_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -82,7 +82,7 @@ Create the header or provide the alternative class name as first argument")
 ENDMACRO()
 
 # Put this at the start of every unique module
-MACRO(allpix_unique_module name)
+MACRO(ALLPIX_UNIQUE_MODULE name)
     _ALLPIX_MODULE_DEFINE_COMMON(${name} ${ARGN})
 
     # Set the unique flag to true
@@ -90,7 +90,7 @@ MACRO(allpix_unique_module name)
 ENDMACRO()
 
 # Put this at the start of every detector module
-MACRO(allpix_detector_module name)
+MACRO(ALLPIX_DETECTOR_MODULE name)
     _ALLPIX_MODULE_DEFINE_COMMON(${name} ${ARGN})
 
     # Set the unique flag to false
@@ -98,7 +98,7 @@ MACRO(allpix_detector_module name)
 ENDMACRO()
 
 # Add sources to the module
-MACRO(allpix_module_sources name)
+MACRO(ALLPIX_MODULE_SOURCES name)
     # Get the list of sources
     SET(_list_var "${ARGN}")
     LIST(REMOVE_ITEM _list_var ${name})
@@ -118,7 +118,7 @@ MACRO(allpix_module_sources name)
 ENDMACRO()
 
 # Provide default install target for the module
-MACRO(allpix_module_install name)
+MACRO(ALLPIX_MODULE_INSTALL name)
     INSTALL(
         TARGETS ${name}
         COMPONENT modules
@@ -128,7 +128,8 @@ MACRO(allpix_module_install name)
         ARCHIVE DESTINATION lib)
 ENDMACRO()
 
-MACRO(allpix_module_require_geant4_interface name)
+# Enable Geant4 interface library requirement
+MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
     SET(ALLPIX_BUILD_GEANT4_INTERFACE
         "ON"
         CACHE BOOL "Build Geant4 interface library" FORCE)
@@ -161,7 +162,7 @@ MACRO(ALLPIX_SETUP_ROOT_TARGETS)
         TARGET_LINK_LIBRARIES(ROOT::Core INTERFACE Core)
         # we list here the targets we use, as later versions of root have the namespace, we do not have to to this for ever
         FOREACH(
-            LIB
+            lib
             Geom
             GenVector
             Graf3d
@@ -170,9 +171,9 @@ MACRO(ALLPIX_SETUP_ROOT_TARGETS)
             Tree
             Hist
             GuiBld)
-            IF(TARGET ${LIB})
-                ADD_LIBRARY(ROOT::${LIB} INTERFACE IMPORTED GLOBAL)
-                TARGET_LINK_LIBRARIES(ROOT::${LIB} INTERFACE ${LIB} ROOT::Core)
+            IF(TARGET ${lib})
+                ADD_LIBRARY(ROOT::${lib} INTERFACE IMPORTED GLOBAL)
+                TARGET_LINK_LIBRARIES(ROOT::${lib} INTERFACE ${lib} ROOT::Core)
             ENDIF()
         ENDFOREACH()
     ELSEIF(${ROOT_VERSION} VERSION_GREATER_EQUAL 6.12 AND ${ROOT_VERSION} VERSION_LESS 6.14)

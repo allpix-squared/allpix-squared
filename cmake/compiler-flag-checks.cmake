@@ -1,15 +1,15 @@
 # Check for supported flags and remove unsupported warnings
 INCLUDE(CheckCXXCompilerFlag)
-FOREACH(FLAG ${COMPILER_FLAGS})
-    STRING(REPLACE "-" "_" FLAG_WORD ${FLAG})
+FOREACH(flag ${COMPILER_FLAGS})
+    STRING(REPLACE "-" "_" FLAG_WORD ${flag})
     STRING(REPLACE "+" "P" FLAG_WORD ${FLAG_WORD})
     STRING(REPLACE "=" "E" FLAG_WORD ${FLAG_WORD})
 
-    CHECK_CXX_COMPILER_FLAG("${FLAG}" CXX_FLAG_WORKS_${FLAG_WORD})
+    CHECK_CXX_COMPILER_FLAG("${flag}" CXX_FLAG_WORKS_${FLAG_WORD})
     IF(${CXX_FLAG_WORKS_${FLAG_WORD}})
-        SET(CMAKE_CXX_FLAGS "${FLAG} ${CMAKE_CXX_FLAGS}")
+        SET(CMAKE_CXX_FLAGS "${flag} ${CMAKE_CXX_FLAGS}")
     ELSE()
-        MESSAGE(STATUS "NOT adding ${FLAG} to CXX_FLAGS - unsupported flag")
+        MESSAGE(STATUS "NOT adding ${flag} to CXX_FLAGS - unsupported flag")
     ENDIF()
 ENDFOREACH()
 

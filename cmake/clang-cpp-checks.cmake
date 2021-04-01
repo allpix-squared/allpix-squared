@@ -4,9 +4,9 @@
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
     SET(HOOK_MISSING OFF)
     SET(HOOK_OUTDATED OFF)
-    FOREACH(HOOK pre-commit-clang-format pre-push-tag-version)
-        SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/${HOOK}-hook")
-        SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/${HOOK}")
+    FOREACH(hook pre-commit-clang-format pre-push-tag-version)
+        SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/${hook}-hook")
+        SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/${hook}")
         IF(NOT EXISTS ${HOOK_DST})
             SET(HOOK_MISSING ON)
         ELSE()
@@ -17,13 +17,11 @@ IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
         ENDIF()
     ENDFOREACH()
     IF(${HOOK_MISSING})
-        MESSAGE(
-            WARNING
-                "Git hooks are not installed - consider installing them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh"
-        )
+        MESSAGE(WARNING "Git hooks are not installed - consider installing them via "
+                        "${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
     ELSEIF(${HOOK_OUTDATED})
-        MESSAGE(
-            WARNING "Git hooks are outdated - consider updating them via ${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+        MESSAGE(WARNING "Git hooks are outdated - consider updating them via "
+                        "${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
     ENDIF()
 ENDIF()
 
@@ -70,7 +68,8 @@ IF(CLANG_FORMAT)
     ELSE()
         MESSAGE(
             STATUS
-                "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, but version ${CLANG_FORMAT_VERSION} is required."
+                "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, "
+                "but version ${CLANG_FORMAT_VERSION} is required."
         )
     ENDIF()
 ELSE()
