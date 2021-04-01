@@ -68,6 +68,9 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<double>("temperature", 293.15);
+
+    // Models:
+    config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
 
     config_.setDefault<bool>("output_linegraphs", false);
@@ -119,7 +122,11 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
         LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
     }
 
-    mobility_ = Mobility("jacoboni", temperature_);
+    try {
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
+    } catch(InvalidModelError& e) {
+        throw InvalidValueError(config_, "mobility_model", e.what());
+    }
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 

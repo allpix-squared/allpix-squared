@@ -44,6 +44,9 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+
+    // Models:
+    config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
@@ -64,7 +67,11 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     output_plots_ = config_.get<bool>("output_plots");
 
-    mobility_ = Mobility("jacoboni", temperature_);
+    try {
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
+    } catch(InvalidModelError& e) {
+        throw InvalidValueError(config_, "mobility_model", e.what());
+    }
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 
