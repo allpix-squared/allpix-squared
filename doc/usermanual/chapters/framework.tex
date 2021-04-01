@@ -721,13 +721,13 @@ The configured number of events are then submitted to the thread pool and execut
 
 The thread pool features two independent queues.
 A FIFO-like unsorted queue for events to be processed, and a second, priority-ordered queue for buffered events.
-The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a SequentialModule.
+The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a \texttt{SequentialModule}.
 
 By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multi-threaded processing of events.
 Therefore each module each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multi-threading capabilities to \apsq.
 To support multi-threading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
 If multi-threading is enabled in the run configuration, the module manager will check if all the loaded modules support multi-threading.
-In case, one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{canParallelize()} method.
+In case one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{canParallelize()} method.
 
 \subsection{Seed Distribution}
 A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to provide reproducibility of simulation results from the same inputs even when the number of workers is different.
