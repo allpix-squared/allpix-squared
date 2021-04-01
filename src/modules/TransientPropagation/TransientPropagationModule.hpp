@@ -87,6 +87,7 @@ namespace allpix {
         double temperature_{}, timestep_{}, integration_time_{};
         bool output_plots_{};
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
+        unsigned int charge_per_step_{};
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
