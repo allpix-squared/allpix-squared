@@ -19,4 +19,4 @@ To create the default file an instantiation without arguments can be placed at t
 [RCEWriter]
 ```
 
-[@proteus]: https://gitlab.cern.ch/unige-fei4tel/proteus/
+[@proteus]: https://gitlab.cern.ch/proteus/proteus

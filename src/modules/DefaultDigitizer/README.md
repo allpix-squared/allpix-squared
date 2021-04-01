@@ -61,4 +61,4 @@ threshold_smearing = 30e
 qdc_smearing = 300e
 ```
 
-[@holmestad]: http://urn.nb.no/URN:NBN:no-67847
+[@holmestad]: https://inspirehep.net/literature/1813192

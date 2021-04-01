@@ -35,9 +35,9 @@ Using the `detector_assignment` to write into two collections and assigning sens
 ```ini
 [LCIOWriter]
 file_name = "run000123-converter.slcio"
-geometry_file = "run000123-gear.xml" 
+geometry_file = "run000123-gear.xml"
 dump_mc_truth = true
 detector_assignment = ["telescope0", "zsdata_m26", "0"], ["mydut", "zsdata_dut", "20"], ["telescope1", "zsdata_m26", "1"]
 ```
 
-[@eutelescope]: http://eutelescope.web.cern.ch/
+[@eutelescope]: https://eutelescope.github.io/

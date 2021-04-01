@@ -83,4 +83,4 @@ clock_bin_tot = 25.0ns
 
 
 [@kleczek]:  https://doi.org/10.1109/MIXDES.2015.7208529
-[@binkley]: https://doi.org/10.1002/9780470033715.index
+[@binkley]: https://doi.org/10.1002/9780470033715
