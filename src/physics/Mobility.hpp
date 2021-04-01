@@ -11,6 +11,8 @@
 #ifndef ALLPIX_MOBILITY_MODELS_H
 #define ALLPIX_MOBILITY_MODELS_H
 
+#include "exceptions.h"
+
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
@@ -181,7 +183,7 @@ namespace allpix {
             } else if(model == "hamburg" || model == "klanner" || model == "scharf") {
                 model_ = std::make_unique<Hamburg>(temperature);
             } else {
-                // throw something
+                throw InvalidModelError(model);
             }
         }
 
