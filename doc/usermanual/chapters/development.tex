@@ -256,8 +256,7 @@ If necessary, modules can also access the ConfigurationManager directly in order
 This allows to retrieve and e.g. store the configuration actually used for the simulation alongside the data.
 
 If a module should be run using multi-threading but requires to execute its run method in the order of event numbers, for example a module that writes to an output file, then the module can inherit from the \textit{SequentialModule} class, without implementing additional functionality.
-This will ensure a sorting of the events before calling the run method.
-It should be noted that such modules cannot dispatch messages to the framework.
+This will ensure that the run method will receive events one-by-one and in the correct sequence.
 
 
 \section{Writing Thread-Safe Code}
