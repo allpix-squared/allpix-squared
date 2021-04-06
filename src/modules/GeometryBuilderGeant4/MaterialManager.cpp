@@ -35,8 +35,18 @@ G4Material* Materials::get(const std::string& material) {
 
     // If not found, try if we can get it from NIST manager:
     G4NistManager* nistman = G4NistManager::Instance();
-    auto nist_material = nistman->FindOrBuildMaterial("G4_" + material);
-    if(nist_material) {
+    G4Material* nist_material = nullptr;
+
+    // Make sure the material has the "G4_" prefix:
+    std::string prefix = "G4_";
+    auto res = std::mismatch(prefix.begin(), prefix.end(), material.begin());
+    if(res.first == prefix.end()) {
+        nist_material = nistman->FindOrBuildMaterial(material);
+    } else {
+        nist_material = nistman->FindOrBuildMaterial(prefix + material);
+    }
+
+    if(nist_material != nullptr) {
         LOG(DEBUG) << "Found material \"" << material << "\" in Geant4 NIST Database";
         return nist_material;
     }
