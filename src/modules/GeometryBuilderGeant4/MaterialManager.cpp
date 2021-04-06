@@ -13,14 +13,12 @@
 
 using namespace allpix;
 
-std::map<std::string, G4Material*> Materials::materials_;
-
 Materials& Materials::getInstance() {
     static Materials instance;
     return instance;
 }
 
-G4Material* Materials::get(const std::string& material) {
+G4Material* Materials::get(const std::string& material) const {
 
     LOG(DEBUG) << "Searching for material \"" << material << "\"";
     // Look in our materials definitions

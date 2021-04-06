@@ -36,13 +36,13 @@ namespace allpix {
          * @returns Material
          * @throws ModuleError if material cannot be found
          */
-        static G4Material* get(const std::string& material);
+        G4Material* get(const std::string& material) const;
 
         /**
          * Method to add an additional material to the internal database
          * @param material The material
          */
-        static void set(const std::string& name, G4Material* material);
+        void set(const std::string& name, G4Material* material);
 
     private:
         /**
@@ -56,7 +56,7 @@ namespace allpix {
         void init_materials();
 
         // Map of materials
-        static std::map<std::string, G4Material*> materials_;
+        std::map<std::string, G4Material*> materials_;
     };
 
 } // namespace allpix
