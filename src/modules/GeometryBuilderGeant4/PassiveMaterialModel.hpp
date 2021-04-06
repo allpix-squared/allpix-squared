@@ -66,8 +66,7 @@ namespace allpix {
          */
         virtual double getMaxSize() const = 0;
 
-        void buildVolume(const std::map<std::string, G4Material*>& materials,
-                         const std::shared_ptr<G4LogicalVolume>& world_log);
+        void buildVolume(const std::shared_ptr<G4LogicalVolume>& world_log);
 
         /**
          * @brief return name of this volume

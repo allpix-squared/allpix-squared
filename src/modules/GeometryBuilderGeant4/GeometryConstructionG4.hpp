@@ -54,15 +54,11 @@ namespace allpix {
          */
         void check_overlaps();
 
-        // List of all materials
-        std::map<std::string, G4Material*> materials_;
-
         std::unique_ptr<DetectorConstructionG4> detector_builder_;
         std::unique_ptr<PassiveMaterialConstructionG4> passive_builder_;
 
         // Storage of internal objects
         std::vector<std::shared_ptr<G4VSolid>> solids_;
-        G4Material* world_material_{};
 
         std::shared_ptr<G4LogicalVolume> world_log_;
         std::unique_ptr<G4VPhysicalVolume> world_phys_;

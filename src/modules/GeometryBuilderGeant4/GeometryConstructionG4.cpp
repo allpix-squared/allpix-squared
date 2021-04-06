@@ -9,6 +9,7 @@
  */
 
 #include "GeometryConstructionG4.hpp"
+#include "MaterialManager.hpp"
 
 #include <memory>
 #include <string>
@@ -54,19 +55,20 @@ GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Con
  */
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Initialize materials
-    init_materials();
+    auto& materials = Materials::getInstance();
 
     // Set world material
+    G4Material* g4material_world = nullptr;
     auto world_material = config_.get<std::string>("world_material", "air");
-    std::transform(world_material.begin(), world_material.end(), world_material.begin(), ::tolower);
-    if(materials_.find(world_material) == materials_.end()) {
-        throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");
+    try {
+        g4material_world = materials.get(world_material);
+    } catch(ModuleError& e) {
+        throw InvalidValueError(config_, "world_material", e.what());
     }
 
-    world_material_ = materials_[world_material];
-    // Add world_material to the list of materials to be called from other modules
-    materials_["world_material"] = world_material_;
-    LOG(TRACE) << "Material of world is " << world_material_->GetName();
+    // Register the world material for others as reference:
+    materials.set("world_material", g4material_world);
+    LOG(TRACE) << "Material of world is " << g4material_world->GetName();
 
     // Calculate world size
     ROOT::Math::XYZVector half_world_size;
@@ -100,7 +102,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build the world
     auto world_box = std::make_shared<G4Box>("World", half_world_size.x(), half_world_size.y(), half_world_size.z());
     solids_.push_back(world_box);
-    world_log_ = std::make_shared<G4LogicalVolume>(world_box.get(), world_material_, "World_log", nullptr, nullptr, nullptr);
+    world_log_ =
+        std::make_shared<G4LogicalVolume>(world_box.get(), g4material_world, "World_log", nullptr, nullptr, nullptr);
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
@@ -111,8 +114,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    passive_builder_->buildVolumes(materials_, world_log_);
-    detector_builder_->build(materials_, world_log_);
+    passive_builder_->buildVolumes(world_log_);
+    detector_builder_->build(world_log_);
 
     // Check for overlaps:
     check_overlaps();

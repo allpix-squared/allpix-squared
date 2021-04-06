@@ -40,14 +40,17 @@
 #include "tools/geant4/geant4.h"
 
 #include "GeometryConstructionG4.hpp"
+#include "MaterialManager.hpp"
 #include "Parameterization2DG4.hpp"
 
 using namespace allpix;
 
 DetectorConstructionG4::DetectorConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 
-void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_,
-                                   const std::shared_ptr<G4LogicalVolume>& world_log) {
+void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world_log) {
+
+    // Get materials manager
+    auto& materials = Materials::getInstance();
 
     /*
     Build the individual detectors
@@ -74,7 +77,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
         solids_.push_back(wrapper_box);
         auto wrapper_log = make_shared_no_delete<G4LogicalVolume>(
-            wrapper_box.get(), materials_["world_material"], "wrapper_" + name + "_log");
+            wrapper_box.get(), materials.get("world_material"), "wrapper_" + name + "_log");
         geo_manager_->setExternalObject(name, "wrapper_log", wrapper_log);
 
         // Get position and orientation
@@ -118,7 +121,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                        model->getSensorSize().z() / 2.0);
         solids_.push_back(sensor_box);
         auto sensor_log =
-            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], "sensor_" + name + "_log");
+            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials.get("silicon"), "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
 
         // Add sensor material to total material budget:
@@ -138,7 +141,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                       model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
         auto pixel_log =
-            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
+            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials.get("silicon"), "pixel_" + name + "_log");
         geo_manager_->setExternalObject(name, "pixel_log", pixel_log);
 
         // Create the parameterization for the pixel grid
@@ -168,7 +171,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
 
             // Create the logical volume for the chip
             auto chip_log =
-                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], "chip_" + name + "_log");
+                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials.get("silicon"), "chip_" + name + "_log");
             geo_manager_->setExternalObject(name, "chip_log", chip_log);
 
             // Add chip material to total material budget:
@@ -228,14 +231,15 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             }
 
             // Create the logical volume for the support
-            auto support_material_iter = materials_.find(layer.getMaterial());
-            if(support_material_iter == materials_.end()) {
-                throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
+            G4Material* support_material = nullptr;
+            try {
+                support_material = materials.get(layer.getMaterial());
+            } catch(ModuleError& e) {
+                throw ModuleError("Cannot construct support layer: " + std::string(e.what()));
             }
-            auto support_log =
-                make_shared_no_delete<G4LogicalVolume>(support_solid.get(),
-                                                       support_material_iter->second,
-                                                       "support_" + name + "_log_" + std::to_string(support_idx));
+
+            auto support_log = make_shared_no_delete<G4LogicalVolume>(
+                support_solid.get(), support_material, "support_" + name + "_log_" + std::to_string(support_idx));
             supports_log->push_back(support_log);
 
             // Add support layer material to total material budget if it doesn't have a hole:
@@ -286,7 +290,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
 
             // Create the logical wrapper volume
             auto bumps_wrapper_log = make_shared_no_delete<G4LogicalVolume>(
-                bump_box.get(), materials_["world_material"], "bumps_wrapper_" + name + "_log");
+                bump_box.get(), materials.get("world_material"), "bumps_wrapper_" + name + "_log");
             geo_manager_->setExternalObject(name, "bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
@@ -314,7 +318,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
 
             // Create the logical volume for the individual bumps
             auto bumps_cell_log =
-                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], "bumps_" + name + "_log");
+                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials.get("solder"), "bumps_" + name + "_log");
             geo_manager_->setExternalObject(name, "bumps_cell_log", bumps_cell_log);
 
             // Add bump material equivalent to uniform solder layer to total material budget:
