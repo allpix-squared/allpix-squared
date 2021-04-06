@@ -44,10 +44,6 @@ namespace allpix {
     private:
         GeometryManager* geo_manager_;
         Configuration& config_;
-        /**
-         * @brief Initializes the list of materials from the supported allpix materials
-         */
-        void init_materials();
 
         /**
          * @brief Check all placed volumes for overlaps
