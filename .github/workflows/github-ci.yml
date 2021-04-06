@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
     - uses: aidasoft/run-lcg-view@v2
       with:
@@ -42,6 +44,8 @@ jobs:
         compiler: [gcc10, clang10]
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
     - uses: actions/download-artifact@v2
       with:
@@ -61,6 +65,8 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
       with:
         cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
@@ -92,6 +98,8 @@ jobs:
         whichtest: [test_core, test_modules, examples]
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
       with:
         cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
@@ -122,6 +130,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - uses: cvmfs-contrib/github-action-cvmfs@v2
     - uses: aidasoft/run-lcg-view@v2
       with:
