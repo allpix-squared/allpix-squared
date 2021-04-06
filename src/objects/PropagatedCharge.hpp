@@ -90,15 +90,19 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PropagatedCharge, 4); // NOLINT
+        ClassDefOverride(PropagatedCharge, 6); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         PropagatedCharge() = default;
 
+        void loadHistory() override;
+        void petrifyHistory() override;
+
     private:
-        TRef deposited_charge_;
-        TRef mc_particle_{nullptr};
+        PointerWrapper<DepositedCharge> deposited_charge_;
+        PointerWrapper<MCParticle> mc_particle_;
+
         std::map<Pixel::Index, Pulse> pulses_;
     };
 

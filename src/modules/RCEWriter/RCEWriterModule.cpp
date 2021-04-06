@@ -293,12 +293,15 @@ static void write_proteus_config(const std::string& device_path,
 }
 
 RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), geo_mgr_(geo_mgr) {
+    : SequentialModule(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     assert(messenger && "messenger must be non-null");
     assert(geo_mgr && "geo_mgr must be non-null");
 
     // Bind to PixelHitMessage
-    messenger->bindMulti(this, &RCEWriterModule::pixel_hit_messages_);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
 
     config_.setDefault("file_name", "rce-data.root");
     // Use default names in Proteus
@@ -306,7 +309,7 @@ RCEWriterModule::RCEWriterModule(Configuration& config, Messenger* messenger, Ge
     config_.setDefault("geometry_file", "geometry.toml");
 }
 
-void RCEWriterModule::init() {
+void RCEWriterModule::initialize() {
     // We need a sorted list of names to assign monotonic, numeric ids
     std::vector<std::string> detector_names;
     for(const auto& detector : geo_mgr_->getDetectors()) {
@@ -358,10 +361,12 @@ void RCEWriterModule::init() {
     write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_, *getConfigManager());
 }
 
-void RCEWriterModule::run(unsigned int event_id) {
+void RCEWriterModule::run(Event* event) {
+    auto pixel_hit_messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
+
     // fill per-event data
     timestamp_ = 0;
-    frame_number_ = event_id;
+    frame_number_ = event->number;
     trigger_time_ = 0;
     trigger_offset_ = 0;
     trigger_info_ = 0;
@@ -375,7 +380,7 @@ void RCEWriterModule::run(unsigned int event_id) {
     }
 
     // Loop over the pixel hit messages
-    for(const auto& hit_msg : pixel_hit_messages_) {
+    for(const auto& hit_msg : pixel_hit_messages) {
         const auto& detector_name = hit_msg->getDetector()->getName();
         auto& sensor = sensors_[detector_name];
 

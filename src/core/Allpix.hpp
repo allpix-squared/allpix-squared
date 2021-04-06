@@ -53,7 +53,7 @@ namespace allpix {
          * @brief Initialize all modules (pre-run)
          * @warning Should be called after the \ref Allpix::load "load function"
          */
-        void init();
+        void initialize();
 
         /**
          * @brief Run all modules for the number of events (run)
@@ -90,6 +90,10 @@ namespace allpix {
         std::unique_ptr<ModuleManager> mod_mgr_;
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_{};
+
+        // Random generators
+        RandomNumberGenerator seeder_modules_;
+        RandomNumberGenerator seeder_core_;
     };
 } // namespace allpix
 

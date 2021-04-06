@@ -96,11 +96,14 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 5); // NOLINT
+        ClassDefOverride(PixelHit, 6); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
         PixelHit() = default;
+
+        void loadHistory() override;
+        void petrifyHistory() override;
 
     private:
         Pixel pixel_;
@@ -108,8 +111,8 @@ namespace allpix {
         double global_time_{};
         double signal_{};
 
-        TRef pixel_charge_;
-        std::vector<TRef> mc_particles_;
+        PointerWrapper<PixelCharge> pixel_charge_;
+        std::vector<PointerWrapper<MCParticle>> mc_particles_;
     };
 
     /**

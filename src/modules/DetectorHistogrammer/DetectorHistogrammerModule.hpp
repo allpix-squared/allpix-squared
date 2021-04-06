@@ -10,8 +10,8 @@
 #ifndef ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 #define ALLPIX_MODULE_DETECTOR_HISTOGRAMMER_H
 
+#include <atomic>
 #include <memory>
-
 #include <string>
 #include <vector>
 
@@ -23,10 +23,12 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "Cluster.hpp"
 #include "objects/PixelHit.hpp"
+#include "tools/ROOT.h"
 
 namespace allpix {
     /**
@@ -48,12 +50,12 @@ namespace allpix {
         /**
          * @brief Initialize the histograms
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Fill the histograms
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Write the histograms to the modules file
@@ -64,45 +66,41 @@ namespace allpix {
         /**
          * @brief Perform a sparse clustering on the PixelHits
          */
-        std::vector<Cluster> doClustering();
+        static std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message);
 
         /**
          * @brief analyze the available MCParticles and return the all particles identified as primary (i.e. that do not have
          * a parent). This might be several particles.
          */
-        std::vector<const MCParticle*> getPrimaryParticles() const;
+        static std::vector<const MCParticle*> getPrimaryParticles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
+
+        Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
 
-        // List of pixel hits and MC particles
-        std::shared_ptr<PixelHitMessage> pixels_message_;
-        std::shared_ptr<MCParticleMessage> mcparticle_message_;
-
-        // Statistics to compute mean position
-        ROOT::Math::XYVector total_vector_{};
-        unsigned long total_hits_{};
+        // Statistics
+        std::atomic<unsigned long> total_hits_{};
 
         // Cut criteria for efficiency measurement:
         ROOT::Math::XYVector matching_cut_{};
 
         // Reference track resolution
         ROOT::Math::XYVector track_resolution_{};
-        std::mt19937_64 random_generator_;
 
         // Histograms to output
-        TH2D *hit_map, *charge_map, *cluster_map;
-        TProfile2D *cluster_size_map, *cluster_size_x_map, *cluster_size_y_map;
-        TProfile2D *cluster_charge_map, *seed_charge_map;
-        TProfile2D *residual_map, *residual_x_map, *residual_y_map, *residual_detector, *residual_x_detector,
-            *residual_y_detector;
-        TH1D *residual_x, *residual_y;
-        TProfile *residual_x_vs_x, *residual_y_vs_y, *residual_x_vs_y, *residual_y_vs_x;
-        TProfile2D *efficiency_map, *efficiency_detector;
-        TProfile *efficiency_vs_x, *efficiency_vs_y;
-        TH1D* event_size;
-        TH1D *cluster_size, *cluster_size_x, *cluster_size_y;
-        TH1D* n_cluster;
-        TH1D *cluster_charge, *pixel_charge, *total_charge;
+        Histogram<TH2D> hit_map, charge_map, cluster_map;
+        Histogram<TProfile2D> cluster_size_map, cluster_size_x_map, cluster_size_y_map;
+        Histogram<TProfile2D> cluster_charge_map, seed_charge_map;
+        Histogram<TProfile2D> residual_map, residual_x_map, residual_y_map, residual_detector, residual_x_detector,
+            residual_y_detector;
+        Histogram<TH1D> residual_x, residual_y;
+        Histogram<TProfile> residual_x_vs_x, residual_y_vs_y, residual_x_vs_y, residual_y_vs_x;
+        Histogram<TProfile2D> efficiency_map, efficiency_detector;
+        Histogram<TProfile> efficiency_vs_x, efficiency_vs_y;
+        Histogram<TH1D> event_size;
+        Histogram<TH1D> cluster_size, cluster_size_x, cluster_size_y;
+        Histogram<TH1D> n_cluster;
+        Histogram<TH1D> cluster_charge, pixel_charge, total_charge;
     };
 } // namespace allpix
 

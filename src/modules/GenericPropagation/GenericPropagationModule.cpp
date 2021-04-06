@@ -57,10 +57,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     model_ = detector_->getModel();
 
     // Require deposits message for single detector
-    messenger_->bindSingle(this, &GenericPropagationModule::deposits_message_, MsgFlags::REQUIRED);
-
-    // Seed the random generator with the module seed
-    random_generator_.seed(getRandomSeed());
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<double>("spatial_precision", Units::get(0.25, "nm"));
@@ -108,11 +105,17 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
+    propagate_electrons_ = config_.get<bool>("propagate_electrons");
+    propagate_holes_ = config_.get<bool>("propagate_holes");
+    charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
     if(!(output_animations_ || output_linegraphs_)) {
         enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
     }
 
     // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
@@ -140,12 +143,12 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void GenericPropagationModule::create_output_plots(unsigned int event_num) {
+void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points) {
     LOG(TRACE) << "Writing output plots";
 
     // Convert to pixel units if necessary
     if(config_.get<bool>("output_plots_use_pixel_units")) {
-        for(auto& deposit_points : output_plot_points_) {
+        for(auto& deposit_points : output_plot_points) {
             for(auto& point : deposit_points.second) {
                 point.SetX(point.x() / model_->getPixelSize().x());
                 point.SetY(point.y() / model_->getPixelSize().y());
@@ -160,7 +163,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
     unsigned int max_charge = 0;
-    for(auto& deposit_points : output_plot_points_) {
+    for(auto& deposit_points : output_plot_points) {
         for(auto& point : deposit_points.second) {
             minX = std::min(minX, point.x());
             maxX = std::max(maxX, point.x());
@@ -248,7 +251,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
     // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
-    for(auto& deposit_points : output_plot_points_) {
+    for(auto& deposit_points : output_plot_points) {
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : deposit_points.second) {
             line->SetNextPoint(point.x(), point.y(), point.z());
@@ -386,7 +389,7 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
             text->Draw();
 
             // Plot all the required points
-            for(auto& deposit_points : output_plot_points_) {
+            for(auto& deposit_points : output_plot_points) {
                 auto points = deposit_points.second;
 
                 auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getGlobalTime() - start_time) /
@@ -482,10 +485,9 @@ void GenericPropagationModule::create_output_plots(unsigned int event_num) {
                 << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
         }
     }
-    output_plot_points_.clear();
 }
 
-void GenericPropagationModule::init() {
+void GenericPropagationModule::initialize() {
 
     auto detector = getDetector();
 
@@ -505,10 +507,10 @@ void GenericPropagationModule::init() {
         auto efield = detector->getElectricField(probe_point);
         auto direction = std::signbit(efield.z());
         // Compare with propagated carrier type:
-        if(direction && !config_.get<bool>("propagate_electrons")) {
+        if(direction && !propagate_electrons_) {
             LOG(WARNING) << "Electric field indicates electron collection at implants, but electrons are not propagated!";
         }
-        if(!direction && !config_.get<bool>("propagate_holes")) {
+        if(!direction && !propagate_holes_) {
             LOG(WARNING) << "Electric field indicates hole collection at implants, but holes are not propagated!";
         }
     }
@@ -526,40 +528,45 @@ void GenericPropagationModule::init() {
     }
 
     if(output_plots_) {
-        step_length_histo_ = new TH1D("step_length_histo",
-                                      "Step length;length [#mum];integration steps",
-                                      100,
-                                      0,
-                                      static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
+        step_length_histo_ =
+            CreateHistogram<TH1D>("step_length_histo",
+                                  "Step length;length [#mum];integration steps",
+                                  100,
+                                  0,
+                                  static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
 
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time;Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Drift time;Drift time [ns];charge carriers",
+                                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                  0,
+                                                  static_cast<double>(Units::convert(integration_time_, "ns")));
 
         uncertainty_histo_ =
-            new TH1D("uncertainty_histo",
-                     "Position uncertainty;uncertainty [nm];integration steps",
-                     100,
-                     0,
-                     static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
+            CreateHistogram<TH1D>("uncertainty_histo",
+                                  "Position uncertainty;uncertainty [nm];integration steps",
+                                  100,
+                                  0,
+                                  static_cast<double>(4 * Units::convert(config_.get<double>("spatial_precision"), "nm")));
 
-        group_size_histo_ = new TH1D("group_size_histo",
-                                     "Charge carrier group size;group size;number of groups trasnported",
-                                     config_.get<int>("charge_per_step") - 1,
-                                     1,
-                                     static_cast<double>(config_.get<unsigned int>("charge_per_step")));
+        group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
+                                                  "Charge carrier group size;group size;number of groups transported",
+                                                  static_cast<int>(charge_per_step_ - 1),
+                                                  1,
+                                                  static_cast<double>(charge_per_step_));
     }
 
     // Check for doping profile
     has_doping_profile_ = detector->hasDopingProfile();
 }
 
-void GenericPropagationModule::run(unsigned int event_num) {
+void GenericPropagationModule::run(Event* event) {
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
+
+    // List of points to plot to plot for output plots
+    OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -567,10 +574,10 @@ void GenericPropagationModule::run(unsigned int event_num) {
     unsigned int recombined_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
-    for(const auto& deposit : deposits_message_->getData()) {
+    for(const auto& deposit : deposits_message->getData()) {
 
-        if((deposit.getType() == CarrierType::ELECTRON && !config_.get<bool>("propagate_electrons")) ||
-           (deposit.getType() == CarrierType::HOLE && !config_.get<bool>("propagate_holes"))) {
+        if((deposit.getType() == CarrierType::ELECTRON && !propagate_electrons_) ||
+           (deposit.getType() == CarrierType::HOLE && !propagate_holes_)) {
             LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
                        << Units::display(deposit.getLocalPosition(), {"mm", "um"});
             continue;
@@ -590,7 +597,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
         LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
                    << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
-        auto charge_per_step = config_.get<unsigned int>("charge_per_step");
+        auto charge_per_step = charge_per_step_;
         while(charges_remaining > 0) {
             // Define number of charges to be propagated and remove charges of this step from the total
             if(charge_per_step > charges_remaining) {
@@ -604,17 +611,19 @@ void GenericPropagationModule::run(unsigned int event_num) {
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
                 auto global_position = detector_->getGlobalPosition(position);
-                output_plot_points_.emplace_back(PropagatedCharge(position,
-                                                                  global_position,
-                                                                  deposit.getType(),
-                                                                  charge_per_step,
-                                                                  deposit.getLocalTime(),
-                                                                  deposit.getGlobalTime()),
-                                                 std::vector<ROOT::Math::XYZPoint>());
+                std::lock_guard<std::mutex> lock{stats_mutex_};
+                output_plot_points.emplace_back(PropagatedCharge(position,
+                                                                 global_position,
+                                                                 deposit.getType(),
+                                                                 charge_per_step,
+                                                                 deposit.getLocalTime(),
+                                                                 deposit.getGlobalTime()),
+                                                std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
-            auto prop_pair = propagate(position, deposit.getType(), deposit.getLocalTime());
+            auto prop_pair =
+                propagate(position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
             position = prop_pair.first;
 
             if(prop_pair.second < 0) {
@@ -652,7 +661,7 @@ void GenericPropagationModule::run(unsigned int event_num) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        create_output_plots(event_num);
+        create_output_plots(event->number, output_plot_points);
     }
 
     // Write summary and update statistics
@@ -662,13 +671,13 @@ void GenericPropagationModule::run(unsigned int event_num) {
               << "Recombined " << recombined_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
-    total_time_ += total_time;
+    total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     // Create a new message with propagated charges
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 /**
@@ -676,8 +685,11 @@ void GenericPropagationModule::run(unsigned int event_num) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double>
-GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const CarrierType& type, const double initial_time) {
+std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+                                                                            const CarrierType& type,
+                                                                            const double initial_time,
+                                                                            RandomNumberGenerator& random_generator,
+                                                                            OutputPlotPoints& output_plot_points) const {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -702,14 +714,14 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
         std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator_);
+            diffusion[i] = gauss_distribution(random_generator);
         }
         return diffusion;
     };
 
     // Survival probability of this charge carrier package, evaluated once
     std::uniform_real_distribution<double> survival(0, 1);
-    auto survival_probability = survival(random_generator_);
+    auto survival_probability = survival(random_generator);
 
     auto carrier_alive = [&](double doping_concentration, double time) -> bool {
         auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
@@ -776,8 +788,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
-                output_plot_points_.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
-                next_idx = output_plot_points_.back().second.size();
+                output_plot_points.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points.back().second.size();
             }
         }
 
@@ -857,7 +869,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos, const Carri
     if(output_linegraphs_ && output_plots_lines_at_implants_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-            output_plot_points_.pop_back();
+            output_plot_points.pop_back();
         }
     }
 
@@ -879,7 +891,8 @@ void GenericPropagationModule::finalize() {
         group_size_histo_->Write();
     }
 
-    long double average_time = total_time_ / std::max(1u, total_propagated_charges_);
+    long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
+                               std::max(1u, static_cast<unsigned int>(total_propagated_charges_));
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
 }

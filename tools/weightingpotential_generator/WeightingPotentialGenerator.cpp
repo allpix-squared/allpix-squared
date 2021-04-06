@@ -5,6 +5,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -16,8 +17,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-// FIXME use central ThreadPool once available
-#include "../mesh_converter/ThreadPool.hpp"
+using allpix::ThreadPool;
 
 void interrupt_handler(int);
 
@@ -151,6 +151,7 @@ int main(int argc, char** argv) {
 
         // Start potential generation on many threads:
         auto num_threads = std::max(std::thread::hardware_concurrency(), 1u);
+        ThreadPool::registerThreadCount(num_threads);
         LOG(STATUS) << "Starting weighting potential generation with " << num_threads << " threads.";
         auto weighting_potential = std::make_shared<std::vector<double>>();
 
@@ -209,8 +210,8 @@ int main(int argc, char** argv) {
             allpix::Log::setFormat(log_format);
         };
 
-        ThreadPool pool(num_threads, init_function);
-        std::vector<std::future<std::vector<double>>> wp_futures;
+        ThreadPool pool(num_threads, num_threads * 1024, init_function);
+        std::vector<std::shared_future<std::vector<double>>> wp_futures;
 
         // Loop over x coordinate, add tasks for each coordinate to the queue
         for(size_t x = 1; x <= binning.x(); x++) {

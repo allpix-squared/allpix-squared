@@ -16,6 +16,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 class G4UIsession;
@@ -46,12 +47,12 @@ namespace allpix {
         /**
          * @brief Initializes visualization and apply configuration parameters
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Show visualization updates if not accumulating data
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Possibly start GUI or terminal and display the visualization

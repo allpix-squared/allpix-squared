@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
@@ -23,10 +24,9 @@ using namespace allpix;
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
-
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Allow to use similar syntax as in DepositionGeant4:
     config_.setAlias("position", "source_position");
@@ -64,7 +64,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     }
 }
 
-void DepositionPointChargeModule::init() {
+void DepositionPointChargeModule::initialize() {
 
     auto model = detector_->getModel();
 
@@ -112,7 +112,7 @@ void DepositionPointChargeModule::init() {
     }
 }
 
-void DepositionPointChargeModule::run(unsigned int event) {
+void DepositionPointChargeModule::run(Event* event) {
 
     ROOT::Math::XYZPoint position;
     auto model = detector_->getModel();
@@ -136,16 +136,16 @@ void DepositionPointChargeModule::run(unsigned int event) {
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
-        position = ROOT::Math::XYZPoint(voxel_.x() * ((event - 1) % root_),
-                                        voxel_.y() * (((event - 1) / root_) % root_),
-                                        voxel_.z() * (((event - 1) / root_ / root_) % root_)) +
+        position = ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
+                                        voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
+                                        voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
                    ref;
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
-            double dx = std::normal_distribution<double>(0, size)(random_generator_);
-            double dy = std::normal_distribution<double>(0, size)(random_generator_);
-            double dz = std::normal_distribution<double>(0, size)(random_generator_);
+            double dx = std::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dy = std::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dz = std::normal_distribution<double>(0, size)(event->getRandomEngine());
             return ROOT::Math::XYZVector(dx, dy, dz);
         };
 
@@ -155,13 +155,13 @@ void DepositionPointChargeModule::run(unsigned int event) {
 
     // Create charge carriers at requested position
     if(type_ == SourceType::MIP) {
-        DepositLine(position);
+        DepositLine(event, position);
     } else {
-        DepositPoint(position);
+        DepositPoint(event, position);
     }
 }
 
-void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& position) {
+void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::XYZPoint& position) {
     // Vector of deposited charges and their "MCParticle"
     std::vector<DepositedCharge> charges;
     std::vector<MCParticle> mcparticles;
@@ -187,13 +187,13 @@ void DepositionPointChargeModule::DepositPoint(const ROOT::Math::XYZPoint& posit
 
     // Dispatch the messages to the framework
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, mcparticle_message);
+    messenger_->dispatchMessage(this, mcparticle_message, event);
 
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
+    messenger_->dispatchMessage(this, deposit_message, event);
 }
 
-void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& position) {
+void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XYZPoint& position) {
     auto model = detector_->getModel();
 
     // Vector of deposited charges and their "MCParticle"
@@ -232,8 +232,8 @@ void DepositionPointChargeModule::DepositLine(const ROOT::Math::XYZPoint& positi
 
     // Dispatch the messages to the framework
     auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(mcparticles), detector_);
-    messenger_->dispatchMessage(this, mcparticle_message);
+    messenger_->dispatchMessage(this, mcparticle_message, event);
 
     auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(charges), detector_);
-    messenger_->dispatchMessage(this, deposit_message);
+    messenger_->dispatchMessage(this, deposit_message, event);
 }

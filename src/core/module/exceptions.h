@@ -72,6 +72,22 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
+     * @brief Informs that an event is in a state it should never be
+     *
+     * The event does for example not have a random number engine available.
+     */
+    class InvalidEventStateException : public LogicError {
+    public:
+        /**
+         * @brief Constructs error with a description
+         * @param message Text explaining the problem
+         */
+        // TODO [doc] the event itself is missing
+        explicit InvalidEventStateException(std::string message) { error_message_ = std::move(message); }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief Informs that a module executes an action is it not allowed to do in particular state
      *
      * A module for example tries to accesses special methods as Module::getOutputPath which are not allowed in the
@@ -120,6 +136,23 @@ namespace allpix {
          */
         // TODO [doc] the module itself is missing
         explicit EndOfRunException(std::string reason) { error_message_ = std::move(reason); }
+    };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Exception for modules to request an interrupt because dependencies are missing
+     * @note Non-fatal error used to request the module to be rescheduled later.
+     *
+     * This error can be raised by modules if they cannot handle an event at this point in time, because earlier events have
+     * not been processed yet. The event will then be pushed on a queue to be handled when all earlier events are done
+     * processing.
+     */
+    class MissingDependenciesException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs request to interrupt event processing
+         */
+        MissingDependenciesException() {}
     };
 } // namespace allpix
 

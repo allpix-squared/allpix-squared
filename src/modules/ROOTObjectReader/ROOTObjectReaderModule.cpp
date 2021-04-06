@@ -28,12 +28,15 @@
 #include "objects/Object.hpp"
 #include "objects/objects.h"
 
-#include "core/utils/type.h"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
 ROOTObjectReaderModule::ROOTObjectReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_mgr)
-    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {}
+    : Module(config), messenger_(messenger), geo_mgr_(geo_mgr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
@@ -73,6 +76,7 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
                 new_obj.SetBit(kIsReferenced);
                 pid->PutObjectWithID(&new_obj);
             }
+            prev_obj.ResetBit(kMustCleanup);
         }
 
         if(detector == nullptr) {
@@ -101,7 +105,7 @@ template <typename T> static ROOTObjectReaderModule::MessageCreatorMap gen_creat
     return ret_map;
 }
 
-void ROOTObjectReaderModule::init() {
+void ROOTObjectReaderModule::initialize() {
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
@@ -253,7 +257,11 @@ void ROOTObjectReaderModule::init() {
     }
 }
 
-void ROOTObjectReaderModule::run(unsigned int event_num) {
+void ROOTObjectReaderModule::run(Event* event) {
+    auto root_lock = root_process_lock();
+
+    // Beware: ROOT uses signed entry counters for its trees
+    auto event_num = static_cast<int64_t>(event->number);
     --event_num;
     for(auto& tree : trees_) {
         if(event_num >= tree->GetEntries()) {
@@ -264,8 +272,8 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
     }
     LOG(TRACE) << "Building messages from stored objects";
 
-    // Loop through all branches
-    for(const auto& message_inf : message_info_array_) {
+    // Loop through all branches to construct messages
+    for(auto& message_inf : message_info_array_) {
         auto* objects = message_inf.objects;
 
         // Skip empty objects in current event
@@ -286,10 +294,25 @@ void ROOTObjectReaderModule::run(unsigned int event_num) {
         read_cnt_ += objects->size();
 
         // Create a message
-        std::shared_ptr<BaseMessage> message = iter->second(*objects, message_inf.detector);
+        message_inf.message = iter->second(*objects, message_inf.detector);
+    }
 
-        // Dispatch the message
-        messenger_->dispatchMessage(this, message, message_inf.name);
+    for(auto& message_inf : message_info_array_) {
+        // We might not have every message, so just continue
+        if(!message_inf.message) {
+            continue;
+        }
+
+        // Resolve history
+        for(auto& object : message_inf.message->getObjectArray()) {
+            object.get().loadHistory();
+        }
+
+        // Dispatch the messages
+        messenger_->dispatchMessage(this, message_inf.message, event, message_inf.name);
+
+        // Reset the message pointer:
+        message_inf.message.reset();
     }
 }
 
@@ -301,7 +324,4 @@ void ROOTObjectReaderModule::finalize() {
 
     // Print statistics
     LOG(INFO) << "Read " << read_cnt_ << " objects from " << branch_count << " branches";
-
-    // Close the file
-    input_file_->Close();
 }

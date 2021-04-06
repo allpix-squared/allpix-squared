@@ -17,9 +17,9 @@
 #include <G4EmParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
+#include <G4NuclearLevelData.hh>
 #include <G4PhysListFactory.hh>
 #include <G4RadioactiveDecayPhysics.hh>
-#include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
@@ -34,9 +34,13 @@
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
+#include "tools/geant4/geant4.h"
 
+#include "ActionInitializationG4.hpp"
 #include "GeneratorActionG4.hpp"
+#include "SDAndFieldConstruction.hpp"
 #include "SensitiveDetectorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
 
@@ -44,14 +48,24 @@
 
 using namespace allpix;
 
+thread_local std::unique_ptr<TrackInfoManager> DepositionGeant4Module::track_info_manager_ = nullptr;
+thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sensors_;
+
 /**
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), messenger_(messenger), geo_manager_(geo_manager), last_event_num_(1), run_manager_g4_(nullptr) {
+    : Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
+    config_.setDefault("pai_model", "pai");
+
+    // Set defaults for charge carrier creation
+    config_.setDefault("fano_factor", 0.115);
+    config_.setDefault("charge_creation_energy", Units::get(3.64, "eV"));
 
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
@@ -59,12 +73,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault<double>("max_step_length", Units::get(1.0, "um"));
     // Default value chosen to ensure proper gamma generation for Cs137 decay
     config_.setDefault<double>("cutoff_time", 2.21e+11);
-
-    // Set alias for support of old particle source definition
-    config_.setAlias("source_position", "beam_position");
-    config_.setAlias("source_energy", "beam_energy");
-    config_.setAlias("source_energy_spread", "beam_energy_spread");
-    config_.setAlias("cutoff_time", "decay_cutoff_time", true);
 
     // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
@@ -99,15 +107,24 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
 /**
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
-void DepositionGeant4Module::init() {
+void DepositionGeant4Module::initialize() {
+    MTRunManager* run_manager_mt = nullptr;
+
+    number_of_particles_ = config_.get<unsigned int>("number_of_particles", 1);
+    output_plots_ = config_.get<bool>("output_plots");
+
     // Load the G4 run manager (which is owned by the geometry builder)
-    run_manager_g4_ = G4RunManager::GetRunManager();
+    if(canParallelize()) {
+        run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
+        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        G4Threading::SetMultithreadedApplication(true);
+    } else {
+        run_manager_g4_ = G4RunManager::GetRunManager();
+    }
+
     if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
-
-    // Suppress all output from G4
-    SUPPRESS_STREAM(G4cout);
 
     // Get UI manager for sending commands
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
@@ -127,7 +144,7 @@ void DepositionGeant4Module::init() {
             auto* region = new G4Region(detector->getName() + "_sensor_region");
             region->AddRootLogicalVolume(logical_volume.get());
 
-            auto pai_model = config_.get<std::string>("pai_model", "pai");
+            auto pai_model = config_.get<std::string>("pai_model");
             auto lcase_model = pai_model;
             std::transform(lcase_model.begin(), lcase_model.end(), lcase_model.begin(), ::tolower);
             if(lcase_model == "pai") {
@@ -213,20 +230,139 @@ void DepositionGeant4Module::init() {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
+    // Disable verbose messages from processes
+    ui_g4->ApplyCommand("/process/verbose 0");
+    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
+    G4EmParameters::Instance()->SetVerbose(0);
+    G4HadronicProcessStore::Instance()->SetVerbose(0);
+    physicsList->SetVerboseLevel(0);
+    G4NuclearLevelData::GetInstance()->GetParameters()->SetVerbose(0);
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
     // Build particle generator
-    LOG(TRACE) << "Constructing particle source";
-    auto* generator = new GeneratorActionG4(config_);
-    run_manager_g4_->SetUserAction(generator);
-
-    track_info_manager_ = std::make_unique<TrackInfoManager>();
-
     // User hook to store additional information at track initialization and termination as well as custom track ids
-    auto* userTrackIDHook = new SetTrackInfoUserHookG4(track_info_manager_.get());
-    run_manager_g4_->SetUserAction(userTrackIDHook);
+    LOG(TRACE) << "Constructing particle source";
 
+    auto* action_initialization = new ActionInitializationG4(config_, this);
+    run_manager_g4_->SetUserInitialization(action_initialization);
+
+    // Get the creation energy for charge (default is silicon electron hole pair energy)
+    auto charge_creation_energy = config_.get<double>("charge_creation_energy");
+    auto fano_factor = config_.get<double>("fano_factor");
+    auto cutoff_time = config_.get<double>("cutoff_time");
+
+    // Construct the sensitive detectors and fields.
+    if(run_manager_mt == nullptr) {
+        // Create the info track manager for the main thread before creating the Sensitive detectors.
+        track_info_manager_ = std::make_unique<TrackInfoManager>();
+        construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy, cutoff_time);
+    } else {
+        // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
+        auto detector_construction =
+            std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy, cutoff_time);
+        run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
+    }
+
+    // Flush the Geant4 stream buffer because some elements in the initialization never do:
+    G4cout << G4endl;
+}
+
+void DepositionGeant4Module::initializeThread() {
+
+    LOG(DEBUG) << "Initializing run manager";
+
+    // Initialize the thread local G4RunManager in case of MT
+    if(canParallelize()) {
+        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+
+        // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
+        // track manager for each calling thread here.
+        if(track_info_manager_ == nullptr) {
+            track_info_manager_ = std::make_unique<TrackInfoManager>();
+        }
+
+        run_manager_mt->InitializeForThread();
+    }
+}
+
+void DepositionGeant4Module::run(Event* event) {
+
+    // Seed the sensitive detectors RNG
+    for(auto& sensor : sensors_) {
+        sensor->seed(event->getRandomNumber());
+    }
+
+    // Start a single event from the beam
+    LOG(TRACE) << "Enabling beam";
+    auto seed1 = event->getRandomNumber();
+    auto seed2 = event->getRandomNumber();
+    LOG(DEBUG) << "Seeding Geant4 event with seeds " << seed1 << " " << seed2;
+
+    if(canParallelize()) {
+        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
+    } else {
+        auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
+        run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
+    }
+
+    uint64_t last_event_num = last_event_num_.load();
+    last_event_num_.compare_exchange_strong(last_event_num, event->number);
+
+    track_info_manager_->createMCTracks();
+    track_info_manager_->dispatchMessage(this, messenger_, event);
+
+    // Dispatch the necessary messages
+    for(auto& sensor : sensors_) {
+        sensor->dispatchMessages(this, messenger_, event);
+
+        // Fill output plots if requested:
+        if(output_plots_) {
+            double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
+            charge_per_event_[sensor->getName()]->Fill(charge);
+        }
+    }
+
+    track_info_manager_->resetTrackInfoManager();
+}
+
+void DepositionGeant4Module::finalize() {
+    if(output_plots_) {
+        // Write histograms
+        LOG(TRACE) << "Writing output plots to file";
+        for(auto& histogram : charge_per_event_) {
+            histogram.second->Write();
+        }
+    }
+
+    // Record the number of sensors and the total charges
+    if(!canParallelize()) {
+        record_module_statistics();
+    }
+
+    // Print summary or warns if module did not output any charges
+    if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
+        size_t average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
+        LOG(INFO) << "Deposited total of " << total_charges_ << " charges in " << number_of_sensors_
+                  << " sensor(s) (average of " << average_charge << " per sensor for every event)";
+    } else {
+        LOG(WARNING) << "No charges deposited";
+    }
+}
+
+void DepositionGeant4Module::finalizeThread() {
+    // Record the number of sensors and the total charges
+    record_module_statistics();
+
+    auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+    run_manager_mt->TerminateForThread();
+}
+
+void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor,
+                                                                      double charge_creation_energy,
+                                                                      double cutoff_time) {
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
@@ -241,27 +377,14 @@ void DepositionGeant4Module::init() {
         }
     }
 
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    auto charge_creation_energy = config_.get<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    auto fano_factor = config_.get<double>("fano_factor", 0.115);
-
-    // Prepare seeds for Geant4:
-    // NOTE Assumes this is the only Geant4 module using random numbers
-    std::string seed_command = "/random/setSeeds ";
-    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
-        seed_command += std::to_string(static_cast<uint32_t>(getRandomSeed() % INT_MAX));
-        if(i != G4_NUM_SEEDS - 1) {
-            seed_command += " ";
-        }
-    }
-
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
         // Do not add sensitive detector for detectors that have no listeners for the deposited charges
-        // FIXME Probably the MCParticle has to be checked as well
         if(!messenger_->hasReceiver(this,
-                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector))) {
+                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector)) &&
+           !messenger_->hasReceiver(this, std::make_shared<MCParticleMessage>(std::vector<MCParticle>(), detector)) &&
+           !messenger_->hasReceiver(this, std::make_shared<MCTrackMessage>(std::vector<MCTrack>()))) {
             LOG(INFO) << "Not depositing charges in " << detector->getName()
                       << " because there is no listener for its output";
             continue;
@@ -269,14 +392,8 @@ void DepositionGeant4Module::init() {
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto* sensitive_detector_action = new SensitiveDetectorActionG4(this,
-                                                                        detector,
-                                                                        messenger_,
-                                                                        track_info_manager_.get(),
-                                                                        charge_creation_energy,
-                                                                        fano_factor,
-                                                                        config_.get<double>("cutoff_time"),
-                                                                        getRandomSeed());
+        auto* sensitive_detector_action = new SensitiveDetectorActionG4(
+            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -290,8 +407,8 @@ void DepositionGeant4Module::init() {
         sensors_.push_back(sensitive_detector_action);
 
         // If requested, prepare output plots
-        if(config_.get<bool>("output_plots")) {
-            LOG(TRACE) << "Creating output plots";
+        if(output_plots_) {
+            LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
             int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
@@ -299,81 +416,31 @@ void DepositionGeant4Module::init() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-            charge_per_event_[sensitive_detector_action->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+
+            {
+                std::lock_guard<std::mutex> lock(histogram_mutex_);
+                if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
+                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
+                        plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+                }
+            }
         }
     }
 
     if(!useful_deposition) {
         LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
     }
-
-    // Disable verbose messages from processes
-    ui_g4->ApplyCommand("/process/verbose 0");
-    ui_g4->ApplyCommand("/process/em/verbose 0");
-    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
-    G4HadronicProcessStore::Instance()->SetVerbose(0);
-
-    // Set the random seed for Geant4 generation
-    ui_g4->ApplyCommand(seed_command);
-
-    // Release the output stream
-    RELEASE_STREAM(G4cout);
 }
 
-void DepositionGeant4Module::run(unsigned int event_num) {
-    // Suppress output stream if not in debugging mode
-    IFLOG(DEBUG);
-    else {
-        SUPPRESS_STREAM(G4cout);
+void DepositionGeant4Module::record_module_statistics() {
+    // Since sensors is thread local, some instances may not be used, hence, skip them
+    auto num_sensors = sensors_.size();
+    if(num_sensors > 0) {
+        number_of_sensors_ = num_sensors;
     }
 
-    // Start a single event from the beam
-    LOG(TRACE) << "Enabling beam";
-    run_manager_g4_->BeamOn(static_cast<int>(config_.get<unsigned int>("number_of_particles", 1)));
-    last_event_num_ = event_num;
-
-    // Release the stream (if it was suspended)
-    RELEASE_STREAM(G4cout);
-
-    track_info_manager_->createMCTracks();
-
-    // Dispatch the necessary messages
-    track_info_manager_->dispatchMessage(this, messenger_);
-
+    // We calculate the total deposited charges here, since sensors exist per thread
     for(auto& sensor : sensors_) {
-        sensor->dispatchMessages();
-
-        // Fill output plots if requested:
-        if(config_.get<bool>("output_plots")) {
-            double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            charge_per_event_[sensor->getName()]->Fill(charge);
-        }
-    }
-
-    track_info_manager_->resetTrackInfoManager();
-}
-
-void DepositionGeant4Module::finalize() {
-    size_t total_charges = 0;
-    for(auto& sensor : sensors_) {
-        total_charges += sensor->getTotalDepositedCharge();
-    }
-
-    if(config_.get<bool>("output_plots")) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-        for(auto& plot : charge_per_event_) {
-            plot.second->Write();
-        }
-    }
-
-    // Print summary or warns if module did not output any charges
-    if(!sensors_.empty() && total_charges > 0 && last_event_num_ > 0) {
-        size_t average_charge = total_charges / sensors_.size() / last_event_num_;
-        LOG(INFO) << "Deposited total of " << total_charges << " charges in " << sensors_.size() << " sensor(s) (average of "
-                  << average_charge << " per sensor for every event)";
-    } else {
-        LOG(WARNING) << "No charges deposited";
+        total_charges_ += sensor->getTotalDepositedCharge();
     }
 }

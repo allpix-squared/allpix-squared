@@ -8,6 +8,7 @@
  */
 
 #include "PulseTransferModule.hpp"
+#include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 
@@ -22,9 +23,7 @@ using namespace allpix;
 PulseTransferModule::PulseTransferModule(Configuration& config,
                                          Messenger* messenger,
                                          const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), detector_(detector), messenger_(messenger) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    : Module(config, detector), messenger_(messenger), detector_(detector) {
 
     // Set default value for config variables
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));
@@ -40,10 +39,18 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
     timestep_ = config_.get<double>("timestep");
 
-    messenger_->bindSingle(this, &PulseTransferModule::message_, MsgFlags::REQUIRED);
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!output_pulsegraphs_) {
+        enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
+    }
+
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void PulseTransferModule::init() {
+void PulseTransferModule::initialize() {
 
     if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
@@ -53,41 +60,42 @@ void PulseTransferModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_total_induced_charge_ =
-            new TH1D("inducedcharge", "total induced charge;induced charge [ke];events", nbins, -maximum, maximum);
-        h_induced_pixel_charge_ =
-            new TH1D("pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, -maximum, maximum);
-        h_induced_pulses_ = new TH2D("pulses_induced",
-                                     "Induced charge per pixel;t [ns];Q_{ind} [e]",
-                                     nbins,
-                                     0,
-                                     10.,
-                                     nbins,
-                                     0,
-                                     config_.get<int>("output_plots_scale") / 0.5e3);
-        h_integrated_pulses_ = new TH2D("pulses_integrated",
-                                        "Accumulated induced charge per pixel;t [ns];Q_{ind} [e]",
-                                        nbins,
-                                        0,
-                                        10.,
-                                        nbins,
-                                        0,
-                                        config_.get<int>("output_plots_scale"));
-        p_induced_pulses_ =
-            new TProfile("pulses_induced_profile", "Induced charge per pixel;t [ns];Q_{ind} [e]", nbins, 0, 10.);
-        p_integrated_pulses_ = new TProfile(
+        h_total_induced_charge_ = CreateHistogram<TH1D>(
+            "inducedcharge", "total induced charge;induced charge [ke];events", nbins, -maximum, maximum);
+        h_induced_pixel_charge_ = CreateHistogram<TH1D>(
+            "pixelcharge", "induced charge per pixel;induced pixel charge [ke];pixels", nbins, -maximum, maximum);
+        h_induced_pulses_ = CreateHistogram<TH2D>("pulses_induced",
+                                                  "Induced charge per pixel;t [ns];Q_{ind} [e]",
+                                                  nbins,
+                                                  0,
+                                                  10.,
+                                                  nbins,
+                                                  0,
+                                                  config_.get<int>("output_plots_scale") / 0.5e3);
+        h_integrated_pulses_ = CreateHistogram<TH2D>("pulses_integrated",
+                                                     "Accumulated induced charge per pixel;t [ns];Q_{ind} [e]",
+                                                     nbins,
+                                                     0,
+                                                     10.,
+                                                     nbins,
+                                                     0,
+                                                     config_.get<int>("output_plots_scale"));
+        p_induced_pulses_ = CreateHistogram<TProfile>(
+            "pulses_induced_profile", "Induced charge per pixel;t [ns];Q_{ind} [e]", nbins, 0, 10.);
+        p_integrated_pulses_ = CreateHistogram<TProfile>(
             "pulses_integrated_profile", "Accumulated induced charge per pixel;t [ns];Q_{ind} [e]", nbins, 0, 10.);
     }
 }
 
-void PulseTransferModule::run(unsigned int event_num) {
+void PulseTransferModule::run(Event* event) {
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
 
-    LOG(DEBUG) << "Received " << message_->getData().size() << " propagated charge objects.";
-    for(const auto& propagated_charge : message_->getData()) {
+    LOG(DEBUG) << "Received " << propagated_message->getData().size() << " propagated charge objects.";
+    for(const auto& propagated_charge : propagated_message->getData()) {
         auto pulses = propagated_charge.getPulses();
 
         if(pulses.empty()) {
@@ -195,7 +203,7 @@ void PulseTransferModule::run(unsigned int event_num) {
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            create_pulsegraphs(event_num, index, pulse);
+            create_pulsegraphs(event->number, index, pulse);
         }
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
@@ -204,10 +212,10 @@ void PulseTransferModule::run(unsigned int event_num) {
     }
 
     if(output_pulsegraphs_) {
-        std::string name = "chargemap_ev" + std::to_string(event_num);
+        std::string name = "chargemap_ev" + std::to_string(event->number);
         auto size = detector_->getModel()->getNPixels();
         std::string title =
-            "Map of accumulated induced charge in event " + std::to_string(event_num) + ";x (pixels);y (pixels);charge";
+            "Map of accumulated induced charge in event " + std::to_string(event->number) + ";x (pixels);y (pixels);charge";
         auto* charge_map = new TH2D(name.c_str(),
                                     title.c_str(),
                                     static_cast<int>(size.x()),
@@ -227,7 +235,7 @@ void PulseTransferModule::run(unsigned int event_num) {
 
     // Create a new message with pixel pulses and dispatch:
     auto pixel_charge_message = std::make_shared<PixelChargeMessage>(std::move(pixel_charges), detector_);
-    messenger_->dispatchMessage(this, pixel_charge_message);
+    messenger_->dispatchMessage(this, pixel_charge_message, event);
 
     // Fill pixel charge histogram
     if(output_plots_) {
@@ -251,7 +259,7 @@ void PulseTransferModule::finalize() {
     }
 }
 
-void PulseTransferModule::create_pulsegraphs(unsigned int event_num, const Pixel::Index& index, const Pulse& pulse) const {
+void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const {
     auto step = pulse.getBinning();
     auto pulse_vec = pulse.getPulse();
     LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "

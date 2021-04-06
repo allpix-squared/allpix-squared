@@ -88,6 +88,11 @@ namespace allpix {
         Message(std::vector<T> data, const std::shared_ptr<const Detector>& detector);
 
         /**
+         * @brief Destructs messages, skipping optional cleanup of objects
+         */
+        ~Message() override;
+
+        /**
          * @brief Get a reference to the data in this message
          */
         const std::vector<T>& getData() const;
@@ -112,6 +117,18 @@ namespace allpix {
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
         get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type* = nullptr);
+
+        /**
+         * @brief Set kMustCleanup bit in all Objects to false, to prevent cleanup by ROOT
+         */
+        template <typename U = T>
+        void skip_object_cleanup(typename std::enable_if<std::is_base_of<Object, U>::value>::type* = nullptr);
+
+        /**
+         * @brief Does nothing if message does not contain objects
+         */
+        template <typename U = T>
+        void skip_object_cleanup(typename std::enable_if<!std::is_base_of<Object, U>::value>::type* = nullptr) {}
 
         std::vector<T> data_;
     };

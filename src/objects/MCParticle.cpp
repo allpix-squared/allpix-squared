@@ -71,33 +71,33 @@ double MCParticle::getLocalTime() const {
 }
 
 void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ = const_cast<MCParticle*>(mc_particle); // NOLINT
+    parent_ = PointerWrapper<MCParticle>(mc_particle);
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getParent() const {
-    return dynamic_cast<MCParticle*>(parent_.GetObject());
+    return parent_.get();
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getPrimary() const {
-    auto* parent = dynamic_cast<MCParticle*>(parent_.GetObject());
+    auto* parent = parent_.get();
     return (parent == nullptr ? this : parent->getPrimary());
 }
 
 void MCParticle::setTrack(const MCTrack* mc_track) {
-    track_ = const_cast<MCTrack*>(mc_track); // NOLINT
+    track_ = PointerWrapper<MCTrack>(mc_track);
 }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCParticle::getTrack() const {
-    return dynamic_cast<MCTrack*>(track_.GetObject());
+    return track_.get();
 }
 
 void MCParticle::print(std::ostream& out) const {
@@ -147,4 +147,13 @@ void MCParticle::print(std::ostream& out) const {
         out << std::right << std::setw(small_gap) << "<nullptr>\n";
     }
     out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
+}
+
+void MCParticle::loadHistory() {
+    parent_.get();
+    track_.get();
+}
+void MCParticle::petrifyHistory() {
+    parent_.store();
+    track_.store();
 }

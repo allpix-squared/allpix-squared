@@ -18,6 +18,7 @@
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
 
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "objects/PixelHit.hpp"
 
@@ -31,7 +32,7 @@ namespace allpix {
      * sub-directory, it creates a Hits tree. Upon receiving the Pixel Hit messages, it writes the information to
      * the respective trees.
      */
-    class RCEWriterModule : public Module {
+    class RCEWriterModule : public SequentialModule {
     public:
         /**
          * @brief Constructor for this unique module
@@ -48,12 +49,12 @@ namespace allpix {
         /**
          * @brief Opens the file to write the objects to, and initializes the trees
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree
          */
-        void run(unsigned int) override;
+        void run(Event* event) override;
 
         /**
          * @brief Write the output file
@@ -61,6 +62,7 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Struct to store tree and information for each detector
@@ -89,8 +91,5 @@ namespace allpix {
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
-
-        // retrieve message containing collected pixel hits for all detectors
-        std::vector<std::shared_ptr<PixelHitMessage>> pixel_hit_messages_;
     };
 } // namespace allpix

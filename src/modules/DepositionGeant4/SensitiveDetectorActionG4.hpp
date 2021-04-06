@@ -17,6 +17,7 @@
 
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
@@ -24,6 +25,8 @@
 #include "TrackInfoManager.hpp"
 
 namespace allpix {
+    class Event;
+
     /**
      * @brief Handles the steps of the particles in all sensitive devices
      */
@@ -31,21 +34,17 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the action handling for every sensitive detector
-         * @param module Pointer to the DepositionGeant4 module holding this class
          * @param detector Detector this sensitive device is bound to
          * @param msg Pointer to the messenger to send the charge deposits
          * @param charge_creation_energy Energy needed per deposited charge
          * @param fano_factor Fano factor for fluctuations in the energy fraction going into e/h pair creation
          * @param random_seed Seed for the random number generator for Fano fluctuations
          */
-        SensitiveDetectorActionG4(Module* module,
-                                  const std::shared_ptr<Detector>& detector,
-                                  Messenger* msg,
+        SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                   TrackInfoManager* track_info_manager,
                                   double charge_creation_energy,
                                   double fano_factor,
-                                  double cutoff_time,
-                                  uint64_t random_seed);
+                                  double cutoff_time);
 
         /**
          * @brief Get total number of charges deposited in the sensitive device bound to this action
@@ -65,6 +64,11 @@ namespace allpix {
         std::string getName() const;
 
         /**
+         * @brief Set the seed of the associated random number generator
+         */
+        void seed(uint64_t random_seed) { random_generator_.seed(random_seed); }
+
+        /**
          * @brief Process a single step of a particle passage through this sensor
          * @param step Information about the step
          * @param history Parameter not used
@@ -73,14 +77,14 @@ namespace allpix {
 
         /**
          * @brief Send the MCParticle and DepositedCharge messages
+         * @param module The module which is responsible for dispatching the message
+         * @param messenger The messenger used to dispatch it
+         * @param event Event to dispatch the messages to
          */
-        void dispatchMessages();
+        void dispatchMessages(Module* module, Messenger* messenger, Event* event);
 
     private:
-        // Instantatiation of the deposition module
-        Module* module_;
         std::shared_ptr<Detector> detector_;
-        Messenger* messenger_;
         // Pointer to track info manager to register tracks which pass through sensitive detectors
         TrackInfoManager* track_info_manager_;
 
@@ -88,8 +92,13 @@ namespace allpix {
         double fano_factor_;
         double cutoff_time_;
 
-        // Random number generator for e/h pair creation fluctuation
-        std::mt19937_64 random_generator_;
+        /**
+         * Random number generator for e/h pair creation fluctuation
+         * @note It is okay to keep a separate random number generator here because instances if this class are thread_local
+         * and the PRNG is re-seeded every event from the event PRNG. See \ref DepositionGeant4Module::run()
+         */
+
+        RandomNumberGenerator random_generator_;
 
         // Statistics of total and per-event deposited charge
         unsigned int total_deposited_charge_{};

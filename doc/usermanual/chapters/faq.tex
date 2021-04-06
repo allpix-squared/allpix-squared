@@ -120,6 +120,7 @@ for(auto& mc_particle : my_mc_particles) {
 \end{minted}
 
 A similar function is used e.g.\ in the DetectorHistogrammer module to filter primary particles and create position-resolved graphs.
+Furthermore, the PixelHit object provides two member functions to access Monte Carlo particles, one which returns all known particles, \parameter{getMCParticles()}, and a second function called \parameter{getPrimaryMCParticles()} which already performs the above filtering and only returns primary particle references.
 \item[How do I access data stored in a file produced with the ROOTObjectWriter from an analysis script?]
 \apsq uses ROOT trees to directly store the relevant \CPP objects as binary data in the file. This retains all information present during the simulation run, including relations between different objects such as assignment of Monte Carlo particles.
 In order to read such a data file in an analysis script, the relevant \CPP library as well as its header have to be loaded.
@@ -202,9 +203,10 @@ reference = "mydetector0"
 \begin{description}
 \item[How do I write my own output module?]
 An essential requirement of any output module is its ability to receive any message of the framework.
-This can be implemented by defining a private \command{listener} function for the module as described in Section~\ref{sec:objects_messages}.
+This can be implemented by defining a private \command{filter} function for the module as described in Section~\ref{sec:objects_messages}.
 This function will be called for every new message dispatched within the framework, and should contain code to decide whether to discard or cache a message for processing.
-Heavy-duty tasks such as handling data should not be performed in the \command{listener} routine, but deferred to the \command{run} function of the respective output module.
+Heavy-duty tasks such as handling data should not be performed in the \command{filter} routine, but deferred to the \command{run} function of the respective output module.
+The \command{filter} function should only decide whether to keep a message for processing or to discard it before the \command{run} function.
 
 \item[How do I process data from multiple detectors?]
 When developing a new \apsq module which processes data from multiple detectors, e.g.\ as the simulation of a track trigger module, this module has to be of type \emph{unique} as described in Section~\ref{sec:module_manager}.
@@ -214,9 +216,7 @@ For \emph{PixelHit} messages, an example code would be:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TrackTriggerModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
-    messenger->bindMulti(this,
-                         &TrackTriggerModule::messages,
-                         MsgFlags::NONE);
+    messenger->bindMulti<MCTrackMessage>(this, MsgFlags::NONE);
 }
 std::vector<std::shared_ptr<PixelHitMessage>> messages;
 \end{minted}
@@ -231,8 +231,8 @@ MyModule::MyModule(Configuration& config, Messenger* messenger, std::shared_ptr<
     : Module(config, detector), detector_(std::move(detector)) {
 
     // Bind messages
-    messenger->bindSingle(this, &MyModule::pixels_message_);
-    messenger->bindSingle(this, &MyModule::mcparticle_message_, MsgFlags::REQUIRED);
+    messenger->bindSingle<PixelHitMessage>(this);
+    messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 }
 \end{minted}
 \end{description}

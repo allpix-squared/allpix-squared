@@ -23,13 +23,14 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
     // Save detector model
     model_ = detector_->getModel();
 
-    random_generator_.seed(getRandomSeed());
-
     // Require deposits message for single detector
-    messenger_->bindSingle(this, &ProjectionPropagationModule::deposits_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);
@@ -76,7 +77,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<bool>("ignore_magnetic_field", false);
 }
 
-void ProjectionPropagationModule::init() {
+void ProjectionPropagationModule::initialize() {
     if(detector_->getElectricFieldType() != FieldType::LINEAR) {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
@@ -109,32 +110,36 @@ void ProjectionPropagationModule::init() {
 
     if(output_plots_) {
         // Initialize output plots
-        propagation_time_histo_ = new TH1D("propagation_time_histo",
-                                           "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
-                                           static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                           0,
-                                           static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
-        drift_time_histo_ = new TH1D("drift_time_histo",
-                                     "Drift time (directed drift only);Drift time [ns];charge carriers",
-                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                     0,
-                                     static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
-        initial_position_histo_ = new TH1D("initial_position_histo",
-                                           "Initial position of collected charge carriers;Position z [um];charge carriers",
-                                           100,
-                                           static_cast<double>(Units::convert(-top_z_, "um")),
-                                           static_cast<double>(Units::convert(top_z_, "um")));
+        propagation_time_histo_ =
+            CreateHistogram<TH1D>("propagation_time_histo",
+                                  "Propagation time (drift + diffusion);Propagation time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
+                                                  "Drift time (directed drift only);Drift time [ns];charge carriers",
+                                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                  0,
+                                                  static_cast<double>(Units::convert(integration_time_, "ns")) * 2);
+        initial_position_histo_ =
+            CreateHistogram<TH1D>("initial_position_histo",
+                                  "Initial position of collected charge carriers;Position z [um];charge carriers",
+                                  100,
+                                  static_cast<double>(Units::convert(-top_z_, "um")),
+                                  static_cast<double>(Units::convert(top_z_, "um")));
         if(diffuse_deposit_) {
-            diffusion_time_histo_ = new TH1D("diffusion_time_histo",
-                                             "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
-                                             static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                             0,
-                                             static_cast<double>(Units::convert(integration_time_, "ns")));
+            diffusion_time_histo_ =
+                CreateHistogram<TH1D>("diffusion_time_histo",
+                                      "Diffusion time prior to drift;Diffusion time [ns];charge carriers",
+                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
         }
     }
 }
 
-void ProjectionPropagationModule::run(unsigned int) {
+void ProjectionPropagationModule::run(Event* event) {
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
@@ -144,7 +149,7 @@ void ProjectionPropagationModule::run(unsigned int) {
     double total_projected_charge = 0;
 
     // Loop over all deposits for propagation
-    for(const auto& deposit : deposits_message_->getData()) {
+    for(const auto& deposit : deposits_message->getData()) {
 
         auto type = deposit.getType();
         auto initial_position = deposit.getLocalPosition();
@@ -202,9 +207,9 @@ void ProjectionPropagationModule::run(unsigned int) {
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
                 std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-                double diffusion_x = gauss_distribution(random_generator_);
-                double diffusion_y = gauss_distribution(random_generator_);
-                double diffusion_z = gauss_distribution(random_generator_);
+                double diffusion_x = gauss_distribution(event->getRandomEngine());
+                double diffusion_y = gauss_distribution(event->getRandomEngine());
+                double diffusion_z = gauss_distribution(event->getRandomEngine());
                 auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
 
                 auto local_position_diffusion = position + diffusion_vec;
@@ -251,7 +256,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             auto carrier_alive = [&](double doping_concentration, double time) -> bool {
                 // Survival probability of this charge carrier package, evaluated once
                 std::uniform_real_distribution<double> survival(0, 1);
-                auto survival_probability = survival(random_generator_);
+                auto survival_probability = survival(event->getRandomEngine());
 
                 auto lifetime_srh =
                     (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
@@ -275,7 +280,7 @@ void ProjectionPropagationModule::run(unsigned int) {
             LOG(TRACE) << "Electric field at carrier position / top of the sensor: "
                        << Units::display(efield_mag_top, "V/cm") << " , " << Units::display(efield_mag, "V/cm");
 
-            slope_efield_ = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
+            auto slope_efield = (efield_mag_top - efield_mag) / (std::abs(top_z_ - position.z()));
 
             // Calculate the drift time
             auto calc_drift_time = [&]() {
@@ -286,7 +291,7 @@ void ProjectionPropagationModule::run(unsigned int) {
                 double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
                 double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
-                return ((log(efield_mag_top) - log(efield_mag)) / slope_efield_ + std::abs(top_z_ - position.z()) / Ec) /
+                return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                        zero_mobility;
             };
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
@@ -318,8 +323,8 @@ void ProjectionPropagationModule::run(unsigned int) {
             }
 
             std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double diffusion_x = gauss_distribution(random_generator_);
-            double diffusion_y = gauss_distribution(random_generator_);
+            double diffusion_x = gauss_distribution(event->getRandomEngine());
+            double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
@@ -371,7 +376,7 @@ void ProjectionPropagationModule::run(unsigned int) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message);
+    messenger_->dispatchMessage(this, propagated_charge_message, event);
 }
 
 void ProjectionPropagationModule::finalize() {

@@ -16,6 +16,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/DepositedCharge.hpp"
@@ -45,12 +46,12 @@ namespace allpix {
         /**
          * @brief Initialize the module and check field configuration
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Propagate all deposited charges through the sensor
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Write statistical summary and histograms
@@ -58,14 +59,16 @@ namespace allpix {
         void finalize() override;
 
     private:
+        Messenger* messenger_;
+
         // General module members
         std::shared_ptr<const Detector> detector_;
-        Messenger* messenger_;
         std::shared_ptr<DetectorModel> model_;
         std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         /**
          * @brief Propagate a single set of charges through the sensor
+         * @param event     Pointer to current event
          * @param pos       Position of the deposit in the sensor
          * @param type      Type of the carrier to propagate
          * @param charge    Total charge of the observed charge carrier set
@@ -73,14 +76,12 @@ namespace allpix {
          *                  result in
          * @return          Pair of the point where the deposit ended after propagation and the time the propagation took
          */
-        std::pair<ROOT::Math::XYZPoint, double> propagate(const ROOT::Math::XYZPoint& pos,
+        std::pair<ROOT::Math::XYZPoint, double> propagate(Event* event,
+                                                          const ROOT::Math::XYZPoint& pos,
                                                           const CarrierType& type,
                                                           const unsigned int charge,
                                                           const double initial_time,
                                                           std::map<Pixel::Index, Pulse>& pixel_map);
-
-        // Random generator for this module
-        std::mt19937_64 random_generator_;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
@@ -117,8 +118,8 @@ namespace allpix {
         ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots
-        TH1D *potential_difference_, *induced_charge_histo_, *induced_charge_e_histo_, *induced_charge_h_histo_;
-        TH1D* step_length_histo_;
-        TH1D* drift_time_histo_;
+        Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;
+        Histogram<TH1D> step_length_histo_;
+        Histogram<TH1D> drift_time_histo_;
     };
 } // namespace allpix

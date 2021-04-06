@@ -48,32 +48,33 @@ namespace allpix {
         DepositionPointChargeModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
-         * @brief Deposit charge carriers for every simulated event
-         */
-        void run(unsigned int) override;
-
-        /**
          * @brief Initialize the histograms
          */
-        void init() override;
+        void initialize() override;
+
+        /**
+         * @brief Deposit charge carriers for every simulated event
+         */
+        void run(Event*) override;
 
     private:
         /**
          * @brief Helper function to deposit charges at a single point
-         * @param event event number
+         * @param event Pointer to current event
+         * @param position
          */
-        void DepositPoint(const ROOT::Math::XYZPoint& position);
+        void DepositPoint(Event*, const ROOT::Math::XYZPoint& position);
 
         /**
          * @brief Helper function to deposit charges along a line
-         * @param event event number
+         * @param event Pointer to current event
+         * @param position
          */
-        void DepositLine(const ROOT::Math::XYZPoint& position);
+        void DepositLine(Event*, const ROOT::Math::XYZPoint& position);
 
-        std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
-        std::mt19937_64 random_generator_;
+        std::shared_ptr<Detector> detector_;
 
         DepositionModel model_;
         SourceType type_;

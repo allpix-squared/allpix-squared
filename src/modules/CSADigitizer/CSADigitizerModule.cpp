@@ -23,15 +23,10 @@
 using namespace allpix;
 
 CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, std::move(detector)), messenger_(messenger), pixel_message_(nullptr) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    : Module(config, std::move(detector)), messenger_(messenger) {
 
     // Require PixelCharge message for single detector
-    messenger_->bindSingle(this, &CSADigitizerModule::pixel_message_, MsgFlags::REQUIRED);
-
-    // Seed the random generator with the global seed
-    random_generator_.seed(getRandomSeed());
+    messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Read model
     auto model = config_.get<std::string>("model");
@@ -131,9 +126,17 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
+
+    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!output_pulsegraphs_) {
+        enable_parallelization();
+    } else {
+        LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
+    }
 }
 
-void CSADigitizerModule::init() {
+void CSADigitizerModule::initialize() {
 
     // Check for sensible configuration of threshold:
     if(ignore_polarity_ && threshold_ < 0) {
@@ -149,32 +152,35 @@ void CSADigitizerModule::init() {
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
-        h_tot = new TH1D("signal",
-                         (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
-                         nbins,
-                         0,
-                         (store_tot_ ? integration_time_ / clockToT_ : 1000));
-        h_toa = new TH1D(
+        h_tot = CreateHistogram<TH1D>(
+            "signal",
+            (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
+            nbins,
+            0,
+            (store_tot_ ? integration_time_ / clockToT_ : 1000));
+        h_toa = CreateHistogram<TH1D>(
             "time",
             (store_toa_ ? "Time-of-Arrival;time of arrival [clk];pixels" : "Time-of-Arrival;time of arrival [ns];pixels"),
             nbins,
             0,
             (store_toa_ ? integration_time_ / clockToA_ : integration_time_));
-        h_pxq_vs_tot = new TH2D("pxqvstot",
-                                "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
-                                nbins,
-                                0,
-                                maximum,
-                                nbins,
-                                0,
-                                integration_time_);
+        h_pxq_vs_tot = CreateHistogram<TH2D>("pxqvstot",
+                                             "ToT vs raw pixel charge;pixel charge [ke];ToT [ns]",
+                                             nbins,
+                                             0,
+                                             maximum,
+                                             nbins,
+                                             0,
+                                             integration_time_);
     }
 }
 
-void CSADigitizerModule::run(unsigned int event_num) {
+void CSADigitizerModule::run(Event* event) {
+    auto pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
+
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(const auto& pixel_charge : pixel_message_->getData()) {
+    for(const auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
@@ -236,7 +242,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
 
         if(output_pulsegraphs_) {
             // Fill a graph with the pulse:
-            create_output_pulsegraphs(std::to_string(event_num),
+            create_output_pulsegraphs(std::to_string(event->number),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
                                       "amp_pulse",
                                       "Amplifier signal without noise",
@@ -250,11 +256,11 @@ void CSADigitizerModule::run(unsigned int event_num) {
         std::transform(amplified_pulse_vec.begin(),
                        amplified_pulse_vec.end(),
                        amplified_pulse_vec.begin(),
-                       [&pulse_smearing, this](auto& c) { return c + (pulse_smearing(random_generator_)); });
+                       [&pulse_smearing, &event](auto& c) { return c + (pulse_smearing(event->getRandomEngine())); });
 
         // Fill a graphs with the individual pixel pulses:
         if(output_pulsegraphs_) {
-            create_output_pulsegraphs(std::to_string(event_num),
+            create_output_pulsegraphs(std::to_string(event->number),
                                       std::to_string(pixel_index.x()) + "-" + std::to_string(pixel_index.y()),
                                       "amp_pulse_noise",
                                       "Amplifier signal with added noise",
@@ -300,7 +306,7 @@ void CSADigitizerModule::run(unsigned int event_num) {
     if(!hits.empty()) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        messenger_->dispatchMessage(this, hits_message);
+        messenger_->dispatchMessage(this, hits_message, event);
     }
 }
 

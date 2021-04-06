@@ -1,0 +1,62 @@
+/**
+ * @file
+ * @brief Implementation of MTRunManager
+ * @copyright Copyright (c) 2019 CERN and the Allpix Squared authors.
+ * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
+ * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
+ * Intergovernmental Organization or submit itself to any jurisdiction.
+ */
+
+#include "MTRunManager.hpp"
+#include "G4LoggingDestination.hpp"
+#include "WorkerRunManager.hpp"
+
+#include <G4UImanager.hh>
+
+using namespace allpix;
+
+G4ThreadLocal WorkerRunManager* MTRunManager::worker_run_manager_ = nullptr;
+
+MTRunManager::MTRunManager() {
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+}
+
+void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
+
+    // Seed the worker run manager for this event:
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed1 % LONG_MAX));
+    worker_run_manager_->seedsQueue.push(static_cast<long>(seed2 % LONG_MAX));
+
+    // redirect the call to the correct manager responsible for this thread
+    worker_run_manager_->BeamOn(n_event);
+}
+
+void MTRunManager::Initialize() {
+    G4MTRunManager::Initialize();
+
+    G4bool cond = ConfirmBeamOnCondition();
+    if(cond) {
+        G4MTRunManager::ConstructScoringWorlds();
+        G4MTRunManager::RunInitialization();
+
+        // Prepare UI commands for workers
+        PrepareCommandsStack();
+    }
+}
+
+void MTRunManager::InitializeForThread() { // NOLINT
+    if(worker_run_manager_ == nullptr) {
+        // construct a new thread worker
+        worker_run_manager_ = WorkerRunManager::GetNewInstanceForThread();
+    }
+}
+
+void MTRunManager::TerminateForThread() { // NOLINT
+    // thread local instance
+    if(worker_run_manager_ != nullptr) {
+        worker_run_manager_->RunTermination();
+        delete worker_run_manager_;
+        worker_run_manager_ = nullptr;
+    }
+}

@@ -11,6 +11,7 @@
 #define ALLPIX_FIELD_PARSER_H
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -295,13 +296,13 @@ namespace allpix {
             file >> tmp;               // ignore cluster length
             file >> tmp >> tmp >> tmp; // ignore the incident pion direction
             file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
-            double thickness, xpixsz, ypixsz;
+            double thickness = NAN, xpixsz = NAN, ypixsz = NAN;
             file >> thickness >> xpixsz >> ypixsz;
             thickness = Units::get(thickness, "um");
             xpixsz = Units::get(xpixsz, "um");
             ypixsz = Units::get(ypixsz, "um");
             file >> tmp >> tmp >> tmp >> tmp; // ignore temperature, flux, rhe (?) and new_drde (?)
-            size_t xsize, ysize, zsize;
+            size_t xsize = 0, ysize = 0, zsize = 0;
             file >> xsize >> ysize >> zsize;
             file >> tmp;
 
@@ -323,7 +324,7 @@ namespace allpix {
                 }
 
                 // Get index of field
-                size_t xind, yind, zind;
+                size_t xind = 0, yind = 0, zind = 0;
                 file >> xind >> yind >> zind;
 
                 if(file.fail() || xind > xsize || yind > ysize || zind > zsize) {
@@ -335,7 +336,7 @@ namespace allpix {
 
                 // Loop through components of field
                 for(size_t j = 0; j < N_; ++j) {
-                    double input;
+                    double input = NAN;
                     file >> input;
 
                     // Set the field at a position

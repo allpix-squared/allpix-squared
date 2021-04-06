@@ -16,7 +16,7 @@ Messages are identified by the object type they are carrying, but can also be re
 Messages are intended to be read-only and a copy of the data should be made if a module wishes to change the data.
 All objects are compiled into a separate library which is automatically linked to every module.
 More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
-\item \textbf{Tools}: \apsq provides a set of header-only 'tools' that allow access to common logic shared by various modules.
+\item \textbf{Tools}: \apsq provides a set of header-only 'tools' and a shared library that allow access to common logic shared by various modules.
 Examples are the Runge-Kutta solver~\cite{fehlberg} implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
 More information about the tools can be found in Chapter~\ref{ch:additional_tools_resources}.
 This set of tools is different from the set of core utilities the framework itself provides, which is part of the core and explained in Section~\ref{sec:logging_utilities}.
@@ -169,7 +169,7 @@ The module search order is as follows:
 \begin{enumerate}
 \item Modules already loaded before from an earlier section header
 \item All directories in the global configuration parameter \parameter{library_directories} in the provided order, if this parameter exists.
-\item \item The internal library paths of the executable, that should automatically point to the libraries that are built and installed together with the executable.
+\item The internal library paths of the executable, that should automatically point to the libraries that are built and installed together with the executable.
 These library paths are stored in \dir{RPATH} on Linux, see the next point for more information.
 \item The other standard locations to search for libraries depending on the operating system.
 Details about the procedure Linux follows can be found in~\cite{linuxld}.
@@ -191,25 +191,16 @@ In the end, only a single instance for every unique name is allowed.
 If there are multiple instantiations with the same unique name, the instantiation with the highest priority is kept.
 If multiple instantiations with the same unique name and the same priority exist, an exception is raised.
 
-\subsection{Parallel execution of modules}
+\subsection{Parallel execution of events}
 \label{sec:multithreading}
-The framework has experimental support for running several modules in parallel.
-This feature is disabled for new modules by default, and has to be both supported by the module and enabled by the user as described in Section~\ref{sec:framework_parameters}.
-A significant speed improvement can be achieved if the simulation contains multiple detectors or simulates the same module using different parameters.
+The framework supports running several events in parallel.
+This feature is disabled for new modules by default, and has to be both supported by all modules in the simulation and enabled by the user as described in Section~\ref{sec:framework_parameters}.
+When enabled this feature can provide a significant speed improvement, depending on the simulation chain.
 
-The framework allows to parallelize the execution of the same type of module, if these would otherwise be executed directly after each other in a linear order.
-Thus, as long as the name of the module remains the same, while going through the execution order of all \parameter{run()} methods, all instances are added to a work queue.
-The instances are then distributed to a set of worker threads as specified in the configuration or determined from system parameters, which will execute the individual modules.
-The module manager will wait for all jobs to finish before continuing to process the next type of module.
+The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
+Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
 
-To enable parallelization for a module, the following line of code has to be added to the constructor of a module:
-\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-// Enable parallelization of this module if multithreading is enabled
-enable_parallelization();
-\end{minted}
-By adding this, the module promises that it will work correctly if the run-method is executed multiple times in parallel, in separate instantiations.
-This means in particular that the module will safely handle access to shared (for example static) variables and it will properly bind ROOT histograms to their directory before the \parameter{run()}-method.
-Access to constant operations in the GeometryManager, Detector and DetectorModel is always valid between various threads. In addition, sending and receiving messages is thread-safe.
+Detailed description of how the framework implements the multi-threading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -289,7 +280,7 @@ The detectors and models can be accessed by name and type through the geometry m
 All detectors can be fetched at once using the \parameter{getDetectors} method.
 If the module is a detector-specific module its related Detector can be accessed through the \parameter{getDetector} method of the module base class instead (returns a null pointer for unique modules) as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     // Returns the linked detector
     std::shared_ptr<Detector> detector = this->getDetector();
 }
@@ -447,15 +438,15 @@ Dispatching messages to their receivers is then performed following these rules:
 An example of how to dispatch a message containing an array of \parameter{Object} types bound to a detector named \texttt{dut} is provided below.
 As usual, the message is dispatched at the end of the \parameter{run()} function of the module.
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     std::vector<Object> data;
     // ..fill the data vector with objects ...
 
     // The message is dispatched only for the module's detector, stored in "detector_"
     auto message = std::make_shared<Message<Object>>(data, detector_);
 
-    // Send the message using the Messenger object
-    messenger->dispatchMessage(this, message);
+    // Send the message using the Messenger object for the given event
+    messenger->dispatchMessage(this, message, event);
 }
 \end{minted}
 
@@ -463,61 +454,54 @@ void run(unsigned int event_id) {
 The message system has multiple methods to process received messages.
 The first two are the most common methods and the third should be avoided in almost every instance.
 \begin{enumerate}
-\item Bind a \textbf{single message} to a variable.
+\item Bind a \textbf{single message} to the input of this module.
 This should usually be the preferred method, where a module expects only a single message to arrive per event containing the list of all relevant objects.
 The following example binds to a message containing an array of objects and is placed in the constructor of a detector-type \parameter{TestModule}:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->bindSingle(this,
-                          /* Pointer to the message variable */
-                          &TestModule::message,
-                          /* No special messenger flags */
-                          MsgFlags::NONE);
+    // Subscribe to a single message, with no special messenger flags
+    messenger->bindSingle<ExampleMessage>(this, MsgFlags::NONE);
 }
-std::shared_ptr<Message<Object>> message;
 \end{minted}
-\item Bind a \textbf{set of messages} to a \texttt{std::vector} variable.
+\item Bind a \textbf{set of messages} to the input of the module.
 This method should be used if the module can (and expects to) receive the same message multiple times (possibly because it wants to receive the same type of message for all detectors).
 An example to bind multiple messages containing an array of objects in the constructor of a unique-type \parameter{TestModule} would be:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
-    messenger->bindMulti(this,
-                          /* Pointer to the message vector */
-                          &TestModule::messages,
-                          /* No special messenger flags */
-                          MsgFlags::NONE);
+    // Subscribe to multiple messages, with no special messenger flags
+    messenger->bindMulti<Message<Object>>(this, MsgFlags::NONE);
 }
-std::vector<std::shared_ptr<Message<Object>>> messages;
 \end{minted}
-\item Listen to a particular message type and execute a \textbf{listener function} as soon as an object is received.
+\item Listen to a particular message type and execute a \textbf{filter function} as soon as an object is received.
 This can be used for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible.
-The listening module should \underline{not} do any heavy work in the listening function as this is supposed to take place in the module \command{run} method instead.
-Using a listener function can lead to unexpected behaviour because the function is executed during the run method of the dispatching module.
-This means that logging is performed at the level of the dispatching module and that the listener method can be accessed from multiple threads if the dispatching module is parallelized.
+The listening module should \underline{not} do any heavy work in the filtering function as this is supposed to take place in the module \command{run} method instead.
+The filter function should return a boolean, indicating whether the message is wanted or not.
+Using a filter function can lead to unexpected behavior because the function is executed during the run method of the dispatching module.
+This means that logging is performed at the level of the dispatching module and that the filter method can be accessed from multiple threads if the dispatching module is parallelized.
 Listening to a message containing an array of objects in a detector-specific \parameter{TestModule} could be performed as follows:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
-    messenger->registerListener(this,
-                                /* Pointer to the listener method */
-                                &TestModule::listener,
-                                /* No special message flags */
-                                MsgFlags::NONE);
+    messenger->registerFilter(this,
+                              /* Pointer to the filter method */
+                              &TestModule::filter,
+                              /* No special message flags */
+                              MsgFlags::NONE);
 }
-void listener(std::shared_ptr<Message<Object>> message) {
-    // Do something with the received message ...
+bool filter(std::shared_ptr<Message<Object>> message) const {
+    // Decide if the message is wanted ...
 }
 \end{minted}
 \end{enumerate}
 
 \subsection{Message flags}
 \label{sec:messageflags}
-Flags can be added to the bind and listening methods which enable a particular behaviour of the framework.
+Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
 \begin{itemize}
     \item \textbf{REQUIRED}: Specifies that this message is required during the event processing.
     If this particular message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
     This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
     \item \parameter{ALLOW_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
-    This flag prevents this behaviour.
+    This flag prevents this behavior.
     It can only be used for variables bound to a single message.
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
@@ -525,7 +509,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 
 \subsection{Persistency}
 \label{ch:objects_persistency}
-As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers by the modules which send them, and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
+As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo history (see Section~\ref{sec:objhistory}), objects are by default persistent until the end of each event. All messages are stored as shared pointers and are released at the end of each event. If no other copies of the shared message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data objects must be created. Note that at the point of creating copies the corresponding history will be lost.
 
 
 \section{Redirect Module Inputs and Outputs}
@@ -540,7 +524,7 @@ The output of this module is then not sent to modules without a configured input
 The \parameter{input} parameter of a particular receiving module should therefore be set to match the value of the \parameter{output} parameter.
 In addition, it is permitted to set the \parameter{input} parameter to the special value \texttt{*} to indicate that the module should listen to all messages irrespective of their name.
 
-An example of a configuration with two different settings for the digitisation module is shown below:
+An example of a configuration with two different settings for the digitization module is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Digitize the propagated charges with low noise levels
 [DefaultDigitizer]
@@ -690,7 +674,7 @@ Signals any problem with the value of a configuration parameter not related to p
 Can for example be used for parameters where the possible valid values are limited, like the set of logging levels, or for paths that do not exist.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     // Fetch a key from the configuration
     std::string value = config.get("key");
 
@@ -708,7 +692,7 @@ This could be used if several optional but mutually exclusive parameters are pre
 The exceptions accepts the list of keys as initializer list.
 An example is shown below:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
-void run(unsigned int event_id) {
+void run(Event* event) {
     // Check if we have mutually exclusive options defined:
     if(config.count({"exclusive_opt_a", "exclusive_opt_b"}) > 1) {
         // Raise an error if the combination of keys is not valid
@@ -727,3 +711,49 @@ Should be used to request the end of event processing in the current run, e.g. i
 \end{itemize}
 
 \todo{add more info about error reporting style?}
+
+\section{Multi-threading}
+\label{sec:multithreading_approach}
+\apsq supports multi-threading by running events in parallel.
+The module manager creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
+Each event is represented by an instance of the \texttt{Event} class which encapsulates the data used during this event.
+The configured number of events are then submitted to the thread pool and executed by the thread pool's workers.
+
+The thread pool features two independent queues.
+A FIFO-like unsorted queue for events to be processed, and a second, priority-ordered queue for buffered events.
+The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a \texttt{SequentialModule}.
+
+By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multi-threaded processing of events.
+Therefore each module each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multi-threading capabilities to \apsq.
+To support multi-threading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
+If multi-threading is enabled in the run configuration, the module manager will check if all the loaded modules support multi-threading.
+In case one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{canParallelize()} method.
+
+\subsection{Seed Distribution}
+A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to provide reproducibility of simulation results from the same inputs even when the number of workers is different.
+Each event is seeded upon its creation by the main thread from a central event seed generator, in increasing sequence of event numbers. The event provides access to a random engine that can be used by each module in the \texttt{run()} method.
+
+To avoid the memory overhead of maintaining random engine objects equal to the number of events, the storage of the engines is made static and thread-local, and is only provided to the event for temporary usage.
+This way ensures that the framework maintains the minimum number of such heavy objects equal to the number of workers used.
+When a worker starts to execute a new event, it seeds its local random engine first and passes it to the event object.
+
+\subsection{Using Messenger in Parallel}
+The \texttt{Messenger} handles communication in different events concurrently. It supports dispatching and fetching messages via the \texttt{LocalMessenger}.
+Each event has its own local messenger which stores all messages that was produced in this event.
+The \texttt{Messenger} owns the global message subscription information and internally forwards the module's requests to dispatch or fetch messages to the local messenger of the event in a thread-safe manner.
+
+\subsection{Running Events in order using SequentialModule}
+The \texttt{SequentialModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
+Inheriting from this class will allow the module to transparently check if the given event is in the correct sequence and decide whether to execute it immediately or to request buffering in the prioritized buffer queue if the thread pool if it is out of order.
+
+Using the \texttt{SequentialModule} is suitable for I/O modules which read or write to the file system and do not allow random read or write access to events.
+This enables output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
+
+Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
+This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
+
+\subsection{Geant4 Modules}
+The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
+Furthermore, \emph{Geant4} does not guarantee results reproducibility between both its multi-threaded and sequential run managers.
+Modules that would like to use the \emph{Geant4} library shall not use the run managers provided by \emph{Geant4}.
+Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.

@@ -37,6 +37,7 @@ ADD_EXECUTABLE(mesh_converter
     ${ALLPIX_SRC}/core/config/ConfigReader.cpp
     ${ALLPIX_SRC}/core/config/Configuration.cpp
     ${ALLPIX_SRC}/core/config/exceptions.cpp
+    ${ALLPIX_SRC}/core/module/ThreadPool.cpp
 )
 
 # Include Eigen dependency

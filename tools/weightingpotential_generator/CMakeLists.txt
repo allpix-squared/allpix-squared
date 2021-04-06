@@ -35,6 +35,7 @@ ADD_EXECUTABLE(generate_potential
     ${ALLPIX_SRC}/core/config/Configuration.cpp
     ${ALLPIX_SRC}/core/config/exceptions.cpp
     ${ALLPIX_SRC}/core/geometry/DetectorModel.cpp
+    ${ALLPIX_SRC}/core/module/ThreadPool.cpp
 )
 
 # Include Eigen dependency

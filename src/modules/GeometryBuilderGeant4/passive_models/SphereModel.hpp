@@ -101,32 +101,32 @@ namespace allpix {
          * @brief Set the inner radius of the sphere
          * @param val Inner radius of the sphere
          */
-        void setInnerRadius(double val) { inner_radius_ = std::move(val); }
+        void setInnerRadius(double val) { inner_radius_ = val; }
         /**
          * @brief Set the outer radius of the sphere
          * @param val Outer radius of the sphere
          */
-        void setOuterRadius(double val) { outer_radius_ = std::move(val); }
+        void setOuterRadius(double val) { outer_radius_ = val; }
         /**
          * @brief Set starting angle for the  azimuthal angle of the sphere in degrees
          * @param val Starting angle phi of the sphere
          */
-        void setStartingAnglePhi(double val) { starting_angle_phi_ = std::move(val); }
+        void setStartingAnglePhi(double val) { starting_angle_phi_ = val; }
         /**
          * @brief Set arc length of the azimuthal circumference in degrees
          * @param val Arc length phi of the sphere
          */
-        void setArcLengthPhi(double val) { arc_length_phi_ = std::move(val); }
+        void setArcLengthPhi(double val) { arc_length_phi_ = val; }
         /**
          * @brief Set starting angle of the Polar Angle of the sphere degrees
          * @param val Starting angle theta of the sphere
          */
-        void setStartingAngleTheta(double val) { starting_angle_theta_ = std::move(val); }
+        void setStartingAngleTheta(double val) { starting_angle_theta_ = val; }
         /**
          * @brief Set arc length of the polar circumference in degrees
          * @param val Arc length theta of the sphere
          */
-        void setArcLengthTheta(double val) { arc_length_theta_ = std::move(val); }
+        void setArcLengthTheta(double val) { arc_length_theta_ = val; }
     };
 } // namespace allpix
 

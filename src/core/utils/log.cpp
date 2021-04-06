@@ -186,6 +186,8 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         os << "\x1B[32;1m"; // GREEN
     } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
         os << "\x1B[36m"; // NON-BOLD CYAN
+    } else if(level == LogLevel::PRNG) {
+        os << "\x1B[90m"; // NON-BOLD GREY
     } else {
         os << "\x1B[36;1m"; // CYAN
     }
@@ -200,6 +202,15 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
     }
     os << "\x1B[0m"; // RESET
+
+    // Add event number if any (shortly in the short format)
+    if(getEventNum() != 0) {
+        if(get_format() != LogFormat::SHORT) {
+            os << "(Event " << getEventNum() << ") ";
+        } else {
+            os << "(E: " << getEventNum() << ") ";
+        }
+    }
 
     // Add section if available
     if(!get_section().empty()) {
@@ -260,13 +271,17 @@ LogLevel DefaultLogger::getReportingLevel() {
 
 // String to LogLevel conversions and vice versa
 std::string DefaultLogger::getStringFromLevel(LogLevel level) {
-    const std::array<std::string, 8> type = {{"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE"}};
+    const std::array<std::string, 9> type = {
+        {"FATAL", "STATUS", "ERROR", "WARNING", "INFO", "DEBUG", "NONE", "TRACE", "PRNG"}};
     return type.at(static_cast<decltype(type)::size_type>(level));
 }
 /**
  * @throws std::invalid_argument If the string does not correspond with an existing log level
  */
 LogLevel DefaultLogger::getLevelFromString(const std::string& level) {
+    if(level == "PRNG") {
+        return LogLevel::PRNG;
+    }
     if(level == "TRACE") {
         return LogLevel::TRACE;
     }
@@ -364,6 +379,23 @@ void DefaultLogger::setSection(std::string section) {
 }
 std::string DefaultLogger::getSection() {
     return get_section();
+}
+
+// Getters and setters for the event number
+uint64_t& DefaultLogger::get_event_num() {
+    thread_local uint64_t event_num;
+
+    // Make sure event_num is initialized to zero.
+    thread_local std::once_flag flag;
+    std::call_once(flag, []() noexcept { event_num = 0; });
+
+    return event_num;
+}
+void DefaultLogger::setEventNum(uint64_t event_num) {
+    get_event_num() = event_num;
+}
+uint64_t DefaultLogger::getEventNum() {
+    return get_event_num();
 }
 
 /**

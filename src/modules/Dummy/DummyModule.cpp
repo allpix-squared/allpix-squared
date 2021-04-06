@@ -21,10 +21,10 @@ DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryMa
 
     // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
     // Input required by this module
-    messenger_->bindMulti(this, &DummyModule::messages_, MsgFlags::REQUIRED);
+    messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);
 }
 
-void DummyModule::init() {
+void DummyModule::initialize() {
     // Loop over detectors and do something
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     for(auto& detector : detectors) {
@@ -34,10 +34,11 @@ void DummyModule::init() {
     }
 }
 
-void DummyModule::run(unsigned int) {
+void DummyModule::run(Event* event) {
+    auto messages = messenger_->fetchMultiMessage<PixelHitMessage>(this, event);
     // ... Implement ... (Typically uses the configuration to execute function and outputs an message)
     // Loop through all received messages and print some information
-    for(auto& message : messages_) {
+    for(auto& message : messages) {
         std::string detectorName = message->getDetector()->getName();
         LOG(DEBUG) << "Picked up " << message->getData().size() << " objects from detector " << detectorName;
     }

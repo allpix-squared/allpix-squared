@@ -13,7 +13,17 @@ They are intended as centralized components which can be shared between differen
 The framework provides a set of methods to ease the integration of ROOT and Geant4 in the framework.
 An important part is the extension of the custom conversion \texttt{to\_string} and \texttt{from\_string} methods from the internal string utilities (see Section~\ref{sec:string_utilities}) to support internal ROOT and Geant4 classes.
 This allows to directly read configuration parameters to these types, making the code in the modules both shorter and cleaner.
-In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units.
+In addition, more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector with units and a thin wrapper for thread-safe ROOT histograms.
+
+\subsection{Geant4 Interface}
+\label{sec:geant4_interface}
+The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4 as follows:
+\begin{enumerate}
+\item \texttt{MTRunManager}: A run manager that can only be used in parallel. Internally, it creates thread-local managers to handle operations for each calling thread independently. It also maintains a stable seed distribution mechanism to ensure results are the same regardless of the number of threads that use the manager in parallel.
+\item \texttt{RunManager}: A run manager that can not be used in parallel. It uses the same seeding mechanism as the multi-threaded version so they can be used interchangeably depending on whether multi-threading is enabled or not, while ensuring identical results.
+\end{enumerate}
+
+The DepositionGeant4 module uses \texttt{MTRunManager} to be able to call the \texttt{BeamOn} method in parallel thus benefiting from the multi-threading feature while the VisualizationGeant4 module uses \texttt{RunManager} to be able to visualize the particles passage through the detectors.
 
 \subsection{Runge-Kutta integrator}
 A fast Eigen-powered~\cite{eigen3} Runge-Kutta integrator is provided as a tool to numerically solve differential equations~\cite{fehlberg}.

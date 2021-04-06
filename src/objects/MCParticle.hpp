@@ -123,7 +123,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 8); // NOLINT
+        ClassDefOverride(MCParticle, 9); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -135,6 +135,9 @@ namespace allpix {
          */
         void print(std::ostream& out) const override;
 
+        void loadHistory() override;
+        void petrifyHistory() override;
+
     private:
         ROOT::Math::XYZPoint local_start_point_{};
         ROOT::Math::XYZPoint global_start_point_{};
@@ -145,8 +148,8 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
 
-        TRef parent_;
-        TRef track_;
+        PointerWrapper<MCParticle> parent_;
+        PointerWrapper<MCTrack> track_;
     };
 
     /**

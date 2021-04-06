@@ -20,6 +20,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/Pixel.hpp"
@@ -52,12 +53,12 @@ namespace allpix {
         /**
          * @brief Initialize the module, creating the cross-coupling matrixs
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Transfer the propagated charges to the pixels and its neighbours
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Display statistical summary
@@ -70,12 +71,8 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Message containing the propagated charges
-        std::shared_ptr<PropagatedChargeMessage> propagated_message_;
-
         // Statistical information
-        unsigned int total_transferred_charges_{};
-        std::set<Pixel::Index> unique_pixels_;
+        std::atomic<unsigned int> total_transferred_charges_{};
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;
@@ -98,11 +95,10 @@ namespace allpix {
 
         double center[2] = {0.0, 0.0};
         double angles[2] = {0.0, 0.0};
-        double pixel_gap = 1.0;
 
-        TH2D* coupling_map;
-        TH2D* gap_map;
-        TH2D* capacitance_map;
-        TH2D* relative_capacitance_map;
+        Histogram<TH2D> coupling_map;
+        Histogram<TH2D> gap_map;
+        Histogram<TH2D> capacitance_map;
+        Histogram<TH2D> relative_capacitance_map;
     };
 } // namespace allpix

@@ -85,27 +85,27 @@ namespace allpix {
          * @brief Set the inner radius of the cylinder in the XY-plane
          * @param val Inner radius of the cylinder
          */
-        void setInnerRadius(double val) { inner_radius_ = std::move(val); }
+        void setInnerRadius(double val) { inner_radius_ = val; }
         /**
          * @brief Set the outer radius of the cylinder in the XY-plane
          * @param val Outer radius of the cylinder
          */
-        void setOuterRadius(double val) { outer_radius_ = std::move(val); }
+        void setOuterRadius(double val) { outer_radius_ = val; }
         /**
          * @brief Set the length of the cylinder in the Z-directior
          * @param val Offset from the pixel grid center
          */
-        void setLength(double val) { length_ = std::move(val); }
+        void setLength(double val) { length_ = val; }
         /**
          * @brief Set starting angle of the circumference of the cylinder in degrees
          * @param val Starting angle of the cylinder
          */
-        void setStartingAngle(double val) { starting_angle_ = std::move(val); }
+        void setStartingAngle(double val) { starting_angle_ = val; }
         /**
          * @brief Set arc length of the circumference in degrees
          * @param val Arc length of the cylinder
          */
-        void setArcLength(double val) { arc_length_ = std::move(val); }
+        void setArcLength(double val) { arc_length_ = val; }
     };
 } // namespace allpix
 

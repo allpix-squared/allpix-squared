@@ -20,7 +20,7 @@
 
 #include "core/module/exceptions.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/geant4.h"
 
 #include "PassiveMaterialModel.hpp"
 #include "passive_models/BoxModel.hpp"

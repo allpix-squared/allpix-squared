@@ -18,10 +18,9 @@
 using namespace allpix;
 
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
-
-    // Seed the random generator for Fano fluctuations with the seed received
-    random_generator_.seed(getRandomSeed());
+    : SequentialModule(config), geo_manager_(geo_manager), messenger_(messenger) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
     config_.setDefault<double>("fano_factor", 0.115);
@@ -62,7 +61,7 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     create_mcparticles_ = config.get<bool>("create_mcparticles");
 }
 
-void DepositionReaderModule::init() {
+void DepositionReaderModule::initialize() {
 
     if(!time_available_) {
         LOG(WARNING) << "No time information provided, all energy deposition will be assigned to t = 0";
@@ -181,8 +180,8 @@ void DepositionReaderModule::init() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + detector->getName();
-            charge_per_event_[detector->getName()] =
-                new TH1D(plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+                plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
     }
 }
@@ -199,7 +198,8 @@ template <typename T> void DepositionReaderModule::check_tree_reader(std::shared
     }
 }
 
-void DepositionReaderModule::run(unsigned int event) {
+void DepositionReaderModule::run(Event* event) {
+    auto event_num = event->number;
 
     // Set of deposited charges in this event
     std::map<std::shared_ptr<Detector>, std::vector<ROOT::Math::XYZPoint>> deposit_position;
@@ -215,8 +215,8 @@ void DepositionReaderModule::run(unsigned int event) {
     std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
 
-    LOG(DEBUG) << "Start reading event " << event;
-    int curr_event_id = -1;
+    LOG(DEBUG) << "Start reading event " << event_num;
+    int64_t curr_event_id = -1;
     bool end_of_run = false;
     std::string eof_message;
 
@@ -229,10 +229,10 @@ void DepositionReaderModule::run(unsigned int event) {
 
         try {
             if(file_model_ == "csv") {
-                read_status = read_csv(event, volume, global_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_csv(event_num, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             } else if(file_model_ == "root") {
-                read_status =
-                    read_root(event, curr_event_id, volume, global_position, time, energy, pdg_code, track_id, parent_id);
+                read_status = read_root(
+                    event_num, curr_event_id, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             }
         } catch(EndOfRunException& e) {
             end_of_run = true;
@@ -266,7 +266,7 @@ void DepositionReaderModule::run(unsigned int event) {
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = energy / charge_creation_energy_;
         std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-        auto charge = static_cast<unsigned int>(charge_fluctuation(random_generator_));
+        auto charge = static_cast<unsigned int>(charge_fluctuation(event->getRandomEngine()));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(local_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
@@ -342,7 +342,7 @@ void DepositionReaderModule::run(unsigned int event) {
         bool has_mcparticles = !mc_particles.empty();
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector);
         if(has_mcparticles) {
-            messenger_->dispatchMessage(this, mc_particle_message);
+            messenger_->dispatchMessage(this, mc_particle_message, event);
         }
 
         if(!deposit_position[detector].empty()) {
@@ -379,7 +379,7 @@ void DepositionReaderModule::run(unsigned int event) {
             auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits[detector]), detector);
 
             // Dispatch the message
-            messenger_->dispatchMessage(this, deposit_message);
+            messenger_->dispatchMessage(this, deposit_message, event);
 
             // Fill output plots if requested:
             if(config_.get<bool>("output_plots")) {
@@ -404,8 +404,8 @@ void DepositionReaderModule::finalize() {
         }
     }
 }
-bool DepositionReaderModule::read_root(unsigned int event_num,
-                                       int& curr_event_id,
+bool DepositionReaderModule::read_root(uint64_t event_num,
+                                       int64_t& curr_event_id,
                                        std::string& volume,
                                        ROOT::Math::XYZPoint& position,
                                        double& time,
@@ -423,7 +423,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
 
     if(require_sequential_events_) {
         // sequential read, return if eventID is larger than allpix-squared event number
-        if(static_cast<unsigned int>(*event_->Get()) > event_num - 1) {
+        if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
             return false;
         }
     } else {
@@ -468,7 +468,7 @@ bool DepositionReaderModule::read_root(unsigned int event_num,
     return true;
 }
 
-bool DepositionReaderModule::read_csv(unsigned int event_num,
+bool DepositionReaderModule::read_csv(uint64_t event_num,
                                       std::string& volume,
                                       ROOT::Math::XYZPoint& position,
                                       double& time,
@@ -493,7 +493,7 @@ bool DepositionReaderModule::read_csv(unsigned int event_num,
         // Check for event header:
         if(line.front() == 'E') {
             std::stringstream lse(line);
-            unsigned int event_read = 0;
+            uint64_t event_read = 0;
             lse >> tmp >> event_read;
             if(event_read + 1 > event_num) {
                 return false;

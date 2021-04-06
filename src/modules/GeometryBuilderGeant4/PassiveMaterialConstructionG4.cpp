@@ -12,7 +12,6 @@
 #include "core/module/exceptions.h"
 
 using namespace allpix;
-using namespace ROOT::Math;
 
 PassiveMaterialConstructionG4::PassiveMaterialConstructionG4(GeometryManager* geo_manager) : geo_manager_(geo_manager) {}
 

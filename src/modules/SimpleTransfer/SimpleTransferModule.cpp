@@ -46,16 +46,20 @@ SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* mes
     // Save detector model
     model_ = detector_->getModel();
 
+    // Cache config parameters:
+    max_depth_distance_ = config_.get<double>("max_depth_distance");
+    collect_from_implant_ = config_.get<bool>("collect_from_implant");
+
     // Cache flag for output plots:
     output_plots_ = config_.get<bool>("output_plots");
 
     // Require propagated deposits for single detector
-    messenger->bindSingle(this, &SimpleTransferModule::propagated_message_, MsgFlags::REQUIRED);
+    messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
-void SimpleTransferModule::init() {
+void SimpleTransferModule::initialize() {
 
-    if(config_.get<bool>("collect_from_implant")) {
+    if(collect_from_implant_) {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         } else {
@@ -67,25 +71,27 @@ void SimpleTransferModule::init() {
     if(output_plots_) {
         auto time_bins =
             static_cast<int>(config_.get<double>("output_plots_range") / config_.get<double>("output_plots_step"));
-        drift_time_histo = new TH1D("drift_time_histo",
-                                    "Charge carrier arrival time;t[ns];charge carriers",
-                                    time_bins,
-                                    0.,
-                                    config_.get<double>("output_plots_range"));
+        drift_time_histo = CreateHistogram<TH1D>("drift_time_histo",
+                                                 "Charge carrier arrival time;t[ns];charge carriers",
+                                                 time_bins,
+                                                 0.,
+                                                 config_.get<double>("output_plots_range"));
     }
 }
 
-void SimpleTransferModule::run(unsigned int) {
+void SimpleTransferModule::run(Event* event) {
+    auto propagated_message = messenger_->fetchMessage<PropagatedChargeMessage>(this, event);
+
     // Find corresponding pixels for all propagated charges
     LOG(TRACE) << "Transferring charges to pixels";
     unsigned int transferred_charges_count = 0;
     std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_map;
-    for(const auto& propagated_charge : propagated_message_->getData()) {
+    for(const auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         // FIXME This logic should be improved
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
-           config_.get<double>("max_depth_distance")) {
+           max_depth_distance_) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their local position is not in implant range";
@@ -105,7 +111,7 @@ void SimpleTransferModule::run(unsigned int) {
         }
 
         // Ignore if outside the implant region:
-        if(config_.get<bool>("collect_from_implant") && !detector_->isWithinImplant(position)) {
+        if(collect_from_implant_ && !detector_->isWithinImplant(position)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because it is outside the pixel implant.";
@@ -115,7 +121,6 @@ void SimpleTransferModule::run(unsigned int) {
         Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
-        unique_pixels_.insert(pixel_index);
         transferred_charges_count += propagated_charge.getCharge();
 
         if(output_plots_) {
@@ -152,13 +157,12 @@ void SimpleTransferModule::run(unsigned int) {
 
     // Dispatch message of pixel charges
     auto pixel_message = std::make_shared<PixelChargeMessage>(pixel_charges, detector_);
-    messenger_->dispatchMessage(this, pixel_message);
+    messenger_->dispatchMessage(this, pixel_message, event);
 }
 
 void SimpleTransferModule::finalize() {
     // Print statistics
-    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges to " << unique_pixels_.size()
-              << " different pixels";
+    LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges";
 
     if(output_plots_) {
         drift_time_histo->Write();

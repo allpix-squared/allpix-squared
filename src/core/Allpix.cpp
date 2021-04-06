@@ -114,15 +114,11 @@ void Allpix::load() {
     LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
     global_config.set<std::string>("version", ALLPIX_PROJECT_VERSION);
 
-    // Initialize the random seeders, one for modules, one for core components
-    std::mt19937_64 seeder_modules;
-    std::mt19937_64 seeder_core;
-
     uint64_t seed = 0;
     if(global_config.has("random_seed")) {
         // Use provided random seed
         seed = global_config.get<uint64_t>("random_seed");
-        seeder_modules.seed(seed);
+        seeder_modules_.seed(seed);
         LOG(STATUS) << "Initialized PRNG with configured seed " << seed;
     } else {
         // Compute random entropy seed
@@ -134,7 +130,7 @@ void Allpix::load() {
         std::hash<std::thread::id> thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
-        seeder_modules.seed(seed);
+        seeder_modules_.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
         global_config.set<uint64_t>("random_seed", seed);
     }
@@ -142,16 +138,13 @@ void Allpix::load() {
     if(global_config.has("random_seed_core")) {
         // Use provided random seed
         seed = global_config.get<uint64_t>("random_seed_core");
-        seeder_core.seed(seed);
+        seeder_core_.seed(seed);
         LOG(STATUS) << "Initialized core PRNG with configured seed " << seed;
     } else {
         // Use module seeder + 1
-        seeder_core.seed(seed + 1);
+        seeder_core_.seed(seed + 1);
         global_config.set<uint64_t>("random_seed_core", seed + 1);
     }
-
-    // Initialize ROOT random generator
-    gRandom->SetSeed(seeder_modules());
 
     // Get output directory
     std::string directory = gSystem->pwd();
@@ -185,11 +178,9 @@ void Allpix::load() {
                    << ". Using current directory instead.";
     }
 
-    // Enable relevant multithreading if needed (disabled by default)
-    if(global_config.get<bool>("experimental_multithreading", false)) {
-        // Enable thread safety for ROOT
-        ROOT::EnableThreadSafety();
-    }
+    // Enable relevant multithreading safety in ROOT
+    // Required for spawned threads, even with a single worker
+    ROOT::EnableThreadSafety();
 
     // Set the default units to use
     register_units();
@@ -198,23 +189,23 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(conf_mgr_.get(), seeder_core);
+    geo_mgr_->load(conf_mgr_.get(), seeder_core_);
 
     // Load the modules from the configuration
     if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), seeder_modules);
+        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
     } else {
         LOG(INFO) << "Skip loading modules because termination is requested";
     }
 }
 
 /**
- * Runs the Module::init() method linearly for every module
+ * Runs the Module::initialize() method linearly for every module
  */
-void Allpix::init() {
+void Allpix::initialize() {
     if(!terminate_) {
         LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->init();
+        mod_mgr_->initialize();
     } else {
         LOG(INFO) << "Skip initializing modules because termination is requested";
     }
@@ -225,7 +216,7 @@ void Allpix::init() {
 void Allpix::run() {
     if(!terminate_) {
         LOG(TRACE) << "Running Allpix";
-        mod_mgr_->run();
+        mod_mgr_->run(seeder_modules_);
 
         // Set that we have run and want to finalize as well
         has_run_ = true;

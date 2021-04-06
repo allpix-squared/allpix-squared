@@ -20,10 +20,17 @@
 #include <Math/EulerAngles.h>
 #include <Math/PositionVector2D.h>
 #include <Math/PositionVector3D.h>
+#include <TProcessID.h>
 #include <TString.h>
 
+#include <ROOT/TThreadedObject.hxx>
+#include <TH1.h>
+
+#include "core/module/ThreadPool.hpp"
 #include "core/utils/text.h"
 #include "core/utils/type.h"
+
+#include "core/utils/log.h"
 
 namespace allpix {
     /**
@@ -145,6 +152,126 @@ namespace allpix {
     template <typename T, typename U>
     inline std::ostream& operator<<(std::ostream& os, const ROOT::Math::PositionVector2D<T, U>& vec) {
         return os << "(" << vec.x() << "," << vec.y() << ")";
+    }
+
+    /**
+     * @brief A re-implementation of ROOT::TThreadedObject
+     *
+     * This class is a re-implementation of TThreadedObject for histograms and profiles, providing better scalability and an
+     * additional thin wrapper to commonly used histogram functions such as Fill() or SetBinContent(). Furthermore, it also
+     * does not depend on ROOT implementation changes that have happened to the original class between minor ROOT versions.
+     * This class scales to an arbitrary number of thread, irrespective of the underlying ROOT version.
+     *
+     * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
+     */
+    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr> class ThreadedHistogram {
+    public:
+        template <class... ARGS> explicit ThreadedHistogram(ARGS&&... args) { this->init(std::forward<ARGS>(args)...); }
+
+        /**
+         * @brief An easy way to fill a histogram
+         */
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { // NOLINT
+            return this->Get()->Fill(std::forward<ARGS>(args)...);
+        }
+
+        /**
+         * @brief An easy way to set bin contents
+         */
+        template <class... ARGS> void SetBinContent(ARGS&&... args) { // NOLINT
+            this->Get()->SetBinContent(std::forward<ARGS>(args)...);
+        }
+
+        /**
+         * @brief An easy way to write a histogram
+         */
+        void Write() { this->Merge()->Write(); } // NOLINT
+
+        /**
+         * @brief Get the thread local instance of the histogram
+         *
+         * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
+         */
+        std::shared_ptr<T> Get() {
+            auto idx = ThreadPool::threadNum();
+            auto& object = objects_[idx];
+            if(!object) {
+                object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
+            }
+            return object;
+        }
+
+        /**
+         * @brief Merge the threaded histograms into final object
+         *
+         * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
+         */
+        std::shared_ptr<T> Merge() {
+            ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
+            if(is_merged_) {
+                return objects_[0];
+            }
+            mergeFunction(objects_[0], objects_);
+            is_merged_ = true;
+            return objects_[0];
+        }
+
+    private:
+        /**
+         * @brief Initialize the threaded histogram
+         *
+         * Based on initialization in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, modified to
+         * initialize based on number of preregistered threads.
+         */
+        template <class... ARGS> void init(ARGS&&... args) {
+            const auto num_slots = ThreadPool::threadCount();
+            objects_.resize(num_slots);
+
+            // create at least one directory (we need it for the model), plus others as needed by the size of objects
+            directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
+            for(auto i = 1u; i < num_slots; ++i) {
+                directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
+            }
+
+            TDirectory::TContext ctxt(directories_[0]);
+            model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
+
+            // initialize at least the base object
+            objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
+        }
+
+        std::unique_ptr<T> model_;
+        std::vector<std::shared_ptr<T>> objects_;
+        std::vector<TDirectory*> directories_;
+        bool is_merged_{false};
+    };
+
+    /**
+     * @brief Helper method to instantiate new objects of the type ThreadedHistogram
+     *
+     * @param args Arguments passed to histogram class
+     * @return Unique pointer to newly created object
+     */
+    template <typename T, class... ARGS> std::unique_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
+        return std::make_unique<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
+    }
+
+    template <class T> using Histogram = std::unique_ptr<ThreadedHistogram<T>>;
+
+    /**
+     * @brief Lock for TProcessID simultaneous action
+     */
+    inline std::unique_lock<std::mutex> root_process_lock() {
+        static std::mutex process_id_mutex;
+        std::unique_lock<std::mutex> lock(process_id_mutex);
+
+        auto pids = TProcessID::GetPIDs();
+        for(int i = 0; i < pids->GetEntries(); ++i) {
+            auto pid_ptr = static_cast<TProcessID*>((*pids)[i]);
+            pid_ptr->Clear();
+        }
+
+        return lock;
     }
 } // namespace allpix
 

@@ -23,17 +23,16 @@
 #endif
 
 #include <G4LogicalVolume.hh>
-#include <G4RunManager.hh>
 #ifdef G4UI_USE_QT
 #include <G4UIQt.hh>
 #endif
 #include <G4PVParameterised.hh>
+#include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIsession.hh>
 #include <G4UItcsh.hh>
 #include <G4UIterminal.hh>
 #include <G4VPVParameterisation.hh>
-#include <G4Version.hh>
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
@@ -86,14 +85,11 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     }
 }
 
-void VisualizationGeant4Module::init() {
-    // Suppress all geant4 output
-    SUPPRESS_STREAM(G4cout);
+void VisualizationGeant4Module::initialize() {
 
     // Check if we have a running G4 manager
     G4RunManager* run_manager_g4 = G4RunManager::GetRunManager();
     if(run_manager_g4 == nullptr) {
-        RELEASE_STREAM(G4cout);
         throw ModuleError("Cannot visualize using Geant4 without a Geant4 geometry builder");
     }
 
@@ -135,7 +131,6 @@ void VisualizationGeant4Module::init() {
     // Initialize the driver and checking it actually exists
     int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
-        RELEASE_STREAM(G4cout);
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
             for(const auto& nickname : system->GetNicknames()) {
@@ -168,16 +163,10 @@ void VisualizationGeant4Module::init() {
     auto display_limit = config_.get<std::string>("display_limit", "1000000");
     UI->ApplyCommand("/vis/ogl/set/displayListLimit " + display_limit);
 
-    // Release the stream early in debugging mode
-    IFLOG(DEBUG) { RELEASE_STREAM(G4cout); }
-
     // Execute initialization macro if provided
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true));
     }
-
-    // Release the g4 output
-    RELEASE_STREAM(G4cout);
 }
 
 /**
@@ -207,11 +196,6 @@ void VisualizationGeant4Module::set_visualization_settings() {
     // Display trajectories if specified
     auto display_trajectories = config_.get<bool>("display_trajectories", true);
     if(display_trajectories) {
-// Work around an issue introduced in G4UIQt v10.7.1 (improper check for string length)
-#if G4VERSION_NUMBER >= 1071
-        RELEASE_STREAM(G4cout);
-#endif
-
         // Add smooth trajectories
         UI->ApplyCommand("/vis/scene/add/trajectories smooth rich");
 
@@ -408,7 +392,7 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-void VisualizationGeant4Module::run(unsigned int) {
+void VisualizationGeant4Module::run(Event*) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(

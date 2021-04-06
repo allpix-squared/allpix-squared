@@ -29,9 +29,12 @@
 using namespace allpix;
 
 MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config, Messenger*, GeometryManager* geoManager)
-    : Module(config), geometryManager_(geoManager) {}
+    : Module(config), geometryManager_(geoManager) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+}
 
-void MagneticFieldReaderModule::init() {
+void MagneticFieldReaderModule::initialize() {
     MagneticFieldType type = MagneticFieldType::NONE;
 
     // Check field strength

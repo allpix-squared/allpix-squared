@@ -34,6 +34,7 @@ RUN source scl_source enable devtoolset-8 && \
           -DGEANT4_USE_XM=ON \
           -DGEANT4_USE_OPENGL_X11=ON \
           -DGEANT4_USE_SYSTEM_CLHEP=OFF \
+          -DGEANT4_BUILD_MULTITHREADED=ON \
           -DCMAKE_INSTALL_PREFIX=../ \
           ../src/geant4.${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \

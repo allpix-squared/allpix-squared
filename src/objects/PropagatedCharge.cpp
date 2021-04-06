@@ -23,7 +23,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    double global_time,
                                    const DepositedCharge* deposited_charge)
     : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time) {
-    deposited_charge_ = const_cast<DepositedCharge*>(deposited_charge); // NOLINT
+    deposited_charge_ = PointerWrapper<DepositedCharge>(deposited_charge);
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
     }
@@ -57,7 +57,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
-    auto* deposited_charge = dynamic_cast<DepositedCharge*>(deposited_charge_.GetObject());
+    auto* deposited_charge = deposited_charge_.get();
     if(deposited_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(DepositedCharge));
     }
@@ -70,7 +70,7 @@ const DepositedCharge* PropagatedCharge::getDepositedCharge() const {
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
 const MCParticle* PropagatedCharge::getMCParticle() const {
-    auto* mc_particle = dynamic_cast<MCParticle*>(mc_particle_.GetObject());
+    auto* mc_particle = mc_particle_.get();
     if(mc_particle == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(MCParticle));
     }
@@ -84,4 +84,13 @@ std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
     SensorCharge::print(out);
+}
+
+void PropagatedCharge::loadHistory() {
+    deposited_charge_.get();
+    mc_particle_.get();
+}
+void PropagatedCharge::petrifyHistory() {
+    deposited_charge_.store();
+    mc_particle_.store();
 }

@@ -22,6 +22,7 @@
 #include "DetectorModel.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
+#include "core/utils/prng.h"
 
 namespace allpix {
 
@@ -78,7 +79,7 @@ namespace allpix {
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(ConfigManager* conf_manager, std::mt19937_64& seeder);
+        void load(ConfigManager* conf_manager, RandomNumberGenerator& seeder);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in
@@ -268,7 +269,7 @@ namespace allpix {
         void close_geometry();
         std::atomic_bool closed_;
 
-        std::mt19937_64 random_generator_;
+        RandomNumberGenerator random_generator_;
 
         std::vector<ROOT::Math::XYZPoint> points_;
 

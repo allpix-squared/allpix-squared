@@ -26,25 +26,19 @@
 
 using namespace allpix;
 
-DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*) : Module(config) {
-    // Bind to all messages
-    messenger->registerListener(this, &DatabaseWriterModule::receive);
+DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
+    : SequentialModule(config), messenger_(messenger) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
+
+    // Bind to all messages with filter
+    messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
     config_.setDefault("global_timing", false);
     config_.setDefault("run_id", "none");
 }
 
-/**
- * @note Objects cannot be stored in smart pointers due to internal ROOT logic
- */
-DatabaseWriterModule::~DatabaseWriterModule() {
-    // Delete all object pointers
-    for(auto& index_data : write_list_) {
-        delete index_data.second;
-    }
-}
-
-void DatabaseWriterModule::init() {
+void DatabaseWriterModule::initialize() {
 
     // retrieving configuration parameters
     host_ = config_.get<std::string>("host");
@@ -82,7 +76,8 @@ void DatabaseWriterModule::init() {
     }
 }
 
-void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::string message_name) { // NOLINT
+bool DatabaseWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
+                                  const std::string& message_name) const { // NOLINT
     try {
         const BaseMessage* inst = message.get();
         std::string name_str = " without a name";
@@ -116,11 +111,10 @@ void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::st
                (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
                 LOG(TRACE) << "Database writer ignored message with object " << allpix::demangle(typeid(*inst).name())
                            << " because it has been excluded or not explicitly included";
-                return;
+                return false;
             }
 
-            // Store message for later reference
-            keep_messages_.push_back(message);
+            return true;
         }
 
     } catch(MessageWithoutObjectException& e) {
@@ -128,9 +122,12 @@ void DatabaseWriterModule::receive(std::shared_ptr<BaseMessage> message, std::st
         LOG(WARNING) << "Database writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
                      << " with name " << message_name;
     }
+
+    return false;
 }
 
-void DatabaseWriterModule::run(unsigned int event_num) {
+void DatabaseWriterModule::run(Event* event) {
+    auto messages = messenger_->fetchFilteredMessages(this, event);
 
     // TO BE NOTED
     // the correct relations of objects in the database are guaranteed by the fact that sequence of dispatched messages
@@ -153,13 +150,15 @@ void DatabaseWriterModule::run(unsigned int event_num) {
 
     // Writing entry to event table
     insertionLine.str(std::string());
-    insertionLine << "INSERT INTO Event (run_nr, eventID) VALUES (" << run_nr_ << ", " << event_num
+    insertionLine << "INSERT INTO Event (run_nr, eventID) VALUES (" << run_nr_ << ", " << event->number
                   << ") RETURNING event_nr;";
     insertionResult = W_->exec(insertionLine.str());
     int event_nr = atoi(insertionResult[0][0].c_str());
 
     // Looping through messages
-    for(auto& message : keep_messages_) {
+    for(auto& pair : messages) {
+        auto& message = pair.first;
+
         // Storing detector's name
         std::string detectorName = "";
         if(message->getDetector() != nullptr) {
@@ -302,9 +301,6 @@ void DatabaseWriterModule::run(unsigned int event_num) {
         }
         msg_cnt_++;
     }
-
-    // Clear the messages we have to keep because they contain the internal pointers
-    keep_messages_.clear();
 }
 
 void DatabaseWriterModule::finalize() {

@@ -10,16 +10,20 @@
 #ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 #define ALLPIX_SIMPLE_DEPOSITION_MODULE_H
 
+#include <atomic>
 #include <memory>
 #include <string>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "SensitiveDetectorActionG4.hpp"
 #include "TrackInfoManager.hpp"
+
+#include "tools/ROOT.h"
 
 #include <TH1D.h>
 
@@ -37,6 +41,9 @@ namespace allpix {
      * MCParticle).
      */
     class DepositionGeant4Module : public Module {
+        friend class SDAndFieldConstruction;
+        friend class SetTrackInfoUserHookG4;
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -49,12 +56,22 @@ namespace allpix {
         /**
          * @brief Initializes the physics list of processes and constructs the particle source
          */
-        void init() override;
+        void initialize() override;
+
+        /**
+         * @brief Prepare thread-local instances of worker run managers
+         */
+        void initializeThread() override;
 
         /**
          * @brief Deposit charges for a single event
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
+
+        /**
+         * @brief Cleanup \ref RunManager for each thread
+         */
+        void finalizeThread() override;
 
         /**
          * @brief Display statistical summary
@@ -62,17 +79,34 @@ namespace allpix {
         void finalize() override;
 
     private:
+        /**
+         * @brief Construct the sensitive detectors and magnetic fields.
+         * @param fano_factor Fano factor for charge carrier creation uncertainty
+         * @param charge_creation_energy Energy required to produce a single e/h pair
+         * @param cutoff_time Time after which energy deposits and MCParticles are discarded
+         */
+        void construct_sensitive_detectors_and_fields(double fano_factor, double charge_creation_energy, double cutoff_time);
+
+        /**
+         * @brief Record statistics for the module run.
+         */
+        void record_module_statistics();
+
         Messenger* messenger_;
         GeometryManager* geo_manager_;
 
+        // Configuration parameters:
+        bool output_plots_{};
+        unsigned int number_of_particles_{};
+
         // The track manager which this module uses to assign custom track IDs and manage & create MCTracks
-        std::unique_ptr<TrackInfoManager> track_info_manager_;
+        static thread_local std::unique_ptr<TrackInfoManager> track_info_manager_;
 
         // Handling of the charge deposition in all the sensitive devices
-        std::vector<SensitiveDetectorActionG4*> sensors_;
+        static thread_local std::vector<SensitiveDetectorActionG4*> sensors_;
 
         // Number of the last event
-        unsigned int last_event_num_;
+        std::atomic_uint64_t last_event_num_{0};
 
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
@@ -82,7 +116,15 @@ namespace allpix {
         G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, TH1D*> charge_per_event_;
+        std::map<std::string, Histogram<TH1D>> charge_per_event_;
+
+        // Total deposited charges
+        std::atomic_uint total_charges_{0};
+
+        std::atomic_size_t number_of_sensors_{0};
+
+        // Mutex used for the construction of histograms
+        std::mutex histogram_mutex_;
     };
 } // namespace allpix
 

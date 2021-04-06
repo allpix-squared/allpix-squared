@@ -109,6 +109,13 @@ SET(COMPILER_FLAGS -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion
 
 INCLUDE("cmake/compiler-flag-checks.cmake")
 
+# Use CCache if available
+FIND_PROGRAM(CCACHE_FOUND ccache)
+IF(CCACHE_FOUND)
+  MESSAGE(STATUS "Using Ccache: ${CCACHE_FOUND}")
+  SET(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_FOUND}" CACHE PATH "CCache program" FORCE)
+ENDIF()
+
 # Check for C++17 and require C++17 if available else fallback to C++14 (should currently be sufficient)
 CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
 IF(SUPPORT_STD_CXX17)
@@ -160,6 +167,10 @@ FIND_PACKAGE(Threads REQUIRED)
 # Define the libraries
 SET(ALLPIX_LIBRARIES "")
 
+# Define the optional libraries
+SET(ALLPIX_GEANT4_INTERFACE "AllpixGeant4Interface")
+SET(ALLPIX_BUILD_GEANT4_INTERFACE "OFF" CACHE BOOL "Build Geant4 interface library" FORCE)
+
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED COMPONENTS Geom Core GenVector Hist RIO NO_MODULE)
 IF(NOT ROOT_FOUND)
@@ -206,6 +217,8 @@ ADD_RUNTIME_DEP(thisroot.sh)
 
 # Set the clang-format version required by the CI for correct formatting:
 SET(CLANG_FORMAT_VERSION "10")
+# Set the clang-tidy version of the linter required by the CI:
+SET(CLANG_TIDY_VERSION "10")
 
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(GLOB_RECURSE
@@ -239,6 +252,11 @@ SET(ALLPIX_LIBRARIES ${ALLPIX_LIBRARIES} AllpixCore)
 
 # Build required modules
 ADD_SUBDIRECTORY(src/modules)
+
+# Build geant4 interface library if needed by modules
+IF(${ALLPIX_BUILD_GEANT4_INTERFACE})
+    ADD_SUBDIRECTORY(src/tools/geant4)
+ENDIF()
 
 # Build the executable
 ADD_SUBDIRECTORY(src/exec)

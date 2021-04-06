@@ -10,7 +10,11 @@
 #ifndef ALLPIX_MODULE_H
 #define ALLPIX_MODULE_H
 
+#include <atomic>
+#include <condition_variable>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
 #include <vector>
@@ -18,15 +22,16 @@
 #include <TDirectory.h>
 
 #include "ModuleIdentifier.hpp"
-#include "ThreadPool.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
+#include "core/utils/prng.h"
 
 namespace allpix {
     class Messenger;
+    class Event;
     /**
      * @defgroup Modules Modules
      * @brief Collection of modules included in the framework
@@ -36,16 +41,18 @@ namespace allpix {
      *
      * The module base is the core of the modular framework. All modules should be descendants of this class. The base class
      * defines the methods the children can implement:
-     * - Module::init(): for initializing the module at the start
-     * - Module::run(unsigned int): for doing the job of every module for every event
+     * - Module::initialize(): for initializing the module at the start
+     * - Module::run(Event*): for doing the job of every module for every event
      * - Module::finalize(): for finalizing the module at the end
      *
      * The module class also provides a few utility methods and stores internal data of instantiations. The internal data is
      * used by the ModuleManager and the Messenger to work.
      */
     class Module {
+        friend class Event;
         friend class ModuleManager;
         friend class Messenger;
+        friend class LocalMessenger;
 
     public:
         /**
@@ -107,17 +114,6 @@ namespace allpix {
         std::string createOutputFile(const std::string& path, bool global = false, bool delete_file = false);
 
         /**
-         * @brief Get seed to initialize random generators
-         * @warning This should be the only method used by modules to seed random numbers to allow reproducing results
-         */
-        uint64_t getRandomSeed();
-
-        /**
-         * @brief Get thread pool to submit asynchronous tasks to
-         */
-        ThreadPool& getThreadPool();
-
-        /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
          * @return ROOT directory for storage
          */
@@ -127,7 +123,7 @@ namespace allpix {
          * @brief Get the config manager object to allow to read the global and other module configurations
          * @return Pointer to the config manager
          */
-        ConfigManager* getConfigManager();
+        ConfigManager* getConfigManager() const;
 
         /**
          * @brief Returns if parallelization of this module is enabled
@@ -136,21 +132,36 @@ namespace allpix {
         bool canParallelize() const;
 
         /**
+         * @brief Initialize the module for each thread after the global initialization
+         * @note Useful to prepare thread local objects
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void initializeThread() {}
+
+        /**
          * @brief Initialize the module before the event sequence
          *
          * Does nothing if not overloaded.
          */
-        virtual void init() {}
+        virtual void initialize() {}
 
         /**
          * @brief Execute the function of the module for every event
-         * @param event_num Number of the event in the event sequence (starts at 1)
+         * @param Event Pointer to the event the module is running
          *
          * Does nothing if not overloaded.
          */
-        // TODO [doc] Start the sequence at 0 instead of 1?
-        virtual void run(unsigned int event_num) { (void)event_num; }
-        //
+        virtual void run(Event* event) { (void)event; }
+
+        /**
+         * @brief Finalize the module after the event sequence for each thread
+         * @note Useful to cleanup thread local objects
+         *
+         * Does nothing if not overloaded.
+         */
+        virtual void finalizeThread() {}
+
         /**
          * @brief Finalize the module after the event sequence
          * @note Useful to have before destruction to allow for raising exceptions
@@ -186,13 +197,6 @@ namespace allpix {
         ModuleIdentifier identifier_;
 
         /**
-         * @brief Set the thread pool for parallel execution
-         * @return Thread pool (or null pointer to disable it)
-         */
-        void set_thread_pool(std::shared_ptr<ThreadPool> thread_pool);
-        std::shared_ptr<ThreadPool> thread_pool_;
-
-        /**
          * @brief Set the output ROOT directory for this module
          * @param directory ROOT directory for storage
          */
@@ -212,22 +216,64 @@ namespace allpix {
          * @param delegate Delegate object
          */
         void add_delegate(Messenger* messenger, BaseDelegate* delegate);
-        /**
-         * @brief Resets messenger delegates after every event
-         */
-        void reset_delegates();
+
         /**
          * @brief Check if all delegates are satisfied
+         * @param messenger Pointer to the messenger we want to check with
+         * @param event Pointer to the event we want to check with
          */
-        bool check_delegates();
-        std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
+        bool check_delegates(Messenger* messenger, Event* event);
 
-        bool initialized_random_generator_{false};
-        std::mt19937_64 random_generator_;
+        /**
+         * @brief Inform the module that a certain event will be skipped
+         * @param event Number of event skipped
+         */
+        virtual void skip_event(uint64_t) {}
+
+        std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
         std::shared_ptr<Detector> detector_;
 
+        /**
+         * @brief Sets the parallelize flag
+         */
+        void set_parallelize(bool parallelize);
         bool parallelize_{false};
+
+        /**
+         * @brief Checks if object is instance of SequentialModule class
+         */
+        virtual bool require_sequence() const { return false; }
+    };
+
+    /**
+     * @brief A Module that always ensure to execute events in the order of event numbers. It
+     * implements buffering out of the box so interested modules can directly use it
+     */
+    class SequentialModule : public Module {
+        friend class Event;
+        friend class ModuleManager;
+        friend class Messenger;
+
+    public:
+        explicit SequentialModule(Configuration& config) : Module(config) {}
+        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
+            : Module(config, std::move(detector)) {}
+
+    protected:
+        /**
+         * @brief Release strict sequence processing requirement
+         */
+        void waive_sequence_requirement();
+
+    private:
+        /**
+         * @brief Checks if this module needs to be executed in correct event sequence
+         *
+         * @return true if strict event sequence is required and false if any processing order is valid
+         */
+        bool require_sequence() const override { return sequence_required_; }
+        bool sequence_required_{true};
     };
 
 } // namespace allpix

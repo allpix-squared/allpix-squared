@@ -31,6 +31,8 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
                                                                Messenger*,
                                                                std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
+    // Enable parallelization of this module if multithreading is enabled
+    enable_parallelization();
 
     // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
     auto model = config_.get<std::string>("model");
@@ -39,7 +41,7 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
     }
 }
 
-void WeightingPotentialReaderModule::init() {
+void WeightingPotentialReaderModule::initialize() {
 
     auto field_model = config_.get<std::string>("model");
 

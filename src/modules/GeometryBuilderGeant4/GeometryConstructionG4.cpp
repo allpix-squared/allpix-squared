@@ -34,15 +34,16 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
-#include "tools/geant4.h"
+#include "tools/geant4/G4LoggingDestination.hpp"
+#include "tools/geant4/geant4.h"
 
-#include "DetectorConstructionG4.hpp"
 #include "Parameterization2DG4.hpp"
 
 using namespace allpix;
 
 GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Configuration& config)
     : geo_manager_(geo_manager), config_(config) {
+    detector_builder_ = std::make_unique<DetectorConstructionG4>(geo_manager_);
     passive_builder_ = std::make_unique<PassiveMaterialConstructionG4>(geo_manager_);
     passive_builder_->registerVolumes();
 }
@@ -51,7 +52,6 @@ GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Con
  * First initializes all the materials. Then constructs the world from the internally calculated world size with a certain
  * margin. Finally builds all the individual detectors.
  */
-
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Initialize materials
     init_materials();
@@ -112,8 +112,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
     passive_builder_->buildVolumes(materials_, world_log_);
-    const auto& detBuilder = new DetectorConstructionG4(geo_manager_);
-    detBuilder->build(materials_, world_log_);
+    detector_builder_->build(materials_, world_log_);
 
     // Check for overlaps:
     check_overlaps();
@@ -232,13 +231,14 @@ void GeometryConstructionG4::check_overlaps() {
     G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
-    // Release Geant4 output for better error description
-    IFLOG(WARNING) { RELEASE_STREAM(G4cout); }
+
+    auto current_level = G4LoggingDestination::getG4coutReportingLevel();
+    G4LoggingDestination::setG4coutReportingLevel(LogLevel::ERROR);
     for(auto* volume : (*phys_volume_store)) {
         overlapFlag = volume->CheckOverlaps(1000, 0., false) || overlapFlag;
     }
-    // Suppress again to prevent further complications
-    IFLOG(WARNING) { SUPPRESS_STREAM(G4cout); }
+    G4LoggingDestination::setG4coutReportingLevel(current_level);
+
     if(overlapFlag) {
         LOG(ERROR) << "Overlapping volumes detected.";
     } else {

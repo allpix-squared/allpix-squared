@@ -122,41 +122,6 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 }
 
 /**
- * The framework will automatically create proper values for the seeds. Those are either generated from a predefined seed if
- * results have to be reproduced or from a high-entropy source to ensure a good quality of randomness
- */
-uint64_t Module::getRandomSeed() {
-    if(initialized_random_generator_ == false) {
-        auto seed = config_.get<uint64_t>("_seed");
-        std::seed_seq seed_seq({seed});
-        random_generator_.seed(seed_seq);
-
-        initialized_random_generator_ = true;
-    }
-
-    return random_generator_();
-}
-
-/**
- * @throws InvalidModuleActionException If the thread pool is accessed outside the run-method
- * @warning Any multithreaded task should be carefully checked to ensure it is thread-safe
- *
- * The thread pool is only available during the run-phase of every module. If no error is thrown by thrown, the threadpool
- * should be safe to use.
- */
-ThreadPool& Module::getThreadPool() {
-    // The thread pool will only be set when the run-method is executed
-    if(thread_pool_ == nullptr) {
-        throw InvalidModuleActionException("Cannot access thread pool outside the run method");
-    }
-
-    return *thread_pool_;
-}
-void Module::set_thread_pool(std::shared_ptr<ThreadPool> thread_pool) {
-    thread_pool_ = std::move(thread_pool);
-}
-
-/**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning Cannot be used from the constructor, because the instantiation logic has not finished yet
  * @warning This method should not be accessed from the destructor (the file is then already closed)
@@ -178,7 +143,7 @@ void Module::set_ROOT_directory(TDirectory* directory) {
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
  * @warning This function technically allows to write to the configurations of other modules, but this should never be done
  */
-ConfigManager* Module::getConfigManager() {
+ConfigManager* Module::getConfigManager() const {
     if(conf_manager_ == nullptr) {
         throw InvalidModuleActionException("Cannot access the config manager in constructor or destructor.");
     };
@@ -193,6 +158,9 @@ bool Module::canParallelize() const {
 }
 void Module::enable_parallelization() {
     parallelize_ = true;
+}
+void Module::set_parallelize(bool parallelize) {
+    parallelize_ = parallelize;
 }
 
 Configuration& Module::get_configuration() {
@@ -209,18 +177,13 @@ ModuleIdentifier Module::get_identifier() const {
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
     delegates_.emplace_back(messenger, delegate);
 }
-void Module::reset_delegates() {
-    for(auto& delegate : delegates_) {
-        delegate.first->clearMessages();
-        delegate.second->reset();
-    }
+bool Module::check_delegates(Messenger* messenger, Event* event) {
+    // Return false if any delegate is not satisfied
+    return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger, event](auto& delegate) {
+        return !delegate.second->isRequired() || messenger->isSatisfied(delegate.second, event);
+    });
 }
-bool Module::check_delegates() {
-    for(auto& delegate : delegates_) {
-        // Return false if any delegate is not satisfied
-        if(!delegate.second->isSatisfied()) {
-            return false;
-        }
-    }
-    return true;
+
+void SequentialModule::waive_sequence_requirement() {
+    sequence_required_ = false;
 }

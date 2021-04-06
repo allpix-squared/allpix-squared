@@ -37,7 +37,7 @@ namespace allpix {
         /**
          * @brief Read weighting potential and apply it to the bound detectors
          */
-        void init() override;
+        void initialize() override;
 
     private:
         std::shared_ptr<Detector> detector_;

@@ -52,7 +52,7 @@ void abort_handler(int) {
 void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(apx_ready) {
-        LOG(STATUS) << "Interrupted! Finishing up current event...";
+        LOG(STATUS) << "Interrupted! Finishing up active events...";
         apx->terminate();
     }
 }
@@ -96,8 +96,11 @@ int main(int argc, const char* argv[]) {
     std::string log_file_name;
     std::vector<std::string> module_options;
     std::vector<std::string> detector_options;
+
     for(int i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "-h") == 0) {
+        std::string arg = argv[i];
+
+        if(arg == "-h") {
             print_help = true;
         } else if(strcmp(argv[i], "--version") == 0) {
             std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION << std::endl;
@@ -110,20 +113,27 @@ int main(int argc, const char* argv[]) {
             std::cout << "or submit itself to any jurisdiction." << std::endl;
             clean();
             return 0;
-        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+        } else if(arg == "-v" && (i + 1 < argc)) {
             try {
                 LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
                 Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
             }
-        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+        } else if(arg == "-c" && (i + 1 < argc)) {
             config_file_name = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
+        } else if(arg == "-l" && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
-        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+        } else if(arg == "-o" && (i + 1 < argc)) {
             module_options.emplace_back(std::string(argv[++i]));
-        } else if(strcmp(argv[i], "-g") == 0 && (i + 1 < argc)) {
+        } else if(arg.find("-j") == 0) {
+            module_options.emplace_back("multithreading=true");
+            if(arg == "-j" && (i + 1 < argc)) {
+                module_options.emplace_back("workers=" + std::string(argv[++i]));
+            } else {
+                module_options.emplace_back("workers=" + arg.substr(2));
+            }
+        } else if(arg == "-g" && (i + 1 < argc)) {
             detector_options.emplace_back(std::string(argv[++i]));
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
@@ -145,6 +155,8 @@ int main(int argc, const char* argv[]) {
         std::cout << "  -o <option>  extra module configuration option(s) to pass" << std::endl;
         std::cout << "  -g <option>  extra detector configuration options(s) to pass" << std::endl;
         std::cout << "  -v <level>   verbosity level, overwriting the global level" << std::endl;
+        std::cout << "  -j <workers> number of worker threads, equivalent to" << std::endl;
+        std::cout << "               -o multithreading=true -o workers=<workers>" << std::endl;
         std::cout << "  --version    print version information and quit" << std::endl;
         std::cout << std::endl;
         std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
@@ -182,7 +194,7 @@ int main(int argc, const char* argv[]) {
         apx->load();
 
         // Initialize modules (pre-run)
-        apx->init();
+        apx->initialize();
 
         // Run modules and event-loop
         apx->run();

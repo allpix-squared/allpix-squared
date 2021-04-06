@@ -17,11 +17,14 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
 #include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
+
+#include "tools/ROOT.h"
 
 namespace allpix {
     /**
@@ -46,12 +49,12 @@ namespace allpix {
         /**
          * @brief Initialize - check for field configuration and implants
          */
-        void init() override;
+        void initialize() override;
 
         /**
          * @brief Transfer the propagated charges to the pixels
          */
-        void run(unsigned int) override;
+        void run(Event*) override;
 
         /**
          * @brief Display statistical summary
@@ -60,19 +63,20 @@ namespace allpix {
 
     private:
         Messenger* messenger_;
+
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Message containing the propagated charges
-        std::shared_ptr<PropagatedChargeMessage> propagated_message_;
+        Histogram<TH1D> drift_time_histo;
 
-        TH1D* drift_time_histo;
+        // Configuration parameters:
+        double max_depth_distance_{};
+        bool collect_from_implant_{};
 
         // Flag whether to store output plots:
         bool output_plots_{};
 
         // Statistical information
-        unsigned int total_transferred_charges_{};
-        std::set<Pixel::Index> unique_pixels_;
+        std::atomic<unsigned int> total_transferred_charges_{};
     };
 } // namespace allpix
