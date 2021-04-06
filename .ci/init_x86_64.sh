@@ -44,7 +44,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_98python3"
+DEFAULT_LCG="LCG_99"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -100,6 +100,3 @@ if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
     source geant4.sh
     cd -
 fi
-
-# Fix LCIO path for LCG_96, cmake configs are not properly placed:
-export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))
