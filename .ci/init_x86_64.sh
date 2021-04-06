@@ -2,10 +2,12 @@
 
 # Determine which OS you are using
 if [ "$(uname)" = "Linux" ]; then
-    if [ "$( cat /etc/*-release | grep Scientific )" ]; then
-        OS=slc6
-    elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
+    if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
+        echo "Detected CentOS Linux 7"
         OS=centos7
+    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ]; then
+        echo "Detected CentOS Linux 8"
+        OS=centos8
     else
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
@@ -62,16 +64,12 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} = "gcc" ]; then
-    if [ ${OS} = "slc6" ]; then
-        COMPILER_VERSION="gcc8"
-    else
-        COMPILER_VERSION="gcc10"
-    fi
+    COMPILER_VERSION="gcc10"
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
-        COMPILER_VERSION="clang110"
+        COMPILER_VERSION="clang120"
     else
         COMPILER_VERSION="clang10"
     fi
