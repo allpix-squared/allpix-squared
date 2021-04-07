@@ -544,7 +544,9 @@ void ModuleManager::initialize() {
         if(available_hardware_concurrency > 1u) {
             // Try to be graceful and leave one core out if the number of workers was not specified
             available_hardware_concurrency -= 1u;
+            LOG(TRACE) << "Ok, let's leave one core: " << available_hardware_concurrency;
         }
+        LOG(TRACE) << "Nr of workers defaults to: " << std::max(available_hardware_concurrency, 1u);
         threads_num = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
         if(threads_num < 2) {
             throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
