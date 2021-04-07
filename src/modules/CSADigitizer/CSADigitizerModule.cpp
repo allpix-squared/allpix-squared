@@ -12,6 +12,7 @@
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
+#include <TF1.h>
 #include <TFile.h>
 #include <TGraph.h>
 #include <TH1D.h>
@@ -35,8 +36,10 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         model_ = DigitizerType::SIMPLE;
     } else if(model == "csa") {
         model_ = DigitizerType::CSA;
+    } else if(model == "custom") {
+        model_ = DigitizerType::CUSTOM;
     } else {
-        throw InvalidValueError(config_, "model", "Invalid model, only 'simple' and 'csa' are supported.");
+        throw InvalidValueError(config_, "model", "Invalid model, only 'simple', 'csa' and 'custom' are supported.");
     }
 
     // Set defaults for config variables
@@ -89,6 +92,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         tauR_ = config_.get<double>("rise_time_constant");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         resistance_feedback_ = tauF_ / capacitance_feedback;
+
+        calculate_impulse_response_ = std::make_unique<TF1>(
+            "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
+        calculate_impulse_response_->SetParameters(resistance_feedback_, tauF_, tauR_);
+
         LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
                    << ", rf = " << Units::display(resistance_feedback_, "V*s/C")
                    << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
@@ -114,6 +122,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         resistance_feedback_ = 2. / transconductance_feedback; // feedback resistor
         tauF_ = resistance_feedback_ * capacitance_feedback;
         tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+
+        calculate_impulse_response_ = std::make_unique<TF1>(
+            "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
+        calculate_impulse_response_->SetParameters(resistance_feedback_, tauF_, tauR_);
+
         LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback_, "V*s/C")
                    << ", capacitance_feedback = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
                    << ", capacitance_detector = " << Units::display(capacitance_detector, {"C/V", "fC/mV"})
@@ -122,6 +135,30 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
                    << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"})
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
+    } else if(model_ == DigitizerType::CUSTOM) {
+        calculate_impulse_response_ = std::make_unique<TF1>(
+            "response_function", (config_.get<std::string>("response_function")).c_str(), 0., integration_time_);
+
+        if(!calculate_impulse_response_->IsValid()) {
+            throw InvalidValueError(
+                config_, "response_function", "The response function is not a valid ROOT::TFormula expression.");
+        }
+
+        auto parameters = config_.getArray<double>("response_parameters");
+
+        // check if number of parameters match up
+        if(static_cast<size_t>(calculate_impulse_response_->GetNumberFreeParameters()) != parameters.size()) {
+            throw InvalidValueError(
+                config_,
+                "response_parameters",
+                "The number of function parameters does not line up with the amount of parameters in the function.");
+        }
+
+        for(size_t n = 0; n < parameters.size(); ++n) {
+            calculate_impulse_response_->SetParameter(static_cast<int>(n), parameters[n]);
+        }
+
+        LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -195,11 +232,9 @@ void CSADigitizerModule::run(Event* event) {
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
             impulse_response_function_.reserve(ntimepoints);
-            auto calculate_impulse_response = [&](double x) {
-                return (resistance_feedback_ * (exp(-x / tauF_) - exp(-x / tauR_)) / (tauF_ - tauR_));
-            };
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
-                impulse_response_function_.push_back(calculate_impulse_response(timestep * static_cast<double>(itimepoint)));
+                impulse_response_function_.push_back(
+                    calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
             }
 
             if(output_plots_) {

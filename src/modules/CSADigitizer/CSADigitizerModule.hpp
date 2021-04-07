@@ -42,6 +42,7 @@ namespace allpix {
         enum class DigitizerType {
             SIMPLE, ///< Simplified parametrisation
             CSA,    ///< Enter all contributions to the transfer function as parameters
+            CUSTOM, ///< Custom impulse response function using a ROOT::TFormula expression
         };
 
     public:
@@ -77,6 +78,9 @@ namespace allpix {
 
         // Parameters of the amplifier: Feedback time constant, risetime time constant
         double tauF_{}, tauR_{};
+
+        // Function to calculate impulse repsonse
+        std::unique_ptr<TF1> calculate_impulse_response_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
