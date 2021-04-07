@@ -7,6 +7,8 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <iostream>
+
 namespace allpix {
     /**
      * @throws MissingKeyError If the requested key is not defined
@@ -34,7 +36,9 @@ namespace allpix {
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
     template <typename T> T Configuration::get(const std::string& key, const T& def) const {
+        std::cout << "Checking for key " << key << std::endl;
         if(has(key)) {
+            std::cout << "Getting value for key " << key << std::endl;
             return get<T>(key);
         }
         return def;
