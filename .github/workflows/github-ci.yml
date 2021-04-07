@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_98python3
+  LCG_VERSION: LCG_99
 jobs:
   compile-centos7:
     strategy:
@@ -69,7 +69,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang120-opt"
         run: |
           mkdir build
           cd build
@@ -103,16 +103,9 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang110-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang120-opt"
         run: |
           chmod -R a+x .github
-          echo "-- ls -la ."
-          ls -la .
-          echo "-- ls -la .github"
-          ls -la .github
-          echo "-- ls -la .github/workflows"
-          ls -la .github/workflows
-          echo "-- source .ci/init_x86_64.sh"
           source .ci/init_x86_64.sh
           chmod a+x bin/allpix
           cd build
