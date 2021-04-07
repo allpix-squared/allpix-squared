@@ -13,10 +13,12 @@ if [ "$(uname)" = "Linux" ]; then
         OS=centos7
     fi
 elif [ "$(uname)" = "Darwin" ]; then
-    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') = "10.15" ]; then
+    MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
+    MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
+    if [ $MACOS_MAJOR = "11" ] || [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
         OS=mac1015
     else
-        echo "Bootstrap only works on macOS Catalina (10.15)"
+        echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
     fi
 else
