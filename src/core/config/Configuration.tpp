@@ -42,7 +42,7 @@ namespace allpix {
             std::cout << "Getting value for key " << key << std::endl;
             return get<T>(key);
         }
-        std::cout << "Returning default " << def << std::endl;
+        std::cout << "Returning default " << std::endl;
         return def;
     }
 
