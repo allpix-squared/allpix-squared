@@ -37,10 +37,12 @@ namespace allpix {
      */
     template <typename T> T Configuration::get(const std::string& key, const T& def) const {
         std::cout << "Checking for key " << key << std::endl;
+        std::cout << "Result is " << has(key) << std::endl;
         if(has(key)) {
             std::cout << "Getting value for key " << key << std::endl;
             return get<T>(key);
         }
+        std::cout << "Returning default " << def << std::endl;
         return def;
     }
 
