@@ -224,7 +224,7 @@ examples:
         - source .ci/init_x86_64.sh
     script:
         - cd build/
-        - ctest -R examples --no-compress-output --test-action Test -j4
+        - ctest -R examples --no-compress-output --test-action Test -j4 --verbose
 
 # SLC 6
 
