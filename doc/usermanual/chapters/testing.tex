@@ -272,8 +272,8 @@ Different tags are provided for Mac OS X since the \CPP standard does not define
 Thus, the distributions produce different results on different platforms even when used with the same random number as input.
 
 \begin{description}
-  \item[Passing a test] The expression marked with the tag \parameter{#PASS}/\parameter{#PASSOSX} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
-  \item[Failing a test] If the expression tagged with \parameter{#FAIL}/\parameter{#FAILOSX} is found in the output, the test fails. If the expression is not found, the test passes.
+  \item[Passing a test] The expression marked with the tag \parameter{#PASS} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
+  \item[Failing a test] If the expression tagged with \parameter{#FAIL} is found in the output, the test fails. If the expression is not found, the test passes.
   \item[Depending on another test] The tag \parameter{#DEPENDS} can be used to indicate dependencies between tests. For example, the module test 09 described below implements such a dependency as it uses the output of module test 08-1 to read data from a previously produced \apsq data file.
   \item[Defining a timeout] For performance tests the runtime of the application is monitored, and the test fails if it exceeds the number of seconds defined using the \parameter{#TIMEOUT} tag.
   \item[Adding additional CLI options] Additional module command line options can be specified for the \parameter{allpix} executable using the \parameter{#OPTION} tag, following the format found in Section~\ref{sec:allpix_executable}. The \parameter{-o} flag will be added automatically. Multiple options can be supplied by repeating the \parameter{#OPTION} tag in the configuration file, only one option per tag is allowed. In exactly the same way options for the detectors can be set as well using the \parameter{#DETOPION} tag, where \parameter{-g} will be added automatically.
