@@ -256,7 +256,7 @@ mod:cc7-docker:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
 
 core:cc7-docker:
     extends: .testcore
