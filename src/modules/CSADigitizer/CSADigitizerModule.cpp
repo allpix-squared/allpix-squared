@@ -43,8 +43,6 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     }
 
     // Set defaults for config variables
-    config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
-
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<bool>("ignore_polarity", false);
@@ -58,10 +56,12 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     if(model_ == DigitizerType::SIMPLE) {
         // defaults for the "simple" parametrisation
+        config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
         config_.setDefault<double>("rise_time_constant", Units::get(1e-9, "s"));
         config_.setDefault<double>("feedback_time_constant", Units::get(10e-9, "s")); // R_f * C_f
     } else if(model_ == DigitizerType::CSA) {
         // and for the "advanced" csa
+        config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
         config_.setDefault<double>("krummenacher_current", Units::get(20e-9, "C/s"));
         config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
@@ -88,19 +88,19 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     ignore_polarity_ = config.get<bool>("ignore_polarity");
 
     if(model_ == DigitizerType::SIMPLE) {
-        tauF_ = config_.get<double>("feedback_time_constant");
-        tauR_ = config_.get<double>("rise_time_constant");
+        auto tauF = config_.get<double>("feedback_time_constant");
+        auto tauR = config_.get<double>("rise_time_constant");
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
-        resistance_feedback_ = tauF_ / capacitance_feedback;
+        auto resistance_feedback = tauF / capacitance_feedback;
 
         calculate_impulse_response_ = std::make_unique<TF1>(
             "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
-        calculate_impulse_response_->SetParameters(resistance_feedback_, tauF_, tauR_);
+        calculate_impulse_response_->SetParameters(resistance_feedback, tauF, tauR);
 
         LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
-                   << ", rf = " << Units::display(resistance_feedback_, "V*s/C")
-                   << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
-                   << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"});
+                   << ", rf = " << Units::display(resistance_feedback, "V*s/C")
+                   << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
+                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"});
     } else if(model_ == DigitizerType::CSA) {
         auto ikrum = config_.get<double>("krummenacher_current");
         if(ikrum <= 0) {
@@ -119,21 +119,21 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
         auto transconductance_feedback = ikrum / (2.0 * 1.5 * boltzmann_kT);
-        resistance_feedback_ = 2. / transconductance_feedback; // feedback resistor
-        tauF_ = resistance_feedback_ * capacitance_feedback;
-        tauR_ = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+        auto resistance_feedback = 2. / transconductance_feedback; // feedback resistor
+        auto tauF = resistance_feedback * capacitance_feedback;
+        auto tauR = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
 
         calculate_impulse_response_ = std::make_unique<TF1>(
             "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
-        calculate_impulse_response_->SetParameters(resistance_feedback_, tauF_, tauR_);
+        calculate_impulse_response_->SetParameters(resistance_feedback, tauF, tauR);
 
-        LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback_, "V*s/C")
+        LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback, "V*s/C")
                    << ", capacitance_feedback = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
                    << ", capacitance_detector = " << Units::display(capacitance_detector, {"C/V", "fC/mV"})
                    << ", capacitance_output = " << Units::display(capacitance_output, {"C/V", "fC/mV"})
                    << ", gm = " << Units::display(gm, "C/s/V")
-                   << ", tauF = " << Units::display(tauF_, {"ns", "us", "ms", "s"})
-                   << ", tauR = " << Units::display(tauR_, {"ns", "us", "ms", "s"})
+                   << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
+                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"})
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     } else if(model_ == DigitizerType::CUSTOM) {
         calculate_impulse_response_ = std::make_unique<TF1>(
