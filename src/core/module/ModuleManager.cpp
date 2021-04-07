@@ -537,8 +537,10 @@ void ModuleManager::initialize() {
     LOG(TRACE) << "Register number of workers for possible multithreading";
     unsigned int threads_num = 0;
     if(multithreading_flag_ && can_parallelize_) {
+        LOG(TRACE) << "Able to parallelize. Computing number of workers.";
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
+        LOG(TRACE) << "Hardware concurrency: " << available_hardware_concurrency;
         if(available_hardware_concurrency > 1u) {
             // Try to be graceful and leave one core out if the number of workers was not specified
             available_hardware_concurrency -= 1u;
@@ -553,6 +555,7 @@ void ModuleManager::initialize() {
                          << std::thread::hardware_concurrency() << ") may impact simulation performance";
         }
     }
+    LOG(TRACE) << "Setting workers to : " << threads_num;
     global_config.set<size_t>("workers", threads_num);
     if(threads_num > 0) {
         ThreadPool::registerThreadCount(threads_num);
