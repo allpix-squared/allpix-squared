@@ -22,7 +22,8 @@ using namespace allpix;
 ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)),
+      top_z_(detector_->getModel()->getSensorSize().z() / 2) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -94,7 +95,6 @@ void ProjectionPropagationModule::initialize() {
     }
 
     // Find correct top side
-    top_z_ = model_->getSensorSize().z() / 2;
     if(detector_->getElectricField({0, 0, top_z_}).z() > detector_->getElectricField({0, 0, -top_z_}).z()) {
         top_z_ *= -1;
     }
