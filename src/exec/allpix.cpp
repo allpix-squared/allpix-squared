@@ -185,25 +185,24 @@ int main(int argc, const char* argv[]) {
         Log::addStream(log_file);
     }
 
-    try {
-        // Construct main Allpix object
-        apx = std::make_unique<Allpix>(config_file_name, module_options, detector_options);
-        apx_ready = true;
+    // Construct main Allpix object
+    apx = std::make_unique<Allpix>(config_file_name, module_options, detector_options);
+    apx_ready = true;
 
-        // Load modules
-        apx->load();
+    // Load modules
+    apx->load();
 
-        // Initialize modules (pre-run)
-        apx->initialize();
+    // Initialize modules (pre-run)
+    apx->initialize();
 
-        // Run modules and event-loop
-        apx->run();
+    // Run modules and event-loop
+    apx->run();
 
-        // Finalize modules (post-run)
-        apx->finalize();
+    // Finalize modules (post-run)
+    apx->finalize();
 
-        // Finish the logging
-        clean();
+    // Finish the logging
+    clean();
 
-        return return_code;
-    }
+    return return_code;
+}
