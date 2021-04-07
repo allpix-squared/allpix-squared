@@ -541,7 +541,7 @@ void ModuleManager::initialize() {
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
         LOG(TRACE) << "Hardware concurrency: " << available_hardware_concurrency;
-        if(available_hardware_concurrency > 2u) {
+        if(available_hardware_concurrency > 1u) {
             // Try to be graceful and leave one core out if the number of workers was not specified
             available_hardware_concurrency -= 1u;
             LOG(TRACE) << "Ok, let's leave one core: " << available_hardware_concurrency;
