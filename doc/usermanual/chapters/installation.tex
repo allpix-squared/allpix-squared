@@ -40,6 +40,7 @@ A useful set of CMake flags to build a functional Geant4 package would be:
 \item Eigen3~\cite{eigen3}: Vector package used to perform Runge-Kutta integration in the generic charge propagation module.
 Eigen is available in almost all Linux distributions through the package manager.
 Otherwise it can be easily installed, comprising a header-only library.
+\item Boost.Random~\cite{boostrandom}: Random number generator and distribution library. Used in order to get cross-platform portable, STL-compatible random number distributions. While STL random number generators are portable and guarantee to deliver the same random number sequence given the same seed, random distributions do not and their implementation is platform-dependent leading to different results.
 \end{itemize}
 Extra flags need to be set for building an \apsq installation without these dependencies.
 Details about these configuration options are given in Section~\ref{sec:cmake_config}.
