@@ -463,6 +463,7 @@ cmp:usermanual:
         - schedules@allpix-squared/allpix-squared
     script:
         - source .ci/init_x86_64.sh
+        - export CCACHE_DIR=`pwd`/ccache
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
