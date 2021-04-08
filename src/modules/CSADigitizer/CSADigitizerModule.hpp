@@ -76,7 +76,7 @@ namespace allpix {
         Messenger* messenger_;
         DigitizerType model_;
 
-        // Function to calculate impulse repsonse
+        // Function to calculate impulse response
         std::unique_ptr<TF1> calculate_impulse_response_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
