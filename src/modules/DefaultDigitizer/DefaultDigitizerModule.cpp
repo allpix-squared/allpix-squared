@@ -193,7 +193,7 @@ void DefaultDigitizerModule::run(Event* event) {
         // Simulate simple front-end saturation if enabled:
         if(config_.get<bool>("saturation")) {
             allpix::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
-                                                                 config_.get<unsigned int>("saturation_width"));
+                                                                    config_.get<unsigned int>("saturation_width"));
             auto saturation = saturation_smearing(event->getRandomEngine());
             if(charge > saturation) {
                 LOG(DEBUG) << "Above front-end saturation, " << Units::display(charge, {"e", "ke"}) << " > "
@@ -208,7 +208,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         allpix::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
-                                                      config_.get<unsigned int>("threshold_smearing"));
+                                                         config_.get<unsigned int>("threshold_smearing"));
         double threshold = thr_smearing(event->getRandomEngine());
         if(config_.get<bool>("output_plots")) {
             h_thr->Fill(threshold / 1e3);
