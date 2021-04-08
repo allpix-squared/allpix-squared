@@ -161,7 +161,7 @@ ENDIF()
 FIND_PACKAGE(Threads REQUIRED)
 
 # Include Boost.Random
-FIND_PACKAGE(Boost REQUIRED COMPONENTS random)
+FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
 
 ###################################
 # Prerequisistes for allpix       #
