@@ -76,20 +76,20 @@ namespace allpix {
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling;
-        unsigned int matrix_rows;
-        unsigned int matrix_cols;
-        unsigned int max_row;
-        unsigned int max_col;
-        bool cc_in;
+        unsigned int matrix_rows{};
+        unsigned int matrix_cols{};
+        unsigned int max_row{};
+        unsigned int max_col{};
+        bool cc_in{};
 
-        double normalization;
-        double nominal_gap;
-        double minimum_gap;
+        double normalization{};
+        double nominal_gap{};
+        double minimum_gap{};
 
-        int cross_coupling;
+        int cross_coupling{};
 
         void getCapacitanceScan(TFile* root_file);
-        TGraph* capacitances[9];
+        TGraph* capacitances[9]{};
 
         Eigen::Hyperplane<double, 3> plane;
 

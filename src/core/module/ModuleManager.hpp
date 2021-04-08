@@ -170,7 +170,7 @@ namespace allpix {
 
         std::atomic<bool> terminate_;
 
-        Messenger* messenger_;
+        Messenger* messenger_{};
 
         // User defined multithreading flag in configuration
         bool multithreading_flag_{false};
