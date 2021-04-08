@@ -2,19 +2,23 @@
 
 # Determine which OS you are using
 if [ "$(uname)" = "Linux" ]; then
-    if [ "$( cat /etc/*-release | grep Scientific )" ]; then
-        OS=slc6
-    elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
+    if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
+        echo "Detected CentOS Linux 7"
         OS=centos7
+    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ]; then
+        echo "Detected CentOS Linux 8"
+        OS=centos8
     else
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
     fi
 elif [ "$(uname)" = "Darwin" ]; then
-    if [ $(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}') = "10.15" ]; then
+    MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
+    MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
+    if [ $MACOS_MAJOR = "11" ] || [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
         OS=mac1015
     else
-        echo "Bootstrap only works on macOS Catalina (10.15)"
+        echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
     fi
 else
@@ -44,7 +48,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_98python3"
+DEFAULT_LCG="LCG_99"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -62,16 +66,12 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} = "gcc" ]; then
-    if [ ${OS} = "slc6" ]; then
-        COMPILER_VERSION="gcc8"
-    else
-        COMPILER_VERSION="gcc10"
-    fi
+    COMPILER_VERSION="gcc10"
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
-        COMPILER_VERSION="clang110"
+        COMPILER_VERSION="clang120"
     else
         COMPILER_VERSION="clang10"
     fi
@@ -100,6 +100,3 @@ if [ -n "${CI}" ] && [ "$(uname)" = "Darwin" ]; then
     source geant4.sh
     cd -
 fi
-
-# Fix LCIO path for LCG_96, cmake configs are not properly placed:
-export LCIO_DIR=$(dirname $(dirname $(readlink $(which lcio_event_counter))))
