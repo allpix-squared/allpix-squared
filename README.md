@@ -114,6 +114,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
 * Ondrej Theiner, Charles University, @otheiner
+* Reem Taibah, Université de Paris, @retaibah
 * Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
 * Andy Wharton, Lancaster University, @awharton
