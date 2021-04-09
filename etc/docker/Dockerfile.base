@@ -11,6 +11,7 @@ RUN yum makecache fast && \
     xerces-c xerces-c-devel \
     qt5-qtbase-devel qt5-qt3d-devel qt5-qtbase-gui \
     eigen3-devel \
+    boost169-devel boost169-random \
     openssl-devel pcre-devel \
     libpqxx libpqxx-devel \
     fftw-devel cfitsio-devel graphviz-devel \

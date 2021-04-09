@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -206,7 +207,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
-                std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+                allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
                 double diffusion_x = gauss_distribution(event->getRandomEngine());
                 double diffusion_y = gauss_distribution(event->getRandomEngine());
                 double diffusion_z = gauss_distribution(event->getRandomEngine());
@@ -322,7 +323,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 continue;
             }
 
-            std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+            allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
             double diffusion_x = gauss_distribution(event->getRandomEngine());
             double diffusion_y = gauss_distribution(event->getRandomEngine());
 

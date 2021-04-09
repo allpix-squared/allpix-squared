@@ -16,6 +16,7 @@
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 #include "tools/ROOT.h"
@@ -281,8 +282,8 @@ void DetectorHistogrammerModule::run(Event* event) {
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
-        double dx = std::normal_distribution<double>(0, residuals.x())(event->getRandomEngine());
-        double dy = std::normal_distribution<double>(0, residuals.y())(event->getRandomEngine());
+        double dx = allpix::normal_distribution<double>(0, residuals.x())(event->getRandomEngine());
+        double dy = allpix::normal_distribution<double>(0, residuals.y())(event->getRandomEngine());
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
     };
 

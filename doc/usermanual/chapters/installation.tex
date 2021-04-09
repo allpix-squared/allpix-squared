@@ -15,10 +15,21 @@ Furthermore, the continuous integration of the project ensures correct building 
 \label{sec:prerequisites}
 If the framework is to be compiled and executed on CERN's LXPLUS service, all build dependencies can be loaded automatically from the CVMFS file system as described in Section~\ref{sec:initialize_dependencies}.
 
-The core framework is compiled separately from the individual modules and \apsq has therefore only one required dependency: ROOT 6 (versions below 6 are not supported)~\cite{root}.
+The core framework is compiled separately from the individual modules and \apsq has therefore only two required external dependencies:
+
+\begin{itemize}
+\item ROOT\,6~\cite{root}:
+ROOT is used for histogramming as well as coordinate transformations.
+In addition, some modules implement I/O using ROOT libraries.
+The latest stable release of ROOT\,6 is recommended and older versions, such as ROOT\,5.x, are not supported.
 Please refer to~\cite{rootinstallation} for instructions on how to install ROOT.
-ROOT has several components of which the GenVector package is required to run \apsq.
+ROOT has several components of which the \parameter{GenVector} package is required to run \apsq.
 This package is included in the default build.
+\item Boost.Random\,1.64.0 or later~\cite{boostrandom}:
+Random number generator and distribution library of the Boost project, used in order to get cross-platform portable, STL-compatible random number distributions.
+While STL random number generators are portable and guarantee to deliver the same random number sequence given the same seed, random distributions are not, and their implementation is platform-dependent leading to different simulation results with the same seed.
+Since the implementation of some random distributions (most notably of \command{boost::normal_distribution}) has changed in the past, a recent version is required.
+\end{itemize}
 
 For some modules, additional dependencies exist.
 For details about the dependencies and their installation see the module documentation in Chapter~\ref{ch:modules}.
@@ -28,7 +39,7 @@ The following dependencies are needed to compile the standard installation:
 See the instructions in~\cite{geant4installation} for details on how to install the software.
 All Geant4 data sets are required to run the modules successfully.
 It is recommended to enable the Geant4 Qt extensions to allow visualization of the detector setup and the simulated particle tracks.
-A useful set of CMake flags to build a functional Geant4 package would be:
+A recommended set of CMake flags to build a Geant4 package suitable for usage with \apsq are:
 \begin{verbatim}
 -DGEANT4_INSTALL_DATA=ON
 -DGEANT4_USE_GDML=ON
@@ -37,7 +48,7 @@ A useful set of CMake flags to build a functional Geant4 package would be:
 -DGEANT4_USE_OPENGL_X11=ON
 -DGEANT4_USE_SYSTEM_CLHEP=OFF
 \end{verbatim}
-\item Eigen3~\cite{eigen3}: Vector package used to perform Runge-Kutta integration in the generic charge propagation module.
+\item Eigen3~\cite{eigen3}: Vector package used to perform Runge-Kutta integration, used in some of the charge carrier propagation modules.
 Eigen is available in almost all Linux distributions through the package manager.
 Otherwise it can be easily installed, comprising a header-only library.
 \end{itemize}

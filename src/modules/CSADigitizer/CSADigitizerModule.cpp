@@ -9,6 +9,7 @@
 
 #include "CSADigitizerModule.hpp"
 
+#include "core/utils/distributions.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
@@ -251,7 +252,7 @@ void CSADigitizerModule::run(Event* event) {
         }
 
         // Apply noise to the amplified pulse
-        std::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
+        allpix::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigmaNoise_, {"mV", "V"});
         std::transform(amplified_pulse_vec.begin(),
                        amplified_pulse_vec.end(),
