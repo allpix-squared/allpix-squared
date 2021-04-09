@@ -114,6 +114,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
+* Reem Taibah, Université de Paris, @retaibah
 * Ondrej Theiner, Charles University, @otheiner
 * Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
