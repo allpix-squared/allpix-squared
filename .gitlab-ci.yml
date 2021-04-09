@@ -35,13 +35,6 @@ stages:
             - lib
         expire_in: 24 hour
 
-cmp:slc6-gcc:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
-
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
     extends: .compile
@@ -59,14 +52,14 @@ cmp:lxplus-gcc:
 cmp:cc7-docker:
     extends: .compile
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps-mt:latest
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
-        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DBOOST_INCLUDEDIR=/usr/include/boost169 -DBOOST_LIBRARYDIR=/usr/lib64/boost169 ..
         - make
         - make install
 
@@ -82,6 +75,13 @@ cmp:cc7-llvm:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
+        - source .ci/init_x86_64.sh
+
+cmp:cc8-gcc:
+    extends: .compile
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    before_script:
+        - export COMPILER_TYPE="gcc"
         - source .ci/init_x86_64.sh
 
 cmp:mac1015-clang:
@@ -226,25 +226,7 @@ examples:
         - cd build/
         - ctest -R examples --no-compress-output --test-action Test -j4
 
-# SLC 6
-
-mod:slc6-gcc:
-    extends: .testmod
-    needs:
-        - job: cmp:slc6-gcc
-          artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    before_script:
-        - source .ci/init_x86_64.sh
-
-core:slc6-gcc:
-    extends: .testcore
-    needs:
-        - job: cmp:slc6-gcc
-          artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    before_script:
-        - source .ci/init_x86_64.sh
+# LXPLUS
 
 mod:lxplus-gcc:
     extends: .testmod
@@ -274,7 +256,7 @@ mod:cc7-docker:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
-        - source scl_source enable devtoolset-7 || echo " "
+        - source scl_source enable devtoolset-8 || echo " "
 
 core:cc7-docker:
     extends: .testcore
@@ -282,7 +264,7 @@ core:cc7-docker:
         - job: cmp:cc7-docker
           artifacts: true
     image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps-mt:latest
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
     before_script:
         - source scl_source enable devtoolset-8 || echo " "
@@ -325,6 +307,25 @@ core:cc7-llvm:
         - export COMPILER_TYPE="llvm"
         - source .ci/init_x86_64.sh
 
+# CentOS 8
+
+mod:cc8-gcc:
+    extends: .testmod
+    needs:
+        - job: cmp:cc8-gcc
+          artifacts: true
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    before_script:
+        - source .ci/init_x86_64.sh
+
+core:cc8-gcc:
+    extends: .testcore
+    needs:
+        - job: cmp:cc8-gcc
+          artifacts: true
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    before_script:
+        - source .ci/init_x86_64.sh
 
 # Mac OS X
 
@@ -462,6 +463,7 @@ cmp:usermanual:
         - schedules@allpix-squared/allpix-squared
     script:
         - source .ci/init_x86_64.sh
+        - export CCACHE_DIR=`pwd`/ccache
         - mkdir -p public/releases
         - cd build
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
@@ -471,15 +473,6 @@ cmp:usermanual:
         paths:
             - public
         expire_in: 24 hour
-
-pkg:slc6-gcc:
-    extends: .pack
-    image: gitlab-registry.cern.ch/sft/docker/slc6:latest
-    needs:
-        - job: cmp:slc6-gcc
-          artifacts: true
-    before_script:
-        - export COMPILER_TYPE="gcc"
 
 pkg:cc7-gcc:
     extends: .pack
@@ -498,6 +491,15 @@ pkg:cc7-llvm:
           artifacts: true
     before_script:
         - export COMPILER_TYPE="llvm"
+
+pkg:cc8-gcc:
+    extends: .pack
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    needs:
+        - job: cmp:cc8-gcc
+          artifacts: true
+    before_script:
+        - export COMPILER_TYPE="gcc"
 
 pkg:mac1015-clang:
     extends: .pack
@@ -549,7 +551,7 @@ deploy-eos:
     dependencies:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
-        - pkg:slc6-gcc
+        - pkg:cc8-gcc
         - pkg:mac1015-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
@@ -564,7 +566,7 @@ deploy-cvmfs:
     dependencies:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
-        - pkg:slc6-gcc
+        - pkg:cc8-gcc
         - pkg:mac1015-clang
     tags:
         - cvmfs-deploy

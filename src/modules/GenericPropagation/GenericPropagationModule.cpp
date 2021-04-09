@@ -34,6 +34,7 @@
 
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
@@ -711,7 +712,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
-        std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+        allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
         Eigen::Vector3d diffusion;
         for(int i = 0; i < 3; ++i) {
             diffusion[i] = gauss_distribution(random_generator);

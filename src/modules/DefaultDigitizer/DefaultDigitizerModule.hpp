@@ -72,6 +72,29 @@ namespace allpix {
          */
         double time_of_arrival(const PixelCharge& pixel_charge, double threshold) const;
 
+        // Configuration
+        bool output_plots_{};
+
+        unsigned int electronics_noise_{};
+        double gain_{}, gain_smearing_{};
+
+        bool saturation_{};
+        unsigned int saturation_mean_{}, saturation_width_{};
+
+        unsigned int threshold_{}, threshold_smearing_{};
+
+        int qdc_resolution_{};
+        unsigned int qdc_smearing_{};
+        double qdc_offset_{};
+        double qdc_slope_{};
+        bool allow_zero_qdc_{};
+
+        int tdc_resolution_{};
+        unsigned int tdc_smearing_{};
+        double tdc_offset_{};
+        double tdc_slope_{};
+        bool allow_zero_tdc_{};
+
         // Statistics
         std::atomic<unsigned long long> total_hits_{};
 

@@ -87,6 +87,7 @@ namespace allpix {
         double temperature_{}, timestep_{}, integration_time_{};
         bool output_plots_{};
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
+        unsigned int charge_per_step_{};
 
         // Precalculated values for electron and hole mobility
         double electron_Vm_;
@@ -111,10 +112,10 @@ namespace allpix {
         double hole_Hall_;
 
         // Doping profile available?
-        bool has_doping_profile_;
+        bool has_doping_profile_{};
 
         // Magnetic field
-        bool has_magnetic_field_;
+        bool has_magnetic_field_{};
         ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots

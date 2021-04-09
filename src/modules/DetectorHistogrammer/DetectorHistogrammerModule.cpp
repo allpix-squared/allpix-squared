@@ -16,6 +16,7 @@
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 #include "tools/ROOT.h"
@@ -26,6 +27,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    using namespace ROOT::Math;
+
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -34,9 +37,17 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     messenger_->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 
     auto model = detector_->getModel();
-    matching_cut_ = config.get<ROOT::Math::XYVector>("matching_cut", model->getPixelSize() * 3);
-    track_resolution_ = config.get<ROOT::Math::XYVector>("track_resolution",
-                                                         ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
+    config_.setDefault<XYVector>("matching_cut", model->getPixelSize() * 3);
+    config_.setDefault<XYVector>("track_resolution", ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
+
+    config_.setDefault<DisplacementVector2D<Cartesian2D<int>>>(
+        "granularity",
+        DisplacementVector2D<Cartesian2D<int>>(static_cast<int>(Units::convert(model->getPixelSize().x(), "um")),
+                                               static_cast<int>(Units::convert(model->getPixelSize().y(), "um"))));
+    config_.setDefault<double>("max_cluster_charge", Units::get(50., "ke"));
+
+    matching_cut_ = config_.get<XYVector>("matching_cut");
+    track_resolution_ = config_.get<XYVector>("track_resolution");
 }
 
 void DetectorHistogrammerModule::initialize() {
@@ -66,8 +77,7 @@ void DetectorHistogrammerModule::initialize() {
         "cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Calculate the granularity of in-pixel maps:
-    auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>(
-        "granularity", DisplacementVector2D<Cartesian2D<int>>(static_cast<int>(pitch_x), static_cast<int>(pitch_y)));
+    auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>("granularity");
     if(inpixel_bins.x() * inpixel_bins.y() > 250000) {
         LOG(WARNING) << "Selected plotting granularity of " << inpixel_bins << " bins creates very large histograms."
                      << std::endl
@@ -236,7 +246,7 @@ void DetectorHistogrammerModule::initialize() {
     n_cluster = CreateHistogram<TH1D>("n_cluster", n_cluster_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
 
     // Create cluster charge plot
-    auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge", Units::get(50., "ke")), "ke");
+    auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge"), "ke");
     std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
     cluster_charge = CreateHistogram<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
@@ -281,8 +291,8 @@ void DetectorHistogrammerModule::run(Event* event) {
 
     // Lambda for smearing the Monte Carlo truth position with the track resolution
     auto track_smearing = [&](auto residuals) {
-        double dx = std::normal_distribution<double>(0, residuals.x())(event->getRandomEngine());
-        double dy = std::normal_distribution<double>(0, residuals.y())(event->getRandomEngine());
+        double dx = allpix::normal_distribution<double>(0, residuals.x())(event->getRandomEngine());
+        double dy = allpix::normal_distribution<double>(0, residuals.y())(event->getRandomEngine());
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, 0);
     };
 

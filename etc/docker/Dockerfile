@@ -14,6 +14,8 @@ RUN source scl_source enable devtoolset-8 && \
     cmake3 -DCMAKE_INSTALL_PREFIX=../ \
            -DBUILD_ALL_MODULES=ON \
            -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
+           -DBOOST_INCLUDEDIR=/usr/include/boost169 \
+           -DBOOST_LIBRARYDIR=/usr/lib64/boost169 \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \

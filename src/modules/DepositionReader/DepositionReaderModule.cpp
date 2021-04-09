@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -59,6 +60,8 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     require_sequential_events_ = config_.get<bool>("require_sequential_events");
     time_available_ = config_.get<bool>("assign_timestamps");
     create_mcparticles_ = config.get<bool>("create_mcparticles");
+
+    output_plots_ = config_.get<bool>("output_plots");
 }
 
 void DepositionReaderModule::initialize() {
@@ -170,7 +173,7 @@ void DepositionReaderModule::initialize() {
     }
 
     // If requested, prepare output plots
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
         for(auto& detector : geo_manager_->getDetectors()) {
 
@@ -265,7 +268,7 @@ void DepositionReaderModule::run(Event* event) {
         // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
         // excitations via the Fano factor. We assume Gaussian statistics here.
         auto mean_charge = energy / charge_creation_energy_;
-        std::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
         auto charge = static_cast<unsigned int>(charge_fluctuation(event->getRandomEngine()));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
@@ -382,7 +385,7 @@ void DepositionReaderModule::run(Event* event) {
             messenger_->dispatchMessage(this, deposit_message, event);
 
             // Fill output plots if requested:
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
                 charge_per_event_[detector->getName()]->Fill(charge);
             }
@@ -396,7 +399,7 @@ void DepositionReaderModule::run(Event* event) {
 }
 
 void DepositionReaderModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         for(auto& plot : charge_per_event_) {

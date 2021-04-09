@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "core/messenger/Messenger.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -22,7 +23,8 @@ using namespace allpix;
 ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)),
+      top_z_(detector_->getModel()->getSensorSize().z() / 2) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
 
@@ -42,6 +44,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
+    charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Set default for charge carrier propagation:
@@ -94,7 +97,6 @@ void ProjectionPropagationModule::initialize() {
     }
 
     // Find correct top side
-    top_z_ = model_->getSensorSize().z() / 2;
     if(detector_->getElectricField({0, 0, top_z_}).z() > detector_->getElectricField({0, 0, -top_z_}).z()) {
         top_z_ *= -1;
     }
@@ -167,7 +169,7 @@ void ProjectionPropagationModule::run(Event* event) {
         unsigned int charges_remaining = deposit.getCharge();
         total_charge += charges_remaining;
 
-        auto charge_per_step = config_.get<unsigned int>("charge_per_step");
+        auto charge_per_step = charge_per_step_;
         while(charges_remaining > 0) {
             if(charge_per_step > charges_remaining) {
                 charge_per_step = charges_remaining;
@@ -206,7 +208,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
-                std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+                allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
                 double diffusion_x = gauss_distribution(event->getRandomEngine());
                 double diffusion_y = gauss_distribution(event->getRandomEngine());
                 double diffusion_z = gauss_distribution(event->getRandomEngine());
@@ -322,7 +324,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 continue;
             }
 
-            std::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
+            allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
             double diffusion_x = gauss_distribution(event->getRandomEngine());
             double diffusion_y = gauss_distribution(event->getRandomEngine());
 

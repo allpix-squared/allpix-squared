@@ -14,6 +14,8 @@ The impulse response function of this transfer function is convoluted with the c
 This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrization providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
 
+Alternatively a custom impulse response function can be provided by using the `custom` model.
+
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
 For the amplified pulse signal, alongside the Time-of-Arrival either the determined Time-over-Threshold, or the integral of the amplified pulse can be stored in the `PixelHit`.
 
@@ -22,8 +24,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 
 ### Parameters
-* `model` :  Choice between different CSA models. Currently implemented are two parametrizations of the circuit from [@kleczek], `simple` and `csa`.
-* `feedback_capacitance` :  The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
+* `model` : Choice between different CSA models. Currently implemented are two parametrizations of the circuit from [@kleczek], `simple` and `csa`, and the `custom` model for a custom impulse response.
 * `integration_time` : The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
@@ -32,15 +33,21 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold (ToT) clock. If set, the output charge is delivered as time over threshold in units of ToT clock cycles, otherwise the pulse integral is stored instead.
 
 #### Parameters for the simplified model
+* `feedback_capacitance` : The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `rise_time_constant` : Rise time constant of CSA output. Defaults to 1 ns.
 * `feedback_time_constant` : Feedback time constant of CSA output. Defaults to 10 ns.
 
 #### Parameters for the CSA model
+* `feedback_capacitance` : The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `krummenacher_current` : The feedback current setting of the CSA. Defaults to 20 nA.
 * `detector_capacitance` : The detector capacitance. Defaults to 100 e-15 F.
 * `amp_output_capacitance` : The capacitance at the amplifier output. Defaults to 20 e-15 F.
 * `transconductance` : The transconductance of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
 * `temperature` : Defaults to 293.15K.
+
+#### Parameters for the custom model
+* `response_function` : A 1-dimensional [`ROOT::TFormula`](https://root.cern.ch/doc/master/classTFormula.html) expression for the impulse response function.
+* `response_parameters` : Array of the parameters in the response function. The number of parameters given need to match up with the number of parameters in the formula.
 
 ### Plotting parameters
 * `output_plots` : Enables simple output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
@@ -50,7 +57,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 
 ### Usage
-Two examples how to use this module:
+Example how to use the `csa` model in this module:
 
 ```ini
 [CSADigitizer]
@@ -66,8 +73,7 @@ threshold = 10e-3V
 sigma_noise = 0.1e-3V
 ```
 
-
-
+Example for the `simple` model:
 ```ini
 [CSADigitizer]
 model = "simple"
@@ -80,7 +86,17 @@ clock_bin_toa = 1.5625ns
 clock_bin_tot = 25.0ns
 ```
 
-
+Example for the `custom` model using a parametrisation of the MuPix10:
+```ini
+[CSADigitizer]
+model = "custom"
+response_function = "TMath::Max([0]*(1.-TMath::Exp(-x/[1]))-[2]*x,0.)"
+response_parameters = [2.6e14V/C, 9.1e1ns, 4.2e19V/C/s]
+integration_time = 10us
+threshold = 60mV
+clock_bin_toa = 8ns
+clock_bin_tot = 8ns
+```
 
 [@kleczek]:  https://doi.org/10.1109/MIXDES.2015.7208529
 [@binkley]: https://doi.org/10.1002/9780470033715.index

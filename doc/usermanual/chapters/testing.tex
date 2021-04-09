@@ -101,8 +101,8 @@ It is configured via the \file{.gitlab-ci.yml} file in the repository's root dir
 \end{figure}
 
 The \textbf{compilation} stage builds the framework from the source on different platforms.
-Currently, builds are performed on Scientific Linux 6, CentOS7, and Mac OS X.
-On Linux type platforms, the framework is compiled with recent versions of GCC and Clang, while the latest AppleClang is used on Mac OS X.
+Currently, builds are performed on CentOS\,7, CentOS\,8, and macOS.
+On Linux type platforms, the framework is compiled with recent versions of GCC and Clang, while the latest AppleClang is used on macOS.
 The build is always performed with the default compiler flags enabled for the project:
 \begin{verbatim}
     -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wconversion
@@ -160,7 +160,7 @@ New versions are published to the folder \dir{/cvmfs/clicdp.cern.ch/software/all
 
 The deployed version currently comprises all modules as well as the detector models shipped with the framework.
 An additional \file{setup.sh} is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary for executing this version.
-Versions both for SLC\,6 and CentOS\,7 are provided.
+Versions both for CentOS\,7 and CentOS\,8 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner.
 Job artifacts from the packaging stage of the CI are downloaded via their ID using the script found in \dir{.gitlab/ci/download_artifacts.py}, and are made available to the \emph{cvclicdp} user which has access to the CVMFS interface.
@@ -196,7 +196,7 @@ Tagged versions can be found via their respective tag name, while updates via th
 
 The final Docker image is formed from three consecutive images with different layers of software added.
 The `base` image contains all build dependencies such as compilers, CMake, and git.
-It derives from a CentOS7 Docker image and can be build using the \file{etc/docker/Dockerfile.base} file via the following commands:
+It derives from a CentOS\,7 Docker image and can be build using the \file{etc/docker/Dockerfile.base} file via the following commands:
 
 \begin{verbatim}
 # Log into the CERN GitLab Docker registry:
@@ -272,8 +272,8 @@ Different tags are provided for Mac OS X since the \CPP standard does not define
 Thus, the distributions produce different results on different platforms even when used with the same random number as input.
 
 \begin{description}
-  \item[Passing a test] The expression marked with the tag \parameter{#PASS}/\parameter{#PASSOSX} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
-  \item[Failing a test] If the expression tagged with \parameter{#FAIL}/\parameter{#FAILOSX} is found in the output, the test fails. If the expression is not found, the test passes.
+  \item[Passing a test] The expression marked with the tag \parameter{#PASS} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
+  \item[Failing a test] If the expression tagged with \parameter{#FAIL} is found in the output, the test fails. If the expression is not found, the test passes.
   \item[Depending on another test] The tag \parameter{#DEPENDS} can be used to indicate dependencies between tests. For example, the module test 09 described below implements such a dependency as it uses the output of module test 08-1 to read data from a previously produced \apsq data file.
   \item[Defining a timeout] For performance tests the runtime of the application is monitored, and the test fails if it exceeds the number of seconds defined using the \parameter{#TIMEOUT} tag.
   \item[Adding additional CLI options] Additional module command line options can be specified for the \parameter{allpix} executable using the \parameter{#OPTION} tag, following the format found in Section~\ref{sec:allpix_executable}. The \parameter{-o} flag will be added automatically. Multiple options can be supplied by repeating the \parameter{#OPTION} tag in the configuration file, only one option per tag is allowed. In exactly the same way options for the detectors can be set as well using the \parameter{#DETOPION} tag, where \parameter{-g} will be added automatically.

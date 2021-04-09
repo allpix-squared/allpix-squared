@@ -9,6 +9,7 @@
 
 #include "DefaultDigitizerModule.hpp"
 
+#include "core/utils/distributions.h"
 #include "core/utils/unit.h"
 #include "objects/PixelHit.hpp"
 #include "tools/ROOT.h"
@@ -60,26 +61,52 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_timescale", Units::get(300, "ns"));
     config_.setDefault<int>("output_plots_bins", 100);
+
+    // Cache config parameters
+    output_plots_ = config_.get<bool>("output_plots");
+
+    electronics_noise_ = config_.get<unsigned int>("electronics_noise");
+    gain_ = config_.get<double>("gain");
+    gain_smearing_ = config_.get<double>("gain_smearing");
+
+    saturation_ = config_.get<bool>("saturation");
+    saturation_mean_ = config_.get<unsigned int>("saturation_mean");
+    saturation_width_ = config_.get<unsigned int>("saturation_width");
+
+    threshold_ = config_.get<unsigned int>("threshold");
+    threshold_smearing_ = config_.get<unsigned int>("threshold_smearing");
+
+    qdc_resolution_ = config_.get<int>("qdc_resolution");
+    qdc_smearing_ = config_.get<unsigned int>("qdc_smearing");
+    qdc_offset_ = config_.get<double>("qdc_offset");
+    qdc_slope_ = config_.get<double>("qdc_slope");
+    allow_zero_qdc_ = config_.get<bool>("allow_zero_qdc");
+
+    tdc_resolution_ = config_.get<int>("tdc_resolution");
+    tdc_smearing_ = config_.get<unsigned int>("tdc_smearing");
+    tdc_offset_ = config_.get<double>("tdc_offset");
+    tdc_slope_ = config_.get<double>("tdc_slope");
+    allow_zero_tdc_ = config_.get<bool>("allow_zero_tdc");
 }
 
 void DefaultDigitizerModule::initialize() {
     // Conversion to ADC units requested:
-    if(config_.get<int>("qdc_resolution") > 31) {
+    if(qdc_resolution_ > 31) {
         throw InvalidValueError(config_, "qdc_resolution", "precision higher than 31bit is not possible");
     }
-    if(config_.get<int>("tdc_resolution") > 31) {
+    if(tdc_resolution_ > 31) {
         throw InvalidValueError(config_, "tdc_resolution", "precision higher than 31bit is not possible");
     }
-    if(config_.get<int>("qdc_resolution") > 0) {
-        LOG(INFO) << "Converting charge to QDC units, QDC resolution: " << config_.get<int>("qdc_resolution")
-                  << "bit, max. value " << ((1 << config_.get<int>("qdc_resolution")) - 1);
+    if(qdc_resolution_ > 0) {
+        LOG(INFO) << "Converting charge to QDC units, QDC resolution: " << qdc_resolution_ << "bit, max. value "
+                  << ((1 << qdc_resolution_) - 1);
     }
-    if(config_.get<int>("tdc_resolution") > 0) {
-        LOG(INFO) << "Converting time to TDC units, TDC resolution: " << config_.get<int>("tdc_resolution")
-                  << "bit, max. value " << ((1 << config_.get<int>("tdc_resolution")) - 1);
+    if(tdc_resolution_ > 0) {
+        LOG(INFO) << "Converting time to TDC units, TDC resolution: " << tdc_resolution_ << "bit, max. value "
+                  << ((1 << tdc_resolution_) - 1);
     }
 
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
@@ -100,11 +127,11 @@ void DefaultDigitizerModule::initialize() {
             "pixelcharge_threshold", "pixel charge above threshold;pixel charge [ke];pixels", nbins, 0, maximum);
 
         // Create final pixel charge plot with different axis, depending on whether ADC simulation is enabled or not
-        if(config_.get<int>("qdc_resolution") > 0) {
+        if(qdc_resolution_ > 0) {
             h_pxq_adc_smear = CreateHistogram<TH1D>(
                 "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
-            int adcbins = (1 << config_.get<int>("qdc_resolution"));
+            int adcbins = (1 << qdc_resolution_);
             h_pxq_adc = CreateHistogram<TH1D>(
                 "pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
             h_calibration =
@@ -125,14 +152,14 @@ void DefaultDigitizerModule::initialize() {
         h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
-        if(config_.get<int>("tdc_resolution") > 0) {
+        if(tdc_resolution_ > 0) {
             h_px_tdc_smear = CreateHistogram<TH1D>("pixel_tdc_smeared",
                                                    "pixel time-of-arrival after TDC smearing;pixel ToA [ns];pixels",
                                                    nbins,
                                                    0,
                                                    time_maximum);
 
-            int adcbins = (1 << config_.get<int>("tdc_resolution"));
+            int adcbins = (1 << tdc_resolution_);
             h_px_tdc = CreateHistogram<TH1D>(
                 "pixel_tdc", "pixel time-of-arrival after TDC;pixel ToA [TDC];pixels", adcbins, 0, adcbins);
             h_toa_calibration = CreateHistogram<TH2D>(
@@ -162,37 +189,36 @@ void DefaultDigitizerModule::run(Event* event) {
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
 
         LOG(DEBUG) << "Received pixel " << pixel_index << ", (absolute) charge " << Units::display(charge, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq->Fill(charge / 1e3);
         }
 
         // Add electronics noise from Gaussian:
-        std::normal_distribution<double> el_noise(0, config_.get<unsigned int>("electronics_noise"));
+        allpix::normal_distribution<double> el_noise(0, electronics_noise_);
         charge += el_noise(event->getRandomEngine());
 
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq_noise->Fill(charge / 1e3);
         }
 
         // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
-        std::normal_distribution<double> gain_smearing(config_.get<double>("gain"), config_.get<double>("gain_smearing"));
+        allpix::normal_distribution<double> gain_smearing(gain_, gain_smearing_);
         double gain = gain_smearing(event->getRandomEngine());
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_gain->Fill(gain);
         }
 
         // Apply the gain to the charge:
         charge *= gain;
         LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq_gain->Fill(charge / 1e3);
         }
 
         // Simulate simple front-end saturation if enabled:
-        if(config_.get<bool>("saturation")) {
-            std::normal_distribution<double> saturation_smearing(config_.get<unsigned int>("saturation_mean"),
-                                                                 config_.get<unsigned int>("saturation_width"));
+        if(saturation_) {
+            allpix::normal_distribution<double> saturation_smearing(saturation_mean_, saturation_width_);
             auto saturation = saturation_smearing(event->getRandomEngine());
             if(charge > saturation) {
                 LOG(DEBUG) << "Above front-end saturation, " << Units::display(charge, {"e", "ke"}) << " > "
@@ -201,15 +227,14 @@ void DefaultDigitizerModule::run(Event* event) {
             }
         }
 
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq_sat->Fill(charge / 1e3);
         }
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
-        std::normal_distribution<double> thr_smearing(config_.get<unsigned int>("threshold"),
-                                                      config_.get<unsigned int>("threshold_smearing"));
+        allpix::normal_distribution<double> thr_smearing(threshold_, threshold_smearing_);
         double threshold = thr_smearing(event->getRandomEngine());
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_thr->Fill(threshold / 1e3);
         }
 
@@ -221,69 +246,67 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         LOG(DEBUG) << "Passed threshold: " << Units::display(charge, "e") << " > " << Units::display(threshold, "e");
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_pxq_thr->Fill(charge / 1e3);
         }
 
         // Simulate QDC if resolution set to more than 0bit
-        if(config_.get<int>("qdc_resolution") > 0) {
+        if(qdc_resolution_ > 0) {
             // temporarily store old charge for histogramming:
             auto original_charge = charge;
 
             // Add ADC smearing:
-            std::normal_distribution<double> adc_smearing(0, config_.get<unsigned int>("qdc_smearing"));
+            allpix::normal_distribution<double> adc_smearing(0, qdc_smearing_);
             charge += adc_smearing(event->getRandomEngine());
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 h_pxq_adc_smear->Fill(charge / 1e3);
             }
             LOG(DEBUG) << "Smeared for simulating limited QDC sensitivity: " << Units::display(charge, "e");
 
             // Convert to ADC units and precision, make sure ADC count is at least 1:
-            charge = static_cast<double>(std::max(
-                std::min(static_cast<int>((config_.get<double>("qdc_offset") + charge) / config_.get<double>("qdc_slope")),
-                         (1 << config_.get<int>("qdc_resolution")) - 1),
-                (config_.get<bool>("allow_zero_qdc") ? 0 : 1)));
+            charge = static_cast<double>(
+                std::max(std::min(static_cast<int>((qdc_offset_ + charge) / qdc_slope_), (1 << qdc_resolution_) - 1),
+                         (allow_zero_qdc_ ? 0 : 1)));
             LOG(DEBUG) << "Charge converted to QDC units: " << charge;
 
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 h_calibration->Fill(original_charge / 1e3, charge);
                 h_pxq_adc->Fill(charge);
             }
-        } else if(config_.get<bool>("output_plots")) {
+        } else if(output_plots_) {
             h_pxq_adc->Fill(charge / 1e3);
         }
 
         auto time = time_of_arrival(pixel_charge, threshold);
         LOG(DEBUG) << "Local time of arrival: " << Units::display(time, {"ns", "ps"});
-        if(config_.get<bool>("output_plots")) {
+        if(output_plots_) {
             h_px_toa->Fill(time);
         }
 
         // Simulate TDC if resolution set to more than 0bit
-        if(config_.get<int>("tdc_resolution") > 0) {
+        if(tdc_resolution_ > 0) {
             // temporarily store full arrival time for histogramming:
             auto original_time = time;
 
             // Add TDC smearing:
-            std::normal_distribution<double> tdc_smearing(0, config_.get<unsigned int>("tdc_smearing"));
+            allpix::normal_distribution<double> tdc_smearing(0, tdc_smearing_);
             time += tdc_smearing(event->getRandomEngine());
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 h_px_tdc_smear->Fill(time);
             }
             LOG(DEBUG) << "Smeared for simulating limited TDC sensitivity: " << Units::display(time, {"ns", "ps"});
 
             // Convert to TDC units and precision, make sure TDC count is at least 1:
-            time = static_cast<double>(std::max(
-                std::min(static_cast<int>((config_.get<double>("tdc_offset") + time) / config_.get<double>("tdc_slope")),
-                         (1 << config_.get<int>("tdc_resolution")) - 1),
-                (config_.get<bool>("allow_zero_tdc") ? 0 : 1)));
+            time = static_cast<double>(
+                std::max(std::min(static_cast<int>((tdc_offset_ + time) / tdc_slope_), (1 << tdc_resolution_) - 1),
+                         (allow_zero_tdc_ ? 0 : 1)));
             LOG(DEBUG) << "Time converted to TDC units: " << time;
 
-            if(config_.get<bool>("output_plots")) {
+            if(output_plots_) {
                 h_toa_calibration->Fill(original_time, time);
                 h_px_tdc->Fill(time);
             }
-        } else if(config_.get<bool>("output_plots")) {
+        } else if(output_plots_) {
             h_px_tdc->Fill(time);
         }
 
@@ -324,7 +347,7 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
 }
 
 void DefaultDigitizerModule::finalize() {
-    if(config_.get<bool>("output_plots")) {
+    if(output_plots_) {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
 
@@ -338,14 +361,14 @@ void DefaultDigitizerModule::finalize() {
         h_pxq_thr->Write();
 
         h_pxq_adc->Write();
-        if(config_.get<int>("qdc_resolution") > 0) {
+        if(qdc_resolution_ > 0) {
             h_pxq_adc_smear->Write();
             h_calibration->Write();
         }
 
         // Time plots
         h_px_toa->Write();
-        if(config_.get<int>("tdc_resolution") > 0) {
+        if(tdc_resolution_ > 0) {
             h_px_tdc_smear->Write();
             h_toa_calibration->Write();
         }

@@ -9,8 +9,9 @@ RUN yum makecache fast && \
     centos-release-scl \
     scl-utils \
     xerces-c xerces-c-devel \
-    qt qt-devel \
+    qt5-qtbase-devel qt5-qt3d-devel qt5-qtbase-gui \
     eigen3-devel \
+    boost169-devel boost169-random \
     openssl-devel pcre-devel \
     libpqxx libpqxx-devel \
     fftw-devel cfitsio-devel graphviz-devel \

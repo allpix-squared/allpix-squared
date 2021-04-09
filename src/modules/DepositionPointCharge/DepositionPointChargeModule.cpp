@@ -15,6 +15,7 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
@@ -61,6 +62,14 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     } else {
         throw InvalidValueError(
             config_, "model", "Invalid deposition model, only 'fixed', 'scan' and 'spot' are supported.");
+    }
+
+    // Read position
+    if(config_.getArray<double>("position").size() == 2) {
+        auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
+        position_ = ROOT::Math::XYZVector(tmp_pos.x(), tmp_pos.y(), 0);
+    } else {
+        position_ = config_.get<ROOT::Math::XYZVector>("position");
     }
 }
 
@@ -117,22 +126,13 @@ void DepositionPointChargeModule::run(Event* event) {
     ROOT::Math::XYZPoint position;
     auto model = detector_->getModel();
 
-    auto get_position = [&]() {
-        if(config_.getArray<double>("position").size() == 2) {
-            auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
-            return ROOT::Math::XYZPoint(tmp_pos.x(), tmp_pos.y(), 0);
-        } else {
-            return config_.get<ROOT::Math::XYZPoint>("position");
-        }
-    };
-
     if(model_ == DepositionModel::FIXED) {
         // Fixed position as read from the configuration:
-        position = get_position();
+        position = position_;
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
-        auto ref = config_.get<ROOT::Math::XYZVector>("position") + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+        auto ref = position_ + model->getGridSize() / 2.0 + voxel_ / 2.0 -
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
@@ -143,14 +143,14 @@ void DepositionPointChargeModule::run(Event* event) {
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
-            double dx = std::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dy = std::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dz = std::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
             return ROOT::Math::XYZVector(dx, dy, dz);
         };
 
         // Spot around the configured position
-        position = get_position() + shift(config_.get<double>("spot_size"));
+        position = position_ + shift(spot_size_);
     }
 
     // Create charge carriers at requested position

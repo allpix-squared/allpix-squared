@@ -80,14 +80,14 @@ namespace allpix {
         std::map<std::string, sensor_data> sensors_;
 
         // Relevant information for the Event tree
-        ULong64_t timestamp_;
-        ULong64_t frame_number_;
-        ULong64_t trigger_time_;
-        Int_t trigger_offset_;
-        Int_t trigger_info_;
-        Bool_t invalid_;
+        ULong64_t timestamp_{};
+        ULong64_t frame_number_{};
+        ULong64_t trigger_time_{};
+        Int_t trigger_offset_{};
+        Int_t trigger_info_{};
+        Bool_t invalid_{};
         // The Event tree
-        TTree* event_tree_; // no unique_ptr, ROOT takes ownership
+        TTree* event_tree_{}; // no unique_ptr, ROOT takes ownership
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;

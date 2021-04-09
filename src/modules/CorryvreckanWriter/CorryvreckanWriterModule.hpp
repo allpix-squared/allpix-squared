@@ -68,9 +68,9 @@ namespace allpix {
         std::string fileName_;               // Output filename
         std::string geometryFileName_;       // Output geometry filename
         std::unique_ptr<TFile> output_file_; // Output file
-        double time_;                        // Event time being written
-        bool output_mc_truth_;               // Decision to write out MC
-        bool timing_global_;                 // Decision to write global or local timestamps
+        double time_{};                      // Event time being written
+        bool output_mc_truth_{};             // Decision to write out MC
+        bool timing_global_{};               // Decision to write global or local timestamps
 
         std::string reference_;
         std::vector<std::string> dut_;

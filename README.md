@@ -14,6 +14,7 @@ For more details about the project please have a look at the website at https://
 
 ## Dependencies
 * [ROOT](https://root.cern.ch/building-root) (required, with the GenVector component)
+* [Boost.Random](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_random/reference.html) (required, version >= 1.64.0)
 * [Geant4](http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/html/installguide.html) (optional, but required for typical purposes, multithreading capabilities should be enabled)
 * [Eigen3](http://eigen.tuxfamily.org/index.php?title=Main_Page) (optional, but required for typical purposes)
 
@@ -113,6 +114,7 @@ The following authors, in alphabetical order, have contributed to Allpix<sup>2</
 * Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC18 Student, @tmplt
+* Reem Taibah, Université de Paris, @retaibah
 * Ondrej Theiner, Charles University, @otheiner
 * Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
