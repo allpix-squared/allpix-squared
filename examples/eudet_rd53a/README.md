@@ -1,7 +1,7 @@
 # EUDET RD53a Simulation Example
 
 This example is similar to the EUDET-type telescope example but with extra DUTs added to match the DESY testbeam setup with RD53a modules.
-The setup consists six telescope planes of MIMOSA26-type (EUDET beam telescope), two RD53a modules centered in between the telescope arms:
+The setup consists of six telescope planes of MIMOSA26-type (EUDET beam telescope) and two RD53a modules centered in between the telescope arms:
 DUT0 defined with 50x50um^2 pitch and DUT1 defined with 20x100um^2 pitch.
 Furthermore, one FEI4 reference plane as the last plane as in real testbeam setup.
 
