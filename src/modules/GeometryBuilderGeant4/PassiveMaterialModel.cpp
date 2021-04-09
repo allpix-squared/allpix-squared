@@ -22,6 +22,7 @@
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
 
+#include "MaterialManager.hpp"
 #include "PassiveMaterialModel.hpp"
 #include "passive_models/BoxModel.hpp"
 #include "passive_models/CylinderModel.hpp"
@@ -64,8 +65,7 @@ PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager
     LOG(DEBUG) << "Registered volume.";
 }
 
-void PassiveMaterialModel::buildVolume(const std::map<std::string, G4Material*>& materials,
-                                       const std::shared_ptr<G4LogicalVolume>& world_log) {
+void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& world_log) {
 
     LOG(TRACE) << "Building passive material: " << getName();
     G4LogicalVolume* mother_log_volume = nullptr;
@@ -83,31 +83,34 @@ void PassiveMaterialModel::buildVolume(const std::map<std::string, G4Material*>&
     G4ThreeVector position_vector = toG4Vector(position_);
     G4Transform3D transform_phys(*rotation_, position_vector);
 
+    auto& materials = Materials::getInstance();
     auto material = config_.get<std::string>("material");
-    std::transform(material.begin(), material.end(), material.begin(), ::tolower);
-    if(materials.find(material) == materials.end()) {
-        throw InvalidValueError(config_, "material", "material does not exists");
+    G4Material* g4material = nullptr;
+    try {
+        g4material = materials.get(material);
+    } catch(ModuleError& e) {
+        throw InvalidValueError(config_, "material", e.what());
     }
 
     LOG(TRACE) << "Creating Geant4 model for '" << getName() << "' of type '" << config_.get<std::string>("type") << "'";
-    LOG(TRACE) << " -Material\t\t:\t " << material << "( " << materials.at(material)->GetName() << " )";
+    LOG(TRACE) << " -Material\t\t:\t " << material << "( " << g4material->GetName() << " )";
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
     auto solid = getSolid();
 
     // Place the logical volume of the passive material
-    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), materials.at(material), getName() + "_log");
+    auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), g4material, getName() + "_log");
     geo_manager_->setExternalObject(getName(), "passive_material_log", log_volume);
 
     // Set VisAttribute to invisible if material is equal to the material of its mother volume
-    if(materials.at(material) == mother_log_volume->GetMaterial()) {
+    if(g4material == mother_log_volume->GetMaterial()) {
         LOG(WARNING) << "Material of passive material " << getName()
                      << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
         log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
     }
     // Set VisAttribute to white if material = world_material
-    else if(materials.at(material) == materials.at("world_material")) {
+    else if(g4material == materials.get("world_material")) {
         auto* white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.4));
         log_volume->SetVisAttributes(white_vol);
     }

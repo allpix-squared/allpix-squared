@@ -9,6 +9,7 @@
  */
 
 #include "GeometryConstructionG4.hpp"
+#include "MaterialManager.hpp"
 
 #include <memory>
 #include <string>
@@ -54,19 +55,20 @@ GeometryConstructionG4::GeometryConstructionG4(GeometryManager* geo_manager, Con
  */
 G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Initialize materials
-    init_materials();
+    auto& materials = Materials::getInstance();
 
     // Set world material
+    G4Material* g4material_world = nullptr;
     auto world_material = config_.get<std::string>("world_material", "air");
-    std::transform(world_material.begin(), world_material.end(), world_material.begin(), ::tolower);
-    if(materials_.find(world_material) == materials_.end()) {
-        throw InvalidValueError(config_, "world_material", "material does not exists, use 'air' or 'vacuum'");
+    try {
+        g4material_world = materials.get(world_material);
+    } catch(ModuleError& e) {
+        throw InvalidValueError(config_, "world_material", e.what());
     }
 
-    world_material_ = materials_[world_material];
-    // Add world_material to the list of materials to be called from other modules
-    materials_["world_material"] = world_material_;
-    LOG(TRACE) << "Material of world is " << world_material_->GetName();
+    // Register the world material for others as reference:
+    materials.set("world_material", g4material_world);
+    LOG(TRACE) << "Material of world is " << g4material_world->GetName();
 
     // Calculate world size
     ROOT::Math::XYZVector half_world_size;
@@ -100,7 +102,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Build the world
     auto world_box = std::make_shared<G4Box>("World", half_world_size.x(), half_world_size.y(), half_world_size.z());
     solids_.push_back(world_box);
-    world_log_ = std::make_shared<G4LogicalVolume>(world_box.get(), world_material_, "World_log", nullptr, nullptr, nullptr);
+    world_log_ =
+        std::make_shared<G4LogicalVolume>(world_box.get(), g4material_world, "World_log", nullptr, nullptr, nullptr);
 
     // Set the world to invisible in the viewer
     world_log_->SetVisAttributes(G4VisAttributes::GetInvisible());
@@ -111,120 +114,13 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
         std::make_unique<G4PVPlacement>(nullptr, G4ThreeVector(0., 0., 0.), world_log_.get(), "World", nullptr, false, 0);
 
     // Build all the geometries that have been added to the GeometryBuilder vector, including Detectors and Target
-    passive_builder_->buildVolumes(materials_, world_log_);
-    detector_builder_->build(materials_, world_log_);
+    passive_builder_->buildVolumes(world_log_);
+    detector_builder_->build(world_log_);
 
     // Check for overlaps:
     check_overlaps();
 
     return world_phys_.get();
-}
-
-/**
- * Initializes all the internal materials. The following materials are supported by this module:
- * - Materials listed by Geant4:
- *   - air
- *   - aluminum
- *   - beryllium
- *   - copper
- *   - kapton
- *   - lead
- *   - lithium
- *   - plexiglass
- *   - silicon
- *   - tungsten
- * - Composite or custom materials:
- *   - carbon fiber
- *   - epoxy
- *   - fused silica
- *   - PCB G-10
- *   - solder
- *   - paper
- *   - polystyrene
- *   - ppo foam
- *   - vacuum
- */
-void GeometryConstructionG4::init_materials() {
-    G4NistManager* nistman = G4NistManager::Instance();
-
-    // Build table of materials from database
-    materials_["air"] = nistman->FindOrBuildMaterial("G4_AIR");
-    materials_["aluminum"] = nistman->FindOrBuildMaterial("G4_Al");
-    materials_["beryllium"] = nistman->FindOrBuildMaterial("G4_Be");
-    materials_["copper"] = nistman->FindOrBuildMaterial("G4_Cu");
-    materials_["kapton"] = nistman->FindOrBuildMaterial("G4_KAPTON");
-    materials_["lead"] = nistman->FindOrBuildMaterial("G4_Pb");
-    materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
-    materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
-    materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
-    materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
-
-    // Create required elements:
-    auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
-    auto* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
-    auto* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
-    auto* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
-    auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
-    auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
-    auto* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
-
-    // Create Epoxy material
-    auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
-    Epoxy->AddElement(H, 44);
-    Epoxy->AddElement(C, 15);
-    Epoxy->AddElement(O, 7);
-    materials_["epoxy"] = Epoxy;
-
-    // Create Carbon Fiber material:
-    auto* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
-    CarbonFiber->AddMaterial(Epoxy, 0.4);
-    CarbonFiber->AddElement(C, 0.6);
-    materials_["carbonfiber"] = CarbonFiber;
-
-    auto* FusedSilica = new G4Material("FusedSilica", 2.2 * CLHEP::g / CLHEP::cm3, 2);
-    FusedSilica->AddElement(O, 0.53);
-    FusedSilica->AddElement(Si, 0.47);
-    materials_["fusedsilica"] = FusedSilica;
-
-    // Create PCB G-10 material
-    auto* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
-    GTen->AddMaterial(nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE"), 0.773);
-    GTen->AddMaterial(Epoxy, 0.147);
-    GTen->AddElement(Cl, 0.08);
-    materials_["g10"] = GTen;
-
-    // Create solder material
-    auto* Solder = new G4Material("Solder", 8.4 * CLHEP::g / CLHEP::cm3, 2);
-    Solder->AddElement(Sn, 0.63);
-    Solder->AddElement(Pb, 0.37);
-    materials_["solder"] = Solder;
-
-    // Create paper material (cellulose C6H10O5)
-    auto* Paper = new G4Material("Paper", 0.8 * CLHEP::g / CLHEP::cm3, 3);
-    Paper->AddElement(C, 6);
-    Paper->AddElement(O, 5);
-    Paper->AddElement(H, 10);
-    materials_["paper"] = Paper;
-
-    // Create polystyrene [(C6H5CHCH2)n]
-    // https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/polystyrene.html
-    auto* Polystyrene = new G4Material("Polystyrene", 1.06 * CLHEP::g / CLHEP::cm3, 2);
-    Polystyrene->AddElement(C, 8);
-    Polystyrene->AddElement(H, 8);
-    materials_["polystyrene"] = Polystyrene;
-
-    // Create PPO foam [(C8H8O)n]
-    // https://en.wikipedia.org/wiki/Poly(p-phenylene_oxide)
-    // (approximate) material for Dortmund Cold Box (DOBOX) used in
-    // ATLAS ITk Pixels testbeams
-    auto* PPOFoam = new G4Material("PPOFoam", 0.05 * CLHEP::g / CLHEP::cm3, 3);
-    PPOFoam->AddElement(C, 8);
-    PPOFoam->AddElement(H, 8);
-    PPOFoam->AddElement(O, 1);
-    materials_["ppofoam"] = PPOFoam;
-
-    // Add vacuum
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 }
 
 void GeometryConstructionG4::check_overlaps() {
