@@ -63,10 +63,11 @@ namespace allpix {
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Config parameters: Check whether plots should be generated
+        // Config parameters
         bool output_plots_;
         double integration_time_{};
         bool diffuse_deposit_;
+        unsigned int charge_per_step_{};
 
         // Carrier type to be propagated
         CarrierType propagate_type_;

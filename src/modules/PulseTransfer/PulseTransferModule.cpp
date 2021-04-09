@@ -38,6 +38,8 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
     timestep_ = config_.get<double>("timestep");
+    max_depth_distance_ = config_.get<double>("max_depth_distance");
+    collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -106,7 +108,7 @@ void PulseTransferModule::run(Event* event) {
 
             // Ignore if outside depth range of implant
             if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
-               config_.get<double>("max_depth_distance")) {
+               max_depth_distance_) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their local position is not in implant range";
@@ -126,7 +128,7 @@ void PulseTransferModule::run(Event* event) {
             }
 
             // Ignore if outside the implant region:
-            if(config_.get<bool>("collect_from_implant")) {
+            if(collect_from_implant_) {
                 if(detector_->getElectricFieldType() == FieldType::LINEAR) {
                     throw ModuleError(
                         "Charge collection from implant region should not be used with linear electric fields.");

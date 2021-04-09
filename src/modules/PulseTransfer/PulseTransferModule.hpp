@@ -66,6 +66,9 @@ namespace allpix {
         // General module members
         std::shared_ptr<Detector> detector_;
 
+        double max_depth_distance_{};
+        bool collect_from_implant_{};
+
         // Output histograms
         Histogram<TH1D> h_total_induced_charge_, h_induced_pixel_charge_;
         Histogram<TH2D> h_induced_pulses_, h_integrated_pulses_;

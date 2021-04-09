@@ -63,6 +63,14 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
         throw InvalidValueError(
             config_, "model", "Invalid deposition model, only 'fixed', 'scan' and 'spot' are supported.");
     }
+
+    // Read position
+    if(config_.getArray<double>("position").size() == 2) {
+        auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
+        position_ = ROOT::Math::XYZVector(tmp_pos.x(), tmp_pos.y(), 0);
+    } else {
+        position_ = config_.get<ROOT::Math::XYZVector>("position");
+    }
 }
 
 void DepositionPointChargeModule::initialize() {
@@ -118,22 +126,13 @@ void DepositionPointChargeModule::run(Event* event) {
     ROOT::Math::XYZPoint position;
     auto model = detector_->getModel();
 
-    auto get_position = [&]() {
-        if(config_.getArray<double>("position").size() == 2) {
-            auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
-            return ROOT::Math::XYZPoint(tmp_pos.x(), tmp_pos.y(), 0);
-        } else {
-            return config_.get<ROOT::Math::XYZPoint>("position");
-        }
-    };
-
     if(model_ == DepositionModel::FIXED) {
         // Fixed position as read from the configuration:
-        position = get_position();
+        position = position_;
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
-        auto ref = config_.get<ROOT::Math::XYZVector>("position") + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+        auto ref = position_ + model->getGridSize() / 2.0 + voxel_ / 2.0 -
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << ref;
@@ -151,7 +150,7 @@ void DepositionPointChargeModule::run(Event* event) {
         };
 
         // Spot around the configured position
-        position = get_position() + shift(config_.get<double>("spot_size"));
+        position = position_ + shift(spot_size_);
     }
 
     // Create charge carriers at requested position

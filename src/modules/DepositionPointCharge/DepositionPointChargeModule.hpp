@@ -82,5 +82,6 @@ namespace allpix {
         ROOT::Math::XYZVector voxel_;
         double step_size_z_{};
         unsigned int root_{}, carriers_{};
+        ROOT::Math::XYZVector position_{};
     };
 } // namespace allpix

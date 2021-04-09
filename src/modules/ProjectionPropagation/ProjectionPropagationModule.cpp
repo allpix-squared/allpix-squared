@@ -44,6 +44,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
+    charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Set default for charge carrier propagation:
@@ -168,7 +169,7 @@ void ProjectionPropagationModule::run(Event* event) {
         unsigned int charges_remaining = deposit.getCharge();
         total_charge += charges_remaining;
 
-        auto charge_per_step = config_.get<unsigned int>("charge_per_step");
+        auto charge_per_step = charge_per_step_;
         while(charges_remaining > 0) {
             if(charge_per_step > charges_remaining) {
                 charge_per_step = charges_remaining;
