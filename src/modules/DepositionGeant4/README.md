@@ -139,7 +139,7 @@ beam_direction = 0 0 1
 number_of_particles = 1
 ```
 
-[@g4physicslists]: http://geant4.cern.ch/support/proc_mod_catalog/physics_lists/referencePL.shtml
+[@g4physicslists]: https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsListGuide/html/index.html
 [@g4particles]: http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
 [@g4radioactive]: https://doi.org/10.1109/TNS.2013.2270894
 [@g4gps]:  http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/html/GettingStarted/generalParticleSource.html
