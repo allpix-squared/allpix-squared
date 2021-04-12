@@ -132,6 +132,17 @@ fmt:cc7-llvm-lint:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-lint
 
+fmt:cmake-lint:
+    extends: .format
+    needs: []
+    dependencies: []
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source .ci/init_x86_64.sh
+        - export PATH=$PATH:/home/sftnight/.local/bin
+    script:
+        - pip install --trusted-host=pypi.org --user cmakelang
+        - cmake-lint `find . -name "CMakeLists.txt"` `find cmake/ \( -name "*.cmake" ! -name "LATEX.cmake" ! -name "PANDOC.cmake" ! -name "FindPQXX.cmake" ! -name "CodeCoverage.cmake" \)`
 
 fmt:coverage:
     extends: .format

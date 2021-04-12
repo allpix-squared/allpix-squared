@@ -68,59 +68,53 @@
 #      make my_coverage_target
 #
 
-include(CMakeParseArguments)
+INCLUDE(CMakeParseArguments)
 
 # Check prereqs
-find_program( GCOV_PATH gcov )
-find_program( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
-find_program( SIMPLE_PYTHON_EXECUTABLE python )
+FIND_PROGRAM(GCOV_PATH gcov)
+FIND_PROGRAM(GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
+FIND_PROGRAM(SIMPLE_PYTHON_EXECUTABLE python)
 
-if(NOT GCOV_PATH)
-    message(FATAL_ERROR "gcov not found! Aborting...")
-endif() # NOT GCOV_PATH
+IF(NOT GCOV_PATH)
+    MESSAGE(FATAL_ERROR "gcov not found! Aborting...")
+ENDIF() # NOT GCOV_PATH
 
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-    if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
-        message(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
-    endif()
-elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
-    message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
-endif()
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+    IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
+        MESSAGE(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
+    ENDIF()
+ELSEIF(NOT CMAKE_COMPILER_IS_GNUCXX)
+    MESSAGE(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
+ENDIF()
 
-set(COVERAGE_COMPILER_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
+SET(COVERAGE_COMPILER_FLAGS
+    "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
     CACHE INTERNAL "")
 
-set(CMAKE_CXX_FLAGS_COVERAGE
+SET(CMAKE_CXX_FLAGS_COVERAGE
     ${COVERAGE_COMPILER_FLAGS}
-    CACHE STRING "Flags used by the C++ compiler during coverage builds."
-    FORCE )
-set(CMAKE_C_FLAGS_COVERAGE
+    CACHE STRING "Flags used by the C++ compiler during coverage builds." FORCE)
+SET(CMAKE_C_FLAGS_COVERAGE
     ${COVERAGE_COMPILER_FLAGS}
-    CACHE STRING "Flags used by the C compiler during coverage builds."
-    FORCE )
-set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    CACHE STRING "Flags used by the C compiler during coverage builds." FORCE)
+SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
     ""
-    CACHE STRING "Flags used for linking binaries during coverage builds."
-    FORCE )
-set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+    CACHE STRING "Flags used for linking binaries during coverage builds." FORCE)
+SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
     ""
-    CACHE STRING "Flags used by the shared libraries linker during coverage builds."
-    FORCE )
-mark_as_advanced(
-    CMAKE_CXX_FLAGS_COVERAGE
-    CMAKE_C_FLAGS_COVERAGE
-    CMAKE_EXE_LINKER_FLAGS_COVERAGE
-    CMAKE_SHARED_LINKER_FLAGS_COVERAGE )
+    CACHE STRING "Flags used by the shared libraries linker during coverage builds." FORCE)
+MARK_AS_ADVANCED(CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE
+                 CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(WARNING "Code coverage results with an optimised (non-Debug) build may be misleading")
-endif() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
+IF(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    MESSAGE(WARNING "Code coverage results with an optimised (non-Debug) build may be misleading")
+ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    link_libraries(gcov)
-else()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-endif()
+IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    LINK_LIBRARIES(gcov)
+ELSE()
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+ENDIF()
 
 # Defines a target for running and collection code coverage information
 # Builds dependencies, runs the given executable and outputs reports.
@@ -132,48 +126,46 @@ endif()
 #     EXECUTABLE ctest -j ${PROCESSOR_COUNT} # Executable in PROJECT_BINARY_DIR
 #     DEPENDENCIES executable_target         # Dependencies to build first
 # )
-function(SETUP_TARGET_FOR_COVERAGE_GCOVR)
+FUNCTION(SETUP_TARGET_FOR_COVERAGE_GCOVR)
 
-    set(options NONE)
-    set(oneValueArgs NAME)
-    set(multiValueArgs EXECUTABLE EXECUTABLE_ARGS DEPENDENCIES)
-    cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    SET(options NONE)
+    SET(oneValueArgs NAME)
+    SET(multiValueArgs EXECUTABLE EXECUTABLE_ARGS DEPENDENCIES)
+    CMAKE_PARSE_ARGUMENTS(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT SIMPLE_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "python not found! Aborting...")
-    endif() # NOT SIMPLE_PYTHON_EXECUTABLE
+    IF(NOT SIMPLE_PYTHON_EXECUTABLE)
+        MESSAGE(FATAL_ERROR "python not found! Aborting...")
+    ENDIF() # NOT SIMPLE_PYTHON_EXECUTABLE
 
-    if(NOT GCOVR_PATH)
-        message(FATAL_ERROR "gcovr not found! Aborting...")
-    endif() # NOT GCOVR_PATH
+    IF(NOT GCOVR_PATH)
+        MESSAGE(FATAL_ERROR "gcovr not found! Aborting...")
+    ENDIF() # NOT GCOVR_PATH
 
     # Combine excludes to several -e arguments
-    set(GCOVR_EXCLUDES "")
-    foreach(EXCLUDE ${COVERAGE_GCOVR_EXCLUDES})
-        list(APPEND GCOVR_EXCLUDES "-e")
-        list(APPEND GCOVR_EXCLUDES "${EXCLUDE}")
-    endforeach()
+    SET(GCOVR_EXCLUDES "")
+    FOREACH(EXCLUDE ${COVERAGE_GCOVR_EXCLUDES})
+        LIST(APPEND GCOVR_EXCLUDES "-e")
+        LIST(APPEND GCOVR_EXCLUDES "${EXCLUDE}")
+    ENDFOREACH()
 
-    add_custom_target(${Coverage_NAME}
+    ADD_CUSTOM_TARGET(
+        ${Coverage_NAME}
         # Run tests
         ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}
-
         # Running gcovr
-        COMMAND ${GCOVR_PATH}
-            -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES}
-            --object-directory=${PROJECT_BINARY_DIR}
+        COMMAND ${GCOVR_PATH} -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES} --object-directory=${PROJECT_BINARY_DIR}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
-        COMMENT "Running gcovr to produce Cobertura code coverage report."
-    )
+        COMMENT "Running gcovr to produce Cobertura code coverage report.")
 
     # Show info where to find the report
-    add_custom_command(TARGET ${Coverage_NAME} POST_BUILD
+    ADD_CUSTOM_COMMAND(
+        TARGET ${Coverage_NAME}
+        POST_BUILD
         COMMAND ;
-        COMMENT "Finished creation of Cobertura code coverage report."
-    )
+        COMMENT "Finished creation of Cobertura code coverage report.")
 
-endfunction() # SETUP_TARGET_FOR_COVERAGE_GCOVR
+ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE_GCOVR
 
 # Defines a target for running and collection code coverage information
 # Builds dependencies, runs the given executable and outputs reports.
@@ -185,55 +177,56 @@ endfunction() # SETUP_TARGET_FOR_COVERAGE_GCOVR
 #     EXECUTABLE ctest -j ${PROCESSOR_COUNT} # Executable in PROJECT_BINARY_DIR
 #     DEPENDENCIES executable_target         # Dependencies to build first
 # )
-function(SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML)
+FUNCTION(SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML)
 
-    set(options NONE)
-    set(oneValueArgs NAME)
-    set(multiValueArgs EXECUTABLE EXECUTABLE_ARGS DEPENDENCIES)
-    cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    SET(options NONE)
+    SET(oneValueArgs NAME)
+    SET(multiValueArgs EXECUTABLE EXECUTABLE_ARGS DEPENDENCIES)
+    CMAKE_PARSE_ARGUMENTS(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT SIMPLE_PYTHON_EXECUTABLE)
-        message(FATAL_ERROR "python not found! Aborting...")
-    endif() # NOT SIMPLE_PYTHON_EXECUTABLE
+    IF(NOT SIMPLE_PYTHON_EXECUTABLE)
+        MESSAGE(FATAL_ERROR "python not found! Aborting...")
+    ENDIF() # NOT SIMPLE_PYTHON_EXECUTABLE
 
-    if(NOT GCOVR_PATH)
-        message(FATAL_ERROR "gcovr not found! Aborting...")
-    endif() # NOT GCOVR_PATH
+    IF(NOT GCOVR_PATH)
+        MESSAGE(FATAL_ERROR "gcovr not found! Aborting...")
+    ENDIF() # NOT GCOVR_PATH
 
     # Combine excludes to several -e arguments
-    set(GCOVR_EXCLUDES "")
-    foreach(EXCLUDE ${COVERAGE_GCOVR_EXCLUDES})
-        list(APPEND GCOVR_EXCLUDES "-e")
-        list(APPEND GCOVR_EXCLUDES "${EXCLUDE}")
-    endforeach()
+    SET(GCOVR_EXCLUDES "")
+    FOREACH(EXCLUDE ${COVERAGE_GCOVR_EXCLUDES})
+        LIST(APPEND GCOVR_EXCLUDES "-e")
+        LIST(APPEND GCOVR_EXCLUDES "${EXCLUDE}")
+    ENDFOREACH()
 
-    add_custom_target(${Coverage_NAME}
+    ADD_CUSTOM_TARGET(
+        ${Coverage_NAME}
         # Run tests
         ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}
-
         # Create folder
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/${Coverage_NAME}
-
         # Running gcovr
-        COMMAND ${GCOVR_PATH} --html --html-details
-            -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES}
-            --object-directory=${PROJECT_BINARY_DIR}
-            -o ${Coverage_NAME}/index.html
+        COMMAND ${GCOVR_PATH} --html --html-details -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES}
+                --object-directory=${PROJECT_BINARY_DIR} -o ${Coverage_NAME}/index.html
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
-        COMMENT "Running gcovr to produce HTML code coverage report."
-    )
+        COMMENT "Running gcovr to produce HTML code coverage report.")
 
     # Show info where to find the report
-    add_custom_command(TARGET ${Coverage_NAME} POST_BUILD
+    ADD_CUSTOM_COMMAND(
+        TARGET ${Coverage_NAME}
+        POST_BUILD
         COMMAND ;
-        COMMENT "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
-    )
+        COMMENT "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report.")
 
-endfunction() # SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML
+ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML
 
-function(APPEND_COVERAGE_COMPILER_FLAGS)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
-    message(STATUS "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}")
-endfunction() # APPEND_COVERAGE_COMPILER_FLAGS
+FUNCTION(APPEND_COVERAGE_COMPILER_FLAGS)
+    SET(CMAKE_C_FLAGS
+        "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}"
+        PARENT_SCOPE)
+    SET(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}"
+        PARENT_SCOPE)
+    MESSAGE(STATUS "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}")
+ENDFUNCTION() # APPEND_COVERAGE_COMPILER_FLAGS

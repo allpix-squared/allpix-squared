@@ -2,10 +2,7 @@
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    CapacitiveTransferModule.cpp
-    # ADD SOURCE FILES HERE...
-)
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} CapacitiveTransferModule.cpp)
 
 # Eigen is required for finding the coupling distances
 FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)

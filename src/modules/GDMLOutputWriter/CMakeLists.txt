@@ -17,9 +17,7 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 ENDIF()
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    GDMLOutputWriterModule.cpp
-)
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} GDMLOutputWriterModule.cpp)
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})

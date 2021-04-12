@@ -1,0 +1,43 @@
+parse:
+  _help_additional_commands:
+  - Specify structure for custom cmake functions
+  additional_commands:
+    SETUP_TARGET_FOR_COVERAGE_GCOVR:
+      kwargs:
+        NAME: '*'
+        EXECUTABLE: '*'
+        DEPENDENCIES: '*'
+    SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML:
+      kwargs:
+        NAME: '*'
+        EXECUTABLE: '*'
+        DEPENDENCIES: '*'
+    ADD_PANDOC_DOCUMENT:
+      flags:
+      - NO_EXPORT_PRODUCT
+      kwargs:
+        SOURCES: '*'
+        PRODUCT_DIRECTORY: '*'
+        PANDOC_DIRECTIVES: '*'
+    ADD_LATEX_DOCUMENT:
+      flags:
+      - USE_BIBLATEX
+      - EXCLUDE_FROM_ALL
+      kwargs:
+        BIBFILES: '*'
+        IMAGES: '*'
+        INPUTS: '*'
+        CONFIGURE: '*'
+        DEPENDS: '*'
+
+format:
+  line_width: 125
+  tab_size: 4
+  use_tabchars: false
+  command_case: 'upper'
+  keyword_case: 'upper'
+  max_subgroups_hwrap: 2
+
+markup:
+  canonicalize_hashrulers: false
+  enable_markup: false

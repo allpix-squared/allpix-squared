@@ -2,9 +2,7 @@
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
-    TransientPropagationModule.cpp
-)
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} TransientPropagationModule.cpp)
 
 # Eigen is required for Runge-Kutta propagation
 FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)

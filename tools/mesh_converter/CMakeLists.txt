@@ -1,20 +1,20 @@
 # CMake file for the allpix2 framework
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
-  CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
-  CMAKE_POLICY(SET CMP0048 NEW) # set project version
+    CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
+    CMAKE_POLICY(SET CMP0048 NEW) # set project version
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Check if a version number is set - if not, just default to an empty string
 IF(NOT ALLPIX_VERSION)
-  ADD_DEFINITIONS(-DALLPIX_PROJECT_VERSION="")
+    ADD_DEFINITIONS(-DALLPIX_PROJECT_VERSION="")
 ENDIF()
 
 # ROOT is required for vector and persistency etc
 FIND_PACKAGE(ROOT REQUIRED NO_MODULE)
 IF(NOT ROOT_FOUND)
     MESSAGE(FATAL_ERROR "Could not find ROOT, make sure to source the ROOT environment\n"
-    "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
+                        "$ source YOUR_ROOT_DIR/bin/thisroot.sh")
 ENDIF()
 ALLPIX_SETUP_ROOT_TARGETS()
 
@@ -26,7 +26,8 @@ GET_FILENAME_COMPONENT(ALLPIX_SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/" ABSOL
 INCLUDE_DIRECTORIES(${ALLPIX_SRC})
 
 # Add TCAD dfise converter executable
-ADD_EXECUTABLE(mesh_converter
+ADD_EXECUTABLE(
+    mesh_converter
     MeshElement.cpp
     MeshConverter.cpp
     MeshParser.cpp
@@ -37,33 +38,36 @@ ADD_EXECUTABLE(mesh_converter
     ${ALLPIX_SRC}/core/config/ConfigReader.cpp
     ${ALLPIX_SRC}/core/config/Configuration.cpp
     ${ALLPIX_SRC}/core/config/exceptions.cpp
-    ${ALLPIX_SRC}/core/module/ThreadPool.cpp
-)
+    ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
 # Include Eigen dependency
 FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
 ALLPIX_SETUP_EIGEN_TARGETS()
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(mesh_converter ROOT::Core ROOT::GenVector ROOT::RIO ROOT::Tree Threads::Threads Eigen3::Eigen)
+TARGET_LINK_LIBRARIES(
+    mesh_converter
+    ROOT::Core
+    ROOT::GenVector
+    ROOT::RIO
+    ROOT::Tree
+    Threads::Threads
+    Eigen3::Eigen)
 
 # Create install target
-INSTALL(TARGETS mesh_converter
+INSTALL(
+    TARGETS mesh_converter
     COMPONENT tools
     RUNTIME DESTINATION bin)
 
-
 # Add mesh_plotter executable
-ADD_EXECUTABLE(mesh_plotter
-    MeshPlotter.cpp
-    ${ALLPIX_SRC}/core/utils/log.cpp
-    ${ALLPIX_SRC}/core/utils/text.cpp
-    ${ALLPIX_SRC}/core/utils/unit.cpp
-)
+ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
+                            ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Link libraries
 TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld Eigen3::Eigen)
 
-INSTALL(TARGETS mesh_plotter
+INSTALL(
+    TARGETS mesh_plotter
     COMPONENT tools
     RUNTIME DESTINATION bin)

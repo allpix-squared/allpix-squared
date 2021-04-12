@@ -2,10 +2,7 @@
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME} 
-    DummyModule.cpp
-    # ADD SOURCE FILES HERE...
-)
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} DummyModule.cpp)
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})

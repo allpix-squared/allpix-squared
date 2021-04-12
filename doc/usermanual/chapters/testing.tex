@@ -96,7 +96,7 @@ It is configured via the \file{.gitlab-ci.yml} file in the repository's root dir
 \begin{figure}[btp]
   \centering
   \includegraphics[width=\textwidth]{ci.png}
-  \caption{Typical \apsq continuous integration pipeline with 32 jobs distributed over seven distinct stages. In this example, all jobs passed.}
+  \caption{Typical \apsq continuous integration pipeline with 34 jobs distributed over seven distinct stages. In this example, all jobs passed.}
   \label{fig:ci}
 \end{figure}
 
@@ -126,6 +126,7 @@ In addition, the \command{clang-tidy} tool is used for ``linting'' of the source
 This means, the source code undergoes a static code analysis in order to identify possible sources of bugs by flagging suspicious and non-portable constructs used.
 Tests are marked as failed if either of the CMake targets \command{make check-format} or \command{make check-lint} fail.
 No code that fails to satisfy the coding conventions and formatting tests will be merged into the repository.
+Furthermore, also basic sanity checks are carried out on the CMake build framework code using \command{cmake-lint}.
 
 The \textbf{performance} stage runs a longer simulation with several thousand events and measures the execution time.
 This facilitates monitoring of the simulation performance, a failing job would indicate a degradation in speed.
