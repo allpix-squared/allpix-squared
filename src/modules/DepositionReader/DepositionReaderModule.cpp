@@ -317,8 +317,11 @@ void DepositionReaderModule::run(Event* event) {
                        << Units::display(time_reference, {"ns", "ps"}) << " global";
         }
 
+        auto mc_particle_size = mc_particle_start[detector].size();
         std::vector<MCParticle> mc_particles;
-        for(size_t i = 0; i < mc_particle_start[detector].size(); i++) {
+        mc_particles.reserve(mc_particle_size);
+
+        for(size_t i = 0; i < mc_particle_size; i++) {
             auto start_global = mc_particle_start[detector].at(i);
             auto start_local = detector->getLocalPosition(start_global);
             auto end_global = mc_particle_end[detector].at(i);
