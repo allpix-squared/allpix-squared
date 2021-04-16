@@ -14,7 +14,7 @@ The following models for the doping profile can be used:
 * For **mesh**, a file containing a doping profile map in APF or INIT format is parsed.
 
 ### Parameters
-* `model` : Type of the weighting potential model, either **constant**, **regions**  or **mesh**.
+* `model` : Type of the doping profile, either **constant**, **regions**  or **mesh**.
 * `file_name` : Location of file containing the doping profile in one of the supported field file formats.
 Only used if the *model* parameter has the value **mesh**.
 * `field_scale` :  Scale of the doping profile in x- and y-direction in units of pixels.
