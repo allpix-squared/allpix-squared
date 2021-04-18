@@ -57,7 +57,7 @@ namespace allpix {
              * @brief Get the top value from the appropriate queue
              * @param out Reference where the value at the top of the queue will be written to
              * @param func Optional function to execute before releasing the queue mutex if pop was successful
-             * @param buffer_left Optional number of jobs that should be left in priority buffer without stall
+             * @param buffer_left Optional number of jobs that should be left in priority buffer without stall on push
              * @return True if a task was acquired or false if pop was exited for another reason
              */
             bool pop(T& out, const std::function<void()>& func = nullptr, size_t buffer_left = 0);
@@ -262,11 +262,11 @@ namespace allpix {
     private:
         /**
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
-         * @param num_threads Total number of active threads
+         * @param min_thread_buffer Minimum buffer size to keep available without stall on push
          * @param init_function Function to initialize the thread
          * @param init_function Function to finalize the thread
          */
-        void worker(size_t num_threads,
+        void worker(size_t min_thread_buffer,
                     const std::function<void()>& init_function,
                     const std::function<void()>& finalize_function);
 
