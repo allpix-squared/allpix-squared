@@ -20,6 +20,7 @@
 #include <Math/EulerAngles.h>
 #include <Math/PositionVector2D.h>
 #include <Math/PositionVector3D.h>
+#include <RVersion.h>
 #include <TProcessID.h>
 #include <TString.h>
 
@@ -227,11 +228,15 @@ namespace allpix {
             const auto num_slots = ThreadPool::threadCount();
             objects_.resize(num_slots);
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(6, 22, 0)
+            directories_ = ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create(num_slots);
+#else
             // create at least one directory (we need it for the model), plus others as needed by the size of objects
             directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
             for(auto i = 1u; i < num_slots; ++i) {
                 directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
             }
+#endif
 
             TDirectory::TContext ctxt(directories_[0]);
             model_.reset(ROOT::Internal::TThreadedObjectUtils::Detacher<T>::Detach(new T(std::forward<ARGS>(args)...)));
