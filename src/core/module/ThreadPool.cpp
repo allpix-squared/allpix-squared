@@ -41,7 +41,11 @@ ThreadPool::ThreadPool(unsigned int num_threads,
     // Create threads
     try {
         for(unsigned int i = 0u; i < num_threads; ++i) {
-            threads_.emplace_back(&ThreadPool::worker, this, num_threads, worker_init_function, worker_finalize_function);
+            threads_.emplace_back(&ThreadPool::worker,
+                                  this,
+                                  std::min(num_threads, max_buffered_size),
+                                  worker_init_function,
+                                  worker_finalize_function);
         }
     } catch(...) {
         destroy();
@@ -88,7 +92,7 @@ void ThreadPool::wait() {
 /**
  * If an exception is thrown by a module, the first exception is saved to propagate in the main thread
  */
-void ThreadPool::worker(size_t num_threads,
+void ThreadPool::worker(size_t min_thread_buffer,
                         const std::function<void()>& initialize_function,
                         const std::function<void()>& finalize_function) {
     try {
@@ -108,7 +112,7 @@ void ThreadPool::worker(size_t num_threads,
         while(!done_) {
             Task task{nullptr};
 
-            if(queue_.pop(task, increase_run_cnt_func, num_threads)) {
+            if(queue_.pop(task, increase_run_cnt_func, min_thread_buffer)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
