@@ -226,8 +226,14 @@ void CSADigitizerModule::run(Event* event) {
         LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
 
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
-        auto pulse_vec = pulse.getPulse();           // the vector of the charges
+
+        if(!pulse.isInitialized()) {
+            throw ModuleError("No pulse information available.");
+        }
+
+        auto pulse_vec = pulse.getPulse(); // the vector of the charges
         auto timestep = pulse.getBinning();
+        LOG(DEBUG) << "Timestep: " << timestep << " integration_time: " << integration_time_;
         auto ntimepoints = static_cast<size_t>(ceil(integration_time_ / timestep));
 
         std::call_once(first_event_flag_, [&]() {
