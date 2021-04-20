@@ -31,7 +31,7 @@ namespace mesh_converter {
             VALUES
         };
 
-    public:
+    private:
         // Read the grid
         MeshMap read_meshes(const std::string& file_name) override;
 
