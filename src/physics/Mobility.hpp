@@ -86,7 +86,7 @@ namespace allpix {
      * @brief Canali mobility model
      *
      * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
-     * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "priginal".
+     * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "original".
      */
     class Canali : public JacoboniCanali {
     public:
