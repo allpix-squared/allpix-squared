@@ -17,7 +17,8 @@ In the latter case, the parameters are used to derive the contributions to the t
 Alternatively a custom impulse response function can be provided by using the `custom` model.
 
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
-For the amplified pulse signal, alongside the Time-of-Arrival either the determined Time-over-Threshold, or the integral of the amplified pulse can be stored in the `PixelHit`.
+
+The values stored in `PixelHit` depend on the Time-of-Arrival (ToA) and Time-over-Threshold (ToT) settings. If a ToA clock is defined, then `local_time` will be stored in ToA clock cycles, else in time units. If a ToT clock is defined, then `signal` will be the amount of ToT cycles the pulse is above the threshold, else it will be the integral of the amplified pulse. 
 
 Since the input pulse may have different polarity, it is important to set the threshold accordingly to a positive or negative value, otherwise it may not trigger at all.
 If this behavior is not desired, the `ignore_polarity` parameter can be set to compare only the absolute values of the input and the threshold value.
