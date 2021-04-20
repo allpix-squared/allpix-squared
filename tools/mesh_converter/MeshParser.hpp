@@ -47,6 +47,12 @@ namespace mesh_converter {
          * @return           Map with all fields for the different regions
          */
         virtual FieldMap read_fields(const std::string& file_name) = 0;
+
+    private:
+        // Cache of parsed meshes for all regions
+        MeshMap mesh_map_;
+        // Cache of parsed fields for all regions
+        FieldMap field_map_;
     };
 
 } // namespace mesh_converter
