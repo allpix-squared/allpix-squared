@@ -406,7 +406,6 @@ int main(int argc, char** argv) {
             mesh_points_done += divisions.z();
             LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << mesh_points_done << " of " << mesh_points_total << ", "
                                     << (100 * mesh_points_done / mesh_points_total) << "%";
-            ;
 
             return new_mesh;
         };
