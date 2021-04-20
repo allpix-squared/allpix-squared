@@ -21,10 +21,6 @@ namespace mesh_converter {
     public:
         static std::shared_ptr<MeshParser> factory(const allpix::Configuration& config);
         /**
-         * @brief Default constructor
-         */
-        MeshParser() = default;
-        /**
          * @brief Default destructor
          */
         virtual ~MeshParser() = default;
@@ -33,7 +29,12 @@ namespace mesh_converter {
         std::vector<Point>
         getField(const std::string& file, const std::string& observable, const std::vector<std::string>& regions);
 
-    private:
+    protected:
+        /**
+         * @brief Default constructor
+         */
+        MeshParser() = default;
+
         /**
          * @brief Method to read grids of mesh points from the given file
          * @param  file_name Canonical path of the input file
