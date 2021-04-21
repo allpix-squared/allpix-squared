@@ -124,7 +124,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     try {
         mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
-    } catch(InvalidModelError& e) {
+    } catch(ModelError& e) {
         throw InvalidValueError(config_, "mobility_model", e.what());
     }
 
