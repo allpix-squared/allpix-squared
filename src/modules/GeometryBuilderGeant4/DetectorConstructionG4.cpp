@@ -228,29 +228,29 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                         auto implant_box = std::make_shared<G4Box>(
                             "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
                         solids_.push_back(implant_box);
-                    std::shared_ptr<G4VSolid> implant_solid = implant_box;
+                        std::shared_ptr<G4VSolid> implant_solid = implant_box;
 
-                    // Calculate transformation for the solid including possible offsets from pixel center
-                    auto offset = model->getImplantOffset();
-                    G4Transform3D implant_transform(
-                        G4RotationMatrix(),
-                        G4ThreeVector(
-                            -model->getGridSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
-                            -model->getGridSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
-                            (model->getSensorSize().z() - implants.z()) / 2.0));
+                        // Calculate transformation for the solid including possible offsets from pixel center
+                        auto offset = model->getImplantOffset();
+                        G4Transform3D implant_transform(
+                            G4RotationMatrix(),
+                            G4ThreeVector(
+                                -model->getGridSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
+                                -model->getGridSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
+                                (model->getSensorSize().z() - implants.z()) / 2.0));
 
                         // Add the new solid to the MultiUnion:
-                        implant_union->AddNode(*implant_solid.get(), implant_transform);
+                        implant_union->AddNode(*implant_solid, implant_transform);
                     }
                 }
 
                 // Finalize the construction of the multi-union solid:
                 implant_union->Voxelize();
 
-            // Place physical instance of implant extrusion in model (conductor):
-            auto implant_log = make_shared_no_delete<G4LogicalVolume>(
-                implant_union.get(), materials.get(model->getImplantMaterial()), "implants_" + name + "_log");
-            detector->setExternalObject("implants_log", implant_log);
+                // Place physical instance of implant extrusion in model (conductor):
+                auto implant_log = make_shared_no_delete<G4LogicalVolume>(
+                    implant_union.get(), materials.get(model->getImplantMaterial()), "implants_" + name + "_log");
+                detector->setExternalObject("implants_log", implant_log);
 
                 // Place the implants box
                 auto implant_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());

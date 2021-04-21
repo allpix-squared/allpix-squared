@@ -521,7 +521,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         runge_kutta.setValue(position);
 
         // Check if we are still in the sensor and not in an implant:
-        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) || model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) ||
+           model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
             state = CarrierState::HALTED;
         }
 
