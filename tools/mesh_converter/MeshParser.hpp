@@ -51,9 +51,9 @@ namespace mesh_converter {
 
     private:
         // Cache of parsed meshes for all regions
-        MeshMap mesh_map_;
+        std::map<std::string, MeshMap> mesh_map_;
         // Cache of parsed fields for all regions
-        FieldMap field_map_;
+        std::map<std::string, FieldMap> field_map_;
     };
 
 } // namespace mesh_converter
