@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/log.h"
 
