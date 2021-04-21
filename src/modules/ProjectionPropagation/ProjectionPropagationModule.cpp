@@ -56,17 +56,15 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
         propagate_type_ = CarrierType::ELECTRON;
     }
 
-    // Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     auto temperature = config_.get<double>("temperature");
-    electron_Vm_ = Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s");
-    electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
-    electron_Beta_ = 2.57e-2 * std::pow(temperature, 0.66);
-
-    hole_Vm_ = Units::get(1.62e8 * std::pow(temperature, -0.52), "cm/s");
-    hole_Ec_ = Units::get(1.24 * std::pow(temperature, 1.68), "V/cm");
-    hole_Beta_ = 0.46 * std::pow(temperature, 0.17);
-
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
+
+    // Mobility fixed to Jacoboni:
+    mobility_ = Mobility("jacoboni", temperature);
+    // We need direct access to the critical field values of the model since we have a discrete integration of the formula
+    // for the total drift time. Taken from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
+    electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
+    hole_Ec_ = Units::get(1.24 * std::pow(temperature, 1.68), "V/cm");
 
     // Reference lifetime and doping concentrations, taken from:
     // https://doi.org/10.1016/0038-1101(82)90203-9
@@ -184,18 +182,6 @@ void ProjectionPropagationModule::run(Event* event) {
             auto efield_top = detector_->getElectricField(ROOT::Math::XYZPoint(0., 0., top_z_));
             double efield_mag_top = std::sqrt(efield_top.Mag2());
 
-            // Define a lambda function to compute the carrier mobility
-            auto carrier_mobility = [&](double efield_magn) {
-                // Compute carrier mobility from constants and electric field magnitude
-                if(type == CarrierType::ELECTRON) {
-                    return electron_Vm_ / electron_Ec_ /
-                           std::pow(1. + std::pow(efield_magn / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
-                } else {
-                    return hole_Vm_ / hole_Ec_ /
-                           std::pow(1. + std::pow(efield_magn / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
-                }
-            };
-
             double diffusion_time = 0;
 
             // Only project if within the depleted region (i.e. efield not zero)
@@ -204,7 +190,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                double diffusion_constant = boltzmann_kT_ * carrier_mobility(efield_mag);
+                double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag);
                 double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
@@ -291,16 +277,14 @@ void ProjectionPropagationModule::run(Event* event) {
                 }
 
                 double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
-                double zero_mobility = (type == CarrierType::ELECTRON ? electron_Vm_ / electron_Ec_ : hole_Vm_ / hole_Ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
-                       zero_mobility;
+                       mobility_(type, 0);
             };
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
             // Assume linear electric field over the depleted part of the sensor
-            double diffusion_constant =
-                boltzmann_kT_ * (carrier_mobility(efield_mag) + carrier_mobility(efield_mag_top)) / 2.;
+            double diffusion_constant = boltzmann_kT_ * (mobility_(type, efield_mag) + mobility_(type, efield_mag_top)) / 2.;
 
             double drift_time = calc_drift_time();
             double propagation_time = deposit.getLocalTime() + drift_time + diffusion_time;
