@@ -20,6 +20,7 @@
 #include <TMatrixD.h>
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
@@ -50,7 +51,8 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
 
     // compute contributions from bumps if available
     const auto* hybrid = dynamic_cast<const HybridPixelDetectorModel*>(&model);
-    if(hybrid != nullptr) {
+    const auto* hexagonal = dynamic_cast<const HexagonalPixelDetectorModel*>(&model);
+    if(hybrid != nullptr || hexagonal != nullptr) {
         // average the bump material over the full pixel size.
         auto bump_radius = std::max(hybrid->getBumpSphereRadius(), hybrid->getBumpCylinderRadius());
         auto bump_height = hybrid->getBumpHeight();

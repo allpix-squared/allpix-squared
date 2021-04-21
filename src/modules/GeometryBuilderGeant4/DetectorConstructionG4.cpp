@@ -34,6 +34,7 @@
 #include "G4Material.hh"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp" 
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -275,7 +276,9 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
 
         // Build the bump bonds only for hybrid pixel detectors
         auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
-        if(hybrid_model != nullptr) {
+	auto hexagonal_model = std::dynamic_pointer_cast<HexagonalPixelDetectorModel>(model);
+	
+        if(hybrid_model != nullptr || hexagonal_model != nullptr) {
 
             /**
              * BUMPS
@@ -286,6 +289,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
             auto bump_height = hybrid_model->getBumpHeight();
             auto bump_sphere_radius = hybrid_model->getBumpSphereRadius();
             auto bump_cylinder_radius = hybrid_model->getBumpCylinderRadius();
+	    
 
             // Create the volume containing the bumps
             auto bump_box = make_shared_no_delete<G4Box>("bump_box_" + name,
@@ -355,6 +359,7 @@ void DetectorConstructionG4::build(std::map<std::string, G4Material*> materials_
                                                   false);
             geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);
         }
+
 
         // ALERT: NO COVER LAYER YET
 

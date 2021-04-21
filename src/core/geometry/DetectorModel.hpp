@@ -49,6 +49,7 @@ namespace allpix {
             friend class DetectorModel;
             // FIXME Friending this class is broken
             friend class HybridPixelDetectorModel;
+            friend class HexagonalPixelDetectorModel;
 
         public:
             /**
@@ -258,6 +259,18 @@ namespace allpix {
         ROOT::Math::XYZVector getGridSize() const {
             return {getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
         }
+	
+	/** 
+	 * Define getPixelIndex() function
+	 * @brief Get Pixel Index
+	 * @return Index of a pixel
+	 */
+        virtual ROOT::Math::XYVector getPixelIndex(const ROOT::Math::XYZPoint & position) const {
+        	double xpixel = static_cast<int>(std::round(position.x() / getPixelSize().x()));
+        	double ypixel = static_cast<int>(std::round(position.y() / getPixelSize().y()));
+                return {xpixel, ypixel};
+
+	}
 
         /* SENSOR */
         /**
