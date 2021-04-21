@@ -182,9 +182,9 @@ namespace allpix {
 
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
             if(type == CarrierType::ELECTRON) {
-                return electron_mumin_ + electron_mu0_ / (1 + std::pow(doping / electron_nref_, alpha_));
+                return electron_mumin_ + electron_mu0_ / (1 + std::pow(std::fabs(doping) / electron_nref_, alpha_));
             } else {
-                return hole_mumin_ + hole_mu0_ / (1 + std::pow(doping / hole_nref_, alpha_));
+                return hole_mumin_ + hole_mu0_ / (1 + std::pow(std::fabs(doping) / hole_nref_, alpha_));
             }
         };
 
