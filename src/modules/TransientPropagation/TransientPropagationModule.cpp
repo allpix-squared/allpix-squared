@@ -66,13 +66,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     }
 
     output_plots_ = config_.get<bool>("output_plots");
-
-    try {
-        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
-    } catch(ModelError& e) {
-        throw InvalidValueError(config_, "mobility_model", e.what());
-    }
-
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 
     // Reference lifetime and doping concentrations, taken from:
@@ -108,6 +101,13 @@ void TransientPropagationModule::initialize() {
 
     // Check for doping profile
     has_doping_profile_ = detector->hasDopingProfile();
+
+    // Prepare mobility model
+    try {
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
+    } catch(ModelError& e) {
+        throw InvalidValueError(config_, "mobility_model", e.what());
+    }
 
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
@@ -240,8 +240,8 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a function to compute the diffusion
-    auto carrier_diffusion = [&](double efield_mag, double timestep) -> Eigen::Vector3d {
-        double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag);
+    auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
+        double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
         double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
@@ -283,7 +283,9 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        return static_cast<int>(type) * mobility_(type, efield.norm()) * efield;
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+
+        return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
@@ -294,7 +296,9 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         Eigen::Vector3d velocity;
         Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
 
-        auto mob = mobility_(type, efield.norm());
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+
+        auto mob = mobility_(type, efield.norm(), doping);
         auto exb = efield.cross(bfield);
 
         Eigen::Vector3d term1;
@@ -327,9 +331,10 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
 
         // Get electric field at current position and fall back to empty field if it does not exist
         auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
-        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), timestep_);
+        auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_);
         position += diffusion;
         runge_kutta.setValue(position);
 
