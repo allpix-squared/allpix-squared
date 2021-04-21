@@ -30,6 +30,7 @@
 #include "tools/ROOT.h"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"//Tasneem: Hexagonal Pixel
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
 
 using namespace allpix;
@@ -439,6 +440,12 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& 
     if(type == "hybrid") {
         return std::make_shared<HybridPixelDetectorModel>(name, reader);
     }
+    
+    //Tasneem: Hexagonal Pixel 
+    if(type == "hexagonal") {
+        return std::make_shared<HexagonalPixelDetectorModel>(name, reader);
+    }
+
     if(type == "monolithic") {
         return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
     }
