@@ -228,6 +228,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                         auto implant_box = std::make_shared<G4Box>(
                             "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
                         solids_.push_back(implant_box);
+                    std::shared_ptr<G4VSolid> implant_solid = implant_box;
 
                     // Calculate transformation for the solid including possible offsets from pixel center
                     auto offset = model->getImplantOffset();
@@ -239,23 +240,17 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                             (model->getSensorSize().z() - implants.z()) / 2.0));
 
                         // Add the new solid to the MultiUnion:
-                        implant_union->AddNode(implant_box, implant_transform);
+                        implant_union->AddNode(*implant_solid.get(), implant_transform);
                     }
                 }
 
                 // Finalize the construction of the multi-union solid:
                 implant_union->Voxelize();
 
-                // Obtain implant material from model:
-                auto implant_material_iter = materials_.find(model->getImplantMaterial());
-                if(implant_material_iter == materials_.end()) {
-                    throw ModuleError("Cannot construct implants of material '" + model->getImplantMaterial() + "'");
-                }
-
-                // Place physical instance of implant extrusion in model (conductor):
-                auto implant_log = make_shared_no_delete<G4LogicalVolume>(
-                    implant_union.get(), implant_material_iter->second, "implants_" + name + "_log");
-                detector->setExternalObject("implants_log", implant_log);
+            // Place physical instance of implant extrusion in model (conductor):
+            auto implant_log = make_shared_no_delete<G4LogicalVolume>(
+                implant_union.get(), materials.get(model->getImplantMaterial()), "implants_" + name + "_log");
+            detector->setExternalObject("implants_log", implant_log);
 
                 // Place the implants box
                 auto implant_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
