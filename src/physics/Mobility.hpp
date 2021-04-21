@@ -159,6 +159,46 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Arora mobility model for charge carriers in silicon
+     *
+     * Parameterization variables from https://doi.org/10.1109/T-ED.1982.20698 (values from Table 1, formulae 8 for electrons
+     * and 13 for holes)
+     */
+    class Arora : public MobilityModel {
+    public:
+        Arora(double temperature, bool doping)
+            : electron_mumin_(Units::get(88 * std::pow(temperature / 300, -0.57), "cm*cm/V/s")),
+              electron_mu0_(Units::get(7.4e8 * std::pow(temperature, -2.33), "cm*cm/V/s")),
+              electron_nref_(Units::get(1.26e17 * std::pow(temperature / 300, 2.4), "/cm/cm/cm")),
+              hole_mumin_(Units::get(54.3 * std::pow(temperature / 300, -0.57), "cm*cm/V/s")),
+              hole_mu0_(Units::get(1.36e8 * std::pow(temperature, -2.23), "cm*cm/V/s")),
+              hole_nref_(Units::get(2.35e17 * std::pow(temperature / 300, 2.4), "/cm/cm/cm")),
+              alpha_(0.88 * std::pow(temperature / 300, -0.146)) {
+            if(!doping) {
+                throw ModelUnsuitable("No doping profile available");
+            }
+        }
+
+        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_mumin_ + electron_mu0_ / (1 + std::pow(doping / electron_nref_, alpha_));
+            } else {
+                return hole_mumin_ + hole_mu0_ / (1 + std::pow(doping / hole_nref_, alpha_));
+            }
+        };
+
+    private:
+        double electron_mumin_;
+        double electron_mu0_;
+        double electron_nref_;
+        double hole_mumin_;
+        double hole_mu0_;
+        double hole_nref_;
+        double alpha_;
+    };
+
+    /**
      * @brief Wrapper class and factory for mobility models.
      *
      * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
@@ -187,6 +227,8 @@ namespace allpix {
                 model_ = std::make_unique<Hamburg>(temperature);
             } else if(model == "hamburg_highfield") {
                 model_ = std::make_unique<HamburgHighField>(temperature);
+            } else if(model == "arora") {
+                model_ = std::make_unique<Arora>(temperature, doping);
             } else {
                 throw InvalidModelError(model);
             }
