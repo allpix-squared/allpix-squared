@@ -20,7 +20,7 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Base class for all model exceptions in the framework.
      */
-    class ModelError : public Exception {};
+    class ModelError : public RuntimeError {};
 
     /**
      * @ingroup Exceptions
@@ -33,7 +33,22 @@ namespace allpix {
          * @param model_name Name of the requested model
          */
         explicit InvalidModelError(const std::string& model_name) {
-            error_message_ = "Model with name \"" + model_name + " does not exist";
+            error_message_ = "Model with name \"" + model_name + "\" does not exist";
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Notifies of a model unsuitable for the current simulation
+     */
+    class ModelUnsuitable : public ModelError {
+    public:
+        /**
+         * @brief Construct an error for a model that is not found
+         * @param model_name Name of the requested model
+         */
+        explicit ModelUnsuitable(const std::string& reason = "") {
+            error_message_ = "Model not suitable for this simulation: " + reason;
         }
     };
 } // namespace allpix
