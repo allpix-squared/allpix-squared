@@ -160,6 +160,59 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Masetti mobility model for charge carriers in silicon
+     *
+     * Parameterization variables from https://doi.org/10.1109/T-ED.1983.21207, formulae (1) for electrons and (4) for holes.
+     * The values are taken from Table I, for Arsenic and Boron
+     */
+    class Masetti : public MobilityModel {
+    public:
+        Masetti(double temperature, bool doping)
+            : electron_mu0_(Units::get(52.2, "cm*cm/V/s")),
+              electron_mumax_(Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
+              electron_cr_(Units::get(9.68e16, "/cm/cm/cm")), electron_alpha_(0.68),
+              electron_mu1_(Units::get(43.4, "cm*cm/V/s")), electron_cs_(Units::get(3.43e20, "/cm/cm/cm")),
+              electron_beta_(2.0), hole_mu0_(Units::get(44.9, "cm*cm/V/s")), hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
+              hole_mumax_(Units::get(470.5, "cm*cm/V/s") * std::pow(temperature / 300, -2.2)),
+              hole_cr_(Units::get(2.23e17, "/cm/cm/cm")), hole_alpha_(0.719), hole_mu1_(Units::get(29.0, "cm*cm/V/s")),
+              hole_cs_(Units::get(6.1e20, "/cm/cm/cm")), hole_beta_(2.0) {
+            if(!doping) {
+                throw ModelUnsuitable("No doping profile available");
+            }
+        }
+
+        double operator()(const CarrierType& type, double, double doping) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_mu0_ +
+                       (electron_mumax_ - electron_mu0_) / (1 + std::pow(doping / electron_cr_, electron_alpha_)) -
+                       electron_mu1_ / (1 + std::pow(electron_cs_ / doping, electron_beta_));
+            } else {
+                return hole_mu0_ * std::exp(-hole_pc_ / doping) +
+                       hole_mumax_ / (1 + std::pow(doping / hole_cr_, hole_alpha_)) -
+                       hole_mu1_ / (1 + std::pow(hole_cs_ / doping, hole_beta_));
+            }
+        };
+
+    private:
+        double electron_mu0_;
+        double electron_mumax_;
+        double electron_cr_;
+        double electron_alpha_;
+        double electron_mu1_;
+        double electron_cs_;
+        double electron_beta_;
+        double hole_mu0_;
+        double hole_pc_;
+        double hole_mumax_;
+        double hole_cr_;
+        double hole_alpha_;
+        double hole_mu1_;
+        double hole_cs_;
+        double hole_beta_;
+    };
+
+    /**
+     * @ingroup Models
      * @brief Arora mobility model for charge carriers in silicon
      *
      * Parameterization variables from https://doi.org/10.1109/T-ED.1982.20698 (values from Table 1, formulae 8 for electrons
@@ -180,7 +233,7 @@ namespace allpix {
             }
         }
 
-        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+        double operator()(const CarrierType& type, double, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mumin_ + electron_mu0_ / (1 + std::pow(std::fabs(doping) / electron_nref_, alpha_));
             } else {
@@ -227,6 +280,8 @@ namespace allpix {
                 model_ = std::make_unique<Hamburg>(temperature);
             } else if(model == "hamburg_highfield") {
                 model_ = std::make_unique<HamburgHighField>(temperature);
+            } else if(model == "masetti") {
+                model_ = std::make_unique<Masetti>(temperature, doping);
             } else if(model == "arora") {
                 model_ = std::make_unique<Arora>(temperature, doping);
             } else {
