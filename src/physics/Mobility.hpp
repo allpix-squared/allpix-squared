@@ -116,14 +116,14 @@ namespace allpix {
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             if(type == CarrierType::ELECTRON) {
                 // Equation (3) of the reference, setting E0 = 0 as suggested
-                return 1 / (1 / electron_mu0_ + 1 / electron_vsat_ * efield_mag);
+                return 1. / (1. / electron_mu0_ + 1. / electron_vsat_ * efield_mag);
             } else {
                 // Equation (5) of the reference
                 if(efield_mag < hole_E0_) {
                     return hole_mu0_;
                 } else {
-                    return 1 / (1 / hole_mu0_ + hole_param_b_ * (efield_mag - hole_E0_) +
-                                hole_param_c_ * (efield_mag - hole_E0_) * (efield_mag - hole_E0_));
+                    return 1. / (1. / hole_mu0_ + hole_param_b_ * (efield_mag - hole_E0_) +
+                                 hole_param_c_ * (efield_mag - hole_E0_) * (efield_mag - hole_E0_));
                 }
             }
         };
@@ -184,12 +184,12 @@ namespace allpix {
         double operator()(const CarrierType& type, double, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mu0_ +
-                       (electron_mumax_ - electron_mu0_) / (1 + std::pow(doping / electron_cr_, electron_alpha_)) -
-                       electron_mu1_ / (1 + std::pow(electron_cs_ / doping, electron_beta_));
+                       (electron_mumax_ - electron_mu0_) / (1. + std::pow(doping / electron_cr_, electron_alpha_)) -
+                       electron_mu1_ / (1. + std::pow(electron_cs_ / doping, electron_beta_));
             } else {
                 return hole_mu0_ * std::exp(-hole_pc_ / doping) +
-                       hole_mumax_ / (1 + std::pow(doping / hole_cr_, hole_alpha_)) -
-                       hole_mu1_ / (1 + std::pow(hole_cs_ / doping, hole_beta_));
+                       hole_mumax_ / (1. + std::pow(doping / hole_cr_, hole_alpha_)) -
+                       hole_mu1_ / (1. + std::pow(hole_cs_ / doping, hole_beta_));
             }
         };
 
