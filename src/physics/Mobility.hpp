@@ -40,7 +40,7 @@ namespace allpix {
          * @param efield_mag Magnitude of the electric field
          * @return Mobility of the charge carrier
          */
-        virtual double operator()(const CarrierType& type, double efield_mag) const = 0;
+        virtual double operator()(const CarrierType& type, double efield_mag, double doping) const = 0;
     };
 
     /**
@@ -60,7 +60,7 @@ namespace allpix {
               hole_Ec_(Units::get(1.24 * std::pow(temperature, 1.68), "V/cm")),
               hole_Beta_(0.46 * std::pow(temperature, 0.17)) {}
 
-        double operator()(const CarrierType& type, double efield_mag) const override {
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
                 return electron_Vm_ / electron_Ec_ /
@@ -113,7 +113,7 @@ namespace allpix {
               hole_param_c_(Units::get(-3.31e-13, "s/V")),
               hole_E0_(Units::get(2640 * std::pow(temperature / 300, 0.526), "V/cm")) {}
 
-        double operator()(const CarrierType& type, double efield_mag) const override {
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
             if(type == CarrierType::ELECTRON) {
                 // Equation (3) of the reference, setting E0 = 0 as suggested
                 return 1 / (1 / electron_mu0_ + 1 / electron_vsat_ * efield_mag);
@@ -176,8 +176,9 @@ namespace allpix {
          * Mobility constructor
          * @param model       Name of the mobility model
          * @param temperature Temperature for which the mobility model should be initialized
+         * @param doping      Boolean to indicate presence of doping profile information
          */
-        Mobility(const std::string& model, double temperature) {
+        Mobility(const std::string& model, double temperature, bool doping = false) {
             if(model == "jacoboni") {
                 model_ = std::make_unique<JacoboniCanali>(temperature);
             } else if(model == "canali") {
