@@ -39,7 +39,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("diffuse_deposit", false);
-    config_.setDefault<std::string>("recombination_model", "combined");
+    config_.setDefault<std::string>("recombination_model", "none");
 
     integration_time_ = config_.get<double>("integration_time");
     output_plots_ = config_.get<bool>("output_plots");

@@ -71,7 +71,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
-    config_.setDefault<std::string>("recombination_model", "combined");
+    config_.setDefault<std::string>("recombination_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
