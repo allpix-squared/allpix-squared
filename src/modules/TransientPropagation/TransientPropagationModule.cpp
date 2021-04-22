@@ -317,12 +317,10 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
         runge_kutta.setValue(position);
 
         // Check if charge carrier is still alive:
-        if(has_doping_profile_) {
-            is_alive = carrier_alive_(type,
-                                      detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                      survival_probability,
-                                      timestep);
-        }
+        is_alive = carrier_alive_(type,
+                                  detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                                  survival_probability,
+                                  timestep);
 
         // Update step length histogram
         if(output_plots_) {
