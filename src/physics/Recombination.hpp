@@ -48,6 +48,16 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief No recombination
+     *
+     */
+    class None : virtual public RecombinationModel {
+    public:
+        bool operator()(const CarrierType&, double, double, double) const override { return true; };
+    };
+
+    /**
+     * @ingroup Models
      * @brief Shockley-Read-Hall recombination of charge carriers in silicon
      *
      * Reference lifetime and doping concentrations, taken from:
@@ -152,7 +162,7 @@ namespace allpix {
             } else if(model == "combined" || "srhauger") {
                 model_ = std::make_unique<ShockleyReadHallAuger>(doping);
             } else {
-                throw InvalidModelError(model);
+                model_ = std::make_unique<None>();
             }
         }
 
