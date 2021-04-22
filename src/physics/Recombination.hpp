@@ -66,10 +66,14 @@ namespace allpix {
      */
     class ShockleyReadHall : virtual public RecombinationModel {
     public:
-        ShockleyReadHall(bool)
+        ShockleyReadHall(bool doping)
             : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(4.0e-4, "s")),
               hole_lifetime_reference_(Units::get(1e16, "/cm/cm/cm")),
-              hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {}
+              hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
+            if(!doping) {
+                throw ModelUnsuitable("No doping profile available");
+            }
+        }
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const override {
             return survival_prob > (1 - std::exp(-1. * time_elapsed / lifetime(type, doping)));
@@ -96,7 +100,11 @@ namespace allpix {
      */
     class Auger : virtual public RecombinationModel {
     public:
-        Auger(bool) : auger_coefficient_(Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s")) {}
+        Auger(bool doping) : auger_coefficient_(Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s")) {
+            if(!doping) {
+                throw ModelUnsuitable("No doping profile available");
+            }
+        }
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const override {
             // Auger only applies to minority charge carriers, if we have a majority carrier always return true:
