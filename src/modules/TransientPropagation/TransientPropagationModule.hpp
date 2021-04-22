@@ -104,9 +104,6 @@ namespace allpix {
         double electron_Hall_;
         double hole_Hall_;
 
-        // Doping profile available?
-        bool has_doping_profile_{};
-
         // Magnetic field
         bool has_magnetic_field_{};
         ROOT::Math::XYZVector magnetic_field_;

@@ -118,9 +118,6 @@ namespace allpix {
         bool has_magnetic_field_;
         ROOT::Math::XYZVector magnetic_field_;
 
-        // Doping profile available?
-        bool has_doping_profile_;
-
         // Statistical information
         std::atomic<unsigned int> total_propagated_charges_{};
         std::atomic<unsigned int> total_steps_{};

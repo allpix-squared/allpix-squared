@@ -541,19 +541,16 @@ void GenericPropagationModule::initialize() {
                                                   static_cast<double>(charge_per_step_));
     }
 
-    // Check for doping profile
-    has_doping_profile_ = detector->hasDopingProfile();
-
     // Prepare mobility model
     try {
-        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, has_doping_profile_);
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, detector->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "mobility_model", e.what());
     }
 
     // Prepare recombination model
     try {
-        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), has_doping_profile_);
+        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), detector->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }

@@ -85,9 +85,6 @@ namespace allpix {
         Mobility mobility_;
         Recombination carrier_alive_;
 
-        // Doping profile available?
-        bool has_doping_profile_{};
-
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 

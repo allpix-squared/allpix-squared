@@ -73,14 +73,13 @@ void ProjectionPropagationModule::initialize() {
         throw ModuleError("This module should only be used with linear electric fields.");
     }
 
-    has_doping_profile_ = detector_->hasDopingProfile();
-    if(has_doping_profile_ && detector_->getDopingProfileType() != FieldType::CONSTANT) {
+    if(detector_->hasDopingProfile() && detector_->getDopingProfileType() != FieldType::CONSTANT) {
         throw ModuleError("This module should only be used with constant doping concentration.");
     }
 
     // Prepare recombination model
     try {
-        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), has_doping_profile_);
+        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), detector_->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
