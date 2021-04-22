@@ -21,7 +21,10 @@
 
 #include "objects/DepositedCharge.hpp"
 #include "objects/Pulse.hpp"
+
 #include "physics/Mobility.hpp"
+#include "physics/Recombination.hpp"
+
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -90,17 +93,12 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
         unsigned int charge_per_step_{};
 
+        // Models for electron and hole mobility and lifetime
         Mobility mobility_;
+        Recombination carrier_alive_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
-
-        // Predefined values for reference charge carrier lifetime and doping concentration
-        double electron_lifetime_reference_;
-        double hole_lifetime_reference_;
-        double electron_doping_reference_;
-        double hole_doping_reference_;
-        double auger_coeff_;
 
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;
