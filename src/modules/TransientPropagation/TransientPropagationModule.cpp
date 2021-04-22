@@ -104,7 +104,7 @@ void TransientPropagationModule::initialize() {
 
     // Prepare mobility model
     try {
-        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_);
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, has_doping_profile_);
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "mobility_model", e.what());
     }
