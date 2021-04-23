@@ -45,6 +45,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     // Set defaults for config variables
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
+    config_.setDefault<bool>("last_threshold_crossing_tot", false);
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
     config_.setDefault<bool>("ignore_polarity", false);
 
@@ -83,6 +84,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         store_tot_ = true;
         clockToT_ = config_.get<double>("clock_bin_tot");
     }
+
+    // Whether to use first or last crossing for ToT
+    last_threshold_crossing_tot_ = config_.get<bool>("last_threshold_crossing_tot");
 
     sigmaNoise_ = config_.get<double>("sigma_noise");
     threshold_ = config_.get<double>("threshold");
@@ -385,9 +389,11 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
 
     LOG(TRACE) << "Calculating time-over-threshold, starting at " << Units::display(arrival_time, {"ps", "ns", "us"});
     unsigned int tot_clock_cycles = 0;
+    unsigned int final_tot_clock_cycles = 0;
+    bool was_above_treshold = true;
 
     // Lambda for threshold calculation:
-    auto is_below_threshold = [](double bin, double threshold, bool ignore_polarity) {
+    auto calculate_is_below_threshold = [](double bin, double threshold, bool ignore_polarity) {
         if(ignore_polarity) {
             return (std::fabs(bin) < std::fabs(threshold));
         } else {
@@ -399,13 +405,18 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
     while(tot_time < integration_time_) {
         auto bin = pulse.at(static_cast<size_t>(std::floor(tot_time / timestep)));
-        if(is_below_threshold(bin, threshold_, ignore_polarity_)) {
-            break;
+        auto is_below_threshold = calculate_is_below_threshold(bin, threshold_, ignore_polarity_);
+        if(was_above_treshold && is_below_threshold) {
+            final_tot_clock_cycles = tot_clock_cycles;
+            if(!last_threshold_crossing_tot_) {
+                break;
+            }
         }
+        was_above_treshold = !is_below_threshold;
         tot_clock_cycles++;
         tot_time += clockToT_;
     }
-    return tot_clock_cycles;
+    return final_tot_clock_cycles;
 }
 
 void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_num,
