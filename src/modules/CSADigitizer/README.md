@@ -23,6 +23,7 @@ The values stored in `PixelHit` depend on the Time-of-Arrival (ToA) and Time-ove
 Since the input pulse may have different polarity, it is important to set the threshold accordingly to a positive or negative value, otherwise it may not trigger at all.
 If this behavior is not desired, the `ignore_polarity` parameter can be set to compare only the absolute values of the input and the threshold value.
 
+By default, the first crossing from above to below the threshold is used to determine the ToT. Some chips may use the last crossing for better performance in high noise to signal scenarios, which can be adjusted with the `last_threshold_crossing_tot` parameter.
 
 ### Parameters
 * `model` : Choice between different CSA models. Currently implemented are two parametrizations of the circuit from [@kleczek], `simple` and `csa`, and the `custom` model for a custom impulse response.
@@ -30,6 +31,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `sigma_noise` : Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold` : Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
 * `ignore_polarity`: Select whether polarity of the threshold is ignored, i.e. the absolute values are compared, or if polarity is taken into account. Defaults to `false`.
+* `last_threshold_crossing_tot` : Select whether the last threshold crossing should be used as ToT within the integration time. Defaults to `false`. 
 * `clock_bin_toa` : Duration of a clock cycle for the time-of-arrival (ToA) clock. If set, the output timestamp is delivered in units of ToA clock cycles, otherwise in nanoseconds.
 * `clock_bin_tot` : Duration of a clock cycle for the time-over-threshold (ToT) clock. If set, the output charge is delivered as time over threshold in units of ToT clock cycles, otherwise the pulse integral is stored instead.
 
@@ -94,6 +96,7 @@ model = "custom"
 response_function = "TMath::Max([0]*(1.-TMath::Exp(-x/[1]))-[2]*x,0.)"
 response_parameters = [2.6e14V/C, 9.1e1ns, 4.2e19V/C/s]
 integration_time = 10us
+last_threshold_crossing_tot = true
 threshold = 60mV
 clock_bin_toa = 8ns
 clock_bin_tot = 8ns
