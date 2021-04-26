@@ -411,8 +411,10 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
             if(!last_threshold_crossing_tot_) {
                 break;
             }
+            was_above_treshold = false;
+        } else if(!was_above_treshold && !is_below_threshold) {
+            was_above_treshold = true;
         }
-        was_above_treshold = !is_below_threshold;
         tot_clock_cycles++;
         tot_time += clockToT_;
     }
