@@ -16,18 +16,24 @@ std::shared_ptr<MeshParser> MeshParser::factory(const allpix::Configuration& con
 }
 
 std::vector<Point> MeshParser::getMesh(const std::string& file, const std::vector<std::string>& regions) {
-    std::vector<Point> points;
 
-    auto region_grid = read_meshes(file);
-    LOG(INFO) << "Grid sizes for all regions:";
-    for(auto& reg : region_grid) {
-        LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
+    // Populate mesh map once:
+    if(mesh_map_[file].empty()) {
+        LOG(STATUS) << "Reading mesh grid from file \"" << file << "\"";
+        mesh_map_[file] = read_meshes(file);
+        LOG(INFO) << "Grid sizes for all regions:";
+        for(auto& reg : mesh_map_[file]) {
+            LOG(INFO) << "\t" << std::left << std::setw(25) << reg.first << " " << reg.second.size();
+        }
+    } else {
+        LOG(STATUS) << "Using cached mesh grid from file \"" << file << "\"";
     }
 
     // Append all grid regions to the mesh:
+    std::vector<Point> points;
     for(const auto& region : regions) {
-        if(region_grid.find(region) != region_grid.end()) {
-            points.insert(points.end(), region_grid[region].begin(), region_grid[region].end());
+        if(mesh_map_[file].find(region) != mesh_map_[file].end()) {
+            points.insert(points.end(), mesh_map_[file][region].begin(), mesh_map_[file][region].end());
         } else {
             throw std::runtime_error("Region \"" + region + "\" not found in mesh file");
         }
@@ -44,21 +50,28 @@ std::vector<Point> MeshParser::getMesh(const std::string& file, const std::vecto
 std::vector<Point>
 MeshParser::getField(const std::string& file, const std::string& observable, const std::vector<std::string>& regions) {
 
-    std::vector<Point> field;
-    auto region_fields = read_fields(file);
-    LOG(INFO) << "Field sizes for all regions and observables:";
-    for(auto& reg : region_fields) {
-        LOG(INFO) << " " << reg.first << ":";
-        for(auto& fld : reg.second) {
-            LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
+    // Populate field map once:
+    if(field_map_[file].empty()) {
+        LOG(STATUS) << "Reading field from file \"" << file << "\"";
+        field_map_[file] = read_fields(file);
+        LOG(INFO) << "Field sizes for all regions and observables:";
+        for(auto& reg : field_map_[file]) {
+            LOG(INFO) << " " << reg.first << ":";
+            for(auto& fld : reg.second) {
+                LOG(INFO) << "\t" << std::left << std::setw(25) << fld.first << " " << fld.second.size();
+            }
         }
+    } else {
+        LOG(STATUS) << "Using cached field from file \"" << file << "\"";
     }
 
     // Append all field regions to the field vector:
+    std::vector<Point> field;
     for(const auto& region : regions) {
-        if(region_fields.find(region) != region_fields.end() &&
-           region_fields[region].find(observable) != region_fields[region].end()) {
-            field.insert(field.end(), region_fields[region][observable].begin(), region_fields[region][observable].end());
+        if(field_map_[file].find(region) != field_map_[file].end() &&
+           field_map_[file][region].find(observable) != field_map_[file][region].end()) {
+            field.insert(
+                field.end(), field_map_[file][region][observable].begin(), field_map_[file][region][observable].end());
         } else {
             throw std::runtime_error("No matching region with observable \"" + observable + "\" found in field file");
         }
