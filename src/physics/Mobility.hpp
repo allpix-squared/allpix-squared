@@ -184,12 +184,13 @@ namespace allpix {
         double operator()(const CarrierType& type, double, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mu0_ +
-                       (electron_mumax_ - electron_mu0_) / (1. + std::pow(doping / electron_cr_, electron_alpha_)) -
-                       electron_mu1_ / (1. + std::pow(electron_cs_ / doping, electron_beta_));
+                       (electron_mumax_ - electron_mu0_) /
+                           (1. + std::pow(std::fabs(doping) / electron_cr_, electron_alpha_)) -
+                       electron_mu1_ / (1. + std::pow(electron_cs_ / std::fabs(doping), electron_beta_));
             } else {
-                return hole_mu0_ * std::exp(-hole_pc_ / doping) +
-                       hole_mumax_ / (1. + std::pow(doping / hole_cr_, hole_alpha_)) -
-                       hole_mu1_ / (1. + std::pow(hole_cs_ / doping, hole_beta_));
+                return hole_mu0_ * std::exp(-hole_pc_ / std::fabs(doping)) +
+                       hole_mumax_ / (1. + std::pow(std::fabs(doping) / hole_cr_, hole_alpha_)) -
+                       hole_mu1_ / (1. + std::pow(hole_cs_ / std::fabs(doping), hole_beta_));
             }
         };
 
@@ -276,7 +277,7 @@ namespace allpix {
                 model_ = std::make_unique<JacoboniCanali>(temperature);
             } else if(model == "canali") {
                 model_ = std::make_unique<Canali>(temperature);
-            } else if(model == "hamburg" || model == "klanner" || model == "scharf") {
+            } else if(model == "hamburg") {
                 model_ = std::make_unique<Hamburg>(temperature);
             } else if(model == "hamburg_highfield") {
                 model_ = std::make_unique<HamburgHighField>(temperature);
