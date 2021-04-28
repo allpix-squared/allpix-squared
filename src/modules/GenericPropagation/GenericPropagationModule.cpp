@@ -720,11 +720,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         return diffusion;
     };
 
-    // Survival probability of this charge carrier package, evaluated once
+    // Survival probability of this charge carrier package, evaluated at every step
     std::uniform_real_distribution<double> survival(0, 1);
-    auto survival_probability = survival(random_generator);
 
-    auto carrier_alive = [&](double doping_concentration, double time) -> bool {
+    auto carrier_alive = [&](double doping_concentration, double timestep) -> bool {
         auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
                             (1 + std::fabs(doping_concentration) /
                                      (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
@@ -740,7 +739,9 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
             lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
         }
 
-        return survival_probability > (1 - std::exp(-1 * time / lifetime));
+        auto survival_probability = survival(random_generator);
+
+        return survival_probability > (1 - std::exp(-1 * timestep / lifetime));
     };
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
@@ -815,8 +816,8 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
 
         // Check if charge carrier is still alive:
         if(has_doping_profile_) {
-            is_alive = carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                     runge_kutta.getTime());
+            is_alive =
+                carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)), timestep);
         }
 
         // Adapt step size to match target precision
