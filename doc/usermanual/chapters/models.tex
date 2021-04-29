@@ -131,14 +131,14 @@ This model requires a doping profile to be loaded for the detector in question, 
 
 While this mobility model requires the \emph{total doping concentration} $N_D + N_A$ as parameter, the doping profile used throughout \apsq provides the \emph{effective doping concentration} $N_D - N_A$ since this also encodes the majority charge carriers via its sign.
 However, in the parts of a silicon detector relevant for this simulation, i.e.\ the sensing volume, the difference between effective and total concentration is expected to be negligible.
-Therefore the doping concentration in this model is taken as the absolute value $D = \left|N_D - N_A\right|$.
+Therefore the doping concentration in this model is taken as the absolute value $N = \left|N_D - N_A\right|$.
 
 The mobility is parametrized as
 \begin{equation}
     \label{eq:mob:mas}
     \begin{split}
-        \mu_e(D) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (D / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / D)^{\beta_e})}\\
-        \mu_h(D) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (D / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / D)^{\beta_h})} + e^{P_c / D}\\
+        \mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / N)^{\beta_e})}\\
+        \mu_h(N) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / N)^{\beta_h})} + e^{P_c / N}\\
 \end{split}
 \end{equation}
 as taken from equations~1 (for electrons) and~4 (for holes) of~\cite{masetti}.
@@ -183,8 +183,8 @@ The mobility is parametrized as
 \begin{equation}
     \label{eq:mob:aro}
     \begin{split}
-        \mu_e(D) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (D / N_{ref,e})^{\alpha}\right)\\
-        \mu_h(D) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (D / N_{ref,h})^{\alpha}\right)\\
+        \mu_e(N) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (N / N_{ref,e})^{\alpha}\right)\\
+        \mu_h(N) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (N / N_{ref,h})^{\alpha}\right)\\
     \end{split}
 \end{equation}
 as taken from equations~8 (for electrons) and~12 (for holes) of~\cite{arora}.
@@ -217,8 +217,55 @@ This technique is for example used in the Synopsys Sentaurus TCAD software.
 The mobility is then parametrized using the two models as:
 \begin{equation}
     \label{eq:mob:mascan}
-    \mu (E, D) = \frac{\mu_{m}(D)}{\left(1 + \left(\mu_{m}(D) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}}
+    \mu (E, N) = \frac{\mu_{m}(N)}{\left(1 + \left(\mu_{m}(N) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}}
 \end{equation}
-where $\mu_{m}(D)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and $v_{m}$, $\beta$ are the respective parameters from the Jacoboni/Canali model presented in Sections~\ref{sec:mob:jac}~and~\ref{sec:mob:can}.
+where $\mu_{m}(N)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and $v_{m}$, $\beta$ are the respective parameters from the Jacoboni/Canali model presented in Sections~\ref{sec:mob:jac}~and~\ref{sec:mob:can}.
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.
+
+
+\section{Charge Carrier Lifetime \& Recombination}
+\label{sec:recombination}
+
+\apsq provides the possibility to simulate finite lifetimes of charge carriers as a function of the local doping concentration via non-radiative recombination processes.
+While most of these models require the \emph{total doping concentration} $N_D + N_A$ as parameter, the doping profile used throughout \apsq provides the \emph{effective doping concentration} $N_D - N_A$ since this also encodes the majority charge carriers via its sign - an information relevant to some of the models.
+However, in the parts of a silicon detector relevant for this simulation, i.e.\ the sensing volume, the difference between effective and total concentration is expected to be negligible.
+Therefore the two values are treated as equivalent throughout the lifetime models and the doping concentration is taken as the absolute value $N = \left|N_D - N_A\right|$.
+
+Whether a charge carrier has recombined with the lattice is calculated for every step of the simulation using the relation
+\begin{equation}
+    \label{eq:recomb:prob}
+    p > 1 - e^{- dt / \tau}
+\end{equation}
+where $p$ is a recombination probability, drawn from a uniform distribution with $[0, 1]$, $dt$ is the last time step of the charge carrier motion and $\tau$ the lifetime for the local doping concentration calculated by the models described in the following.
+If Equation~\eqref{eq:recomb:prob} evaluates to \emph{true}, the charge carrier still exists, if it evaluates to \emph{false} it has been recombined with the lattice.
+
+Finite charge carrier lifetime can be simulated by all propagation modules and comprise the following models:
+
+\subsection{Shockley-Read-Hall Recombination}
+
+~\cite{shockley-read,hall}
+The lifetime is calculated using the Shockley-Read-Hall relation~\cite{fossum-lee}
+\begin{equation}
+    \tau(N) = \frac{\tau_0}{1 + \frac{N}{N_{d0}}}
+\end{equation}
+where $\tau_0$ and $N_{d0}$ are reference lifetime and doping concentration taken from~\cite{fossum}.
+
+\subsection{Auger Recombination}
+
+The charge carrier lifetime according to the Auger recombination model is calculated~\cite{haug}
+\begin{equation}
+    \tau(N) = \frac{1}{C_{a}N}
+\end{equation}
+where $C_{a}$ is the Auger coefficient.
+
+\subsection{Combined SRH/Auger Recombination}
+
+This model combines the charge carrier recombination from the Shockley-Read-Hall and the Auger model by inversely summing the individual lifetimes calculated by the models via
+\begin{align}
+    \label{eq:recom:combined}
+    \tau^{-1}(N) &= \tau_{srh}^{-1}(N) + \tau_{a}^{-1}(N) &\quad \textrm{for \emph{minority} charge carriers} \nonumber \\
+              &= \tau_{srh}^{-1}(N) &\quad \textrm{for \emph{majority} charge carriers}
+\end{align}
+where $\tau_{srh}(N)$ is the Shockley-Read-Hall and $\tau_{a}(N)$ the Auger lifetime.
+The latter is only taken into account for minority charge carriers.
