@@ -58,7 +58,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Set alias for backward compatibility with the previous keyword for multithreading
-    global_config.setDefault("multithreading", false);
+    global_config.setDefault("multithreading", true);
     multithreading_flag_ = global_config.get<bool>("multithreading");
 
     // Set default for performance plot creation:
