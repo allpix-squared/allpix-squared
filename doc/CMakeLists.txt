@@ -150,6 +150,7 @@ IF(LATEX_COMPILER)
                    usermanual/chapters/testing.tex
                    usermanual/chapters/framework.tex
                    usermanual/chapters/getting_started.tex
+                   usermanual/chapters/models.tex
                    usermanual/chapters/objects.tex
                    usermanual/chapters/modules.tex
                    usermanual/chapters/examples.tex

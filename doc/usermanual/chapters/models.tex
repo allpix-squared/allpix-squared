@@ -1,0 +1,224 @@
+\chapter{Physics Models}
+\label{ch:models}
+
+\apsq implements a variety of models to describe the physics of semiconductor detectors.
+These models are implemented module-independently and can be selected via configuration parameters in the respective models.
+This chapter serves as central reference for the different models.
+
+\section{Charge Carrier Mobility}
+\label{sec:mobility}
+
+\apsq provides different charge carrier mobility models, the best-suited model depends on the simulated device and other simulation parameters.
+Some models depend on the electric field strength to parametrize the mobility, others on the doping concentration of the device.
+The charge carrier mobility models are used by all propagation modules and comprise the following models:
+
+\subsection{Jacoboni-Canali Model}
+\label{sec:mob:jac}
+
+The Jacoboni-Canali model~\cite{jacoboni} is the most widely used parametrization of charge carrier mobility in Silicon as a function of the electric field $E$.
+It has originally been derived for $\left<111\right>$ silicon lattice orientation, but is widely used also for the common $\left<100\right>$ orientation.
+The mobility is parametrized as
+\begin{equation}
+    \label{eq:mob:jac}
+    \mu (E) = \frac{v_m}{E_c} \frac{1}{\left(1 + (E / E_c)^\beta \right)^{1 / \beta}},
+\end{equation}
+where $v_m$, $E_c$, and $\beta$ are phenomenological parameters, defined for electrons and holes respectively.
+The temperature dependence of these parameters is taken into account by scaling them with respect to a reference parameter value as
+\begin{equation}
+    A = A_{ref} \cdot T^{\gamma}
+\end{equation}
+where $A_{ref}$ is the reference parameter value, $T$ the temperature in units of \si{K}, and $\gamma$ the temperature scaling factor.
+
+The parameter values implemented in \apsq are taken from Table~5 of~\cite{jacoboni} as:
+\begin{equation*}
+    \begin{split}
+        v_{m,e} &= \num{1.53e9} \cdot T^{-0.87}\,\si{cm \per s}\\
+        E_{c,e} &= \num{1.01} \cdot T^{1.55}\,\si{V \per cm}\\
+        \beta_e &= \num{2.57e-2} \cdot T^{0.66}
+    \end{split}
+    \qquad
+    \begin{split}
+        v_{m,h} &= \num{1.62e8} \cdot T^{-0.52}\,\si{cm \per s}\\
+        E_{c,h} &= \num{1.24} \cdot T^{1.68}\,\si{V \per cm}\\
+        \beta_h &= \num{0.46} \cdot T^{0.17}
+    \end{split}
+\end{equation*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "jacoboni"}.
+
+\subsection{Canali Model}
+\label{sec:mob:can}
+
+The Canali model~\cite{canali} differs from the Jacoboni-Canali model from equation~\eqref{eq:mob:jac} only by the value of $v_m$ for electrons.
+The difference is most likely a typo in the Jacoboni reproduction of the parametrization, so this one can be considered the original parametrization derived from data.
+The altered value is taken from equation~2a in~\cite{canali} and amounts to
+\begin{equation*}
+    v_{m,e} = \num{1.43e9} \cdot T^{-0.87}\,\si{cm \per s}
+\end{equation*}
+
+A comparison with other models exhibits a better accordance of the electron mobility compared to the Jacoboni-Canali parameter value, especially at very high values of the electric field.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "canali"}.
+
+\subsection{Hamburg Model}
+
+The Hamburg model~\cite{hamburg} presents an empirical parametrization of electron and hole mobility as a function of the electric field $E$ based on measurements of drift velocities in high-ohmic silicon with $\left<100\right>$ lattice orientation.
+The mobility is parametrized as
+\begin{align}
+    \label{eq:mob:ham}
+    \mu_e^{-1}(E) &= 1 / \mu_{0,e} + E / v_{sat} \nonumber \\
+    \mu_h^{-1}(E) &= 1 / \mu_{0,h} &\quad \textrm{for} \quad E < E_0 \nonumber \\
+                  &= 1 / \mu_{0,h} + b \cdot (E - E_0) + c \cdot (E - E_0)^2 &\quad \textrm{for} \quad E \geq E_0
+\end{align}
+as taken from equations~3 and~5 of~\cite{hamburg}.
+
+The temperature dependence of the model parameters are calculated with respect to their reference values at a temperature of \SI{300}{K} via equation~6 of~\cite{hamburg} as
+\begin{equation}
+    \label{eq:mob:ham:temp}
+    A_i = A_i(T = \SI{300}{K}) \cdot \left(\frac{T}{\SI{300}{K}}\right)^{\gamma_i}
+\end{equation}
+The hole mobility parameter $c$ is assumed to have no temperature dependence.
+
+The parameter values implemented in \apsq are taken from Table~4 of~\cite{hamburg} as:
+\begin{equation*}
+    \begin{split}
+        \mu_{0,e} &= \SI{1530}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.42}\\
+        v_{sat}   &= \SI{1.03e7}{cm \per s} \cdot (T / \SI{300}{K})^{-0.226}\\
+    \end{split}
+    \qquad
+    \begin{split}
+      \mu_{0,h} &= \SI{464}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.20}\\
+        b       &= \SI{9.57e-8}{cm \per s} \cdot (T / \SI{300}{K})^{-0.101}\\
+        c       &= \SI{-3.31e-13}{s \per V}\\
+        E_0     &= \SI{2640}{V \per cm} \cdot (T / \SI{300}{K})^{0.526}
+    \end{split}
+\end{equation*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "hamburg"}.
+
+
+\subsection{Hamburg High-Field Model}
+
+The Hamburg high-field model~\cite{hamburg} takes the same form as the Hamburg model provided in equation~\eqref{eq:mob:ham} but uses a different set of parameter values.
+The values are taken from Table~3 of~\cite{hamburg} and are suitable for electric field strengths above \SI{2.5}{\kilo V/cm}.
+Again, no temperature dependence is assumed on hole mobility parameter $c$, while all other parameters are scaled to temperatures different than \SI{300}{K} using equation~\eqref{eq:mob:ham:temp}.
+
+The parameter values implemented in \apsq are:
+\begin{equation*}
+    \begin{split}
+        \mu_{0,e} &= \SI{1430}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-1.99}\\
+        v_{sat}   &= \SI{1.05e7}{cm \per s} \cdot (T / \SI{300}{K})^{-0.302}\\
+    \end{split}
+    \qquad
+    \begin{split}
+      \mu_{0,h} &= \SI{457}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.80}\\
+        b       &= \SI{9.57e-8}{cm \per s} \cdot (T / \SI{300}{K})^{-0.155}\\
+        c       &= \SI{-3.24e-13}{s \per V}\\
+        E_0     &= \SI{2970}{V \per cm} \cdot (T / \SI{300}{K})^{0.563}
+    \end{split}
+\end{equation*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "hamburg_highfield"}.
+
+\subsection{Masetti Model}
+\label{sec:mob:mas}
+
+The Masetti mobility model~\cite{masetti} parametrizes electron and hole mobility as a function of the total doping concentration $D$ of the silicon material.
+This model requires a doping profile to be loaded for the detector in question, and an error will be returned if the doping profile is missing.
+
+While this mobility model requires the \emph{total doping concentration} $N_D + N_A$ as parameter, the doping profile used throughout \apsq provides the \emph{effective doping concentration} $N_D - N_A$ since this also encodes the majority charge carriers via its sign.
+However, in the parts of a silicon detector relevant for this simulation, i.e.\ the sensing volume, the difference between effective and total concentration is expected to be negligible.
+Therefore the doping concentration in this model is taken as the absolute value $D = \left|N_D - N_A\right|$.
+
+The mobility is parametrized as
+\begin{equation}
+    \label{eq:mob:mas}
+    \begin{split}
+        \mu_e(D) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (D / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / D)^{\beta_e})}\\
+        \mu_h(D) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (D / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / D)^{\beta_h})} + e^{P_c / D}\\
+\end{split}
+\end{equation}
+as taken from equations~1 (for electrons) and~4 (for holes) of~\cite{masetti}.
+
+Only the parameters $\mu_{max}$ for both electrons and holes are temperature dependent and are scaled according to Equation~\eqref{eq:mob:ham:temp} with parameters $\gamma_e = -2.5$ for electrons and $\gamma_h = -2.2$ for holes.
+
+The parameter values implemented in \apsq are taken from Table~I of~\cite{masetti} as:
+\begin{equation*}
+    \begin{split}
+        \mu_{0,e}   &= \SI{52.2}{cm^2 \per V \per s}\\
+        \mu_{max,e} &= \SI{1417}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.5}\\
+        C_{r,e}     &= \SI{9.68e16}{\per \cubic \cm}\\
+        \alpha_{e}  &= 0.68\\
+        \mu_{1,e}   &= \SI{43.4}{cm^2 \per V \per s}\\
+        C_{s,e}     &= \SI{3.43e20}{\per \cubic \cm}\\
+        \beta_{e}   &= 2.0\\
+    \end{split}
+    \qquad
+    \begin{split}
+        \mu_{0,h}   &= \SI{44.9}{cm^2 \per V \per s}\\
+        \mu_{max,h} &= \SI{470.5}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.2}\\
+        C_{r,h}     &= \SI{2.23e17}{\per \cubic \cm}\\
+        \alpha_{h}  &= 0.719\\
+        \mu_{1,h}   &= \SI{29.0}{cm^2 \per V \per s}\\
+        C_{s,h}     &= \SI{6.1e20}{\per \cubic \cm}\\
+        \beta_{h}   &= 2.0\\
+        P_{c}       &= \SI{9.23e16}{\per \cubic \cm}\\
+    \end{split}
+\end{equation*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti"}.
+
+
+\subsection{Arora Model}
+
+The Arora mobility model~\cite{arora} parametrizes electron and hole mobility as a function of the total doping concentration of the silicon material.
+This model requires a doping profile to be loaded for the detector in question, and an error will be returned if the doping profile is missing.
+The same caveat to doping concentration information in \apsq applies as described in the previous section.
+
+The mobility is parametrized as
+\begin{equation}
+    \label{eq:mob:aro}
+    \begin{split}
+        \mu_e(D) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (D / N_{ref,e})^{\alpha}\right)\\
+        \mu_h(D) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (D / N_{ref,h})^{\alpha}\right)\\
+    \end{split}
+\end{equation}
+as taken from equations~8 (for electrons) and~12 (for holes) of~\cite{arora}.
+
+The parameter values are provided at the reference temperature of \SI{300}{K} and scaled to different temperatures according to Equation~\eqref{eq:mob:ham:temp}.
+The values implemented in \apsq are taken from Table~1 of~\cite{arora} as:
+\begin{equation*}
+    \begin{split}
+        \mu_{min,e} &= \SI{88.0}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-0.57}\\
+        \mu_{0,e}   &= \SI{7.40e8}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.33}\\
+        N_{ref,e}   &= \SI{1.26e17}{\per \cubic \cm} \cdot (T / \SI{300}{K})^{2.4}\\
+    \end{split}
+    \qquad
+    \begin{split}
+        \mu_{min,h} &= \SI{54.3}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-0.57}\\
+        \mu_{0,h}   &= \SI{1.36e8}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.23}\\
+        N_{ref,h}   &= \SI{2.35e17}{\per \cubic \cm} \cdot (T / \SI{300}{K})^{2.4}\\
+        \alpha   &= 0.88 \cdot (T / \SI{300}{K})^{-0.146}
+    \end{split}
+\end{equation*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "arora"}.
+
+\subsection{Extended Canali Model}
+
+This model extends the Jacoboni/Canali model described in Section~\ref{sec:mob:jac} with other doping concentration dependent, low-field models such as the Masetti model described in Section~\ref{sec:mob:mas}.
+This technique is for example used in the Synopsys Sentaurus TCAD software.
+
+The mobility is then parametrized using the two models as:
+\begin{equation}
+    \label{eq:mob:mascan}
+    \mu (E, D) = \frac{\mu_{m}(D)}{\left(1 + \left(\mu_{m}(D) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}}
+\end{equation}
+where $\mu_{m}(D)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and $v_{m}$, $\beta$ are the respective parameters from the Jacoboni/Canali model presented in Sections~\ref{sec:mob:jac}~and~\ref{sec:mob:can}.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.

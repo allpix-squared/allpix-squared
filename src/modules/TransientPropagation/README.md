@@ -7,7 +7,7 @@
 ### Description
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
 
-The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility parameterization by C. Jacoboni et al. [@jacoboni] and the magnetic field via a calculation of the Lorentz drift.
+The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
 
 A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
@@ -30,11 +30,11 @@ The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall rel
 $`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
 
 where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
-In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug]
 
 $`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
 
-where $`C_{a}`$ is the Auger coefficient. 
+where $`C_{a}`$ is the Auger coefficient.
 The effective life time is then given by
 
 $`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
@@ -44,12 +44,13 @@ The survival probability is calculated at each step of the propagation by drawin
 
 ### Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
+* `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation.
 * `charge_per_step`: Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
 * `timestep`: Time step for the Runge-Kutta integration, representing the granularity with which the induced charge is calculated. Default value is 0.01ns.
 * `integration_time`: Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `induction_matrix`: Size of the pixel sub-matrix for which the induced charge is calculated, provided as number of pixels in x and y. The numbers have to be odd and default to `3, 3`. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, a 3x3 grid (9 pixels) should suffice since the weighting potential at a distance of more than one pixel pitch normally is small enough to be neglected while time simulation time is almost tripled.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
-* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$. 
+* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$.
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 
 
@@ -62,7 +63,6 @@ output_plots = true
 timestep = 0.02ns
 ```
 
-[@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
 [@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9

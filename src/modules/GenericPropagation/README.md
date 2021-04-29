@@ -7,12 +7,7 @@
 ### Description
 Simulates the propagation of electrons and/or holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
 
-The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility parameterization by C. Jacoboni et al. [@jacoboni] and the magnetic field via a calculation of the Lorentz drift. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly.
-The mobility is calculated as
-
-$`\mu \left(\vec{x}\right) = \frac{v_m}{E_c} \frac{1}{\left(1 + \left(E\left(\vec{x}\right) / E_c\right)^{\beta} \right)^{1 / \beta}}`$
-
-with $`v_m`$, $`E_c`$, $`\beta`$ defined for electrons and holes separately as detailed in [@jacoboni].
+The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
 
 The two parameters `propagate_electrons` and `propagate_holes` allow to control which type of charge carrier is propagated to their respective electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
 The direction of the propagation depends on the electric and magnetic fields field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
@@ -29,11 +24,11 @@ The life time $`\tau_{srh}`$ is then calculated using the Shockley-Read-Hall rel
 $`\tau_{srh} = \frac{\tau_0}{1 + \frac{N_d}{N_{d0}}}`$
 
 where $`\tau_0`$ and $`N_{d0}`$ are reference life time and doping concentration taken from literature [@fossum].
-In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug] 
+In addition, the charge carrier life time $`\tau_{a}`$ according to the Auger recombination model is calculated [@haug]
 
 $`\tau_{a} = \frac{1}{C_{a}N_{d}}`$
 
-where $`C_{a}`$ is the Auger coefficient. 
+where $`C_{a}`$ is the Auger coefficient.
 The effective life time is then given by
 
 $`\tau^{-1} = \tau_{srh}^{-1} + \tau_{a}^{-1}`$.
@@ -51,6 +46,7 @@ This module requires an installation of Eigen3.
 
 ### Parameters
 * `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
+* `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation.
 * `charge_per_step` : Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
 * `spatial_precision` : Spatial precision to aim for. The timestep of the Runge-Kutta propagation is adjusted to reach this spatial precision after calculating the uncertainty from the fifth-order error method. Defaults to 0.25nm.
 * `timestep_start` : Timestep to initialize the Runge-Kutta integration with. Appropriate initialization of this parameter reduces the time to optimize the timestep to the *spatial_precision* parameter. Default value is 0.01ns.
@@ -60,7 +56,7 @@ This module requires an installation of Eigen3.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
-* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$. 
+* `auger_coefficient` : Auger coefficient for the Auger recombination model. Default is $`2 \times 10^{-30}\,\mathrm{cm}^{6}\,\mathrm{s}^{-1}"`$.
 
 ### Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
@@ -88,7 +84,6 @@ temperature = 293K
 charge_per_step = 25
 ```
 
-[@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
 [@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8

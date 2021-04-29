@@ -283,7 +283,7 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
             return model;
         }
     }
-    throw allpix::InvalidModelError(name);
+    throw allpix::InvalidDetectorModelError(name);
 }
 
 /**
@@ -358,7 +358,7 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
         }
     }
     if(result.empty()) {
-        throw allpix::InvalidModelError(type);
+        throw allpix::InvalidDetectorModelError(type);
     }
 
     return result;
