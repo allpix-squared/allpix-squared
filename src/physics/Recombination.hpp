@@ -135,8 +135,8 @@ namespace allpix {
                 return ShockleyReadHall::operator()(type, survival_prob, timestep, doping);
             } else {
                 // If we have a minority charge carrier, combine the lifetimes:
-                auto combined_lifetime = ShockleyReadHall::lifetime(type, doping) * Auger::lifetime(type, doping) /
-                                         (ShockleyReadHall::lifetime(type, doping) + Auger::lifetime(type, doping));
+                auto combined_lifetime =
+                    1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
                 return survival_prob > (1 - std::exp(-1. * timestep / combined_lifetime));
             }
         };
