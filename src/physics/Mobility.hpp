@@ -38,6 +38,7 @@ namespace allpix {
          * Function call operator to obtain mobility value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field
+         * @param doping (Effective) doping concentration
          * @return Mobility of the charge carrier
          */
         virtual double operator()(const CarrierType& type, double efield_mag, double doping) const = 0;
@@ -50,15 +51,15 @@ namespace allpix {
      * Parameterization variables from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2). All parameters are taken
      * from Table 5.
      */
-    class JacoboniCanali : public MobilityModel {
+    class JacoboniCanali : virtual public MobilityModel {
     public:
         JacoboniCanali(double temperature)
             : electron_Vm_(Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s")),
-              electron_Ec_(Units::get(1.01 * std::pow(temperature, 1.55), "V/cm")),
               electron_Beta_(2.57e-2 * std::pow(temperature, 0.66)),
               hole_Vm_(Units::get(1.62e8 * std::pow(temperature, -0.52), "cm/s")),
-              hole_Ec_(Units::get(1.24 * std::pow(temperature, 1.68), "V/cm")),
-              hole_Beta_(0.46 * std::pow(temperature, 0.17)) {}
+              hole_Beta_(0.46 * std::pow(temperature, 0.17)),
+              electron_Ec_(Units::get(1.01 * std::pow(temperature, 1.55), "V/cm")),
+              hole_Ec_(Units::get(1.24 * std::pow(temperature, 1.68), "V/cm")) {}
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
@@ -72,13 +73,13 @@ namespace allpix {
 
     protected:
         double electron_Vm_;
+        double electron_Beta_;
+        double hole_Vm_;
+        double hole_Beta_;
 
     private:
         double electron_Ec_;
-        double electron_Beta_;
-        double hole_Vm_;
         double hole_Ec_;
-        double hole_Beta_;
     };
 
     /**
@@ -88,7 +89,7 @@ namespace allpix {
      * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
      * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "original".
      */
-    class Canali : public JacoboniCanali {
+    class Canali : virtual public JacoboniCanali {
     public:
         Canali(double temperature) : JacoboniCanali(temperature) {
             electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
@@ -165,7 +166,7 @@ namespace allpix {
      * Parameterization variables from https://doi.org/10.1109/T-ED.1983.21207, formulae (1) for electrons and (4) for holes.
      * The values are taken from Table I, for Arsenic and Boron
      */
-    class Masetti : public MobilityModel {
+    class Masetti : virtual public MobilityModel {
     public:
         Masetti(double temperature, bool doping)
             : electron_mu0_(Units::get(52.2, "cm*cm/V/s")),
@@ -210,6 +211,29 @@ namespace allpix {
         double hole_mu1_;
         double hole_cs_;
         double hole_beta_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Combination of the Masetti and Canali mobility models for charge carriers in silicon ("extended Canali model")
+     *
+     * Based on the combination of the models as implemented in Synopsys Sentaurus TCAD
+     */
+    class MasettiCanali : public Canali, public Masetti {
+    public:
+        MasettiCanali(double temperature, bool doping)
+            : JacoboniCanali(temperature), Canali(temperature), Masetti(temperature, doping) {}
+
+        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+            double masetti = Masetti::operator()(type, efield_mag, doping);
+
+            if(type == CarrierType::ELECTRON) {
+                return masetti /
+                       std::pow(1. + std::pow(masetti * efield_mag / electron_Vm_, electron_Beta_), 1. / electron_Beta_);
+            } else {
+                return masetti / std::pow(1. + std::pow(masetti * efield_mag / hole_Vm_, hole_Beta_), 1. / hole_Beta_);
+            }
+        };
     };
 
     /**
@@ -283,6 +307,8 @@ namespace allpix {
                 model_ = std::make_unique<HamburgHighField>(temperature);
             } else if(model == "masetti") {
                 model_ = std::make_unique<Masetti>(temperature, doping);
+            } else if(model == "masetti_canali") {
+                model_ = std::make_unique<MasettiCanali>(temperature, doping);
             } else if(model == "arora") {
                 model_ = std::make_unique<Arora>(temperature, doping);
             } else {
