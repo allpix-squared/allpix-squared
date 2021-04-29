@@ -22,14 +22,14 @@ The mobility is parametrized as
     \label{eq:mob:jac}
     \mu (E) = \frac{v_m}{E_c} \frac{1}{\left(1 + (E / E_c)^\beta \right)^{1 / \beta}},
 \end{equation}
-where $v_m$, $E_c$, and $\beta$ are phenomenological parameters, defined for electrons and holes respectively
+where $v_m$, $E_c$, and $\beta$ are phenomenological parameters, defined for electrons and holes respectively.
 The temperature dependence of these parameters is taken into account by scaling them with respect to a reference parameter value as
 \begin{equation}
     A = A_{ref} \cdot T^{\gamma}
 \end{equation}
 where $A_{ref}$ is the reference parameter value and $\gamma$ the temperature scaling factor.
 
-The parameter values implemented in \apsq are taken from Table~5~of~\cite{jacoboni} as:
+The parameter values implemented in \apsq are taken from Table~5 of~\cite{jacoboni} as:
 \begin{equation*}
     \begin{split}
         v_{m,e} &= \num{1.53e9} \cdot T^{-0.87}\,\si{cm \per s}\\
@@ -52,7 +52,7 @@ This model can be selected in the configuration file via the parameter \paramete
 
 The Canali model~\cite{canali} differs from the Jacoboni-Canali model from equation~\eqref{eq:mob:jac} only by the value of $v_m$ for electrons.
 The difference is most likely a typo in the Jacoboni reproduction of the parametrization, so this one can be considered the original parametrization derived from data.
-The altered value is taken from equation~2a~in~\cite{canali} and amounts to
+The altered value is taken from equation~2a in~\cite{canali} and amounts to
 \begin{equation*}
     v_{m,e} = \num{1.43e9} \cdot T^{-0.87}\,\si{cm \per s}
 \end{equation*}
@@ -143,7 +143,7 @@ The mobility is parametrized as
 \end{equation}
 as taken from equations~1 (for electrons) and~4 (for holes) of~\cite{masetti}.
 
-Only the parameter s$\mu_{max}$ for both electrons and holes are taken as temperature dependent and are scaled according to Equation~\eqref{eq:mob:ham:temp} with parameters $\gamma_e = -2.5$ for electrons and $\gamma_h = -2.2$ for holes.
+Only the parameters $\mu_{max}$ for both electrons and holes are temperature dependent and are scaled according to Equation~\eqref{eq:mob:ham:temp} with parameters $\gamma_e = -2.5$ for electrons and $\gamma_h = -2.2$ for holes.
 
 The parameter values implemented in \apsq are taken from Table~I of~\cite{masetti} as:
 \begin{equation*}
