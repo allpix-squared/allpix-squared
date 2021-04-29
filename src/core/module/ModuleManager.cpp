@@ -951,6 +951,34 @@ void ModuleManager::finalize() {
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
+    // Check for unused configuration keys:
+    auto unused_keys = global_config.getUnusedKeys();
+    if(!unused_keys.empty()) {
+        std::stringstream st;
+        st << "Unused configuration keys in global section:";
+        for(auto& key : unused_keys) {
+            st << std::endl << key;
+        }
+        LOG(WARNING) << st.str();
+    }
+    for(auto& config : conf_manager_->getInstanceConfigurations()) {
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto cfg_unused_keys = config.getUnusedKeys();
+        if(!cfg_unused_keys.empty()) {
+            std::stringstream st;
+            st << "Unused configuration keys in section " << unique_name << ":";
+            for(auto& key : cfg_unused_keys) {
+                st << std::endl << key;
+            }
+            LOG(WARNING) << st.str();
+        }
+    }
+
     // Find the slowest module, and accumulate the total run-time for all modules
     long double slowest_time = 0, total_module_time = 0;
     std::string slowest_module;
