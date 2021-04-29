@@ -179,7 +179,7 @@ namespace allpix {
          * Function call operator forwarded to the mobility model
          * @return Recombination value
          */
-        template <class... ARGS> double operator()(ARGS&&... args) const {
+        template <class... ARGS> bool operator()(ARGS&&... args) const {
             return model_->operator()(std::forward<ARGS>(args)...);
         }
 
