@@ -27,7 +27,7 @@ The temperature dependence of these parameters is taken into account by scaling 
 \begin{equation}
     A = A_{ref} \cdot T^{\gamma}
 \end{equation}
-where $A_{ref}$ is the reference parameter value and $\gamma$ the temperature scaling factor.
+where $A_{ref}$ is the reference parameter value, $T$ the temperature in units of \si{K}, and $\gamma$ the temperature scaling factor.
 
 The parameter values implemented in \apsq are taken from Table~5 of~\cite{jacoboni} as:
 \begin{equation*}
@@ -130,7 +130,7 @@ The Masetti mobility model~\cite{masetti} parametrizes electron and hole mobilit
 This model requires a doping profile to be loaded for the detector in question, and an error will be returned if the doping profile is missing.
 
 While this mobility model requires the \emph{total doping concentration} $N_D + N_A$ as parameter, the doping profile used throughout \apsq provides the \emph{effective doping concentration} $N_D - N_A$ since this also encodes the majority charge carriers via its sign.
-However, in the parts of a silicon detector relevant for this simulation, i.e.\ the sensing volume, the difference between the two values is expected to be negligible.
+However, in the parts of a silicon detector relevant for this simulation, i.e.\ the sensing volume, the difference between effective and total concentration is expected to be negligible.
 Therefore the doping concentration in this model is taken as the absolute value $D = \left|N_D - N_A\right|$.
 
 The mobility is parametrized as
