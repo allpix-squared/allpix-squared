@@ -13,6 +13,7 @@ Some models depend on the electric field strength to parametrize the mobility, o
 The charge carrier mobility models are used by all propagation modules and comprise the following models:
 
 \subsection{Jacoboni-Canali Model}
+\label{sec:mob:jac}
 
 The Jacoboni-Canali model~\cite{jacoboni} is the most widely used parametrization of charge carrier mobility in Silicon as a function of the electric field $E$.
 It has originally been derived for $\left<111\right>$ silicon lattice orientation, but is widely used also for the common $\left<100\right>$ orientation.
@@ -47,6 +48,7 @@ for electrons and holes, respectively.
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "jacoboni"}.
 
 \subsection{Canali Model}
+\label{sec:mob:can}
 
 The Canali model~\cite{canali} differs from the Jacoboni-Canali model from equation~\eqref{eq:mob:jac} only by the value of $v_m$ for electrons.
 The difference is most likely a typo in the Jacoboni reproduction of the parametrization, so this one can be considered the original parametrization derived from data.
@@ -122,6 +124,7 @@ for electrons and holes, respectively.
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "hamburg_highfield"}.
 
 \subsection{Masetti Model}
+\label{sec:mob:mas}
 
 The Masetti mobility model~\cite{masetti} parametrizes electron and hole mobility as a function of the total doping concentration $D$ of the silicon material.
 This model requires a doping profile to be loaded for the detector in question, and an error will be returned if the doping profile is missing.
@@ -132,7 +135,7 @@ Therefore the doping concentration in this model is taken as the absolute value 
 
 The mobility is parametrized as
 \begin{equation}
-    \label{eq:mob:ham}
+    \label{eq:mob:mas}
     \begin{split}
         \mu_e(D) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (D / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / D)^{\beta_e})}\\
         \mu_h(D) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (D / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / D)^{\beta_h})} + e^{P_c / D}\\
@@ -178,7 +181,7 @@ The same caveat to doping concentration information in \apsq applies as describe
 
 The mobility is parametrized as
 \begin{equation}
-    \label{eq:mob:ham}
+    \label{eq:mob:aro}
     \begin{split}
         \mu_e(D) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (D / N_{ref,e})^{\alpha}\right)\\
         \mu_h(D) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (D / N_{ref,h})^{\alpha}\right)\\
@@ -205,3 +208,17 @@ The values implemented in \apsq are taken from Table~1 of~\cite{arora} as:
 for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "arora"}.
+
+\subsection{Extended Canali Model}
+
+This model extends the Jacoboni/Canali model described in Section~\ref{sec:mob:jac} with other doping concentration dependent, low-field models such as the Masetti model described in Section~\ref{sec:mob:mas}.
+This technique is for example used in the Synopsys Sentaurus TCAD software.
+
+The mobility is then parametrized using the two models as:
+\begin{equation}
+    \label{eq:mob:mascan}
+    \mu (E, D) = \frac{\mu_{m}(D)}{\left(1 + \left(\mu_{m}(D) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}}
+\end{equation}
+where $\mu_{m}(D)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and $v_{m}$, $\beta$ are the respective parameters from the Jacoboni/Canali model presented in Sections~\ref{sec:mob:jac}~and~\ref{sec:mob:can}.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.
