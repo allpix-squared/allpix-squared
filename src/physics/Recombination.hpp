@@ -168,9 +168,11 @@ namespace allpix {
                 model_ = std::make_unique<Auger>(doping);
             } else if(model == "combined" || model == "srh_auger") {
                 model_ = std::make_unique<ShockleyReadHallAuger>(doping);
-            } else {
+            } else if(model == "none") {
                 LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
                 model_ = std::make_unique<None>();
+            } else {
+                throw InvalidModelError(model);
             }
         }
 
