@@ -235,7 +235,7 @@ Therefore the two values are treated as equivalent throughout the lifetime model
 Whether a charge carrier has recombined with the lattice is calculated for every step of the simulation using the relation
 \begin{equation}
     \label{eq:recomb:prob}
-    p > 1 - e^{- dt / \tau}
+    p > 1 - e^{- dt / \tau(N)}
 \end{equation}
 where $p$ is a recombination probability, drawn from a uniform distribution with $[0, 1]$, $dt$ is the last time step of the charge carrier motion and $\tau$ the lifetime for the local doping concentration calculated by the models described in the following.
 If Equation~\eqref{eq:recomb:prob} evaluates to \emph{true}, the charge carrier still exists, if it evaluates to \emph{false} it has been recombined with the lattice.
@@ -244,20 +244,38 @@ Finite charge carrier lifetime can be simulated by all propagation modules and c
 
 \subsection{Shockley-Read-Hall Recombination}
 
-~\cite{shockley-read,hall}
-The lifetime is calculated using the Shockley-Read-Hall relation~\cite{fossum-lee}
+This model describes the finite lifetime based on Shockley-Read-Hall or trap-assisted recombination of charge carriers with the lattice~\cite{shockley-read,hall}.
+The lifetime is calculated using the Shockley-Read-Hall relation as given by~\cite{fossum-lee}:
 \begin{equation}
     \tau(N) = \frac{\tau_0}{1 + \frac{N}{N_{d0}}}
 \end{equation}
-where $\tau_0$ and $N_{d0}$ are reference lifetime and doping concentration taken from~\cite{fossum}.
+where $\tau_0$ and $N_{d0}$ are reference lifetime and doping concentration, for electrons and holes respectively.
+The parameter values implemented in \apsq are taken from~\cite{fossum} as:
+\begin{equation*}
+    \begin{split}
+        \tau_{0,e} &= \SI{1e-5}{s} \\
+        N_{d0,e}   &= \SI{1e16}{\per \cubic \cm} \\
+    \end{split}
+    \qquad
+    \begin{split}
+        \tau_{0,e} &= \SI{4.0e-4}{s} \\
+        N_{d0,e}   &= \SI{7.1e15}{\per \cubic \cm} \\
+    \end{split}
+\end{equation*}
+
+This model can be selected in the configuration file via the parameter \parameter{recombination_model = "srh"}.
 
 \subsection{Auger Recombination}
 
-The charge carrier lifetime according to the Auger recombination model is calculated~\cite{haug}
+The charge carrier lifetime according to the Auger recombination model is calculated as:
 \begin{equation}
-    \tau(N) = \frac{1}{C_{a}N}
+    \tau(N) = \frac{1}{C_{a} \cdot N^2}
 \end{equation}
-where $C_{a}$ is the Auger coefficient.
+where $C_{a}$ is the Auger coefficient, taken as $C_{a} = \SI{2e-30}{\cm^6 \per \s}$ from~\cite{haug}.
+
+This recombination mode applies to minority charge carriers only, majority charge carriers have an infinite life time under this model and Equation~\eqref{eq:recomb:prob} will always evaluate to \emph{true}.
+
+This model can be selected in the configuration file via the parameter \parameter{recombination_model = "auger"}.
 
 \subsection{Combined SRH/Auger Recombination}
 
@@ -269,3 +287,5 @@ This model combines the charge carrier recombination from the Shockley-Read-Hall
 \end{align}
 where $\tau_{srh}(N)$ is the Shockley-Read-Hall and $\tau_{a}(N)$ the Auger lifetime.
 The latter is only taken into account for minority charge carriers.
+
+This model can be selected in the configuration file via the parameter \parameter{recombination_model = "srh_auger"}.
