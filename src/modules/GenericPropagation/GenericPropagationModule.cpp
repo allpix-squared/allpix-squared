@@ -784,7 +784,7 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         // Check if charge carrier is still alive:
         is_alive = carrier_alive_(type,
                                   detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                  survival_probability,
+                                  survival(random_generator),
                                   timestep);
 
         // Adapt step size to match target precision
