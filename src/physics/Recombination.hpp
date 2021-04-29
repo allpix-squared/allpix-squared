@@ -67,9 +67,8 @@ namespace allpix {
     class ShockleyReadHall : virtual public RecombinationModel {
     public:
         ShockleyReadHall(bool doping)
-            : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(4.0e-4, "s")),
-              hole_lifetime_reference_(Units::get(1e16, "/cm/cm/cm")),
-              hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
+            : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(1e16, "/cm/cm/cm")),
+              hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
@@ -162,7 +161,7 @@ namespace allpix {
          * @param doping      Boolean to indicate presence of doping profile information
          */
         Recombination(const std::string& model, bool doping = false) {
-            if(model == "srh" || model == "shockleyreadhall" || model == "scharfetter") {
+            if(model == "srh") {
                 model_ = std::make_unique<ShockleyReadHall>(doping);
             } else if(model == "auger") {
                 model_ = std::make_unique<Auger>(doping);
