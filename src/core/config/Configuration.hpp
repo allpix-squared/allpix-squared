@@ -249,6 +249,8 @@ namespace allpix {
         // FIXME Better name for this function
         std::vector<std::pair<std::string, std::string>> getAll() const;
 
+        std::vector<std::string> getUnusedKeys() const;
+
     private:
         /**
          * @brief Make relative paths absolute from this configuration file
@@ -277,6 +279,7 @@ namespace allpix {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
+        mutable std::map<std::string, bool> used_keys_;
     };
 } // namespace allpix
 

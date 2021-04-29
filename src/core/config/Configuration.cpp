@@ -186,6 +186,20 @@ std::vector<std::pair<std::string, std::string>> Configuration::getAll() const {
     return result;
 }
 
+std::vector<std::string> Configuration::getUnusedKeys() const {
+    std::vector<std::string> result;
+
+    // Loop over all configuration keys, excluding internal ones
+    for(const auto& key_value : getAll()) {
+        // Add those to result that have not been accessed:
+        if(used_keys_.find(key_value.first) == used_keys_.end() || !used_keys_.at(key_value.first)) {
+            result.emplace_back(key_value.first);
+        }
+    }
+
+    return result;
+}
+
 /**
  * String is recursively parsed for all pair of [ and ] brackets. All parts between single or double quotation marks are
  * skipped.
