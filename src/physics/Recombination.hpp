@@ -39,11 +39,11 @@ namespace allpix {
          * concentration
          * @param type Type of charge carrier (electron or hole)
          * @param doping (Effective) doping concentration
-         * @param survival_prob Survival probability for this charge carrier
-         * @param time_elapsed Current lifetime of the regarded charge carrier since its creation
+         * @param survival_prob Current survival probability for this charge carrier
+         * @param timestep Current time step performed for the charge carrier
          * @return Recombination status, true if alive, false if recombined
          */
-        virtual bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const = 0;
+        virtual bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const = 0;
     };
 
     /**
@@ -75,8 +75,8 @@ namespace allpix {
             }
         }
 
-        bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const override {
-            return survival_prob > (1 - std::exp(-1. * time_elapsed / lifetime(type, doping)));
+        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
+            return survival_prob > (1 - std::exp(-1. * timestep / lifetime(type, doping)));
         };
 
     protected:
@@ -106,11 +106,10 @@ namespace allpix {
             }
         }
 
-        bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const override {
+        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
             // Auger only applies to minority charge carriers, if we have a majority carrier always return true:
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
-            return (minorityType != type ? true
-                                         : (survival_prob > (1 - std::exp(-1. * time_elapsed / lifetime(type, doping)))));
+            return (minorityType != type ? true : (survival_prob > (1 - std::exp(-1. * timestep / lifetime(type, doping)))));
         };
 
     protected:
@@ -129,16 +128,16 @@ namespace allpix {
     public:
         ShockleyReadHallAuger(bool doping) : ShockleyReadHall(doping), Auger(doping) {}
 
-        bool operator()(const CarrierType& type, double doping, double survival_prob, double time_elapsed) const override {
+        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
             if(minorityType != type) {
                 // Auger only applies to minority charge carriers, if we have a majority carrier just return SRH lifetime:
-                return ShockleyReadHall::operator()(type, survival_prob, time_elapsed, doping);
+                return ShockleyReadHall::operator()(type, survival_prob, timestep, doping);
             } else {
                 // If we have a minority charge carrier, combine the lifetimes:
                 auto combined_lifetime = ShockleyReadHall::lifetime(type, doping) * Auger::lifetime(type, doping) /
                                          (ShockleyReadHall::lifetime(type, doping) + Auger::lifetime(type, doping));
-                return survival_prob > (1 - std::exp(-1. * time_elapsed / combined_lifetime));
+                return survival_prob > (1 - std::exp(-1. * timestep / combined_lifetime));
             }
         };
     };
@@ -163,7 +162,7 @@ namespace allpix {
          * @param doping      Boolean to indicate presence of doping profile information
          */
         Recombination(const std::string& model, bool doping = false) {
-            if(model == "srh" || model == "schockleyreadhall" || model == "scharfetter") {
+            if(model == "srh" || model == "shockleyreadhall" || model == "scharfetter") {
                 model_ = std::make_unique<ShockleyReadHall>(doping);
             } else if(model == "auger") {
                 model_ = std::make_unique<Auger>(doping);
