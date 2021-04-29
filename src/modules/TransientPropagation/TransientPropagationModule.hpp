@@ -25,6 +25,7 @@
 #include "objects/PropagatedCharge.hpp"
 #include "objects/Pulse.hpp"
 
+#include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
 #include "physics/Trapping.hpp"
@@ -94,8 +95,7 @@ namespace allpix {
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, threshold_field_{};
-        bool output_plots_{}, enable_multiplication_{};
-        std::string multiplication_model_{};
+        bool output_plots_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
@@ -103,6 +103,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        ImpactIonization multiplication_;
         Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
@@ -112,9 +113,6 @@ namespace allpix {
         double electron_Hall_;
         double hole_Hall_;
 
-        // Predefined values for charge multiplication
-        double optical_hbarOmega_;
-        double gamma_Overstraeten_;
 
         // Magnetic field
         bool has_magnetic_field_{};
