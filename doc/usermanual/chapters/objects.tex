@@ -29,7 +29,7 @@ The MCParticle additionally stores a parent MCParticle object, if available.
 The lack of a parent doesn't guarantee that this MCParticle originates from a primary particle, but only means that no parent on the given detector exists.
 Also, the MCParticle stores a reference to the MCTrack it is associated with.
 
-MCParticles provide local and global coordinates in space and time.
+MCParticles provide local and global coordinates in space for both the entry and the exit of the particle in the sensor volume, as well as local and global time information.
 The global spatial coordinates are calculated with respect to the global reference frame defined in Section~\ref{sec:coordinate_systems}, the global time is counted from the beginning of the event.
 Local spatial coordinates are determined by the respective detector, the local time measurement references the entry point of the \emph{first} MCParticle of the event into the detector.
 
