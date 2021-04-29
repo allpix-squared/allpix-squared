@@ -101,11 +101,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     }
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
-    
+
     // Set defaults for charge carrier multiplication
-    config_.setDefault<bool>("enable_charge_multiplication", false);
+    config_.setDefault<std::string>("multiplication_model", "none");
     config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
-	config_.setDefault<std::string>("charge_multiplication_model", "massey");
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -114,9 +113,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     timestep_start_ = config_.get<double>("timestep_start");
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
-    enable_multiplication_ = config_.get<bool>("enable_charge_multiplication");
     threshold_field_ = config_.get<double>("charge_multiplication_threshold");
-    multiplication_model_ = config_.get<std::string>("charge_multiplication_model");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
@@ -143,13 +140,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
     electron_Hall_ = 1.15;
     hole_Hall_ = 0.9;
-
-    // Parameter for Overstraeten-de Man charge multiplication
-    // comment: in the TCAD manual, T0 is never stated for the van Overstraeten-de Man model
-    // it is given as 300K for the Okuto-Crowell model and is assumed to be also 300K here                                                                  
-    optical_hbarOmega_ = Units::get(0.063e6, "eV");
-    gamma_Overstraeten_ = std::tanh(optical_hbarOmega_ / (2. * boltzmann_kT_ * 300. / temperature_)) /
-      std::tanh(optical_hbarOmega_ / (2. * boltzmann_kT_));
 }
 
 void GenericPropagationModule::create_output_plots(uint64_t event_num,
@@ -587,14 +577,8 @@ void GenericPropagationModule::initialize() {
                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                      0,
                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
-        if(enable_multiplication_) {
-            gain_histo_ =
-                CreateHistogram<TH1D>("gain_histo",
-                                      "Gain per charge carrier group after propagation;gain;number of groups transported",
-                                      500,
-                                      1,
-                                      25);
-        }
+        gain_histo_ = CreateHistogram<TH1D>(
+            "gain_histo", "Gain per charge carrier group after propagation;gain;number of groups transported", 500, 1, 25);
     }
 
     // Prepare mobility model
@@ -602,6 +586,13 @@ void GenericPropagationModule::initialize() {
 
     // Prepare recombination model
     recombination_ = Recombination(config_, detector_->hasDopingProfile());
+
+    // Impact ionization model
+    try {
+        multiplication_ = ImpactIonization(config_.get<std::string>("multiplication_model"), temperature_);
+    } catch(ModelError& e) {
+        throw InvalidValueError(config_, "multiplication_model", e.what());
+    }
 
     // Prepare trapping model
     trapping_ = Trapping(config_);
@@ -790,73 +781,6 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         return diffusion;
     };
 
-    // Define a function to compute the charge carrier multiplcation
-    auto carrier_multiplication = [&](double efield_mag, double step_length) -> double {
-        
-        // experimental parameters from van Overstraeten – de Man model
-        double a_n_low = 7.03e4;    // in mm^-1
-        double a_n_high = 7.03e4;   // in mm^-1
-        double a_p_low = 1.582e5;   // in mm^-1
-        double a_p_high = 6.71e4;   // in mm^-1
-        double b_n_low = 1.231e-1;  // in MV mm^-1
-        double b_n_high = 1.231e-1; // in MV mm^-1
-        double b_p_low = 2.036e-1;  // in MV mm^-1
-        double b_p_high = 1.693e-1; // in MV mm^-1
-        double e_zero = 4.0e-2;     // in MV mm^-1
-
-        // experimental parameters from Massey model
-        double a_n = 4.43e4;  // in mm^-1
-        double a_p = 1.13e5;  // in mm^-1
-        double c_n = 9.66e-2; // in MV mm^-1
-        double c_p = 1.71e-1; // in MV mm^-1
-        double d_n = 4.99e-5; // in MV mm^-1 K^-1
-        double d_p = 1.09e-4; // in MV mm^-1 K^-1
-
-        // Compute the gain
-        if(abs(efield_mag) > threshold_field_) {
-
-            if(multiplication_model_ == "massey") {
-
-                // ionisation coefficient for electrons
-                double b_n = c_n + d_n * temperature_;
-                double alpha_ = a_n * std::exp(-(b_n / efield_mag));
-
-                // ionisation coefficient for holes
-                double b_p = c_p + d_p * temperature_;
-                double beta_ = a_p * std::exp(-(b_p / efield_mag));
-                auto g = std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
-                LOG(TRACE) << "Massey gain " << g << " for field " << abs(efield_mag);
-                return g;
-            }
-
-            else if(multiplication_model_ == "overstraeten") {
-
-                // ionisation coefficient for electrons
-                if(std::abs(efield_mag) > e_zero) {
-                    double alpha_ =
-                        gamma_Overstraeten_ * a_n_high * std::exp(-(gamma_Overstraeten_ * b_n_high / efield_mag));
-                    double beta_ = gamma_Overstraeten_ * a_p_high * std::exp(-(gamma_Overstraeten_ * b_p_high / efield_mag));
-                    return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
-                }
-
-                // ionisation coefficient for holes
-                else {
-                    double alpha_ = gamma_Overstraeten_ * a_n_low * std::exp(-(gamma_Overstraeten_ * b_n_low / efield_mag));
-                    double beta_ = gamma_Overstraeten_ * a_p_low * std::exp(-(gamma_Overstraeten_ * b_p_low / efield_mag));
-                    return std::exp(step_length * (type == CarrierType::ELECTRON ? alpha_ : beta_));
-                }
-            }
-
-            else {
-                throw ModuleError("Charge multiplication is enabled but no valid model is set. Possible values are 'massey' "
-                                  "and 'overstraeten'.");
-            }
-        } else {
-            return 1.0;
-        }
-        return gain;
-    };
-
     // Survival probability of this charge carrier package, evaluated at every step
     std::uniform_real_distribution<double> survival(0, 1);
 
@@ -971,9 +895,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         double step_length = step.value.norm();
 
         // Apply multiplication step, fully deterministic from local efield and step length
-        if(enable_multiplication_) {
-            gain *= carrier_multiplication(std::sqrt(efield.Mag2()), step_length);
-        }
+        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step_length);
 
         // Update step length histogram
         if(output_plots_) {
@@ -1018,7 +940,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
-    if(output_plots_ && enable_multiplication_) {
+    if(output_plots_) {
         gain_histo_->Fill(gain);
     }
 
@@ -1045,9 +967,7 @@ void GenericPropagationModule::finalize() {
         trapped_histo_->Write();
         recombination_time_histo_->Write();
         trapping_time_histo_->Write();
-        if(enable_multiplication_) {
-            gain_histo_->Write();
-        }
+        gain_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /

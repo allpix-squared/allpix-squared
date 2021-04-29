@@ -28,6 +28,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
 #include "physics/Trapping.hpp"
@@ -108,14 +109,14 @@ namespace allpix {
             target_spatial_precision_{}, threshold_field_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
             output_linegraphs_trapped_{}, output_animations_{};
-        bool enable_multiplication_{}, propagate_electrons_{}, propagate_holes_{};
+        bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
-        std::string multiplication_model_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        ImpactIonization multiplication_;
         Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
@@ -124,10 +125,6 @@ namespace allpix {
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;
         double hole_Hall_;
-
-        // Predefined values for charge multiplication
-        double optical_hbarOmega_;
-        double gamma_Overstraeten_;
 
         // Magnetic field
         bool has_magnetic_field_;
