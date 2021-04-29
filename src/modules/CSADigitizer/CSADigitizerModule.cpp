@@ -193,13 +193,13 @@ void CSADigitizerModule::initialize() {
         h_tot = CreateHistogram<TH1D>(
             "signal",
             (store_tot_ ? "Time-over-Threshold;time over threshold [clk];pixels" : "Signal;signal;pixels"),
-            nbins,
+            (store_tot_ ? static_cast<int>(integration_time_ / clockToT_) : nbins),
             0,
             (store_tot_ ? integration_time_ / clockToT_ : 1000));
         h_toa = CreateHistogram<TH1D>(
             "time",
             (store_toa_ ? "Time-of-Arrival;time of arrival [clk];pixels" : "Time-of-Arrival;time of arrival [ns];pixels"),
-            nbins,
+            (store_toa_ ? static_cast<int>(integration_time_ / clockToA_) : nbins),
             0,
             (store_toa_ ? integration_time_ / clockToA_ : integration_time_));
         h_pxq_vs_tot = CreateHistogram<TH2D>("pxqvstot",
