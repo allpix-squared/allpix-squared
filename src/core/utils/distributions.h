@@ -11,9 +11,15 @@
 #define ALLPIX_RANDOM_DISTRIBUTIONS_H
 
 #include <boost/random/normal_distribution.hpp>
+#include <boost/random/piecewise_linear_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 namespace allpix {
-    template <typename T> using normal_distribution = boost::normal_distribution<T>;
+    template <typename T> using normal_distribution = boost::random::normal_distribution<T>;
+    template <typename T> using piecewise_linear_distribution = boost::random::piecewise_linear_distribution<T>;
+    template <typename T> using poisson_distribution = boost::random::poisson_distribution<T>;
+    template <typename T> using uniform_real_distribution = boost::random::uniform_real_distribution<T>;
 } // namespace allpix
 
 #endif // ALLPIX_RANDOM_DISTRIBUTIONS_H
