@@ -90,6 +90,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `beam_size` : Width of the Gaussian beam profile.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the beam as a unit vector.
+* `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
 #### Parameters for source `square`
 * `square_side` : Length of the square side.
