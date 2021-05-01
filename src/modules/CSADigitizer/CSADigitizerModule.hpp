@@ -81,6 +81,7 @@ namespace allpix {
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
+        bool last_threshold_crossing_tot_{};
 
         // Helper variables for transfer function
         double integration_time_{};
