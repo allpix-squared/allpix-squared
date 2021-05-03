@@ -103,8 +103,15 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), g4material, getName() + "_log");
     geo_manager_->setExternalObject(getName(), "passive_material_log", log_volume);
 
+    // Set VisAttribute of the material
+    auto pm_color = config_.get<ROOT::Math::XYZPoint>("color", ROOT::Math::XYZPoint());
+    auto opacity = config_.get<double>("opacity", 0.4);
+    if(pm_color != ROOT::Math::XYZPoint()) {
+        auto* pm_vol_col = new G4VisAttributes(G4Colour(pm_color.x(), pm_color.y(), pm_color.z(), opacity));
+        log_volume->SetVisAttributes(pm_vol_col);
+    }
     // Set VisAttribute to invisible if material is equal to the material of its mother volume
-    if(g4material == mother_log_volume->GetMaterial()) {
+    else if(g4material == mother_log_volume->GetMaterial()) {
         LOG(WARNING) << "Material of passive material " << getName()
                      << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
         log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
