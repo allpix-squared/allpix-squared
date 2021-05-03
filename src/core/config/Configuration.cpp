@@ -192,7 +192,7 @@ std::vector<std::string> Configuration::getUnusedKeys() const {
     // Loop over all configuration keys, excluding internal ones
     for(const auto& key_value : getAll()) {
         // Add those to result that have not been accessed:
-        if(used_keys_.find(key_value.first) == used_keys_.end() || !used_keys_.at(key_value.first)) {
+        if(used_keys_.find(key_value.first) == used_keys_.end()) {
             result.emplace_back(key_value.first);
         }
     }

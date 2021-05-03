@@ -14,6 +14,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "core/config/exceptions.h"
@@ -279,7 +280,7 @@ namespace allpix {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
-        mutable std::map<std::string, bool> used_keys_;
+        mutable std::unordered_set<std::string> used_keys_;
     };
 } // namespace allpix
 
