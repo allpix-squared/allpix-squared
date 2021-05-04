@@ -41,7 +41,7 @@ namespace allpix {
          * @param doping (Effective) doping concentration
          * @param survival_prob Current survival probability for this charge carrier
          * @param timestep Current time step performed for the charge carrier
-         * @return Recombination status, true if alive, false if recombined
+         * @return Recombination status, true if charge carrier has recombined, false if it still is alive
          */
         virtual bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const = 0;
     };
@@ -53,7 +53,7 @@ namespace allpix {
      */
     class None : virtual public RecombinationModel {
     public:
-        bool operator()(const CarrierType&, double, double, double) const override { return true; };
+        bool operator()(const CarrierType&, double, double, double) const override { return false; };
     };
 
     /**
@@ -75,7 +75,7 @@ namespace allpix {
         }
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
-            return survival_prob > (1 - std::exp(-1. * timestep / lifetime(type, doping)));
+            return survival_prob < (1 - std::exp(-1. * timestep / lifetime(type, doping)));
         };
 
     protected:
@@ -106,9 +106,10 @@ namespace allpix {
         }
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
-            // Auger only applies to minority charge carriers, if we have a majority carrier always return true:
+            // Auger only applies to minority charge carriers, if we have a majority carrier always return false (alive):
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
-            return (minorityType != type ? true : (survival_prob > (1 - std::exp(-1. * timestep / lifetime(type, doping)))));
+            return (minorityType != type ? false
+                                         : (survival_prob < (1 - std::exp(-1. * timestep / lifetime(type, doping)))));
         };
 
     protected:
@@ -136,7 +137,7 @@ namespace allpix {
                 // If we have a minority charge carrier, combine the lifetimes:
                 auto combined_lifetime =
                     1. / (1. / ShockleyReadHall::lifetime(type, doping) + 1. / Auger::lifetime(type, doping));
-                return survival_prob > (1 - std::exp(-1. * timestep / combined_lifetime));
+                return survival_prob < (1 - std::exp(-1. * timestep / combined_lifetime));
             }
         };
     };

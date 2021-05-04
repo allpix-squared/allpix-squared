@@ -79,7 +79,7 @@ void ProjectionPropagationModule::initialize() {
 
     // Prepare recombination model
     try {
-        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), detector_->hasDopingProfile());
+        recombination_ = Recombination(config_.get<std::string>("recombination_model"), detector_->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
@@ -277,7 +277,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
             std::uniform_real_distribution<double> survival(0, 1);
-            if(!carrier_alive_(
+            if(recombination_(
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
                            << Units::display(position, {"mm", "um"});

@@ -550,7 +550,7 @@ void GenericPropagationModule::initialize() {
 
     // Prepare recombination model
     try {
-        carrier_alive_ = Recombination(config_.get<std::string>("recombination_model"), detector->hasDopingProfile());
+        recombination_ = Recombination(config_.get<std::string>("recombination_model"), detector->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
@@ -782,10 +782,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         runge_kutta.setValue(position);
 
         // Check if charge carrier is still alive:
-        is_alive = carrier_alive_(type,
-                                  detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                  survival(random_generator),
-                                  timestep);
+        is_alive = !recombination_(type,
+                                   detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                                   survival(random_generator),
+                                   timestep);
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
