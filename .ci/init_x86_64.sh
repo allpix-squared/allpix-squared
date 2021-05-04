@@ -48,7 +48,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_99"
+DEFAULT_LCG="LCG_100"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
