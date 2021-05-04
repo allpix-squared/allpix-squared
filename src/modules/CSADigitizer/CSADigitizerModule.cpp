@@ -24,6 +24,7 @@
 
 #include "CSADigitizerModel.hpp"
 #include "Models/KrummenacherCurrentModel.hpp"
+#include "Models/MuPix10.hpp"
 #include "Models/SimpleModel.hpp"
 
 using namespace allpix;
@@ -41,8 +42,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         model_ = std::make_unique<csa::SimpleModel>();
     } else if(model == "krummenacher") {
         model_ = std::make_unique<csa::KrummenacherCurrentModel>();
+    } else if(model == "mupix10") {
+        model_ = std::make_unique<csa::MuPix10>();
     } else {
-        throw InvalidValueError(config_, "model", "Invalid model, only 'simple' and 'krummenacher' are supported.");
+        throw InvalidValueError(
+            config_, "model", "Invalid model, only 'simple', 'krummenacher' and 'mupix10' are supported.");
     }
 
     // Set defaults for config variables

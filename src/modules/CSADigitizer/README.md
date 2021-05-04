@@ -5,14 +5,19 @@
 **Output**: PixelHit
 
 ### Description
-Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
-For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from [@kleczek] :
+Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier.
+
+In this module are two main types of amplifiers implemented: one with Krummenacher feedback and one with a linear falling slope like in the MuPix10.
+
+For the amplifiers with Krummenacher feedback, a transfer function for a CSA is taken from [@kleczek] :
 $`H(s) = \frac{R_f}{((1+ \tau_f s) * (1 + \tau_r s))}, `$
 with $`\tau_f = R_f C_f `$ , rise time constant $`\tau_r = \frac{C_{det} * C_{out}}{g_m * C_f} `$
 
 The impulse response function of this transfer function is convoluted with the charge pulse.
 This module can be steered by either providing all contributions to the transfer function as parameters within the `krummenacher` model, or using a simplified parametrization providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. [@binkley] for calculation of transconductance).
+
+The MuPix10 amplifier provides a charge dependent feedback that creates a linear falling slope. This can be modeled with $`Q * A (1 - \exp{- \frac{t}{R}}) - F * t`$.
 
 Noise can be applied to the individual bins of the output pulse, drawn from a normal distribution.
 
@@ -46,6 +51,11 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `amp_output_capacitance` : The capacitance at the amplifier output. Defaults to 20 e-15 F.
 * `transconductance` : The transconductance of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
 * `temperature` : Defaults to 293.15K.
+
+#### Parameters for the mupix10 model
+* `parameter_amplification` : Amplification parameter. Defaults to 2.51424577e+14 V/C.
+* `parameter_rise` : Rise parameter. Defaults to 3.35573247e-07 s.
+* `parameter_fall` : Fall parameter. Defaults to 1.85969061e+04 V/s.
 
 ### Plotting parameters
 * `output_plots` : Enables simple output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
@@ -81,6 +91,20 @@ integration_time = 0.5e-6s
 threshold = 10e-3V
 clock_bin_ts1 = 1.5625ns
 clock_bin_ts2 = 25.0ns
+```
+
+Example for the `mupix10` model:
+```ini
+[CSADigitizer]
+model = "mupix10"
+parameter_amplification = 2.51424577e+14 V/C
+parameter_rise = 3.35573247e-07 s
+parameter_fall = 1.85969061e+04 V/s
+integration_time = 5us
+threshold = 40e-3V
+clock_bin_ts1 = 8ns
+clock_bin_ts2 = 128ns
+signal_is_ts2 = true
 ```
 
 [@kleczek]:  https://doi.org/10.1109/MIXDES.2015.7208529

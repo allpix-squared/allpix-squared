@@ -7,7 +7,8 @@ ALLPIX_MODULE_SOURCES(
     CSADigitizerModule.cpp
     CSADigitizerModel.cpp
     Models/SimpleModel.cpp
-    Models/KrummenacherCurrentModel.cpp)
+    Models/KrummenacherCurrentModel.cpp
+    Models/MuPix10.cpp)
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
