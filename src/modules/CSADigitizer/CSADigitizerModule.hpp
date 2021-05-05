@@ -20,7 +20,8 @@
 
 #include "objects/PixelCharge.hpp"
 
-#include <TF1.h>
+#include "CSADigitizerModel.hpp"
+
 #include <TH1D.h>
 #include <TH2D.h>
 
@@ -35,16 +36,6 @@ namespace allpix {
      * noise and simulating the threshold as well as accounting for threshold dispersion and ADC noise.
      */
     class CSADigitizerModule : public Module {
-
-        /**
-         * @brief Different implemented digitization models
-         */
-        enum class DigitizerType {
-            SIMPLE, ///< Simplified parametrisation
-            CSA,    ///< Enter all contributions to the transfer function as parameters
-            CUSTOM, ///< Custom impulse response function using a ROOT::TFormula expression
-        };
-
     public:
         /**
          * @brief Constructor for this detector-specific module
@@ -72,42 +63,28 @@ namespace allpix {
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};
-        bool store_tot_{false}, store_toa_{false}, ignore_polarity_{};
-        Messenger* messenger_;
-        DigitizerType model_;
 
-        // Function to calculate impulse response
-        std::unique_ptr<TF1> calculate_impulse_response_;
+        // threshold logic control variables
+        bool store_ts1_{false}, store_ts2_{false}, signal_is_ts2_{false};
+
+        // FIXME: descripotion
+        bool ignore_polarity_{};
+
+        // FIXME: descripotion
+        Messenger* messenger_;
+
+        // Digitizer Model
+        std::unique_ptr<csa::CSADigitizerModel> model_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
-        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
+        double sigmaNoise_{}, clockTS2_{}, clockTS1_{}, threshold_{};
 
         // Helper variables for transfer function
         double integration_time_{};
-        std::vector<double> impulse_response_function_;
-        std::once_flag first_event_flag_;
 
         // Output histograms
         Histogram<TH1D> h_tot{}, h_toa{};
         Histogram<TH2D> h_pxq_vs_tot{};
-
-        /**
-         * @brief Calculate time of first threshold crossing
-         * @param timestep Step size of the input pulse
-         * @param pulse    Pulse after amplification and electronics noise
-         * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
-         *         of ToA clock cycles before crossing) and double (time of crossing)
-         */
-        std::tuple<bool, unsigned int, double> get_toa(double timestep, const std::vector<double>& pulse) const;
-
-        /**
-         * @brief Calculate time-over-threshold
-         * @param  timestep    Step size of the input pulse
-         * @param arrival_time Time of crossing the threshold
-         * @param  pulse       Pulse after amplification and electronics noise
-         * @return             Number of clock cycles signal was over threshold
-         */
-        unsigned int get_tot(double timestep, double arrival_time, const std::vector<double>& pulse) const;
 
         /**
          * @brief Create output plots of the pulses
