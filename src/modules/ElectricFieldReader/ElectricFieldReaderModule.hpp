@@ -29,6 +29,15 @@ namespace allpix {
      * - For the INIT format, reads the specified file and add the electric field grid to the bound detectors
      */
     class ElectricFieldReaderModule : public Module {
+        /**
+         * @brief Different electric field types
+         */
+        enum class ElectricField {
+            CONSTANT, ///< Constant electric field
+            LINEAR,   ///< Linear electric field
+            MESH,     ///< Electric field defined by a mesh
+        };
+
     public:
         /**
          * @brief Constructor for this detector-specific module
