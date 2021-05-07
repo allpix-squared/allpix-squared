@@ -31,17 +31,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
     // Read model
-    auto model = config_.get<std::string>("model");
-    std::transform(model.begin(), model.end(), model.begin(), ::tolower);
-    if(model == "simple") {
-        model_ = DigitizerType::SIMPLE;
-    } else if(model == "csa") {
-        model_ = DigitizerType::CSA;
-    } else if(model == "custom") {
-        model_ = DigitizerType::CUSTOM;
-    } else {
-        throw InvalidValueError(config_, "model", "Invalid model, only 'simple', 'csa' and 'custom' are supported.");
-    }
+    model_ = config_.get<DigitizerType>("model");
 
     // Set defaults for config variables
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
