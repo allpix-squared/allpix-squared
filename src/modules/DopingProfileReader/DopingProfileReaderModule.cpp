@@ -26,7 +26,7 @@ void DopingProfileReaderModule::initialize() {
     FieldType type = FieldType::GRID;
 
     // Check field strength
-    auto field_model = config_.get<std::string>("model");
+    auto field_model = config_.get<DopingProfile>("model");
 
     // set depth of doping profile
     auto model = detector_->getModel();
@@ -38,7 +38,7 @@ void DopingProfileReaderModule::initialize() {
     auto thickness_domain = std::make_pair(sensor_max_z - doping_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "mesh") {
+    if(field_model == DopingProfile::MESH) {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -60,7 +60,7 @@ void DopingProfileReaderModule::initialize() {
         detector_->setDopingProfileGrid(
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
 
-    } else if(field_model == "constant") {
+    } else if(field_model == DopingProfile::CONSTANT) {
         LOG(TRACE) << "Adding constant doping concentration";
         type = FieldType::CONSTANT;
 
@@ -69,7 +69,7 @@ void DopingProfileReaderModule::initialize() {
         FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) noexcept { return concentration; };
 
         detector_->setDopingProfileFunction(function, type);
-    } else if(field_model == "regions") {
+    } else if(field_model == DopingProfile::REGIONS) {
         LOG(TRACE) << "Adding doping concentration depending on sensor region";
         type = FieldType::CUSTOM;
 
@@ -98,8 +98,6 @@ void DopingProfileReaderModule::initialize() {
         };
 
         detector_->setDopingProfileFunction(function, type);
-    } else {
-        throw InvalidValueError(config_, "model", "model should be 'constant', 'regions' or 'mesh'");
     }
 }
 

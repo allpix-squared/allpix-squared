@@ -22,6 +22,15 @@ namespace allpix {
      * More detailed explanation of module
      */
     class DopingProfileReaderModule : public Module {
+        /**
+         * @brief Different doping profile types
+         */
+        enum class DopingProfile {
+            CONSTANT, ///< Constant doping concentration
+            REGIONS,  ///< Different regions with different doping concentrations
+            MESH,     ///< Doping profile defined by a mesh
+        };
+
     public:
         /**
          * @brief Constructor for this detector-specific module
