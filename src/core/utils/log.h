@@ -199,12 +199,6 @@ namespace allpix {
 
     private:
         /**
-         * @brief The number of exceptions that are uncaught
-         * @param cons If true: always return zero if amount of exceptions cannot be properly determined
-         * @return Number of uncaught exceptions
-         */
-        int get_uncaught_exceptions(bool cons);
-        /**
          * @brief Get the current date as a printable string
          * @return Current date as a string
          */
