@@ -28,6 +28,17 @@ namespace allpix {
     class GeneratorActionG4 : public G4VUserPrimaryGeneratorAction {
     public:
         /**
+         * @brief Different types of particle sources
+         */
+        enum class SourceType {
+            MACRO,  ///< Source defined by a macro file
+            BEAM,   ///< Beam particle source
+            SPHERE, ///< Spherical particle source
+            SQUARE, ///< Square particle source
+            POINT,  ///< Point source
+        };
+
+        /**
          * @brief Constructs the generator action
          * @param config Configuration of the \ref DepositionGeant4Module module
          */

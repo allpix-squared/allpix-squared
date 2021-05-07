@@ -89,9 +89,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
     particle_source_->SetVerbosity(0);
 
     // Get source specific parameters
-    auto source_type = config_.get<std::string>("source_type");
+    auto source_type = config_.get<SourceType>("source_type");
 
-    if(source_type == "macro") {
+    if(source_type == SourceType::MACRO) {
         LOG(INFO) << "Using user macro for particle source.";
 
         // Get the macro file and apply its commands
@@ -105,7 +105,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->GetPosDist()->SetCentreCoords(config_.get<G4ThreeVector>("source_position"));
 
         // Set position and direction parameters according to shape
-        if(source_type == "beam") {
+        if(source_type == SourceType::BEAM) {
 
             // Align the -z axis of the system with the direction vector
             auto direction = config_.get<G4ThreeVector>("beam_direction");
@@ -144,7 +144,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
             single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
 
-        } else if(source_type == "sphere") {
+        } else if(source_type == SourceType::SPHERE) {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Surface");
@@ -160,7 +160,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 single_source->GetAngDist()->SetAngDistType("cos");
             }
 
-        } else if(source_type == "square") {
+        } else if(source_type == SourceType::SQUARE) {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Plane");
@@ -172,17 +172,13 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetAngDist()->SetAngDistType("iso");
             single_source->GetAngDist()->SetMaxTheta(config_.get<double>("square_angle", ROOT::Math::Pi()) / 2);
 
-        } else if(source_type == "point") {
+        } else if(source_type == SourceType::POINT) {
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Point");
 
             // Set angle distribution parameters
             single_source->GetAngDist()->SetAngDistType("iso");
-
-        } else {
-
-            throw InvalidValueError(config_, "source_type", "");
         }
 
         // Find Geant4 particle
