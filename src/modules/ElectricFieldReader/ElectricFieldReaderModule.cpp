@@ -34,12 +34,6 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
-
-    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
-    auto model = config_.get<std::string>("model");
-    if(model == "init" || model == "apf") {
-        config_.set("model", "mesh");
-    }
 }
 
 void ElectricFieldReaderModule::initialize() {
