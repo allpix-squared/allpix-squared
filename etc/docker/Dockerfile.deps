@@ -1,6 +1,77 @@
 FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-base:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
+# Add layer for LCIO
+
+ENV LCIO_VERSION 02-16-01
+
+ENV LCIODIR="/opt/lcio"
+ENV PATH="$LCIODIR/bin:$PATH"
+ENV LD_LIBRARY_PATH="$LCIODIR/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$LCIODIR/lib:$LIBPATH"
+ENV CMAKE_PREFIX_PATH="$LCIODIR:$CMAKE_PREFIX_PATH"
+
+RUN source scl_source enable devtoolset-8 && \
+    mkdir -p ${LCIODIR}/{src,build} && \
+    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
+            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
+    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
+    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
+    cd ${LCIODIR}/build && \
+    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
+           ../src/LCIO-${LCIO_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${LCIODIR}/{src,build}
+
+
+# Add layer for ROOT6
+
+ENV ROOT6_VERSION 6.24.00
+
+ENV ROOTSYS="/opt/root6"
+ENV PATH="$ROOTSYS/bin:$PATH"
+ENV LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
+ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
+ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
+
+RUN source scl_source enable devtoolset-8 && \
+    mkdir -p ${ROOTSYS}/{src,build} && \
+    curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
+            https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
+    tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
+    rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
+    cd ${ROOTSYS}/build && \
+    cmake3 -Dgdml=ON \
+           -Dgenvector=ON \
+           -Dmathmore=ON \
+           -Dminuit2=ON \
+           -Dthread=ON \
+           -Dx11=OFF \
+           -Dopengl=OFF \
+           -Dtmva=OFF -Dtmva-cpu=OFF -Dtmva-pymva=OFF \
+           -Dhttp=OFF \
+           -Dwebgui=OFF \
+           -Droot7=OFF \
+           -Dfftw3=OFF \
+           -Dfitsio=OFF \
+           -Dclad=OFF \
+           -Dspectrum=OFF \
+           -Dvdt=OFF \
+           -Dxrootd=OFF \
+           -Droofit=OFF \
+           -Ddataframe=OFF \
+           -Dpython3=ON \
+           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+           -DCMAKE_INSTALL_PREFIX=../ \
+           -DCMAKE_CXX_STANDARD=17 \
+           ../src/root-${ROOT6_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${ROOTSYS}/{src,build}
+
+
 # Add layer for Geant4
 
 ENV GEANT4_VERSION 10.07
@@ -41,63 +112,5 @@ RUN source scl_source enable devtoolset-8 && \
           ../src/geant4.${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
-    rm -rf ${GEANT4DIR}/{src,build}
-
-
-# Add layer for ROOT6
-
-ENV ROOT6_VERSION 6.22.08
-
-ENV ROOTSYS="/opt/root6"
-ENV PATH="$ROOTSYS/bin:$PATH"
-ENV LD_LIBRARY_PATH="$ROOTSYS/lib:$LD_LIBRARY_PATH"
-ENV LIBPATH="$ROOTSYS/lib:$LIBPATH"
-ENV PYTHONPATH="$ROOTSYS/lib:$PYTHONPATH"
-ENV CMAKE_PREFIX_PATH="$ROOTSYS:$CMAKE_PREFIX_PATH"
-
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p ${ROOTSYS}/{src,build} && \
-    curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
-            https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
-    tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
-    rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
-    cd ${ROOTSYS}/build && \
-    cmake3 -Dgdml=ON \
-           -Dgenvector=ON \
-           -Dmathmore=ON \
-           -Dminuit2=ON \
-           -Dthread=ON \
-           -Dx11=OFF \
-           -Dopengl=OFF \
-           -Dpython3=ON \
-           -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-           -DCMAKE_INSTALL_PREFIX=../ \
-           -DCMAKE_CXX_STANDARD=17 \
-           ../src/root-${ROOT6_VERSION} && \
-    make -j`grep -c processor /proc/cpuinfo` && \
-    make install && \
-    rm -rf ${ROOTSYS}/{src,build}
-
-
-# Add layer for LCIO
-
-ENV LCIO_VERSION 02-16-01
-
-ENV LCIODIR="/opt/lcio"
-ENV PATH="$LCIODIR/bin:$PATH"
-ENV LD_LIBRARY_PATH="$LCIODIR/lib:$LD_LIBRARY_PATH"
-ENV LIBPATH="$LCIODIR/lib:$LIBPATH"
-ENV CMAKE_PREFIX_PATH="$LCIODIR:$CMAKE_PREFIX_PATH"
-
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p ${LCIODIR}/{src,build} && \
-    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
-            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
-    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
-    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
-    cd ${LCIODIR}/build && \
-    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
-           ../src/LCIO-${LCIO_VERSION} && \
-    make -j`grep -c processor /proc/cpuinfo` && \
-    make install && \
-    rm -rf ${LCIODIR}/{src,build}
+    rm -rf ${GEANT4DIR}/{src,build} && \
+    rm -rf ${GEANT4DIR}/share/Geant4-${GEANT4_VERSION_PATH}/examples
