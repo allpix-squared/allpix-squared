@@ -33,12 +33,6 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
-
-    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
-    auto model = config_.get<std::string>("model");
-    if(model == "init" || model == "apf") {
-        config_.set("model", "mesh");
-    }
 }
 
 void WeightingPotentialReaderModule::initialize() {
