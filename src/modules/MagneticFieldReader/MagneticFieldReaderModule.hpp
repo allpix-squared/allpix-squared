@@ -27,6 +27,13 @@ namespace allpix {
      * whole volume
      */
     class MagneticFieldReaderModule : public Module {
+        /**
+         * @brief Different magnetic field types
+         */
+        enum class MagneticField {
+            CONSTANT, ///< Constant magnetic field
+        };
+
     public:
         /**
          * @brief Constructor for this unique module
