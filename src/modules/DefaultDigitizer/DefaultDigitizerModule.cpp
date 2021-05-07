@@ -264,9 +264,9 @@ void DefaultDigitizerModule::run(Event* event) {
             LOG(DEBUG) << "Smeared for simulating limited QDC sensitivity: " << Units::display(charge, "e");
 
             // Convert to ADC units and precision, make sure ADC count is at least 1:
-            charge = static_cast<double>(
-                std::max(std::min(static_cast<int>((qdc_offset_ + charge) / qdc_slope_), (1 << qdc_resolution_) - 1),
-                         (allow_zero_qdc_ ? 0 : 1)));
+            charge = static_cast<double>(std::clamp(static_cast<int>((qdc_offset_ + charge) / qdc_slope_),
+                                                    (allow_zero_qdc_ ? 0 : 1),
+                                                    (1 << qdc_resolution_) - 1));
             LOG(DEBUG) << "Charge converted to QDC units: " << charge;
 
             if(output_plots_) {
@@ -297,9 +297,8 @@ void DefaultDigitizerModule::run(Event* event) {
             LOG(DEBUG) << "Smeared for simulating limited TDC sensitivity: " << Units::display(time, {"ns", "ps"});
 
             // Convert to TDC units and precision, make sure TDC count is at least 1:
-            time = static_cast<double>(
-                std::max(std::min(static_cast<int>((tdc_offset_ + time) / tdc_slope_), (1 << tdc_resolution_) - 1),
-                         (allow_zero_tdc_ ? 0 : 1)));
+            time = static_cast<double>(std::clamp(
+                static_cast<int>((tdc_offset_ + time) / tdc_slope_), (allow_zero_tdc_ ? 0 : 1), (1 << tdc_resolution_) - 1));
             LOG(DEBUG) << "Time converted to TDC units: " << time;
 
             if(output_plots_) {
