@@ -42,6 +42,11 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     type_ = config_.get<SourceType>("source_type");
     model_ = config_.get<DepositionModel>("model");
 
+    // Read spot size
+    if(model_ == DepositionModel::SPOT) {
+        spot_size_ = config.get<double>("spot_size");
+    }
+
     // Read position
     if(config_.getArray<double>("position").size() == 2) {
         auto tmp_pos = config_.get<ROOT::Math::XYPoint>("position");
