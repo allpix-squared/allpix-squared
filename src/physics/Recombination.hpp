@@ -96,10 +96,12 @@ namespace allpix {
      * @ingroup Models
      * @brief Auger recombination of charge carriers in silicon
      *
+     * Auger coefficient from https://aip.scitation.org/doi/10.1063/1.89694
+     *
      */
     class Auger : virtual public RecombinationModel {
     public:
-        Auger(bool doping) : auger_coefficient_(Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s")) {
+        Auger(bool doping) : auger_coefficient_(Units::get(3.8e-31, "cm*cm*cm*cm*cm*cm*/s")) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
