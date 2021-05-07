@@ -40,7 +40,14 @@ namespace allpix {
         if(val.has_value()) {
             return val.value();
         }
-        throw std::invalid_argument("invalid value");
+
+        // Generate list of available values for the exception:
+        auto v = magic_enum::enum_names<T>();
+        std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](auto a, auto s) {
+            return std::move(a) + (a.empty() ? "" : ", ") + std::string(s.data());
+        });
+        std::transform(vstr.begin(), vstr.end(), vstr.begin(), ::tolower);
+        throw std::invalid_argument("invalid value, possible values are: " + vstr);
     }
 
     /**
