@@ -94,15 +94,14 @@ namespace allpix {
         return to_string_impl(inp, empty_tag());
     }
 
-    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, bool>>
     std::string to_string_impl(T inp, empty_tag) {
         std::ostringstream out;
         out << inp;
         return out.str();
     }
 
-    template <typename T, std::enable_if_t<std::is_enum<T>::value, bool> = true>
-    std::string to_string_impl(T inp, empty_tag) {
+    template <typename T, std::enable_if_t<std::is_enum<T>::value, bool>> std::string to_string_impl(T inp, empty_tag) {
         auto out = std::string(magic_enum::enum_name(inp));
         std::transform(out.begin(), out.end(), out.begin(), ::tolower);
         return out;
