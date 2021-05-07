@@ -52,18 +52,18 @@ namespace allpix {
 
     /**
      * @ingroup StringConversions
-     * @brief Conversion handler for all non implemented conversions
-     * @warning Function does not return but will raise an static assertion.
-     */
-    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    constexpr T from_string_impl(const std::string&, type_tag<T>);
-    /**
-     * @ingroup StringConversions
      * @brief Conversion handler for all arithmetic types
      * @throws std::invalid_argument If the string cannot be converted to the required arithmetic type
      */
-    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
-    T from_string_impl(std::string str, type_tag<T>);
+    template <typename T>
+    typename std::enable_if_t<std::is_arithmetic<T>::value, T> from_string_impl(std::string str, type_tag<T>);
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all enum types
+     * @throws std::invalid_argument If the string cannot be converted to the required enum type
+     */
+    template <typename T>
+    typename std::enable_if_t<std::is_enum<T>::value, T> from_string_impl(std::string str, type_tag<T>);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
@@ -86,16 +86,15 @@ namespace allpix {
 
     /**
      * @ingroup StringConversions
-     * @brief Conversion handler for all non implemented conversions
-     * @warning Function does not return but will raise an static assertion.
-     */
-    template <typename T, typename = std::enable_if_t<!std::is_arithmetic<T>::value>, typename = void>
-    constexpr void to_string_impl(T, empty_tag);
-    /**
-     * @ingroup StringConversions
      * @brief Conversion handler for all arithmetic types
      */
-    template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+    std::string to_string_impl(T inp, empty_tag);
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for all enum types
+     */
+    template <typename T, std::enable_if_t<std::is_enum<T>::value, bool> = true>
     std::string to_string_impl(T inp, empty_tag);
 
     ///@{
