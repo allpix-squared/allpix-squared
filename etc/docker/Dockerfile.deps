@@ -37,6 +37,7 @@ RUN source scl_source enable devtoolset-8 && \
           -DGEANT4_USE_SYSTEM_CLHEP=OFF \
           -DGEANT4_BUILD_MULTITHREADED=ON \
           -DCMAKE_INSTALL_PREFIX=../ \
+          -DGEANT4_BUILD_CXXSTD=17 \
           ../src/geant4.${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
@@ -61,8 +62,7 @@ RUN source scl_source enable devtoolset-8 && \
     tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
     rm -f ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz && \
     cd ${ROOTSYS}/build && \
-    cmake3 -Dcxx11=ON \
-           -Dgdml=ON \
+    cmake3 -Dgdml=ON \
            -Dgenvector=ON \
            -Dmathmore=ON \
            -Dminuit2=ON \
@@ -72,6 +72,7 @@ RUN source scl_source enable devtoolset-8 && \
            -Dpython3=ON \
            -DPYTHON_EXECUTABLE=/usr/bin/python3 \
            -DCMAKE_INSTALL_PREFIX=../ \
+           -DCMAKE_CXX_STANDARD=17 \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
