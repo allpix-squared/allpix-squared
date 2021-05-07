@@ -38,6 +38,15 @@ namespace allpix {
      * detector.
      */
     class DepositionReaderModule : public SequentialModule {
+
+        /**
+         * @brief Different implemented file models
+         */
+        enum class FileModel {
+            ROOT, ///< ROOT Trees
+            CSV,  ///< Comma-separated value files
+        };
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -90,7 +99,7 @@ namespace allpix {
         double charge_creation_energy_;
         double fano_factor_;
 
-        std::string file_model_;
+        FileModel file_model_;
         size_t volume_chars_{};
         std::string unit_length_{}, unit_time_{}, unit_energy_{};
         bool output_plots_{};

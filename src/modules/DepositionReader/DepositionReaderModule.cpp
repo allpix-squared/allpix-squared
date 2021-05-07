@@ -48,6 +48,8 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
+    file_model_ = config_.get<FileModel>("model");
+
     // Get the creation energy for charge (default is silicon electron hole pair energy)
     charge_creation_energy_ = config_.get<double>("charge_creation_energy");
     fano_factor_ = config_.get<double>("fano_factor");
@@ -74,16 +76,14 @@ void DepositionReaderModule::initialize() {
     }
 
     // Check which file type we want to read:
-    file_model_ = config_.get<std::string>("model");
-    std::transform(file_model_.begin(), file_model_.end(), file_model_.begin(), ::tolower);
-    if(file_model_ == "csv") {
+    if(file_model_ == FileModel::CSV) {
         // Open the file with the objects
         auto file_path = config_.getPathWithExtension("file_name", "csv", true);
         input_file_ = std::make_unique<std::ifstream>(file_path);
         if(!input_file_->is_open()) {
             throw InvalidValueError(config_, "file_name", "could not open input file");
         }
-    } else if(file_model_ == "root") {
+    } else if(file_model_ == FileModel::ROOT) {
         auto file_path = config_.getPathWithExtension("file_name", "root", true);
         input_file_root_ = std::make_unique<TFile>(file_path.c_str(), "READ");
         if(!input_file_root_->IsOpen()) {
@@ -167,9 +167,6 @@ void DepositionReaderModule::initialize() {
             check_tree_reader(track_id_);
             check_tree_reader(parent_id_);
         }
-
-    } else {
-        throw InvalidValueError(config_, "model", "only models 'root' and 'csv' are currently supported");
     }
 
     // If requested, prepare output plots
@@ -231,9 +228,9 @@ void DepositionReaderModule::run(Event* event) {
         int pdg_code = 0, track_id = 0, parent_id = 0;
 
         try {
-            if(file_model_ == "csv") {
+            if(file_model_ == FileModel::CSV) {
                 read_status = read_csv(event_num, volume, global_position, time, energy, pdg_code, track_id, parent_id);
-            } else if(file_model_ == "root") {
+            } else if(file_model_ == FileModel::ROOT) {
                 read_status = read_root(
                     event_num, curr_event_id, volume, global_position, time, energy, pdg_code, track_id, parent_id);
             }
