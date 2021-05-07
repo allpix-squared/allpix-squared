@@ -23,19 +23,17 @@ namespace allpix {
          * @brief Types of deposition
          */
         enum class DepositionModel {
-            NONE = 0, ///< No deposition
-            FIXED,    ///< Deposition at a specific point
-            SCAN,     ///< Scan through the volume of a pixel
-            SPOT,     ///< Deposition around fixed position with Gaussian profile
+            FIXED, ///< Deposition at a specific point
+            SCAN,  ///< Scan through the volume of a pixel
+            SPOT,  ///< Deposition around fixed position with Gaussian profile
         };
 
         /**
          * @brief Types of sources
          */
         enum class SourceType {
-            NONE = 0, ///< No source
-            POINT,    ///< Deposition at a single point
-            MIP,      ///< MIP-like linear deposition of charge carrier
+            POINT, ///< Deposition at a single point
+            MIP,   ///< MIP-like linear deposition of charge carrier
         };
 
     public:
