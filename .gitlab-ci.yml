@@ -49,17 +49,15 @@ cmp:lxplus-gcc:
         - ninja -k0
         - ninja install
 
-cmp:cc7-docker:
+cmp:docker:
     extends: .compile
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
-    before_script:
-        - source scl_source enable devtoolset-8 || echo " "
     script:
         - mkdir build
         - cd build
-        - cmake3 -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DBOOST_INCLUDEDIR=/usr/include/boost169 -DBOOST_LIBRARYDIR=/usr/lib64/boost169 ..
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
         - make
         - make install
 
@@ -257,29 +255,26 @@ core:lxplus-gcc:
     before_script:
         - source etc/scripts/setup_lxplus.sh
 
-# CentOS 7
-mod:cc7-docker:
+# Ubuntu Docker image
+mod:docker:
     extends: .testmod
     needs:
-        - job: cmp:cc7-docker
+        - job: cmp:docker
           artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
-    before_script:
-        - source scl_source enable devtoolset-8 || echo " "
 
-core:cc7-docker:
+core:docker:
     extends: .testcore
     needs:
-        - job: cmp:cc7-docker
+        - job: cmp:docker
           artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
         entrypoint: [""]
-    before_script:
-        - source scl_source enable devtoolset-8 || echo " "
 
+# CentOS 7
 mod:cc7-gcc:
     extends: .testmod
     needs:
