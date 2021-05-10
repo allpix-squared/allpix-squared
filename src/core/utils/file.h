@@ -38,19 +38,6 @@ namespace allpix {
         }
         return false;
     }
-
-    /**
-     * @brief Check for the existence of the file extension and add it if not present
-     * @param path File name or path to file
-     * @param extension File extension (without separating dot) to be checked for or added
-     * @return File name or path to file including the appropriate file extension
-     */
-    inline std::string add_file_extension(const std::string& path, std::string extension) {
-        if(extension.empty()) {
-            return path;
-        }
-        return std::filesystem::path(path).replace_extension(extension);
-    }
 } // namespace allpix
 
 #endif /* ALLPIX_FILE_H */

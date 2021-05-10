@@ -319,7 +319,7 @@ void RCEWriterModule::initialize() {
     std::sort(detector_names.begin(), detector_names.end());
 
     // Open output data file
-    std::string path_data = createOutputFile(add_file_extension(config_.get<std::string>("file_name"), "root"));
+    std::string path_data = createOutputFile(config_.get<std::string>("file_name"), "root");
     output_file_ = std::make_unique<TFile>(path_data.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -357,8 +357,8 @@ void RCEWriterModule::initialize() {
     }
 
     // Write proteus config files
-    auto device_path = createOutputFile(add_file_extension(config_.get<std::string>("device_file"), "toml"));
-    auto geometry_path = createOutputFile(add_file_extension(config_.get<std::string>("geometry_file"), "toml"));
+    auto device_path = createOutputFile(config_.get<std::string>("device_file"), "toml");
+    auto geometry_path = createOutputFile(config_.get<std::string>("geometry_file"), "toml");
     write_proteus_config(device_path, geometry_path, detector_names, *geo_mgr_, *getConfigManager());
 }
 

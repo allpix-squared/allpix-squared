@@ -45,8 +45,7 @@ GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*
 
 void GDMLOutputWriterModule::initialize() {
 
-    std::string GDML_output_file =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);
+    std::string GDML_output_file = createOutputFile(config_.get<std::string>("file_name", "Output"), "gdml", false, true);
 
     G4GDMLParser parser;
     parser.SetRegionExport(true);

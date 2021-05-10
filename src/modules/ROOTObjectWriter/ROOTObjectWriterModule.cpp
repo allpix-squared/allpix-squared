@@ -49,8 +49,7 @@ ROOTObjectWriterModule::~ROOTObjectWriterModule() {
 
 void ROOTObjectWriterModule::initialize() {
     // Create output file
-    output_file_name_ =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "root"), true);
+    output_file_name_ = createOutputFile(config_.get<std::string>("file_name", "data"), "root", true);
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 

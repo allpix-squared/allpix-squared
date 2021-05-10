@@ -37,8 +37,7 @@ TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, 
 
 void TextWriterModule::initialize() {
     // Create output file
-    output_file_name_ =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "data"), "txt"), true);
+    output_file_name_ = createOutputFile(config_.get<std::string>("file_name", "data"), "txt", true);
     output_file_ = std::make_unique<std::ofstream>(output_file_name_);
 
     *output_file_ << "# Allpix Squared ASCII data - https://cern.ch/allpix-squared" << std::endl << std::endl;

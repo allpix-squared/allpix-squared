@@ -56,13 +56,13 @@ void CorryvreckanWriterModule::initialize() {
     timing_global_ = config_.get<bool>("global_timing");
 
     // Create output file and directories
-    fileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "root"));
+    fileName_ = createOutputFile(config_.get<std::string>("file_name"), "root");
     LOG(TRACE) << "Creating output file \"" << fileName_ << "\"";
     output_file_ = std::make_unique<TFile>(fileName_.c_str(), "RECREATE");
     output_file_->cd();
 
     // Create geometry file:
-    geometryFileName_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "conf"));
+    geometryFileName_ = createOutputFile(config_.get<std::string>("geometry_file"), "conf");
 
     // Create trees:
     LOG(TRACE) << "Booking event tree";
