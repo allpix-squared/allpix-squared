@@ -71,7 +71,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
-    config_.setDefault<double>("auger_coefficient", Units::get(2e-30, "cm*cm*cm*cm*cm*cm*/s"));
+    config_.setDefault<std::string>("recombination_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
@@ -112,7 +112,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
-    auger_coeff_ = config_.get<double>("auger_coefficient");
 
     // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -123,14 +122,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     }
 
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
-
-    // Reference lifetime and doping concentrations, taken from:
-    // https://doi.org/10.1016/0038-1101(82)90203-9
-    // https://doi.org/10.1016/0038-1101(76)90022-8
-    electron_lifetime_reference_ = Units::get(1e-5, "s");
-    hole_lifetime_reference_ = Units::get(4.0e-4, "s");
-    electron_doping_reference_ = Units::get(1e16, "/cm/cm/cm");
-    hole_doping_reference_ = Units::get(7.1e15, "/cm/cm/cm");
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -550,14 +541,18 @@ void GenericPropagationModule::initialize() {
                                                   static_cast<double>(charge_per_step_));
     }
 
-    // Check for doping profile
-    has_doping_profile_ = detector->hasDopingProfile();
-
     // Prepare mobility model
     try {
-        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, has_doping_profile_);
+        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, detector->hasDopingProfile());
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "mobility_model", e.what());
+    }
+
+    // Prepare recombination model
+    try {
+        recombination_ = Recombination(config_.get<std::string>("recombination_model"), detector->hasDopingProfile());
+    } catch(ModelError& e) {
+        throw InvalidValueError(config_, "recombination_model", e.what());
     }
 }
 
@@ -712,27 +707,6 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
     // Survival probability of this charge carrier package, evaluated at every step
     std::uniform_real_distribution<double> survival(0, 1);
 
-    auto carrier_alive = [&](double doping_concentration, double timestep) -> bool {
-        auto lifetime_srh = (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
-                            (1 + std::fabs(doping_concentration) /
-                                     (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
-
-        // auger lifetime model
-        auto lifetime_auger = 1.0 / (auger_coeff_ * doping_concentration * doping_concentration);
-
-        auto minorityType = (doping_concentration > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
-
-        // combine the two
-        auto lifetime = lifetime_srh;
-        if(minorityType == type) {
-            lifetime = (lifetime_srh * lifetime_auger) / (lifetime_srh + lifetime_auger);
-        }
-
-        auto survival_probability = survival(random_generator);
-
-        return survival_probability > (1 - std::exp(-1 * timestep / lifetime));
-    };
-
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
@@ -808,10 +782,10 @@ std::pair<ROOT::Math::XYZPoint, double> GenericPropagationModule::propagate(cons
         runge_kutta.setValue(position);
 
         // Check if charge carrier is still alive:
-        if(has_doping_profile_) {
-            is_alive =
-                carrier_alive(detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)), timestep);
-        }
+        is_alive = !recombination_(type,
+                                   detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                                   survival(random_generator),
+                                   timestep);
 
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();

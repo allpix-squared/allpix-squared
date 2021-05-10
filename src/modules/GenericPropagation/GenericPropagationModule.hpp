@@ -27,6 +27,7 @@
 #include "objects/PropagatedCharge.hpp"
 
 #include "physics/Mobility.hpp"
+#include "physics/Recombination.hpp"
 
 #include "tools/ROOT.h"
 
@@ -102,18 +103,12 @@ namespace allpix {
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
 
-        // Precalculated values for electron and hole mobility
+        // Models for electron and hole mobility and lifetime
         Mobility mobility_;
+        Recombination recombination_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
-
-        // Predefined values for reference charge carrier lifetime and doping concentration
-        double electron_lifetime_reference_;
-        double hole_lifetime_reference_;
-        double electron_doping_reference_;
-        double hole_doping_reference_;
-        double auger_coeff_;
 
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;
@@ -122,9 +117,6 @@ namespace allpix {
         // Magnetic field
         bool has_magnetic_field_;
         ROOT::Math::XYZVector magnetic_field_;
-
-        // Doping profile available?
-        bool has_doping_profile_;
 
         // Statistical information
         std::atomic<unsigned int> total_propagated_charges_{};

@@ -23,6 +23,7 @@
 #include "objects/PropagatedCharge.hpp"
 
 #include "physics/Mobility.hpp"
+#include "physics/Recombination.hpp"
 
 #include "tools/ROOT.h"
 
@@ -76,23 +77,16 @@ namespace allpix {
         // Side to propagate too
         double top_z_;
 
-        // Precalculated values for electron and hole mobility
+        // Precalculated values for electron and hole critical fields
         double hole_Ec_;
         double electron_Ec_;
-        Mobility mobility_;
 
-        // Doping profile available?
-        bool has_doping_profile_{};
+        // Models for electron and hole mobility and lifetime
+        Mobility mobility_;
+        Recombination recombination_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
-
-        // Predefined values for reference charge carrier lifetime and doping concentration
-        double electron_lifetime_reference_;
-        double hole_lifetime_reference_;
-        double electron_doping_reference_;
-        double hole_doping_reference_;
-        double auger_coeff_;
 
         // Output plot for drift time
         Histogram<TH1D> drift_time_histo_;
