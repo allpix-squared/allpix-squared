@@ -67,25 +67,6 @@ namespace allpix {
     }
 
     /**
-     * @brief Get all files in a directory
-     * @param path The base directory
-     * @return A list with the full names of all files in the directory
-     *
-     * Does not recurse on subdirectories, but only return the files that are directly in the directory.
-     */
-    // TODO [doc] check if path exists and ensure canonical paths
-    inline std::vector<std::string> get_files_in_directory(const std::string& path) {
-        std::vector<std::string> files;
-        for(const auto& entry : std::filesystem::directory_iterator(path)) {
-            if(entry.is_regular_file()) {
-                // Add full file paths
-                files.push_back(std::filesystem::canonical(entry));
-            }
-        }
-        return files;
-    }
-
-    /**
      * @brief Create a directory
      * @param path The path to create
      * @param mode The flags permissions of the file to create
@@ -104,37 +85,6 @@ namespace allpix {
     }
 
     /**
-     * @brief Recursively removes a path from the file system
-     * @param path Path to the top directory to remove
-     * @throws std::invalid_argument If the path cannot be removed
-     * @warning This method is not thread-safe
-     *
-     * All the required directories are deleted recursively from the top-directory (use this with caution).
-     */
-    inline void remove_path(const std::string& path) {
-        try {
-            std::filesystem::remove_all(path);
-        } catch(std::filesystem::filesystem_error& e) {
-            throw std::invalid_argument("path cannot be completely deleted: " + std::string(e.what()));
-        }
-    }
-
-    /*
-     * @brief Removes a single file from the file system
-     * @param path Path to the file
-     * @throws std::invalid_argument If the file cannot be removed
-     *
-     * Remove a single file at the given path. If the function returns the deletion was successful.
-     */
-    inline void remove_file(const std::string& path) {
-        try {
-            std::filesystem::remove(path);
-        } catch(std::filesystem::filesystem_error& e) {
-            throw std::invalid_argument("file cannot be deleted: " + std::string(e.what()));
-        }
-    }
-
-    /**
      * @brief Check for the existence of the file extension and add it if not present
      * @param path File name or path to file
      * @param extension File extension (without separating dot) to be checked for or added
@@ -145,16 +95,6 @@ namespace allpix {
             return path;
         }
         return std::filesystem::path(path).replace_extension(extension);
-    }
-
-    /**
-     * @brief Get the name of the file together with the extension
-     * @param path Absolute path to the file
-     * @return Pair of name of the file and the possible extension
-     */
-    inline std::pair<std::string, std::string> get_file_name_extension(const std::string& path) {
-        auto file = std::filesystem::path(path);
-        return std::make_pair(file.stem(), file.extension());
     }
 } // namespace allpix
 

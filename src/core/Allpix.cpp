@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <climits>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
@@ -156,10 +157,10 @@ void Allpix::load() {
 
     // Use existing output directory if it exists
     bool create_output_dir = true;
-    if(allpix::path_is_directory(directory)) {
+    if(std::filesystem::is_directory(directory)) {
         if(global_config.get<bool>("purge_output_directory", false)) {
             LOG(DEBUG) << "Deleting previous output directory " << directory;
-            allpix::remove_path(directory);
+            std::filesystem::remove_all(directory);
         } else {
             LOG(DEBUG) << "Output directory " << directory << " already exists";
             create_output_dir = false;

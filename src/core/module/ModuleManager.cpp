@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <random>
@@ -76,7 +77,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        allpix::remove_file(path);
+        std::filesystem::remove(path);
     }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {

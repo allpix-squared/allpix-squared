@@ -10,6 +10,7 @@
 
 #include "Module.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
@@ -97,8 +98,8 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
             try {
-                allpix::remove_file(file);
-            } catch(std::invalid_argument& e) {
+                std::filesystem::remove(file);
+            } catch(std::filesystem::filesystem_error& e) {
                 throw ModuleError("Deleting file " + file + " failed: " + e.what());
             }
         }
@@ -111,12 +112,12 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 
         // Convert the file to an absolute path
         file = get_canonical_path(file);
-    } catch(std::invalid_argument& e) {
+    } catch(std::filesystem::filesystem_error& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }
 
     if(delete_file) {
-        allpix::remove_file(file);
+        std::filesystem::remove(file);
     }
     return file;
 }
