@@ -170,7 +170,7 @@ void Allpix::load() {
     try {
         if(create_output_dir) {
             LOG(DEBUG) << "Creating output directory " << directory;
-            allpix::create_directories(directory);
+            std::filesystem::create_directories(directory);
         }
         // Change to the new/existing output directory
         gSystem->ChangeDirectory(directory.c_str());

@@ -85,13 +85,13 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 
     try {
         // Create all the required main directories
-        allpix::create_directories(file);
+        std::filesystem::create_directories(file);
 
         // Add the file itself
         file += "/";
         file += path;
 
-        if(path_is_file(file)) {
+        if(std::filesystem::is_regular_file(file)) {
             auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
             if(config_.get<bool>("deny_overwrite", global_overwrite)) {
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
@@ -111,7 +111,7 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
         }
 
         // Convert the file to an absolute path
-        file = get_canonical_path(file);
+        file = std::filesystem::canonical(file);
     } catch(std::filesystem::filesystem_error& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }

@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -101,7 +102,7 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
 
     // Convert file name to absolute path (if given)
     if(!file_name.empty()) {
-        file_name = allpix::get_canonical_path(file_name);
+        file_name = std::filesystem::canonical(file_name);
     }
 
     // Build first empty configuration

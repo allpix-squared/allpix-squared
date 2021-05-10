@@ -105,7 +105,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
         LOG(TRACE) << "Registered model paths from configuration.";
     }
-    if(path_is_directory(ALLPIX_MODEL_DIRECTORY)) {
+    if(std::filesystem::is_directory(ALLPIX_MODEL_DIRECTORY)) {
         model_paths_.emplace_back(ALLPIX_MODEL_DIRECTORY);
         LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
     }
@@ -120,7 +120,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         }
 
         data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/models");
-        if(path_is_directory(data_dir)) {
+        if(std::filesystem::is_directory(data_dir)) {
             model_paths_.emplace_back(data_dir);
             LOG(TRACE) << "Registered global model path: " << data_dir;
         }
@@ -380,7 +380,7 @@ void GeometryManager::load_models() {
     // Add all the paths to the reader
     for(auto& path : paths) {
         // Check if file or directory
-        if(allpix::path_is_directory(path)) {
+        if(std::filesystem::is_directory(path)) {
             for(const auto& entry : std::filesystem::directory_iterator(path)) {
                 if(!entry.is_regular_file()) {
                     continue;

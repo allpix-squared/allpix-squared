@@ -22,33 +22,6 @@
 namespace allpix {
 
     /**
-     * @brief Get canonical path from a file or directory name
-     * @return The canonical path (without dots)
-     * @throws std::invalid_argument If absolute path does not exist on the system
-     */
-    inline std::string get_canonical_path(const std::string& path) {
-        if(!std::filesystem::exists(path)) {
-            // Throw an error if the path does not exist
-            throw std::invalid_argument("path " + path + " not found");
-        }
-        return std::filesystem::canonical(path);
-    }
-
-    /**
-     * @brief Check if path is an existing directory
-     * @param path The path to check
-     * @return True if the path is a directory, false otherwise
-     */
-    inline bool path_is_directory(const std::string& path) { return std::filesystem::is_directory(path); }
-
-    /**
-     * @brief Check if path is an existing file
-     * @param path The path to check
-     * @return True if the path is a file, false otherwise
-     */
-    inline bool path_is_file(const std::string& path) { return std::filesystem::is_regular_file(path); }
-
-    /**
      * @brief Check if the file is a binary file
      * @param path The path to the file to be checked check
      * @return True if the file contains null bytes, false otherwise
@@ -64,24 +37,6 @@ namespace allpix {
             }
         }
         return false;
-    }
-
-    /**
-     * @brief Create a directory
-     * @param path The path to create
-     * @param mode The flags permissions of the file to create
-     * @throws std::invalid_argument If the directory or one of its subpaths cannot be created
-     *
-     * All the required directories are created from the top-directory until the last folder. Therefore it can be used to
-     * create a structure of directories.
-     */
-    inline void create_directories(std::string path, mode_t mode = 0777) {
-        try {
-            std::filesystem::create_directories(path);
-            std::filesystem::permissions(path, std::filesystem::perms(mode));
-        } catch(std::filesystem::filesystem_error& e) {
-            throw std::invalid_argument("cannot create path: " + std::string(e.what()));
-        }
     }
 
     /**

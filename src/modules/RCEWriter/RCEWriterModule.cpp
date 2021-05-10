@@ -10,6 +10,7 @@
 #include "RCEWriterModule.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 
@@ -284,7 +285,7 @@ static void write_proteus_config(const std::string& device_path,
 
     // device config
     // TODO use path relative to the device file
-    device_file << "geometry = \"" << get_canonical_path(geometry_path) << "\"\n";
+    device_file << "geometry = \"" << std::filesystem::canonical(geometry_path) << "\"\n";
     device_file << '\n';
     print_device(device_file, names, geo_mgr, cfg_mgr);
 

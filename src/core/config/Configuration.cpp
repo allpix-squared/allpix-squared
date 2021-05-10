@@ -10,6 +10,7 @@
 #include "Configuration.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -123,7 +124,7 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
     // Normalize path only if we have to check if it exists
     // NOTE: This throws an error if the path does not exist
     if(canonicalize_path) {
-        path = allpix::get_canonical_path(path);
+        path = std::filesystem::canonical(path);
     }
     return path;
 }

@@ -72,7 +72,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
     path = allpix::add_file_extension(path, "root");
 
-    if(allpix::path_is_file(path)) {
+    if(std::filesystem::is_regular_file(path)) {
         if(global_config.get<bool>("deny_overwrite", false)) {
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
