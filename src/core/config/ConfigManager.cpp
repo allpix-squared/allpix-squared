@@ -17,7 +17,6 @@
 
 #include "Configuration.hpp"
 #include "core/config/exceptions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;

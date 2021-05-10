@@ -21,7 +21,6 @@
 #include <TMatrixD.h>
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 #include "core/utils/unit.h"

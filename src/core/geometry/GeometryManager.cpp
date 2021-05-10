@@ -26,7 +26,6 @@
 #include "core/geometry/exceptions.h"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"

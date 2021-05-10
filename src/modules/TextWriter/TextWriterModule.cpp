@@ -17,7 +17,6 @@
 #include <TClass.h>
 
 #include "core/config/ConfigReader.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 

@@ -16,7 +16,6 @@
 #include <string>
 #include <utility>
 
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;

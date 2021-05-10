@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "core/messenger/Messenger.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 #include <Math/RotationZYX.h>
