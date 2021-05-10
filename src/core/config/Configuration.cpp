@@ -123,7 +123,11 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
     // Normalize path only if we have to check if it exists
     // NOTE: This throws an error if the path does not exist
     if(canonicalize_path) {
-        path = std::filesystem::canonical(path);
+        try {
+            path = std::filesystem::canonical(path);
+        } catch(std::filesystem::filesystem_error&) {
+            throw std::invalid_argument("path " + path + " not found");
+        }
     }
     return path;
 }
