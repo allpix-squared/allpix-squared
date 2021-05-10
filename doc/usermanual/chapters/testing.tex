@@ -195,24 +195,10 @@ New \apsq Docker images are automatically created and deployed by the CI for eve
 New versions are published to project Docker container registry~\cite{ap2-container-registry}.
 Tagged versions can be found via their respective tag name, while updates via the nightly build are always stored with the \parameter{latest} tag attached.
 
-The final Docker image is formed from three consecutive images with different layers of software added.
-The `base` image contains all build dependencies such as compilers, CMake, and git.
-It derives from a CentOS\,7 Docker image and can be build using the \file{etc/docker/Dockerfile.base} file via the following commands:
+The final Docker image is formed from two consecutive images with different layers of software added.
+The \parameter{deps} image contains all build dependencies such as compilers, CMake, and git as well as the two main dependencies of the framework are ROOT6 and Geant4.
+It derives from the latest Ubuntu LTS Docker image and can be build using the \file{etc/docker/Dockerfile.deps} file via the following commands:
 
-\begin{verbatim}
-# Log into the CERN GitLab Docker registry:
-$ docker login gitlab-registry.cern.ch
-# Compile the new image version:
-$ docker build --file etc/docker/Dockerfile.base            \
-               --tag gitlab-registry.cern.ch/allpix-squared/\
-                     allpix-squared/allpix-squared-base     \
-               .
-# Upload the image to the registry:
-$ docker push gitlab-registry.cern.ch/allpix-squared/\
-              allpix-squared/allpix-squared-base
-\end{verbatim}
-
-The two main dependencies of the framework are ROOT6 and Geant4, which are added to the base image via the \parameter{deps} Docker image created from the file \file{etc/docker/Dockerfile.deps} via:
 \begin{verbatim}
 $ docker build --file etc/docker/Dockerfile.deps            \
                --tag gitlab-registry.cern.ch/allpix-squared/\
@@ -221,10 +207,10 @@ $ docker build --file etc/docker/Dockerfile.deps            \
 $ docker push gitlab-registry.cern.ch/allpix-squared/\
               allpix-squared/allpix-squared-deps
 \end{verbatim}
-These images are created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
+This image is created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
 
 \begin{warning}
-  The dependencies Docker images should not be flattened with commands like
+  The dependencies Docker image should not be flattened with commands like
 
   \command{docker export <container id> | docker import - <tag name>}
 
