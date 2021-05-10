@@ -10,24 +10,14 @@
 #ifndef ALLPIX_FILE_H
 #define ALLPIX_FILE_H
 
-#include <climits>
-#include <cstdlib>
-#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include <dirent.h>
-#include <ftw.h>
-#include <libgen.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-// NOTE: can be replaced by STL filesystem API when we move to C++17
-// TODO [DOC] this should be moved to a sub namespace
 
 namespace allpix {
 
@@ -37,14 +27,11 @@ namespace allpix {
      * @throws std::invalid_argument If absolute path does not exist on the system
      */
     inline std::string get_canonical_path(const std::string& path) {
-        char* path_ptr = realpath(path.c_str(), nullptr);
-        if(path_ptr == nullptr) {
+        if(!std::filesystem::exists(path)) {
             // Throw an error if the path does not exist
             throw std::invalid_argument("path " + path + " not found");
         }
-        std::string abs_path(path_ptr);
-        free(static_cast<void*>(path_ptr)); // NOLINT
-        return abs_path;
+        return std::filesystem::canonical(path);
     }
 
     /**
@@ -52,26 +39,14 @@ namespace allpix {
      * @param path The path to check
      * @return True if the path is a directory, false otherwise
      */
-    inline bool path_is_directory(const std::string& path) {
-        struct stat path_stat;
-        if(stat(path.c_str(), &path_stat) == -1) {
-            return false;
-        }
-        return S_ISDIR(path_stat.st_mode);
-    }
+    inline bool path_is_directory(const std::string& path) { return std::filesystem::is_directory(path); }
 
     /**
      * @brief Check if path is an existing file
      * @param path The path to check
      * @return True if the path is a file, false otherwise
      */
-    inline bool path_is_file(const std::string& path) {
-        struct stat path_stat;
-        if(stat(path.c_str(), &path_stat) == -1) {
-            return false;
-        }
-        return S_ISREG(path_stat.st_mode);
-    }
+    inline bool path_is_file(const std::string& path) { return std::filesystem::is_regular_file(path); }
 
     /**
      * @brief Check if the file is a binary file
@@ -101,35 +76,12 @@ namespace allpix {
     // TODO [doc] check if path exists and ensure canonical paths
     inline std::vector<std::string> get_files_in_directory(const std::string& path) {
         std::vector<std::string> files;
-        struct dirent* ent = nullptr;
-        struct stat st;
-
-        // Loop through all files
-        DIR* dir = opendir(path.c_str());
-        while((ent = readdir(dir)) != nullptr) {
-            std::string file_name = ent->d_name;
-            std::string full_file_name = path;
-            full_file_name += "/";
-            full_file_name += file_name;
-
-            // Ignore useless or wrong paths
-            if(!file_name.empty() && file_name[0] == '.') {
-                continue;
+        for(const auto& entry : std::filesystem::directory_iterator(path)) {
+            if(entry.is_regular_file()) {
+                // Add full file paths
+                files.push_back(std::filesystem::canonical(entry));
             }
-            if(stat(full_file_name.c_str(), &st) == -1) {
-                continue;
-            }
-
-            // Ignore subdirectories
-            const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-            if(is_directory) {
-                continue;
-            }
-
-            // Add full file paths
-            files.push_back(full_file_name);
         }
-        closedir(dir);
         return files;
     }
 
@@ -143,27 +95,11 @@ namespace allpix {
      * create a structure of directories.
      */
     inline void create_directories(std::string path, mode_t mode = 0777) {
-        struct stat st;
-
-        path += "/";
-        size_t pos = 1;
-        // Loop through all subpaths of directories that possibly need to be created
-        while((pos = path.find('/', pos)) != std::string::npos) {
-            std::string sub_path = path.substr(0, pos);
-
-            // Try to create the directory
-            if(mkdir(sub_path.c_str(), mode) != 0 && errno != EEXIST) {
-                throw std::invalid_argument("cannot create folder (" + std::string(strerror(errno)) + ")");
-            }
-            // Check if subpath can accessed
-            if(stat(sub_path.c_str(), &st) != 0) {
-                throw std::invalid_argument("cannot access path (" + std::string(strerror(errno)) + ")");
-            } else if(!S_ISDIR(st.st_mode)) {
-                errno = ENOTDIR;
-                throw std::invalid_argument("part of path already exists as a file");
-            }
-
-            pos++;
+        try {
+            std::filesystem::create_directories(path);
+            std::filesystem::permissions(path, std::filesystem::perms(mode));
+        } catch(std::filesystem::filesystem_error& e) {
+            throw std::invalid_argument("cannot create path: " + std::string(e.what()));
         }
     }
 
@@ -176,14 +112,10 @@ namespace allpix {
      * All the required directories are deleted recursively from the top-directory (use this with caution).
      */
     inline void remove_path(const std::string& path) {
-        int status = nftw(
-            path.c_str(),
-            [](const char* remove_path, const struct stat*, int, struct FTW*) { return remove(remove_path); },
-            64,
-            FTW_DEPTH);
-
-        if(status != 0) {
-            throw std::invalid_argument("path cannot be completely deleted");
+        try {
+            std::filesystem::remove_all(path);
+        } catch(std::filesystem::filesystem_error& e) {
+            throw std::invalid_argument("path cannot be completely deleted: " + std::string(e.what()));
         }
     }
 
@@ -195,10 +127,10 @@ namespace allpix {
      * Remove a single file at the given path. If the function returns the deletion was successful.
      */
     inline void remove_file(const std::string& path) {
-        int status = unlink(path.c_str());
-
-        if(status != 0) {
-            throw std::invalid_argument("file cannot be deleted");
+        try {
+            std::filesystem::remove(path);
+        } catch(std::filesystem::filesystem_error& e) {
+            throw std::invalid_argument("file cannot be deleted: " + std::string(e.what()));
         }
     }
 
@@ -212,18 +144,7 @@ namespace allpix {
         if(extension.empty()) {
             return path;
         }
-        // Add separating dot if not present:
-        if(extension.at(0) != '.') {
-            extension.insert(0, 1, '.');
-        }
-
-        if(path.size() > extension.size()) {
-            if(std::equal(extension.rbegin(), extension.rend(), path.rbegin())) {
-                return path;
-            }
-        }
-
-        return path + extension;
+        return std::filesystem::path(path).replace_extension(extension);
     }
 
     /**
@@ -232,16 +153,8 @@ namespace allpix {
      * @return Pair of name of the file and the possible extension
      */
     inline std::pair<std::string, std::string> get_file_name_extension(const std::string& path) {
-        auto char_string = std::make_unique<char[]>(path.size() + 1);
-        std::copy(path.begin(), path.end(), char_string.get());
-        char_string[path.size()] = '\0';
-
-        std::string base_name = basename(char_string.get());
-        auto idx = base_name.find('.');
-        if(idx != std::string::npos) {
-            return std::make_pair(base_name.substr(0, idx), base_name.substr(idx));
-        }
-        return std::make_pair(base_name, "");
+        auto file = std::filesystem::path(path);
+        return std::make_pair(file.stem(), file.extension());
     }
 } // namespace allpix
 
