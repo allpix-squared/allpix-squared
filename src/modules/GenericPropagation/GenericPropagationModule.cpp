@@ -538,6 +538,13 @@ void GenericPropagationModule::initialize() {
                                                   static_cast<int>(charge_per_step_ - 1),
                                                   1,
                                                   static_cast<double>(charge_per_step_));
+
+        recombine_histo_ =
+            CreateHistogram<TH1D>("recombination_histo",
+                                  "Fraction of recombined charge carriers;recombination [N / N_{total}] ;number of events",
+                                  100,
+                                  0,
+                                  1);
     }
 
     // Prepare mobility model
@@ -668,6 +675,10 @@ void GenericPropagationModule::run(Event* event) {
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
+
+    if(output_plots_) {
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / propagated_charges_count);
+    }
 
     // Create a new message with propagated charges
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
@@ -857,6 +868,7 @@ void GenericPropagationModule::finalize() {
         drift_time_histo_->Write();
         uncertainty_histo_->Write();
         group_size_histo_->Write();
+        recombine_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
