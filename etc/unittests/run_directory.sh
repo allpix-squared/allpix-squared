@@ -1,3 +1,4 @@
+#!/bin/bash
 ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )"
 
 # Load dependencies if run by the CI
