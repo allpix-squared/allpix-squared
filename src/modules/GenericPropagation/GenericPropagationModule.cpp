@@ -35,7 +35,6 @@
 #include "core/config/Configuration.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/utils/distributions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"

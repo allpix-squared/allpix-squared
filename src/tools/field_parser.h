@@ -16,7 +16,6 @@
 #include <iostream>
 #include <map>
 
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -213,6 +212,24 @@ namespace allpix {
         }
 
     private:
+        /**
+         * @brief Check if the file is a binary file
+         * @param path The path to the file to be checked check
+         * @return True if the file contains null bytes, false otherwise
+         *
+         * This helper function checks the first 256 characters of a file for the occurrence of a nullbyte.
+         * For binary files it is very unlikely not to have at least one. This approach is also used e.g. by diff
+         */
+        bool file_is_binary(const std::string& path) const {
+            std::ifstream file(path);
+            for(size_t i = 0; i < 256; i++) {
+                if(file.get() == '\0') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /**
          * @brief Function to guess the type of a field data file
          * @param path Path to the file to be tested

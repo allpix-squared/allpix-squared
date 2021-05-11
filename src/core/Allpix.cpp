@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <climits>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
@@ -22,7 +23,6 @@
 #include <TSystem.h>
 
 #include "core/config/exceptions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 
@@ -156,10 +156,10 @@ void Allpix::load() {
 
     // Use existing output directory if it exists
     bool create_output_dir = true;
-    if(allpix::path_is_directory(directory)) {
+    if(std::filesystem::is_directory(directory)) {
         if(global_config.get<bool>("purge_output_directory", false)) {
             LOG(DEBUG) << "Deleting previous output directory " << directory;
-            allpix::remove_path(directory);
+            std::filesystem::remove_all(directory);
         } else {
             LOG(DEBUG) << "Output directory " << directory << " already exists";
             create_output_dir = false;
@@ -169,7 +169,7 @@ void Allpix::load() {
     try {
         if(create_output_dir) {
             LOG(DEBUG) << "Creating output directory " << directory;
-            allpix::create_directories(directory);
+            std::filesystem::create_directories(directory);
         }
         // Change to the new/existing output directory
         gSystem->ChangeDirectory(directory.c_str());

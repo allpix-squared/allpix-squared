@@ -8,14 +8,10 @@ ENV PATH="/opt/allpix-squared/bin:${PATH}"
 WORKDIR "/data"
 
 # Compile Allpix Squared
-RUN source scl_source enable devtoolset-8 && \
-    mkdir -p /opt/allpix-squared/build && \
+RUN mkdir -p /opt/allpix-squared/build && \
     cd /opt/allpix-squared/build && \
-    cmake3 -DCMAKE_INSTALL_PREFIX=../ \
-           -DBUILD_ALL_MODULES=ON \
-           -DCMAKE_MODULE_PATH="/usr/share/cmake3/Modules/;/usr/share/cmake/Modules/" \
-           -DBOOST_INCLUDEDIR=/usr/include/boost169 \
-           -DBOOST_LIBRARYDIR=/usr/lib64/boost169 \
+    cmake -DCMAKE_INSTALL_PREFIX=../ \
+          -DBUILD_ALL_MODULES=ON \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \

@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "core/messenger/Messenger.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 #include <Math/RotationZYX.h>
@@ -239,9 +238,9 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
 
 void LCIOWriterModule::initialize() {
     // Create the output GEAR file for the detector geometry
-    geometry_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("geometry_file"), "xml"));
+    geometry_file_name_ = createOutputFile(config_.get<std::string>("geometry_file"), "xml");
     // Open LCIO file and write run header
-    lcio_file_name_ = createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name"), "slcio"));
+    lcio_file_name_ = createOutputFile(config_.get<std::string>("file_name"), "slcio");
     lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
     lcWriter_->open(lcio_file_name_, LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();

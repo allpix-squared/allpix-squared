@@ -30,7 +30,6 @@
 #include "core/geometry/GeometryManager.hpp"
 
 #include "core/config/ConfigReader.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 
@@ -45,8 +44,7 @@ GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*
 
 void GDMLOutputWriterModule::initialize() {
 
-    std::string GDML_output_file =
-        createOutputFile(allpix::add_file_extension(config_.get<std::string>("file_name", "Output"), "gdml"), false, true);
+    std::string GDML_output_file = createOutputFile(config_.get<std::string>("file_name", "Output"), "gdml", false, true);
 
     G4GDMLParser parser;
     parser.SetRegionExport(true);

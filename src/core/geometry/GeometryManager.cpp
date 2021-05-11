@@ -8,6 +8,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -25,7 +26,6 @@
 #include "core/geometry/exceptions.h"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -104,7 +104,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
         LOG(TRACE) << "Registered model paths from configuration.";
     }
-    if(path_is_directory(ALLPIX_MODEL_DIRECTORY)) {
+    if(std::filesystem::is_directory(ALLPIX_MODEL_DIRECTORY)) {
         model_paths_.emplace_back(ALLPIX_MODEL_DIRECTORY);
         LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
     }
@@ -119,7 +119,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         }
 
         data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/models");
-        if(path_is_directory(data_dir)) {
+        if(std::filesystem::is_directory(data_dir)) {
             model_paths_.emplace_back(data_dir);
             LOG(TRACE) << "Registered global model path: " << data_dir;
         }
@@ -379,14 +379,16 @@ void GeometryManager::load_models() {
     // Add all the paths to the reader
     for(auto& path : paths) {
         // Check if file or directory
-        if(allpix::path_is_directory(path)) {
-            std::vector<std::string> sub_paths = allpix::get_files_in_directory(path);
-            for(auto& sub_path : sub_paths) {
-                auto name_ext = allpix::get_file_name_extension(sub_path);
+        if(std::filesystem::is_directory(path)) {
+            for(const auto& entry : std::filesystem::directory_iterator(path)) {
+                if(!entry.is_regular_file()) {
+                    continue;
+                }
 
                 // Accept only with correct model suffix
+                auto sub_path = std::filesystem::canonical(entry);
                 std::string suffix(ALLPIX_MODEL_SUFFIX);
-                if(name_ext.second != suffix) {
+                if(sub_path.extension() != suffix) {
                     continue;
                 }
 
@@ -395,7 +397,7 @@ void GeometryManager::load_models() {
                 std::ifstream file(sub_path);
 
                 ConfigReader reader(file, sub_path);
-                readers.emplace_back(name_ext.first, reader);
+                readers.emplace_back(sub_path.stem(), reader);
             }
         } else {
             // Always a file because paths are already checked
@@ -403,8 +405,7 @@ void GeometryManager::load_models() {
             std::ifstream file(path);
 
             ConfigReader reader(file, path);
-            auto name_ext = allpix::get_file_name_extension(path);
-            readers.emplace_back(name_ext.first, reader);
+            readers.emplace_back(std::filesystem::path(path).stem(), reader);
         }
     }
 

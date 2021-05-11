@@ -10,6 +10,7 @@
 
 #include "Module.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <stdexcept>
@@ -17,7 +18,6 @@
 
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -69,7 +69,7 @@ std::shared_ptr<Detector> Module::getDetector() const {
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, bool global, bool delete_file) {
+std::string Module::createOutputFile(const std::string& path, const std::string& extension, bool global, bool delete_file) {
     std::string file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());
@@ -84,21 +84,22 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
 
     try {
         // Create all the required main directories
-        allpix::create_directories(file);
+        std::filesystem::create_directories(file);
 
         // Add the file itself
         file += "/";
-        file += path;
+        file +=
+            (extension.empty() ? path : static_cast<std::string>(std::filesystem::path(path).replace_extension(extension)));
 
-        if(path_is_file(file)) {
+        if(std::filesystem::is_regular_file(file)) {
             auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
             if(config_.get<bool>("deny_overwrite", global_overwrite)) {
                 throw ModuleError("Overwriting of existing file " + file + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
             try {
-                allpix::remove_file(file);
-            } catch(std::invalid_argument& e) {
+                std::filesystem::remove(file);
+            } catch(std::filesystem::filesystem_error& e) {
                 throw ModuleError("Deleting file " + file + " failed: " + e.what());
             }
         }
@@ -110,13 +111,13 @@ std::string Module::createOutputFile(const std::string& path, bool global, bool 
         }
 
         // Convert the file to an absolute path
-        file = get_canonical_path(file);
-    } catch(std::invalid_argument& e) {
+        file = std::filesystem::canonical(file);
+    } catch(std::filesystem::filesystem_error& e) {
         throw ModuleError("Path " + file + " cannot be created");
     }
 
     if(delete_file) {
-        allpix::remove_file(file);
+        std::filesystem::remove(file);
     }
     return file;
 }

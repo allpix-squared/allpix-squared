@@ -97,13 +97,8 @@ void VisualizationGeant4Module::initialize() {
     if(config_.get<std::string>("mode") == "gui") {
         // Need to provide parameters, simulate this behaviour
         session_param_ = ALLPIX_PROJECT_NAME;
-#if __cplusplus > 201402L
-        // in C++17 a non-const version of the data() function is available
         session_param_ptr_ = session_param_.data();
-#else
-        // pre C++17 the data has to be const-cast manually
-        session_param_ptr_ = const_cast<char*>(session_param_.data()); // NOLINT
-#endif
+
 #ifdef G4UI_USE_QT
         gui_session_ = std::make_unique<G4UIQt>(1, &session_param_ptr_);
 #else

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <random>
@@ -32,7 +33,6 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 // Common prefix for all modules
@@ -69,14 +69,14 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 
     // (Re)create the main ROOT file
     auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
-    path = allpix::add_file_extension(path, "root");
+    path = std::filesystem::path(path).replace_extension("root");
 
-    if(allpix::path_is_file(path)) {
+    if(std::filesystem::is_regular_file(path)) {
         if(global_config.get<bool>("deny_overwrite", false)) {
             throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        allpix::remove_file(path);
+        std::filesystem::remove(path);
     }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {

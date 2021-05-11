@@ -10,12 +10,12 @@
 #include "Configuration.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 
 #include "core/config/exceptions.h"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -83,7 +83,7 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
 std::string
 Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
     try {
-        return path_to_absolute(allpix::add_file_extension(get<std::string>(key), extension), check_exists);
+        return path_to_absolute(std::filesystem::path(get<std::string>(key)).replace_extension(extension), check_exists);
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(*this, key, e.what());
     }
@@ -123,7 +123,11 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
     // Normalize path only if we have to check if it exists
     // NOTE: This throws an error if the path does not exist
     if(canonicalize_path) {
-        path = allpix::get_canonical_path(path);
+        try {
+            path = std::filesystem::canonical(path);
+        } catch(std::filesystem::filesystem_error&) {
+            throw std::invalid_argument("path " + path + " not found");
+        }
     }
     return path;
 }

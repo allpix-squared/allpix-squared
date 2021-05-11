@@ -1,4 +1,5 @@
 #include <csignal>
+#include <filesystem>
 #include <fstream>
 
 #include "core/config/ConfigReader.hpp"
@@ -6,7 +7,6 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/module/ThreadPool.hpp"
-#include "core/utils/file.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/field_parser.h"
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
             } else if(strcmp(argv[i], "--matrix") == 0 && (i + 1 < argc)) {
                 matrix = allpix::from_string<XYVectorInt>(std::string(argv[++i]));
             } else if(strcmp(argv[i], "--model") == 0 && (i + 1 < argc)) {
-                model_path = allpix::get_canonical_path(std::string(argv[++i]));
+                model_path = std::filesystem::canonical(std::string(argv[++i]));
             } else if(strcmp(argv[i], "--output") == 0 && (i + 1 < argc)) {
                 output_file_prefix = std::string(argv[++i]);
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {

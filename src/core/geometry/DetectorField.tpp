@@ -33,8 +33,7 @@ namespace allpix {
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
-                // TODO When moving to C++17, this can be replaced with std::clamp()
-                z = std::max(thickness_domain_.first, std::min(z, thickness_domain_.second));
+                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
             } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
                 return {};
             }
@@ -72,8 +71,7 @@ namespace allpix {
 
         // Check if we need to extrapolate along the z axis:
         if(extrapolate_z) {
-            // TODO When moving to C++17, this can be replaced with std::clamp()
-            z_ind = std::max(0, std::min(z_ind, static_cast<int>(dimensions_[2]) - 1));
+            z_ind = std::clamp(z_ind, 0, static_cast<int>(dimensions_[2]) - 1);
         } else if(z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
             return {};
         }
@@ -126,8 +124,7 @@ namespace allpix {
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
-                // TODO When moving to C++17, this can be replaced with std::clamp()
-                z = std::max(thickness_domain_.first, std::min(z, thickness_domain_.second));
+                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
             } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
                 return {};
             }

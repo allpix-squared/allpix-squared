@@ -6,10 +6,16 @@ An overview of possible build configurations is given.
 After installing and loading the required dependencies, there are various options to customize the installation of \apsq.
 This chapter contains details on the standard installation process and information about custom build configurations.
 
+
 \section{Supported Operating Systems}
 \label{sec:os}
 \apsq is designed to run without issues on either a recent Linux distribution or Mac OS\,X.
-Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), CentOS\,8 (with GCC only) and Mac OS Catalina 10.15 (AppleClang 12.0).
+Furthermore, the continuous integration of the project ensures correct building and functioning of the software framework on CentOS\,7 (with GCC and LLVM), CentOS\,8 (with GCC only), Ubuntu 20.04 LTS (Docker, GCC) and Mac OS Catalina 10.15 (AppleClang 12.0).
+
+\section{Supported Compilers}
+\label{sec:compilers}
+\apsq relies on functionality from the {\CPP}17 standard and therefore requires a {\CPP}17-compliant compiler.
+This comprises for example GCC\,7+, LLVM/Clang\,4.0+ and AppleClang\,10.0+. A detailed list of supported compilers can be found at~\cite{cppcompilersupport}.
 
 \section{Prerequisites}
 \label{sec:prerequisites}
