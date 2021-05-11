@@ -53,11 +53,10 @@ cmp:docker:
     extends: .compile
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-        entrypoint: [""]
     script:
         - mkdir build
         - cd build
-        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR ..
+        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
         - make install
 
@@ -196,8 +195,9 @@ fmt:coverity:
     stage: testing
     tags:
         - docker
-    after_script:
+    before_script:
         - source .ci/init_x86_64.sh
+    after_script:
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
         when: always
@@ -229,8 +229,6 @@ examples:
         - job: cmp:cc7-gcc
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source .ci/init_x86_64.sh
     script:
         - cd build/
         - ctest -R examples --no-compress-output --test-action Test -j4
@@ -263,8 +261,7 @@ mod:docker:
           artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    after_script:
-        - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+    before_script: []
 
 core:docker:
     extends: .testcore
@@ -273,8 +270,7 @@ core:docker:
           artifacts: true
     image:
         name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    after_script:
-        - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+    before_script: []
 
 # CentOS 7
 mod:cc7-gcc:
@@ -283,8 +279,6 @@ mod:cc7-gcc:
         - job: cmp:cc7-gcc
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source .ci/init_x86_64.sh
 
 core:cc7-gcc:
     extends: .testcore
@@ -292,8 +286,6 @@ core:cc7-gcc:
         - job: cmp:cc7-gcc
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source .ci/init_x86_64.sh
 
 mod:cc7-llvm:
     extends: .testmod
@@ -323,8 +315,6 @@ mod:cc8-gcc:
         - job: cmp:cc8-gcc
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos8:latest
-    before_script:
-        - source .ci/init_x86_64.sh
 
 core:cc8-gcc:
     extends: .testcore
@@ -332,8 +322,6 @@ core:cc8-gcc:
         - job: cmp:cc8-gcc
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos8:latest
-    before_script:
-        - source .ci/init_x86_64.sh
 
 # Mac OS X
 
@@ -344,8 +332,6 @@ mod:mac1015-clang:
     needs:
         - job: cmp:mac1015-clang
           artifacts: true
-    before_script:
-        - source .ci/init_x86_64.sh
 
 core:mac1015-clang:
     extends: .testcore
@@ -354,8 +340,6 @@ core:mac1015-clang:
     needs:
         - job: cmp:mac1015-clang
           artifacts: true
-    before_script:
-        - source .ci/init_x86_64.sh
 
 
 #####################
