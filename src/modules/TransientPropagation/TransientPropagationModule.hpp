@@ -113,5 +113,6 @@ namespace allpix {
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
+        Histogram<TH1D> recombine_histo_;
     };
 } // namespace allpix

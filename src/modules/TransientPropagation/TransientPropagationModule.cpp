@@ -153,6 +153,13 @@ void TransientPropagationModule::initialize() {
                                                   static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                   0,
                                                   static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        recombine_histo_ =
+            CreateHistogram<TH1D>("recombination_histo",
+                                  "Fraction of recombined charge carriers;recombination [N / N_{total}] ;number of events",
+                                  100,
+                                  0,
+                                  1);
     }
 }
 
@@ -161,6 +168,8 @@ void TransientPropagationModule::run(Event* event) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
+    unsigned int propagated_charges_count = 0;
+    unsigned int recombined_charges_count = 0;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -209,10 +218,21 @@ void TransientPropagationModule::run(Event* event) {
 
             propagated_charges.push_back(std::move(propagated_charge));
 
+            if(alive) {
+                propagated_charges_count += charge_per_step;
+            } else {
+                recombined_charges_count += charge_per_step;
+            }
+
             if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
             }
         }
+    }
+
+    if(output_plots_) {
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) /
+                               (propagated_charges_count + recombined_charges_count));
     }
 
     // Create a new message with propagated charges
@@ -425,6 +445,7 @@ void TransientPropagationModule::finalize() {
         potential_difference_->Write();
         step_length_histo_->Write();
         drift_time_histo_->Write();
+        recombine_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
