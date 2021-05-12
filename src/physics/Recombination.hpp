@@ -134,7 +134,7 @@ namespace allpix {
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
             if(minorityType != type) {
                 // Auger only applies to minority charge carriers, if we have a majority carrier just return SRH lifetime:
-                return ShockleyReadHall::operator()(type, survival_prob, timestep, doping);
+                return ShockleyReadHall::operator()(type, doping, survival_prob, timestep);
             } else {
                 // If we have a minority charge carrier, combine the lifetimes:
                 auto combined_lifetime =
