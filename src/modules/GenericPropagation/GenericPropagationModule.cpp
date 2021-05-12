@@ -677,7 +677,7 @@ void GenericPropagationModule::run(Event* event) {
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / propagated_charges_count);
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (propagated_charges_count + recombined_charges_count));
     }
 
     // Create a new message with propagated charges
