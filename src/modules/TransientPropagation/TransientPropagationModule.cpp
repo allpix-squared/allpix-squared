@@ -190,27 +190,27 @@ void TransientPropagationModule::run(Event* event) {
             std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto prop_pair = propagate(
+            auto [local_position, time, alive] = propagate(
                 event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
-            auto global_position = detector_->getGlobalPosition(prop_pair.first);
-            PropagatedCharge propagated_charge(prop_pair.first,
+            auto global_position = detector_->getGlobalPosition(local_position);
+            PropagatedCharge propagated_charge(local_position,
                                                global_position,
                                                deposit.getType(),
                                                std::move(px_map),
-                                               deposit.getLocalTime() + prop_pair.second,
-                                               deposit.getGlobalTime() + prop_pair.second,
+                                               deposit.getLocalTime() + time,
+                                               deposit.getGlobalTime() + time,
                                                &deposit);
 
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(prop_pair.first, {"mm", "um"})
-                       << " in " << Units::display(prop_pair.second, "ns") << " time, induced "
+            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(local_position, {"mm", "um"})
+                       << " in " << Units::display(time, "ns") << " time, induced "
                        << Units::display(propagated_charge.getCharge(), {"e"});
 
             propagated_charges.push_back(std::move(propagated_charge));
 
             if(output_plots_) {
-                drift_time_histo_->Fill(static_cast<double>(Units::convert(prop_pair.second, "ns")), charge_per_step);
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
             }
         }
     }
@@ -227,12 +227,13 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Event* event,
-                                                                              const ROOT::Math::XYZPoint& pos,
-                                                                              const CarrierType& type,
-                                                                              const unsigned int charge,
-                                                                              const double initial_time,
-                                                                              std::map<Pixel::Index, Pulse>& pixel_map) {
+std::tuple<ROOT::Math::XYZPoint, double, bool>
+TransientPropagationModule::propagate(Event* event,
+                                      const ROOT::Math::XYZPoint& pos,
+                                      const CarrierType& type,
+                                      const unsigned int charge,
+                                      const double initial_time,
+                                      std::map<Pixel::Index, Pulse>& pixel_map) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Define a function to compute the diffusion
@@ -416,7 +417,7 @@ std::pair<ROOT::Math::XYZPoint, double> TransientPropagationModule::propagate(Ev
     }
 
     // Return the final position of the propagated charge
-    return std::make_pair(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime());
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive);
 }
 
 void TransientPropagationModule::finalize() {
