@@ -6,6 +6,8 @@
 Adds a doping profile to the detector from one of the supported sources. By default, detectors do not have a doping profile applied.
 A doping profile is required for simulating the lifetime of charge carriers.
 It is not used for the calculation of the electric field inside the sensor.
+The profile is extrapolated along `z` such that if a position outside the sensor is queried, the last value available at the sensor surface is returned.
+This precludes edge effects from charge carriers moving at the sensor surfaces.
 
 The following models for the doping profile can be used:
 

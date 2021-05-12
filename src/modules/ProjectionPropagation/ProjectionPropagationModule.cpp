@@ -124,6 +124,14 @@ void ProjectionPropagationModule::initialize() {
                                   100,
                                   static_cast<double>(Units::convert(-top_z_, "um")),
                                   static_cast<double>(Units::convert(top_z_, "um")));
+
+        recombine_histo_ =
+            CreateHistogram<TH1D>("recombination_histo",
+                                  "Fraction of recombined charge carriers;recombination [N / N_{total}] ;number of events",
+                                  100,
+                                  0,
+                                  1);
+
         if(diffuse_deposit_) {
             diffusion_time_histo_ =
                 CreateHistogram<TH1D>("diffusion_time_histo",
@@ -141,9 +149,10 @@ void ProjectionPropagationModule::run(Event* event) {
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
 
-    double charge_lost = 0;
-    double total_charge = 0;
-    double total_projected_charge = 0;
+    unsigned int charge_lost = 0;
+    unsigned int total_charge = 0;
+    unsigned int total_projected_charge = 0;
+    unsigned int recombined_charges_count = 0;
 
     // Loop over all deposits for propagation
     for(const auto& deposit : deposits_message->getData()) {
@@ -159,7 +168,7 @@ void ProjectionPropagationModule::run(Event* event) {
         LOG(DEBUG) << "Set of " << deposit.getCharge() << " charge carriers (" << type << ") on "
                    << Units::display(initial_position, {"mm", "um"});
 
-        double projected_charge = 0;
+        unsigned int projected_charge = 0;
 
         unsigned int charges_remaining = deposit.getCharge();
         total_charge += charges_remaining;
@@ -281,6 +290,7 @@ void ProjectionPropagationModule::run(Event* event) {
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
                            << Units::display(position, {"mm", "um"});
+                recombined_charges_count += charge_per_step;
                 continue;
             }
 
@@ -334,6 +344,10 @@ void ProjectionPropagationModule::run(Event* event) {
               << "%)";
     LOG(DEBUG) << "Total count of propagated charge carriers: " << propagated_charges.size();
 
+    if(output_plots_) {
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charge);
+    }
+
     // Create a new message with propagated charges
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
@@ -347,6 +361,7 @@ void ProjectionPropagationModule::finalize() {
         drift_time_histo_->Write();
         propagation_time_histo_->Write();
         initial_position_histo_->Write();
+        recombine_histo_->Write();
         if(diffuse_deposit_) {
             diffusion_time_histo_->Write();
         }

@@ -93,5 +93,6 @@ namespace allpix {
         Histogram<TH1D> diffusion_time_histo_;
         Histogram<TH1D> propagation_time_histo_;
         Histogram<TH1D> initial_position_histo_;
+        Histogram<TH1D> recombine_histo_;
     };
 } // namespace allpix
