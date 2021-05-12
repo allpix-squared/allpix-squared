@@ -148,19 +148,19 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
     unsigned int max_charge = 0;
-    for(auto& deposit_points : output_plot_points) {
-        for(auto& point : deposit_points.second) {
+    for(auto& [deposit, points] : output_plot_points) {
+        for(auto& point : points) {
             minX = std::min(minX, point.x());
             maxX = std::max(maxX, point.x());
 
             minY = std::min(minY, point.y());
             maxY = std::max(maxY, point.y());
         }
-        start_time = std::min(start_time, deposit_points.first.getGlobalTime());
-        total_charge += deposit_points.first.getCharge();
-        max_charge = std::max(max_charge, deposit_points.first.getCharge());
+        start_time = std::min(start_time, deposit.getGlobalTime());
+        total_charge += deposit.getCharge();
+        max_charge = std::max(max_charge, deposit.getCharge());
 
-        tot_point_cnt += deposit_points.second.size();
+        tot_point_cnt += points.size();
     }
 
     // Compute frame axis sizes if equal scaling is requested
@@ -236,14 +236,14 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
-    for(auto& deposit_points : output_plot_points) {
+    for(auto& [deposit, points] : output_plot_points) {
         auto line = std::make_unique<TPolyLine3D>();
-        for(auto& point : deposit_points.second) {
+        for(auto& point : points) {
             line->SetNextPoint(point.x(), point.y(), point.z());
         }
         // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
-            EColor plot_color = (deposit_points.first.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+            EColor plot_color = (deposit.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
             line->SetLineColor(current_color);
             line->Draw("same");
@@ -374,11 +374,9 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             text->Draw();
 
             // Plot all the required points
-            for(auto& deposit_points : output_plot_points) {
-                auto points = deposit_points.second;
-
-                auto diff = static_cast<unsigned long>(std::round((deposit_points.first.getGlobalTime() - start_time) /
-                                                                  config_.get<long double>("output_plots_step")));
+            for(auto& [deposit, points] : output_plot_points) {
+                auto diff = static_cast<unsigned long>(
+                    std::round((deposit.getGlobalTime() - start_time) / config_.get<long double>("output_plots_step")));
                 if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                     continue;
@@ -391,9 +389,9 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(static_cast<float>(deposit_points.first.getCharge() *
-                                                         config_.get<double>("output_animations_marker_size", 1)) /
-                                      static_cast<float>(max_charge));
+                marker->SetMarkerSize(
+                    static_cast<float>(deposit.getCharge() * config_.get<double>("output_animations_marker_size", 1)) /
+                    static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
                 initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
@@ -404,9 +402,9 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
                 marker->Draw();
                 markers.push_back(std::move(marker));
 
-                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit_points.first.getCharge());
-                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit_points.first.getCharge());
-                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit_points.first.getCharge());
+                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit.getCharge());
+                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit.getCharge());
+                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit.getCharge());
                 ++point_cnt;
             }
 
