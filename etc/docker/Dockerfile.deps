@@ -84,7 +84,7 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
 
 
 # Install Geant4 dependencies
-RUN apt-get install -y libxerces-c-dev qtbase5-dev qt3d5-dev libxmu-dev libmotif-dev
+RUN apt-get install -y libxerces-c-dev
 
 # Add layer for Geant4
 ENV GEANT4_VERSION 10.07
@@ -112,11 +112,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     rm -f ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz && \
     cd ${GEANT4DIR}/build && \
     cmake -DGEANT4_INSTALL_DATA=ON \
-          -DOpenGL_GL_PREFERENCE=GLVND \
           -DGEANT4_USE_GDML=ON \
-          -DGEANT4_USE_QT=ON \
-          -DGEANT4_USE_XM=ON \
-          -DGEANT4_USE_OPENGL_X11=ON \
           -DGEANT4_USE_SYSTEM_CLHEP=OFF \
           -DGEANT4_BUILD_MULTITHREADED=ON \
           -DCMAKE_INSTALL_PREFIX=../ \
