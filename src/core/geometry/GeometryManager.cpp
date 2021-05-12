@@ -71,12 +71,11 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 
         LOG(DEBUG) << "Detector " << geometry_section.getName() << ":";
         // Get the position and orientation of the detector
-        auto orientation = calculate_orientation(geometry_section);
+        auto [position, orientation] = calculate_orientation(geometry_section);
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector =
-            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), orientation.first, orientation.second));
+        auto detector = std::shared_ptr<Detector>(new Detector(geometry_section.getName(), position, orientation));
         addDetector(detector);
 
         // Add a link to the detector to add the model later
@@ -411,22 +410,22 @@ void GeometryManager::load_models() {
 
     // Loop through all configurations and parse them
     LOG(TRACE) << "Parsing models";
-    for(auto& name_reader : readers) {
-        if(hasModel(name_reader.first)) {
+    for(auto& [name, reader] : readers) {
+        if(hasModel(name)) {
             // Skip models that we already loaded earlier higher in the chain
-            LOG(DEBUG) << "Skipping overwritten model " + name_reader.first << " in path "
-                       << name_reader.second.getHeaderConfiguration().getFilePath();
+            LOG(DEBUG) << "Skipping overwritten model " + name << " in path "
+                       << reader.getHeaderConfiguration().getFilePath();
             continue;
         }
-        if(!needsModel(name_reader.first)) {
+        if(!needsModel(name)) {
             // Also skip models that are not needed
-            LOG(TRACE) << "Skipping not required model " + name_reader.first << " in path "
-                       << name_reader.second.getHeaderConfiguration().getFilePath();
+            LOG(TRACE) << "Skipping not required model " + name << " in path "
+                       << reader.getHeaderConfiguration().getFilePath();
             continue;
         }
 
         // Parse configuration and add model to the config
-        addModel(parse_config(name_reader.first, name_reader.second));
+        addModel(parse_config(name, reader));
     }
 }
 
@@ -463,25 +462,23 @@ void GeometryManager::close_geometry() {
     load_models();
 
     // Try to resolve the missing models
-    for(auto& detectors_types : nonresolved_models_) {
-        for(auto& config_detector : detectors_types.second) {
+    for(auto& [name, config_detectors] : nonresolved_models_) {
+        for(auto& [config, detector] : config_detectors) {
             // Create a new model if one of the core model parameters is changed in the detector configuration
-            auto config = config_detector.first;
-            auto model = getModel(detectors_types.first);
+            auto model = getModel(name);
 
             // Get the configuration of the model
             Configuration new_config("");
             auto model_configs = model->getConfigurations();
 
             // Add all non internal parameters to the config for a specialized model
-            for(auto& key_value : config.getAll()) {
-                auto key = key_value.first;
+            for(auto& [key, value] : config.getAll()) {
                 // Skip all internal parameters
                 if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config
-                new_config.setText(key, key_value.second);
+                new_config.setText(key, value);
             }
 
             // Create new model if needed
@@ -494,10 +491,10 @@ void GeometryManager::close_geometry() {
                     reader.addConfiguration(std::move(model_config));
                 }
 
-                model = parse_config(detectors_types.first, reader);
+                model = parse_config(name, reader);
             }
 
-            config_detector.second->set_model(model);
+            detector->set_model(model);
         }
     }
 
