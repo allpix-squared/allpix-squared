@@ -154,10 +154,10 @@ void ConfigReader::add(std::istream& stream, std::string file_name) {
             // Line should be a key / value pair with an equal sign
             try {
                 // Parse the key value pair
-                auto key_value = parseKeyValue(line);
+                auto [key, value] = parseKeyValue(line);
 
                 // Add the config key
-                conf.setText(key_value.first, key_value.second);
+                conf.setText(key, value);
             } catch(KeyValueParseError& e) {
                 // Rethrow key / value parse error as a configuration parse error
                 throw ConfigParseError(file_name, line_num);
