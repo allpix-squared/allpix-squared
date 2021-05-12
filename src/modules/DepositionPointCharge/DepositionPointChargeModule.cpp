@@ -33,8 +33,6 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     config_.setAlias("position", "source_position");
 
     // Set default value for the number of charges deposited
-    config_.setDefault("number_of_charges", 1);
-    config_.setDefault("number_of_steps", 100);
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", "point");
 
@@ -79,15 +77,20 @@ void DepositionPointChargeModule::initialize() {
 
     // Set up the different source types
     if(type_ == SourceType::MIP) {
+        config_.setDefault("number_of_steps", 100);
+        config_.setDefault("number_of_charges", 80000);
+
         // Calculate voxel size and ensure granularity is not zero:
         auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
         step_size_z_ = model->getSensorSize().z() / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
-        carriers_ = static_cast<unsigned int>(80000 * step_size_z_);
+        auto eh_per_um = config_.get<unsigned int>("number_of_charges");
+        carriers_ = static_cast<unsigned int>(eh_per_um * step_size_z_);
         LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
-                  << carriers_ << " e/h pairs per step";
+                  << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
     } else {
+        config_.setDefault("number_of_charges", 1);
         carriers_ = config_.get<unsigned int>("number_of_charges");
     }
 

@@ -10,7 +10,7 @@ The number of charge carriers to be deposited can be specified in the configurat
 Two different source types are available:
 
 * The `point` source deposits charge carriers at a specific point in the sensor, which can be configured via the `position` parameter with three dimensions. The number of charge carriers deposited can be adjusted using the `number_of_charges` parameter.
-* The `mip` model allows to deposit charge carriers along a straight line through the sensor, perpendicular to its surface. Charge carriers are deposited linearly along this line with 80 electron-hole pairs per micrometer. The number of steps through the sensor can be configured using the `number_of_steps` parameter, the position can be given in two dimensions via the `position` parameter.
+* The `mip` model allows to deposit charge carriers along a straight line through the sensor, perpendicular to its surface. Charge carriers are deposited linearly along this line with a configurable number of electron-hole pairs per length. The number of steps through the sensor can be configured using the `number_of_steps` parameter, the position can be given in two dimensions via the `position` parameter and the number of charge carriers per length are taken from the `number_of_charges` parameter.
 
 This module supports three different deposition models:
 
@@ -23,7 +23,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 
 ### Parameters
 * `model`: Model according to which charge carriers are deposited. For `fixed`, charge carriers are deposited at a specific point for every event. For `scan`, the point where charge carriers are deposited changes for every event. For `spot`, depositions are smeared around the configured position.
-* `number_of_charges`: Number of charges to deposit inside the sensor. Defaults to 1. Only used for `point` source type.
+* `number_of_charges`: Number of charges deposited. This refers to the total number of charge carriers for the source type `point` and defaults to 1. For the `mip` source type, this value is interpreted as charge carriers per length deposited in the sensor and defaults to `80/um`. It should be noted that without units specified, this value will be interpreted in the framework base units, in this case `/mm`.
 * `number_of_steps`: Number of steps over the full sensor thickness at which charge carriers are deposited. Only used for `mip` source type. Defaults to 100.
 * `source_type`: Modeled source type for the deposition of charge carriers. For `point`, charge carriers are deposited at the position given by the `position` parameter. For `mip`, charge carriers are deposited along a line through the full sensor thickness. Defaults to `point`.
 * `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. Only used for the `fixed` and model. When using source type `mip`, providing a 2D position is sufficient since it only uses the x and y coordinates. If used in scan mode, it allows you to shift the origin of each deposited charge by adding this value.
@@ -31,10 +31,24 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 
 ### Usage
 
+Example configuration for a point source at a defined position around which charge carriers are deposited with a Gaussian distribution:
+
 ```toml
 [DepositionPointCharge]
-number_of_steps = 100
+source_type = "point"
+model = "spot"
 position = -10um 10um 0um
-model = "fixed"
+spot_size = 3um
+number_of_steps = 100
+```
+
+Example configuration for a MIP-like energy deposition along a line at a fixed position, with 63 electron-hole pairs deposited per micrometer of sensor material:
+
+```toml
+[DepositionPointCharge]
 source_type = "mip"
+model = "fixed"
+position = -10um 10um
+number_of_steps = 100
+number_of_charges = 63/um
 ```
