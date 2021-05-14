@@ -183,7 +183,7 @@ FUNCTION(add_allpix_test test name)
     ADD_TEST(
         NAME "${name}"
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/etc/unittests
-        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${test}"
+        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${name}"
                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}")
 
     # Parse configuration file for pass/fail conditions:
