@@ -212,13 +212,13 @@ fmt:coverity:
     extends: .test
     script:
         - cd build/
-        - ctest -R test_modules --no-compress-output --test-action Test -j4
+        - ctest -R modules/ --no-compress-output --test-action Test -j4
 
 .testcore:
     extends: .test
     script:
         - cd build/
-        - ctest -R test_core --no-compress-output --test-action Test -j4
+        - ctest -R core/ --no-compress-output --test-action Test -j4
 
 
 # Test if examples still execute fine:
@@ -231,7 +231,7 @@ examples:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - cd build/
-        - ctest -R examples --no-compress-output --test-action Test -j4
+        - ctest -R examples/ --no-compress-output --test-action Test -j4
 
 # LXPLUS
 
@@ -355,7 +355,7 @@ core:mac1015-clang:
         - benchmark
     script:
         - cd build/
-        - ctest -R test_performance --output-on-failure
+        - ctest -R performance/ --output-on-failure
     allow_failure: true
     retry: 1
 
