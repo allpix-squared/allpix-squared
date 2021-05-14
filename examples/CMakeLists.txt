@@ -9,8 +9,6 @@ ADD_TEST(NAME example
 ADD_TEST(NAME manual COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_manual"
                              "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf")
 
-OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
-
 IF(TEST_EXAMPLES)
     FILE(
         GLOB TEST_LIST_EXAMPLES

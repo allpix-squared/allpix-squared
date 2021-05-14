@@ -2,8 +2,6 @@
 # Module functionality tests #
 ##############################
 
-OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
-
 IF(TEST_MODULES)
     FILE(
         GLOB TEST_LIST_MODULES
@@ -22,8 +20,6 @@ ENDIF()
 # Framework performance tests #
 ###############################
 
-OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
-
 IF(TEST_PERFORMANCE)
     FILE(
         GLOB TEST_LIST_PERFORMANCE
@@ -41,8 +37,6 @@ ENDIF()
 ######################################
 # Core framework functionality tests #
 ######################################
-
-OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
 
 IF(TEST_CORE)
     FILE(

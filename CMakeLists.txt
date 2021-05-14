@@ -283,6 +283,24 @@ FILE(
 INCLUDE("cmake/clang-cpp-checks.cmake")
 
 ###################################
+# Setup tests for allpix          #
+###################################
+
+OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
+OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
+OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
+OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
+
+# Enable testing
+ENABLE_TESTING()
+
+# Include example configurations:
+ADD_SUBDIRECTORY(examples)
+
+# Include all tests
+ADD_SUBDIRECTORY(etc/unittests)
+
+###################################
 # Define build targets for allpix #
 ###################################
 
@@ -317,19 +335,6 @@ ADD_SUBDIRECTORY(src/exec)
 
 # Handle the included tools
 ADD_SUBDIRECTORY(tools)
-
-###################################
-# Setup tests for allpix          #
-###################################
-
-# Enable testing
-ENABLE_TESTING()
-
-# Include example configurations:
-ADD_SUBDIRECTORY(examples)
-
-# Include all tests
-ADD_SUBDIRECTORY(etc/unittests)
 
 ############################
 # Create local setup files #
