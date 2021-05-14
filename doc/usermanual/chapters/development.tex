@@ -243,10 +243,10 @@ In addition to the constructor, each module can override the following methods:
 \begin{itemize}
 \item \parameter{initialize()}: Called once per module from the main thread after loading and constructing all modules and before starting the event loop.
 This method can for example be used to initialize histograms.
-\item \parameter{initializeThread()}: Called after global initialization but before event processing and gives the possibility to initialize worker thread-specific members for modules if multi-threading is used.
+\item \parameter{initializeThread()}: Called after global initialization but before event processing and gives the possibility to initialize worker thread-specific members for modules if multithreading is used.
 \item \parameter{run(Event* event)}: Called for every event in the simulation, with a pointer to the current event object as parameter.
 An exception should be thrown for serious errors, otherwise a warning should be logged.
-\item \parameter{finalizeThread()}: Called for each worker thread after processing all events in the run by each worker thread separately if multi-threading is used.
+\item \parameter{finalizeThread()}: Called for each worker thread after processing all events in the run by each worker thread separately if multithreading is used.
 \item \parameter{finalize()}: Called once per module from the main thread after processing all events in the run and before destructing the module.
 Typically used to save the output data (like histograms).
 Any exceptions should be thrown from here instead of the destructor.
@@ -255,7 +255,7 @@ Any exceptions should be thrown from here instead of the destructor.
 If necessary, modules can also access the ConfigurationManager directly in order to obtain configuration information from other module instances or other modules in the framework using the \parameter{getConfigManager()} call.
 This allows to retrieve and e.g. store the configuration actually used for the simulation alongside the data.
 
-If a module should be run using multi-threading but requires to execute its run method in the order of event numbers, for example a module that writes to an output file, then the module can inherit from the \textit{SequentialModule} class, without implementing additional functionality.
+If a module should be run using multithreading but requires to execute its run method in the order of event numbers, for example a module that writes to an output file, then the module can inherit from the \textit{SequentialModule} class, without implementing additional functionality.
 This will ensure that the run method will receive events one-by-one and in the correct sequence.
 
 
@@ -277,7 +277,7 @@ For initialization and finalization of thread-local data members, i.e.\ structur
 \subsection{Histograms}
 
 \apsq uses ROOT histograms for collecting and storing statistics and other additional information about the simulation process.
-ROOT provides the template class \command{ROOT::TThreadedObject} which allows to use histograms in multi-threaded environments but slightly alters the interface of the histogram objects.
+ROOT provides the template class \command{ROOT::TThreadedObject} which allows to use histograms in multithreaded environments but slightly alters the interface of the histogram objects.
 Furthermore, there have been significant changes to the class between minor release version of ROOT and it doesn't scale very well with a large number of predefined threads.
 Therefore, \apsq provides its own re-implementation of this class, \command{allpix::ThreadedHistogram} which also restores the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way as in a single-threaded environment.
 

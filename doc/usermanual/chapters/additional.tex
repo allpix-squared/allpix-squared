@@ -20,7 +20,7 @@ In addition, more conversions functions are provided together with other useful 
 The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules interested in using Geant4 as follows:
 \begin{enumerate}
 \item \texttt{MTRunManager}: A run manager for multithreaded event processing. Internally, it creates thread-local managers to handle operations for each calling thread independently. It also maintains a stable seed distribution mechanism to ensure results are the same regardless of the number of threads that use the manager in parallel.
-\item \texttt{RunManager}: A run manager for sequential event processing. It uses the same seeding mechanism as the multi-threaded version so they can be used interchangeably depending on whether multithreading is enabled or not, while ensuring identical results.
+\item \texttt{RunManager}: A run manager for sequential event processing. It uses the same seeding mechanism as the multithreaded version so they can be used interchangeably depending on whether multithreading is enabled or not, while ensuring identical results.
 \end{enumerate}
 
 The DepositionGeant4 module uses \texttt{MTRunManager} to be able to call the \texttt{BeamOn} method in parallel on multiple threads thus benefiting from the multithreading feature while the VisualizationGeant4 module uses \texttt{RunManager} to be able to visualize the particles passage through the detectors.

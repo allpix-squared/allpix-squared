@@ -200,7 +200,7 @@ When enabled this feature can provide a significant speed improvement, depending
 The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
 Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
 
-Detailed description of how the framework implements the multi-threading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
+Detailed description of how the framework implements the multithreading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -710,7 +710,7 @@ Should be used to request the end of event processing in the current run, e.g. i
 
 \section{Multi-threading}
 \label{sec:multithreading_approach}
-\apsq supports multi-threading by running events in parallel.
+\apsq supports multithreading by running events in parallel.
 The module manager creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
 Each event is represented by an instance of the \texttt{Event} class which encapsulates the data used during this event.
 The configured number of events are then submitted to the thread pool and executed by the thread pool's workers.
@@ -719,11 +719,11 @@ The thread pool features two independent queues.
 A FIFO-like unsorted queue for events to be processed, and a second, priority-ordered queue for buffered events.
 The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a \texttt{SequentialModule}.
 
-By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multi-threaded processing of events.
-Therefore each module each module must explicitly enable multi-threading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multi-threading capabilities to \apsq.
-To support multi-threading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
-If multi-threading is enabled in the run configuration, the module manager will check if all the loaded modules support multi-threading.
-In case one or more modules do not support multi-threading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{multithreadingEnabled()} method.
+By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multithreaded processing of events.
+Therefore each module each module must explicitly enable multithreading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multithreading capabilities to \apsq.
+To support multithreading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
+If multithreading is enabled in the run configuration, the module manager will check if all the loaded modules support multithreading.
+In case one or more modules do not support multithreading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{multithreadingEnabled()} method.
 
 \subsection{Seed Distribution}
 A stable seed distribution to modules and core components of \apsq is guaranteed in order to be able to provide reproducibility of simulation results from the same inputs even when the number of workers is different.
@@ -739,17 +739,17 @@ Each event has its own local messenger which stores all messages that was produc
 The \texttt{Messenger} owns the global message subscription information and internally forwards the module's requests to dispatch or fetch messages to the local messenger of the event in a thread-safe manner.
 
 \subsection{Running Events in order using SequentialModule}
-The \texttt{SequentialModule} class is made available for modules that require processing of events in the correct order without disabling multi-threading.
+The \texttt{SequentialModule} class is made available for modules that require processing of events in the correct order without disabling multithreading.
 Inheriting from this class will allow the module to transparently check if the given event is in the correct sequence and decide whether to execute it immediately or to request buffering in the prioritized buffer queue if the thread pool if it is out of order.
 
 Using the \texttt{SequentialModule} is suitable for I/O modules which read or write to the file system and do not allow random read or write access to events.
-This enables output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multi-threading for other modules.
+This enables output modules to produce the exact same output file for the same simulation inputs without sacrificing the benefits of using multithreading for other modules.
 
 Since random number generators are thread-local and shared between events processed on the same thread, their state is stored internally when being written into the buffer and restored before processing.
 This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
 
 \subsection{Geant4 Modules}
-The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multi-threaded run manager expects to handle parallelization internally which violates \apsq design.
-Furthermore, \emph{Geant4} does not guarantee results reproducibility between its multi-threaded and sequential run managers.
+The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multithreaded run manager expects to handle parallelization internally which violates \apsq design.
+Furthermore, \emph{Geant4} does not guarantee results reproducibility between its multithreaded and sequential run managers.
 Modules that would like to use the \emph{Geant4} library shall not use the run managers provided by \emph{Geant4}.
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
