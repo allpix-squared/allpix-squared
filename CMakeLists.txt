@@ -291,6 +291,11 @@ OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
 OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
 OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
 
+SET_PROPERTY(GLOBAL PROPERTY COUNT_TESTS_CORE "0")
+SET_PROPERTY(GLOBAL PROPERTY COUNT_TESTS_MODULES "0")
+SET_PROPERTY(GLOBAL PROPERTY COUNT_TESTS_PERFORMANCE "0")
+SET_PROPERTY(GLOBAL PROPERTY COUNT_TESTS_EXAMPLES "0")
+
 # Enable testing
 ENABLE_TESTING()
 
@@ -335,6 +340,31 @@ ADD_SUBDIRECTORY(src/exec)
 
 # Handle the included tools
 ADD_SUBDIRECTORY(tools)
+
+##################
+# Test summaries #
+##################
+
+IF(TEST_CORE)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_CORE)
+    MESSAGE(STATUS "Unit tests: ${CNT} framework core functionality tests")
+ELSE()
+    MESSAGE(STATUS "Unit tests: framework core functionality tests deactivated.")
+ENDIF()
+
+IF(TEST_MODULES)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_MODULES)
+    MESSAGE(STATUS "Unit tests: ${CNT} module functionality tests")
+ELSE()
+    MESSAGE(STATUS "Unit tests: module functionality tests deactivated.")
+ENDIF()
+
+IF(TEST_PERFORMANCE)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_PERFORMANCE)
+    MESSAGE(STATUS "Unit tests: ${CNT} performance tests")
+ELSE()
+    MESSAGE(STATUS "Unit tests: performance tests deactivated.")
+ENDIF()
 
 ############################
 # Create local setup files #
