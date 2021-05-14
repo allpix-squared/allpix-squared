@@ -219,20 +219,28 @@ ENDFUNCTION()
 
 # Macro for adding module tests to CTest
 MACRO(ALLPIX_MODULE_TESTS name directory)
+    # Get the name of the module
+    GET_FILENAME_COMPONENT(_allpix_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+
     IF(TEST_MODULES)
         FILE(
             GLOB TEST_LIST_MODULES
             RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
             ${directory}/[00-99]*)
+
         FOREACH(test ${TEST_LIST_MODULES})
             GET_FILENAME_COMPONENT(title ${test} NAME_WE)
-            STRING(SUBSTRING ${name} 12 -1 module)
-            ADD_ALLPIX_TEST(${test} "modules/${module}/${title}")
+            ADD_ALLPIX_TEST(${test} "modules/${_allpix_module_dir}/${title}")
 
             GET_PROPERTY(old_count GLOBAL PROPERTY COUNT_TESTS_MODULES)
             MATH(EXPR new_count "${old_count}+1")
             SET_PROPERTY(GLOBAL PROPERTY COUNT_TESTS_MODULES "${new_count}")
         ENDFOREACH()
+
+        # Register that this module has tests:
+        IF(TEST_LIST_MODULES)
+            SET(MODULES_WITH_TESTS "${_allpix_module_dir};${MODULES_WITH_TESTS}" CACHE INTERNAL "MODULES_WITH_TESTS")
+        ENDIF()
     ENDIF()
 ENDMACRO()
 
