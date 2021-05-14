@@ -30,7 +30,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Module to simulate digitization of collected charges
-     * @note This module supports parallelization
+     * @note This module supports multithreading
      *
      * This module provides a relatively simple simulation of the frontend electronics behavior. It simulates the
      * propagation of the signal of collected charges through the amplifier, comparator and ADC while adding electronics

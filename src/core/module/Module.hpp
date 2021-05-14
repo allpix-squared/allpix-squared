@@ -130,10 +130,10 @@ namespace allpix {
         ConfigManager* getConfigManager() const;
 
         /**
-         * @brief Returns if parallelization of this module is enabled
-         * @return True if parallelization is enabled, false otherwise (the default)
+         * @brief Returns if multithreading of this module is enabled
+         * @return True if multithreading is enabled, false otherwise (the default)
          */
-        bool canParallelize() const;
+        bool multithreadingEnabled() const;
 
         /**
          * @brief Initialize the module for each thread after the global initialization
@@ -176,9 +176,9 @@ namespace allpix {
 
     protected:
         /**
-         * @brief Enable parallelization for this module
+         * @brief Enable multithreading for this module
          */
-        void enable_parallelization();
+        void enable_multithreading();
 
         /**
          * @brief Get the module configuration for internal use
@@ -239,10 +239,10 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         /**
-         * @brief Sets the parallelize flag
+         * @brief Sets the multithreading flag
          */
-        void set_parallelize(bool parallelize);
-        bool parallelize_{false};
+        void set_multithreading(bool multithreading);
+        bool multithreading_{false};
 
         /**
          * @brief Checks if object is instance of SequentialModule class

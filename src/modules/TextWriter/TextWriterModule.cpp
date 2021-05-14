@@ -27,8 +27,8 @@ using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
     : SequentialModule(config), messenger_(messenger) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    // Enable multithreading of this module if multithreading is enabled
+    enable_multithreading();
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &TextWriterModule::filter);

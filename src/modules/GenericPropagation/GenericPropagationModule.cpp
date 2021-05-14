@@ -112,10 +112,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
 
-    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
     if(!(output_animations_ || output_linegraphs_)) {
-        enable_parallelization();
+        enable_multithreading();
     } else {
         LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
     }

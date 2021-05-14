@@ -28,7 +28,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Module to simulate digitization of collected charges
-     * @note This module supports parallelization
+     * @note This module supports multithreading
      *
      * This module provides a relatively simple simulation of a charge-sensitive amplifier
      * with Krummenacher feedack circuit while adding electronics

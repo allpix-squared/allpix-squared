@@ -41,10 +41,10 @@ PulseTransferModule::PulseTransferModule(Configuration& config,
     max_depth_distance_ = config_.get<double>("max_depth_distance");
     collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
-    // Enable parallelization of this module if multithreading is enabled and no per-event output plots are requested:
+    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
     if(!output_pulsegraphs_) {
-        enable_parallelization();
+        enable_multithreading();
     } else {
         LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
     }

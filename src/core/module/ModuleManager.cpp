@@ -239,7 +239,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             mod->set_identifier(identifier);
 
             // Check if module can't run in parallel
-            can_parallelize_ = mod->canParallelize() && can_parallelize_;
+            can_parallelize_ = mod->multithreadingEnabled() && can_parallelize_;
 
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
@@ -247,10 +247,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
     }
 
-    // Force MT off for all modules in case MT was not requested or some modules didn't enable parallelization
+    // Force MT off for all modules in case MT was not requested or some modules didn't enable multithreading
     if(!(multithreading_flag_ && can_parallelize_)) {
         for(auto& module : modules_) {
-            module->set_parallelize(false);
+            module->set_multithreading(false);
         }
     }
     LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
