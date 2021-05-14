@@ -66,11 +66,8 @@ IF(CLANG_FORMAT)
             COMMAND ! grep -c "replacement " ${CMAKE_BINARY_DIR}/check_format_file.txt > /dev/null
             COMMENT "Checking format compliance")
     ELSE()
-        MESSAGE(
-            STATUS
-                "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, "
-                "but version ${CLANG_FORMAT_VERSION} is required."
-        )
+        MESSAGE(STATUS "Could only find version ${CLANG_MAJOR_VERSION} of clang-format, "
+                       "but version ${CLANG_FORMAT_VERSION} is required.")
     ENDIF()
 ELSE()
     MESSAGE(STATUS "Could NOT find clang-format")

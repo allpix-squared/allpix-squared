@@ -252,7 +252,14 @@ ALLPIX_SETUP_ROOT_TARGETS()
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES Threads::Threads Boost::random ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
+SET(ALLPIX_DEPS_LIBRARIES
+    Threads::Threads
+    Boost::random
+    ROOT::Core
+    ROOT::GenVector
+    ROOT::Geom
+    ROOT::RIO
+    ROOT::Hist)
 
 # Add the LCG view as dependency if set:
 IF(DEFINED ENV{LCG_VIEW})

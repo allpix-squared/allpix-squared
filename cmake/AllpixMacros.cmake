@@ -223,7 +223,7 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
         FILE(
             GLOB TEST_LIST_MODULES
             RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        ${directory}/[00-99]*)
+            ${directory}/[00-99]*)
         FOREACH(test ${TEST_LIST_MODULES})
             GET_FILENAME_COMPONENT(title ${test} NAME_WE)
             STRING(SUBSTRING ${name} 12 -1 module)
