@@ -298,7 +298,9 @@ OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
 OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
 OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
 
-SET(MODULES_WITH_TESTS "" CACHE INTERNAL "MODULES_WITH_TESTS")
+SET(_MODULES_WITH_TESTS
+    ""
+    CACHE INTERNAL "MODULES_WITH_TESTS")
 
 # Enable testing
 ENABLE_TESTING()
@@ -362,9 +364,12 @@ IF(TEST_MODULES)
 
     SET(ALLPIX_MODULE_DIR "${PROJECT_SOURCE_DIR}/src/modules")
     MESSAGE(STATUS "Modules without functionality tests:")
-    FILE(GLOB mods RELATIVE ${ALLPIX_MODULE_DIR}/ ${ALLPIX_MODULE_DIR}/*)
+    FILE(
+        GLOB mods
+        RELATIVE ${ALLPIX_MODULE_DIR}/
+        ${ALLPIX_MODULE_DIR}/*)
     FOREACH(mod ${mods})
-        IF(IS_DIRECTORY ${ALLPIX_MODULE_DIR}/${mod} AND NOT "${mod}" IN_LIST MODULES_WITH_TESTS)
+        IF(IS_DIRECTORY ${ALLPIX_MODULE_DIR}/${mod} AND NOT "${mod}" IN_LIST _MODULES_WITH_TESTS)
             MESSAGE(STATUS "   ${mod}")
         ENDIF()
     ENDFOREACH()

@@ -239,7 +239,9 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
 
         # Register that this module has tests:
         IF(TEST_LIST_MODULES)
-            SET(MODULES_WITH_TESTS "${_allpix_module_dir};${MODULES_WITH_TESTS}" CACHE INTERNAL "MODULES_WITH_TESTS")
+            SET(_MODULES_WITH_TESTS
+                "${_allpix_module_dir};${_MODULES_WITH_TESTS}"
+                CACHE INTERNAL "MODULES_WITH_TESTS")
         ENDIF()
     ENDIF()
 ENDMACRO()
