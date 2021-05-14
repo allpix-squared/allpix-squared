@@ -13,5 +13,8 @@ TARGET_LINK_LIBRARIES(${MODULE_NAME} ${LCIO_LIBRARIES})
 # Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} LCIOWriterModule.cpp)
 
+# Register module tests
+ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
+
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
