@@ -369,7 +369,10 @@ IF(TEST_MODULES)
         RELATIVE ${ALLPIX_MODULE_DIR}/
         ${ALLPIX_MODULE_DIR}/*)
     FOREACH(mod ${mods})
-        IF(IS_DIRECTORY ${ALLPIX_MODULE_DIR}/${mod} AND NOT "${mod}" IN_LIST _MODULES_WITH_TESTS)
+        # Check if module has registered tests and is going to be built
+        IF(IS_DIRECTORY ${ALLPIX_MODULE_DIR}/${mod}
+           AND NOT "${mod}" IN_LIST _MODULES_WITH_TESTS
+           AND "${BUILD_${mod}}")
             MESSAGE(STATUS "   ${mod}")
         ENDIF()
     ENDFOREACH()
