@@ -112,7 +112,7 @@ void Allpix::load() {
 
     // Put welcome message and set version
     LOG(STATUS) << "Welcome to Allpix^2 " << ALLPIX_PROJECT_VERSION;
-    global_config.set<std::string>("version", ALLPIX_PROJECT_VERSION);
+    global_config.set<std::string>("version", ALLPIX_PROJECT_VERSION, true);
 
     uint64_t seed = 0;
     if(global_config.has("random_seed")) {
@@ -132,7 +132,7 @@ void Allpix::load() {
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules_.seed(seed);
         LOG(STATUS) << "Initialized PRNG with system entropy seed " << seed;
-        global_config.set<uint64_t>("random_seed", seed);
+        global_config.set<uint64_t>("random_seed", seed, true);
     }
 
     if(global_config.has("random_seed_core")) {
@@ -143,7 +143,7 @@ void Allpix::load() {
     } else {
         // Use module seeder + 1
         seeder_core_.seed(seed + 1);
-        global_config.set<uint64_t>("random_seed_core", seed + 1);
+        global_config.set<uint64_t>("random_seed_core", seed + 1, true);
     }
 
     // Get output directory
