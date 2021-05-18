@@ -70,6 +70,7 @@ std::string Configuration::getFilePath() const {
 std::string Configuration::getText(const std::string& key) const {
     try {
         // NOTE: returning literally including ""
+        used_keys_.markUsed(key);
         return config_.at(key);
     } catch(std::out_of_range& e) {
         throw MissingKeyError(key, getName());
@@ -154,6 +155,7 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
 
 void Configuration::setText(const std::string& key, const std::string& val) {
     config_[key] = val;
+    used_keys_.registerMarker(key);
 }
 
 /**
@@ -212,7 +214,7 @@ std::vector<std::string> Configuration::getUnusedKeys() const {
     // Loop over all configuration keys, excluding internal ones
     for(const auto& key_value : getAll()) {
         // Add those to result that have not been accessed:
-        if(used_keys_.find(key_value.first) == used_keys_.end()) {
+        if(!used_keys_.isUsed(key_value.first)) {
             result.emplace_back(key_value.first);
         }
     }

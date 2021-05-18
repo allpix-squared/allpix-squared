@@ -335,7 +335,7 @@ namespace allpix {
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
-        mutable std::unordered_set<std::string> used_keys_;
+        mutable AccessMarker used_keys_;
     };
 } // namespace allpix
 

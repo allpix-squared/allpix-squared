@@ -16,7 +16,7 @@ namespace allpix {
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
             auto node = parse_value(config_.at(key));
-            used_keys_.insert(key);
+            used_keys_.markUsed(key);
             try {
                 return allpix::from_string<T>(node->value);
             } catch(std::invalid_argument& e) {
@@ -49,7 +49,7 @@ namespace allpix {
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
-            used_keys_.insert(key);
+            used_keys_.markUsed(key);
 
             std::vector<T> array;
             auto node = parse_value(str);
@@ -88,7 +88,7 @@ namespace allpix {
     template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
         try {
             std::string str = config_.at(key);
-            used_keys_.insert(key);
+            used_keys_.markUsed(key);
 
             Matrix<T> matrix;
             auto node = parse_value(str);
