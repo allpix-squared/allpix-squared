@@ -190,13 +190,13 @@ namespace allpix {
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
         if(!has(key)) {
-            set<T>(key, val);
+            set<T>(key, val, true);
         }
     }
 
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
         if(!has(key)) {
-            setArray<T>(key, val);
+            setArray<T>(key, val, true);
         }
     }
 } // namespace allpix
