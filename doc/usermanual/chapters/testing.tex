@@ -255,9 +255,6 @@ These expressions are simply placed in the configuration file of the correspondi
 Each test can only contain one passing and one failing expression.
 If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
 
-Different tags are provided for Mac OS X since the \CPP standard does not define the exact implementation of random number distributions such as \texttt{std::normal\_distribution}.
-Thus, the distributions produce different results on different platforms even when used with the same random number as input.
-
 \begin{description}
   \item[Passing a test] The expression marked with the tag \parameter{#PASS} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
   \item[Failing a test] If the expression tagged with \parameter{#FAIL} is found in the output, the test fails. If the expression is not found, the test passes.
@@ -267,6 +264,14 @@ Thus, the distributions produce different results on different platforms even wh
   For all other command line options to be passed to the executable, the \parameter{#CLIOPTION} can be used. Here, the complete flag and possible value needs to be passed, e.g.\ \parameter{-j9}.
   \item[Defining a test case label] Tests can be grouped and executed based on labels, e.g.\ for code coverage reports. Labels can be assigned to individual tests using the \parameter{#LABEL} tag.
 \end{description}
+
+Pass and fail condition are not interpreted as regular expressions but relevant characters are automatically escaped.
+This allows to directly copy corresponding lines form the log into the respective condition without manually creating a matching regular expression.
+A noteworthy exception to this are line breaks.
+To ease matching of multi-line expressions, the newline escape sequence \parameter{\n} of any test expression is automatically expanded to \parameter{[\r\n\t ]*} to match any new line, carriage return, tab and whitespace characters following the line break.
+
+If no explicit fail conditions are specified, the test will fail if any \parameter{WARNING}, \parameter{ERROR} or \parameter{FATAL} appears in the output log.
+If a test is expected to create multiple error or warning messages, the \parameter{#FAIL} parameter should be set explicitly to avoid matching regular expressions.
 
 \paragraph{Framework Functionality Tests}
 

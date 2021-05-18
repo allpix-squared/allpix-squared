@@ -154,6 +154,7 @@ FUNCTION(escape_regex inp output)
     STRING(REPLACE "#PASS " "" _TMP_STR "${inp}")
     STRING(REPLACE "#FAIL " "" _TMP_STR "${_TMP_STR}")
     STRING(REGEX REPLACE "([][+.*()^])" "\\\\\\1" _TMP_STR "${_TMP_STR}")
+    STRING(REGEX REPLACE "(\\\\n)" "[\\\\\\\\\r\\\\\\\\\n\\\\\\\\\t ]*" _TMP_STR "${_TMP_STR}")
     SET(${output}
         "${_TMP_STR}"
         PARENT_SCOPE)
