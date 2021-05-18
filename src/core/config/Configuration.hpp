@@ -218,8 +218,9 @@ namespace allpix {
          * @brief Set value for a key in a given type
          * @param key Key to set value of
          * @param val Value to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
          */
-        template <typename T> void set(const std::string& key, const T& val);
+        template <typename T> void set(const std::string& key, const T& val, bool mark_used = false);
 
         /**
          * @brief Store value for a key in a given type, including units
@@ -233,9 +234,10 @@ namespace allpix {
          * @brief Set list of values for a key in a given type
          * @param key Key to set values of
          * @param val List of values to assign to the key
+         * @param mark_used Flag whether key should be marked as "used" directly
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        template <typename T> void setArray(const std::string& key, const std::vector<T>& val);
+        template <typename T> void setArray(const std::string& key, const std::vector<T>& val, bool mark_used = false);
 
         /**
          * @brief Set matrix of values for a key in a given type

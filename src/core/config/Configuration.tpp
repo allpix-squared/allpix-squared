@@ -129,8 +129,12 @@ namespace allpix {
         return def;
     }
 
-    template <typename T> void Configuration::set(const std::string& key, const T& val) {
+    template <typename T> void Configuration::set(const std::string& key, const T& val, bool mark_used) {
         config_[key] = allpix::to_string(val);
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T>
@@ -144,9 +148,10 @@ namespace allpix {
         }
         ret_str.pop_back();
         config_[key] = ret_str;
+        used_keys_.registerMarker(key);
     }
 
-    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
+    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
@@ -155,6 +160,10 @@ namespace allpix {
         }
         str.pop_back();
         config_[key] = str;
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
@@ -176,6 +185,7 @@ namespace allpix {
         str.pop_back();
         str += "]";
         config_[key] = str;
+        used_keys_.registerMarker(key);
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
