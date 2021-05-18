@@ -194,6 +194,17 @@ FUNCTION(add_allpix_test test name)
     ENDIF()
     IF(EXPRESSIONS_FAIL)
         SET_PROPERTY(TEST ${name} PROPERTY FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
+    ELSE()
+        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "\(WARNING\)")
+            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "WARNING")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "\(ERROR\)")
+            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "\(FATAL\)")
+            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
+        ENDIF()
     ENDIF()
 
     # Some tests might depend on others:
