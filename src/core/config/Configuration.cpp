@@ -20,6 +20,26 @@
 
 using namespace allpix;
 
+Configuration::AccessMarker::AccessMarker(const Configuration::AccessMarker& rhs) {
+    for(const auto& [key, value] : rhs.markers_) {
+        registerMarker(key);
+        markers_.at(key) = value.load();
+    }
+}
+
+Configuration::AccessMarker& Configuration::AccessMarker::operator=(const Configuration::AccessMarker& rhs) {
+    for(const auto& [key, value] : rhs.markers_) {
+        registerMarker(key);
+        markers_.at(key) = value.load();
+    }
+    return *this;
+}
+
+void Configuration::AccessMarker::registerMarker(const std::string& key) {
+    std::lock_guard<std::mutex> lock{register_mutex_};
+    markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
+}
+
 Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {

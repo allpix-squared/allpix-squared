@@ -10,8 +10,10 @@
 #ifndef ALLPIX_CONFIGURATION_H
 #define ALLPIX_CONFIGURATION_H
 
+#include <atomic>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -32,6 +34,59 @@ namespace allpix {
      * the library of \ref StringConversions.
      */
     class Configuration {
+
+        /**
+         * @brief Helper class to keep track of key access
+         *
+         * This class holds all configuration keys in a map together with an atomic boolean marking whether they have been
+         * accessed already. This allows to find out whick keys have not been accessed at all. This wrapper allows to use
+         * atomics for non-locking access but requires to register all keys beforehand.
+         */
+        class AccessMarker {
+        public:
+            /**
+             * Default constructor
+             */
+            AccessMarker() = default;
+
+            /**
+             * @brief Explicit copy constructor to allow copying of the map keys
+             */
+            AccessMarker(const AccessMarker& rhs);
+
+            /**
+             * @brief Explicit copy assignment operator to allow copying of the map keys
+             */
+            AccessMarker& operator=(const AccessMarker& rhs);
+
+            /**
+             * @brief Method to register a key for a new access marker
+             * @param key Key of the marker
+             * @note This operation locks a mutex for the configuration object
+             */
+            void registerMarker(const std::string& key);
+
+            /**
+             * @brief Method to mark existing marker as accessed/used.
+             * @param key Key of the marker
+             * @note This is an atomic operation and thread-safe.
+             * @throws std::out_of_range if the key has not been registered beforehand
+             */
+            void markUsed(const std::string& key) { markers_.at(key) = true; };
+
+            /**
+             * @brief Method to retrieve access status of an existing marker.
+             * @param key Key of the marker
+             * @note This is an atomic operation and thread-safe.
+             * @throws std::out_of_range if the key has not been registered beforehand
+             */
+            bool isUsed(const std::string& key) { return markers_.at(key).load(); }
+
+        private:
+            std::mutex register_mutex_;
+            std::map<std::string, std::atomic<bool>> markers_;
+        };
+
     public:
         /**
          * @brief Construct a configuration object
