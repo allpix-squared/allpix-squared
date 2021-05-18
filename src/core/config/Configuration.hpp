@@ -250,12 +250,14 @@ namespace allpix {
          * @brief Set default value for a key only if it is not defined yet
          * @param key Key to possible set value of
          * @param val Value to assign if the key is not defined yet
+         * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefault(const std::string& key, const T& val);
         /**
          * @brief Set default list of values for a key only if it is not defined yet
          * @param key Key to possible set values of
          * @param val List of values to assign to the key if the key is not defined yet
+         * @note This marks the default key as "used" automatically
          */
         template <typename T> void setDefaultArray(const std::string& key, const std::vector<T>& val);
 
@@ -271,6 +273,7 @@ namespace allpix {
          * @param new_key New alias to be created
          * @param old_key Key the alias is created for
          * @param warn Optionally print a warning message to notify of deprecation
+         * @note This marks the old key as "used" automatically
          */
         void setAlias(const std::string& new_key, const std::string& old_key, bool warn = false);
 
@@ -307,6 +310,12 @@ namespace allpix {
         // FIXME Better name for this function
         std::vector<std::pair<std::string, std::string>> getAll() const;
 
+        /**
+         * @brief Obtain all keys which have not been accessed yet
+         *
+         * This method returns all keys from the configuration object which have not yet been accessed, Default values as
+         * well as aliases are marked as used automatically and are therefore never returned.
+         */
         std::vector<std::string> getUnusedKeys() const;
 
     private:
