@@ -270,8 +270,29 @@ This allows to directly copy corresponding lines form the log into the respectiv
 A noteworthy exception to this are line breaks.
 To ease matching of multi-line expressions, the newline escape sequence \parameter{\n} of any test expression is automatically expanded to \parameter{[\r\n\t ]*} to match any new line, carriage return, tab and whitespace characters following the line break.
 
-If no explicit fail conditions are specified, the test will fail if any \parameter{WARNING}, \parameter{ERROR} or \parameter{FATAL} appears in the output log.
-If a test is expected to create multiple error or warning messages, the \parameter{#FAIL} parameter should be set explicitly to avoid matching regular expressions.
+If no explicit fail conditions are specified, the test will fail if any \parameter{WARNING}, \parameter{ERROR} or \parameter{FATAL} appears in the output log unless it is already part of the pass condition.
+For example, if a test is supposed to pass in case of an error provoked
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{bash}
+(FATAL) [I:GeometryBuilderGeant4] Error during execution of run:
+                                  Could not find a detector model of type 'missing_model'
+                                  Please check your configuration and modules. Cannot continue.
+\end{minted}
+
+The full error message including the \parameter{FATAL} has to be provided as pass condition:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+#PASS (FATAL) [I:GeometryBuilderGeant4] Error during execution of run:\nCould not find a detector model of type 'missing_model'
+\end{minted}
+
+If a test is expected to create multiple error or warning messages which cannot be matched with a single pass condition, the \parameter{#FAIL} parameter should be set explicitly to avoid matching the respective flags:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# This test created multiple WARNING messages, we exclude WARNING from the
+# fail expression by explicitly defining it as FATAL only:
+#PASS (ERROR) Multithreading disabled since the current module configuration does not support it
+#FAIL FATAL
+\end{minted}
 
 \paragraph{Framework Functionality Tests}
 
