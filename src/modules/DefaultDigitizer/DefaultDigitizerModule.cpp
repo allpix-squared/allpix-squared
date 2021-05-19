@@ -340,7 +340,7 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
         }
         return pulse.getBinning() * static_cast<double>(std::distance(charges.begin(), bin));
     } else {
-        LOG_ONCE(WARNING) << "Simulation chain does not allow for time-of-arrival calculation";
+        LOG_ONCE(INFO) << "Simulation chain does not allow for time-of-arrival calculation";
         return 0;
     }
 }
