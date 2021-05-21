@@ -37,6 +37,7 @@ namespace allpix {
             LINEAR,    ///< Linear electric field
             MESH,      ///< Electric field defined by a mesh
             PARABOLIC, ///< Parabolic electric field
+            CUSTOM,    ///< Custom electric field, defined as 3-dimensional function
         };
 
     public:
@@ -68,6 +69,12 @@ namespace allpix {
          * @param thickness_domain Domain of the thickness where the field is defined
          */
         FieldFunction<ROOT::Math::XYZVector> get_parabolic_field_function(std::pair<double, double> thickness_domain);
+
+        /**
+         * @brief Create and apply a custom field from functions
+         * @param thickness_domain Domain of the thickness where the field is defined
+         */
+        FieldFunction<ROOT::Math::XYZVector> get_custom_field_function(std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field from a file in init or apf format and apply it

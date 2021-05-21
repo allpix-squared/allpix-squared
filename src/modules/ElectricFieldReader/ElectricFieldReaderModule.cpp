@@ -18,6 +18,7 @@
 #include <utility>
 
 #include <Math/Vector3D.h>
+#include <TF3.h>
 #include <TH2F.h>
 
 #include "core/config/exceptions.h"
@@ -103,16 +104,20 @@ void ElectricFieldReaderModule::initialize() {
 
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
-        FieldFunction<ROOT::Math::XYZVector> function = get_linear_field_function(depletion_voltage, thickness_domain);
-        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::LINEAR);
+        detector_->setElectricFieldFunction(
+            get_linear_field_function(depletion_voltage, thickness_domain), thickness_domain, FieldType::LINEAR);
     } else if(field_model == ElectricField::PARABOLIC) {
         LOG(TRACE) << "Adding parabolic electric field";
         LOG(INFO) << "Setting parabolic electric field with minimum field "
                   << Units::display(config_.get<double>("minimum_field"), "V/cm") << " at position "
                   << Units::display(config_.get<double>("minimum_position"), {"um", "mm"}) << " and maximum field "
                   << Units::display(config_.get<double>("maximum_field"), "V/cm") << " at electrode";
-        FieldFunction<ROOT::Math::XYZVector> function = get_parabolic_field_function(thickness_domain);
-        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::CUSTOM);
+        detector_->setElectricFieldFunction(
+            get_parabolic_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM);
+    } else if(field_model == ElectricField::CUSTOM) {
+        LOG(TRACE) << "Adding custom electric field";
+        detector_->setElectricFieldFunction(
+            get_custom_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM);
     }
 
     // Produce histograms if needed
@@ -174,6 +179,110 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
         double field_z = a * pos.z() * pos.z() + b * pos.z() + c;
         return ROOT::Math::XYZVector(0, 0, field_z);
     };
+}
+
+FieldFunction<ROOT::Math::XYZVector>
+ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> thickness_domain) {
+
+    auto field_functions = config_.getArray<std::string>("field_function");
+    auto field_parameters = config_.getArray<double>("field_parameters");
+
+    // Derive field extent from pixel boundaries:
+    auto model = detector_->getModel();
+    auto min = -0.5 * model->getPixelSize();
+    auto max = 0.5 * model->getPixelSize();
+
+    // 1D field, interpret as field along z-axis:
+    if(field_functions.size() == 1) {
+        LOG(DEBUG) << "Found definition of 1D custom field, applying to z axis";
+        auto z = std::make_shared<TF3>("z",
+                                       field_functions.front().c_str(),
+                                       min.x(),
+                                       max.x(),
+                                       min.y(),
+                                       max.y(),
+                                       thickness_domain.first,
+                                       thickness_domain.second);
+
+        // Check if number of parameters match up
+        if(static_cast<size_t>(z->GetNumberFreeParameters()) != field_parameters.size()) {
+            throw InvalidValueError(
+                config_,
+                "field_parameters",
+                "The number of function parameters does not line up with the amount of parameters in the function.");
+        }
+
+        // Apply parameters to the function
+        for(size_t n = 0; n < field_parameters.size(); ++n) {
+            z->SetParameter(static_cast<int>(n), field_parameters.at(n));
+        }
+
+        LOG(DEBUG) << "Value of custom field at sensor center: " << Units::display(z->Eval(0., 0., 0.), "V/cm");
+        return [z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
+            return ROOT::Math::XYZVector(0, 0, z->Eval(pos.x(), pos.y(), pos.z()));
+        };
+    } else if(field_functions.size() == 3) {
+        LOG(DEBUG) << "Found definition of 3D custom field, applying to three Cartesian axes";
+        auto x = std::make_shared<TF3>("x",
+                                       field_functions.at(0).c_str(),
+                                       min.x(),
+                                       max.x(),
+                                       min.y(),
+                                       max.y(),
+                                       thickness_domain.first,
+                                       thickness_domain.second);
+        auto y = std::make_shared<TF3>("y",
+                                       field_functions.at(1).c_str(),
+                                       min.x(),
+                                       max.x(),
+                                       min.y(),
+                                       max.y(),
+                                       thickness_domain.first,
+                                       thickness_domain.second);
+        auto z = std::make_shared<TF3>("z",
+                                       field_functions.at(2).c_str(),
+                                       min.x(),
+                                       max.x(),
+                                       min.y(),
+                                       max.y(),
+                                       thickness_domain.first,
+                                       thickness_domain.second);
+
+        // Check if number of parameters match up
+        if(static_cast<size_t>(x->GetNumberFreeParameters() + y->GetNumberFreeParameters() + z->GetNumberFreeParameters()) !=
+           field_parameters.size()) {
+            throw InvalidValueError(
+                config_,
+                "field_parameters",
+                "The number of function parameters does not line up with the sum of parameters in all functions.");
+        }
+
+        // Apply parameters to the functions
+        for(auto n = 0; n < x->GetNumberFreeParameters(); ++n) {
+            x->SetParameter(n, field_parameters.at(static_cast<size_t>(n)));
+        }
+        for(auto n = 0; n < y->GetNumberFreeParameters(); ++n) {
+            y->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNumberFreeParameters())));
+        }
+        for(auto n = 0; n < z->GetNumberFreeParameters(); ++n) {
+            z->SetParameter(
+                n,
+                field_parameters.at(static_cast<size_t>(n + x->GetNumberFreeParameters() + y->GetNumberFreeParameters())));
+        }
+
+        LOG(DEBUG) << "Value of custom field at sensor center: "
+                   << Units::display(ROOT::Math::XYZVector(x->Eval(0., 0., 0.), y->Eval(0., 0., 0.), z->Eval(0., 0., 0.)),
+                                     {"V/cm"});
+        return [x = std::move(x), y = std::move(y), z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
+            return ROOT::Math::XYZVector(
+                x->Eval(pos.x(), pos.y(), pos.z()), y->Eval(pos.x(), pos.y(), pos.z()), z->Eval(pos.x(), pos.y(), pos.z()));
+        };
+    } else {
+        throw InvalidValueError(config_,
+                                "field_function",
+                                "field function either needs one component (z) or three components (x,y,z)  but " +
+                                    std::to_string(field_functions.size()) + " were given");
+    }
 }
 
 /**
