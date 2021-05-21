@@ -7,24 +7,32 @@ Adds an electric field to the detector from one of the supported sources. By def
 
 The reader provides the following models for electric fields:
 
-* For *constant* electric fields it add a constant electric field in the z-direction towards the pixel implants. This is not very physical but might aid in developing and testing new charge propagation algorithms.
-* For *linear* electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is depleted either from the implant or the back side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa). If the sensor is depleted from the implant side, the electric field is calculated using the formula $`E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( 1- \frac{z}{d} \right)`$, where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively. In case of a depletion from the back side, the electric field is calculated as $`E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( \frac{z}{d} \right)`$.
-* For *parabolic* electric fields, a parabola is defined in order to emulate a double-peaked field such as the electric fields observed in sensors after irratiation. The parabola is calculated from the position $`z_{min}`$ and value $`E_{min}`$ of the minimum field in the sensor and the maximum field value at the electrode, $`E_{max}`$. The parameters of parabolic equation $`E(z) = az^2 + bz + c`$ then resolve to:
-    ```latex
-    a = \frac{E_{max} - E_{min}}{z_{min}^2 + (d/2)^2 - dz_{min}}
-    b = -2az_{min}
-    c = E_{max} - a ((d/2)^2 - dz_{min})
+* For **constant** electric fields it add a constant electric field in the z-direction towards the pixel implants. This is not very physical but might aid in developing and testing new charge propagation algorithms.
+* For **linear** electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage. The sensor is depleted either from the implant or the back side, the direction of the electric field depends on the sign of the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa). If the sensor is depleted from the implant side, the electric field is calculated using the formula
+    ```math
+    E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( 1- \frac{z}{d} \right),
     ```
-    where $`d`$ is the sensor thickness and $`z`$ the position along the `z`-axis in local coordinates.
-* For electric fields in the *INIT* or *APF* formats it parses a file containing an electric field map in the APF format or the legacy INIT format also used by the PixelAV software [@pixelav]. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale` parameter. By default, the module assumes the field represents a single pixel unit cell. If the field size and pixel pitch do not match, a warning is printed and the field is scaled to the pixel pitch.
-* The *custom* field model allows to specify arbitrary analytic field functions for a single or all three vector components of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for the `z` component of the field vector, or with three functions representing the three components of the field vector. Using the `field_parameters` configuration, values for free parameters defined in the formulae can be set. For the parameters, units are supported and parsed. Each of the field vector components has access to its own free parameters as well as all three coordinates `x`, `y` and `z` which are defined as the position within the respective pixel.
+    where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively. In case of a depletion from the back side, the electric field is calculated as
+    ```math
+    E(z) = \frac{U_{bias} - U_{depl}}{d} + 2 \frac{U_{depl}}{d}\left( \frac{z}{d} \right).
+    ```
+* For **parabolic** electric fields, a parabola is defined in order to emulate a double-peaked field such as the electric fields observed in sensors after irradiation. The parabola is calculated from the position $`z_{min}`$ and value $`E_{min}`$ of the minimum field in the sensor and the field value at the readout electrode, $`E_{max}`$. The parameters of parabolic equation $`E(z) = az^2 + bz + c`$ then resolve to:
+    ```math
+    a = \frac{E_{max} - E_{min}}{z_{min}^2 + (d/2)^2 - dz_{min}} \qquad
+    b = -2az_{min} \qquad
+    c = E_{max} - a ((d/2)^2 - dz_{min}),
+    ```
+    where $`d`$ is the sensor thickness and $`z`$ the position along the `z`-axis in local coordinates, from $`-d/2`$ to $`+d/2`$. The direction of the electric field is determined by the sign of the field parameters.
+* For electric fields from **mesh files** in the *INIT* or *APF* formats it parses a file containing an electric field map in the APF format or the legacy INIT format also used by the PixelAV software [@pixelav]. An example of a electric field in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale` parameter. By default, the module assumes the field represents a single pixel unit cell. If the field size and pixel pitch do not match, a warning is printed and the field is scaled to the pixel pitch.
+* The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for the `z` component of the field vector, or with three functions representing the three components of the field vector. Using the `field_parameters` configuration, values for free parameters defined in the formulae can be set. For the parameters, units are supported and parsed. Each of the field vector components has access to its own free parameters as well as all three coordinates `x`, `y` and `z` which are defined as the position within the respective pixel.
 
 
 The `depletion_depth` parameter can be used to control the thickness of the depleted region inside the sensor.
 This can be useful for devices such as HV-CMOS sensors, where the typical depletion depth but not necessarily the full depletion voltage are know.
 It should be noted that `depletion_voltage` and `depletion_depth` are mutually exclusive parameters and only one at a time can be specified.
 
-Furthermore the module can produce a plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
+Furthermore the module can plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular plane in the sensor.
+Additional plots comprise the individual field vector components as well as the field magnitude and can be enabled and controlled with the plotting parameter slisted below.
 
 ### Parameters
 * `model` : Type of the electric field model, either **linear**, **constant**, **parabolic**, **custom** or **mesh**.
