@@ -321,62 +321,8 @@ Using a fixed seed (using the \parameter{random_seed} configuration keyword) tog
 One event is produced per test and the \parameter{DEBUG}-level logging output of the respective module is checked against pre-defined expectation output using regular expressions.
 Once modules are altered, their respective expectation output has to be adapted after careful verification of the simulation result.
 
-Currently implemented tests comprise:
+Module tests are located within the individual module source folders and are only enabled if the respective module will be built.
 
-\begin{description}
-    \item[\file{test_01_geobuilder.conf}] takes the provided detector setup and builds the Geant4 geometry from the internal detector description. The monitored output comprises the calculated wrapper dimensions of the detector model.
-    \item[\file{test_1-2_geobuilder_addpoint.conf}] ensures the module adds corner points of the passive material in a correct way.
-    \item[\file{test_1-3_geobuilder_addpoint_rot.conf}] ensures proper rotation of the position of the corner points of the passive material.
-    \item[\file{test_1-4_geobuilder_mothervolume.conf}] ensures placing a detector inside a passive material will not cause overlapping materials.
-    \item[\file{test_1-5_geobuilder_worldvolume.conf}] ensures the added corner points of the passive material increase the world volume accordingly.
-    \item[\file{test_1-6_geobuilder_same_materials.conf}] tests if a warning will be thrown if the material of the passive material is the same as the material of the world volume.
-    \item[\file{test_02-1_electricfield_linear.conf}] creates a linear electric field in the constructed detector by specifying the bias and depletion voltages. The monitored output comprises the calculated effective thickness of the depleted detector volume.
-    \item[\file{test_02-2_electricfield_init.conf}] loads an INIT file containing a TCAD-simulated electric field (cf.\ Section~\ref{sec:module_electric_field}) and applies the field to the detector model. The monitored output comprises the number of field cells for each pixel as read and parsed from the input file.
-    \item[\file{test_02-3_electricfield_linear_depth.conf}] creates a linear electric field in the constructed detector by specifying the applied bias voltage and a depletion depth. The monitored output comprises the calculated effective thickness of the depleted detector volume.
-    \item[\file{test_02-4_magneticfield_constant.conf}] creates a constant magnetic field for the full volume and applies it to the geometryManager. The monitored output comprises the message for successful application of the magnetic field.
-    \item[\file{test_02-5_magneticfield_local.conf}] checks that the local magnetic field including the detector rotation is correct.
-    \item[\file{test_02-6_electricfield_linear_depletion_side.conf}] checks that depleting from the sensor backside is possible.
-    \item[\file{test_03-1_deposition.conf}] executes the charge carrier deposition module. This will invoke Geant4 to deposit energy in the sensitive volume. The monitored output comprises the exact number of charge carriers deposited in the detector.
-    \item[\file{test_03-2_deposition_mc.conf}] executes the charge carrier deposition module as the previous tests, but monitors the type, entry and exit point of the Monte Carlo particle associated to the deposited charge carriers.
-    \item[\file{test_03-3_deposition_track.conf}] executes the charge carrier deposition module as the previous tests, but monitors the start and end point of one of the Monte Carlo tracks in the event.
-    \item[\file{test_03-4_deposition_source_point.conf}] tests the point source in the charge carrier deposition module by monitoring the deposited charges.
-    \item[\file{test_03-5_deposition_source_square.conf}] tests the square source in the charge carrier deposition module by monitoring the deposited charges.
-    \item[\file{test_03-6_deposition_source_sphere.conf}] tests the sphere source in the charge carrier deposition module by monitoring the deposited charges.
-    \item[\file{test_03-7_deposition_source_macro.conf}] tests the G4 macro source in the charge carrier deposition module using the macro file \file{source_macro_test.txt}, monitoring the deposited charges.
-    \item[\file{test_03-8_deposition_point.conf}] tests the deposition of a point charge at a specified position, checks the position of the deposited charge carrier in global coordinates.
-    \item[\file{test_03-9_deposition_scan.conf}] tests the scan of a pixel volume by depositing charges for a given number of events, check for the calculated voxel size.
-    \item[\file{test_03-10_deposition_scan_cube.conf}] tests the calculation of the scanning points by monitoring the warning of the number of events is not a perfect cube.
-    \item[\file{test_03-11_deposition_mip.conf}] tests the deposition of charges along a line by monitoring the calculated step size and number of charge carriers deposited per step.
-    \item[\file{test_03-12_deposition_mip_position.conf}] tests the generation of the Monte Carlo particle when depositing charges along a line by monitoring the start and end positions of the particle.
-    \item[\file{test_03-13_deposition_fano.conf}] tests the simulation of fluctuations in charge carrier generation by monitoring the total number of generated carrier pairs when altering the Fano factor.
-    \item[\file{test_03-14_deposition_spot.conf}] tests the deposition of charge carriers around a fixed position with a Gaussian distribution.
-    \item[\file{test_04-1_propagation_project.conf}] projects deposited charges to the implant side of the sensor. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
-    \item[\file{test_04-2_propagation_generic.conf}] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
-    \item[\file{test_04-3_propagation_generic-magnetic.conf}] uses the Runge-Kutta-Fehlberg integration of the equations of motion implemented in the drift-diffusion model to propagate the charge carriers to the implants under the influence of a constant magnetic field. The monitored output comprises the total number of charges moved, the number of integration steps taken and the simulated propagation time.
-    \item[\file{test_04-4_propagation_project_integration.conf}] projects deposited charges to the implant side of the sensor with a reduced integration time to ignore some charge carriers. The monitored output comprises the total number of charge carriers propagated to the sensor implants.
-    \item[\file{test_05-1_transfer_simple.conf}] tests the transfer of charges from sensor implants to readout chip. The monitored output comprises the total number of charges transferred and the coordinates of the pixels the charges have been assigned to.
-    \item[\file{test_05-2_transfer_simple_implant.conf}] tests the transfer of charges from sensor implants to readout chip in case sensor implants have been defined in the detector model.
-    \item[\file{test_05-3_transfer_pseudopulse.conf}] tests the calculation of induced signals based on the arrival time of charge carriers at the sensor surface.
-    \item[\file{test_06-1_digitization_charge.conf}] digitizes the transferred charges to simulate the front-end electronics. The monitored output of this test comprises the total charge for one pixel including noise contributions and the smeared threshold it is compared to.
-    \item[\file{test_06-2_digitization_qdc.conf}] digitizes the transferred charges and tests the conversion into QDC units. The monitored output comprises the converted charge value in units of QDC counts.
-    \item[\file{test_06-3_digitization_gain.conf}] digitizes the transferred charges and tests the amplification process by monitoring the total charge after signal amplification and smearing.
-    \item[\file{test_06-4_digitization_toa.conf}] digitizes the signal and calculates the time-of-arrival of the particle by checking when the threshold was crossed.
-    \item[\file{test_06-5_digitization_tdc.conf}] digitizes the signal and test the conversion of time-of-arrival to TDC units.
-    \item[\file{test_06-6_digitization_csa_pseudopulse.conf}] checks the outcome of a digitization by the CSA of a pseudo-pulse generated from arrival times.
-    \item[\file{test_06-7_digitization_csa_tot_pseudopulse.conf}] checks the outcome of a digitization by the CSA of a pseudo-pulse generated from arrival times and conversion to time-over-threshold units.
-    \item[\file{test_07_histogramming.conf}] tests the detector histogramming module and its clustering algorithm. The monitored output comprises the total number of clusters and their mean position.
-    \item[\file{test_08-1_writer_root.conf}] ensures proper functionality of the ROOT file writer module. It monitors the total number of objects and branches written to the output ROOT trees.
-    \item[\file{test_08-2_writer_rce.conf}] ensures proper functionality of the RCE file writer module. The correct conversion of the PixelHit position and value is monitored by the test's regular expressions.
-    \item[\file{test_08-3_writer_lcio.conf}] ensures proper functionality of the LCIO file writer module. Similar to the above test, the correct conversion of PixelHits (coordinates and charge) is monitored.
-    \item[\file{test_08-4_writer_corryvreckan.conf}] ensures proper functionality of the Corryvreckan file writer module. The monitored output comprises the coordinates of the pixel produced in the simulation.
-    \item[\file{test_08-5_writer_corryvreckan_mc.conf}] ensures the correct storage of Monte Carlo truth particle information in the Corryvreckan file writer module by monitoring the local coordinates of the MC particle associated to the pixel hit.
-    \item[\file{test_08-6_writer_text.conf}] ensures proper functionality of the ASCII text writer module by monitoring the total number of objects and messages written to the text file..
-    \item[\file{test_08-7_writer_lcio_detector_assignment.conf}] exercises the assignment of detector IDs to \apsq detectors in the LCIO output file. A fixed ID and collection name is assigned to the simulated detector.
-    \item[\file{test_08-8_writer_lcio_no_mc_truth.conf}] ensures that simulation results are properly converted to LCIO and stored even without the Monte Carlo truth information available.
-    \item[\file{test_09-1_reader_root.conf}] tests the capability of the framework to read data back in and to dispatch messages for all objects found in the input tree. The monitored output comprises the total number of objects read from all branches.
-    \item[\file{test_09-2_reader_root_seed.conf}] tests the capability of the framework to detect different random seeds for misalignment set in a data file to be read back in. The monitored output comprises the error message including the two different random seed values.
-    \item[\file{test_09-3_reader_root_ignoreseed.conf}] tests if core random seeds are properly ignored by the ROOTObjectReader module if requested by the configuration. The monitored output comprises the warning message emitted if a difference in seed values is discovered.
-\end{description}
 
 \paragraph{Performance Tests}
 

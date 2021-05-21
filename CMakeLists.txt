@@ -252,7 +252,14 @@ ALLPIX_SETUP_ROOT_TARGETS()
 
 # Set the dependencies
 SET(ALLPIX_DEPS_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS})
-SET(ALLPIX_DEPS_LIBRARIES Threads::Threads Boost::random ROOT::Core ROOT::GenVector ROOT::Geom ROOT::RIO ROOT::Hist)
+SET(ALLPIX_DEPS_LIBRARIES
+    Threads::Threads
+    Boost::random
+    ROOT::Core
+    ROOT::GenVector
+    ROOT::Geom
+    ROOT::RIO
+    ROOT::Hist)
 
 # Add the LCG view as dependency if set:
 IF(DEFINED ENV{LCG_VIEW})
@@ -281,6 +288,28 @@ FILE(
     tools/*.[tch]pp
     tools/*.h)
 INCLUDE("cmake/clang-cpp-checks.cmake")
+
+###################################
+# Setup tests for allpix          #
+###################################
+
+OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
+OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
+OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
+OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
+
+SET(_MODULES_WITH_TESTS
+    ""
+    CACHE INTERNAL "MODULES_WITH_TESTS")
+
+# Enable testing
+ENABLE_TESTING()
+
+# Include example configurations:
+ADD_SUBDIRECTORY(examples)
+
+# Include all tests
+ADD_SUBDIRECTORY(etc/unittests)
 
 ###################################
 # Define build targets for allpix #
@@ -318,18 +347,45 @@ ADD_SUBDIRECTORY(src/exec)
 # Handle the included tools
 ADD_SUBDIRECTORY(tools)
 
-###################################
-# Setup tests for allpix          #
-###################################
+##################
+# Test summaries #
+##################
 
-# Enable testing
-ENABLE_TESTING()
+IF(TEST_CORE)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_CORE)
+    MESSAGE(STATUS "Unit tests: ${CNT} framework core functionality tests")
+ELSE()
+    MESSAGE(STATUS "Unit tests: framework core functionality tests deactivated.")
+ENDIF()
 
-# Include example configurations:
-ADD_SUBDIRECTORY(examples)
+IF(TEST_MODULES)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_MODULES)
+    MESSAGE(STATUS "Unit tests: ${CNT} module functionality tests")
 
-# Include all tests
-ADD_SUBDIRECTORY(etc/unittests)
+    SET(ALLPIX_MODULE_DIR "${PROJECT_SOURCE_DIR}/src/modules")
+    MESSAGE(STATUS "Modules without functionality tests:")
+    FILE(
+        GLOB mods
+        RELATIVE ${ALLPIX_MODULE_DIR}/
+        ${ALLPIX_MODULE_DIR}/*)
+    FOREACH(mod ${mods})
+        # Check if module has registered tests and is going to be built
+        IF(IS_DIRECTORY ${ALLPIX_MODULE_DIR}/${mod}
+           AND NOT "${mod}" IN_LIST _MODULES_WITH_TESTS
+           AND "${BUILD_${mod}}")
+            MESSAGE(STATUS "   ${mod}")
+        ENDIF()
+    ENDFOREACH()
+ELSE()
+    MESSAGE(STATUS "Unit tests: module functionality tests deactivated.")
+ENDIF()
+
+IF(TEST_PERFORMANCE)
+    GET_PROPERTY(CNT GLOBAL PROPERTY COUNT_TESTS_PERFORMANCE)
+    MESSAGE(STATUS "Unit tests: ${CNT} performance tests")
+ELSE()
+    MESSAGE(STATUS "Unit tests: performance tests deactivated.")
+ENDIF()
 
 ############################
 # Create local setup files #
