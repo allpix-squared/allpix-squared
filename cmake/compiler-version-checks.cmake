@@ -9,7 +9,7 @@
 # https://gcc.gnu.org/projects/cxx-status.html
 # https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2017
 SET(GCC_CXX_14_VERSION_MIN "6.1")
-SET(GCC_CXX_17_VERSION_MIN "7.3")
+SET(GCC_CXX_17_VERSION_MIN "8.0")
 
 # Minimum Clang versions for C++14 and C++17 feature support.
 # based on
