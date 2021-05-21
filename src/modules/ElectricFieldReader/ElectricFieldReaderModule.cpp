@@ -157,6 +157,14 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
     auto e_max = config_.get<double>("maximum_field");
     double eff_thickness = thickness_domain.second - thickness_domain.first;
 
+    if(z_min <= thickness_domain.first || z_min >= thickness_domain.second) {
+        throw InvalidValueError(config_,
+                                "minimum_position",
+                                "Minimum field position must be within defined region of the electric field (" +
+                                    Units::display(thickness_domain.first, "um") + "," +
+                                    Units::display(thickness_domain.second, "um") + ")");
+    }
+
     auto a = (e_max - config_.get<double>("minimum_field")) /
              (z_min * z_min + thickness_domain.second * thickness_domain.second - eff_thickness * z_min);
     auto b = -2 * a * z_min;

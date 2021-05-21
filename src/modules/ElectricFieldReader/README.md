@@ -58,4 +58,15 @@ model = "mesh"
 file_name = "example_electric_field.init"
 ```
 
+This example uses the parabolic field shape and defines a minimum field and position as well as the field at the electrode:
+
+```ini
+[ElectricFieldReader]
+model = "parabolic"
+# In local coordinates of the sensor, i.e. 100um below the center of the sensor along z:
+minimum_position = -100um
+minimum_field = 5200V/cm
+maximum_field = 10000V/cm
+```
+
 [@pixelav]: https://cds.cern.ch/record/687440
