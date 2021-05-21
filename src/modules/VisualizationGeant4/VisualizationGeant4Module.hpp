@@ -31,6 +31,24 @@ namespace allpix {
      * configure both the visualization viewer as well as the display of the various detector components and the beam.
      */
     class VisualizationGeant4Module : public Module {
+        /**
+         * @brief Different viewing modes
+         */
+        enum class ViewingMode {
+            NONE,     ///< No viewer
+            GUI,      ///< GUI viewing mode
+            TERMINAL, ///< Terminal viewing mode
+        };
+
+        /**
+         * @brief Different trajectory color modes
+         */
+        enum class ColorMode {
+            GENERIC,  ///< Generic trajectory coloration
+            CHARGE,   ///< Trajectory coloration by charge
+            PARTICLE, ///< Trajectory coloration by particle type
+        };
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -77,6 +95,8 @@ namespace allpix {
 
         // Check if we did run successfully, used to apply workaround in destructor if needed
         bool has_run_;
+
+        ViewingMode mode_;
 
         // Own the Geant4 visualization manager
         std::unique_ptr<G4VisManager> vis_manager_g4_;

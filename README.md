@@ -160,3 +160,4 @@ The following third-party codes are included in the repository:
 * The cereal C++11 serialization library used by Allpix<sup>2</sup> is published under the BSD 3-Clause License, the original source code can be found [here](https://github.com/USCiLab/cereal).
 * The combination algorithms by Howard Hinnant are published under the Boost Software License Version 1.0, the code can be found [here](https://github.com/HowardHinnant/combinations) and the documentation of the class is published [here](https://howardhinnant.github.io/combinations/combinations.html).
 * The CTest to JUnit XSL template is published under the MIT License, the original source code can be found [here](https://github.com/rpavlik/jenkins-ctest-plugin).
+* The Magic Enum library by Daniil Goncharov is published under the MIT license, the code can be found [here](https://github.com/Neargye/magic_enum).

@@ -33,17 +33,11 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable parallelization of this module if multithreading is enabled
     enable_parallelization();
-
-    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
-    auto model = config_.get<std::string>("model");
-    if(model == "init" || model == "apf") {
-        config_.set("model", "mesh");
-    }
 }
 
 void WeightingPotentialReaderModule::initialize() {
 
-    auto field_model = config_.get<std::string>("model");
+    auto field_model = config_.get<WeightingPotential>("model");
 
     // Calculate thickness domain
     auto model = detector_->getModel();
@@ -51,7 +45,7 @@ void WeightingPotentialReaderModule::initialize() {
     auto thickness_domain = std::make_pair(sensor_max_z - model->getSensorSize().z(), sensor_max_z);
 
     // Calculate the potential depending on the configuration
-    if(field_model == "mesh") {
+    if(field_model == WeightingPotential::MESH) {
         auto field_data = read_field(thickness_domain);
 
         detector_->setWeightingPotentialGrid(field_data.getData(),
@@ -59,15 +53,13 @@ void WeightingPotentialReaderModule::initialize() {
                                              std::array<double, 2>{{field_data.getSize()[0], field_data.getSize()[1]}},
                                              std::array<double, 2>{{0, 0}},
                                              thickness_domain);
-    } else if(field_model == "pad") {
+    } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
 
         // Get pixel implant size from the detector model:
         auto implant = model->getImplantSize();
         auto function = get_pad_potential_function(implant, thickness_domain);
         detector_->setWeightingPotentialFunction(function, thickness_domain, FieldType::CUSTOM);
-    } else {
-        throw InvalidValueError(config_, "model", "model should be 'init' or `pad`");
     }
 
     // Produce histograms if needed

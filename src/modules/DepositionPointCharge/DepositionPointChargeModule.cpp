@@ -34,32 +34,15 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
 
     // Set default value for the number of charges deposited
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
-    config_.setDefault("source_type", "point");
+    config_.setDefault("source_type", SourceType::POINT);
 
-    // Read type:
-    auto type = config_.get<std::string>("source_type");
-    std::transform(type.begin(), type.end(), type.begin(), ::tolower);
-    if(type == "point") {
-        type_ = SourceType::POINT;
-    } else if(type == "mip") {
-        type_ = SourceType::MIP;
-    } else {
-        throw InvalidValueError(config_, "source_type", "Invalid deposition type, only 'point' and 'mip' are supported.");
-    }
+    // Read type and model:
+    type_ = config_.get<SourceType>("source_type");
+    model_ = config_.get<DepositionModel>("model");
 
-    // Read model
-    auto model = config_.get<std::string>("model");
-    std::transform(model.begin(), model.end(), model.begin(), ::tolower);
-    if(model == "fixed") {
-        model_ = DepositionModel::FIXED;
-    } else if(model == "scan") {
-        model_ = DepositionModel::SCAN;
-    } else if(model == "spot") {
-        model_ = DepositionModel::SPOT;
+    // Read spot size
+    if(model_ == DepositionModel::SPOT) {
         spot_size_ = config.get<double>("spot_size");
-    } else {
-        throw InvalidValueError(
-            config_, "model", "Invalid deposition model, only 'fixed', 'scan' and 'spot' are supported.");
     }
 
     // Read position

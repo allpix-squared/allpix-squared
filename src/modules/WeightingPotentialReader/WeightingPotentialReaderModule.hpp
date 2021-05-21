@@ -25,6 +25,14 @@ namespace allpix {
      * @brief Module to read weighting potentials
      */
     class WeightingPotentialReaderModule : public Module {
+        /**
+         * @brief Different weighting potential types
+         */
+        enum class WeightingPotential {
+            PAD,  ///< Weighting potential calculated from geometry of the pad
+            MESH, ///< Weighting potential defined by a mesh
+        };
+
     public:
         /**
          * @brief Constructor for this detector-specific module

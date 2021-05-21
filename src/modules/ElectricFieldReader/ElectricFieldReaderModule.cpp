@@ -34,20 +34,14 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
-
-    // NOTE Backwards-compatibility: interpret both "init" and "apf" as "mesh":
-    auto model = config_.get<std::string>("model");
-    if(model == "init" || model == "apf") {
-        config_.set("model", "mesh");
-    }
 }
 
 void ElectricFieldReaderModule::initialize() {
     FieldType type = FieldType::GRID;
 
     // Check field strength
-    auto field_model = config_.get<std::string>("model");
-    if((field_model == "constant" || field_model == "linear") &&
+    auto field_model = config_.get<ElectricField>("model");
+    if((field_model == ElectricField::CONSTANT || field_model == ElectricField::LINEAR) &&
        config_.get<double>("bias_voltage") > Units::get(5.0, "kV")) {
         LOG(WARNING) << "Very high bias voltage of " << Units::display(config_.get<double>("bias_voltage"), "kV")
                      << " set, this is most likely not desired.";
@@ -71,7 +65,7 @@ void ElectricFieldReaderModule::initialize() {
     auto thickness_domain = std::make_pair(sensor_max_z - depletion_depth, sensor_max_z);
 
     // Calculate the field depending on the configuration
-    if(field_model == "mesh") {
+    if(field_model == ElectricField::MESH) {
         // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
@@ -94,7 +88,7 @@ void ElectricFieldReaderModule::initialize() {
 
         detector_->setElectricFieldGrid(
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
-    } else if(field_model == "constant") {
+    } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
         type = FieldType::CONSTANT;
 
@@ -104,7 +98,7 @@ void ElectricFieldReaderModule::initialize() {
             return ROOT::Math::XYZVector(0, 0, -field_z);
         };
         detector_->setElectricFieldFunction(function, thickness_domain, type);
-    } else if(field_model == "linear") {
+    } else if(field_model == ElectricField::LINEAR) {
         LOG(TRACE) << "Adding linear electric field";
         type = FieldType::LINEAR;
 
@@ -115,8 +109,6 @@ void ElectricFieldReaderModule::initialize() {
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
         FieldFunction<ROOT::Math::XYZVector> function = get_linear_field_function(depletion_voltage, thickness_domain);
         detector_->setElectricFieldFunction(function, thickness_domain, type);
-    } else {
-        throw InvalidValueError(config_, "model", "model should be 'linear', 'constant' or 'init'");
     }
 
     // Produce histograms if needed
