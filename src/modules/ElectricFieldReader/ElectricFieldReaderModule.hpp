@@ -33,9 +33,10 @@ namespace allpix {
          * @brief Different electric field types
          */
         enum class ElectricField {
-            CONSTANT, ///< Constant electric field
-            LINEAR,   ///< Linear electric field
-            MESH,     ///< Electric field defined by a mesh
+            CONSTANT,  ///< Constant electric field
+            LINEAR,    ///< Linear electric field
+            MESH,      ///< Electric field defined by a mesh
+            PARABOLIC, ///< Parabolic electric field
         };
 
     public:
@@ -61,6 +62,12 @@ namespace allpix {
          */
         FieldFunction<ROOT::Math::XYZVector> get_linear_field_function(double depletion_voltage,
                                                                        std::pair<double, double> thickness_domain);
+
+        /**
+         * @brief Create and apply a parabolic field
+         * @param thickness_domain Domain of the thickness where the field is defined
+         */
+        FieldFunction<ROOT::Math::XYZVector> get_parabolic_field_function(std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field from a file in init or apf format and apply it

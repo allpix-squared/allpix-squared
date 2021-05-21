@@ -37,7 +37,6 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 }
 
 void ElectricFieldReaderModule::initialize() {
-    FieldType type = FieldType::GRID;
 
     // Check field strength
     auto field_model = config_.get<ElectricField>("model");
@@ -90,17 +89,14 @@ void ElectricFieldReaderModule::initialize() {
             field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
-        type = FieldType::CONSTANT;
-
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
         LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
         FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
             return ROOT::Math::XYZVector(0, 0, -field_z);
         };
-        detector_->setElectricFieldFunction(function, thickness_domain, type);
+        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::CONSTANT);
     } else if(field_model == ElectricField::LINEAR) {
         LOG(TRACE) << "Adding linear electric field";
-        type = FieldType::LINEAR;
 
         // Get depletion voltage, defaults to bias voltage:
         auto depletion_voltage = config_.get<double>("depletion_voltage", config_.get<double>("bias_voltage"));
@@ -108,7 +104,15 @@ void ElectricFieldReaderModule::initialize() {
         LOG(INFO) << "Setting linear electric field from " << Units::display(config_.get<double>("bias_voltage"), "V")
                   << " bias voltage and " << Units::display(depletion_voltage, "V") << " depletion voltage";
         FieldFunction<ROOT::Math::XYZVector> function = get_linear_field_function(depletion_voltage, thickness_domain);
-        detector_->setElectricFieldFunction(function, thickness_domain, type);
+        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::LINEAR);
+    } else if(field_model == ElectricField::PARABOLIC) {
+        LOG(TRACE) << "Adding parabolic electric field";
+        LOG(INFO) << "Setting parabolic electric field with minimum field "
+                  << Units::display(config_.get<double>("minimum_field"), "V/cm") << " at position "
+                  << Units::display(config_.get<double>("minimum_position"), {"um", "mm"}) << " and maximum field "
+                  << Units::display(config_.get<double>("maximum_field"), "V/cm") << " at electrode";
+        FieldFunction<ROOT::Math::XYZVector> function = get_parabolic_field_function(thickness_domain);
+        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::CUSTOM);
     }
 
     // Produce histograms if needed
@@ -142,6 +146,25 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
                                       2 * (depletion_voltage / eff_thickness) *
                                           (deplete_from_implants ? (1 - z_rel / eff_thickness) : z_rel / eff_thickness));
         return ROOT::Math::XYZVector(0, 0, (direction ? -1 : 1) * field_z);
+    };
+}
+
+FieldFunction<ROOT::Math::XYZVector>
+ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double> thickness_domain) {
+    LOG(TRACE) << "Calculating function for the parabolic electric field.";
+
+    auto z_min = config_.get<double>("minimum_position");
+    auto e_max = config_.get<double>("maximum_field");
+    double eff_thickness = thickness_domain.second - thickness_domain.first;
+
+    auto a = (e_max - config_.get<double>("minimum_field")) /
+             (z_min * z_min + thickness_domain.second * thickness_domain.second - eff_thickness * z_min);
+    auto b = -2 * a * z_min;
+    auto c = e_max - a * (thickness_domain.second * thickness_domain.second - eff_thickness * z_min);
+
+    return [a, b, c](const ROOT::Math::XYZPoint& pos) {
+        double field_z = a * pos.z() * pos.z() + b * pos.z() + c;
+        return ROOT::Math::XYZVector(0, 0, field_z);
     };
 }
 
