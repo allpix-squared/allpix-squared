@@ -159,11 +159,9 @@ void PulseTransferModule::run(Event* event) {
             LOG_ONCE(INFO) << "Pulses available - settings \"timestep\", \"max_depth_distance\" and "
                               "\"collect_from_implant\" have no effect";
 
-            for(auto& pulse : pulses) {
-                auto pixel_index = pulse.first;
-
+            for(auto& [pixel_index, pulse] : pulses) {
                 // Accumulate all pulses from input message data:
-                pixel_pulse_map[pixel_index] += pulse.second;
+                pixel_pulse_map[pixel_index] += pulse;
 
                 auto px = pixel_charge_map[pixel_index];
                 // For each pulse, store the corresponding propagated charges to preserve history:
@@ -177,10 +175,7 @@ void PulseTransferModule::run(Event* event) {
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
     Pulse total_pulse;
-    for(auto& pixel_index_pulse : pixel_pulse_map) {
-        auto index = pixel_index_pulse.first;
-        auto pulse = pixel_index_pulse.second;
-
+    for(auto& [index, pulse] : pixel_pulse_map) {
         // Sum all pulses for informational output:
         total_pulse += pulse;
 
@@ -227,9 +222,7 @@ void PulseTransferModule::run(Event* event) {
                                     -0.5,
                                     static_cast<int>(size.y()) - 0.5);
 
-        for(auto& pixel_index_pulse : pixel_pulse_map) {
-            auto index = pixel_index_pulse.first;
-            auto pulse = pixel_index_pulse.second;
+        for(auto& [index, pulse] : pixel_pulse_map) {
             charge_map->Fill(index.x(), index.y(), pulse.getCharge());
         }
         getROOTDirectory()->WriteTObject(charge_map, name.c_str());
