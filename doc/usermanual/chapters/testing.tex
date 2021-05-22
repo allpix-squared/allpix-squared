@@ -265,6 +265,8 @@ If different functionality and thus outputs need to be tested, a second test sho
   \item[Defining a test case label] Tests can be grouped and executed based on labels, e.g.\ for code coverage reports. Labels can be assigned to individual tests using the \parameter{#LABEL} tag.
 \end{description}
 
+Multiple pass or fail conditions can be separated by a semicolon or by adding multiple \parameter{#PASS} or \parameter{#FAIL} expressions.
+It should however be noted that test passes or fails \emph{if any of these conditions is met}, i.e.\ the conditions are combined with a logical \parameter{OR}.
 Pass and fail condition are not interpreted as regular expressions but relevant characters are automatically escaped.
 This allows to directly copy corresponding lines form the log into the respective condition without manually creating a matching regular expression.
 A noteworthy exception to this are line breaks.
