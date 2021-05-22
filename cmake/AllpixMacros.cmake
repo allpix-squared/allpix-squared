@@ -129,6 +129,39 @@ FUNCTION(escape_regex inp output)
         PARENT_SCOPE)
 ENDFUNCTION()
 
+# Add default fail conditions if not present as pass conditions
+FUNCTION(add_default_fail_conditions test)
+    GET_PROPERTY(
+        EXPRESSIONS_FAIL
+        TEST ${name}
+        PROPERTY FAIL_REGULAR_EXPRESSION)
+    IF(NOT EXPRESSIONS_FAIL)
+        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        GET_PROPERTY(
+            EXPRESSIONS_PASS
+            TEST ${name}
+            PROPERTY PASS_REGULAR_EXPRESSION)
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "WARNING")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "WARNING")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "ERROR")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
+        ENDIF()
+    ENDIF()
+ENDFUNCTION()
+
 # Add a test to the unit test suite and parse its configuration file for options
 FUNCTION(add_allpix_test test name)
     # Allow the test to specify additional module CLI parameters:
@@ -169,27 +202,21 @@ FUNCTION(add_allpix_test test name)
     # Escape possible regex patterns in the expected output:
     FOREACH(pass ${PASS_LST_})
         ESCAPE_REGEX("${pass}" pass)
-        SET_PROPERTY(TEST ${name} APPEND PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
+        SET_PROPERTY(
+            TEST ${name}
+            APPEND
+            PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
     ENDFOREACH()
     FOREACH(fail ${FAIL_LST_})
         ESCAPE_REGEX("${fail}" fail)
-        SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "${fail}")
+        SET_PROPERTY(
+            TEST ${name}
+            APPEND
+            PROPERTY FAIL_REGULAR_EXPRESSION "${fail}")
     ENDFOREACH()
 
-    GET_PROPERTY(EXPRESSIONS_FAIL TEST ${name} PROPERTY FAIL_REGULAR_EXPRESSION)
-    IF(NOT EXPRESSIONS_FAIL)
-        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
-        GET_PROPERTY(EXPRESSIONS_PASS TEST ${name} PROPERTY PASS_REGULAR_EXPRESSION)
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "WARNING")
-            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "WARNING")
-        ENDIF()
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "ERROR")
-            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
-        ENDIF()
-        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
-            SET_PROPERTY(TEST ${name} APPEND PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
-        ENDIF()
-    ENDIF()
+    # Add default fail conditions
+    ADD_DEFAULT_FAIL_CONDITIONS(${name})
 
     # Some tests might depend on others:
     FILE(STRINGS ${test} DEPENDENCY REGEX "#DEPENDS ")
