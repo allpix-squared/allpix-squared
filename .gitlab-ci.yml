@@ -139,7 +139,9 @@ fmt:cmake-lint:
         - export PATH=$PATH:/home/sftnight/.local/bin
     script:
         - pip install --trusted-host=pypi.org --user cmakelang
-        - cmake-lint `find . -name "CMakeLists.txt"` `find cmake/ \( -name "*.cmake" ! -name "LATEX.cmake" ! -name "PANDOC.cmake" ! -name "FindPQXX.cmake" ! -name "CodeCoverage.cmake" \)`
+        - mkdir build && cd build/
+        - cmake -GNinja ..
+        - ninja lint-cmake
 
 fmt:coverage:
     extends: .format
