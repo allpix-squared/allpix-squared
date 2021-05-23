@@ -280,7 +280,7 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
     } else {
         throw InvalidValueError(config_,
                                 "field_function",
-                                "field function either needs one component (z) or three components (x,y,z)  but " +
+                                "field function either needs one component (z) or three components (x,y,z) but " +
                                     std::to_string(field_functions.size()) + " were given");
     }
 }
