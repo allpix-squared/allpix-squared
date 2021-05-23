@@ -278,16 +278,8 @@ SET(CLANG_FORMAT_VERSION "10")
 # Set the clang-tidy version of the linter required by the CI:
 SET(CLANG_TIDY_VERSION "10")
 
-# Set the source files to clang-format (FIXME: determine this better)
-FILE(
-    GLOB_RECURSE
-    CHECK_CXX_SOURCE_FILES
-    src/*.[tch]pp
-    src/*.h
-    tools/*.C
-    tools/*.[tch]pp
-    tools/*.h)
 INCLUDE("cmake/clang-cpp-checks.cmake")
+INCLUDE("cmake/cmake-checks.cmake")
 
 ###################################
 # Setup tests for allpix          #
