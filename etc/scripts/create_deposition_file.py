@@ -100,8 +100,8 @@ def createParticle(nsteps):
     distVect = exitPoint - entryPoint
     totalDist = np.sqrt(distVect.dot(distVect))
 
-    # Calculate mean energy deposition
-    eVPermm = 390/0.001
+    # Calculate mean energy deposition, 80 e/h pairs per micron are ~200eV/um or 0.2 MeV/mm
+    eVPermm = 0.2
     eVPerStep = eVPermm * (totalDist/nsteps)
 
     # Track parametrization
