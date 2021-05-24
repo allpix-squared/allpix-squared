@@ -183,11 +183,19 @@ FUNCTION(add_allpix_test test name)
         SET(clioptions "${clioptions} ${opt}")
     ENDFOREACH()
 
+    # Parse possible commands to be run before
+    FILE(STRINGS ${test} OPTS REGEX "#BEFORE_SCRIPT ")
+    FOREACH(opt ${OPTS})
+        STRING(REPLACE "#BEFORE_SCRIPT " "" opt "${opt}")
+        LIST(APPEND before_script ${opt})
+    ENDFOREACH()
+
     ADD_TEST(
         NAME "${name}"
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/etc/unittests
         COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${name}"
-                "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}")
+                "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}"
+                ${before_script})
 
     # Parse configuration file for pass/fail conditions:
     FILE(STRINGS ${test} PASS_LST_ REGEX "#PASS ")

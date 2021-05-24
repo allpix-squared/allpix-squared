@@ -7,7 +7,18 @@ if [ -n "${CI}" ] && [ "$(uname)" == "Darwin" ]; then
     source $ABSOLUTE_PATH/../../.ci/init_x86_64.sh
 fi
 
+# Run all additional arguments as script commands before the test
+if [ "$#" -gt 2 ]; then
+    echo "Running BEFORE_SCRIPT"
+    for cmd in "${@:3}"; do
+        echo "${cmd}"
+        ${cmd}
+    done
+fi
+
 # Run the second argument in the directory created from the first argument
+echo "Running TEST"
+echo "$2"
 rm -rf $1
 mkdir -p $1
 cd $1
