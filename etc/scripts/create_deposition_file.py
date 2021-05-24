@@ -90,9 +90,9 @@ def createParticle(nsteps):
     timeOffset = 1.
 
     # Arbitrary entry and exit points in global coordinates
-    entryX = random.gauss(2., 0.5)
+    entryX = random.gauss(0.5, 0.15)
     exitX = random.gauss(entryX, 0.05)
-    entryY = random.gauss(-0.5, 0.5)
+    entryY = random.gauss(-0.5, 0.15)
     exitY = random.gauss(entryY, 0.05)
     entryPoint = np.array([entryX, entryY, -0.1420])
     exitPoint = np.array([exitX, exitY, 0.1420])
@@ -156,9 +156,14 @@ if __name__ == '__main__':
     parser.add_argument("--detector", help="Name of the detector")
     parser.add_argument("--outputpath", help="Path to write output files to")
     parser.add_argument("--events", help="Number of events to generate", type=int)
+    parser.add_argument("--seed", help="Seed for random number generator", type=int)
     parser.add_argument("--steps", help="Number of steps along the track in the sensor", type=int)
     parser.add_argument("--scantree", help="Scan generated ROOT tree and print sections", action="store_true")
     args = parser.parse_args()
+
+    # Seed PRNG with provided seed
+    if args.type is not None:
+        random.seed(args.seed)
 
     # Check for availability of ROOT
     rootAvailable = True
