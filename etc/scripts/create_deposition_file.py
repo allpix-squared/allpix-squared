@@ -2,6 +2,7 @@ import sys
 import os
 import random
 import numpy as np
+import argparse
 
 from array import array
 
@@ -20,7 +21,7 @@ parent_idArr = array('i', [0])
 
 # Class to store deposited charges in
 class depositedCharge:
-    
+
     def __init__(self):
         pass
 
@@ -44,13 +45,13 @@ class depositedCharge:
         self.track_id = track_id
     def setParent_Id(self, parent_id):
         self.parent_id = parent_id
-    
+
 
     # Required for TTrees
     def fillDepositionArrays(self):
 
         global eventArr, energyArr, timeArr, positionxArr, positionyArr, positionzArr, pdg_codeArr, track_idArr, parent_idArr
-    
+
         eventArr[0] = self.eventNr
         energyArr[0] = self.energy
         timeArr[0] = self.time
@@ -78,7 +79,7 @@ class depositedCharge:
         text += "\n"
 
         return text
-        
+
 
 # Calculation of straight particle trajectories in the sensor
 def createParticle(nsteps):
@@ -110,7 +111,7 @@ def createParticle(nsteps):
 
     # Create vector of deposited charges
     deposits = []
-    
+
     for zPos in zPositions:
         xyPos = offset + slope*zPos
         xyzPos = np.append(xyPos,zPos)
@@ -135,7 +136,7 @@ def createParticle(nsteps):
         deposits.append(deposit)
 
     return deposits
-    
+
 def user_input(question):
     if sys.version_info.major == 3:
         return input(question)
@@ -144,10 +145,20 @@ def user_input(question):
     else:
         print("Python version could not be determined.")
         exit(1)
-    
+
 
 
 if __name__ == '__main__':
+
+    # Check if we have command line control:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--type", help="File type to generate, (a) TTree, (b) CSV, (c) both")
+    parser.add_argument("--detector", help="Name of the detector")
+    parser.add_argument("--outputpath", help="Path to write output files to")
+    parser.add_argument("--events", help="Number of events to generate", type=int)
+    parser.add_argument("--steps", help="Number of steps along the track in the sensor", type=int)
+    parser.add_argument("--scantree", help="Scan generated ROOT tree and print sections", action="store_true")
+    args = parser.parse_args()
 
     # Check for availability of ROOT
     rootAvailable = True
@@ -157,10 +168,14 @@ if __name__ == '__main__':
         print("ROOT unavailable. Install ROOT with python option if you are interested in writing TTrees.")
         rootAvailable = False
 
-    
+
     # Ask whether to use TTrees or CSV files
     if rootAvailable:
-        writeOption = user_input("Generate TTrees (a), a CSV file (b) or both (c)? ")
+        if args.type is None:
+            writeOption = user_input("Generate TTrees (a), a CSV file (b) or both (c)? ")
+        else:
+            writeOption = args.type
+
         writeROOT = False
         writeCSV = False
         if writeOption=="a":
@@ -177,21 +192,32 @@ if __name__ == '__main__':
         print("Will just write a CSV file.")
         writeCSV = True
         writeROOT = False
-    
+
 
     filenamePrefix = "deposition"
-    
+    if args.outputpath:
+        filenamePrefix = args.outputpath + "/" + filenamePrefix
+
     rootfilename = filenamePrefix + ".root"
     csvFilename = filenamePrefix + ".csv"
-    
+
     # Define detector name
-    detectorName = user_input("Name of your detector: ")
+    if args.detector is None:
+        detectorName = user_input("Name of your detector: ")
+    else:
+        detectorName = args.detector
 
     # Ask for the number of events
-    events = int(user_input("Number of events to process: "))
+    if args.events is None:
+        events = int(user_input("Number of events to process: "))
+    else:
+        events = args.events
 
     # Ask for the number of steps along the track:
-    nsteps = int(user_input("Number of steps along the track in the sensor: "))
+    if args.steps is None:
+        nsteps = int(user_input("Number of steps along the track in the sensor: "))
+    else:
+        nsteps = args.steps
 
     if writeROOT:
         # Open the file and create the tree
@@ -213,11 +239,11 @@ if __name__ == '__main__':
         pdg_codeBranch = tree.Branch("pdg_code", pdg_codeArr, "pdg_code/I")
         track_idBranch = tree.Branch("track_id", track_idArr, "track_id/I")
         parent_idBranch = tree.Branch("parent_id", parent_idArr, "parent_id/I")
-        
+
 
     if writeCSV:
         fout = open(csvFilename,'w')
-    
+
 
     for eventNr in range(0,events):
         print("Processing event " + str(eventNr))
@@ -248,7 +274,8 @@ if __name__ == '__main__':
 
     if writeROOT:
         # Inspect tree and write ROOT file
-        tree.Scan()
+        if args.scantree:
+            tree.Scan()
         rootfile.Write()
         rootfile.Close()
 
@@ -256,5 +283,3 @@ if __name__ == '__main__':
         # End the file with a line break to prevent from the last line being ignored due to the EOF
         fout.write("\n")
         fout.close()
-
-        
