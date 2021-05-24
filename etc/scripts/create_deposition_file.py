@@ -48,33 +48,37 @@ class depositedCharge:
 
 
     # Required for TTrees
-    def fillDepositionArrays(self):
+    def fillDepositionArrays(self, omit_time, omit_mcparticle):
 
         global eventArr, energyArr, timeArr, positionxArr, positionyArr, positionzArr, pdg_codeArr, track_idArr, parent_idArr
 
         eventArr[0] = self.eventNr
         energyArr[0] = self.energy
-        timeArr[0] = self.time
+        if not omit_time:
+            timeArr[0] = self.time
         positionxArr[0] = self.positionx
         positionyArr[0] = self.positiony
         positionzArr[0] = self.positionz
         pdg_codeArr[0] = self.pdg_code
-        track_idArr[0] = self.track_id
-        parent_idArr[0] = self.parent_id
+        if not omit_mcparticle:
+            track_idArr[0] = self.track_id
+            parent_idArr[0] = self.parent_id
 
 
     # Required for CSV output
-    def getDepositionText(self):
+    def getDepositionText(self, omit_time, omit_mcparticle):
 
         text = str(self.pdg_code) + ", "
-        text += str(self.time) + ", "
+        if not omit_time:
+            text += str(self.time) + ", "
         text += str(self.energy) + ", "
         text += str(self.positionx) + ", "
         text += str(self.positiony) + ", "
         text += str(self.positionz) + ", "
         text += str(self.detector) + ", "
-        text += str(self.track_id) + ", "
-        text += str(self.parent_id)
+        if not omit_mcparticle:
+            text += str(self.track_id) + ", "
+            text += str(self.parent_id)
 
         text += "\n"
 
@@ -159,6 +163,8 @@ if __name__ == '__main__':
     parser.add_argument("--seed", help="Seed for random number generator", type=int)
     parser.add_argument("--steps", help="Number of steps along the track in the sensor", type=int)
     parser.add_argument("--scantree", help="Scan generated ROOT tree and print sections", action="store_true")
+    parser.add_argument("--omit-time", help="Omit generation of timestamps", action="store_true")
+    parser.add_argument("--omit-mcparticle", help="Omit generation of Monte Carlo particles", action="store_true")
     args = parser.parse_args()
 
     # Seed PRNG with provided seed
@@ -235,15 +241,17 @@ if __name__ == '__main__':
         # Create the branches
         eventBranch = tree.Branch("event", eventArr, "event/I")
         energyBranch = tree.Branch("energy", energyArr, "energy/D")
-        timeBranch = tree.Branch("time", timeArr, "time/D")
+        if not args.omit_time:
+            timeBranch = tree.Branch("time", timeArr, "time/D")
         positionxBranch = tree.Branch("position.x", positionxArr, "position.x/D")
         positionyBranch = tree.Branch("position.y", positionyArr, "position.y/D")
         positionzBranch = tree.Branch("position.z", positionzArr, "position.z/D")
         # The char array for the detector branch is a bit more tricky, since you have to give it the length of the name
         detectorBranch = tree.Branch("detector", detectorArr[0], "detector["+str(len(detectorArr[0]))+"]/C")
         pdg_codeBranch = tree.Branch("pdg_code", pdg_codeArr, "pdg_code/I")
-        track_idBranch = tree.Branch("track_id", track_idArr, "track_id/I")
-        parent_idBranch = tree.Branch("parent_id", parent_idArr, "parent_id/I")
+        if not args.omit_mcparticle:
+            track_idBranch = tree.Branch("track_id", track_idArr, "track_id/I")
+            parent_idBranch = tree.Branch("parent_id", parent_idArr, "parent_id/I")
 
 
     if writeCSV:
@@ -268,12 +276,12 @@ if __name__ == '__main__':
 
             if writeROOT:
                 # Fill the arrays and then write them to the tree
-                deposit.fillDepositionArrays()
+                deposit.fillDepositionArrays(args.omit_time, args.omit_mcparticle)
                 tree.Fill()
 
             if writeCSV:
                 # extract the text lines for the individual depositions
-                text = deposit.getDepositionText()
+                text = deposit.getDepositionText(args.omit_time, args.omit_mcparticle)
                 fout.write(text)
 
 
