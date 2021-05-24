@@ -117,46 +117,49 @@ MACRO(ALLPIX_MODULE_SOURCES name)
     ENDIF()
 ENDMACRO()
 
-# Retrieve regular expressions for test output matching from the test's configuration file
-FUNCTION(get_test_regex inp output_pass output_fail)
-    IF(NOT OUTPUT_PASS_)
-        FILE(STRINGS ${inp} OUTPUT_PASS_ REGEX "#PASS ")
-    ENDIF()
-    IF(NOT OUTPUT_FAIL_)
-        FILE(STRINGS ${inp} OUTPUT_FAIL_ REGEX "#FAIL ")
-    ENDIF()
-
-    # Check for number of arguments - should only be one:
-    LIST(LENGTH OUTPUT_PASS_ listcount_pass)
-    LIST(LENGTH OUTPUT_FAIL_ listcount_fail)
-    IF(listcount_pass GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one PASS expressions defined in test ${inp}")
-    ENDIF()
-    IF(listcount_fail GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one FAIL expressions defined in test ${inp}")
-    ENDIF()
-
-    # Escape possible regex patterns in the expected output:
-    ESCAPE_REGEX("${OUTPUT_PASS_}" OUTPUT_PASS_)
-    ESCAPE_REGEX("${OUTPUT_FAIL_}" OUTPUT_FAIL_)
-
-    SET(${output_pass}
-        "${OUTPUT_PASS_}"
-        PARENT_SCOPE)
-    SET(${output_fail}
-        "${OUTPUT_FAIL_}"
-        PARENT_SCOPE)
-ENDFUNCTION()
-
 # Escape regular expressions in the match strings of tests
 FUNCTION(escape_regex inp output)
     # Escape possible regex patterns in the expected output:
     STRING(REPLACE "#PASS " "" _TMP_STR "${inp}")
     STRING(REPLACE "#FAIL " "" _TMP_STR "${_TMP_STR}")
     STRING(REGEX REPLACE "([][+.*()^])" "\\\\\\1" _TMP_STR "${_TMP_STR}")
+    STRING(REGEX REPLACE "(\\\\n)" "[\\\\\\\\\r\\\\\\\\\n\\\\\\\\\t ]*" _TMP_STR "${_TMP_STR}")
     SET(${output}
         "${_TMP_STR}"
         PARENT_SCOPE)
+ENDFUNCTION()
+
+# Add default fail conditions if not present as pass conditions
+FUNCTION(add_default_fail_conditions test)
+    GET_PROPERTY(
+        EXPRESSIONS_FAIL
+        TEST ${name}
+        PROPERTY FAIL_REGULAR_EXPRESSION)
+    IF(NOT EXPRESSIONS_FAIL)
+        # Unless they are part of the pass condition, no WARNING, ERROR or FATAL logs should appear:
+        GET_PROPERTY(
+            EXPRESSIONS_PASS
+            TEST ${name}
+            PROPERTY PASS_REGULAR_EXPRESSION)
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "WARNING")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "WARNING")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "ERROR")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "ERROR")
+        ENDIF()
+        IF(NOT "${EXPRESSIONS_PASS}" MATCHES "FATAL")
+            SET_PROPERTY(
+                TEST ${name}
+                APPEND
+                PROPERTY FAIL_REGULAR_EXPRESSION "FATAL")
+        ENDIF()
+    ENDIF()
 ENDFUNCTION()
 
 # Add a test to the unit test suite and parse its configuration file for options
@@ -187,13 +190,33 @@ FUNCTION(add_allpix_test test name)
                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}")
 
     # Parse configuration file for pass/fail conditions:
-    GET_TEST_REGEX(${test} EXPRESSIONS_PASS EXPRESSIONS_FAIL)
-    IF(EXPRESSIONS_PASS)
-        SET_PROPERTY(TEST ${name} PROPERTY PASS_REGULAR_EXPRESSION "${EXPRESSIONS_PASS}")
+    FILE(STRINGS ${test} PASS_LST_ REGEX "#PASS ")
+    FILE(STRINGS ${test} FAIL_LST_ REGEX "#FAIL ")
+
+    # Check for number of arguments - should only be one:
+    LIST(LENGTH PASS_LST_ listcount_pass)
+    IF(listcount_pass GREATER 1)
+        MESSAGE(FATAL_ERROR "More than one PASS expressions defined in test ${inp}")
     ENDIF()
-    IF(EXPRESSIONS_FAIL)
-        SET_PROPERTY(TEST ${name} PROPERTY FAIL_REGULAR_EXPRESSION "${EXPRESSIONS_FAIL}")
-    ENDIF()
+
+    # Escape possible regex patterns in the expected output:
+    FOREACH(pass ${PASS_LST_})
+        ESCAPE_REGEX("${pass}" pass)
+        SET_PROPERTY(
+            TEST ${name}
+            APPEND
+            PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
+    ENDFOREACH()
+    FOREACH(fail ${FAIL_LST_})
+        ESCAPE_REGEX("${fail}" fail)
+        SET_PROPERTY(
+            TEST ${name}
+            APPEND
+            PROPERTY FAIL_REGULAR_EXPRESSION "${fail}")
+    ENDFOREACH()
+
+    # Add default fail conditions
+    ADD_DEFAULT_FAIL_CONDITIONS(${name})
 
     # Some tests might depend on others:
     FILE(STRINGS ${test} DEPENDENCY REGEX "#DEPENDS ")
