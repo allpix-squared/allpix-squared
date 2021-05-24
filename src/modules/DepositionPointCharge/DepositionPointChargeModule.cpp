@@ -27,7 +27,7 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     // Allow to use similar syntax as in DepositionGeant4:
     config_.setAlias("position", "source_position");

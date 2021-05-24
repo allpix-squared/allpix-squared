@@ -57,7 +57,7 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");

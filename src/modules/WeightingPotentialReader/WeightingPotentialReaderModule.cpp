@@ -32,7 +32,7 @@ WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& co
                                                                std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 }
 
 void WeightingPotentialReaderModule::initialize() {

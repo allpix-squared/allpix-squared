@@ -24,7 +24,7 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
                                              const std::shared_ptr<Detector>& detector)
     : Module(config, detector), messenger_(messenger), detector_(detector) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
 

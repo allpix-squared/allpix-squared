@@ -158,7 +158,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
     if(!output_pulsegraphs_) {
-        enable_multithreading();
+        allow_multithreading();
     } else {
         LOG(WARNING) << "Per-event pulse graphs requested, disabling parallel event processing";
     }

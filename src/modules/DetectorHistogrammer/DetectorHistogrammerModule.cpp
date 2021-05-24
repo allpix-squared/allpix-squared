@@ -30,7 +30,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     using namespace ROOT::Math;
 
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     // Bind messages
     messenger_->bindSingle<PixelHitMessage>(this);

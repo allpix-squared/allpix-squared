@@ -39,7 +39,7 @@ using namespace allpix;
 
 GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 }
 
 void GDMLOutputWriterModule::initialize() {

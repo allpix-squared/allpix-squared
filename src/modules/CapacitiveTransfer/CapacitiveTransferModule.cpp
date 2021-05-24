@@ -32,7 +32,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
                                                    std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);

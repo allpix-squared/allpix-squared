@@ -21,7 +21,7 @@ using namespace allpix;
 DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : SequentialModule(config), geo_manager_(geo_manager), messenger_(messenger) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
     config_.setDefault<double>("fano_factor", 0.115);

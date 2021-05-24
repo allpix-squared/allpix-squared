@@ -26,7 +26,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)),
       top_z_(detector_->getModel()->getSensorSize().z() / 2) {
     // Enable multithreading of this module if multithreading is enabled
-    enable_multithreading();
+    allow_multithreading();
 
     // Save detector model
     model_ = detector_->getModel();

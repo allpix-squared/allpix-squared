@@ -178,7 +178,7 @@ namespace allpix {
         /**
          * @brief Enable multithreading for this module
          */
-        void enable_multithreading();
+        void allow_multithreading();
 
         /**
          * @brief Get the module configuration for internal use

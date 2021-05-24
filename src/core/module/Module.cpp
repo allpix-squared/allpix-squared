@@ -157,7 +157,7 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
 bool Module::multithreadingEnabled() const {
     return multithreading_;
 }
-void Module::enable_multithreading() {
+void Module::allow_multithreading() {
     multithreading_ = true;
 }
 void Module::set_multithreading(bool multithreading) {
