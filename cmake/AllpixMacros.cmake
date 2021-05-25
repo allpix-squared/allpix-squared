@@ -130,7 +130,7 @@ FUNCTION(escape_regex inp output)
 ENDFUNCTION()
 
 # Add default fail conditions if not present as pass conditions
-FUNCTION(add_default_fail_conditions test)
+FUNCTION(add_default_fail_conditions name)
     GET_PROPERTY(
         EXPRESSIONS_FAIL
         TEST ${name}
