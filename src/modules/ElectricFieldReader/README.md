@@ -45,7 +45,7 @@ Additional plots comprise the individual field vector components as well as the 
 
 #### Parameters for model `parabolic`
 * `minimum_field` : Value of the electric field in the minimum.
-* `minimum_position` : Position of the electric field minimum along `z`, in local coordinates.
+* `minimum_position` : Position of the electric field minimum along `z`, in local coordinates. Required to be located within the sensor volume.
 * `maximum_field` : Value of the electric field at the electrode.
 
 #### Parameters for model `mesh`
