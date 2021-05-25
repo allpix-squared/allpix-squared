@@ -101,13 +101,13 @@ field_function = "[0]*z*z + [1]"
 field_parameters = 12500V/mm/mm/mm, 5000V/cm
 ```
 
-And finally, a three-dimensional custom field is defined with varying number of parameters per equation:
+And finally, a three-dimensional custom field is defined with varying number of parameters per equation and using different coordinates for the three dimensions of the field vector:
 
 ```ini
 [ElectricFieldReader]
 model = "custom"
 # Parabolic in x and y, linear in z:
-field_function = "[0]*x*x","[0]*y*y","[0]*z + [1]"
+field_function = "[0]*x*y","[0]*x*y","[0]*z + [1]"
 field_parameters = 12500V/mm/mm/mm, 12500V/mm/mm/mm, 6000V/cm/cm, 5000V/cm
 ```
 
