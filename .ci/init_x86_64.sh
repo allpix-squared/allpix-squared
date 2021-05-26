@@ -73,7 +73,7 @@ if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
         COMPILER_VERSION="clang120"
     else
-        COMPILER_VERSION="clang10"
+        COMPILER_VERSION="clang11"
     fi
     echo "Compiler type set to LLVM, version ${COMPILER_VERSION}."
 fi
