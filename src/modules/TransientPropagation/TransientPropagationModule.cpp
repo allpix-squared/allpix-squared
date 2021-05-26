@@ -379,18 +379,18 @@ TransientPropagationModule::propagate(Event* event,
         // Find the nearest pixel - before and after the step
         auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        auto last_xpixel = static_cast<int>(std::round(last_position.x() / model_->getPixelSize().x()));
+        auto last_ypixel = static_cast<int>(std::round(last_position.y() / model_->getPixelSize().y()));
+        if(last_xpixel != xpixel || last_ypixel != ypixel) {
+            LOG(TRACE) << "Carrier crossed boundary from pixel "
+                       << Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel))
+                       << " to pixel " << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+        }
         LOG(TRACE) << "Moving carriers below pixel "
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(initial_time + runge_kutta.getTime(), "ns");
-        auto last_xpixel = static_cast<int>(std::round(last_position.x() / model_->getPixelSize().x()));
-        auto last_ypixel = static_cast<int>(std::round(last_position.y() / model_->getPixelSize().y()));
-        if(last_xpixel != xpixel || last_ypixel != ypixel) {
-            LOG(TRACE) << "Carrier crossed boundary from pixel "
-                       << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " to pixel "
-                       << Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
-        }
 
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
