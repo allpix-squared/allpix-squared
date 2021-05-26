@@ -394,11 +394,11 @@ TransientPropagationModule::propagate(Event* event,
 
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
-        // only jump "into" a pixel but never "out" in case of a 1x1 induction matrix.
-        int x_lower = std::min(xpixel - matrix_.x() / 2, last_xpixel);
-        int x_higher = std::max(xpixel + matrix_.x() / 2, last_xpixel);
-        int y_lower = std::min(ypixel - matrix_.y() / 2, last_ypixel);
-        int y_higher = std::max(ypixel + matrix_.y() / 2, last_ypixel);
+        // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
+        int x_lower = std::min(xpixel, last_xpixel) - matrix_.x() / 2;
+        int x_higher = std::max(xpixel, last_xpixel) + matrix_.x() / 2;
+        int y_lower = std::min(ypixel, last_ypixel) - matrix_.y() / 2;
+        int y_higher = std::max(ypixel, last_ypixel) + matrix_.y() / 2;
 
         // Loop over NxN pixels:
         for(int x = x_lower; x <= x_higher; x++) {
