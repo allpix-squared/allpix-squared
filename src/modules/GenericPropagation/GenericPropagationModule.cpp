@@ -796,6 +796,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                    survival(random_generator),
                                    timestep);
 
+        LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
+                   << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
+                   << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
+                   << (is_alive ? "" : ", recombined");
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
 
