@@ -302,6 +302,13 @@ FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double
         // Check if electric field matches chip
         check_detector_match(field_data.getSize(), thickness_domain, field_scale);
 
+        // Warn at field values larger than 100kV/cm / 1 MV/mm. Simple lookup per vector component, not total field magnitude
+        auto max_field = *std::max_element(std::begin(*field_data.getData()), std::end(*field_data.getData()));
+        if(max_field > 1) {
+            LOG(WARNING) << "Very high electric field of " << Units::display(max_field, {"MV/cm", "kV/cm"})
+                         << ", this is most likely not desired.";
+        }
+
         LOG(INFO) << "Set electric field with " << field_data.getDimensions().at(0) << "x"
                   << field_data.getDimensions().at(1) << "x" << field_data.getDimensions().at(2) << " cells";
 
