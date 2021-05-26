@@ -229,13 +229,14 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                             "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
                         solids_.push_back(implant_box);
 
-                        // Calculate transformation for the solid
-                        // FIXME: implant offset from pixel center currently not implemented
-                        G4Transform3D implant_transform(
-                            G4RotationMatrix(),
-                            G4ThreeVector(-model->getGridSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x(),
-                                          -model->getGridSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y(),
-                                          (model->getSensorSize().z() - implants.z()) / 2.0));
+                    // Calculate transformation for the solid including possible offsets from pixel center
+                    auto offset = model->getImplantOffset();
+                    G4Transform3D implant_transform(
+                        G4RotationMatrix(),
+                        G4ThreeVector(
+                            -model->getGridSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
+                            -model->getGridSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
+                            (model->getSensorSize().z() - implants.z()) / 2.0));
 
                         // Add the new solid to the MultiUnion:
                         implant_union->AddNode(*implant_box.get(), implant_transform);
