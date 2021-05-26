@@ -274,9 +274,9 @@ ADD_RUNTIME_DEP(thisroot.sh)
 ###################################
 
 # Set the clang-format version required by the CI for correct formatting:
-SET(CLANG_FORMAT_VERSION "10")
+SET(CLANG_FORMAT_VERSION "11")
 # Set the clang-tidy version of the linter required by the CI:
-SET(CLANG_TIDY_VERSION "10")
+SET(CLANG_TIDY_VERSION "11")
 
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(
