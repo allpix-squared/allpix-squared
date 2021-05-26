@@ -226,7 +226,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                     for(int npix_y = 0; npix_y < model->getNPixels().y(); npix_y++) {
                         // FIXME: We should extend the implant and shift it to avoid fake surfaces
                         auto implant_box = std::make_shared<G4Box>(
-                            "implant_box", implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
+                            "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
                         solids_.push_back(implant_box);
 
                         // Calculate transformation for the solid
@@ -271,7 +271,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
                 G4Transform3D transform(G4RotationMatrix(), G4ThreeVector(0, 0, 0));
                 auto subtraction_solid = std::make_shared<G4SubtractionSolid>(
-                    "sensor_implant_subtraction", sensor_box.get(), implant_union.get(), transform);
+                    "sensor_implant_subtraction_" + name, sensor_box.get(), implant_union.get(), transform);
                 solids_.push_back(subtraction_solid);
             }
         }
