@@ -401,9 +401,9 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     // set z axis tile
     histogram->GetZaxis()->SetTitle("field strength (V/cm)");
-    histogram_x->GetZaxis()->SetTitle("#vec{x} field (V/cm)");
-    histogram_y->GetZaxis()->SetTitle("#vec{y} field (V/cm)");
-    histogram_z->GetZaxis()->SetTitle("#vec{z} field (V/cm)");
+    histogram_x->GetZaxis()->SetTitle("field (V/cm)");
+    histogram_y->GetZaxis()->SetTitle("field (V/cm)");
+    histogram_z->GetZaxis()->SetTitle("field (V/cm)");
     // Find the electric field at every index
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
@@ -450,7 +450,7 @@ void ElectricFieldReaderModule::create_output_plots() {
                 histogram_z->GetYaxis()->SetTitle("y (mm)");
             }
 
-            // Get field strength from detector - dircectly convert to double to fill root histograms
+            // Get field strength from detector - directly convert to double to fill root histograms
             auto field = detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z));
             auto field_strength = static_cast<double>(Units::convert(std::sqrt(field.Mag2()), "V/cm"));
             auto field_x_strength = static_cast<double>(Units::convert(field.x(), "V/cm"));
