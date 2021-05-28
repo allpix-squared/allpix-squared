@@ -399,6 +399,11 @@ void ElectricFieldReaderModule::create_output_plots() {
         z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
     }
 
+    // set z axis tile
+    histogram->GetZaxis()->SetTitle("field strength (V/cm)");
+    histogram_x->GetZaxis()->SetTitle("#vec{x} field (V/cm)");
+    histogram_y->GetZaxis()->SetTitle("#vec{y} field (V/cm)");
+    histogram_z->GetZaxis()->SetTitle("#vec{z} field (V/cm)");
     // Find the electric field at every index
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
