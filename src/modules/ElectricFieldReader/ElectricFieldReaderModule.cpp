@@ -399,6 +399,11 @@ void ElectricFieldReaderModule::create_output_plots() {
         z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
     }
 
+    // set z axis tile
+    histogram->GetZaxis()->SetTitle("field strength (V/cm)");
+    histogram_x->GetZaxis()->SetTitle("field (V/cm)");
+    histogram_y->GetZaxis()->SetTitle("field (V/cm)");
+    histogram_z->GetZaxis()->SetTitle("field (V/cm)");
     // Find the electric field at every index
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
@@ -445,30 +450,32 @@ void ElectricFieldReaderModule::create_output_plots() {
                 histogram_z->GetYaxis()->SetTitle("y (mm)");
             }
 
-            // Get field strength from detector
+            // Get field strength from detector - directly convert to double to fill root histograms
             auto field = detector_->getElectricField(ROOT::Math::XYZPoint(x, y, z));
-            auto field_strength = Units::convert(std::sqrt(field.Mag2()), "V/cm");
-            auto field_z_strength = Units::convert(field.z(), "V/cm");
+            auto field_strength = static_cast<double>(Units::convert(std::sqrt(field.Mag2()), "V/cm"));
+            auto field_x_strength = static_cast<double>(Units::convert(field.x(), "V/cm"));
+            auto field_y_strength = static_cast<double>(Units::convert(field.y(), "V/cm"));
+            auto field_z_strength = static_cast<double>(Units::convert(field.z(), "V/cm"));
             // Fill the main histogram
             if(project == 'x') {
-                histogram->Fill(y, z, static_cast<double>(field_strength));
-                histogram_x->Fill(y, z, field.x());
-                histogram_y->Fill(y, z, field.y());
-                histogram_z->Fill(y, z, field.z());
+                histogram->Fill(y, z, field_strength);
+                histogram_x->Fill(y, z, field_x_strength);
+                histogram_y->Fill(y, z, field_y_strength);
+                histogram_z->Fill(y, z, field_z_strength);
             } else if(project == 'y') {
-                histogram->Fill(x, z, static_cast<double>(field_strength));
-                histogram_x->Fill(x, z, field.x());
-                histogram_y->Fill(x, z, field.y());
-                histogram_z->Fill(x, z, field.z());
+                histogram->Fill(x, z, field_strength);
+                histogram_x->Fill(x, z, field_x_strength);
+                histogram_y->Fill(x, z, field_y_strength);
+                histogram_z->Fill(x, z, field_z_strength);
             } else {
-                histogram->Fill(x, y, static_cast<double>(field_strength));
-                histogram_x->Fill(x, y, field.x());
-                histogram_y->Fill(x, y, field.y());
-                histogram_z->Fill(x, y, field.z());
+                histogram->Fill(x, y, field_strength);
+                histogram_x->Fill(x, y, field_x_strength);
+                histogram_y->Fill(x, y, field_y_strength);
+                histogram_z->Fill(x, y, field_z_strength);
             }
             // Fill the 1d histogram
             if(j == steps / 2) {
-                histogram1D->Fill(z, static_cast<double>(field_z_strength));
+                histogram1D->Fill(z, field_z_strength);
             }
         }
     }
