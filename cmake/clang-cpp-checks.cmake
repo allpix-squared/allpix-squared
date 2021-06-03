@@ -1,15 +1,5 @@
 # Additional targets to perform clang-format/clang-tidy/cppcheck
 
-# Set the source files to clang-format (FIXME: determine this better)
-FILE(
-    GLOB_RECURSE
-    CHECK_CXX_SOURCE_FILES
-    src/*.[tch]pp
-    src/*.h
-    tools/*.C
-    tools/*.[tch]pp
-    tools/*.h)
-
 # Check if the git hooks are installed and upt-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
     SET(HOOK_MISSING OFF)

@@ -278,7 +278,26 @@ SET(CLANG_FORMAT_VERSION "10")
 # Set the clang-tidy version of the linter required by the CI:
 SET(CLANG_TIDY_VERSION "10")
 
+# Set the source files to clang-format (FIXME: determine this better)
+FILE(
+    GLOB_RECURSE
+    CHECK_CXX_SOURCE_FILES
+    src/*.[tch]pp
+    src/*.h
+    tools/*.C
+    tools/*.[tch]pp
+    tools/*.h)
+
 INCLUDE("cmake/clang-cpp-checks.cmake")
+
+FILE(
+    GLOB_RECURSE CHECK_CMAKE_FILES
+    LIST_DIRECTORIES false
+    RELATIVE ${PROJECT_SOURCE_DIR}
+    "cmake/*.cmake" "CMakeLists.txt")
+LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/FindPQXX.cmake"
+     "cmake/CodeCoverage.cmake")
+
 INCLUDE("cmake/cmake-checks.cmake")
 
 ###################################

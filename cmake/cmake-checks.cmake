@@ -1,13 +1,5 @@
 # Additional targets to perform cmake-lint/cmake-format
 
-FILE(
-    GLOB_RECURSE CHECK_CMAKE_FILES
-    LIST_DIRECTORIES false
-    RELATIVE ${PROJECT_SOURCE_DIR}
-    "cmake/*.cmake" "CMakeLists.txt")
-LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/FindPQXX.cmake"
-     "cmake/CodeCoverage.cmake")
-
 FIND_PROGRAM(CMAKELINT "cmake-lint")
 IF(CMAKELINT)
     ADD_CUSTOM_TARGET(
