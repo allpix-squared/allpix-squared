@@ -49,6 +49,16 @@ namespace allpix {
             AccessMarker() = default;
 
             /**
+             * @brief Explicit copy constructor to allow copying of the map keys
+             */
+            AccessMarker(const AccessMarker& rhs);
+
+            /**
+             * @brief Explicit copy assignment operator to allow copying of the map keys
+             */
+            AccessMarker& operator=(const AccessMarker& rhs);
+
+            /**
              * @brief Method to register a key for a new access marker
              * @param key Key of the marker
              * @warning This operation is not thread-safe
@@ -61,7 +71,7 @@ namespace allpix {
              * @note This is an atomic operation and thread-safe.
              * @throws std::out_of_range if the key has not been registered beforehand
              */
-            void markUsed(const std::string& key) { *markers_.at(key) = true; };
+            void markUsed(const std::string& key) { markers_.at(key).store(true); };
 
             /**
              * @brief Method to retrieve access status of an existing marker.
@@ -69,10 +79,10 @@ namespace allpix {
              * @note This is an atomic operation and thread-safe.
              * @throws std::out_of_range if the key has not been registered beforehand
              */
-            bool isUsed(const std::string& key) { return markers_.at(key)->load(); }
+            bool isUsed(const std::string& key) { return markers_.at(key).load(); }
 
         private:
-            std::map<std::string, std::shared_ptr<std::atomic<bool>>> markers_;
+            std::map<std::string, std::atomic<bool>> markers_;
         };
 
     public:
