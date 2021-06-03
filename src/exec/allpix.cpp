@@ -76,6 +76,7 @@ int main(int argc, const char* argv[]) {
 
     // Install abort handler (CTRL+\)
     std::signal(SIGQUIT, abort_handler);
+    std::signal(SIGABRT, abort_handler);
 
     // Install interrupt handler (CTRL+C)
     std::signal(SIGINT, interrupt_handler);
