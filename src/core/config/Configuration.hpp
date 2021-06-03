@@ -13,7 +13,6 @@
 #include <atomic>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -52,7 +51,7 @@ namespace allpix {
             /**
              * @brief Method to register a key for a new access marker
              * @param key Key of the marker
-             * @note This operation locks a mutex for the configuration object
+             * @warning This operation is not thread-safe
              */
             void registerMarker(const std::string& key);
 
