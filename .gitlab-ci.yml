@@ -11,6 +11,7 @@ stages:
     - packaging
     - deployment
 
+
 ############################
 # General target templates #
 ############################
@@ -27,6 +28,15 @@ stages:
         - export COMPILER_TYPE="gcc"
         - source etc/scripts/setup_lxplus.sh
         - mkdir -p build/ && cd build/
+
+.macos:
+    tags:
+        - mac
+    before_script:
+        - export COMPILER_TYPE="llvm"
+        - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
+
 
 #######################
 # Compilation targets #
@@ -67,8 +77,6 @@ cmp:docker:
         - .compile
         - .docker
     script:
-        - mkdir build
-        - cd build
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
         - make install
@@ -94,15 +102,11 @@ cmp:cc8-gcc:
         - export COMPILER_TYPE="gcc"
         - source .ci/init_x86_64.sh
 
-cmp:mac1015-clang:
-    extends: .compile
-    tags:
-        - mac
-    before_script:
-        - source .ci/init_x86_64.sh
+cmp:macos-clang:
+    extends:
+        - .compile
+        - .macos
     script:
-        - mkdir build
-        - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja -k0
         - ninja install
@@ -127,16 +131,14 @@ cmp:mac1015-clang:
 fmt:cc7-llvm-format:
     extends: .format
     script:
-        - mkdir -p build
-        - cd build/
+        - mkdir -p build && cd build/
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-format
 
 fmt:cc7-llvm-lint:
     extends: .format
     script:
-        - mkdir -p build
-        - cd build/
+        - mkdir -p build && cd build/
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-lint
 
@@ -157,9 +159,8 @@ fmt:coverage:
         - export PATH=$PATH:/home/sftnight/.local/bin
     script:
         - pip install --trusted-host=pypi.org --user gcovr
-        - mkdir build
-        - cd build
         - export CCACHE_DIR=`pwd`/ccache
+        - mkdir -p build && cd build/
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
         - ninja -k0
         - ninja install
@@ -181,13 +182,13 @@ fmt:coverity:
         SCHEDULE_TAG: "coverity"
     script:
         - wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
-        - mkdir build
-        - cd build
+        - mkdir -p build && cd build/
         - tar xfz /tmp/cov-analysis-linux64.tgz
         - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
         - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
         - tar cfz cov-int.tar.gz cov-int
         - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
+
 
 ##############
 # Unit tests #
@@ -199,6 +200,7 @@ fmt:coverity:
         - docker
     before_script:
         - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
     after_script:
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
@@ -213,18 +215,15 @@ fmt:coverity:
 .testmod:
     extends: .test
     script:
-        - cd build/
         - ctest -R modules/ --no-compress-output --test-action Test -j4
 
 .testcore:
     extends: .test
     script:
-        - cd build/
         - ctest -R core/ --no-compress-output --test-action Test -j4
 
 
 # Test if examples still execute fine:
-
 examples:
     extends: .test
     needs:
@@ -236,7 +235,6 @@ examples:
         - ctest -R examples/ --no-compress-output --test-action Test -j4
 
 # LXPLUS
-
 mod:lxplus-gcc:
     extends:
         - .testmod
@@ -312,7 +310,6 @@ core:cc7-llvm:
         - source .ci/init_x86_64.sh
 
 # CentOS 8
-
 mod:cc8-gcc:
     extends: .testmod
     needs:
@@ -327,22 +324,21 @@ core:cc8-gcc:
           artifacts: true
     image: gitlab-registry.cern.ch/sft/docker/centos8:latest
 
-# Mac OS X
-
-mod:mac1015-clang:
-    extends: .testmod
-    tags:
-        - mac
+# Mac OS
+mod:macos-clang:
+    extends:
+        - .testmod
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
 
-core:mac1015-clang:
-    extends: .testcore
-    tags:
-        - mac
+core:macos-clang:
+    extends:
+        - .testcore
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
 
 
@@ -352,7 +348,6 @@ core:mac1015-clang:
 
 # Performance tests are only run on Mac OS X and on a native CentOS7 installation. Otherwise we have no control
 # about how many CI jobs are performed on the same machine in parallel via the hypervisor.
-
 .testperf:
     stage: performance
     tags:
@@ -364,7 +359,6 @@ core:mac1015-clang:
     retry: 1
 
 # CentOS7
-
 perf:cc7-gcc:
     extends: .testperf
     needs:
@@ -385,15 +379,15 @@ perf:cc7-gcc:
         - export COMPILER_TYPE="llvm"
         - source .ci/init_x86_64.sh
 
-# Mac OS X
+# Mac OS
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:mac1015-clang:
-    extends: .testperf
+.perf:macos-clang:
+    extends:
+        - .testperf
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
-    before_script:
-        - source .ci/init_x86_64.sh
 
 
 #############################
@@ -410,7 +404,6 @@ perf:cc7-gcc:
         paths:
             - public
         expire_in: 24 hour
-
 
 # Compile Doxygen reference
 cmp:doxygen:
@@ -445,6 +438,7 @@ cmp:usermanual:
         - mv usermanual/usermanual/html/css ../public/usermanual/usermanual/html/
         - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
         - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
+
 
 ################################
 # Packaging of Binary Tarballs #
@@ -497,15 +491,13 @@ pkg:cc8-gcc:
     before_script:
         - export COMPILER_TYPE="gcc"
 
-pkg:mac1015-clang:
-    extends: .pack
-    tags:
-        - mac
+pkg:macos-clang:
+    extends:
+        - .pack
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="llvm"
 
 
 ############################
@@ -548,7 +540,7 @@ deploy-eos:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:cc8-gcc
-        - pkg:mac1015-clang
+        - pkg:macos-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
@@ -563,7 +555,7 @@ deploy-cvmfs:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:cc8-gcc
-        - pkg:mac1015-clang
+        - pkg:macos-clang
     tags:
         - cvmfs-deploy
     only:
