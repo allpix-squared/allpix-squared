@@ -11,6 +11,23 @@ stages:
     - packaging
     - deployment
 
+############################
+# General target templates #
+############################
+
+.docker:
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+    before_script:
+        - mkdir -p build/ && cd build/
+
+.lxplus:
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    before_script:
+        - export COMPILER_TYPE="gcc"
+        - source etc/scripts/setup_lxplus.sh
+        - mkdir -p build/ && cd build/
+
 #######################
 # Compilation targets #
 #######################
@@ -37,22 +54,18 @@ stages:
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source etc/scripts/setup_lxplus.sh
+    extends:
+        - .compile
+        - .lxplus
     script:
-        - mkdir build
-        - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja -k0
         - ninja install
 
 cmp:docker:
-    extends: .compile
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+    extends:
+        - .compile
+        - .docker
     script:
         - mkdir build
         - cd build
@@ -104,6 +117,8 @@ cmp:mac1015-clang:
     stage: formatting
     tags:
         - docker
+    needs: []
+    dependencies: []
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     before_script:
         - export COMPILER_TYPE="llvm"
@@ -111,8 +126,6 @@ cmp:mac1015-clang:
 
 fmt:cc7-llvm-format:
     extends: .format
-    needs: []
-    dependencies: []
     script:
         - mkdir -p build
         - cd build/
@@ -121,8 +134,6 @@ fmt:cc7-llvm-format:
 
 fmt:cc7-llvm-lint:
     extends: .format
-    needs: []
-    dependencies: []
     script:
         - mkdir -p build
         - cd build/
@@ -131,13 +142,8 @@ fmt:cc7-llvm-lint:
 
 fmt:cmake-lint:
     extends: .format
-    needs: []
-    dependencies: []
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
-        - export PATH=$PATH:/home/sftnight/.local/bin
     script:
+        - export PATH=$PATH:~/.local/bin
         - pip install --trusted-host=pypi.org --user cmakelang
         - mkdir build && cd build/
         - cmake -GNinja ..
@@ -145,8 +151,6 @@ fmt:cmake-lint:
 
 fmt:coverage:
     extends: .format
-    needs: []
-    dependencies: []
     before_script:
         - export COMPILER_TYPE="gcc"
         - source .ci/init_x86_64.sh
@@ -163,8 +167,6 @@ fmt:coverage:
 
 fmt:codespell:
     extends: .format
-    needs: []
-    dependencies: []
     script:
         - export PATH=~/.local/bin:$PATH
         - pip install --trusted-host=pypi.org --user codespell
@@ -172,8 +174,6 @@ fmt:codespell:
 
 fmt:coverity:
     extends: .format
-    needs: []
-    dependencies: []
     only:
         - coverity
         - schedules
@@ -238,41 +238,43 @@ examples:
 # LXPLUS
 
 mod:lxplus-gcc:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .lxplus
     needs:
         - job: cmp:lxplus-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
 
 core:lxplus-gcc:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .lxplus
     needs:
         - job: cmp:lxplus-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
 
 # Ubuntu Docker image
 mod:docker:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .docker
     needs:
         - job: cmp:docker
           artifacts: true
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    before_script: []
+    script:
+        - cd build/
+        - make test_modules
 
 core:docker:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .docker
     needs:
         - job: cmp:docker
           artifacts: true
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    before_script: []
+    script:
+        - cd build/
+        - make test_core
 
 # CentOS 7
 mod:cc7-gcc:
