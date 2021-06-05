@@ -287,7 +287,18 @@ FILE(
     tools/*.C
     tools/*.[tch]pp
     tools/*.h)
+
 INCLUDE("cmake/clang-cpp-checks.cmake")
+
+FILE(
+    GLOB_RECURSE CHECK_CMAKE_FILES
+    LIST_DIRECTORIES false
+    RELATIVE ${PROJECT_SOURCE_DIR}
+    "cmake/*.cmake" "CMakeLists.txt")
+LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/FindPQXX.cmake"
+     "cmake/CodeCoverage.cmake")
+
+INCLUDE("cmake/cmake-checks.cmake")
 
 ###################################
 # Setup tests for allpix          #
