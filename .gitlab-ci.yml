@@ -11,6 +11,51 @@ stages:
     - packaging
     - deployment
 
+
+############################
+# General target templates #
+############################
+
+.centos7:
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    variables:
+        COMPILER_TYPE: "gcc"
+    before_script:
+        - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
+
+.centos8:
+    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    variables:
+        COMPILER_TYPE: "gcc"
+    before_script:
+        - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
+
+.docker:
+    image:
+        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+    before_script:
+        - mkdir -p build/ && cd build/
+
+.lxplus:
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    variables:
+        COMPILER_TYPE: "gcc"
+    before_script:
+        - source etc/scripts/setup_lxplus.sh
+        - mkdir -p build/ && cd build/
+
+.macos:
+    tags:
+        - mac
+    variables:
+        COMPILER_TYPE: "llvm"
+    before_script:
+        - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
+
+
 #######################
 # Compilation targets #
 #######################
@@ -22,8 +67,6 @@ stages:
     tags:
         - docker
     script:
-        - mkdir build
-        - cd build
         - export CCACHE_DIR=`pwd`/ccache
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
         - ninja -k0
@@ -37,59 +80,45 @@ stages:
 
 # Ensure that our LXPLUS setup script is functional:
 cmp:lxplus-gcc:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source etc/scripts/setup_lxplus.sh
+    extends:
+        - .compile
+        - .lxplus
     script:
-        - mkdir build
-        - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja -k0
         - ninja install
 
 cmp:docker:
-    extends: .compile
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+    extends:
+        - .compile
+        - .docker
     script:
-        - mkdir build
-        - cd build
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
         - make install
 
 cmp:cc7-gcc:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
+    extends:
+        - .compile
+        - .centos7
 
 cmp:cc7-llvm:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .ci/init_x86_64.sh
+    extends:
+        - .compile
+        - .centos7
+    variables:
+        COMPILER_TYPE: "llvm"
 
 cmp:cc8-gcc:
-    extends: .compile
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
+    extends:
+        - .compile
+        - .centos8
 
-cmp:mac1015-clang:
-    extends: .compile
-    tags:
-        - mac
-    before_script:
-        - source .ci/init_x86_64.sh
+cmp:macos-clang:
+    extends:
+        - .compile
+        - .macos
     script:
-        - mkdir build
-        - cd build
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
         - ninja -k0
         - ninja install
@@ -104,57 +133,39 @@ cmp:mac1015-clang:
     stage: formatting
     tags:
         - docker
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .ci/init_x86_64.sh
+    needs: []
+    dependencies: []
+    extends: .centos7
+    variables:
+        COMPILER_TYPE: "llvm"
 
 fmt:cc7-llvm-format:
     extends: .format
-    needs: []
-    dependencies: []
     script:
-        - mkdir -p build
-        - cd build/
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-format
 
 fmt:cc7-llvm-lint:
     extends: .format
-    needs: []
-    dependencies: []
     script:
-        - mkdir -p build
-        - cd build/
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-lint
 
 fmt:cmake-lint:
     extends: .format
-    needs: []
-    dependencies: []
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
-        - export PATH=$PATH:/home/sftnight/.local/bin
     script:
+        - export PATH=$PATH:~/.local/bin
         - pip install --trusted-host=pypi.org --user cmakelang
-        - mkdir build && cd build/
         - cmake -GNinja ..
         - ninja lint-cmake
 
 fmt:coverage:
     extends: .format
-    needs: []
-    dependencies: []
-    before_script:
-        - export COMPILER_TYPE="gcc"
-        - source .ci/init_x86_64.sh
-        - export PATH=$PATH:/home/sftnight/.local/bin
+    variables:
+        COMPILER_TYPE: "gcc"
     script:
+        - export PATH=$PATH:~/.local/bin
         - pip install --trusted-host=pypi.org --user gcovr
-        - mkdir build
-        - cd build
         - export CCACHE_DIR=`pwd`/ccache
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DLCIO_DIR=$LCIO_DIR ..
         - ninja -k0
@@ -163,17 +174,14 @@ fmt:coverage:
 
 fmt:codespell:
     extends: .format
-    needs: []
-    dependencies: []
     script:
         - export PATH=~/.local/bin:$PATH
+        - cd ../
         - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty"
 
 fmt:coverity:
     extends: .format
-    needs: []
-    dependencies: []
     only:
         - coverity
         - schedules
@@ -181,13 +189,12 @@ fmt:coverity:
         SCHEDULE_TAG: "coverity"
     script:
         - wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
-        - mkdir build
-        - cd build
         - tar xfz /tmp/cov-analysis-linux64.tgz
         - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
         - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
         - tar cfz cov-int.tar.gz cov-int
         - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
+
 
 ##############
 # Unit tests #
@@ -197,8 +204,6 @@ fmt:coverity:
     stage: testing
     tags:
         - docker
-    before_script:
-        - source .ci/init_x86_64.sh
     after_script:
         - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
@@ -213,134 +218,128 @@ fmt:coverity:
 .testmod:
     extends: .test
     script:
-        - cd build/
         - ctest -R modules/ --no-compress-output --test-action Test -j4
 
 .testcore:
     extends: .test
     script:
-        - cd build/
         - ctest -R core/ --no-compress-output --test-action Test -j4
 
 
 # Test if examples still execute fine:
-
 examples:
-    extends: .test
+    extends:
+        - .test
+        - .centos7
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
-        - cd build/
         - ctest -R examples/ --no-compress-output --test-action Test -j4
 
 # LXPLUS
-
 mod:lxplus-gcc:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .lxplus
     needs:
         - job: cmp:lxplus-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
 
 core:lxplus-gcc:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .lxplus
     needs:
         - job: cmp:lxplus-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source etc/scripts/setup_lxplus.sh
 
 # Ubuntu Docker image
 mod:docker:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .docker
     needs:
         - job: cmp:docker
           artifacts: true
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    before_script: []
 
 core:docker:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .docker
     needs:
         - job: cmp:docker
           artifacts: true
-    image:
-        name: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
-    before_script: []
 
 # CentOS 7
 mod:cc7-gcc:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .centos7
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
 
 core:cc7-gcc:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .centos7
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
 
 mod:cc7-llvm:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .centos7
+    variables:
+        COMPILER_TYPE: "llvm"
     needs:
         - job: cmp:cc7-llvm
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .ci/init_x86_64.sh
 
 core:cc7-llvm:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .centos7
+    variables:
+        COMPILER_TYPE: "llvm"
     needs:
         - job: cmp:cc7-llvm
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .ci/init_x86_64.sh
 
 # CentOS 8
-
 mod:cc8-gcc:
-    extends: .testmod
+    extends:
+        - .testmod
+        - .centos8
     needs:
         - job: cmp:cc8-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
 
 core:cc8-gcc:
-    extends: .testcore
+    extends:
+        - .testcore
+        - .centos8
     needs:
         - job: cmp:cc8-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
 
-# Mac OS X
-
-mod:mac1015-clang:
-    extends: .testmod
-    tags:
-        - mac
+# Mac OS
+mod:macos-clang:
+    extends:
+        - .testmod
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
 
-core:mac1015-clang:
-    extends: .testcore
-    tags:
-        - mac
+core:macos-clang:
+    extends:
+        - .testcore
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
 
 
@@ -350,48 +349,44 @@ core:mac1015-clang:
 
 # Performance tests are only run on Mac OS X and on a native CentOS7 installation. Otherwise we have no control
 # about how many CI jobs are performed on the same machine in parallel via the hypervisor.
-
 .testperf:
     stage: performance
     tags:
         - benchmark
     script:
-        - cd build/
         - ctest -R performance/ --output-on-failure
     allow_failure: true
     retry: 1
 
 # CentOS7
-
 perf:cc7-gcc:
-    extends: .testperf
+    extends:
+        - .testperf
+        - .centos7
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - source .ci/init_x86_64.sh
 
 # Temporarily hide LLVM job, have to find out why this is so slow.
 .perf:cc7-llvm:
-    extends: .testperf
+    extends:
+        - .testperf
+        - .centos7
+    variables:
+        COMPILER_TYPE: "llvm"
     needs:
         - job: cmp:cc7-llvm
           artifacts: true
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    before_script:
-        - export COMPILER_TYPE="llvm"
-        - source .ci/init_x86_64.sh
 
-# Mac OS X
+# Mac OS
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:mac1015-clang:
-    extends: .testperf
+.perf:macos-clang:
+    extends:
+        - .testperf
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
-    before_script:
-        - source .ci/init_x86_64.sh
 
 
 #############################
@@ -404,21 +399,20 @@ perf:cc7-gcc:
     dependencies: []
     tags:
         - docker
+    before_script:
+        - mkdir -p public/usermanual
+        - mkdir build && cd build
     artifacts:
         paths:
             - public
         expire_in: 24 hour
-
 
 # Compile Doxygen reference
 cmp:doxygen:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
-        - source .ci/init_x86_64.sh
-        - mkdir -p public/usermanual
-        - mkdir build
-        - cd build
+        - source ../.ci/init_x86_64.sh
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make Allpix-reference
         - mv reference/html ../public/reference
@@ -428,9 +422,6 @@ cmp:usermanual:
     extends: .doc
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
     script:
-        - mkdir -p public/usermanual
-        - mkdir build
-        - cd build
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make pdf
         - make html
@@ -444,6 +435,7 @@ cmp:usermanual:
         - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
         - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
 
+
 ################################
 # Packaging of Binary Tarballs #
 ################################
@@ -455,11 +447,12 @@ cmp:usermanual:
     only:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
-    script:
-        - source .ci/init_x86_64.sh
+    before_script:
         - export CCACHE_DIR=`pwd`/ccache
+        - source .ci/init_x86_64.sh
         - mkdir -p public/releases
         - cd build
+    script:
         - cmake -GNinja -DCMAKE_SKIP_RPATH=ON -DCMAKE_INSTALL_PREFIX=/tmp ..
         - ninja package
         - mv *.tar.gz ../public/releases
@@ -469,41 +462,38 @@ cmp:usermanual:
         expire_in: 24 hour
 
 pkg:cc7-gcc:
-    extends: .pack
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends:
+        - .pack
+        - .centos7
     needs:
         - job: cmp:cc7-gcc
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="gcc"
 
 pkg:cc7-llvm:
-    extends: .pack
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    extends:
+        - .pack
+        - .centos7
     needs:
         - job: cmp:cc7-llvm
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="llvm"
+    variables:
+        COMPILER_TYPE: "llvm"
 
 pkg:cc8-gcc:
-    extends: .pack
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+    extends:
+        - .pack
+        - .centos8
     needs:
         - job: cmp:cc8-gcc
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="gcc"
 
-pkg:mac1015-clang:
-    extends: .pack
-    tags:
-        - mac
+pkg:macos-clang:
+    extends:
+        - .pack
+        - .macos
     needs:
-        - job: cmp:mac1015-clang
+        - job: cmp:macos-clang
           artifacts: true
-    before_script:
-        - export COMPILER_TYPE="llvm"
 
 
 ############################
@@ -546,7 +536,7 @@ deploy-eos:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:cc8-gcc
-        - pkg:mac1015-clang
+        - pkg:macos-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
@@ -561,7 +551,7 @@ deploy-cvmfs:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:cc8-gcc
-        - pkg:mac1015-clang
+        - pkg:macos-clang
     tags:
         - cvmfs-deploy
     only:
