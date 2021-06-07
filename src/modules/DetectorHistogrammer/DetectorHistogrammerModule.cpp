@@ -29,8 +29,8 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     using namespace ROOT::Math;
 
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    // Enable multithreading of this module if multithreading is enabled
+    allow_multithreading();
 
     // Bind messages
     messenger_->bindSingle<PixelHitMessage>(this);

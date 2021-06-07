@@ -30,7 +30,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Module that directly converts propagated charges to charges on a pixel
-     * @note This module supports parallelization
+     * @note This module supports multithreading
      *
      * This module does a simple direct mapping from propagated charges to the nearest pixel in the grid. It only considers
      * propagated charges within a certain distance from the implants and within the pixel grid, charges in the rest of the

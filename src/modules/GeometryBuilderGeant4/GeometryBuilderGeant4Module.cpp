@@ -42,8 +42,8 @@ using namespace ROOT;
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    // Enable multithreading of this module if multithreading is enabled
+    allow_multithreading();
 
     // Read Geant4 verbosity configuration
     auto g4cerr_log_level = config_.get<std::string>("log_level_g4cerr", "WARNING");
@@ -114,7 +114,7 @@ void GeometryBuilderGeant4Module::initialize() {
 
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
-    if(canParallelize()) {
+    if(multithreadingEnabled()) {
         run_manager_g4_ = std::make_unique<MTRunManager>();
     } else {
         run_manager_g4_ = std::make_unique<RunManager>();

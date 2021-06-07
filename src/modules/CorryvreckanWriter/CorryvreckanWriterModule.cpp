@@ -22,8 +22,8 @@ using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
     : SequentialModule(config), messenger_(messenger), geometryManager_(geoManager) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    // Enable multithreading of this module if multithreading is enabled
+    allow_multithreading();
 
     // Require PixelHit messages for single detector
     messenger_->bindMulti<PixelHitMessage>(this, MsgFlags::REQUIRED);

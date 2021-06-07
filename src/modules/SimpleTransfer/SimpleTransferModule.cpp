@@ -29,8 +29,8 @@ using namespace allpix;
 
 SimpleTransferModule::SimpleTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
-    // Enable parallelization of this module if multithreading is enabled
-    enable_parallelization();
+    // Enable multithreading of this module if multithreading is enabled
+    allow_multithreading();
 
     // Set default value for the maximum depth distance to transfer
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));

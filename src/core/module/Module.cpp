@@ -154,14 +154,14 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
-bool Module::canParallelize() const {
-    return parallelize_;
+bool Module::multithreadingEnabled() const {
+    return multithreading_;
 }
-void Module::enable_parallelization() {
-    parallelize_ = true;
+void Module::allow_multithreading() {
+    multithreading_ = true;
 }
-void Module::set_parallelize(bool parallelize) {
-    parallelize_ = parallelize;
+void Module::set_multithreading(bool multithreading) {
+    multithreading_ = multithreading;
 }
 
 Configuration& Module::get_configuration() {

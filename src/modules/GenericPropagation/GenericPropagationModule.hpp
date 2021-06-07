@@ -37,7 +37,7 @@ namespace allpix {
     /**
      * @ingroup Modules
      * @brief Generic module for Runge-Kutta propagation of charge deposits in the sensitive device
-     * @note This module supports parallelization
+     * @note This module supports multithreading
      *
      * Splits the sets of deposited charge in several sets which are propagated individually. The propagation consist of a
      * combination of drift from a charge mobility parameterization and diffusion using a Gaussian random walk process.
