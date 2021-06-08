@@ -2,6 +2,7 @@
 
 * Captions with UNIX timestamps are located in `captions.txt`
 * To add new captions, check the git log using `git log --date=raw` for their UNIX epoch timestamps
+* The log can be restricted to merge requests only with `git log --date=raw --merges --first-parent`
 * Gource configuration is stored in `gource.conf`
 * To generate the `.ppm` output file, run:
 
