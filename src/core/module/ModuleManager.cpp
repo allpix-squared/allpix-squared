@@ -96,11 +96,13 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         if(loaded_libraries_.count(lib_name) == 0) {
             // If library is not loaded then try to load it first from the config directories
             if(global_config.has("library_directories")) {
+                LOG(TRACE) << "Attempting to load library from configured paths";
                 std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
                 for(auto& lib_path : lib_paths) {
                     std::string full_lib_path = lib_path;
                     full_lib_path += "/";
                     full_lib_path += lib_name;
+                    LOG(TRACE) << "Searching in path \"" << full_lib_path << "\"";
 
                     // Check if the absolute file exists and try to load if it exists
                     std::ifstream check_file(full_lib_path);
@@ -950,6 +952,34 @@ void ModuleManager::finalize() {
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+
+    // Check for unused configuration keys:
+    auto unused_keys = global_config.getUnusedKeys();
+    if(!unused_keys.empty()) {
+        std::stringstream st;
+        st << "Unused configuration keys in global section:";
+        for(auto& key : unused_keys) {
+            st << std::endl << key;
+        }
+        LOG(WARNING) << st.str();
+    }
+    for(auto& config : conf_manager_->getInstanceConfigurations()) {
+        auto unique_name = config.getName();
+        auto identifier = config.get<std::string>("identifier");
+        if(!identifier.empty()) {
+            unique_name += ":";
+            unique_name += identifier;
+        }
+        auto cfg_unused_keys = config.getUnusedKeys();
+        if(!cfg_unused_keys.empty()) {
+            std::stringstream st;
+            st << "Unused configuration keys in section " << unique_name << ":";
+            for(auto& key : cfg_unused_keys) {
+                st << std::endl << key;
+            }
+            LOG(WARNING) << st.str();
+        }
+    }
 
     // Find the slowest module, and accumulate the total run-time for all modules
     long double slowest_time = 0, total_module_time = 0;

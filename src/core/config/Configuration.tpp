@@ -16,6 +16,7 @@ namespace allpix {
     template <typename T> T Configuration::get(const std::string& key) const {
         try {
             auto node = parse_value(config_.at(key));
+            used_keys_.markUsed(key);
             try {
                 return allpix::from_string<T>(node->value);
             } catch(std::invalid_argument& e) {
@@ -48,6 +49,7 @@ namespace allpix {
     template <typename T> std::vector<T> Configuration::getArray(const std::string& key) const {
         try {
             std::string str = config_.at(key);
+            used_keys_.markUsed(key);
 
             std::vector<T> array;
             auto node = parse_value(str);
@@ -86,6 +88,7 @@ namespace allpix {
     template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key) const {
         try {
             std::string str = config_.at(key);
+            used_keys_.markUsed(key);
 
             Matrix<T> matrix;
             auto node = parse_value(str);
@@ -126,8 +129,12 @@ namespace allpix {
         return def;
     }
 
-    template <typename T> void Configuration::set(const std::string& key, const T& val) {
+    template <typename T> void Configuration::set(const std::string& key, const T& val, bool mark_used) {
         config_[key] = allpix::to_string(val);
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T>
@@ -141,9 +148,10 @@ namespace allpix {
         }
         ret_str.pop_back();
         config_[key] = ret_str;
+        used_keys_.registerMarker(key);
     }
 
-    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val) {
+    template <typename T> void Configuration::setArray(const std::string& key, const std::vector<T>& val, bool mark_used) {
         // NOTE: not the most elegant way to support arrays
         std::string str;
         for(auto& el : val) {
@@ -152,6 +160,10 @@ namespace allpix {
         }
         str.pop_back();
         config_[key] = str;
+        used_keys_.registerMarker(key);
+        if(mark_used) {
+            used_keys_.markUsed(key);
+        }
     }
 
     template <typename T> void Configuration::setMatrix(const std::string& key, const Matrix<T>& val) {
@@ -173,17 +185,18 @@ namespace allpix {
         str.pop_back();
         str += "]";
         config_[key] = str;
+        used_keys_.registerMarker(key);
     }
 
     template <typename T> void Configuration::setDefault(const std::string& key, const T& val) {
         if(!has(key)) {
-            set<T>(key, val);
+            set<T>(key, val, true);
         }
     }
 
     template <typename T> void Configuration::setDefaultArray(const std::string& key, const std::vector<T>& val) {
         if(!has(key)) {
-            setArray<T>(key, val);
+            setArray<T>(key, val, true);
         }
     }
 } // namespace allpix
