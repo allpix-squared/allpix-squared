@@ -722,6 +722,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         thread_pool->markComplete(n);
     }
 
+    LOG(STATUS) << "Starting event loop";
     for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {

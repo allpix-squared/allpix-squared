@@ -237,7 +237,7 @@ FUNCTION(add_allpix_test test name)
     FILE(STRINGS ${test} TESTTIMEOUT REGEX "#TIMEOUT ")
     IF(TESTTIMEOUT)
         STRING(REPLACE "#TIMEOUT " "" TESTTIMEOUT "${TESTTIMEOUT}")
-        SET_PROPERTY(TEST ${name} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Running event")
+        SET_PROPERTY(TEST ${name} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Starting event loop")
     ENDIF()
 
     # Allow to add test labels
