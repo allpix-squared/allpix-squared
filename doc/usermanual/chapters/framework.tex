@@ -16,6 +16,9 @@ Messages are identified by the object type they are carrying, but can also be re
 Messages are intended to be read-only and a copy of the data should be made if a module wishes to change the data.
 All objects are compiled into a separate library which is automatically linked to every module.
 More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
+\item \textbf{Physics}: In many cases, several modules depend on the same underlying physics models.
+These models are separated by the modules themselves.
+The implemented physics models are described in Chapter~\ref{ch:models}.
 \item \textbf{Tools}: \apsq provides a set of header-only 'tools' and a shared library that allow access to common logic shared by various modules.
 Examples are the Runge-Kutta solver~\cite{fehlberg} implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
 More information about the tools can be found in Chapter~\ref{ch:additional_tools_resources}.
