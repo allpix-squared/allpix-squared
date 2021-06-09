@@ -219,12 +219,12 @@ fmt:coverity:
 .testmod:
     extends: .test
     script:
-        - ctest -R modules/ --no-compress-output --test-action Test -j4
+        - ctest -R modules/ --no-compress-output --test-action Test
 
 .testcore:
     extends: .test
     script:
-        - ctest -R core/ --no-compress-output --test-action Test -j4
+        - ctest -R core/ --no-compress-output --test-action Test
 
 
 # Test if examples still execute fine:
@@ -236,7 +236,7 @@ examples:
         - job: cmp:cc7-gcc
           artifacts: true
     script:
-        - ctest -R examples/ --no-compress-output --test-action Test -j4
+        - ctest -R examples/ --no-compress-output --test-action Test
 
 # LXPLUS
 mod:lxplus-gcc:

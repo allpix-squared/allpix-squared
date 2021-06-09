@@ -58,7 +58,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
 
     // Set alias for backward compatibility with the previous keyword for multithreading
-    global_config.setDefault("multithreading", false);
+    global_config.setDefault("multithreading", true);
     multithreading_flag_ = global_config.get<bool>("multithreading");
 
     // Set default for performance plot creation:
@@ -724,6 +724,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         thread_pool->markComplete(n);
     }
 
+    LOG(STATUS) << "Starting event loop";
     for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
