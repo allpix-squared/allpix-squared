@@ -194,13 +194,14 @@ If multiple instantiations with the same unique name and the same priority exist
 \subsection{Multithreading: Parallel execution of events}
 \label{sec:multithreading}
 The framework supports running several events in parallel via its multithreading feature.
-This feature is disabled for new modules by default, and has to be both supported by all modules in the simulation and enabled by the user as described in Section~\ref{sec:framework_parameters}.
+By default, this feature is disabled for new modules.
+If supported by all modules in the simulation, multithreading is enabled by default, but can be disabled by the user as described in Section~\ref{sec:framework_parameters}.
 When enabled this feature can provide a significant speed improvement, depending on the simulation chain.
 
 The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
 Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
 
-Detailed description of how the framework implements the multithreading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
+Detailed description of how the framework implements the multithreading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading is provided in Section~\ref{sec:module_multithreading}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
