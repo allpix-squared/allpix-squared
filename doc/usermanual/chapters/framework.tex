@@ -722,7 +722,7 @@ A FIFO-like unsorted queue for events to be processed, and a second, priority-or
 The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a \texttt{SequentialModule}.
 
 By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multithreaded processing of events.
-Therefore each module each module must explicitly enable multithreading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multithreading capabilities to \apsq.
+Therefore each module each module must explicitly enable multithreading in its constructor via calling the \texttt{allow_multithreading()} method in order to signal its multithreading capabilities to \apsq.
 To support multithreading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
 If multithreading is enabled in the run configuration, the module manager will check if all the loaded modules support multithreading.
 In case one or more modules do not support multithreading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{multithreadingEnabled()} method.
@@ -751,7 +751,7 @@ Since random number generators are thread-local and shared between events proces
 This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
 
 \subsection{Geant4 Modules}
-The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multithreaded run manager expects to handle parallelization internally which violates \apsq design.
+The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multithreaded run manager expects to handle parallelization internally which violates the \apsq design.
 Furthermore, \emph{Geant4} does not guarantee results reproducibility between its multithreaded and sequential run managers.
 Modules that would like to use the \emph{Geant4} library shall not use the run managers provided by \emph{Geant4}.
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.
