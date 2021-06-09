@@ -328,6 +328,10 @@ Currently implemented tests comprise:
     \item[\file{test_04-3_configuration_imbalanced_brackets.conf}] tests whether imbalanced brackets in configuration values are properly detected.
     \item[\file{test_04-4_detector_config_cli_change.conf}] tests whether detector options can be overwritten from the command line.
     \item[\file{test_04-5_module_config_cli_detectors.conf}] tests whether framework parameters are properly parsed from the command line.
+    \item[\file{test_04-6_module_config_double_unique.conf}] tests whether a double definition of a unique module is detected.
+    \item[\file{test_04-7_module_config_empty_filter.conf}] tests the framework behaviour with an empty filter.
+    \item[\file{test_04-8_configuration_unused_key.conf}] tests the detection of unused configuration keys in the gloal configuration section.
+    \item[\file{test_04-9_configuration_unused_key_module.conf}] tests the detection of unused configuration keys in a module configuration section.
     \item[\file{test_05-1_overwrite_same_denied.conf}] tests whether two modules writing to the same file is disallowed if overwriting is denied.
     \item[\file{test_05-overwrite_module_allowed.conf}] tests whether two modules writing to the same file is allowed if the last one reenables overwriting locally.
     \item[\file{test_06-1_multithreading.conf}] checks if multithreading can be enabled.
@@ -336,6 +340,9 @@ Currently implemented tests comprise:
     \item[\file{test_06-4_multithreading_zeroworkers.conf}] tests the framework response in case too few workers are enabled.
     \item[\file{test_06-5_multithreading_buffers.conf}] tests if the module buffer depth can be configured properly.
     \item[\file{test_06-6_multithreading_impossible.conf}] tests the framework response in case a module without multithreading capabilities has been enabled.
+    \item[\file{test_06-7_multithreading_physics.conf}] tests the reproducibility in case of multithreading enabled.
+    \item[\file{test_06-8_multithreading_buffered.conf}] tests the reproducibility in case of a sequential module.
+    \item[\file{test_06-9_multithreading_disabled.conf}] tests the framework response to explicitly disabling multithreading.
     \item[\file{test_07-1_catch_exception.conf}] checks the correct propagation of exceptions with multithreading enabled.
     \item[\file{test_07-2_catch_exception_nomt.conf}] checks the correct propagation of exceptions with multithreading disabled.
 \end{description}
