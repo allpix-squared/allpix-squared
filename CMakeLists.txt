@@ -448,6 +448,11 @@ INSTALL(
     PATTERN "*.h")
 
 INSTALL(
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/magic_enum"
+    DESTINATION include/3rdparty
+PATTERN "*.hpp")
+
+INSTALL(
     EXPORT Allpix
     NAMESPACE Allpix::
     FILE AllpixConfigTargets.cmake

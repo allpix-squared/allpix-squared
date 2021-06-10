@@ -60,6 +60,9 @@ Create the header or provide the alternative class name as first argument")
 
     # If modules are build externally, the path to the dynamic implementation changes and we need to link differently:
     IF(${ALLPIX_MODULE_EXTERNAL})
+        # Add 3rdparty includes
+        TARGET_INCLUDE_DIRECTORIES(${${name}} SYSTEM PRIVATE ${ALLPIX_INCLUDE_DIR}/3rdparty)
+
         TARGET_SOURCES(${${name}} PRIVATE "${ALLPIX_INCLUDE_DIR}/core/module/dynamic_module_impl.cpp")
         SET_PROPERTY(
             SOURCE "${ALLPIX_INCLUDE_DIR}/dynamic_module_impl.cpp"
