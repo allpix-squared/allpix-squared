@@ -340,9 +340,10 @@ Currently implemented tests comprise:
     \item[\file{test_06-4_multithreading_zeroworkers.conf}] tests the framework response in case too few workers are enabled.
     \item[\file{test_06-5_multithreading_buffers.conf}] tests if the module buffer depth can be configured properly.
     \item[\file{test_06-6_multithreading_impossible.conf}] tests the framework response in case a module without multithreading capabilities has been enabled.
-    \item[\file{test_06-7_multithreading_physics.conf}] tests the reproducibility in case of multithreading enabled.
+    \item[\file{test_06-7_multithreading_disabled.conf}] tests the framework response to explicitly disabling multithreading.
     \item[\file{test_06-8_multithreading_buffered.conf}] tests the reproducibility in case of a sequential module.
-    \item[\file{test_06-9_multithreading_disabled.conf}] tests the framework response to explicitly disabling multithreading.
+    \item[\file{test_06-9_multithreading_physics.conf}] tests the reproducibility in case of multithreading enabled.
+    \item[\file{test_06-10_multithreading_physics_singlethr.conf}] tests the reproducibility in case of multithreading disabled.
     \item[\file{test_07-1_catch_exception.conf}] checks the correct propagation of exceptions with multithreading enabled.
     \item[\file{test_07-2_catch_exception_nomt.conf}] checks the correct propagation of exceptions with multithreading disabled.
 \end{description}
