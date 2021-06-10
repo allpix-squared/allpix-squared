@@ -16,6 +16,9 @@ Messages are identified by the object type they are carrying, but can also be re
 Messages are intended to be read-only and a copy of the data should be made if a module wishes to change the data.
 All objects are compiled into a separate library which is automatically linked to every module.
 More information about the messaging system and the supported objects can be found in Section~\ref{sec:objects_messages}.
+\item \textbf{Physics}: In many cases, several modules depend on the same underlying physics models.
+These models are separated by the modules themselves.
+The implemented physics models are described in Chapter~\ref{ch:models}.
 \item \textbf{Tools}: \apsq provides a set of header-only 'tools' and a shared library that allow access to common logic shared by various modules.
 Examples are the Runge-Kutta solver~\cite{fehlberg} implemented using the Eigen3 library and the set of template specializations for ROOT and Geant4 configurations.
 More information about the tools can be found in Chapter~\ref{ch:additional_tools_resources}.
@@ -194,13 +197,14 @@ If multiple instantiations with the same unique name and the same priority exist
 \subsection{Multithreading: Parallel execution of events}
 \label{sec:multithreading}
 The framework supports running several events in parallel via its multithreading feature.
-This feature is disabled for new modules by default, and has to be both supported by all modules in the simulation and enabled by the user as described in Section~\ref{sec:framework_parameters}.
+By default, this feature is disabled for new modules.
+If supported by all modules in the simulation, multithreading is enabled by default, but can be disabled by the user as described in Section~\ref{sec:framework_parameters}.
 When enabled this feature can provide a significant speed improvement, depending on the simulation chain.
 
 The framework allows to parallelize the execution of the same module for multiple events, if these would otherwise be executed directly after each other in a linear order.
 Thus, events are added to a work queue and then distributed to a set of worker threads as specified in the configuration or determined from system parameters.
 
-Detailed description of how the framework implements the multithreading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading os provided in Section~\ref{sec:module_multithreading}.
+Detailed description of how the framework implements the multithreading feature can be found in Section~\ref{sec:multithreading_approach} and an overview of important considerations when writing a new module capable of multithreading is provided in Section~\ref{sec:module_multithreading}.
 
 \section{Geometry and Detectors}
 \label{sec:models_geometry}
@@ -351,7 +355,8 @@ The individual bumps are by default positioned at the center of each single pixe
 \label{sec:support_layers}
 In addition to the active layer, multiple layers of support material can be added to the detector description.
 It is possible to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip (or inactive silicon layer).
-The support material can be chosen from a set of predefined materials, including PCB and Kapton.
+The defined support materials will always be positioned relative to the corresponding detector.
+The support material can be chosen either from a set of predefined materials, including PCB and Kapton, or any material available via the Geant4 material database.
 
 Every support layer should be defined in its own section headed with the name \texttt{[support]}.
 By default, no support layers are added.
@@ -708,7 +713,7 @@ Should be used to request the end of event processing in the current run, e.g. i
 
 \todo{add more info about error reporting style?}
 
-\section{Multi-threading}
+\section{Multithreading}
 \label{sec:multithreading_approach}
 \apsq supports multithreading by running events in parallel.
 The module manager creates a thread pool with the configured number of workers or determines them from system parameters if not specified.
@@ -720,7 +725,7 @@ A FIFO-like unsorted queue for events to be processed, and a second, priority-or
 The former is constantly filled with new events to be processed by the main thread, while the latter is used to temporarily buffer events which wait to be picked up in the correct sequence by a \texttt{SequentialModule}.
 
 By default modules are assumed to not operate in a thread-safe way and therefore cannot participate in multithreaded processing of events.
-Therefore each module each module must explicitly enable multithreading in its constructor as described in Section~\ref{sec:multithreading} in order to signal its multithreading capabilities to \apsq.
+Therefore each module each module must explicitly enable multithreading in its constructor in order to signal its multithreading capabilities to \apsq.
 To support multithreading, the module \texttt{run()} method should be re-entrant and any shared member variables should be protected.
 If multithreading is enabled in the run configuration, the module manager will check if all the loaded modules support multithreading.
 In case one or more modules do not support multithreading, a warning is printed and the feature is disabled. Modules can inform themselves about the decision via the \texttt{multithreadingEnabled()} method.
@@ -749,7 +754,7 @@ Since random number generators are thread-local and shared between events proces
 This ensures that the sequence of pseudo-random numbers is exactly the same regardless of whether the event was buffered or directly processed.
 
 \subsection{Geant4 Modules}
-The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multithreaded run manager expects to handle parallelization internally which violates \apsq design.
+The usage of the \emph{Geant4} library in \apsq has some constraints because the \emph{Geant4} multithreaded run manager expects to handle parallelization internally which violates the \apsq design.
 Furthermore, \emph{Geant4} does not guarantee results reproducibility between its multithreaded and sequential run managers.
 Modules that would like to use the \emph{Geant4} library shall not use the run managers provided by \emph{Geant4}.
 Instead, they must use the custom run managers provided by \apsq as described in Section~\ref{sec:geant4_interface}.

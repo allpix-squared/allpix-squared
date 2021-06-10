@@ -17,7 +17,7 @@ The framework has the following three required layers of configuration files:
 \begin{itemize}
 \item The \textbf{main} configuration: The most important configuration file and the file that is passed directly to the binary.
 Contains both the global framework configuration and the list of modules to instantiate together with their configuration.
-An example can be found in the repository at \textit{examples/example.conf}.
+An example can be found in the repository at \file{examples/example.conf}.
 More details and a more thorough example are found in Section~\ref{sec:main_config}, several advanced simulation chain configurations are presented in Chapter~\ref{ch:examples}.
 \item The \textbf{geometry} configuration passed to the framework to determine the detector setup and passive materials.
 Describes the detector setup, containing the position, orientation and model type of all detectors.
@@ -27,7 +27,7 @@ Introduced in Section~\ref{sec:detector_config}.
 \item The detector \textbf{model} configuration.
 Contains the parameters describing a particular type of detector.
 Several models are already provided by the framework, but new types of detectors can easily be added.
-See \textit{models/test.conf} in the repository for an example.
+See \file{models/test.conf} in the repository for an example.
 Please refer to Section~\ref{sec:adding_detector_model} for more details about adding new models.
 \end{itemize}
 
