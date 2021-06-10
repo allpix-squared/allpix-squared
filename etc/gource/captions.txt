@@ -54,3 +54,19 @@
 1603198652|MR!360: Improve handling of charge polarity
 1603720244|MR!363: Distinguish between Global and Local Timeframe
 1603975380|Stable Release: Allpix Squared v1.6
+1604405777|MR!392: Limit processing to integration time
+1614934041|MR!416: Deploy binaries for MacOS and Clang
+1614946692|MR!417: Add GitHub CI via GitHub Actions
+1616589711|MR!429: Simulation of charge carrier lifetime & recombination
+1616589800|MR!439: Front-End saturation in DefaultDigitizer
+1617706847|MR!427: Event-based Seeding & Multithreading
+1617959736|MR!375: Using Boost.Random Distributions for Portability
+1617982991|MR!449: Allow loading of arbitrary materials from Geant4
+1619705078|MR!450: Introduction of different Mobility Models
+1620741511|MR!482: Introduce requirement of C++17
+1621617156|MR!483: Introduce Enum Reflection
+1621617320|MR!488: Restructure Module Tests
+1621957023|MR!493: Allow custom Analytic Electric Fields
+1622904773|MR!494: Introduce Linting & Formatting for CMake
+1623131943|MR!475: Warn about Unused Configuration Keys
+1623307728|Major Release: Allpix Squared v2.0
