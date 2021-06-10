@@ -138,8 +138,8 @@ A preprint version is available on [arxiv.org](https://arxiv.org/abs/1806.05813)
 
 In addition, the software can be cited using the [versioned Zenodo record](https://doi.org/10.5281/zenodo.3550935) or the current version as:
 
-> S. Spannagel, K. Wolters, D. Hynds. (2019, July 9). Allpix Squared - Generic Pixel Detector Simulation Framework
-> (Version 1.4.0). Zenodo. http://doi.org/10.5281/zenodo.3550971
+> S. Spannagel, K. Wolters, P. Schütze. (2021, June 10). Allpix Squared - Generic Pixel Detector Simulation Framework
+> (Version 2.0.0). Zenodo. http://doi.org/10.5281/zenodo.4924549
 
 
 ## Contributing
