@@ -326,12 +326,14 @@ void DepositionReaderModule::run(Event* event) {
 
             auto pdg_code = mc_particle_code[detector].at(i);
             auto time = mc_particle_time[detector].at(i);
-            auto parent_id = mc_particle_parent[detector].at(i);
 
             mc_particles.emplace_back(
                 start_local, start_global, end_local, end_global, pdg_code, time - time_reference, time);
+        }
 
+        for(size_t i = 0; i < mc_particle_size; i++) {
             // Check if we know the parent - and set it:
+            auto parent_id = mc_particle_parent[detector].at(i);
             auto parent = track_id_to_mcparticle[detector].find(parent_id);
             if(parent != track_id_to_mcparticle[detector].end()) {
                 LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
