@@ -86,7 +86,7 @@ class depositedCharge:
 
 
 # Calculation of straight particle trajectories in the sensor
-def createParticle(nsteps):
+def createParticle(particle, nparticles, nsteps, mix):
 
     pdgCode = 11
 
@@ -132,9 +132,14 @@ def createParticle(nsteps):
         deposit.setPositiony(xyzPos[1])
         deposit.setPositionz(xyzPos[2])
         deposit.setPdg_Code(pdgCode)
+
         # Track and parent ID arbitrary in this case
-        deposit.setTrack_Id(0)
-        deposit.setParent_Id(0)
+        if mix:
+            deposit.setTrack_Id(particle)
+            deposit.setParent_Id(max(0, nparticles - particle))
+        else:
+            deposit.setTrack_Id(particle)
+            deposit.setParent_Id(max(0, particle - 1))
 
         # Push back vector of deposited charges
         deposits.append(deposit)
@@ -160,6 +165,8 @@ if __name__ == '__main__':
     parser.add_argument("--detector", help="Name of the detector")
     parser.add_argument("--outputpath", help="Path to write output files to")
     parser.add_argument("--events", help="Number of events to generate", type=int)
+    parser.add_argument("--particles", help="Number of particles to generate for each event", nargs='?', const=1, type=int)
+    parser.add_argument("--mix-particles", help="Switch to mix up parent realtions to not be sequential", action="store_true")
     parser.add_argument("--seed", help="Seed for random number generator", type=int)
     parser.add_argument("--steps", help="Number of steps along the track in the sensor", type=int)
     parser.add_argument("--scantree", help="Scan generated ROOT tree and print sections", action="store_true")
@@ -261,9 +268,13 @@ if __name__ == '__main__':
     for eventNr in range(0,events):
         print("Processing event " + str(eventNr))
 
-        # Get the depositions for the particle created
-        deposits = createParticle(nsteps)
+        deposits = []
+        # Create as many particles as necessary:
+        for particle in range(0, args.particles):
+            # Get the depositions for the particle created
+            deposits = np.append(deposits, createParticle(particle, args.particles, nsteps, args.mix_particles))
 
+        # deposits = createParticle(nsteps);
         if writeCSV:
             # Write the event number
             text = "\nEvent: " + str(eventNr) + "\n"
