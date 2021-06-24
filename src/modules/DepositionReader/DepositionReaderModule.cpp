@@ -335,11 +335,13 @@ void DepositionReaderModule::run(Event* event) {
             // Check if we know the parent - and set it:
             auto parent_id = mc_particle_parent[detector].at(i);
             auto parent = track_id_to_mcparticle[detector].find(parent_id);
-            if(parent != track_id_to_mcparticle[detector].end()) {
-                LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
-                mc_particles.back().setParent(&mc_particles.at(parent->second));
+            if(parent == track_id_to_mcparticle[detector].end()) {
+                LOG(DEBUG) << "Parent MCParticle is unknown, parent track id " << parent_id;
+            } else if(i == parent->second) {
+                LOG(DEBUG) << "Parent MCParticle is same as current particle, not adding relation";
             } else {
-                LOG(DEBUG) << "Parent MCParticle is unknown, parent id " << parent_id;
+                LOG(DEBUG) << "Adding parent relation to MCParticle with track id " << parent_id;
+                mc_particles.at(i).setParent(&mc_particles.at(parent->second));
             }
         }
 
