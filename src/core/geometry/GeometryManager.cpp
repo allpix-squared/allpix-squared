@@ -32,6 +32,7 @@
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -443,6 +444,9 @@ std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& 
     }
     if(type == "monolithic") {
         return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
+    }
+    if(type == "hexagonal") {
+	return std::make_shared<HexagonalPixelDetectorModel>(name, reader);
     }
 
     LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
