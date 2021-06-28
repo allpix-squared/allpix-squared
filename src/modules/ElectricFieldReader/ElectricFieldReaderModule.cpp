@@ -217,7 +217,7 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
             z->SetParameter(static_cast<int>(n), field_parameters.at(n));
         }
 
-        LOG(DEBUG) << "Value of custom field at sensor center: " << Units::display(z->Eval(0., 0., 0.), "V/cm");
+        LOG(DEBUG) << "Value of custom field at pixel center: " << Units::display(z->Eval(0., 0., 0.), "V/cm");
         return [z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
             return ROOT::Math::XYZVector(0, 0, z->Eval(pos.x(), pos.y(), pos.z()));
         };
@@ -270,7 +270,7 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
                 field_parameters.at(static_cast<size_t>(n + x->GetNumberFreeParameters() + y->GetNumberFreeParameters())));
         }
 
-        LOG(DEBUG) << "Value of custom field at sensor center: "
+        LOG(DEBUG) << "Value of custom field at pixel center: "
                    << Units::display(ROOT::Math::XYZVector(x->Eval(0., 0., 0.), y->Eval(0., 0., 0.), z->Eval(0., 0., 0.)),
                                      {"V/cm"});
         return [x = std::move(x), y = std::move(y), z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
