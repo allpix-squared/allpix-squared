@@ -118,7 +118,7 @@ namespace allpix {
         // Compute using the grid or a function depending on the setting
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
