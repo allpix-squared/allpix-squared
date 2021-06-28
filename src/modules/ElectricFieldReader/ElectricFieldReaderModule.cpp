@@ -70,7 +70,7 @@ void ElectricFieldReaderModule::initialize() {
         auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
         // FIXME Add sanity checks for scales here
         LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
-        std::array<double, 2> field_scale{{model->getPixelSize().x() * scales.x(), model->getPixelSize().y() * scales.y()}};
+        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
 
         // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
         auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
@@ -516,13 +516,14 @@ void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimen
         }
 
         // Check the field extent along the pixel pitch in x and y:
-        if(std::fabs(xpixsz - field_scale[0]) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - field_scale[1]) > std::numeric_limits<double>::epsilon()) {
+        auto pitch = model->getPixelSize();
+        if(std::fabs(xpixsz - field_scale[0] * pitch.x()) > std::numeric_limits<double>::epsilon() ||
+           std::fabs(ypixsz - field_scale[1] * pitch.y()) > std::numeric_limits<double>::epsilon()) {
             LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
                          << Units::display(ypixsz, {"um", "mm"})
                          << ") but current configuration results in an field area of ("
-                         << Units::display(field_scale[0], {"um", "mm"}) << ","
-                         << Units::display(field_scale[1], {"um", "mm"}) << ")" << std::endl
+                         << Units::display(field_scale[0] * pitch.x(), {"um", "mm"}) << ","
+                         << Units::display(field_scale[1] * pitch.y(), {"um", "mm"}) << ")" << std::endl
                          << "The size of the area to which the electric field is applied can be changes using the "
                             "field_scale parameter.";
         }
