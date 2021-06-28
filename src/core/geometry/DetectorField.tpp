@@ -52,7 +52,6 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        // clang-format off
         auto x_ind = (dimensions_[0] == 1 ? 0
                                           : static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) *
                                                                         (dist.x() + scales_[0] / 2.0) / scales_[0])));
@@ -61,7 +60,6 @@ namespace allpix {
                                                                         (dist.y() + scales_[1] / 2.0) / scales_[1])));
         auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
-        // clang-format on
 
         // Check for indices within the field map
         if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
