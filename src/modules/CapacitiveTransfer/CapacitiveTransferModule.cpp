@@ -278,13 +278,6 @@ void CapacitiveTransferModule::run(Event* event) {
         auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
-        Pixel::Index pixel_index;
-        double neighbour_charge = 0;
-        double ccpd_factor = 0;
-
-        Eigen::Vector3d pixel_point;
-        Eigen::Vector3d pixel_projection;
-
         for(size_t row = 0; row < max_row; row++) {
             for(size_t col = 0; col < max_col; col++) {
                 if(!cross_coupling_) {
@@ -303,13 +296,14 @@ void CapacitiveTransferModule::run(Event* event) {
                     continue;
                 }
 
-                pixel_index = Pixel::Index(static_cast<unsigned int>(xcoord), static_cast<unsigned int>(ycoord));
+                auto pixel_index = Pixel::Index(static_cast<unsigned int>(xcoord), static_cast<unsigned int>(ycoord));
 
+                double ccpd_factor = 0;
                 if(config_.has("coupling_scan_file")) {
                     double local_x = pixel_index.x() * model_->getPixelSize().x();
                     double local_y = pixel_index.y() * model_->getPixelSize().y();
-                    pixel_point = Eigen::Vector3d(local_x, local_y, 0);
-                    pixel_projection = plane.projection(pixel_point);
+                    auto pixel_point = Eigen::Vector3d(local_x, local_y, 0);
+                    auto pixel_projection = plane.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
 
                     ccpd_factor = capacitances[row * 3 + col]->Eval(
@@ -326,7 +320,7 @@ void CapacitiveTransferModule::run(Event* event) {
 
                 // Update statistics
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
-                neighbour_charge =
+                auto neighbour_charge =
                     static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) * ccpd_factor;
 
                 LOG(DEBUG) << "Set of " << propagated_charge.getCharge() * ccpd_factor << " charges brought to neighbour "
