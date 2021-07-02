@@ -85,6 +85,7 @@ namespace allpix {
         double normalization{};
         double nominal_gap{};
         double minimum_gap{};
+        double max_depth_distance_{};
 
         bool cross_coupling_{};
 

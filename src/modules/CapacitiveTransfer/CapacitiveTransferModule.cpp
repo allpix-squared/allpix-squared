@@ -38,9 +38,11 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
     config_.setDefault("nominal_gap", 0.0);
+    config_.setDefault("max_depth_distance", Units::get(5, "um"));
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
+    max_depth_distance_ = config_.get<double>("max_depth_distance");
 
     // Require propagated deposits for single detector
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -265,7 +267,7 @@ void CapacitiveTransferModule::run(Event* event) {
         auto position = propagated_charge.getLocalPosition();
         // Ignore if outside depth range of implant
         if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
-           config_.get<double>("max_depth_distance")) {
+           max_depth_distance_) {
             LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << propagated_charge.getLocalPosition() << " because their local position is not in implant range";
             continue;
