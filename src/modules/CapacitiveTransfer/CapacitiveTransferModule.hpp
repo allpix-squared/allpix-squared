@@ -75,27 +75,20 @@ namespace allpix {
         std::atomic<unsigned int> total_transferred_charges_{};
 
         // Matrix to store cross-coupling values
-        std::vector<std::vector<double>> relative_coupling;
-        unsigned int matrix_rows{};
-        unsigned int matrix_cols{};
-        unsigned int max_row{};
-        unsigned int max_col{};
-        bool cc_in{};
+        std::vector<std::vector<double>> relative_coupling_;
+        unsigned int matrix_rows_{};
+        unsigned int matrix_cols_{};
+        unsigned int max_row_{};
+        unsigned int max_col_{};
 
-        double normalization{};
-        double nominal_gap{};
-        double minimum_gap{};
+        double normalization_{};
         double max_depth_distance_{};
-
         bool cross_coupling_{};
 
         void getCapacitanceScan(TFile* root_file);
-        TGraph* capacitances[9]{};
+        TGraph* capacitances_[9]{};
 
-        Eigen::Hyperplane<double, 3> plane;
-
-        double center[2] = {0.0, 0.0};
-        double angles[2] = {0.0, 0.0};
+        Eigen::Hyperplane<double, 3> plane_;
 
         Histogram<TH2D> coupling_map;
         Histogram<TH2D> gap_map;
