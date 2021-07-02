@@ -317,6 +317,12 @@ void CapacitiveTransferModule::run(Event* event) {
                     LOG(ERROR) << "This shouldn't happen. Transferring 100% of detected charge";
                 }
 
+                // If there is no cross-coupling (factor is zero) don't create a pixel hit:
+                if(std::fabs(ccpd_factor) < std::numeric_limits<double>::epsilon()) {
+                    LOG(TRACE) << "Detected zero coupling, skipping pixel hit creation";
+                    continue;
+                }
+
                 // Update statistics
                 transferred_charges_count += static_cast<unsigned int>(propagated_charge.getCharge() * ccpd_factor);
                 auto neighbour_charge =
