@@ -86,7 +86,7 @@ namespace allpix {
         double nominal_gap{};
         double minimum_gap{};
 
-        int cross_coupling{};
+        bool cross_coupling_{};
 
         void getCapacitanceScan(TFile* root_file);
         TGraph* capacitances[9]{};

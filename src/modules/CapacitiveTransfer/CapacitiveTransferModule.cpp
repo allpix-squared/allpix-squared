@@ -36,9 +36,11 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
-    config_.setDefault("cross_coupling", 1);
+    config_.setDefault("cross_coupling", true);
     config_.setDefault("nominal_gap", 0.0);
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
+
+    cross_coupling_ = config_.get<bool>("cross_coupling");
 
     // Require propagated deposits for single detector
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -157,7 +159,7 @@ void CapacitiveTransferModule::initialize() {
         }
         matrix_cols = 3;
         matrix_rows = 3;
-        if(config_.get<int>("cross_coupling") == 1) {
+        if(cross_coupling_) {
             max_col = 3;
             max_row = 3;
         } else {
@@ -283,7 +285,7 @@ void CapacitiveTransferModule::run(Event* event) {
 
         for(size_t row = 0; row < max_row; row++) {
             for(size_t col = 0; col < max_col; col++) {
-                if(config_.get<int>("cross_coupling") == 0) {
+                if(!cross_coupling_) {
                     col = static_cast<size_t>(std::floor(matrix_cols / 2));
                     row = static_cast<size_t>(std::floor(matrix_rows / 2));
                 }
