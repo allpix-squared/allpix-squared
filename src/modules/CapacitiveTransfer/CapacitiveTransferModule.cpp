@@ -58,8 +58,8 @@ void CapacitiveTransferModule::initialize() {
         matrix_rows_ = static_cast<unsigned int>(relative_coupling_.size());
         matrix_cols_ = static_cast<unsigned int>(relative_coupling_[0].size());
 
-        max_col_ = matrix_cols;
-        max_row_ = matrix_rows;
+        max_col_ = matrix_cols_;
+        max_row_ = matrix_rows_;
 
         if(config_.get<bool>("output_plots")) {
             LOG(TRACE) << "Creating output plots";
