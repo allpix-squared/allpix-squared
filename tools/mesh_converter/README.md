@@ -79,6 +79,8 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
+* `observable_units`: Units in which the observable is stored in the input file (Defaults to `V/cm` matching the default observable `ElectricField`).
+* `vector_field`: Select if the observable is a vector field or scalar field (Defaults to `true` matching the default observable `ElectricField`).
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
