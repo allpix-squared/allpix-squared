@@ -52,16 +52,14 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        // clang-format off
         auto x_ind = (dimensions_[0] == 1 ? 0
                                           : static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) *
-                                                                        (dist.x() + scales_[0] / 2.0) / scales_[0])));
+                                                                        (dist.x() / (scales_[0] * pixel_size_.x()) + 0.5))));
         auto y_ind = (dimensions_[1] == 1 ? 0
                                           : static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) *
-                                                                        (dist.y() + scales_[1] / 2.0) / scales_[1])));
+                                                                        (dist.y() / (scales_[1] * pixel_size_.y()) + 0.5))));
         auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
-        // clang-format on
 
         // Check for indices within the field map
         if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
@@ -102,12 +100,12 @@ namespace allpix {
 
         // Compute corresponding field replica coordinates:
         // WARNING This relies on the origin of the local coordinate system
-        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) / scales_[0]));
-        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) / scales_[1]));
+        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) / (scales_[0] * pixel_size_.x())));
+        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) / (scales_[1] * pixel_size_.y())));
 
         // Convert to the replica frame:
-        x -= (replica_x + 0.5) * scales_[0] - 0.5 * pixel_size_.x();
-        y -= (replica_y + 0.5) * scales_[1] - 0.5 * pixel_size_.y();
+        x -= ((replica_x + 0.5) * scales_[0] - 0.5) * pixel_size_.x();
+        y -= ((replica_y + 0.5) * scales_[1] - 0.5) * pixel_size_.y();
 
         // Do flipping if necessary
         if((replica_x % 2) == 1) {
@@ -120,7 +118,7 @@ namespace allpix {
         // Compute using the grid or a function depending on the setting
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z));
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
