@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
         const auto max_radius = config.get<double>("max_radius", 50);
         const auto volume_cut = config.get<double>("volume_cut", 10e-9);
         const auto units = config.get<std::string>("observable_units", "V/cm");
-        const auto vector_field = config.get<bool>("vector_field", true);
+        const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
         XYZVectorInt divisions;
         const auto dimension = config.get<size_t>("dimension", 3);
