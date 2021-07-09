@@ -55,8 +55,11 @@ void CapacitiveTransferModule::initialize() {
             config_, {"coupling_matrix", "coupling_file", "coupling_scan_file"}, "More than one coupling input defined");
     } else if(config_.has("coupling_matrix")) {
         relative_coupling_ = config_.getMatrix<double>("coupling_matrix");
-        max_row_ = static_cast<unsigned int>(relative_coupling_.size());
-        max_col_ = static_cast<unsigned int>(relative_coupling_[0].size());
+        matrix_rows_ = static_cast<unsigned int>(relative_coupling_.size());
+        matrix_cols_ = static_cast<unsigned int>(relative_coupling_[0].size());
+
+        max_col_ = matrix_cols;
+        max_row_ = matrix_rows;
 
         if(config_.get<bool>("output_plots")) {
             LOG(TRACE) << "Creating output plots";
