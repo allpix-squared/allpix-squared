@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
         std::string output_name_log;
         std::string plane = "yz";
         std::string units;
+        bool scalar_field = false;
         bool flag_cut = false;
         size_t slice_cut = 0;
         bool log_scale = false;
@@ -82,6 +83,8 @@ int main(int argc, char** argv) {
                 plane = std::string(argv[++i]);
             } else if(strcmp(argv[i], "-u") == 0 && (i + 1 < argc)) {
                 units = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-s") == 0) {
+                scalar_field = true;
             } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
                 slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
                 flag_cut = true;
@@ -113,6 +116,7 @@ int main(int argc, char** argv) {
             std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
             std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
             std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
+            std::cout << "\t -s                     parsed observable is a scalar field" << std::endl;
             std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
             allpix::Log::finish();
@@ -128,7 +132,7 @@ int main(int argc, char** argv) {
         std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
         // FIXME this should be done in a more elegant way
-        FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+        FieldQuantity quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);
