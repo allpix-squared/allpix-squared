@@ -190,35 +190,35 @@ int main(int argc, char** argv) {
         auto* efield_map = new TH2D(Form("%s", observable.c_str()),
                                     Form("%s;%s", observable.c_str(), axis_titles.c_str()),
                                     x_bin,
-                                    1,
-                                    x_bin + 1,
+                                    0,
+                                    x_bin,
                                     y_bin,
-                                    1,
-                                    y_bin + 1);
+                                    0,
+                                    y_bin);
         auto* exfield_map = new TH2D(Form("%s X component", observable.c_str()),
                                      Form("%s X component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
         auto* eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
                                      Form("%s Y component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
         auto* ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
                                      Form("%s Z component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
 
         auto* c1 = new TCanvas();
 
