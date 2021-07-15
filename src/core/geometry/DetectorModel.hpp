@@ -28,6 +28,7 @@
 #include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 
 namespace allpix {
@@ -360,6 +361,36 @@ namespace allpix {
                                                    full_hole_size,
                                                    std::move(hole_offset)));
         }
+
+        /**
+         * @brief Returns if a local position is within the sensitive device
+         * @return True if a local position is within the sensor, false otherwise
+         */
+        bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Returns if a local position is within the pixel implant region of the sensitive device
+         * @return True if a local position is within the pixel implant, false otherwise
+         */
+        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Returns if a pixel index is within the grid of pixels defined for the device
+         * @return True if pixel_index is within the pixel grid, false otherwise
+         */
+        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+
+        /**
+         * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
+         * @return True if pixel coordinates are within the pixel grid, false otherwise
+         */
+        bool isWithinPixelGrid(const int x, const int y) const;
+
+        /**
+         * @brief Returns a pixel center in local coordinates
+         * @return Coordinates of the pixel center
+         */
+        ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const;
 
     protected:
         std::string type_;

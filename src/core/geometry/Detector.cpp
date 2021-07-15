@@ -106,48 +106,6 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
 }
 
 /**
- * The definition of inside the sensor is determined by the detector model
- */
-bool Detector::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
-    auto sensor_center = model_->getSensorCenter();
-    auto sensor_size = model_->getSensorSize();
-    return (2 * std::fabs(local_pos.z() - sensor_center.z()) <= sensor_size.z()) &&
-           (2 * std::fabs(local_pos.y() - sensor_center.y()) <= sensor_size.y()) &&
-           (2 * std::fabs(local_pos.x() - sensor_center.x()) <= sensor_size.x());
-}
-
-/**
- * The definition of inside the implant region is determined by the detector model
- *
- * @note The pixel implant currently is always positioned symmetrically, in the center of the pixel cell.
- */
-bool Detector::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
-
-    auto x_mod_pixel = std::fmod(local_pos.x() + model_->getPixelSize().x() / 2, model_->getPixelSize().x()) -
-                       model_->getPixelSize().x() / 2;
-    auto y_mod_pixel = std::fmod(local_pos.y() + model_->getPixelSize().y() / 2, model_->getPixelSize().y()) -
-                       model_->getPixelSize().y() / 2;
-
-    return (std::fabs(x_mod_pixel) <= std::fabs(model_->getImplantSize().x() / 2) &&
-            std::fabs(y_mod_pixel) <= std::fabs(model_->getImplantSize().y() / 2));
-}
-
-/**
- * The definition of the pixel grid size is determined by the detector model
- */
-bool Detector::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
-    return !(pixel_index.x() >= model_->getNPixels().x() || pixel_index.y() >= model_->getNPixels().y());
-}
-
-/**
- * The definition of the pixel grid size is determined by the detector model
- */
-bool Detector::isWithinPixelGrid(const int x, const int y) const {
-    return !(x < 0 || x >= static_cast<int>(model_->getNPixels().x()) || y < 0 ||
-             y >= static_cast<int>(model_->getNPixels().y()));
-}
-
-/**
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
@@ -161,12 +119,7 @@ Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
 Pixel Detector::getPixel(const Pixel::Index& index) const {
     auto size = model_->getPixelSize();
 
-    // WARNING This relies on the origin of the local coordinate system
-    auto local_x = size.x() * index.x();
-    auto local_y = size.y() * index.y();
-    auto local_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
-
-    auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
+    auto local_center = model_->getPixelCenter(index.x(), index.y());
     auto global_center = getGlobalPosition(local_center);
 
     return {index, local_center, global_center, size};

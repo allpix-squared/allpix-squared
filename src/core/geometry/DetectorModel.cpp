@@ -171,3 +171,51 @@ std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const
 
     return ret_layers;
 }
+
+/**
+ * The definition of inside the sensor is determined by the detector model
+ */
+bool DetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
+    auto sensor_center = getSensorCenter();
+    auto sensor_size = getSensorSize();
+    return (2 * std::fabs(local_pos.z() - sensor_center.z()) <= sensor_size.z()) &&
+           (2 * std::fabs(local_pos.y() - sensor_center.y()) <= sensor_size.y()) &&
+           (2 * std::fabs(local_pos.x() - sensor_center.x()) <= sensor_size.x());
+}
+
+/**
+ * The definition of inside the implant region is determined by the detector model
+ *
+ * @note The pixel implant currently is always positioned symmetrically, in the center of the pixel cell.
+ */
+bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
+
+    auto x_mod_pixel = std::fmod(local_pos.x() + getPixelSize().x() / 2, getPixelSize().x()) - getPixelSize().x() / 2;
+    auto y_mod_pixel = std::fmod(local_pos.y() + getPixelSize().y() / 2, getPixelSize().y()) - getPixelSize().y() / 2;
+
+    return (std::fabs(x_mod_pixel) <= std::fabs(getImplantSize().x() / 2) &&
+            std::fabs(y_mod_pixel) <= std::fabs(getImplantSize().y() / 2));
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool DetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+    return !(pixel_index.x() >= getNPixels().x() || pixel_index.y() >= getNPixels().y());
+}
+
+/**
+ * The definition of the pixel grid size is determined by the detector model
+ */
+bool DetectorModel::isWithinPixelGrid(const int x, const int y) const {
+    return !(x < 0 || x >= static_cast<int>(getNPixels().x()) || y < 0 || y >= static_cast<int>(getNPixels().y()));
+}
+
+ROOT::Math::XYZPoint DetectorModel::getPixelCenter(unsigned int x, unsigned int y) const {
+    auto size = getSize();
+    auto local_x = size.x() * x;
+    auto local_y = size.y() * y;
+    auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
+
+    return {local_x, local_y, local_z};
+}
