@@ -256,7 +256,7 @@ void DepositionReaderModule::run(Event* event) {
         LOG(DEBUG) << "Found detector \"" << detector->getName() << "\"";
 
         auto local_position = detector->getLocalPosition(global_position);
-        if(!detector->isWithinSensor(local_position)) {
+        if(!detector->getModel()->isWithinSensor(local_position)) {
             LOG(WARNING) << "Found deposition outside sensor at " << Units::display(local_position, {"mm", "um"})
                          << ", global " << Units::display(global_position, {"mm", "um"}) << ". Skipping.";
             continue;

@@ -211,7 +211,8 @@ void ProjectionPropagationModule::run(Event* event) {
                 auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
                 double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
 
-                if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() && (detector_->isWithinSensor(position))) {
+                if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
+                   (detector_->getModel()->isWithinSensor(position))) {
                     LOG(TRACE) << "Charge carrier remains within undepleted volume";
                     continue;
                 }
@@ -238,7 +239,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 diffusion_time = integration_time_ * std::sqrt((position - initial_position).Mag2() /
                                                                (local_position_diffusion - initial_position).Mag2());
 
-                if(!detector_->isWithinSensor(position)) {
+                if(!detector_->getModel()->isWithinSensor(position)) {
                     LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
                     continue;
                 }
@@ -313,7 +314,7 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             // Only add if within sensor volume:
-            if(!detector_->isWithinSensor(local_position)) {
+            if(!detector_->getModel()->isWithinSensor(local_position)) {
                 LOG(DEBUG) << "Charge carriers outside sensor volume at " << Units::display(local_position, {"mm", "um"});
                 // FIXME: drop charges if it ends up outside the sensor, could be optimized to estimate position on border
                 continue;

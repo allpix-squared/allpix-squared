@@ -346,14 +346,14 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Check for overshooting outside the sensor and correct for it:
-        if(!detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
             LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             // within_sensor = false;
 
             auto check_position = position;
             check_position.z() = last_position.z();
             // Correct for position in z by interpolation to increase precision:
-            if(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+            if(detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
                 // FIXME this currently depends in the direction of the drift
                 if(position.z() > 0 && type == CarrierType::HOLE) {
                     LOG(DEBUG) << "Not stopping carrier " << type << " at "
@@ -404,7 +404,7 @@ TransientPropagationModule::propagate(Event* event,
         for(int x = x_lower; x <= x_higher; x++) {
             for(int y = y_lower; y <= y_higher; y++) {
                 // Ignore if out of pixel grid
-                if(!detector_->isWithinPixelGrid(x, y)) {
+                if(!detector_->getModel()->isWithinPixelGrid(x, y)) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
