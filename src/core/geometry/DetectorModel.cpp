@@ -190,8 +190,8 @@ bool DetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const 
  */
 bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
-    auto x_mod_pixel = std::fmod(local_pos.x() + getPixelSize().x() / 2, getPixelSize().x()) - getPixelSize().x() / 2;
-    auto y_mod_pixel = std::fmod(local_pos.y() + getPixelSize().y() / 2, getPixelSize().y()) - getPixelSize().y() / 2;
+    auto x_mod_pixel = std::fmod(local_pos.x() + pixel_size_.x() / 2, pixel_size_.x()) - pixel_size_.x() / 2;
+    auto y_mod_pixel = std::fmod(local_pos.y() + pixel_size_.y() / 2, pixel_size_.y()) - pixel_size_.y() / 2;
 
     return (std::fabs(x_mod_pixel) <= std::fabs(getImplantSize().x() / 2) &&
             std::fabs(y_mod_pixel) <= std::fabs(getImplantSize().y() / 2));
@@ -201,14 +201,14 @@ bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const
  * The definition of the pixel grid size is determined by the detector model
  */
 bool DetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
-    return !(pixel_index.x() >= getNPixels().x() || pixel_index.y() >= getNPixels().y());
+    return !(pixel_index.x() >= number_of_pixels_.x() || pixel_index.y() >= number_of_pixels_.y());
 }
 
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
 bool DetectorModel::isWithinPixelGrid(const int x, const int y) const {
-    return !(x < 0 || x >= static_cast<int>(getNPixels().x()) || y < 0 || y >= static_cast<int>(getNPixels().y()));
+    return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
 ROOT::Math::XYZPoint DetectorModel::getPixelCenter(unsigned int x, unsigned int y) const {
