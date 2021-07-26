@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
         std::string output_name_log;
         std::string plane = "yz";
         std::string units;
+        bool scalar_field = false;
         bool flag_cut = false;
         size_t slice_cut = 0;
         bool log_scale = false;
@@ -82,6 +83,8 @@ int main(int argc, char** argv) {
                 plane = std::string(argv[++i]);
             } else if(strcmp(argv[i], "-u") == 0 && (i + 1 < argc)) {
                 units = std::string(argv[++i]);
+            } else if(strcmp(argv[i], "-s") == 0) {
+                scalar_field = true;
             } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
                 slice_cut = static_cast<size_t>(std::atoi(argv[++i]));
                 flag_cut = true;
@@ -113,6 +116,7 @@ int main(int argc, char** argv) {
             std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
             std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
             std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
+            std::cout << "\t -s                     parsed observable is a scalar field" << std::endl;
             std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
             allpix::Log::finish();
@@ -128,7 +132,7 @@ int main(int argc, char** argv) {
         std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
         // FIXME this should be done in a more elegant way
-        FieldQuantity quantity = (observable == "ElectricField" ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+        FieldQuantity quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);
@@ -186,35 +190,35 @@ int main(int argc, char** argv) {
         auto* efield_map = new TH2D(Form("%s", observable.c_str()),
                                     Form("%s;%s", observable.c_str(), axis_titles.c_str()),
                                     x_bin,
-                                    1,
-                                    x_bin + 1,
+                                    0,
+                                    x_bin,
                                     y_bin,
-                                    1,
-                                    y_bin + 1);
+                                    0,
+                                    y_bin);
         auto* exfield_map = new TH2D(Form("%s X component", observable.c_str()),
                                      Form("%s X component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
         auto* eyfield_map = new TH2D(Form("%s Y component", observable.c_str()),
                                      Form("%s Y component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
         auto* ezfield_map = new TH2D(Form("%s Z component", observable.c_str()),
                                      Form("%s Z component;%s", observable.c_str(), axis_titles.c_str()),
-                                     x_bin + 1,
-                                     1,
-                                     x_bin + 1,
-                                     y_bin + 1,
-                                     1,
-                                     y_bin + 1);
+                                     x_bin,
+                                     0,
+                                     x_bin,
+                                     y_bin,
+                                     0,
+                                     y_bin);
 
         auto* c1 = new TCanvas();
 
