@@ -48,9 +48,11 @@ void WeightingPotentialReaderModule::initialize() {
     if(field_model == WeightingPotential::MESH) {
         auto field_data = read_field(thickness_domain);
 
+        // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
-                                             std::array<double, 2>{{field_data.getSize()[0], field_data.getSize()[1]}},
+                                             std::array<double, 2>{{field_data.getSize()[0] / model->getPixelSize().x(),
+                                                                    field_data.getSize()[1] / model->getPixelSize().y()}},
                                              std::array<double, 2>{{0, 0}},
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
