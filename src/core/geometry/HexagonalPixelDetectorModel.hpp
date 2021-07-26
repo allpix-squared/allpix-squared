@@ -54,171 +54,59 @@ namespace allpix {
 			int xpixel = -1;
 			int ypixel = -1;	
 
-			//Check if it is outside the pixel grid
-			if(posx < 0 || posx > (x_gridsize + minor_radius)){
-				return ROOT::Math::XYVector(xpixel, ypixel);
-			}else if(posy < 0 || posy > y_gridsize){
-				return ROOT::Math::XYVector(xpixel, ypixel);
-			}
-
-			if(x_check >= 1 && (x_gridsize - minor_radius) >= x_check){
-				switch(y_check % 6){
-					case 0: {
-						if(x_check % 2 == 0){
-							offset = (3 * side * std::floor(posy / (3 * side))) + ((std::sqrt(3) / 3) * ((x_check + 1) * minor_radius));
-							if(posy > (-(std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-							}else if(posy < (-(std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::floor(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)));	
-							} 							
-						}else if(x_check % 2 == 1){ 
-							offset = (3 * side * std::floor(posy / (3 * side))) - ((std::sqrt(3) / 3) * (x_check * minor_radius));
-							if(posy > ((std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1); 
-							}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)));
-							}							
-						}
-						break;
-					}
-					case 1: case 2:
-						xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-						ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-						break;	
-					case 3: {
-						if(x_check % 2 == 0){
-							offset = side * (3 * std::floor(posy / (3 * side)) + 2) - (std::sqrt(3) / 3) * (minor_radius * (x_check + 1));
-							if(posy > ((std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 2);
-							}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 1);
-							}			
-						}else if(x_check % 2 == 1){
-							offset = side * (3 * std::floor(posy / (3 * side)) + 2) + ((std::sqrt(3) / 3) * (minor_radius * x_check));
-							if(posy > (-(std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 2);
-							}else if(posy < (-(std::sqrt(3) / 3) * posx + offset)){
-								xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-								ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-							}
-						}
-						break;
-					}			
-					case 4: case 5: {
-						xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
-						ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 2);
-						break;				
-					}
-				}
-			}else if(x_check == 0){
-				switch(y_check % 6){
-					case 0:
-						offset = side * (0.5 + (3 * std::floor(posy / (3 * side))));
+			switch(y_check % 6){
+				case 0: {
+					if(x_check % 2 == 0){
+						offset = (3 * side * std::floor(posy / (3 * side))) + ((std::sqrt(3) / 3) * ((x_check + 1) * minor_radius));
 						if(posy > (-(std::sqrt(3) / 3) * posx + offset)){
-							xpixel = 1;
-							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 1);
-						}else if(posy < (-(std::sqrt(3) / 3) * (posx) + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}		    
-						break;
-					case 1: case 2:
-						xpixel = 1;
-						ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-						break;
-					case 3:
-						offset = side * (1.5 + (3 * std::floor(posy / (3 * side))));
-						if(posy > ((std::sqrt(3) / 3) * posx + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
-							xpixel = 1;
-							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 1);
-						}
-						break;
-					case 4: case 5:
-						return ROOT::Math::XYVector(xpixel, ypixel);
-				}		
-			}else if(x_check == ((x_gridsize / minor_radius) - 1)){
-				switch(y_check % 6){
-					case 0:
-						offset = ((3 * side) * (std::floor(posy / (3 * side)))) - ((std::sqrt(3) / 3) * (x_gridsize - minor_radius));
-						if(posy > ((std::sqrt(3) / 3)*(posx) + offset)){
 							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
 							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-						}else if(posy < ((std::sqrt(3) / 3)*(posx) + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}
-						break;
-					case 1: case 2:
-						xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-						ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);	
-						break;
-					case 3:
-						offset = side * (3 * std::floor(posy / (3 * side)) + 2)+ (std::sqrt(3) / 3) * (x_gridsize - minor_radius);
-						if(posy > ((-std::sqrt(3) / 3) * posx + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}else if(posy < ((-std::sqrt(3) / 3) * posx + offset)){
-							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-						}
-						break;
-					case 4: case 5:
-						return ROOT::Math::XYVector(xpixel, ypixel);
-				}							 
-			}
-
-			//considering the edge of the grid along y (can this be ingrained in the above code?);
-			if(posy < (side / 2)){
-				switch(x_check % 2){
-					offset = (std::sqrt(3) / 3) * (pixelsize * (std::floor(posx / pixelsize)) + minor_radius);
-					case 0: {
+						}else if(posy < (-(std::sqrt(3) / 3) * posx + offset)){
+							xpixel = static_cast<int>(std::floor(posx / pixelsize));
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)));	
+						} 							
+					}else if(x_check % 2 == 1){ 
+						offset = (3 * side * std::floor(posy / (3 * side))) - ((std::sqrt(3) / 3) * (x_check * minor_radius));
 						if(posy > ((std::sqrt(3) / 3) * posx + offset)){
 							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-							ypixel = 1;
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1); 
 						}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}
-						break;
-					}
-					case 1: {
-						offset = -offset;
-						if(posy > ((std::sqrt(3) / 3) * posx + offset)){
 							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-							ypixel = 1;
-						}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}
-						break;
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)));
+						}							
 					}
+					break;
 				}
-			}else if(posy > (y_gridsize - (side / 2))){
-				switch(x_check % 2){
-					offset = y_gridsize - ((std::sqrt(3) / 3) * (minor_radius * (2 * std::floor(posx / pixelsize) + 1)));    
-					case 0: {
-						if(posy > ((std::sqrt(3) / 3) * (posx) + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}else if(posy < ((std::sqrt(3) / 3) * (posx) + offset)){
+				case 1: case 2:
+					xpixel = static_cast<int>(std::ceil(posx / pixelsize));
+					ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
+					break;	
+				case 3: {
+					if(x_check % 2 == 0){
+						offset = side * (3 * std::floor(posy / (3 * side)) + 2) - (std::sqrt(3) / 3) * (minor_radius * (x_check + 1));
+						if(posy > ((std::sqrt(3) / 3) * posx + offset)){
+							xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 2);
+						}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
+							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side))  + 1);
+						}			
+					}else if(x_check % 2 == 1){
+						offset = side * (3 * std::floor(posy / (3 * side)) + 2) + ((std::sqrt(3) / 3) * (minor_radius * x_check));
+						if(posy > (-(std::sqrt(3) / 3) * posx + offset)){
+							xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
+							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 2);
+						}else if(posy < (-(std::sqrt(3) / 3) * posx + offset)){
 							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
 							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
 						}
-				    	break;
 					}
-					case 1: {
-						offset = -offset;		    
-						if(posy > ((-std::sqrt(3) / 3) * posx + offset)){
-							return ROOT::Math::XYVector(xpixel, ypixel);
-						}else if(posy < ((-std::sqrt(3) / 3) * posx + offset)){
-							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
-							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-						}
-						break;
-					}
+					break;
+				}			
+				case 4: case 5: {
+					xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
+					ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 2);
+					break;				
 				}
 			}
 			//calculation done based on 1 as first index, but then shift to 0 here to match convention defined in user manual
@@ -237,7 +125,7 @@ namespace allpix {
 			double side = getPixelSize().x() / std::sqrt(3);
 			if((pixely_num % 2) == 1){
 				y_gridsize = (((pixely_num - 1) / 2) * 3 * side) + (2 * side);
-				std::cout << "Gridsize Y: " << y_gridsize << std::endl;
+				//std::cout << "Gridsize Y: " << y_gridsize << std::endl;
 			}else if(pixely_num % 2 == 0){
 				y_gridsize = ((pixely_num / 2) * 3 * side) + (side / 2);
 	    	}
