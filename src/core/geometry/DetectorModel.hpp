@@ -366,37 +366,37 @@ namespace allpix {
          * @brief Returns if a local position is within the sensitive device
          * @return True if a local position is within the sensor, false otherwise
          */
-        bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
+        virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
          * @return True if a local position is within the pixel implant, false otherwise
          */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
-        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+        virtual bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
 
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
-        bool isWithinPixelGrid(const int x, const int y) const;
+        virtual bool isWithinPixelGrid(const int x, const int y) const;
 
         /**
          * @brief Returns a pixel center in local coordinates
          * @return Coordinates of the pixel center
          */
-        ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const;
+        virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
          * @return X,Y pixel indices
          */
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>
         findPixel(const ROOT::Math::XYZPoint& local_pos) const;
 
     protected:
