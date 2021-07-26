@@ -122,11 +122,15 @@ The following command-line options are supported:
 -l                     plot with logarithmic scale if set
 -o <output_file_name>  name of the file to output (default is efield.png)
 -p <plane>             plane to be plotted. xy, yz or zx (default is yz)
+-u <units>             units to interpret the field data in
+-s                     parsed observable is a scalar field
 ```
 
 The list with options and defaults is displayed with the `-h` option.
 In a 3D mesh, the plane to be plotted must be identified by using the option `-p` with argument *xy*, *yz* or *zx*, defaulting to *yz*.
-The data to be plotted can be selected with the `-d` option, the arguments are *ex*, *ey*, *ez* for the vector components or the default value *n* for the norm of the electric field.
+By default, the data is interpreted as a vector field, where graphs for all three components are created.
+Using the option `-s` enables the interpretation of a scalar field.
+The units for the field to interpreted in can be defined via the option `-u`.
 The number of mesh divisions in each dimension is automatically read from the `init`/`apf` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
 
 # Octree
