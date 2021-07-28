@@ -9,6 +9,7 @@
  */
 
 #include "DetectorModel.hpp"
+#include "core/geometry/exceptions.h"
 #include "core/module/exceptions.h"
 
 using namespace allpix;
@@ -220,9 +221,11 @@ ROOT::Math::XYZPoint DetectorModel::getPixelCenter(unsigned int x, unsigned int 
     return {local_x, local_y, local_z};
 }
 
-ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>
-DetectorModel::findPixel(const ROOT::Math::XYZPoint& local_pos) const {
+Pixel::Index DetectorModel::findPixel(const ROOT::Math::XYZPoint& local_pos) const {
     auto pixel_x = static_cast<int>(std::round(local_pos.x() / pixel_size_.x()));
     auto pixel_y = static_cast<int>(std::round(local_pos.y() / pixel_size_.y()));
-    return {pixel_x, pixel_y};
+    if(!isWithinPixelGrid(pixel_x, pixel_y)) {
+        throw PixelOutsideGridException();
+    }
+    return {static_cast<unsigned int>(pixel_x), static_cast<unsigned int>(pixel_y)};
 }

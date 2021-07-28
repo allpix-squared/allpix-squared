@@ -17,6 +17,7 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -273,8 +274,20 @@ void CapacitiveTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        Pixel::Index pixel;
+        try {
+            pixel = model_->findPixel(position);
+        }
+        // Ignore if out of pixel grid
+        catch(PixelOutsideGridException& e) {
+            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                       << " because their nearest pixel is outside the grid";
+            continue;
+        }
+
+        auto xpixel = static_cast<int>(pixel.x());
+        auto ypixel = static_cast<int>(pixel.y());
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
         for(size_t row = 0; row < max_row_; row++) {
@@ -290,7 +303,7 @@ void CapacitiveTransferModule::run(Event* event) {
                 // Ignore if out of pixel grid
                 if(!detector_->getModel()->isWithinPixelGrid(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
-                               << " because their nearest pixel (" << xpixel << "," << ypixel
+                               << " because their nearest pixel (" << xcoord << "," << ycoord
                                << ") is outside the pixel matrix";
                     continue;
                 }

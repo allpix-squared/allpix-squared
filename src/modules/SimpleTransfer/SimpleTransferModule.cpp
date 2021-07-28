@@ -19,6 +19,7 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
@@ -99,13 +100,15 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto pixel = model_->findPixel(position);
-
+        Pixel::Index pixel_index;
+        try {
+            pixel_index = model_->findPixel(position);
+        }
         // Ignore if out of pixel grid
-        if(!detector_->getModel()->isWithinPixelGrid(pixel.x(), pixel.y())) {
+        catch(PixelOutsideGridException& e) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                       << " because their nearest pixel (" << pixel.x() << "," << pixel.y() << ") is outside the grid";
+                       << " because their nearest pixel is outside the grid";
             continue;
         }
 
@@ -116,8 +119,6 @@ void SimpleTransferModule::run(Event* event) {
                        << " because it is outside the pixel implant.";
             continue;
         }
-
-        Pixel::Index pixel_index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y()));
 
         // Update statistics
         transferred_charges_count += propagated_charge.getCharge();

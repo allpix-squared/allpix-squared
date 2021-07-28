@@ -8,6 +8,7 @@
  */
 
 #include "PulseTransferModule.hpp"
+#include "core/geometry/exceptions.h"
 #include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
@@ -116,14 +117,15 @@ void PulseTransferModule::run(Event* event) {
             }
 
             // Find the nearest pixel
-            auto xpixel = static_cast<int>(std::round(position.x() / model->getPixelSize().x()));
-            auto ypixel = static_cast<int>(std::round(position.y() / model->getPixelSize().y()));
-
+            Pixel::Index pixel_index;
+            try {
+                pixel_index = model->findPixel(position);
+            }
             // Ignore if out of pixel grid
-            if(!detector_->getModel()->isWithinPixelGrid(xpixel, ypixel)) {
+            catch(PixelOutsideGridException& e) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                           << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
+                           << " because their nearest pixel is outside the grid";
                 continue;
             }
 
@@ -141,8 +143,6 @@ void PulseTransferModule::run(Event* event) {
                     continue;
                 }
             }
-
-            Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
