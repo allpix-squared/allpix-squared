@@ -86,6 +86,13 @@ namespace allpix {
         std::vector<const MCParticle*> getMCParticles() const;
 
         /**
+         * @brief Get all primary Monte-Carlo particles contributing to this pixel charge. A particle is considered primary
+         * if it has no parent particle set.
+         * @return List of all related primary Monte-Carlo particles
+         */
+        std::vector<const MCParticle*> getPrimaryMCParticles() const;
+
+        /**
          *  @brief Get recoded charge pulse
          *  @return Constant reference to the full charge pulse
          */
