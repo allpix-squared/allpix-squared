@@ -79,8 +79,7 @@ void InducedTransferModule::run(Event* event) {
         // Ignore if out of pixel grid
         catch(PixelOutsideGridException& e) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << Units::display(position_end, {"mm", "um"}) << " because their nearest pixel " << pixel
-                       << " is outside the grid";
+                       << Units::display(position_end, {"mm", "um"}) << " because their nearest pixel is outside the grid";
             continue;
         }
 

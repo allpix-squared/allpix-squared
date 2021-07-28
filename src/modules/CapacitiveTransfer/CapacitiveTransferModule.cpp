@@ -282,7 +282,7 @@ void CapacitiveTransferModule::run(Event* event) {
         catch(PixelOutsideGridException& e) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                       << " because their nearest pixel " << pixel << " is outside the grid";
+                       << " because their nearest pixel is outside the grid";
             continue;
         }
 
@@ -303,7 +303,8 @@ void CapacitiveTransferModule::run(Event* event) {
                 // Ignore if out of pixel grid
                 if(!detector_->getModel()->isWithinPixelGrid(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
-                               << " because their nearest pixel " << pixel << " is outside the pixel matrix";
+                               << " because their nearest pixel (" << xcoord << "," << ycoord
+                               << ") is outside the pixel matrix";
                     continue;
                 }
 

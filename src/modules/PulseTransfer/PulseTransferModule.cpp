@@ -125,7 +125,7 @@ void PulseTransferModule::run(Event* event) {
             catch(PixelOutsideGridException& e) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                           << " because their nearest pixel (" << pixel_index << ") is outside the grid";
+                           << " because their nearest pixel is outside the grid";
                 continue;
             }
 
