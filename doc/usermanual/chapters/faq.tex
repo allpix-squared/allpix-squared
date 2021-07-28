@@ -120,7 +120,7 @@ for(auto& mc_particle : my_mc_particles) {
 \end{minted}
 
 A similar function is used e.g.\ in the DetectorHistogrammer module to filter primary particles and create position-resolved graphs.
-Furthermore, the PixelHit object provides two member functions to access Monte Carlo particles, one which returns all known particles, \parameter{getMCParticles()}, and a second function called \parameter{getPrimaryMCParticles()} which already performs the above filtering and only returns primary particle references.
+Furthermore, the PixelHit and PixelCharge objects provide two member functions to access Monte Carlo particles, one which returns all known particles, \parameter{getMCParticles()}, and a second function called \parameter{getPrimaryMCParticles()} which already performs the above filtering and only returns primary particle references.
 \item[How do I access data stored in a file produced with the ROOTObjectWriter from an analysis script?]
 \apsq uses ROOT trees to directly store the relevant \CPP objects as binary data in the file. This retains all information present during the simulation run, including relations between different objects such as assignment of Monte Carlo particles.
 In order to read such a data file in an analysis script, the relevant \CPP library as well as its header have to be loaded.
