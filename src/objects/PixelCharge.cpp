@@ -108,6 +108,30 @@ std::vector<const MCParticle*> PixelCharge::getMCParticles() const {
     return mc_particles;
 }
 
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * MCParticles can only be fetched if the full history of objects are in scope and stored
+ */
+std::vector<const MCParticle*> PixelCharge::getPrimaryMCParticles() const {
+    std::vector<const MCParticle*> primary_particles;
+    for(const auto& mc_particle : mc_particles_) {
+        auto* particle = mc_particle.get();
+        if(particle == nullptr) {
+            throw MissingReferenceException(typeid(*this), typeid(MCParticle));
+        }
+
+        // Check for possible parents:
+        if(particle->getParent() != nullptr) {
+            continue;
+        }
+        primary_particles.emplace_back(particle);
+    }
+
+    // Return as a vector of mc particles
+    return primary_particles;
+}
+
 void PixelCharge::print(std::ostream& out) const {
     auto local_center_location = pixel_.getLocalCenter();
     auto global_center_location = pixel_.getGlobalCenter();
