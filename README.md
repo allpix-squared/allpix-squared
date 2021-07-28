@@ -108,7 +108,6 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Stefano Mersi, CERN, @mersi
 * Sebastian Pape, TU Dortmund University, @spape
 * Marko Petric, CERN, @mpetric
-* Radek Privara, Palacky University Olomouc, @rprivara
 * Nashad Rahman, The Ohio State University, @nashadroid
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer

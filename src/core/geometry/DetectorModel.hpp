@@ -396,7 +396,8 @@ namespace allpix {
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
          * @return X,Y pixel indices
          */
-        virtual Pixel::Index findPixel(const ROOT::Math::XYZPoint& local_pos) const;
+        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>
+        findPixel(const ROOT::Math::XYZPoint& local_pos) const;
 
     protected:
         std::string type_;

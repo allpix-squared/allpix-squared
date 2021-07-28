@@ -12,7 +12,6 @@
 #include <string>
 #include <utility>
 
-#include "core/geometry/exceptions.h"
 #include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
@@ -72,20 +71,10 @@ void InducedTransferModule::run(Event* event) {
         auto position_start = deposited_charge->getLocalPosition();
 
         // Find the nearest pixel
-        Pixel::Index pixel;
-        try {
-            pixel = model_->findPixel(position_end);
-        }
-        // Ignore if out of pixel grid
-        catch(PixelOutsideGridException& e) {
-            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << Units::display(position_end, {"mm", "um"}) << " because their nearest pixel is outside the grid";
-            continue;
-        }
-
-        auto xpixel = static_cast<int>(pixel.x());
-        auto ypixel = static_cast<int>(pixel.y());
-        LOG(TRACE) << "Calculating induced charge from carriers below pixel " << pixel << ", moved from "
+        auto xpixel = static_cast<int>(std::round(position_end.x() / model_->getPixelSize().x()));
+        auto ypixel = static_cast<int>(std::round(position_end.y() / model_->getPixelSize().y()));
+        LOG(TRACE) << "Calculating induced charge from carriers below pixel "
+                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << ", moved from "
                    << Units::display(position_start, {"um", "mm"}) << " to " << Units::display(position_end, {"um", "mm"})
                    << ", " << Units::display(propagated_charge.getGlobalTime() - deposited_charge->getGlobalTime(), "ns");
 

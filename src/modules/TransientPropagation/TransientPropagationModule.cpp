@@ -16,7 +16,6 @@
 
 #include <Eigen/Core>
 
-#include "core/geometry/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
@@ -378,19 +377,16 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Find the nearest pixel - before and after the step
-        Pixel::Index pixel, last_pixel;
-        try {
-            pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(position));
-            last_pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(last_position));
-        } catch(PixelOutsideGridException& e) {
-            LOG(TRACE) << "Skipping set of propagated charges because it is outside the grid";
-            continue;
-        }
-
+        auto pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(position));
+        auto last_pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(last_position));
         if(last_pixel.x() != pixel.x() || last_pixel.y() != pixel.y()) {
-            LOG(TRACE) << "Carrier crossed boundary from pixel " << last_pixel << " to pixel " << pixel;
+            LOG(TRACE) << "Carrier crossed boundary from pixel "
+                       << Pixel::Index(static_cast<unsigned int>(last_pixel.x()), static_cast<unsigned int>(last_pixel.y()))
+                       << " to pixel "
+                       << Pixel::Index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y()));
         }
-        LOG(TRACE) << "Moving carriers below pixel " << pixel << " from "
+        LOG(TRACE) << "Moving carriers below pixel "
+                   << Pixel::Index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y())) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(initial_time + runge_kutta.getTime(), "ns");
@@ -398,10 +394,10 @@ TransientPropagationModule::propagate(Event* event,
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
-        auto x_lower = static_cast<int>(std::min(pixel.x(), last_pixel.x())) - matrix_.x() / 2;
-        int x_higher = static_cast<int>(std::max(pixel.x(), last_pixel.x())) + matrix_.x() / 2;
-        int y_lower = static_cast<int>(std::min(pixel.y(), last_pixel.y())) - matrix_.y() / 2;
-        int y_higher = static_cast<int>(std::max(pixel.y(), last_pixel.y())) + matrix_.y() / 2;
+        int x_lower = std::min(pixel.x(), last_pixel.x()) - matrix_.x() / 2;
+        int x_higher = std::max(pixel.x(), last_pixel.x()) + matrix_.x() / 2;
+        int y_lower = std::min(pixel.y(), last_pixel.y()) - matrix_.y() / 2;
+        int y_higher = std::max(pixel.y(), last_pixel.y()) + matrix_.y() / 2;
 
         // Loop over NxN pixels:
         for(int x = x_lower; x <= x_higher; x++) {

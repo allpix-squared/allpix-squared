@@ -106,17 +106,5 @@ namespace allpix {
             error_message_ = "Detector name " + name + " is invalid, choose a different name";
         }
     };
-
-    /**
-     * @ingroup Exceptions
-     * @brief Indicates pixel indices referring to a pixel outside of the grid
-     */
-    class PixelOutsideGridException : public RuntimeError {
-    public:
-        /**
-         * @brief Constructs an error for pixel indices outside of the grid
-         */
-        explicit PixelOutsideGridException() { error_message_ = "Pixel indices outside of the grid"; }
-    };
 } // namespace allpix
 #endif /* ALLPIX_GEOMETRY_EXCEPTIONS_H */
