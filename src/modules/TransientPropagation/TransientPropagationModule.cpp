@@ -383,7 +383,7 @@ TransientPropagationModule::propagate(Event* event,
             pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(position));
             last_pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(last_position));
         } catch(PixelOutsideGridException& e) {
-            LOG(TRACE) << "Skipping set of propagated charges at pixel " << last_pixel << " because it is outside the grid";
+            LOG(TRACE) << "Skipping set of propagated charges because it is outside the grid";
             continue;
         }
 
