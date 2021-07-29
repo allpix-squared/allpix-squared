@@ -562,7 +562,7 @@ TransientPropagationModule::propagate(Event* event,
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
-        if(detector_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
             LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             // FIXME do we need an interpolation for accuracy here as well?
             within_sensor = false;
