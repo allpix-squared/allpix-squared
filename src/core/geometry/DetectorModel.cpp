@@ -220,9 +220,8 @@ ROOT::Math::XYZPoint DetectorModel::getPixelCenter(unsigned int x, unsigned int 
     return {local_x, local_y, local_z};
 }
 
-ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>
-DetectorModel::findPixel(const ROOT::Math::XYZPoint& local_pos) const {
-    auto pixel_x = static_cast<int>(std::round(local_pos.x() / pixel_size_.x()));
-    auto pixel_y = static_cast<int>(std::round(local_pos.y() / pixel_size_.y()));
+std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
+    auto pixel_x = static_cast<int>(std::round(position.x() / pixel_size_.x()));
+    auto pixel_y = static_cast<int>(std::round(position.y() / pixel_size_.y()));
     return {pixel_x, pixel_y};
 }
