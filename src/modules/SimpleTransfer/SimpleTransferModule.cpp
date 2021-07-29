@@ -99,13 +99,13 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto pixel = model_->findPixel(position);
+        auto [xpixel, ypixel] = model_->getPixelIndex(position);
 
         // Ignore if out of pixel grid
-        if(!detector_->getModel()->isWithinPixelGrid(pixel.x(), pixel.y())) {
+        if(!detector_->getModel()->isWithinPixelGrid(xpixel, ypixel)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                       << " because their nearest pixel (" << pixel.x() << "," << pixel.y() << ") is outside the grid";
+                       << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
             continue;
         }
 
@@ -117,7 +117,7 @@ void SimpleTransferModule::run(Event* event) {
             continue;
         }
 
-        Pixel::Index pixel_index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y()));
+        Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
         // Update statistics
         transferred_charges_count += propagated_charge.getCharge();

@@ -377,16 +377,15 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Find the nearest pixel - before and after the step
-        auto pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(position));
-        auto last_pixel = model_->findPixel(static_cast<ROOT::Math::XYZPoint>(last_position));
-        if(last_pixel.x() != pixel.x() || last_pixel.y() != pixel.y()) {
+        auto [xpixel, ypixel] = model_->getPixelIndex(static_cast<ROOT::Math::XYZPoint>(position));
+        auto [last_xpixel, last_ypixel] = model_->getPixelIndex(static_cast<ROOT::Math::XYZPoint>(last_position));
+        if(last_xpixel != xpixel || last_ypixel != ypixel) {
             LOG(TRACE) << "Carrier crossed boundary from pixel "
-                       << Pixel::Index(static_cast<unsigned int>(last_pixel.x()), static_cast<unsigned int>(last_pixel.y()))
-                       << " to pixel "
-                       << Pixel::Index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y()));
+                       << Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel))
+                       << " to pixel " << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
         }
         LOG(TRACE) << "Moving carriers below pixel "
-                   << Pixel::Index(static_cast<unsigned int>(pixel.x()), static_cast<unsigned int>(pixel.y())) << " from "
+                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(initial_time + runge_kutta.getTime(), "ns");
@@ -394,10 +393,10 @@ TransientPropagationModule::propagate(Event* event,
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
-        int x_lower = std::min(pixel.x(), last_pixel.x()) - matrix_.x() / 2;
-        int x_higher = std::max(pixel.x(), last_pixel.x()) + matrix_.x() / 2;
-        int y_lower = std::min(pixel.y(), last_pixel.y()) - matrix_.y() / 2;
-        int y_higher = std::max(pixel.y(), last_pixel.y()) + matrix_.y() / 2;
+        int x_lower = std::min(xpixel, last_xpixel) - matrix_.x() / 2;
+        int x_higher = std::max(xpixel, last_xpixel) + matrix_.x() / 2;
+        int y_lower = std::min(ypixel, last_ypixel) - matrix_.y() / 2;
+        int y_higher = std::max(ypixel, last_ypixel) + matrix_.y() / 2;
 
         // Loop over NxN pixels:
         for(int x = x_lower; x <= x_higher; x++) {

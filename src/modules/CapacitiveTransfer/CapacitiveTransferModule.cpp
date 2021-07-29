@@ -273,8 +273,7 @@ void CapacitiveTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        auto [xpixel, ypixel] = model_->getPixelIndex(position);
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
         for(size_t row = 0; row < max_row_; row++) {
