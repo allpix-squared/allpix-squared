@@ -276,8 +276,7 @@ void CapacitiveTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        auto [xpixel, ypixel] = model_->getPixelIndex(position);
         LOG(DEBUG) << "Hit at pixel " << xpixel << ", " << ypixel;
 
         for(size_t row = 0; row < max_row_; row++) {
@@ -291,7 +290,7 @@ void CapacitiveTransferModule::run(Event* event) {
                 auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
-                if(!detector_->isWithinPixelGrid(xcoord, ycoord)) {
+                if(!detector_->getModel()->isWithinPixelGrid(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";

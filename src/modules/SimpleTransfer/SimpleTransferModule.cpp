@@ -99,11 +99,10 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position.x() / model_->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position.y() / model_->getPixelSize().y()));
+        auto [xpixel, ypixel] = model_->getPixelIndex(position);
 
         // Ignore if out of pixel grid
-        if(!detector_->isWithinPixelGrid(xpixel, ypixel)) {
+        if(!detector_->getModel()->isWithinPixelGrid(xpixel, ypixel)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
@@ -111,7 +110,7 @@ void SimpleTransferModule::run(Event* event) {
         }
 
         // Ignore if outside the implant region:
-        if(collect_from_implant_ && !detector_->isWithinImplant(position)) {
+        if(collect_from_implant_ && !detector_->getModel()->isWithinImplant(position)) {
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because it is outside the pixel implant.";

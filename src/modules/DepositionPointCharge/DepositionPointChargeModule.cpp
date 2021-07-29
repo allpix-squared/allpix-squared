@@ -154,7 +154,7 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
 
     LOG(DEBUG) << "Position (local coordinates): " << Units::display(position, {"um", "mm"});
     // Cross-check calculated position to be within sensor:
-    if(!detector_->isWithinSensor(position)) {
+    if(!detector_->getModel()->isWithinSensor(position)) {
         LOG(DEBUG) << "Requested position is outside active sensor volume.";
         return;
     }
@@ -187,7 +187,7 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     std::vector<MCParticle> mcparticles;
 
     // Cross-check calculated position to be within sensor:
-    if(!detector_->isWithinSensor(ROOT::Math::XYZPoint(position.x(), position.y(), 0))) {
+    if(!detector_->getModel()->isWithinSensor(ROOT::Math::XYZPoint(position.x(), position.y(), 0))) {
         LOG(DEBUG) << "Requested position is outside active sensor volume.";
         return;
     }

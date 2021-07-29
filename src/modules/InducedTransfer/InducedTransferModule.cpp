@@ -71,8 +71,8 @@ void InducedTransferModule::run(Event* event) {
         auto position_start = deposited_charge->getLocalPosition();
 
         // Find the nearest pixel
-        auto xpixel = static_cast<int>(std::round(position_end.x() / model_->getPixelSize().x()));
-        auto ypixel = static_cast<int>(std::round(position_end.y() / model_->getPixelSize().y()));
+        auto [xpixel, ypixel] = model_->getPixelIndex(position_end);
+
         LOG(TRACE) << "Calculating induced charge from carriers below pixel "
                    << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << ", moved from "
                    << Units::display(position_start, {"um", "mm"}) << " to " << Units::display(position_end, {"um", "mm"})
@@ -82,7 +82,7 @@ void InducedTransferModule::run(Event* event) {
         for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
             for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
                 // Ignore if out of pixel grid
-                if(!detector_->isWithinPixelGrid(x, y)) {
+                if(!detector_->getModel()->isWithinPixelGrid(x, y)) {
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
