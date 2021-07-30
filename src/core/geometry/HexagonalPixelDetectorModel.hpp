@@ -39,9 +39,7 @@ namespace allpix {
 								For now, part of the hexagon pixels at the edge of the rectangular grid is assumed to be out of grid
 								Note: out of grid pixels set to indices (-1,-1) which are then subsequently filtered out by isWithinPixelGrid() 
 		*/
-    	ROOT::Math::XYVector getPixelIndex(const ROOT::Math::XYZPoint & position) const override {
-			double x_gridsize = getGridSize().x();
-			double y_gridsize = getGridSize().y();
+		std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const override {
 			double pixelsize = getPixelSize().x(); //defined as side to side length (pitch)
 			double side = pixelsize / std::sqrt(3);
 			double minor_radius = pixelsize / 2;
@@ -73,14 +71,15 @@ namespace allpix {
 						}else if(posy < ((std::sqrt(3) / 3) * posx + offset)){
 							xpixel = static_cast<int>(std::ceil(posx / pixelsize));
 							ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)));
-						}							
+						}						
 					}
 					break;
 				}
-				case 1: case 2:
+				case 1: case 2: {
 					xpixel = static_cast<int>(std::ceil(posx / pixelsize));
 					ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);
-					break;	
+					break;
+				}
 				case 3: {
 					if(x_check % 2 == 0){
 						offset = side * (3 * std::floor(posy / (3 * side)) + 2) - (std::sqrt(3) / 3) * (minor_radius * (x_check + 1));
@@ -110,7 +109,7 @@ namespace allpix {
 				}
 			}
 			//calculation done based on 1 as first index, but then shift to 0 here to match convention defined in user manual
-			return ROOT::Math::XYVector(xpixel - 1, ypixel - 1); 
+			return {xpixel - 1, ypixel - 1}; 
 		} //End of getPixelIndex function
 	
 		/*
