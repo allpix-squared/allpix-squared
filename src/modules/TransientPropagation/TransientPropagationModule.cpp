@@ -393,6 +393,8 @@ TransientPropagationModule::propagate(Event* event,
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
+
+        /*
         int x_lower = std::min(xpixel, last_xpixel) - matrix_.x() / 2;
         int x_higher = std::max(xpixel, last_xpixel) + matrix_.x() / 2;
         int y_lower = std::min(ypixel, last_ypixel) - matrix_.y() / 2;
@@ -406,6 +408,8 @@ TransientPropagationModule::propagate(Event* event,
                     LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
                     continue;
                 }
+
+                std::cout << "(" << x << "," << y << ") ";
 
                 Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
                 auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
@@ -431,9 +435,32 @@ TransientPropagationModule::propagate(Event* event,
                     }
                 }
             }
+        } */
+
+        for(const auto& pixel_index : model_->getNeighborPixels(pixel)) {
+            auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
+            auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
+
+            // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
+            auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+            LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
+                       << " q = " << Units::display(induced, "e");
+
+            // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
+            auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
+            pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
+
+            if(output_plots_) {
+                potential_difference_->Fill(std::fabs(ramo - last_ramo));
+                induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                if(type == CarrierType::ELECTRON) {
+                    induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                } else {
+                    induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                }
+            }
         }
     }
-
     // Return the final position of the propagated charge
     return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive);
 }

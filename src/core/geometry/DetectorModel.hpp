@@ -238,7 +238,7 @@ namespace allpix {
          * @warning The grid has zero thickness
          * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
-        ROOT::Math::XYZVector getGridSize() const {
+        virtual ROOT::Math::XYZVector getGridSize() const {
             return {getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
         }
 
@@ -408,7 +408,14 @@ namespace allpix {
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+
+        /**
+         * @brief Return a set containing all the neighboring pixels 
+         * X,Y indices of a pixel corresponding to a local position in a sensor.
+         * @return X,Y pixel indices
+         */
+        virtual std::set<Pixel::Index> getNeighborPixels(Pixel::Index idx, size_t distance = 1) const;
 
     protected:
         std::string type_;
