@@ -8,18 +8,10 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_HEXAGONAL_PIXEL_DETECTOR_H
-#define ALLPIX_HEXAGONAL_PIXEL_DETECTOR_H
+#include "HexagonalPixelDetectorModel.hpp"
 
-namespace allpix {
-    class HexagonalPixelDetectorModel : public DetectorModel {
+using namespace allpix;
 
-    private:
-       //static double offset;
-       //int xpixel;
-       //int ypixel;
-	   //static double pixelsize, side, minor_radius, posx, posy, offset;
-	   //static int x_modulus, y_modulus, xpixel, ypixel;
     public:
 
 		explicit HexagonalPixelDetectorModel(std::string type, const ConfigReader& reader) : DetectorModel(std::move(type), reader) {}
@@ -34,27 +26,25 @@ namespace allpix {
 			double pixelsize = getPixelSize().x(); //defined as side to side length (pitch)
 			double side = pixelsize / std::sqrt(3);
 			double minor_radius = pixelsize / 2;
-			double posx = position.x() + minor_radius;
+			double posx = position.x() + minor_radius; 
 			double posy = position.y() + side;
-
-			int x_modulus = static_cast<int>(std::floor(posx / minor_radius)); 
-			int y_modulus = static_cast<int>(std::floor(((posy / (3 * side)) - std::floor(posy / (3 * side))) * 6));
-
-			double offset;
-
+			int x_check = static_cast<int>(std::floor(posx  / minor_radius));
+			int y_check = static_cast<int>(std::floor(posy / (side / 2)));
+			double offset;	
+		
 			int xpixel = static_cast<int>(std::ceil(posx / pixelsize));
 			int ypixel = static_cast<int>(2 * std::floor(posy / (3 * side)) + 1);	
 
-			switch(y_modulus % 6){
+			switch(y_check % 6){
 				case 0: {
-					if(x_modulus % 2 == 0){
-						offset = (3 * side * std::floor(posy / (3 * side))) + ((std::sqrt(3) / 3) * ((x_modulus + 1) * minor_radius));
+					if(x_check % 2 == 0){
+						offset = (3 * side * std::floor(posy / (3 * side))) + ((std::sqrt(3) / 3) * ((x_check + 1) * minor_radius));
 						if(posy < (-(std::sqrt(3) / 3) * posx + offset)){
 							xpixel -= 1;
 							ypixel -= 1;
-						}		
-					}else if(x_modulus % 2 == 1 || x_modulus % 2 == -1){ 
-						offset = (3 * side * std::floor(posy / (3 * side))) - ((std::sqrt(3) / 3) * (x_modulus * minor_radius));
+						}				
+					}else if(x_check % 2 == 1){ 
+						offset = (3 * side * std::floor(posy / (3 * side))) - ((std::sqrt(3) / 3) * (x_check * minor_radius));
 						if(posy < ((std::sqrt(3) / 3) * posx + offset)){
 							ypixel -= 1;
 						}						
@@ -65,14 +55,14 @@ namespace allpix {
 					break;
 				}
 				case 3: {
-					if(x_modulus % 2 == 0){
-						offset = side * (3 * std::floor(posy / (3 * side)) + 2) - (std::sqrt(3) / 3) * (minor_radius * (x_modulus + 1));
+					if(x_check % 2 == 0){
+						offset = side * (3 * std::floor(posy / (3 * side)) + 2) - (std::sqrt(3) / 3) * (minor_radius * (x_check + 1));
 						if(posy > ((std::sqrt(3) / 3) * posx + offset)){
 							xpixel -= 1; 
 							ypixel += 1;
 						}		
-					}else if(x_modulus % 2 == 1 || x_modulus % 2 == -1){
-						offset = side * (3 * std::floor(posy / (3 * side)) + 2) + ((std::sqrt(3) / 3) * (minor_radius * x_modulus));
+					}else if(x_check % 2 == 1){
+						offset = side * (3 * std::floor(posy / (3 * side)) + 2) + ((std::sqrt(3) / 3) * (minor_radius * x_check));
 						if(posy > (-(std::sqrt(3) / 3) * posx + offset)){
 							ypixel += 1;
 						}
@@ -80,20 +70,11 @@ namespace allpix {
 					break;
 				}			
 				case 4: case 5: {
-					if(x_modulus % 2 == 0){
-						xpixel -= 1;
-						ypixel += 1;
-					}else if(x_modulus % 2 == 1 || x_modulus % 2 == -1){
-						ypixel += 1;
-					}
+					xpixel = static_cast<int>(std::ceil((posx - minor_radius) / pixelsize));
+					ypixel += 1;
 					break;				
 				}
-				default:
-					//Bugged values (if there is) are set as (-1,-1)
-					xpixel = -1;
-					ypixel = -1;
 			}
-
 			//calculation done based on 1 as first index, but then shift to 0 here to match convention defined in user manual
 			return {xpixel - 1, ypixel - 1}; 
 		} //End of getPixelIndex function
