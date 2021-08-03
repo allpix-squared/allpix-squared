@@ -33,7 +33,7 @@ namespace allpix {
 
         /**
          * @brief Constructs the world geometry with all detectors
-         * @return Physical volume representing the world
+         * @param world_log Shared pointer to the World logical volume
          */
         void build(const std::shared_ptr<G4LogicalVolume>& world_log);
 
