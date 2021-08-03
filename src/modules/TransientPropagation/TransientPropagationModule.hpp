@@ -72,11 +72,12 @@ namespace allpix {
 
         /**
          * @brief Propagate a single set of charges through the sensor
-         * @param event     Pointer to current event
-         * @param pos       Position of the deposit in the sensor
-         * @param type      Type of the carrier to propagate
-         * @param charge    Total charge of the observed charge carrier set
-         * @param pixel_map Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
+         * @param event        Pointer to current event
+         * @param pos          Position of the deposit in the sensor
+         * @param type         Type of the carrier to propagate
+         * @param charge       Total charge of the observed charge carrier set
+         * @param initial_time Initial timestamp referring to the start of the event
+         * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
          *                  result in
          * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took and a
          * flag whether it is still alive or has recombined
