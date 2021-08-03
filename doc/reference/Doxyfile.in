@@ -775,7 +775,9 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = "@PROJECT_SOURCE_DIR@/src/" \
-                         "@PROJECT_SOURCE_DIR@/tools/tcad_dfise_converter/" \
+                         "@PROJECT_SOURCE_DIR@/tools/mesh_converter/" \
+                         "@PROJECT_SOURCE_DIR@/tools/apf_tools/" \
+                         "@PROJECT_SOURCE_DIR@/tools/weightingpotential_generator/" \
                          "@PROJECT_SOURCE_DIR@/doc/reference/README.md"
 
 # This tag can be used to specify the character encoding of the source files
