@@ -44,7 +44,7 @@ namespace allpix {
      * @brief Flags to change the behaviour of delegates
      *
      * All flags are distinct and can be combined using the | (OR) operator. The flags should be passed to the
-     * \ref Messenger when \ref Messenger::registerFiltering "registering" a filter or when binding either a \ref
+     * \ref Messenger when \ref Messenger::registerFilter "registering" a filter or when binding either a \ref
      * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
      * combination of flags is valid.
      */

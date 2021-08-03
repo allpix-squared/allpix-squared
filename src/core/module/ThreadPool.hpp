@@ -139,7 +139,7 @@ namespace allpix {
          * @param max_queue_size Maximum size of the standard job queue
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
-         * @warning Total count of threads need to be preregistered via \ref ThreadPool::addThreadCount
+         * @warning Total count of threads need to be preregistered via \ref ThreadPool::registerThreadCount
          */
         ThreadPool(unsigned int num_threads,
                    unsigned int max_queue_size,
@@ -153,7 +153,7 @@ namespace allpix {
          * @param max_buffered_size Maximum size of the buffered job queue (should be at least number of threads)
          * @param worker_init_function Function run by all the workers to initialize
          * @param worker_finalize_function Function run by all the workers to cleanup
-         * @warning Total count of threads need to be preregistered via \ref ThreadPool::addThreadCount
+         * @warning Total count of threads need to be preregistered via \ref ThreadPool::registerThreadCount
          */
         ThreadPool(unsigned int num_threads,
                    unsigned int max_queue_size,
@@ -170,24 +170,20 @@ namespace allpix {
         /// @}
 
         /**
-         * @brief Submit a standard job to be run by the thread pool. In case of no workers, the function will be immediately
-         * executed.
-         * @param n Priority identifier or UINT64_MAX for non-prioritized submission
+         * @brief Submit a standard job to be run by the thread pool. In case no workers are registered, the function will be
+         * executed immediately.
          * @param func Function to execute by the pool
          * @param args Parameters to pass to the function
-         * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
-         *          there are no threads available
          */
         template <typename Func, typename... Args> auto submit(Func&& func, Args&&... args);
         /**
-         * @brief Submit a priority job to be run by the thread pool. In case no workers, the function will be immediately
-         * executed.
-         * @warning This function can only be called if thread pool was initialized with buffered jobs
+         * @brief Submit a priority job to be run by the thread pool. In case no workers are registered, the function will be
+         * executed immediately.
          * @param n Priority identifier or UINT64_MAX for non-prioritized submission
          * @param func Function to execute by the pool
          * @param args Parameters to pass to the function
-         * @warning The thread submitting task should always call the \ref ThreadPool::execute method to prevent a lock when
-         *          there are no threads available
+         *
+         * @warning This function can only be called if thread pool was initialized with buffered jobs
          */
         template <typename Func, typename... Args> auto submit(uint64_t n, Func&& func, Args&&... args);
 

@@ -230,7 +230,6 @@ namespace allpix {
 
         /**
          * @brief Inform the module that a certain event will be skipped
-         * @param event Number of event skipped
          */
         virtual void skip_event(uint64_t) {}
 

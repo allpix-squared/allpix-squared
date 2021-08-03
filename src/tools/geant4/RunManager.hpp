@@ -22,7 +22,7 @@ namespace allpix {
         ~RunManager() override = default;
 
         /**
-         * @brief Wrapper around \ref G4RunManager BeamOn that seeds the RNG before calling BeamOn
+         * @brief Wrapper around G4RunManager::BeamOn that seeds the RNG before calling BeamOn
          * @param n_event number of events (particles) to simulate in one call to BeamOn.
          * @param seed1 First event seed
          * @param seed2 Second event seed

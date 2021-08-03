@@ -92,13 +92,13 @@ namespace allpix {
         /**
          * @brief Run all modules for the number of events
          * @param seeder Reference to the seeder
-         * @warning Should be called after the \ref ModuleManager::init "init function"
+         * @warning Should be called after the \ref ModuleManager::initialize "init function"
          */
         void run(RandomNumberGenerator& seeder);
 
         /**
          * @brief Finalize all modules after the event sequence
-         * @warning Should be called after the \ref ModuleManager::init "run function"
+         * @warning Should be called after the \ref ModuleManager::initialize "run function"
          */
         void finalize();
 
