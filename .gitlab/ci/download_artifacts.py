@@ -12,7 +12,7 @@ api_token = sys.argv[1]
 ci_project_id = sys.argv[2]
 ci_pipeline_id = sys.argv[3]
 
-print "Downloading job list"
+print("Downloading job list")
 data = json.load(os.popen("curl -g --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/%s/pipelines/%s/jobs?scope[]=success&per_page=100\"" % (api_token, ci_project_id, ci_pipeline_id)))
 
 # Find last passed builds
@@ -20,6 +20,6 @@ for i in range(0, len(data)):
   if "pkg:" not in data[i]['name']:
     continue
 
-  print "Downloading artifact for job %s" % data[i]['id']
+  print("Downloading artifact for job %s" % data[i]['id'])
   os.system("curl --location --header \"PRIVATE-TOKEN:%s\" \"https://gitlab.cern.ch/api/v4/projects/%s/jobs/%s/artifacts\" -o artifact.zip" % (api_token, ci_project_id, data[i]['id']))
   os.system("unzip -j artifact.zip; rm artifact.zip")
