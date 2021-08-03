@@ -19,9 +19,9 @@ namespace allpix {
     /**
      * @brief Run manager for Geant4 that can be used by multiple threads where each thread will have its own instance.
      *
-     * This manager overrides \ref G4WorkerRunManager behaviour so it can be used on user defined threads. Therefore, there
+     * This manager overrides G4WorkerRunManager behaviour so it can be used on user defined threads. Therefore, there
      * is no dependency on the master run manager except only in initialization.
-     * APIs inherited from \ref G4WorkerRunManager which communicate with master run manager are suppressed because they
+     * APIs inherited from G4WorkerRunManager which communicate with master run manager are suppressed because they
      * are not needed anymore. This manager assumes that the client is only interested in its own results and it is
      * independent from other instances running on different threads.
      */
@@ -54,6 +54,8 @@ namespace allpix {
         /**
          * @brief Run the event loop for specified number of events.
          * @param n_event number of events
+         * @param macroFile Possible pointer to a macro file, passed on to Geant4
+         * @param n_select Optional n_select parameter passed on to Geant4
          *
          * Run the event loop. Everything is the same as base implementation except that we keep
          * the seedsQueue since the master manager has already pushed the seeds in it.
@@ -71,7 +73,7 @@ namespace allpix {
          * @brief Constructs an event object and set the seeds for RNG.
          * @param i_event the event number.
          *
-         * Creates a new \ref G4Event object and set its event number, seeds for the thread RNG.
+         * Creates a new G4Event object and set its event number, seeds for the thread RNG.
          */
         G4Event* GenerateEvent(G4int i_event) override;
 
