@@ -23,7 +23,6 @@
 #include "objects/exceptions.h"
 #include "tools/runge_kutta.h"
 
-
 using namespace allpix;
 using namespace ROOT::Math;
 
