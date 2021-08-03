@@ -40,7 +40,8 @@ namespace allpix {
 
         /**
          * Method to add an additional material to the internal database
-         * @param material The material
+         * @param name Name of the material to be registered
+         * @param material Pointer to the material object
          */
         void set(const std::string& name, G4Material* material);
 

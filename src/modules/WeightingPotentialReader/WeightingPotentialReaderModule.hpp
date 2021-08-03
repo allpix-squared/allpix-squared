@@ -52,6 +52,7 @@ namespace allpix {
 
         /**
          * @brief Create and apply a weighting potential equivalent to a pixel/pad in a plane condenser
+         * @param implant Vector with size of the readout implant in x and y
          * @param thickness_domain Domain of the thickness where the field is defined
          */
         FieldFunction<double> get_pad_potential_function(const ROOT::Math::XYVector& implant,

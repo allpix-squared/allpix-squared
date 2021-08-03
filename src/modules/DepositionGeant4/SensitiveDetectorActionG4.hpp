@@ -35,10 +35,10 @@ namespace allpix {
         /**
          * @brief Constructs the action handling for every sensitive detector
          * @param detector Detector this sensitive device is bound to
-         * @param msg Pointer to the messenger to send the charge deposits
+         * @param track_info_manager Pointer to the track information manager
          * @param charge_creation_energy Energy needed per deposited charge
          * @param fano_factor Fano factor for fluctuations in the energy fraction going into e/h pair creation
-         * @param random_seed Seed for the random number generator for Fano fluctuations
+         * @param cutoff_time Cut-off time for the creation of secondary particles
          */
         SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                   TrackInfoManager* track_info_manager,
