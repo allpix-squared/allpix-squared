@@ -217,13 +217,15 @@ namespace allpix {
          * @brief Construct a function delegate for the given module
          * @param flags Messenger flags
          * @param obj Module object this delegate should operate on
-         * @param method A function taking a shared_ptr to the message to listen to
+         * @param filter A filter function receiving a shared_ptr to the message and its name, returning a boolean indicating
+         * the filter decision
          */
         FilterDelegate(MsgFlags flags, T* obj, FilterFunction filter) : ModuleDelegate<T>(flags, obj), filter_(filter) {}
 
         /**
          * @brief Calls the filter function with the supplied message
          * @param msg Message to process
+         * @param dest Destination of the message
          * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
          * filter function
          */
@@ -255,14 +257,16 @@ namespace allpix {
          * @brief Construct a filter delegate for the given module
          * @param flags Messenger flags
          * @param obj Module object this delegate should operate on
-         * @param method A function taking a shared_ptr to the message to listen to
+         * @param filter A filter function receiving a shared_ptr to the message and its name, returning a boolean indicating
+         * the filter decision
          */
         FilterAllDelegate(MsgFlags flags, T* obj, FilterFunction filter) : ModuleDelegate<T>(flags, obj), filter_(filter) {}
 
         /**
          * @brief Calls the filter function with the supplied message
          * @param msg Message to process
-         * @param name Name of the message to process
+         * @param name Name of the message
+         * @param dest Destination of the message
          * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
          * filter function
          */
@@ -293,7 +297,7 @@ namespace allpix {
         /**
          * @brief Saves the message in the passed destination
          * @param msg Message to process
-         * @param dest Message destination
+         * @param dest Destination of the message
          * @throws UnexpectedMessageException If this delegate has already received the message after the previous reset (not
          * thrown if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is passed)
          *
@@ -331,7 +335,7 @@ namespace allpix {
         /**
          * @brief Adds the message to the bound vector
          * @param msg Message to process
-         * @param dest Message destination
+         * @param dest Destination of the message
          */
         void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
 #ifndef NDEBUG

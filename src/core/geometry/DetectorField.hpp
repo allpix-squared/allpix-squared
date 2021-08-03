@@ -79,7 +79,7 @@ namespace allpix {
 
         /**
          * @brief Get the field value in the sensor at a position provided in local coordinates
-         * @param pos Position in the local frame
+         * @param local_pos Position in the local frame
          * @param extrapolate_z Extrapolate the field along z when outside the defined region
          * @return Value(s) of the field at the queried point
          */
@@ -87,7 +87,7 @@ namespace allpix {
 
         /**
          * @brief Get the value of the field at a position provided in local coordinates with respect to the reference
-         * @param pos       Position in the local frame
+         * @param local_pos Position in the local frame
          * @param reference Reference position to calculate the field for, x and y coordinate only
          * @param extrapolate_z Extrapolate the field along z when outside the defined region
          * @return Value(s) of the field assigned to the reference pixel at the queried point
@@ -138,7 +138,7 @@ namespace allpix {
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
          * @param offset The calculated global index to start from
-         * @param index sequence expanded to the number of elements requested, depending on the template instance
+         * @note The index sequence is expanded to the number of elements requested, depending on the template instance
          */
         template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
 
