@@ -58,7 +58,7 @@ namespace allpix {
 
         /**
          * @brief Run all modules for the number of events (run)
-         * @warning Should be called after the \ref Allpix::init "init function"
+         * @warning Should be called after the \ref Allpix::initialize "init function"
          */
         void run();
 
