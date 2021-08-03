@@ -395,8 +395,10 @@ namespace allpix {
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
          * @return X,Y pixel indices
+         *
+         * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
 
     protected:
         std::string type_;
