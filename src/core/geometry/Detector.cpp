@@ -173,7 +173,7 @@ bool Detector::hasWeightingPotential() const {
  * The weighting potential is retrieved relative to a reference pixel. Outside of the sensor the weighting potential is
  * strictly zero by definition.
  */
-double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pixel::Index& reference) const {
+double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const {
     auto size = model_->getPixelSize();
 
     // WARNING This relies on the origin of the local coordinate system
@@ -182,7 +182,7 @@ double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& pos, const Pi
 
     // Requiring to extrapolate the field along z because equilibrium means no change in weighting potential,
     // Without this, we would get large jumps close to the electrode once charge carriers cross the boundary.
-    return weighting_potential_.getRelativeTo(pos, {local_x, local_y}, true);
+    return weighting_potential_.getRelativeTo(local_pos, {local_x, local_y}, true);
 }
 
 /**
@@ -253,17 +253,17 @@ FieldType Detector::getDopingProfileType() const {
 }
 
 /**
- * @throws std::invalid_argument If the dpong profile sizes are incorrect
+ * @throws std::invalid_argument If the doping profile dimensions are incorrect
  *
  * The doping profile is stored as a large flat array. If the sizes are denoted as respectively X_SIZE, Y_ SIZE and Z_SIZE,
  * each position (x, y, z) has one index, calculated as x*Y_SIZE*Z_SIZE+y*Z_SIZE+z
  */
 void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
-                                    std::array<size_t, 3> sizes,
+                                    std::array<size_t, 3> dimensions,
                                     std::array<double, 2> scales,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
-    doping_profile_.setGrid(std::move(field), sizes, scales, offset, thickness_domain);
+    doping_profile_.setGrid(std::move(field), dimensions, scales, offset, thickness_domain);
 }
 
 void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {

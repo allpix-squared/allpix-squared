@@ -37,7 +37,8 @@ namespace allpix {
         /**
          * @brief Constructs Allpix and initialize all managers
          * @param config_file_name Path of the main configuration file
-         * @param options List of extra configuration options
+         * @param module_options List of extra configuration options for modules
+         * @param detector_options List of extra configuration options for the geometry setup
          */
         explicit Allpix(std::string config_file_name,
                         const std::vector<std::string>& module_options = std::vector<std::string>(),

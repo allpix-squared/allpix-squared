@@ -102,6 +102,7 @@ namespace allpix {
              * @param size Size of the support layer
              * @param offset Offset of the support layer from the center
              * @param material Material of the support layer
+             * @param type Type of the hole
              * @param location Location of the support material
              * @param hole_size Size of an optional hole (zero vector if no hole)
              * @param hole_offset Offset of the optional hole from the center of the support layer
@@ -338,6 +339,7 @@ namespace allpix {
          * @param thickness Thickness of the support
          * @param offset Offset of the support in the x,y-plane
          * @param material Material of the support
+         * @param type Type of the hole
          * @param location Location of the support (either 'sensor' or 'chip')
          * @param hole_size Size of the optional hole in the support
          * @param hole_offset Offset of the hole from its default position
@@ -386,7 +388,7 @@ namespace allpix {
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
          * @param x X- (or column-) coordinate to be checked
-         * @param x Y- (or row-) coordinate to be checked
+         * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
         virtual bool isWithinPixelGrid(const int x, const int y) const;

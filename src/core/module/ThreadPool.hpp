@@ -262,12 +262,12 @@ namespace allpix {
     private:
         /**
          * @brief Constantly running internal function each thread uses to acquire work items from the queue.
-         * @param min_thread_buffer Minimum buffer size to keep available without stall on push
-         * @param init_function Function to initialize the thread
-         * @param init_function Function to finalize the thread
+         * @param min_thread_buffer   Minimum buffer size to keep available without stall on push
+         * @param initialize_function Function to initialize the thread
+         * @param finalize_function   Function to finalize the thread
          */
         void worker(size_t min_thread_buffer,
-                    const std::function<void()>& init_function,
+                    const std::function<void()>& initialize_function,
                     const std::function<void()>& finalize_function);
 
         // The queue holds the task functions to be executed by the workers
