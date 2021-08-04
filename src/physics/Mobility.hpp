@@ -314,6 +314,7 @@ namespace allpix {
             } else {
                 throw InvalidModelError(model);
             }
+            LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
         }
 
         /**
