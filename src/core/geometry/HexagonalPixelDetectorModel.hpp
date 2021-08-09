@@ -94,7 +94,7 @@ namespace allpix {
 
         /**
          * @brief Return gridsize along X,Y of a hexagonal sensor grid.
-         * @return X,Y gridlength length in mm
+         * @return X and Y gridlength length in mm
          */
         ROOT::Math::XYZVector getGridSize() const override {
             double x_gridsize = getNPixels().x() * getPixelSize().x();
