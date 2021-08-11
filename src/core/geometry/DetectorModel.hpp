@@ -411,11 +411,11 @@ namespace allpix {
         std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
 
         /**
-         * @brief Return a set containing all the neighboring pixels 
+         * @brief Return a set containing all the neighboring pixels
          * X,Y indices of a pixel corresponding to a local position in a sensor.
          * @return X,Y pixel indices
          */
-        virtual std::set<Pixel::Index> getNeighborPixels(Pixel::Index idx, size_t distance = 1) const;
+        virtual std::set<Pixel::Index> getNeighborPixels(Pixel::Index idx, ROOT::Math::XYVector ind_matrix) const;
 
     protected:
         std::string type_;
