@@ -226,21 +226,26 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
     return {pixel_x, pixel_y};
 }
 
-std::set<Pixel::Index> DetectorModel::getNeighborPixels(Pixel::Index idx, ROOT::Math::XYVector ind_matrix) const {
-    std::set<Pixel::Index> neighbors;
+// std::set<Pixel::Index> DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::Math::XYVector
+// ind_matrix) const {
+std::set<std::pair<int, int>>
+DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::Math::XYVector ind_matrix) const {
+    // std::set<Pixel::Index> neighbors;
+    std::set<std::pair<int, int>> neighbors;
 
-    int x_lower = std::min(xpixel, last_xpixel) - ind_matrix.x() / 2;
-    int x_higher = std::max(xpixel, last_xpixel) + ind_matrix.x() / 2;
-    int y_lower = std::min(ypixel, last_ypixel) - ind_matrix.y() / 2;
-    int y_higher = std::max(ypixel, last_ypixel) + ind_matrix.y() / 2;
+    int x_lower = std::min(idx.x(), last_idx.x()) - ind_matrix.x() / 2;
+    int x_higher = std::max(idx.x(), last_idx.x()) + ind_matrix.x() / 2;
+    int y_lower = std::min(idx.y(), last_idx.y()) - ind_matrix.y() / 2;
+    int y_higher = std::max(idx.y(), last_idx.y()) + ind_matrix.y() / 2;
 
     // Calculate all neigboring pixels, e.g. for a rectangular pixel detector simply:
     for(int x = x_lower; x <= x_higher; x++) {
         for(int y = y_lower; y <= y_higher; y++) {
-            if(!isWithinPixelGrid(x, y) {
+            if(!isWithinPixelGrid(x, y)) {
                 continue;
             }
-            neighbors.add({x, y});
+            // neighbors.insert(Pixel::Index(static_cast<unsigned int>(x), static_cast<unsigned int>(y)));
+            neighbors.insert({x, y});
         }
     }
     return neighbors;

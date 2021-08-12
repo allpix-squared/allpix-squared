@@ -415,7 +415,10 @@ namespace allpix {
          * X,Y indices of a pixel corresponding to a local position in a sensor.
          * @return X,Y pixel indices
          */
-        virtual std::set<Pixel::Index> getNeighborPixels(Pixel::Index idx, ROOT::Math::XYVector ind_matrix) const;
+        virtual std::set<std::pair<int, int>>
+        getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::Math::XYVector ind_matrix) const;
+        // virtual std::set<Pixel::Index> DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx,
+        // ROOT::Math::XYVector ind_matrix) const {
 
     protected:
         std::string type_;
