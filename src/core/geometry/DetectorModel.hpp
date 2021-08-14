@@ -417,8 +417,6 @@ namespace allpix {
          */
         virtual std::set<std::pair<int, int>>
         getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::Math::XYVector ind_matrix) const;
-        // virtual std::set<Pixel::Index> DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx,
-        // ROOT::Math::XYVector ind_matrix) const {
 
     protected:
         std::string type_;

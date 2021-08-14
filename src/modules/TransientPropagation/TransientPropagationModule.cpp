@@ -32,8 +32,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
-
     // Save detector model
     model_ = detector_->getModel();
 
@@ -51,17 +49,17 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
-    config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
+    config_.setDefault<XYVector>("induction_matrix", XYVector(3, 3));
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
-    matrix_ = config_.get<XYVectorInt>("induction_matrix");
+    matrix_ = config_.get<XYVector>("induction_matrix");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
 
-    if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
+    if(int(matrix_.x()) % 2 == 0 || int(matrix_.y()) % 2 == 0) {
         throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
     }
 
@@ -397,50 +395,10 @@ TransientPropagationModule::propagate(Event* event,
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
 
-        /*
-        int x_lower = std::min(xpixel, last_xpixel) - matrix_.x() / 2;
-        int x_higher = std::max(xpixel, last_xpixel) + matrix_.x() / 2;
-        int y_lower = std::min(ypixel, last_ypixel) - matrix_.y() / 2;
-        int y_higher = std::max(ypixel, last_ypixel) + matrix_.y() / 2;
-
-        // Loop over NxN pixels:
-        for(int x = x_lower; x <= x_higher; x++) {
-            for(int y = y_lower; y <= y_higher; y++) {
-                // Ignore if out of pixel grid
-                if(!detector_->getModel()->isWithinPixelGrid(x, y)) {
-                    LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
-                    continue;
-                }
-
-                std::cout << "(" << x << "," << y << ") ";
-
-                Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
-                auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
-                auto last_ramo =
-                    detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
-
-                // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
-                LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
-                           << " q = " << Units::display(induced, "e");
-
-                // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
-                auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
-                pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
-
-                if(output_plots_) {
-                    potential_difference_->Fill(std::fabs(ramo - last_ramo));
-                    induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                    if(type == CarrierType::ELECTRON) {
-                        induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                    } else {
-                        induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                    }
-                }
-            }
-        } */
-
-        for(const auto& pixel_index : model_->getNeighborPixels(idx, last_idx, matrix_)) {
+        for(const auto& pixel_idx : model_->getNeighborPixels(idx, last_idx, matrix_)) {
+            // auto [x, y] = pixel_idx;
+            Pixel::Index pixel_index(static_cast<unsigned int>(pixel_idx.first),
+                                     static_cast<unsigned int>(pixel_idx.second));
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
