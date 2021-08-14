@@ -251,6 +251,9 @@ void DetectorHistogrammerModule::initialize() {
     cluster_charge = CreateHistogram<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
+    cluster_seed_charge = CreateHistogram<TH1D>(
+        "cluster_seed_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+
     std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
     pixel_charge =
         CreateHistogram<TH1D>("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
@@ -359,6 +362,15 @@ void DetectorHistogrammerModule::run(Event* event) {
                     inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
             }
 
+            auto seed_charge = 0.;
+            for(const auto& cluster_pixel : clus.getPixelHits()) {
+                auto c_signal = static_cast<double>(Units::convert(cluster_pixel->getSignal(), "ke"));
+                if(c_signal > seed_charge) {
+                    seed_charge = c_signal;
+                }
+            }
+            cluster_seed_charge->Fill(seed_charge);
+
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
@@ -454,6 +466,7 @@ void DetectorHistogrammerModule::finalize() {
     auto efficiency_map_histogram = efficiency_map->Merge();
     auto n_cluster_histogram = n_cluster->Merge();
     auto cluster_charge_histogram = cluster_charge->Merge();
+    auto cluster_seed_charge_histogram = cluster_seed_charge->Merge();
     auto cluster_charge_map_histogram = cluster_charge_map->Merge();
     auto seed_charge_map_histogram = seed_charge_map->Merge();
     auto pixel_charge_histogram = pixel_charge->Merge();
@@ -569,6 +582,7 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_map_histogram->Write();
     n_cluster_histogram->Write();
     cluster_charge_histogram->Write();
+    cluster_seed_charge_histogram->Write();
     pixel_charge_histogram->Write();
     cluster_charge_map_histogram->Write();
     seed_charge_map_histogram->Write();

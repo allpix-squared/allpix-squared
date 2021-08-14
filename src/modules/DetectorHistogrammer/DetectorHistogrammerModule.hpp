@@ -100,7 +100,7 @@ namespace allpix {
         Histogram<TH1D> event_size;
         Histogram<TH1D> cluster_size, cluster_size_x, cluster_size_y;
         Histogram<TH1D> n_cluster;
-        Histogram<TH1D> cluster_charge, pixel_charge, total_charge;
+        Histogram<TH1D> cluster_charge, pixel_charge, total_charge, cluster_seed_charge;
     };
 } // namespace allpix
 
