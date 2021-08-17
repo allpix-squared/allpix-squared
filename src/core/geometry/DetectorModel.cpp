@@ -226,8 +226,9 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
     return {pixel_x, pixel_y};
 }
 
-std::set<std::pair<int, int>>
-DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::Math::XYVector ind_matrix) const {
+std::set<std::pair<int, int>> DetectorModel::getNeighborPixels(const Pixel::Index& idx,
+                                                               const Pixel::Index& last_idx,
+                                                               const ROOT::Math::XYVector& ind_matrix) const {
     std::set<std::pair<int, int>> neighbors;
 
     int x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - std::floor(ind_matrix.x() / 2));
@@ -243,5 +244,6 @@ DetectorModel::getNeighborPixels(Pixel::Index idx, Pixel::Index last_idx, ROOT::
             neighbors.insert({x, y});
         }
     }
+
     return neighbors;
 }
