@@ -396,7 +396,6 @@ TransientPropagationModule::propagate(Event* event,
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
 
         for(const auto& pixel_idx : model_->getNeighborPixels(idx, last_idx, matrix_)) {
-            // auto [x, y] = pixel_idx;
             Pixel::Index pixel_index(static_cast<unsigned int>(pixel_idx.first),
                                      static_cast<unsigned int>(pixel_idx.second));
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
