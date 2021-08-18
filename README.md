@@ -103,9 +103,10 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Moritz Kiehn, Université de Genève, @msmk
 * Stephan Lachnit, Heidelberg University, @stephanlachnit
 * Salman Maqbool, CERN Summer Student, @smaqbool
+* Stefano Mersi, CERN, @mersi
+* Ryuji Moriya, CERN Summer Student, University of Glasgow, @rmoriya
 * Sebastien Murphy, ETHZ, @smurphy
 * Andreas Matthias Nürnberg, KIT, @nurnberg
-* Stefano Mersi, CERN, @mersi
 * Sebastian Pape, TU Dortmund University, @spape
 * Marko Petric, CERN, @mpetric
 * Radek Privara, Palacky University Olomouc, @rprivara
