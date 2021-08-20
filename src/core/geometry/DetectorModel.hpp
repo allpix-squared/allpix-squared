@@ -386,7 +386,7 @@ namespace allpix {
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
          * @param x X- (or column-) coordinate to be checked
-         * @param x Y- (or row-) coordinate to be checked
+         * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
         virtual bool isWithinPixelGrid(const int x, const int y) const;
