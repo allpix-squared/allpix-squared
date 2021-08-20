@@ -37,7 +37,6 @@ namespace mesh_converter {
          * @brief Constructor using a vector to store the index of the nodes and a list for the mesh and electric field
          * points
          * @param dimension Dimension of the nodes
-         * @param index List of indices of the points for debugging purposes
          * @param vertices_tetrahedron List containing 4 mesh node points
          * @param efield_vertices_tetrahedron List containing 4 points with the component of the electric field at the mesh
          * node

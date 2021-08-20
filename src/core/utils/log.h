@@ -304,7 +304,7 @@ namespace allpix {
     inline void SUPPRESS_STREAM(std::ostream& stream) { stream.setstate(std::ios::failbit); }
 
 /**
- * @brief Suppress a stream from writing output unless logging is below \ref level
+ * @brief Suppress a stream from writing output unless logging is below \ref allpix::LogLevel
  * @param  level  The log level of the stream
  * @param  stream Stream to suppress
  */

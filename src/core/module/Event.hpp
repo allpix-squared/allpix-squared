@@ -38,6 +38,7 @@ namespace allpix {
     public:
         /**
          * @brief Construct an Event
+         * @param messenger Messenger responsible for handling message transmission for this event
          * @param event_num The unique event identifier
          * @param seed Random generator seed for this event
          */

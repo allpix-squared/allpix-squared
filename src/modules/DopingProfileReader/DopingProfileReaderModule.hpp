@@ -59,7 +59,6 @@ namespace allpix {
         /**
          * @brief Compare the dimensions of the detector with the field, print warnings
          * @param dimensions Dimensions of the field read from file
-         * @param thickness_domain Domain of the thickness where the field is defined
          * @param field_scale The configured scaling parameters of the electric field in x and y
          */
         void check_detector_match(std::array<double, 3> dimensions, std::array<double, 2> field_scale);

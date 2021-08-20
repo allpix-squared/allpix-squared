@@ -531,7 +531,6 @@ void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat, std::string
 
 /**
  * Sets the section header and logging settings before executing the  \ref Module::initialize() function.
- *  \ref Module::reset_delegates() "Resets" the delegates and the logging after initialization.
  */
 void ModuleManager::initialize() {
 

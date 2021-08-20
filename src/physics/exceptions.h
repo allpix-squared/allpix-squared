@@ -44,8 +44,8 @@ namespace allpix {
     class ModelUnsuitable : public ModelError {
     public:
         /**
-         * @brief Construct an error for a model that is not found
-         * @param model_name Name of the requested model
+         * @brief Construct an error for a model that is not suitable for the current simulation
+         * @param reason Message explaining why this model is unsuitable
          */
         explicit ModelUnsuitable(const std::string& reason = "") {
             error_message_ = "Model not suitable for this simulation: " + reason;

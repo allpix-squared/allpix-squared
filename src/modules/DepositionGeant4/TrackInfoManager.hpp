@@ -61,7 +61,7 @@ namespace allpix {
          * @brief Reset of the TrackInfoManager instance
          *
          * This will reset the track id counter, the tracks which are registered to be stored and the already stored tracks,
-         * regardless if they have been dispatched or not. Make sure to call @see #dispatchMesseges before if the tracks
+         * regardless if they have been dispatched or not. Make sure to call \ref dispatchMessage before if the tracks
          * should be dispatched
          */
         void resetTrackInfoManager();

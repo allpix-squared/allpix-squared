@@ -26,7 +26,7 @@ namespace allpix {
     public:
         /**
          * @brief Constructor taking a TrackInfoManager*
-         * @param track_info_mgr_ptr Pointer to TrackInfoManager which must be used to create the TrackInfoG4 instances
+         * @param module Pointer to the DepositionGeant4 module, required to create the TrackInfoG4 instances
          */
         explicit SetTrackInfoUserHookG4(DepositionGeant4Module* module) : module_(module){};
 

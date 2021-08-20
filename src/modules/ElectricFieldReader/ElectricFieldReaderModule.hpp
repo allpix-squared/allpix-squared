@@ -59,6 +59,7 @@ namespace allpix {
 
         /**
          * @brief Create and apply a linear field
+         * @param depletion_voltage Depletion voltage of the sensor for the given thickness domain
          * @param thickness_domain Domain of the thickness where the field is defined
          */
         FieldFunction<ROOT::Math::XYZVector> get_linear_field_function(double depletion_voltage,

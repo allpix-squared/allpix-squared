@@ -75,7 +75,7 @@ namespace allpix {
 
         /**
          * @brief Loads the geometry from the global configuration
-         * @param global_config Configuration manager of the framework
+         * @param conf_manager Configuration manager of the framework
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
@@ -204,7 +204,7 @@ namespace allpix {
         bool hasMagneticField() const;
         /**
          * @brief Get the magnetic field at a global position
-         * @param pos Position in the global frame
+         * @param position Position in the global frame
          * @return Vector of the field at the queried point
          */
         ROOT::Math::XYZVector getMagneticField(const ROOT::Math::XYZPoint& position) const;

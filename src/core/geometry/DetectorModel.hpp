@@ -102,6 +102,7 @@ namespace allpix {
              * @param size Size of the support layer
              * @param offset Offset of the support layer from the center
              * @param material Material of the support layer
+             * @param type Type of the hole
              * @param location Location of the support material
              * @param hole_size Size of an optional hole (zero vector if no hole)
              * @param hole_offset Offset of the optional hole from the center of the support layer
@@ -338,6 +339,7 @@ namespace allpix {
          * @param thickness Thickness of the support
          * @param offset Offset of the support in the x,y-plane
          * @param material Material of the support
+         * @param type Type of the hole
          * @param location Location of the support (either 'sensor' or 'chip')
          * @param hole_size Size of the optional hole in the support
          * @param hole_offset Offset of the hole from its default position
@@ -364,39 +366,49 @@ namespace allpix {
 
         /**
          * @brief Returns if a local position is within the sensitive device
+         * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the sensor, false otherwise
          */
         virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
+         * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the pixel implant, false otherwise
          */
         virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
+         * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
         virtual bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
 
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
+         * @param x X- (or column-) coordinate to be checked
+         * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
         virtual bool isWithinPixelGrid(const int x, const int y) const;
 
         /**
          * @brief Returns a pixel center in local coordinates
+         * @param x X- (or column-) coordinate of the pixel
+         * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
          */
         virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
+         * @param position Position in local coordinates of the detector model
          * @return X,Y pixel indices
+         *
+         * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
 
     protected:
         std::string type_;
