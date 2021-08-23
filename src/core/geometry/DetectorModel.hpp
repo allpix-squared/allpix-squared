@@ -412,11 +412,13 @@ namespace allpix {
 
         /**
          * @brief Return a set containing all the neighboring pixels
-         * X,Y indices of a pixel corresponding to a local position in a sensor.
-         * @return X,Y pixel indices
+         * @param idx       Index of the current pixel in question
+         * @param last_idx  Index of the last pixel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return Set of neighboring pixel indices
          */
         virtual std::set<Pixel::Index>
-        getNeighborPixels(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const;
+        getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const;
 
     protected:
         std::string type_;

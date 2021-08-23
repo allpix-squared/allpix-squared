@@ -227,7 +227,7 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
 }
 
 std::set<Pixel::Index>
-DetectorModel::getNeighborPixels(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
+DetectorModel::getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
     auto x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - distance);
