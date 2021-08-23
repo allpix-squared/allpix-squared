@@ -20,7 +20,6 @@
 #include <string>
 #include <utility>
 
-#include <Math/DisplacementVector2D.h>
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
@@ -417,9 +416,7 @@ namespace allpix {
          * @return X,Y pixel indices
          */
         virtual std::set<Pixel::Index>
-        getNeighborPixels(const Pixel::Index& idx,
-                          const Pixel::Index& last_idx,
-                          const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& ind_matrix) const;
+        getNeighborPixels(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const;
 
     protected:
         std::string type_;

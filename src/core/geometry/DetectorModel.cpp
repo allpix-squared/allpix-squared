@@ -227,15 +227,13 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
 }
 
 std::set<Pixel::Index>
-DetectorModel::getNeighborPixels(const Pixel::Index& idx,
-                                 const Pixel::Index& last_idx,
-                                 const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& ind_matrix) const {
+DetectorModel::getNeighborPixels(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
-    int x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - std::floor(ind_matrix.x() / 2));
-    int x_higher = static_cast<int>(std::max(idx.x(), last_idx.x()) + std::floor(ind_matrix.x() / 2));
-    int y_lower = static_cast<int>(std::min(idx.y(), last_idx.y()) - std::floor(ind_matrix.y() / 2));
-    int y_higher = static_cast<int>(std::max(idx.y(), last_idx.y()) + std::floor(ind_matrix.y() / 2));
+    auto x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - distance);
+    auto x_higher = static_cast<int>(std::max(idx.x(), last_idx.x()) + distance);
+    auto y_lower = static_cast<int>(std::min(idx.y(), last_idx.y()) - distance);
+    auto y_higher = static_cast<int>(std::max(idx.y(), last_idx.y()) + distance);
 
     for(int x = x_lower; x <= x_higher; x++) {
         for(int y = y_lower; y <= y_higher; y++) {
