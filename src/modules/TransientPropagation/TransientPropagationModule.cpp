@@ -32,6 +32,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
+    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
+
     // Save detector model
     model_ = detector_->getModel();
 
@@ -49,17 +51,17 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
-    config_.setDefault<XYVector>("induction_matrix", XYVector(3, 3));
+    config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
-    matrix_ = config_.get<XYVector>("induction_matrix");
+    matrix_ = config_.get<XYVectorInt>("induction_matrix");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
 
-    if(int(matrix_.x()) % 2 == 0 || int(matrix_.y()) % 2 == 0) {
+    if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
         throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
     }
 
@@ -388,12 +390,11 @@ TransientPropagationModule::propagate(Event* event,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(initial_time + runge_kutta.getTime(), "ns");
 
-        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
-        auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
-
         // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
         // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
         // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
+        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+        auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
 
         for(const auto& pixel_idx : model_->getNeighborPixels(idx, last_idx, matrix_)) {
             Pixel::Index pixel_index(static_cast<unsigned int>(pixel_idx.first),
@@ -421,6 +422,7 @@ TransientPropagationModule::propagate(Event* event,
             }
         }
     }
+
     // Return the final position of the propagated charge
     return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive);
 }

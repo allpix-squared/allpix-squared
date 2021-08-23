@@ -408,7 +408,7 @@ namespace allpix {
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
 
         /**
          * @brief Return a set containing all the neighboring pixels
