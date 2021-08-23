@@ -615,7 +615,7 @@ void DetectorHistogrammerModule::finalize() {
 /**
  * @brief Perform a sparse clustering on the PixelHits
  */
-std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) {
+std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) const {
     std::vector<Cluster> clusters;
     std::map<const PixelHit*, bool> usedPixel;
 
@@ -634,13 +634,8 @@ std::vector<Cluster> DetectorHistogrammerModule::doClustering(std::shared_ptr<Pi
         LOG(TRACE) << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex();
 
         auto touching = [&](const PixelHit* pixel) {
-            auto pxi1 = pixel->getIndex();
             for(const auto& cluster_pixel : cluster.getPixelHits()) {
-
-                auto distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
-
-                auto pxi2 = cluster_pixel->getIndex();
-                if(distance(pxi1.x(), pxi2.x()) <= 1 && distance(pxi1.y(), pxi2.y()) <= 1) {
+                if(detector_->getModel()->areNeighbors(cluster_pixel->getIndex(), pixel->getIndex(), 1)) {
                     return true;
                 }
             }

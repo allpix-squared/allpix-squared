@@ -420,6 +420,15 @@ namespace allpix {
         virtual std::set<Pixel::Index>
         getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const;
 
+        /**
+         * @brief Check if two pixel indices are neighbors to each other
+         * @param  seed    Initial pixel index
+         * @param  entrant Entrant pixel index to be tested
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return         Boolean whether pixels are neighbors or not
+         */
+        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const;
+
     protected:
         std::string type_;
 

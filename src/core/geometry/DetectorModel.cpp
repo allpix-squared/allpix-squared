@@ -246,3 +246,8 @@ DetectorModel::getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_id
 
     return neighbors;
 }
+
+bool DetectorModel::areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const {
+    auto pixel_distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
+    return (pixel_distance(seed.x(), entrant.x()) <= distance && pixel_distance(seed.y(), entrant.y()) <= distance);
+}
