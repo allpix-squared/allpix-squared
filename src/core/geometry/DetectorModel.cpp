@@ -226,10 +226,11 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
     return {pixel_x, pixel_y};
 }
 
-std::set<std::pair<int, int>> DetectorModel::getNeighborPixels(const Pixel::Index& idx,
-                                                               const Pixel::Index& last_idx,
-                                                               const ROOT::Math::XYVector& ind_matrix) const {
-    std::set<std::pair<int, int>> neighbors;
+std::set<Pixel::Index>
+DetectorModel::getNeighborPixels(const Pixel::Index& idx,
+                                 const Pixel::Index& last_idx,
+                                 const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& ind_matrix) const {
+    std::set<Pixel::Index> neighbors;
 
     int x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - std::floor(ind_matrix.x() / 2));
     int x_higher = static_cast<int>(std::max(idx.x(), last_idx.x()) + std::floor(ind_matrix.x() / 2));
@@ -241,7 +242,7 @@ std::set<std::pair<int, int>> DetectorModel::getNeighborPixels(const Pixel::Inde
             if(!isWithinPixelGrid(x, y)) {
                 continue;
             }
-            neighbors.insert({x, y});
+            neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});
         }
     }
 
