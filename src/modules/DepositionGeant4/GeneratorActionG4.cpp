@@ -279,6 +279,9 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
         // mark the initialization done
         initialize_ion_as_particle_ = false;
+
+        LOG(DEBUG) << "Using ion " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ") with "
+                   << Units::display(particle->GetPDGLifeTime(), {"s", "ns"}) << " lifetime.";
     }
 
     particle_source_->GeneratePrimaryVertex(event);
