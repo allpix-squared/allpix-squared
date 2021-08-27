@@ -258,13 +258,17 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
         } else if(particle_type_.substr(0, 3) == "ion") {
-            // Parse particle type as ion with components /Z/A/Q/E
+            // Parse particle type as ion with components /Z/A/Q/E/D
             std::smatch ion;
-            if(std::regex_match(
-                   particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+            if(std::regex_match(particle_type_,
+                                ion,
+                                std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)/(true|false)")) &&
                ion.ready()) {
                 particle = G4IonTable::GetIonTable()->GetIon(
                     allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                if(allpix::from_string<bool>(ion[5])) {
+                    particle->SetPDGLifeTime(0.);
+                }
                 single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
             } else {
                 throw InvalidValueError(config_, "particle_type", "cannot parse parameters for ion.");
