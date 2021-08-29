@@ -270,6 +270,14 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                     particle->SetPDGLifeTime(0.);
                 }
                 single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+            } else if(std::regex_match(
+                          particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+                      ion.ready()) {
+                // Parse old declaration with /Z/A/Q/E
+                particle = G4IonTable::GetIonTable()->GetIon(
+                    allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+                LOG(WARNING) << "Using \"ion/Z/A/Q/E\" is deprecated and superseded by \"ion/Z/A/Q/E/D\".";
             } else {
                 throw InvalidValueError(config_, "particle_type", "cannot parse parameters for ion.");
             }
