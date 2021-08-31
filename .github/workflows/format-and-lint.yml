@@ -1,4 +1,4 @@
-name: format-and-lint
+name: format&lint
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
