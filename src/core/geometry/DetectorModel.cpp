@@ -17,6 +17,9 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     using namespace ROOT::Math;
     auto config = reader_.getHeaderConfiguration();
 
+    // Store model class
+    setClass(config.get<std::string>("type"));
+
     // Number of pixels
     setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels

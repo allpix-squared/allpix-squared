@@ -167,6 +167,18 @@ namespace allpix {
         std::string getType() const { return type_; }
 
         /**
+         * @brief Get the class of models
+         * @return Model class
+         */
+        std::string getClass() const { return class_; }
+
+        /**
+         * @brief Set the class of model
+         * @param val Model class
+         */
+        void setClass(std::string val) { class_ = val; }
+
+        /**
          * @brief Get local coordinate of the position and rotation center in global frame
          * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
          * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
@@ -412,6 +424,7 @@ namespace allpix {
 
     protected:
         std::string type_;
+        std::string class_;
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
