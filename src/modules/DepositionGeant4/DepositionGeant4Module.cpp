@@ -377,6 +377,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         }
     }
 
+    // Calculate hit transform matrix for every detector model
+    auto hit_transform = calculate_hit_transform();
+
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
@@ -392,8 +395,12 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         useful_deposition = true;
 
         // Get model of the sensitive device
-        auto* sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, cutoff_time);
+        auto* sensitive_detector_action = new SensitiveDetectorActionG4(detector,
+                                                                        track_info_manager_.get(),
+                                                                        hit_transform.at(detector->getModel()->getClass()),
+                                                                        charge_creation_energy,
+                                                                        fano_factor,
+                                                                        cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -443,4 +450,16 @@ void DepositionGeant4Module::record_module_statistics() {
     for(auto& sensor : sensors_) {
         total_charges_ += sensor->getTotalDepositedCharge();
     }
+}
+
+std::map<std::string, G4RotationMatrix*> DepositionGeant4Module::calculate_hit_transform() {
+    std::map<std::string, G4RotationMatrix*> hit_transform;
+    auto matrix = new G4RotationMatrix();
+
+    // Hybrid and monolithic models do not require additional transformations,
+    // rotation matrix is identity matrix
+    hit_transform.insert({"monolithic", matrix});
+    hit_transform.insert({"hybrid", matrix});
+
+    return hit_transform;
 }

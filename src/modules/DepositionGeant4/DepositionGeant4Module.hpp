@@ -92,6 +92,11 @@ namespace allpix {
          */
         void record_module_statistics();
 
+        /**
+         * @brief Calculate hit transformation matrix for every detector model class
+         */
+        std::map<std::string, G4RotationMatrix*> calculate_hit_transform();
+
         Messenger* messenger_;
         GeometryManager* geo_manager_;
 

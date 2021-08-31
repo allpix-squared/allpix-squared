@@ -36,6 +36,7 @@ using namespace allpix;
 
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      TrackInfoManager* track_info_manager,
+                                                     const G4RotationMatrix* hit_transform,
                                                      double charge_creation_energy,
                                                      double fano_factor,
                                                      double cutoff_time)
@@ -46,6 +47,7 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
+    hit_transform_ = hit_transform;
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
@@ -73,6 +75,9 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(step_pos));
     auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(step_pos);
+
+    // Transform the hit position using the rotation matrix
+    deposit_position_g4 *= *hit_transform_;
 
     // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
     // excitations via the Fano factor. We assume Gaussian statistics here.
