@@ -404,6 +404,12 @@ ELSE()
     MESSAGE(STATUS "Unit tests: performance tests deactivated.")
 ENDIF()
 
+GET_PROPERTY(CORE_TEST_DESCRIPTIONS GLOBAL PROPERTY CORE_TEST_DESCRIPTIONS)
+GET_PROPERTY(MODULES_TEST_DESCRIPTIONS GLOBAL PROPERTY MODULES_TEST_DESCRIPTIONS)
+GET_PROPERTY(PERF_TEST_DESCRIPTIONS GLOBAL PROPERTY PERF_TEST_DESCRIPTIONS)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/chapters/tests.cmake.tex"
+               "${CMAKE_CURRENT_BINARY_DIR}/usermanual/usermanual/tests.tex" @ONLY)
+
 ############################
 # Create local setup files #
 ############################

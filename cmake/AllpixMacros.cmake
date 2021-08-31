@@ -186,6 +186,21 @@ FUNCTION(add_allpix_test test name)
         SET(clioptions "${clioptions} ${opt}")
     ENDFOREACH()
 
+    # Register the test for inclusion in the documentation:
+    FILE(STRINGS ${test} DESC REGEX "#DESC ")
+    LIST(LENGTH DESC listcount_desc)
+    IF(listcount_desc EQUAL 0)
+        MESSAGE(WARNING "Test ${name} does not provide a description")
+    ELSEIF(listcount_desc GREATER 1)
+        MESSAGE(FATAL_ERROR "More than one DESC expressions defined in test ${name}")
+    ELSE()
+        STRING(REPLACE "#DESC " "\\item[\\file{${name}}] " DESC "${DESC}")
+        LIST(APPEND TEST_DESCRIPTIONS ${DESC})
+    ENDIF()
+    SET(TEST_DESCRIPTIONS
+        ${TEST_DESCRIPTIONS}
+        PARENT_SCOPE)
+
     # Parse possible commands to be run before
     FILE(STRINGS ${test} OPTS REGEX "#BEFORE_SCRIPT ")
     FOREACH(opt ${OPTS})
@@ -277,6 +292,13 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
                 "${_allpix_module_dir};${_MODULES_WITH_TESTS}"
                 CACHE INTERNAL "MODULES_WITH_TESTS")
         ENDIF()
+
+        # Append list of test descriptions to global property
+        GET_PROPERTY(tmp GLOBAL PROPERTY MODULES_TEST_DESCRIPTIONS)
+        FOREACH(item ${TEST_DESCRIPTIONS})
+            SET(tmp "${tmp} ${item}")
+        ENDFOREACH()
+        SET_PROPERTY(GLOBAL PROPERTY MODULES_TEST_DESCRIPTIONS "${tmp}")
     ENDIF()
 ENDMACRO()
 
