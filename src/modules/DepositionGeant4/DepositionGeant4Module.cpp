@@ -394,13 +394,19 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         }
         useful_deposition = true;
 
+        // Get the hit transformation matrix
+        G4RotationMatrix* trf_matrix;
+        try {
+            // See if detector model has a defined matrix
+            trf_matrix = hit_transform.at(detector->getModel()->getClass());
+        } catch(const std::out_of_range&) {
+            // Otherwise use the fallback identity matrix
+            trf_matrix = hit_transform.at("default");
+        }
+
         // Get model of the sensitive device
-        auto* sensitive_detector_action = new SensitiveDetectorActionG4(detector,
-                                                                        track_info_manager_.get(),
-                                                                        hit_transform.at(detector->getModel()->getClass()),
-                                                                        charge_creation_energy,
-                                                                        fano_factor,
-                                                                        cutoff_time);
+        auto* sensitive_detector_action = new SensitiveDetectorActionG4(
+            detector, track_info_manager_.get(), trf_matrix, charge_creation_energy, fano_factor, cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -453,13 +459,12 @@ void DepositionGeant4Module::record_module_statistics() {
 }
 
 std::map<std::string, G4RotationMatrix*> DepositionGeant4Module::calculate_hit_transform() {
+    // Map the appropriate rotation matrix to a model class string (hybrid, monolithic, ...)
     std::map<std::string, G4RotationMatrix*> hit_transform;
-    auto matrix = new G4RotationMatrix();
 
-    // Hybrid and monolithic models do not require additional transformations,
-    // rotation matrix is identity matrix
-    hit_transform.insert({"monolithic", matrix});
-    hit_transform.insert({"hybrid", matrix});
+    // Fallback transformation matrix is identity
+    auto matrix = new G4RotationMatrix();
+    hit_transform.insert({"default", matrix});
 
     return hit_transform;
 }
