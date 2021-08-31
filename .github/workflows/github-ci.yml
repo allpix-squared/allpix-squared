@@ -127,3 +127,38 @@ jobs:
           cd build
           cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
           ninja check-format
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang10-opt"
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
+          ninja check-lint
+
+  cmake-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v2
+      with:
+        run_local_checkout: 'false'
+        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang10-opt"
+        run: |
+          mkdir build
+          cd build
+          pip install --trusted-host=pypi.org --user cmakelang
+          cmake -GNinja ..
+          ninja lint-cmake
