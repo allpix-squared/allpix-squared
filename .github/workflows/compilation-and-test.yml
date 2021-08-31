@@ -1,4 +1,4 @@
-name: github-ci
+name: compile-test
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
