@@ -258,14 +258,26 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
         } else if(particle_type_.substr(0, 3) == "ion") {
-            // Parse particle type as ion with components /Z/A/Q/E
+            // Parse particle type as ion with components /Z/A/Q/E/D
             std::smatch ion;
-            if(std::regex_match(
-                   particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+            if(std::regex_match(particle_type_,
+                                ion,
+                                std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)/(true|false)")) &&
                ion.ready()) {
                 particle = G4IonTable::GetIonTable()->GetIon(
                     allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                if(allpix::from_string<bool>(ion[5])) {
+                    particle->SetPDGLifeTime(0.);
+                }
                 single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+            } else if(std::regex_match(
+                          particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+                      ion.ready()) {
+                // Parse old declaration with /Z/A/Q/E
+                particle = G4IonTable::GetIonTable()->GetIon(
+                    allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+                LOG(WARNING) << "Using \"ion/Z/A/Q/E\" is deprecated and superseded by \"ion/Z/A/Q/E/D\".";
             } else {
                 throw InvalidValueError(config_, "particle_type", "cannot parse parameters for ion.");
             }
@@ -279,6 +291,9 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
         // mark the initialization done
         initialize_ion_as_particle_ = false;
+
+        LOG(DEBUG) << "Using ion " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ") with "
+                   << Units::display(particle->GetPDGLifeTime(), {"s", "ns"}) << " lifetime.";
     }
 
     particle_source_->GeneratePrimaryVertex(event);
