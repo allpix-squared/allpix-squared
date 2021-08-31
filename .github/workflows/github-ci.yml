@@ -159,6 +159,7 @@ jobs:
         run: |
           mkdir build
           cd build
+          export PATH=$PATH:~/.local/bin
           pip install --trusted-host=pypi.org --user cmakelang
           cmake -GNinja ..
           ninja lint-cmake
