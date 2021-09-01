@@ -392,7 +392,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         useful_deposition = true;
 
         // Get the hit transformation matrix
-        auto hit_transform = calculate_hit_transform(detector->getModel());
+        auto* hit_transform = calculate_hit_transform(detector->getModel());
 
         // Get model of the sensitive device
         auto* sensitive_detector_action = new SensitiveDetectorActionG4(
@@ -448,6 +448,6 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel>) {
+G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel>&) {
     return new G4RotationMatrix();
 }
