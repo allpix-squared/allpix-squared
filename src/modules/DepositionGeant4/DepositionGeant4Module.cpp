@@ -30,6 +30,8 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/MonolithicPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
@@ -377,9 +379,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         }
     }
 
-    // Calculate hit transform matrix for every detector model
-    auto hit_transform = calculate_hit_transform();
-
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
@@ -395,18 +394,11 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         useful_deposition = true;
 
         // Get the hit transformation matrix
-        G4RotationMatrix* trf_matrix;
-        try {
-            // See if detector model has a defined matrix
-            trf_matrix = hit_transform.at(detector->getModel()->getClass());
-        } catch(const std::out_of_range&) {
-            // Otherwise use the fallback identity matrix
-            trf_matrix = hit_transform.at("default");
-        }
+        auto hit_transform = calculate_hit_transform(detector->getModel());
 
         // Get model of the sensitive device
         auto* sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), trf_matrix, charge_creation_energy, fano_factor, cutoff_time);
+            detector, track_info_manager_.get(), hit_transform, charge_creation_energy, fano_factor, cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -458,13 +450,16 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-std::map<std::string, G4RotationMatrix*> DepositionGeant4Module::calculate_hit_transform() {
-    // Map the appropriate rotation matrix to a model class string (hybrid, monolithic, ...)
-    std::map<std::string, G4RotationMatrix*> hit_transform;
+G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel> model) {
+    auto hit_transform = new G4RotationMatrix();
 
-    // Fallback transformation matrix is identity
-    auto matrix = new G4RotationMatrix();
-    hit_transform.insert({"default", matrix});
+    // There is no point in checking for these models as their transformation matrix
+    // is identity anyway; it's only to use the argument
+    auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
+    auto monolithic_model = std::dynamic_pointer_cast<MonolithicPixelDetectorModel>(model);
+
+    if(hybrid_model != nullptr || monolithic_model != nullptr) {
+    }
 
     return hit_transform;
 }
