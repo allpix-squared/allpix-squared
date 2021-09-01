@@ -176,7 +176,7 @@ namespace allpix {
          * @brief Set the class of model
          * @param val Model class
          */
-        void setClass(std::string val) { class_ = val; }
+        void setClass(std::string val) { class_ = std::move(val); }
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
