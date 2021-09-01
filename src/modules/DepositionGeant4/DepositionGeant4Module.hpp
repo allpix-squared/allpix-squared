@@ -92,6 +92,16 @@ namespace allpix {
          */
         void record_module_statistics();
 
+        /**
+         * @brief Calculate hit transformation matrix for a given detector model
+         * @param model Detector model
+         * @returns Hit transformation matrix pointer
+         *
+         * @note This matrix transforms the Geant4 local coordinate system of the sensor
+         * volume to the APSQ local coordinate system based on the detector model type.
+         */
+        G4RotationMatrix* calculate_hit_transform(const std::shared_ptr<DetectorModel>& model);
+
         Messenger* messenger_;
         GeometryManager* geo_manager_;
 
