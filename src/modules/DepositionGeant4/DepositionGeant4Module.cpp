@@ -30,8 +30,6 @@
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/geometry/HybridPixelDetectorModel.hpp"
-#include "core/geometry/MonolithicPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
@@ -450,16 +448,6 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel> model) {
-    auto hit_transform = new G4RotationMatrix();
-
-    // There is no point in checking for these models as their transformation matrix
-    // is identity anyway; it's only to use the argument
-    auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
-    auto monolithic_model = std::dynamic_pointer_cast<MonolithicPixelDetectorModel>(model);
-
-    if(hybrid_model != nullptr || monolithic_model != nullptr) {
-    }
-
-    return hit_transform;
+G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel>) {
+    return new G4RotationMatrix();
 }

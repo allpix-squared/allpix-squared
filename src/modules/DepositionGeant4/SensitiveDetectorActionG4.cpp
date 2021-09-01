@@ -47,6 +47,7 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
+
     hit_transform_ = hit_transform;
 }
 
