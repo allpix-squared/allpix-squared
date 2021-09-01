@@ -238,6 +238,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
  * Called automatically for every event
  */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
+
+    // G4IonTable is only ready after initialization, so we need to pick the particle here and assign it to the source:
     if(initialize_ion_as_particle_) {
         auto* single_source = particle_source_->GetCurrentSource();
         G4ParticleDefinition* particle = nullptr;
@@ -283,17 +285,21 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
             }
         }
 
-        // Set global parameters of the source
-        single_source->SetNumberOfParticles(1);
-        single_source->SetParticleDefinition(particle);
-        // Set the primary track's start time in for the current event to zero:
-        single_source->SetParticleTime(0.0);
+        if(particle != nullptr) {
+            // Set global parameters of the source
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            // Set the primary track's start time in for the current event to zero:
+            single_source->SetParticleTime(0.0);
 
-        // mark the initialization done
-        initialize_ion_as_particle_ = false;
+            // mark the initialization done
+            initialize_ion_as_particle_ = false;
 
-        LOG(DEBUG) << "Using ion " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ") with "
-                   << Units::display(particle->GetPDGLifeTime(), {"s", "ns"}) << " lifetime.";
+            LOG(DEBUG) << "Using ion " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ") with "
+                       << Units::display(particle->GetPDGLifeTime(), {"s", "ns"}) << " lifetime.";
+        } else {
+            throw InvalidValueError(config_, "particle_type", "failed to fetch or create ion.");
+        }
     }
 
     particle_source_->GeneratePrimaryVertex(event);
