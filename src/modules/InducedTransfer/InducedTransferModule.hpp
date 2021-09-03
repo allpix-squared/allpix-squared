@@ -55,7 +55,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Induction matrix size in number of pixels along x and y
-        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>> matrix_;
+        // Distance of electrodes taken into account for induction
+        unsigned int distance_;
     };
 } // namespace allpix
