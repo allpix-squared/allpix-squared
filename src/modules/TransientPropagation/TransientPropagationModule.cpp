@@ -51,19 +51,15 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
-    config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
+    config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
     integration_time_ = config_.get<double>("integration_time");
-    matrix_ = config_.get<XYVectorInt>("induction_matrix");
+    distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
-
-    if(matrix_.x() % 2 == 0 || matrix_.y() % 2 == 0) {
-        throw InvalidValueError(config_, "induction_matrix", "Odd number of pixels in x and y required.");
-    }
 
     output_plots_ = config_.get<bool>("output_plots");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
@@ -396,7 +392,7 @@ TransientPropagationModule::propagate(Event* event,
         auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
         auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
 
-        for(const auto& pixel_index : model_->getNeighbors(idx, last_idx, static_cast<size_t>(matrix_.x() / 2))) {
+        for(const auto& pixel_index : model_->getNeighbors(idx, last_idx, distance_)) {
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
