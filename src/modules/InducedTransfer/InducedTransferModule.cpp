@@ -26,8 +26,6 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
-
     // Save detector model
     model_ = detector_->getModel();
 
