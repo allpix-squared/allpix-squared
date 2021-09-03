@@ -349,8 +349,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
             // Find the nearest pixel
-            auto xpixel = static_cast<unsigned int>(std::round(particlePos.x() / pitch.x()));
-            auto ypixel = static_cast<unsigned int>(std::round(particlePos.y() / pitch.y()));
+            auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
             // Retrieve the pixel to which this MCParticle points:
             const auto* pixel = clus.getPixelHit(xpixel, ypixel);
@@ -394,8 +393,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
         // Find the nearest pixel
-        auto xpixel = static_cast<unsigned int>(std::round(particlePos.x() / pitch.x()));
-        auto ypixel = static_cast<unsigned int>(std::round(particlePos.y() / pitch.y()));
+        auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
         auto matched_cluster =
             std::find_if(clusters.begin(), clusters.end(), [this, &particlePos, &pitch](const Cluster& clus) {
