@@ -411,9 +411,17 @@ namespace allpix {
         virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
 
         /**
-         * @brief Return a set containing all the neighboring pixels
-         * @param idx       Index of the current pixel in question
-         * @param last_idx  Index of the last pixel in question
+         * @brief Return a set containing all channels neigboring the given one with a configurable maximum distance
+         * @param idx       Index of the channel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return Set of neighboring pixel indices
+         */
+        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const;
+
+        /**
+         * @brief Return a set containing all channels neigboring the two given channels with a configurable maximum distance
+         * @param idx       Index of the first channel in question
+         * @param last_idx  Index of the second channel in question
          * @param distance  Distance for pixels to be considered neighbors
          * @return Set of neighboring pixel indices
          */
