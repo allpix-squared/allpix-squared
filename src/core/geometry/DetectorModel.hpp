@@ -169,7 +169,8 @@ namespace allpix {
          * @brief Get type of the pixels
          * @return TYpe of the pixels indicating their shape
          */
-        virtual Pixel::Type getPixelType() const { return pixel_type_; }
+        Pixel::Type getPixelType() const { return pixel_type_; }
+
         /**
          * @brief Set the size of a pixel
          * @param val Size of a pixel
