@@ -94,7 +94,7 @@ namespace allpix {
          * @brief Return a pixel object from the x- and y-index values
          * @return Pixel object
          */
-        Pixel getPixel(unsigned int x, unsigned int y) const;
+        Pixel getPixel(int x, int y) const;
 
         /**
          * @brief Return a pixel object from the pixel index

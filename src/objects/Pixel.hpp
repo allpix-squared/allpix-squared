@@ -17,8 +17,8 @@
 
 namespace ROOT {
     namespace Math { // NOLINT
-        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
-                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs);
+        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
+                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs);
     }
 } // namespace ROOT
 
@@ -30,7 +30,7 @@ namespace allpix {
      */
     class Pixel {
     public:
-        using Index = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>;
+        using Index = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
         /**
          * @brief Construct a new pixel

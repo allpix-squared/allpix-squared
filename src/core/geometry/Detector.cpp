@@ -108,7 +108,7 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
 /**
  * The pixel has internal information about the size and location specific for this detector
  */
-Pixel Detector::getPixel(unsigned int x, unsigned int y) const {
+Pixel Detector::getPixel(int x, int y) const {
     Pixel::Index index(x, y);
     return getPixel(index);
 }

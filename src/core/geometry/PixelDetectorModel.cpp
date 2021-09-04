@@ -59,7 +59,8 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
  * The definition of the pixel grid size is determined by the detector model
  */
 bool PixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
-    return !(pixel_index.x() >= number_of_pixels_.x() || pixel_index.y() >= number_of_pixels_.y());
+    return !(pixel_index.x() < 0 || pixel_index.x() >= static_cast<int>(number_of_pixels_.x()) || pixel_index.y() < 0 ||
+             pixel_index.y() >= static_cast<int>(number_of_pixels_.y()));
 }
 
 /**
@@ -69,7 +70,7 @@ bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
-ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(unsigned int x, unsigned int y) const {
+ROOT::Math::XYZPoint DetectorModel::getPixelCenter(const int x, const int y) const {
     auto size = getPixelSize();
     auto local_x = size.x() * x;
     auto local_y = size.y() * y;

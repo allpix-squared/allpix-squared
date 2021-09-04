@@ -141,7 +141,7 @@ void PulseTransferModule::run(Event* event) {
                 }
             }
 
-            Pixel::Index pixel_index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+            Pixel::Index pixel_index(xpixel, ypixel);
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
