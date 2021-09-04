@@ -26,7 +26,7 @@ Pixel::Pixel(Pixel::Index index,
              ROOT::Math::XYZPoint local_center,
              ROOT::Math::XYZPoint global_center,
              ROOT::Math::XYVector size)
-    : index_(std::move(index)), type_(std::move(type)), local_center_(std::move(local_center)),
+    : index_(std::move(index)), type_(type), local_center_(std::move(local_center)),
       global_center_(std::move(global_center)), size_(std::move(size)) {}
 
 Pixel::Index Pixel::getIndex() const {
