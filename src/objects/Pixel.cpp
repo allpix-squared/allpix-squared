@@ -22,14 +22,19 @@ bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Ca
 }
 
 Pixel::Pixel(Pixel::Index index,
+             Pixel::Type type,
              ROOT::Math::XYZPoint local_center,
              ROOT::Math::XYZPoint global_center,
              ROOT::Math::XYVector size)
-    : index_(std::move(index)), local_center_(std::move(local_center)), global_center_(std::move(global_center)),
-      size_(std::move(size)) {}
+    : index_(std::move(index)), type_(std::move(type)), local_center_(std::move(local_center)),
+      global_center_(std::move(global_center)), size_(std::move(size)) {}
 
 Pixel::Index Pixel::getIndex() const {
     return index_;
+}
+
+Pixel::Type Pixel::getType() const {
+    return type_;
 }
 
 ROOT::Math::XYZPoint Pixel::getLocalCenter() const {

@@ -35,9 +35,19 @@ namespace allpix {
         using Index = ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>;
 
         /**
+         * @brief Type of pixels
+         */
+        enum class Type {
+            RECTANGLE = 0,  ///< Rectangular pixel shape
+            HEXAGON_FLAT,   ///< Hexagonal pixel shape, flat side up
+            HEXAGON_POINTY, ///< Hexagonal pixel shape, corner up
+        };
+
+        /**
          * @brief Construct a new pixel
          */
         Pixel(Pixel::Index index,
+              Pixel::Type type,
               ROOT::Math::XYZPoint local_center,
               ROOT::Math::XYZPoint global_center,
               ROOT::Math::XYVector size);
@@ -47,6 +57,12 @@ namespace allpix {
          * @return Index in x,y-plane
          */
         Pixel::Index getIndex() const;
+
+        /**
+         * @brief Return type of pixel
+         * @return Type of the pixel describing its shape and orientation
+         */
+        Pixel::Type getType() const;
 
         /**
          * @brief Get center position in local coordinates
@@ -75,6 +91,7 @@ namespace allpix {
 
     private:
         Pixel::Index index_;
+        Pixel::Type type_;
 
         ROOT::Math::XYZPoint local_center_;
         ROOT::Math::XYZPoint global_center_;
