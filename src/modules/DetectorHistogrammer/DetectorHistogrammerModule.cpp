@@ -352,7 +352,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
             // Retrieve the pixel to which this MCParticle points:
-            const auto* pixel = clus.getPixelHit(xpixel, ypixel);
+            const auto* pixel = clus.getPixelHit(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
             if(pixel != nullptr) {
                 seed_charge_map->Fill(
                     inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
