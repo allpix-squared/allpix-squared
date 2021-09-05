@@ -121,6 +121,14 @@ namespace allpix {
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
 
     private:
+        // Transformations from axial coordinates to cartesian coordinates
+        const std::array<double, 4> transform_pointy_{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
+        const std::array<double, 4> transform_flat_{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
+
+        // Inverse transformations, going from cartesian coordinates to axial coordinates
+        const std::array<double, 4> inv_transform_pointy_{std::sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
+        const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
+
         /**
          * @brief Helper function to correcty round floating-point hexagonal positions to the nearest hexagon.
          * @param x  Column axial coordinate of the hexagon

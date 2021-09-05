@@ -31,36 +31,28 @@ ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getCenter() const {
 }
 
 ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, const int y) const {
-    // Transformations from axial coordinates to cartesian coordinates
-    const std::array<double, 4> transform_pointy{std::sqrt(3.0), std::sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0};
-    const std::array<double, 4> transform_flat{3.0 / 2.0, 0.0, std::sqrt(3.0) / 2.0, std::sqrt(3.0)};
-
     auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
 
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return {(transform_pointy.at(0) * x + transform_pointy.at(1) * y) * pixel_size_.x(),
-                (transform_pointy.at(2) * x + transform_pointy.at(3) * y) * pixel_size_.y(),
+        return {(transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x(),
+                (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y(),
                 local_z};
     } else {
-        return {(transform_flat.at(0) * x + transform_flat.at(1) * y) * pixel_size_.x(),
-                (transform_flat.at(2) * x + transform_flat.at(3) * y) * pixel_size_.y(),
+        return {(transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x(),
+                (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y(),
                 local_z};
     }
 }
 
 std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
-    // Inverse transformations, going from cartesian coordinates to axial coordinates
-    const std::array<double, 4> inv_transform_pointy{std::sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0};
-    const std::array<double, 4> inv_transform_flat{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
-
     auto pt = ROOT::Math::XYPoint(position.x() / pixel_size_.x(), position.y() / pixel_size_.y());
     double q = 0, r = 0;
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        q = inv_transform_pointy.at(0) * pt.x() + inv_transform_pointy.at(1) * pt.y();
-        r = inv_transform_pointy.at(2) * pt.x() + inv_transform_pointy.at(3) * pt.y();
+        q = inv_transform_pointy_.at(0) * pt.x() + inv_transform_pointy_.at(1) * pt.y();
+        r = inv_transform_pointy_.at(2) * pt.x() + inv_transform_pointy_.at(3) * pt.y();
     } else {
-        q = inv_transform_flat.at(0) * pt.x() + inv_transform_flat.at(1) * pt.y();
-        r = inv_transform_flat.at(2) * pt.x() + inv_transform_flat.at(3) * pt.y();
+        q = inv_transform_flat_.at(0) * pt.x() + inv_transform_flat_.at(1) * pt.y();
+        r = inv_transform_flat_.at(2) * pt.x() + inv_transform_flat_.at(3) * pt.y();
     }
     return round_to_nearest_hex(q, r);
 }
