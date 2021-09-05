@@ -143,8 +143,8 @@ void CorryvreckanWriterModule::run(Event* event) {
         for(const auto& apx_pixel : message->getData()) {
             auto* corry_pixel = new corryvreckan::Pixel(
                 detector_name,
-                static_cast<int>(apx_pixel.getPixel().getIndex().X()),
-                static_cast<int>(apx_pixel.getPixel().getIndex().Y()),
+                apx_pixel.getPixel().getIndex().X(),
+                apx_pixel.getPixel().getIndex().Y(),
                 static_cast<int>(apx_pixel.getSignal()),
                 apx_pixel.getSignal(),
                 (timing_global_ ? event_->start() + apx_pixel.getGlobalTime() : apx_pixel.getLocalTime()));
