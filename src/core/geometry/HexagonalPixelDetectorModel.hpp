@@ -113,8 +113,14 @@ namespace allpix {
          * @param x X- (or column-) coordinate to be checked
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
+         *
+         * In an axial-coordinates hexagon grid, simply checking for x and y to be between 0 and number_of_pixels will create
+         * a rhombus which does lack the upper-left pixels and which has surplus pixels at the upper-right corner. We
+         * therefore need to check the allowed range along x as a function of the y coordinate. The integer division by two
+         * ensures we allow for one more x coordinate every other row in y.
          */
         bool isWithinPixelGrid(const int x, const int y) const override {
+            // FIXME check if this depends on pointy vs. flat!
             return !(y < 0 || y >= static_cast<int>(number_of_pixels_.y()) || x < 0 - y / 2 ||
                      x >= static_cast<int>(number_of_pixels_.x()) - y / 2);
         };
@@ -200,6 +206,13 @@ namespace allpix {
             return neighbors;
         };
 
+        /**
+         * @brief Check if two pixel indices are neighbors to each other
+         * @param  seed    Initial pixel index
+         * @param  entrant Entrant pixel index to be tested
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return         Boolean whether pixels are neighbors or not
+         */
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override {
             return (hex_distance(seed.x(), seed.y(), entrant.x(), entrant.y()) <= distance);
         };
