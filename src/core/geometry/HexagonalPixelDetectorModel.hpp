@@ -154,14 +154,46 @@ namespace allpix {
         std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const override {
             std::set<Pixel::Index> neighbors;
 
-            for(int ix = -static_cast<int>(distance); ix <= static_cast<int>(distance); ix++) {
-                for(int iy = -static_cast<int>(distance); iy <= static_cast<int>(distance); iy++) {
-                    auto x = idx.x() + ix;
-                    auto y = idx.y() + iy;
+            for(int x = idx.x() - static_cast<int>(distance); x <= idx.x() + static_cast<int>(distance); x++) {
+                for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
                     // "cut off" the corners of the rectangle around the index in question to make it a hexagon, remove
-                    // inidces outside the pixel grid
-                    if(std::abs(ix + iy) <= static_cast<int>(distance) && isWithinPixelGrid(x, y)) {
+                    // indices outside the pixel grid
+                    if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) && isWithinPixelGrid(x, y)) {
                         neighbors.insert({x, y});
+                    }
+                }
+            }
+            return neighbors;
+        }
+
+        /**
+         * @brief Return a set containing all pixels neighboring the two given pixels with a configurable maximum distance
+         * @param idx       Index of the first pixel in question
+         * @param last_idx  Index of the second pixel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return Set of neighboring pixel indices, including the two initial pixels
+         *
+         * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         */
+        std::set<Pixel::Index>
+        getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
+            std::set<Pixel::Index> neighbors;
+
+            auto x_lower = std::min(idx.x(), last_idx.x()) - static_cast<int>(distance);
+            auto x_higher = std::max(idx.x(), last_idx.x()) + static_cast<int>(distance);
+            auto y_lower = std::min(idx.y(), last_idx.y()) - static_cast<int>(distance);
+            auto y_higher = std::max(idx.y(), last_idx.y()) + static_cast<int>(distance);
+
+            for(int x = x_lower; x <= x_higher; x++) {
+                for(int y = y_lower; y <= y_higher; y++) {
+                    // Remove indices outside the pixel grid
+                    if(isWithinPixelGrid(x, y)) {
+                        // "cut off" the corners of the rectangle around the indices in question to make it a "prolonged"
+                        // hexagon
+                        if(std::abs(x - idx.x() + y - idx.y()) <= distance ||
+                           std::abs(x - last_idx.x() + y - last_idx.y()) <= distance) {
+                            neighbors.insert({x, y});
+                        }
                     }
                 }
             }
