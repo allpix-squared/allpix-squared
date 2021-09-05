@@ -176,7 +176,7 @@ namespace allpix {
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
          */
         std::set<Pixel::Index>
-        getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
+        getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const override {
             std::set<Pixel::Index> neighbors;
 
             auto x_lower = std::min(idx.x(), last_idx.x()) - static_cast<int>(distance);
@@ -190,8 +190,8 @@ namespace allpix {
                     if(isWithinPixelGrid(x, y)) {
                         // "cut off" the corners of the rectangle around the indices in question to make it a "prolonged"
                         // hexagon
-                        if(std::abs(x - idx.x() + y - idx.y()) <= distance ||
-                           std::abs(x - last_idx.x() + y - last_idx.y()) <= distance) {
+                        if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) ||
+                           std::abs(x - last_idx.x() + y - last_idx.y()) <= static_cast<int>(distance)) {
                             neighbors.insert({x, y});
                         }
                     }
