@@ -75,14 +75,20 @@ bool HexagonalPixelDetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_in
 }
 
 ROOT::Math::XYZVector HexagonalPixelDetectorModel::getGridSize() const {
-    // FIXME re-do math!
-    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        LOG(ERROR) << "grid size: " << Units::display(number_of_pixels_.x() * 2 * pixel_size_.x(), "um") << ", "
-                   << Units::display(number_of_pixels_.y() * 2 * pixel_size_.y(), "um");
-        return {number_of_pixels_.x() * 2 * pixel_size_.x(), number_of_pixels_.y() * 2 * pixel_size_.y(), 0};
-    } else {
-        return {number_of_pixels_.x() * 2 * pixel_size_.x(), number_of_pixels_.y() * 2 * pixel_size_.y(), 0};
-    }
+    auto start_angle = (pixel_type_ == Pixel::Type::HEXAGON_POINTY ? 0.5 : 0.0);
+
+    auto corner_offset_right = pixel_size_.x() * std::cos(M_PI * start_angle / 3);        // corner 0
+    auto corner_offset_top = pixel_size_.y() * std::sin(M_PI * (start_angle + 1) / 3);    // corner 1
+    auto corner_offset_left = pixel_size_.x() * std::cos(M_PI * (start_angle + 3) / 3);   // corner 3
+    auto corner_offset_bottom = pixel_size_.y() * std::sin(M_PI * (start_angle + 4) / 3); // corner 4
+
+    // Top and right boundaries:
+    auto limit_top = corner_offset_top +
+                     get_pixel_center_y((number_of_pixels_.y() > 1 ? 1 : 0), static_cast<int>(number_of_pixels_.y()) - 1);
+    auto limit_right = corner_offset_right +
+                       get_pixel_center_x(static_cast<int>(number_of_pixels_.x()) - 1, (number_of_pixels_.y() > 1 ? 1 : 0));
+
+    return {limit_right - corner_offset_left, limit_top - corner_offset_bottom, 0};
 }
 
 std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
