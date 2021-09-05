@@ -30,18 +30,25 @@ ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getCenter() const {
     return {getGridSize().x() / 2.0 - getPixelSize().x() / 2.0, getGridSize().y() / 2.0 - getPixelSize().y() / 2.0, 0};
 }
 
+double HexagonalPixelDetectorModel::get_pixel_center_x(const int x, const int y) const {
+    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
+        return (transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x();
+    } else {
+        return (transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x();
+    }
+}
+
+double HexagonalPixelDetectorModel::get_pixel_center_y(const int x, const int y) const {
+    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
+        return (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y();
+    } else {
+        return (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y();
+    }
+}
+
 ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, const int y) const {
     auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
-
-    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return {(transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x(),
-                (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y(),
-                local_z};
-    } else {
-        return {(transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x(),
-                (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y(),
-                local_z};
-    }
+    return {get_pixel_center_x(x, y), get_pixel_center_y(x, y), local_z};
 }
 
 std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {

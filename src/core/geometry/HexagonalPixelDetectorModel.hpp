@@ -130,6 +130,22 @@ namespace allpix {
         const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
 
         /**
+         * @brief Helper to calculate the center along y of a hexagon in cartesian coordinates
+         * @param  x Axial column index
+         * @param  y Axial row index
+         * @return Position of the pixel center along y in cartesian coordinates
+         */
+        double get_pixel_center_x(const int x, const int y) const;
+
+        /**
+         * @brief Helper to calculate the center along y of a hexagon in cartesian coordinates
+         * @param  x Axial column index
+         * @param  y Axial row index
+         * @return Position of the pixel center along y in cartesian coordinates
+         */
+        double get_pixel_center_y(const int x, const int y) const;
+
+        /**
          * @brief Helper function to correcty round floating-point hexagonal positions to the nearest hexagon.
          * @param x  Column axial coordinate of the hexagon
          * @param y  Row axial coordinate of the hexagon
