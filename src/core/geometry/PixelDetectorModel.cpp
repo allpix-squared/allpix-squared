@@ -93,7 +93,7 @@ std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx,
             if(!isWithinMatrix(x, y)) {
                 continue;
             }
-            neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});
+            neighbors.insert({x, y});
         }
     }
 
