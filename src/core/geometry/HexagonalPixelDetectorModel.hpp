@@ -143,6 +143,31 @@ namespace allpix {
             }
         }
 
+        /**
+         * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
+         * @param idx       Index of the pixel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return Set of neighboring pixel indices, including the initial pixel
+         *
+         * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         */
+        std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const override {
+            std::set<Pixel::Index> neighbors;
+
+            for(int ix = -static_cast<int>(distance); ix <= static_cast<int>(distance); ix++) {
+                for(int iy = -static_cast<int>(distance); iy <= static_cast<int>(distance); iy++) {
+                    auto x = idx.x() + ix;
+                    auto y = idx.y() + iy;
+                    // "cut off" the corners of the rectangle around the index in question to make it a hexagon, remove
+                    // inidces outside the pixel grid
+                    if(std::abs(ix + iy) <= static_cast<int>(distance) && isWithinPixelGrid(x, y)) {
+                        neighbors.insert({x, y});
+                    }
+                }
+            }
+            return neighbors;
+        }
+
     private:
         std::pair<int, int> round_to_nearest_hex(double x, double y) const {
             auto q = static_cast<int>(std::round(x));
