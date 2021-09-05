@@ -297,7 +297,7 @@ void CapacitiveTransferModule::run(Event* event) {
                     continue;
                 }
 
-                auto pixel_index = Pixel::Index(static_cast<unsigned int>(xcoord), static_cast<unsigned int>(ycoord));
+                auto pixel_index = Pixel::Index(xcoord, ycoord);
 
                 double ccpd_factor = 0;
                 if(config_.has("coupling_scan_file")) {
