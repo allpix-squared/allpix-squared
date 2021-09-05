@@ -124,7 +124,7 @@ namespace allpix {
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
-        virtual bool isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const override {
             return isWithinPixelGrid(pixel_index.x(), pixel_index.y());
         };
 
