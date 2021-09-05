@@ -198,9 +198,15 @@ namespace allpix {
                 }
             }
             return neighbors;
-        }
+        };
+
+        bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override {
+            return (hex_distance(seed.x(), seed.y(), entrant.x(), entrant.y()) <= distance);
+        };
 
     private:
+        // Rounding is more easy in cubic coordinates, so we need to reconstruct the third coordinate from the other two as
+        // z = - x - y:
         std::pair<int, int> round_to_nearest_hex(double x, double y) const {
             auto q = static_cast<int>(std::round(x));
             auto r = static_cast<int>(std::round(y));
@@ -214,7 +220,13 @@ namespace allpix {
                 r = -q - s;
             }
             return {q, r};
-        }
+        };
+
+        // The distance between two hexagons in cubic coordinates is half the Manhattan distance. To use axial coordinates,
+        // we have to reconstruct the third coordinate z = - x - y:
+        size_t hex_distance(double x1, double x2, double y1, double y2) const {
+            return static_cast<size_t>((std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2);
+        };
     }; // End of HexagonalPixelDetectorModel class
 } // namespace allpix
 #endif /* ALLPIX_HEXAGONAL_PIXEL_DETECTOR_H */
