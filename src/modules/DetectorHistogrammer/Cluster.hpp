@@ -69,7 +69,7 @@ namespace allpix {
          * @param  y Coordinate of the pixel in y direction
          * @return Pointer to matching PixelHit if available or a nullptr if not part of the cluster
          */
-        const PixelHit* getPixelHit(unsigned int x, unsigned int y) const;
+        const PixelHit* getPixelHit(int x, int y) const;
 
         /**
          * @brief Get the PixelHits contained in this cluster
@@ -91,7 +91,7 @@ namespace allpix {
 
         double cluster_charge_{};
 
-        unsigned int minX_, minY_, maxX_, maxY_;
+        int minX_, minY_, maxX_, maxY_;
     };
 } // namespace allpix
 #endif /*ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H */
