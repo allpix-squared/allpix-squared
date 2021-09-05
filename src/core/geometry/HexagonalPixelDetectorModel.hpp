@@ -152,7 +152,7 @@ namespace allpix {
         double start_angle() const { return (pixel_type_ == Pixel::Type::HEXAGON_POINTY ? 0.5 : 0.0); }
 
         /**
-         * @brief Helper function to correcty round floating-point hexagonal positions to the nearest hexagon.
+         * @brief Helper function to correctly round floating-point hexagonal positions to the nearest hexagon.
          * @param x  Column axial coordinate of the hexagon
          * @param y  Row axial coordinate of the hexagon
          * @return Indices of nearest hexagon
