@@ -146,6 +146,12 @@ namespace allpix {
         double get_pixel_center_y(const int x, const int y) const;
 
         /**
+         * @brief Helper to determine the starting angle for the position of the first corner
+         * @return Starting angle
+         */
+        double start_angle() const { return (pixel_type_ == Pixel::Type::HEXAGON_POINTY ? 0.5 : 0.0); }
+
+        /**
          * @brief Helper function to correcty round floating-point hexagonal positions to the nearest hexagon.
          * @param x  Column axial coordinate of the hexagon
          * @param y  Row axial coordinate of the hexagon
