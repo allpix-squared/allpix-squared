@@ -167,7 +167,7 @@ namespace allpix {
          * @param y2  Row axial coordinate of the second hexagon
          * @return    Absolute distance between the hexagons
          */
-        size_t hex_distance(double x1, double x2, double y1, double y2) const;
+        size_t hex_distance(double x1, double y1, double x2, double y2) const;
     };
 } // namespace allpix
 

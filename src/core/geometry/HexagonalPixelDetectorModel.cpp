@@ -157,6 +157,6 @@ std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, 
 
 // The distance between two hexagons in cubic coordinates is half the Manhattan distance. To use axial coordinates, we have
 // to reconstruct the third coordinate z = - x - y:
-size_t HexagonalPixelDetectorModel::hex_distance(double x1, double x2, double y1, double y2) const {
-    return static_cast<size_t>((std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2);
+size_t HexagonalPixelDetectorModel::hex_distance(double x1, double y1, double x2, double y2) const {
+    return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
 }
