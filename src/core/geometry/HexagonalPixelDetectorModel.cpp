@@ -27,24 +27,24 @@ HexagonalPixelDetectorModel::HexagonalPixelDetectorModel(std::string type, const
 
 ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getCenter() const {
     auto grid = getGridSize();
-    auto corner_offset_left = pixel_size_.x() * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
-    auto corner_offset_bottom = pixel_size_.y() * std::sin(M_PI * (start_angle() + 4) / 3); // corner 4
+    auto corner_offset_left = pixel_size_.x() / 2 * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
+    auto corner_offset_bottom = pixel_size_.y() / 2 * std::sin(M_PI * (start_angle() + 4) / 3); // corner 4
     return {grid.x() / 2.0 + corner_offset_left, grid.y() / 2.0 + corner_offset_bottom, 0};
 }
 
 double HexagonalPixelDetectorModel::get_pixel_center_x(const int x, const int y) const {
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return (transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x();
+        return (transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x() / 2;
     } else {
-        return (transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x();
+        return (transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x() / 2;
     }
 }
 
 double HexagonalPixelDetectorModel::get_pixel_center_y(const int x, const int y) const {
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y();
+        return (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y() / 2;
     } else {
-        return (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y();
+        return (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y() / 2;
     }
 }
 
@@ -54,7 +54,7 @@ ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, co
 }
 
 std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
-    auto pt = ROOT::Math::XYPoint(position.x() / pixel_size_.x(), position.y() / pixel_size_.y());
+    auto pt = ROOT::Math::XYPoint(position.x() / pixel_size_.x() * 2, position.y() / pixel_size_.y() * 2);
     double q = 0, r = 0;
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
         q = inv_transform_pointy_.at(0) * pt.x() + inv_transform_pointy_.at(1) * pt.y();
@@ -77,10 +77,10 @@ bool HexagonalPixelDetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_in
 }
 
 ROOT::Math::XYZVector HexagonalPixelDetectorModel::getGridSize() const {
-    auto corner_offset_right = pixel_size_.x() * std::cos(M_PI * start_angle() / 3);        // corner 0
-    auto corner_offset_top = pixel_size_.y() * std::sin(M_PI * (start_angle() + 1) / 3);    // corner 1
-    auto corner_offset_left = pixel_size_.x() * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
-    auto corner_offset_bottom = pixel_size_.y() * std::sin(M_PI * (start_angle() + 4) / 3); // corner 4
+    auto corner_offset_right = pixel_size_.x() / 2 * std::cos(M_PI * start_angle() / 3);        // corner 0
+    auto corner_offset_top = pixel_size_.y() / 2 * std::sin(M_PI * (start_angle() + 1) / 3);    // corner 1
+    auto corner_offset_left = pixel_size_.x() / 2 * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
+    auto corner_offset_bottom = pixel_size_.y() / 2 * std::sin(M_PI * (start_angle() + 4) / 3); // corner 4
 
     // Top and right boundaries:
     auto limit_top = corner_offset_top +
