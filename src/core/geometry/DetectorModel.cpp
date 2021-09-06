@@ -212,7 +212,7 @@ bool DetectorModel::isWithinPixelGrid(const int x, const int y) const {
 }
 
 ROOT::Math::XYZPoint DetectorModel::getPixelCenter(unsigned int x, unsigned int y) const {
-    auto size = getSize();
+    auto size = getPixelSize();
     auto local_x = size.x() * x;
     auto local_y = size.y() * y;
     auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
