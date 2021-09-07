@@ -249,14 +249,6 @@ namespace allpix {
         void load_models();
 
         /**
-         * @brief Parse a configuration object and instantiate the corresponding model
-         * @param name Name of the model
-         * @param reader Reader with the configuration for this model
-         * @return Detector model instantiated from the configuration
-         */
-        std::shared_ptr<DetectorModel> parse_config(const std::string& name, const ConfigReader&);
-
-        /**
          * @brief Get the orientation of an object
          * @param config Configuration that defines in the object
          * @return Position and rotation vector of the object

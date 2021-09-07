@@ -44,6 +44,14 @@ namespace allpix {
     class DetectorModel {
     public:
         /**
+         * @brief Factory to dynamically create detector model objects
+         * @param name Name of the model
+         * @param reader Reader with the configuration for this model
+         * @return Detector model instantiated from the configuration
+         */
+        static std::shared_ptr<DetectorModel> factory(const std::string& name, const ConfigReader&);
+
+        /**
          * @brief Helper class to hold support layers for a detector model
          */
         class SupportLayer {

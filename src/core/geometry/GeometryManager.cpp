@@ -30,9 +30,6 @@
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
-#include "core/geometry/HybridPixelDetectorModel.hpp"
-#include "core/geometry/MonolithicPixelDetectorModel.hpp"
-
 using namespace allpix;
 using namespace ROOT::Math;
 
@@ -425,29 +422,8 @@ void GeometryManager::load_models() {
         }
 
         // Parse configuration and add model to the config
-        addModel(parse_config(name, reader));
+        addModel(DetectorModel::factory(name, reader));
     }
-}
-
-std::shared_ptr<DetectorModel> GeometryManager::parse_config(const std::string& name, const ConfigReader& reader) {
-    Configuration config = reader.getHeaderConfiguration();
-
-    if(!config.has("type")) {
-        LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
-    }
-    auto type = config.get<std::string>("type");
-
-    // Instantiate the correct detector model
-    if(type == "hybrid") {
-        return std::make_shared<HybridPixelDetectorModel>(name, reader);
-    }
-    if(type == "monolithic") {
-        return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
-    }
-
-    LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
-    // FIXME: The model can probably be silently ignored if we have more model readers later
-    throw InvalidValueError(config, "type", "model type is not supported");
 }
 
 /*
@@ -491,7 +467,7 @@ void GeometryManager::close_geometry() {
                     reader.addConfiguration(std::move(model_config));
                 }
 
-                model = parse_config(name, reader);
+                model = DetectorModel::factory(name, reader);
             }
 
             detector->set_model(model);
