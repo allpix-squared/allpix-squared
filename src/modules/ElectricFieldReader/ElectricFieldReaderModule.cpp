@@ -398,10 +398,34 @@ void ElectricFieldReaderModule::create_output_plots() {
     double x = 0, y = 0, z = 0;
     if(project == 'x') {
         x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.x();
+        histogram->GetXaxis()->SetTitle("y (mm)");
+        histogram_x->GetXaxis()->SetTitle("y (mm)");
+        histogram_y->GetXaxis()->SetTitle("y (mm)");
+        histogram_z->GetXaxis()->SetTitle("y (mm)");
+        histogram->GetYaxis()->SetTitle("z (mm)");
+        histogram_x->GetYaxis()->SetTitle("z (mm)");
+        histogram_y->GetYaxis()->SetTitle("z (mm)");
+        histogram_z->GetYaxis()->SetTitle("z (mm)");
     } else if(project == 'y') {
         y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.y();
+        histogram->GetXaxis()->SetTitle("x (mm)");
+        histogram_x->GetXaxis()->SetTitle("x (mm)");
+        histogram_y->GetXaxis()->SetTitle("x (mm)");
+        histogram_z->GetXaxis()->SetTitle("x (mm)");
+        histogram->GetYaxis()->SetTitle("z (mm)");
+        histogram_x->GetYaxis()->SetTitle("z (mm)");
+        histogram_y->GetYaxis()->SetTitle("z (mm)");
+        histogram_z->GetYaxis()->SetTitle("z (mm)");
     } else {
         z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
+        histogram->GetXaxis()->SetTitle("x (mm)");
+        histogram_x->GetXaxis()->SetTitle("x (mm)");
+        histogram_y->GetXaxis()->SetTitle("x (mm)");
+        histogram_z->GetXaxis()->SetTitle("x (mm)");
+        histogram->GetYaxis()->SetTitle("y (mm)");
+        histogram_x->GetYaxis()->SetTitle("y (mm)");
+        histogram_y->GetYaxis()->SetTitle("y (mm)");
+        histogram_z->GetYaxis()->SetTitle("y (mm)");
     }
 
     // set z axis tile
@@ -409,46 +433,23 @@ void ElectricFieldReaderModule::create_output_plots() {
     histogram_x->GetZaxis()->SetTitle("field (V/cm)");
     histogram_y->GetZaxis()->SetTitle("field (V/cm)");
     histogram_z->GetZaxis()->SetTitle("field (V/cm)");
-    // Find the electric field at every index
+
+    // Find the electric field at every index, scan axes in local coordinates!
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
             y = center.y() - size.y() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.y();
-            histogram->GetXaxis()->SetTitle("y (mm)");
-            histogram_x->GetXaxis()->SetTitle("y (mm)");
-            histogram_y->GetXaxis()->SetTitle("y (mm)");
-            histogram_z->GetXaxis()->SetTitle("y (mm)");
         } else if(project == 'y') {
             x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
-            histogram->GetXaxis()->SetTitle("x (mm)");
-            histogram_x->GetXaxis()->SetTitle("x (mm)");
-            histogram_y->GetXaxis()->SetTitle("x (mm)");
-            histogram_z->GetXaxis()->SetTitle("x (mm)");
         } else {
             x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
-            histogram->GetXaxis()->SetTitle("x (mm)");
-            histogram_x->GetXaxis()->SetTitle("x (mm)");
-            histogram_y->GetXaxis()->SetTitle("x (mm)");
-            histogram_z->GetXaxis()->SetTitle("x (mm)");
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
-                histogram->GetYaxis()->SetTitle("z (mm)");
-                histogram_x->GetYaxis()->SetTitle("z (mm)");
-                histogram_y->GetYaxis()->SetTitle("z (mm)");
-                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else if(project == 'y') {
                 z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
-                histogram->GetYaxis()->SetTitle("z (mm)");
-                histogram_x->GetYaxis()->SetTitle("z (mm)");
-                histogram_y->GetYaxis()->SetTitle("z (mm)");
-                histogram_z->GetYaxis()->SetTitle("z (mm)");
             } else {
                 y = center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
-                histogram->GetYaxis()->SetTitle("y (mm)");
-                histogram_x->GetYaxis()->SetTitle("y (mm)");
-                histogram_y->GetYaxis()->SetTitle("y (mm)");
-                histogram_z->GetYaxis()->SetTitle("y (mm)");
             }
 
             // Get field strength from detector - directly convert to double to fill root histograms
