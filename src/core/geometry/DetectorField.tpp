@@ -153,14 +153,14 @@ namespace allpix {
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
-        if(!model_initialized_) {
+        if(model_ == nullptr) {
             throw std::invalid_argument("field not initialized with detector model parameters");
         }
         if(dimensions[0] * dimensions[1] * dimensions[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given dimensions");
         }
-        if(thickness_domain.first + 1e-9 < sensor_center_.z() - sensor_size_.z() / 2.0 ||
-           sensor_center_.z() + sensor_size_.z() / 2.0 < thickness_domain.second - 1e-9) {
+        if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
+           model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
             throw std::invalid_argument("thickness domain is outside sensor dimensions");
         }
         if(thickness_domain.first >= thickness_domain.second) {

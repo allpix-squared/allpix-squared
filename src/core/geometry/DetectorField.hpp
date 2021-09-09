@@ -139,14 +139,10 @@ namespace allpix {
          * @param pixel_pitch the pitch in X and Y of a single pixel
          */
         void set_model_parameters(const std::shared_ptr<DetectorModel>& model,
-                                  const ROOT::Math::XYZPoint& sensor_center,
-                                  const ROOT::Math::XYZVector& sensor_size,
-                                  const ROOT::Math::XYVector& pixel_pitch) {
+                                  const ROOT::Math::XYZPoint&,
+                                  const ROOT::Math::XYZVector&,
+                                  const ROOT::Math::XYVector&) {
             model_ = model;
-            sensor_center_ = sensor_center;
-            sensor_size_ = sensor_size;
-            pixel_size_ = pixel_pitch;
-            model_initialized_ = true;
         }
 
         /**
@@ -196,13 +192,8 @@ namespace allpix {
         /*
          * Relevant parameters from the detector model for this field
          */
-        ROOT::Math::XYVector pixel_size_{};
-        ROOT::Math::XYZPoint sensor_center_{};
-        ROOT::Math::XYZVector sensor_size_{};
-
         std::shared_ptr<DetectorModel> model_;
         FieldScale scale_{FieldScale::FULL};
-        bool model_initialized_{};
     };
 } // namespace allpix
 
