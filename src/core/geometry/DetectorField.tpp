@@ -50,15 +50,21 @@ namespace allpix {
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
     T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z) const {
+
+        auto pitch = model_->getPixelSize();
+        // Fold onto available field scale - flip coordinates if necessary
+        double x =
+            (scale_ == FieldScale::HALF_X || scale_ == FieldScale::QUARTER ? 2 * (-std::abs(dist.x()) / pitch.x() + 0.5)
+                                                                           : (dist.x() / pitch.x() + 0.5));
+        double y =
+            (scale_ == FieldScale::HALF_Y || scale_ == FieldScale::QUARTER ? 2 * (-std::abs(dist.y()) / pitch.y() + 0.5)
+                                                                           : (dist.y() / pitch.y() + 0.5));
+
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (dimensions_[0] == 1 ? 0
-                                          : static_cast<int>(std::floor(static_cast<double>(dimensions_[0]) *
-                                                                        (dist.x() / (scales_[0] * pixel_size_.x()) + 0.5))));
-        auto y_ind = (dimensions_[1] == 1 ? 0
-                                          : static_cast<int>(std::floor(static_cast<double>(dimensions_[1]) *
-                                                                        (dist.y() / (scales_[1] * pixel_size_.y()) + 0.5))));
+        auto x_ind = (dimensions_[0] == 1 ? 0 : static_cast<int>(std::floor(x * dimensions_[0])));
+        auto y_ind = (dimensions_[1] == 1 ? 0 : static_cast<int>(std::floor(y * dimensions_[1])));
         auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
 
@@ -79,7 +85,12 @@ namespace allpix {
         size_t tot_ind = static_cast<size_t>(x_ind) * dimensions_[1] * dimensions_[2] * N +
                          static_cast<size_t>(y_ind) * dimensions_[2] * N + static_cast<size_t>(z_ind) * N;
 
-        return get_impl(tot_ind, std::make_index_sequence<N>{});
+        // Retrieve field
+        auto field_vector = get_impl(tot_ind, std::make_index_sequence<N>{});
+        flip_vector_components(field_vector,
+                               (dist.x() > 0) && (scale_ == FieldScale::HALF_X || scale_ == FieldScale::QUARTER),
+                               (dist.y() > 0) && (scale_ == FieldScale::HALF_Y || scale_ == FieldScale::QUARTER));
+        return field_vector;
     }
 
     /**
@@ -94,46 +105,27 @@ namespace allpix {
             return {};
         }
 
-        // Shift the coordinates by the offset configured for the field:
-        auto x = pos.x() + offset_[0];
-        auto y = pos.y() + offset_[1];
-        auto z = pos.z();
+        // Calculate which pixel we are in and the pixel center:
+        auto [px, py] = model_->getPixelIndex(pos);
+        auto pxpos = model_->getPixelCenter(px, py);
 
-        // Compute corresponding field replica coordinates:
-        // WARNING This relies on the origin of the local coordinate system
-        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pixel_size_.x()) / (scales_[0] * pixel_size_.x())));
-        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pixel_size_.y()) / (scales_[1] * pixel_size_.y())));
-
-        // Convert to the replica frame:
-        x -= ((replica_x + 0.5) * scales_[0] - 0.5) * pixel_size_.x();
-        y -= ((replica_y + 0.5) * scales_[1] - 0.5) * pixel_size_.y();
-
-        // Do flipping if necessary
-        if((replica_x % 2) == 1) {
-            x *= -1;
-        }
-        if((replica_y % 2) == 1) {
-            y *= -1;
-        }
+        // Calculate difference, add offset:
+        auto diff = pos - pxpos + ROOT::Math::XYZVector(offset_[0], offset_[1], 0);
 
         // Compute using the grid or a function depending on the setting
-        T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
+            return get_field_from_grid(static_cast<ROOT::Math::XYZPoint>(diff), extrapolate_z);
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
-                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
-            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                diff.SetZ(std::clamp(diff.z(), thickness_domain_.first, thickness_domain_.second));
+            } else if(diff.z() < thickness_domain_.first || thickness_domain_.second < diff.z()) {
                 return {};
             }
 
             // Calculate the field from the configured function:
-            ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
+            return function_(static_cast<ROOT::Math::XYZPoint>(diff));
         }
-        // Flip vector if necessary
-        flip_vector_components(ret_val, replica_x % 2, replica_y % 2);
-        return ret_val;
     }
 
     /**
