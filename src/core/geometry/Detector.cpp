@@ -54,11 +54,10 @@ Detector::Detector(std::string name, ROOT::Math::XYZPoint position, const ROOT::
 void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
 
-    // Initialize the detector fields with the model parameters:
-    electric_field_.set_model_parameters(model_, model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
-    weighting_potential_.set_model_parameters(
-        model_, model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
-    doping_profile_.set_model_parameters(model_, model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
+    // Initialize the detector fields with the model:
+    electric_field_.set_model(model_);
+    weighting_potential_.set_model(model_);
+    doping_profile_.set_model(model_);
 
     build_transform();
 }

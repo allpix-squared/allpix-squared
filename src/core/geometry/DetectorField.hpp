@@ -133,17 +133,10 @@ namespace allpix {
 
     private:
         /**
-         * @brief Set the relevant parameters from the detector model this field is used for
-         * @param sensor_center The center of the sensor in local coordinates
-         * @param sensor_size The extend of the sensor
-         * @param pixel_pitch the pitch in X and Y of a single pixel
+         * @brief Set the detector model this field is used for
+         * @param model The detector model
          */
-        void set_model_parameters(const std::shared_ptr<DetectorModel>& model,
-                                  const ROOT::Math::XYZPoint&,
-                                  const ROOT::Math::XYZVector&,
-                                  const ROOT::Math::XYVector&) {
-            model_ = model;
-        }
+        void set_model(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
 
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
