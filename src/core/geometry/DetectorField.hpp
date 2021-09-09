@@ -21,6 +21,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "DetectorModel.hpp"
 #include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 
@@ -35,6 +36,16 @@ namespace allpix {
         LINEAR,   ///< Linear field (linearity determined by function)
         GRID,     ///< Field supplied through a regularized grid
         CUSTOM,   ///< Custom field function
+    };
+
+    /**
+     * @brief Scale of field maps
+     */
+    enum class FieldScale {
+        FULL = 0, ///< The field map spans the full volume
+        HALF_X,   ///< The field map spans half the volume and should be mirrored along x
+        HALF_Y,   ///< The field map spans half the volume and should be mirrored along y
+        QUARTER,  ///< The field map spans a quarter of the volume and should be mirrored to the other quadrants
     };
 
     /**
@@ -127,9 +138,11 @@ namespace allpix {
          * @param sensor_size The extend of the sensor
          * @param pixel_pitch the pitch in X and Y of a single pixel
          */
-        void set_model_parameters(const ROOT::Math::XYZPoint& sensor_center,
+        void set_model_parameters(const std::shared_ptr<DetectorModel>& model,
+                                  const ROOT::Math::XYZPoint& sensor_center,
                                   const ROOT::Math::XYZVector& sensor_size,
                                   const ROOT::Math::XYVector& pixel_pitch) {
+            model_ = model;
             sensor_center_ = sensor_center;
             sensor_size_ = sensor_size;
             pixel_size_ = pixel_pitch;
@@ -186,6 +199,9 @@ namespace allpix {
         ROOT::Math::XYVector pixel_size_{};
         ROOT::Math::XYZPoint sensor_center_{};
         ROOT::Math::XYZVector sensor_size_{};
+
+        std::shared_ptr<DetectorModel> model_;
+        FieldScale scale_{FieldScale::FULL};
         bool model_initialized_{};
     };
 } // namespace allpix
