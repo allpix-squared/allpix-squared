@@ -150,7 +150,7 @@ namespace allpix {
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field, // NOLINT
                                       std::array<size_t, 3> dimensions,
-                                      std::array<double, 2> scales,
+                                      FieldScale scale,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
         if(model_ == nullptr) {
@@ -169,7 +169,7 @@ namespace allpix {
 
         field_ = std::move(field);
         dimensions_ = dimensions;
-        scales_ = scales;
+        scale_ = scale;
         offset_ = offset;
 
         thickness_domain_ = std::move(thickness_domain);

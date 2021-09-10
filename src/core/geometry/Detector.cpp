@@ -156,7 +156,7 @@ FieldType Detector::getElectricFieldType() const {
 void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                     std::array<size_t, 3> dimensions,
                                     std::array<double, 3> size,
-                                    std::array<double, 2> scales,
+                                    FieldScale scale,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
@@ -199,7 +199,7 @@ FieldType Detector::getWeightingPotentialType() const {
 void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
                                          std::array<size_t, 3> dimensions,
                                          std::array<double, 3> size,
-                                         std::array<double, 2> scales,
+                                         FieldScale scale,
                                          std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
@@ -263,7 +263,7 @@ FieldType Detector::getDopingProfileType() const {
 void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> dimensions,
                                     std::array<double, 3> size,
-                                    std::array<double, 2> scales,
+                                    FieldScale scale,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
