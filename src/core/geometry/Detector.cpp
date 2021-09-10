@@ -156,11 +156,11 @@ FieldType Detector::getElectricFieldType() const {
 void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                     std::array<size_t, 3> dimensions,
                                     std::array<double, 3> size,
-                                    FieldScale scale,
+                                    FieldMapping mapping,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
-    electric_field_.setGrid(field, dimensions, scales, offset, thickness_domain);
+    electric_field_.setGrid(field, dimensions, mapping, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -199,11 +199,11 @@ FieldType Detector::getWeightingPotentialType() const {
 void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
                                          std::array<size_t, 3> dimensions,
                                          std::array<double, 3> size,
-                                         FieldScale scale,
+                                         FieldMapping mapping,
                                          std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
-    weighting_potential_.setGrid(potential, dimensions, scales, offset, thickness_domain);
+    weighting_potential_.setGrid(potential, dimensions, mapping, offset, thickness_domain);
 }
 
 void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
@@ -263,7 +263,7 @@ FieldType Detector::getDopingProfileType() const {
 void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<size_t, 3> dimensions,
                                     std::array<double, 3> size,
-                                    FieldScale scale,
+                                    FieldMapping mapping,
                                     std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
