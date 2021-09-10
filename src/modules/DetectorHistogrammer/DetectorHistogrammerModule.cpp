@@ -313,9 +313,11 @@ void DetectorHistogrammerModule::run(Event* event) {
         cluster_size_x->Fill(clusSizesXY.first);
         cluster_size_y->Fill(clusSizesXY.second);
 
+        auto [cluster_x, cluster_y] = clus.getIndex();
         auto clusterPos = clus.getPosition();
-        LOG(DEBUG) << "Cluster at coordinates " << clusterPos << " with charge " << Units::display(clus.getCharge(), "ke");
-        cluster_map->Fill(clusterPos.x(), clusterPos.y());
+        LOG(DEBUG) << "Cluster at indices " << cluster_x << ", " << cluster_y << "(" << clusterPos
+                   << " local coordinates) with charge " << Units::display(clus.getCharge(), "ke");
+        cluster_map->Fill(cluster_x, cluster_y);
         cluster_charge->Fill(static_cast<double>(Units::convert(clus.getCharge(), "ke")));
         charge_sum += clus.getCharge();
 
@@ -364,8 +366,8 @@ void DetectorHistogrammerModule::run(Event* event) {
 
 
             // Calculate residual with cluster position:
-            auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
-            auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y() * pitch.y(), "um"));
+            auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
+            auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y(), "um"));
             residual_x->Fill(residual_um_x);
             residual_y->Fill(residual_um_y);
             residual_x_vs_x->Fill(inPixel_um_x, std::fabs(residual_um_x));
@@ -403,8 +405,8 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         auto matched_cluster =
             std::find_if(clusters.begin(), clusters.end(), [this, &particlePos, &pitch](const Cluster& clus) {
-                return (std::fabs(clus.getPosition().x() * pitch.x() - particlePos.x()) < matching_cut_.x()) &&
-                       (std::fabs(clus.getPosition().y() * pitch.y() - particlePos.y()) < matching_cut_.y());
+                return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
+                       (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
             });
 
         // Do we have a match?
