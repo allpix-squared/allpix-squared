@@ -193,7 +193,7 @@ namespace allpix {
          *
          * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
          */
-        std::shared_ptr<T> Get() {
+        std::shared_ptr<T> Get() { // NOLINT
             auto idx = ThreadPool::threadNum();
             auto& object = objects_[idx];
             if(!object) {
@@ -207,7 +207,7 @@ namespace allpix {
          *
          * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
          */
-        std::shared_ptr<T> Merge() {
+        std::shared_ptr<T> Merge() { // NOLINT
             ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
             if(is_merged_) {
                 return objects_[0];
@@ -270,9 +270,9 @@ namespace allpix {
         static std::mutex process_id_mutex;
         std::unique_lock<std::mutex> lock(process_id_mutex);
 
-        auto pids = TProcessID::GetPIDs();
+        auto* pids = TProcessID::GetPIDs();
         for(int i = 0; i < pids->GetEntries(); ++i) {
-            auto pid_ptr = static_cast<TProcessID*>((*pids)[i]);
+            auto* pid_ptr = static_cast<TProcessID*>((*pids)[i]);
             pid_ptr->Clear();
         }
 
