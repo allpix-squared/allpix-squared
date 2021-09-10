@@ -438,11 +438,10 @@ void DetectorHistogrammerModule::run(Event* event) {
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
         auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
-        auto matched_cluster =
-            std::find_if(clusters.begin(), clusters.end(), [this, &particlePos, &pitch](const Cluster& clus) {
-                return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
-                       (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
-            });
+        auto matched_cluster = std::find_if(clusters.begin(), clusters.end(), [this, &particlePos](const Cluster& clus) {
+            return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
+                   (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
+        });
 
         // Do we have a match?
         bool matched = matched_cluster != clusters.end();
