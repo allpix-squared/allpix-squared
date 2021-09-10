@@ -289,8 +289,9 @@ void DetectorHistogrammerModule::initialize() {
     cluster_charge = CreateHistogram<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
+    std::string cluster_seed_charge_title = "Cluster seed charge for " + detector_->getName() + ";seed charge [ke];clusters";
     cluster_seed_charge = CreateHistogram<TH1D>(
-        "cluster_seed_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+        "cluster_seed_charge", cluster_seed_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
     std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
     pixel_charge =
@@ -390,21 +391,12 @@ void DetectorHistogrammerModule::run(Event* event) {
             cluster_charge_map->Fill(
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(clus.getCharge(), "ke")));
 
-            // Retrieve the pixel to which this MCParticle points:
-            const auto* pixel = clus.getPixelHit(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
-            if(pixel != nullptr) {
-                seed_charge_map->Fill(
-                    inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(pixel->getSignal(), "ke")));
-            }
+            // Retrieve the seed pixel:
+            const auto* seed_pixel = clus.getSeedPixelHit();
+            seed_charge_map->Fill(
+                inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
+            cluster_seed_charge->Fill(static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
 
-            auto seed_charge = 0.;
-            for(const auto& cluster_pixel : clus.getPixelHits()) {
-                auto c_signal = static_cast<double>(Units::convert(cluster_pixel->getSignal(), "ke"));
-                if(c_signal > seed_charge) {
-                    seed_charge = c_signal;
-                }
-            }
-            cluster_seed_charge->Fill(seed_charge);
 
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x() * pitch.x(), "um"));
