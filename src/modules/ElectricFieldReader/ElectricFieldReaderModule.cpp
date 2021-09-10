@@ -68,11 +68,8 @@ void ElectricFieldReaderModule::initialize() {
 
     // Calculate the field depending on the configuration
     if(field_model == ElectricField::MESH) {
-        // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
-        auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
-        // FIXME Add sanity checks for scales here
-        LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
-        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+        // Read the field scales from the configuration, defaulting to the full pixel cell:
+        auto field_scale = config_.get<FieldScale>("field_scale", {FieldScale::FULL});
 
         // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
         auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
