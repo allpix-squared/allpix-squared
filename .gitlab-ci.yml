@@ -415,7 +415,7 @@ cmp:doxygen:
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Allpix-reference
+        - make Allpix-reference 1> /dev/null
         - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
