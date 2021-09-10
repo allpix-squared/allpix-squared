@@ -63,8 +63,8 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (dimensions_[0] == 1 ? 0 : static_cast<int>(std::floor(x * dimensions_[0])));
-        auto y_ind = (dimensions_[1] == 1 ? 0 : static_cast<int>(std::floor(y * dimensions_[1])));
+        auto x_ind = (dimensions_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(dimensions_[0]))));
+        auto y_ind = (dimensions_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(dimensions_[1]))));
         auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
 
@@ -107,7 +107,7 @@ namespace allpix {
 
         // Calculate which pixel we are in and the pixel center:
         auto [px, py] = model_->getPixelIndex(pos);
-        auto pxpos = model_->getPixelCenter(px, py);
+        auto pxpos = model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py));
 
         // Calculate difference, add offset:
         auto diff = pos - pxpos + ROOT::Math::XYZVector(offset_[0], offset_[1], 0);
