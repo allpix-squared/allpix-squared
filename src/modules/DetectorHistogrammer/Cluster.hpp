@@ -10,7 +10,7 @@
 #ifndef ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H
 #define ALLPIX_DETECTOR_HISTOGRAMMER_CLUSTER_H
 
-#include <Math/DisplacementVector2D.h>
+#include <Math/Vector3D.h>
 
 #include <set>
 
@@ -52,10 +52,16 @@ namespace allpix {
         std::pair<unsigned int, unsigned int> getSizeXY() const;
 
         /**
-         * @brief Get the charge-weighted mean cluster position
+         * @brief Get the charge-weighted mean cluster position in index coordinates
+         * @return Indices of weighted mean cluster position
+         */
+        std::pair<double, double> getIndex() const;
+
+        /**
+         * @brief Get the charge-weighted mean cluster position in local coordinates
          * @return weighted mean cluster position
          */
-        ROOT::Math::XYVectorD getPosition() const;
+        ROOT::Math::XYZVector getPosition() const;
 
         /**
          * @brief Get the seed PixelHit, i.e. the PixelHit with the largest charge
