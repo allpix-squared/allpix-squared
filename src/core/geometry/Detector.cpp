@@ -174,15 +174,11 @@ bool Detector::hasWeightingPotential() const {
  * strictly zero by definition.
  */
 double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const {
-    auto size = model_->getPixelSize();
-
-    // WARNING This relies on the origin of the local coordinate system
-    auto local_x = size.x() * reference.x();
-    auto local_y = size.y() * reference.y();
+    auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(reference.x(), reference.y()));
 
     // Requiring to extrapolate the field along z because equilibrium means no change in weighting potential,
     // Without this, we would get large jumps close to the electrode once charge carriers cross the boundary.
-    return weighting_potential_.getRelativeTo(local_pos, {local_x, local_y}, true);
+    return weighting_potential_.getRelativeTo(local_pos, ref, true);
 }
 
 /**
