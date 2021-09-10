@@ -10,6 +10,7 @@
 #include "Cluster.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 
 #include "core/utils/log.h"
@@ -41,6 +42,12 @@ bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
         maxX_ = std::max(pixX, maxX_);
         minY_ = std::min(pixY, minY_);
         maxY_ = std::max(pixY, maxY_);
+
+        // Update seed pixel if new charge is larger:
+        if(std::signbit(seed_pixel_hit_->getSignal()) == std::signbit(pixel_hit->getSignal()) &&
+           std::abs(seed_pixel_hit_->getSignal()) < std::abs(pixel_hit->getSignal())) {
+            seed_pixel_hit_ = pixel_hit;
+        }
 
         for(const auto* mc_particle : pixel_hit->getMCParticles()) {
             mc_particles_.insert(mc_particle);
