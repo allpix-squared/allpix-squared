@@ -215,6 +215,7 @@ namespace allpix {
                                        std::array<size_t, 3> dimensions,
                                        std::array<double, 3> size,
                                        FieldMapping mapping,
+                                       std::array<double, 2> scales,
                                        std::array<double, 2> offset,
                                        std::pair<double, double> thickness_domain);
         /**

@@ -119,6 +119,7 @@ namespace allpix {
         void setGrid(std::shared_ptr<std::vector<double>> field,
                      std::array<size_t, 3> dimensions,
                      FieldMapping mapping,
+                     std::array<double, 2> scales,
                      std::array<double, 2> offset,
                      std::pair<double, double> thickness_domain);
         /**
@@ -162,6 +163,7 @@ namespace allpix {
          */
         std::array<size_t, 3> dimensions_{};
         FieldMapping mapping_{FieldMapping::FULL};
+        std::array<double, 2> scales_{{1., 1.}};
         std::array<double_t, 2> offset_{{0., 0.}};
 
         /**

@@ -53,6 +53,7 @@ void WeightingPotentialReaderModule::initialize() {
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
+                                             FieldMapping::FULL,
                                              field_data.getSize(),
                                              std::array<double, 2>{{field_data.getSize()[0] / model->getPixelSize().x(),
                                                                     field_data.getSize()[1] / model->getPixelSize().y()}},
