@@ -69,6 +69,8 @@ stages:
 
 # Hidden key to define the default compile job:
 .compile:
+    variables:
+        ALLPIX_BUILD_ENV: "CI"
     stage: compilation
     needs: []
     script:
@@ -566,6 +568,8 @@ deploy-cvmfs:
 
 deploy-docker-latest:
     stage: deployment
+    variables:
+        ALLPIX_BUILD_ENV: "Docker"
     tags:
         - docker-image-build
     dependencies: []
@@ -578,6 +582,8 @@ deploy-docker-latest:
 
 deploy-docker-tag:
     stage: deployment
+    variables:
+        ALLPIX_BUILD_ENV: "Docker"
     tags:
         - docker-image-build
     dependencies: []
