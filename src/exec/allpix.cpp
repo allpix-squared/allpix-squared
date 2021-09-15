@@ -16,11 +16,12 @@
 #include <string>
 #include <utility>
 
+#include <boost/version.hpp>
+
 #include "core/Allpix.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
-
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -110,6 +111,11 @@ int main(int argc, const char* argv[]) {
 #endif
             std::cout << std::endl;
             std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
+            std::cout << "               using Boost.Random " << BOOST_VERSION / 100000 << "." // major version
+                      << BOOST_VERSION / 100 % 1000 << "."                                     // minor version
+                      << BOOST_VERSION % 100                                                   // patch level
+                      << std::endl;
+            std::cout << "                     ROOT " << ROOT_RELEASE << std::endl;
             std::cout << std::endl;
             std::cout << "Copyright (c) 2017-2021 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
