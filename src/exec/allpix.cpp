@@ -104,7 +104,11 @@ int main(int argc, const char* argv[]) {
         if(arg == "-h") {
             print_help = true;
         } else if(strcmp(argv[i], "--version") == 0) {
-            std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION << std::endl;
+            std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION;
+#ifdef ALLPIX_BUILD_ENV
+            std::cout << " (" << ALLPIX_BUILD_ENV << ")";
+#endif
+            std::cout << std::endl;
             std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
             std::cout << std::endl;
             std::cout << "Copyright (c) 2017-2020 CERN and the Allpix Squared authors." << std::endl << std::endl;
