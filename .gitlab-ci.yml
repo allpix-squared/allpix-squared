@@ -70,7 +70,7 @@ stages:
 # Hidden key to define the default compile job:
 .compile:
     variables:
-        ALLPIX_BUILD_ENV: "CI"
+        ALLPIX_BUILD_ENV: "CI/CD"
     stage: compilation
     needs: []
     script:
