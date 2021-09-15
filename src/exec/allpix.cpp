@@ -24,6 +24,10 @@
 #include "core/utils/exceptions.h"
 #include "core/utils/log.h"
 
+#ifdef ALLPIX_GEANT4_AVAILABLE
+#include <G4Version.hh>
+#endif
+
 using namespace allpix;
 
 void clean();
@@ -116,6 +120,9 @@ int main(int argc, const char* argv[]) {
                       << BOOST_VERSION % 100                                                   // patch level
                       << std::endl;
             std::cout << "                     ROOT " << ROOT_RELEASE << std::endl;
+#ifdef ALLPIX_GEANT4_AVAILABLE
+            std::cout << "                     Geant4 " << G4VERSION_NUMBER << std::endl;
+#endif
             std::cout << std::endl;
             std::cout << "Copyright (c) 2017-2021 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;

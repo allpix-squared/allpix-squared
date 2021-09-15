@@ -355,6 +355,7 @@ ADD_SUBDIRECTORY(src/modules)
 # Build geant4 interface library if needed by modules
 IF(${ALLPIX_BUILD_GEANT4_INTERFACE})
     ADD_SUBDIRECTORY(src/tools/geant4)
+    ADD_DEFINITIONS(-DALLPIX_GEANT4_AVAILABLE)
 ENDIF()
 
 # Build the executable
