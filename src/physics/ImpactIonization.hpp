@@ -175,6 +175,8 @@ namespace allpix {
     /**
      * @ingroup Models
      * @brief Bologna model for impact ionization
+     *
+     * Taken from https://ieeexplore.ieee.org/abstract/document/799251, Table 1
      */
     class Bologna : virtual public ImpactIonizationModel {
     public:
