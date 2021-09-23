@@ -16,8 +16,6 @@ namespace allpix {
     ThreadPool::SafeQueue<T>::SafeQueue(unsigned int max_standard_size, unsigned max_priority_size)
         : max_standard_size_(max_standard_size), max_priority_size_(max_priority_size) {}
 
-    template <typename T> ThreadPool::SafeQueue<T>::~SafeQueue<T>() { invalidate(); }
-
     /*
      * Block until a value is available if the wait parameter is set to true. The wait exits when the queue is invalidated.
      */

@@ -377,7 +377,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             for(auto& [deposit, points] : output_plot_points) {
                 auto diff = static_cast<unsigned long>(
                     std::round((deposit.getGlobalTime() - start_time) / config_.get<long double>("output_plots_step")));
-                if(static_cast<long>(plot_idx) - static_cast<long>(diff) < 0) {
+                if(plot_idx < diff) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                     continue;
                 }

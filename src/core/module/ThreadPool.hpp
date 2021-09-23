@@ -51,7 +51,7 @@ namespace allpix {
             /**
              * @brief Erases the queue and release waiting threads on destruction
              */
-            ~SafeQueue();
+            ~SafeQueue() { invalidate(); };
 
             /**
              * @brief Get the top value from the appropriate queue
