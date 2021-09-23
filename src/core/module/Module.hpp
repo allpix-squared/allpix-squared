@@ -152,7 +152,7 @@ namespace allpix {
 
         /**
          * @brief Execute the function of the module for every event
-         * @param Event Pointer to the event the module is running
+         * @param event Pointer to the event the module is running
          *
          * Does nothing if not overloaded.
          */
@@ -209,7 +209,7 @@ namespace allpix {
 
         /**
          * @brief Set the link to the config manager
-         * @param conf_manager ConfigManager holding all relevant configurations
+         * @param config Pointer to the configuration manager holding all relevant configurations
          */
         void set_config_manager(ConfigManager* config);
         ConfigManager* conf_manager_{nullptr};
@@ -230,7 +230,6 @@ namespace allpix {
 
         /**
          * @brief Inform the module that a certain event will be skipped
-         * @param event Number of event skipped
          */
         virtual void skip_event(uint64_t) {}
 

@@ -26,7 +26,7 @@ namespace allpix {
      * This manager overrides G4MTRunManager class so it doesn't create its own thread and work with the threads
      * already created by \ref ModuleManager class. Also, it provides a concurrent API that can be used by
      * multiple threads safely at the same time.
-     * Most of the APIs defined by \ref G4MTRunManager are overridden to simply do nothing since this custom run
+     * Most of the APIs defined by G4MTRunManager are overridden to simply do nothing since this custom run
      * manager doesn't operate its own event loop and assumes it is part of the client event loop and the results
      * of each event are independent from each other. Also, this  manager doesn't maintain any threads, it only
      * maintains the worker managers which are allocated on a per thread basis.
@@ -39,7 +39,7 @@ namespace allpix {
         ~MTRunManager() override = default;
 
         /**
-         * @brief Thread safe version of \ref G4RunManager BeamOn. Offload the work to a thread specific worker.
+         * @brief Thread safe version of G4RunManager::BeamOn. Offload the work to a thread specific worker.
          * @param n_event number of events to simulate in one run.
          * @param seed1 First event seed for the worker run manager of the calling thread
          * @param seed2 Second event seed for the worker run manager of the calling thread

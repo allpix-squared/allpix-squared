@@ -34,13 +34,13 @@ Radioactive isotopes are forced to decay immediately in order to allow sensible 
 Currently, the following radioactive isotopes are supported: `Fe55`, `Am241`, `Sr90`, `Co60`, `Cs137`.
 Note that for `Cs137` the `cutoff_time` has to be set to 221 seconds for the decay to work properly.
 
-Ions can be used as particles by setting their atomic properties, i.e. the atomic number Z, the atomic mass A, their charge Q and the excitation energy E via the following syntax:
+Ions can be used as particles by setting their atomic properties, i.e. the atomic number Z, the atomic mass A, their charge Q, the excitation energy E and whether or not they should decay instantly via the following syntax:
 
 ```ini
-particle_type = "ion/Z/A/Q/E"
+particle_type = "ion/Z/A/Q/E/D"
 ```
 
-where `Z` and `A` are unsigned integers, `Q` is a signed integer and `E` a floating point value with units, e.g. `13eV`.
+where `Z` and `A` are unsigned integers, `Q` is a signed integer, `E` a floating point value with units, e.g. `13eV`, and `D` is `true` for instant decay or `false` else.
 
 #### Energy Deposition and Charge Carrier creation
 
@@ -132,7 +132,7 @@ A Xenon-132 ion beam could be simulated using the following configuration:
 ```ini
 [DepositionGeant4]
 physics_list = FTFP_BERT_LIV
-particle_type = "ion/54/132/0/0eV"
+particle_type = "ion/54/132/0/0eV/false"
 source_energy = 10MeV
 source_position = 0 0 -1mm
 source_type = "beam"

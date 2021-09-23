@@ -54,7 +54,8 @@ void ROOTObjectWriterModule::initialize() {
 
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
-        throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
+        throw InvalidCombinationError(
+            config_, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
     } else if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());

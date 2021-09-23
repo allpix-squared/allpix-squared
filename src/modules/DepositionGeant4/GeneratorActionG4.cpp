@@ -238,6 +238,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
  * Called automatically for every event
  */
 void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
+
+    // G4IonTable is only ready after initialization, so we need to pick the particle here and assign it to the source:
     if(initialize_ion_as_particle_) {
         auto* single_source = particle_source_->GetCurrentSource();
         G4ParticleDefinition* particle = nullptr;
@@ -258,27 +260,46 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
         } else if(particle_type_.substr(0, 3) == "ion") {
-            // Parse particle type as ion with components /Z/A/Q/E
+            // Parse particle type as ion with components /Z/A/Q/E/D
             std::smatch ion;
-            if(std::regex_match(
-                   particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+            if(std::regex_match(particle_type_,
+                                ion,
+                                std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)/(true|false)")) &&
                ion.ready()) {
                 particle = G4IonTable::GetIonTable()->GetIon(
                     allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                if(allpix::from_string<bool>(ion[5])) {
+                    particle->SetPDGLifeTime(0.);
+                }
                 single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+            } else if(std::regex_match(
+                          particle_type_, ion, std::regex("ion/([0-9]+)/([0-9]+)/([-+]?[0-9]+)/([0-9.]+(?:[a-zA-Z]+)?)")) &&
+                      ion.ready()) {
+                // Parse old declaration with /Z/A/Q/E
+                particle = G4IonTable::GetIonTable()->GetIon(
+                    allpix::from_string<int>(ion[1]), allpix::from_string<int>(ion[2]), allpix::from_string<double>(ion[4]));
+                single_source->SetParticleCharge(allpix::from_string<int>(ion[3]));
+                LOG(WARNING) << "Using \"ion/Z/A/Q/E\" is deprecated and superseded by \"ion/Z/A/Q/E/D\".";
             } else {
                 throw InvalidValueError(config_, "particle_type", "cannot parse parameters for ion.");
             }
         }
 
-        // Set global parameters of the source
-        single_source->SetNumberOfParticles(1);
-        single_source->SetParticleDefinition(particle);
-        // Set the primary track's start time in for the current event to zero:
-        single_source->SetParticleTime(0.0);
+        if(particle != nullptr) {
+            // Set global parameters of the source
+            single_source->SetNumberOfParticles(1);
+            single_source->SetParticleDefinition(particle);
+            // Set the primary track's start time in for the current event to zero:
+            single_source->SetParticleTime(0.0);
 
-        // mark the initialization done
-        initialize_ion_as_particle_ = false;
+            // mark the initialization done
+            initialize_ion_as_particle_ = false;
+
+            LOG(DEBUG) << "Using ion " << particle->GetParticleName() << " (ID " << particle->GetPDGEncoding() << ") with "
+                       << Units::display(particle->GetPDGLifeTime(), {"s", "ns"}) << " lifetime.";
+        } else {
+            throw InvalidValueError(config_, "particle_type", "failed to fetch or create ion.");
+        }
     }
 
     particle_source_->GeneratePrimaryVertex(event);

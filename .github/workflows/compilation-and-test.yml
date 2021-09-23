@@ -1,4 +1,4 @@
-name: github-ci
+name: compile&test
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
@@ -110,20 +110,3 @@ jobs:
           chmod a+x bin/allpix
           cd build
           ctest -R ${{matrix.whichtest}} --output-on-failure -j4
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
-      with:
-        run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang10-opt"
-        run: |
-          mkdir build
-          cd build
-          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
-          ninja check-format

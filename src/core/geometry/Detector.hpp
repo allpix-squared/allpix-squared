@@ -146,12 +146,13 @@ namespace allpix {
         /**
          * @brief Set the electric field in a single pixel in the detector using a grid
          * @param field Flat array of the field vectors (see detailed description)
-         * @param sizes The dimensions of the flat electric field array
+         * @param dimensions The dimensions of the flat electric field array
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
+         * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
-                                  std::array<size_t, 3> sizes,
+                                  std::array<size_t, 3> dimensions,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
                                   std::pair<double, double> thickness_domain);
@@ -185,12 +186,13 @@ namespace allpix {
         /**
          * @brief Set the doping profile in a single pixel in the detector using a grid
          * @param field Flat array of the field (see detailed description)
-         * @param sizes The dimensions of the flat doping profile array
+         * @param dimensions The dimensions of the flat doping profile array
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
+         * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the profile holds
          */
         void setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
-                                  std::array<size_t, 3> sizes,
+                                  std::array<size_t, 3> dimensions,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
                                   std::pair<double, double> thickness_domain);
@@ -214,9 +216,8 @@ namespace allpix {
 
         /**
          * @brief Get the weighting potential in the sensor at a local position
-         * @param pos Position in the local frame
-         * @param x x-coordinate of the pixel for which we want the weighting potential
-         * @param y y-coordinate of the pixel for which we want the weighting potential
+         * @param local_pos Position in the local frame
+         * @param reference Index of the pixel for which we want the weighting potential
          * @return Value of the potential at the queried point
          */
         double getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index& reference) const;
@@ -224,11 +225,13 @@ namespace allpix {
         /**
          * @brief Set the weighting potential in a single pixel in the detector using a grid
          * @param potential Flat array of the potential vectors (see detailed description)
-         * @param sizes The dimensions of the flat weighting potential array
+         * @param dimensions The dimensions of the flat weighting potential array
+         * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
+         * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */
         void setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
-                                       std::array<size_t, 3> sizes,
+                                       std::array<size_t, 3> dimensions,
                                        std::array<double, 2> scales,
                                        std::array<double, 2> offset,
                                        std::pair<double, double> thickness_domain);
@@ -244,8 +247,7 @@ namespace allpix {
 
         /**
          * @brief Set the magnetic field in the detector
-         * @param function Function used to retrieve the magnetic field
-         * @param type Type of the magnetic field function used
+         * @param b_field Vector indicating strength and direction of the magnetic field
          */
         void setMagneticField(ROOT::Math::XYZVector b_field);
 

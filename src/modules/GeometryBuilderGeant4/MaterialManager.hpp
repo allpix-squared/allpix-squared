@@ -21,7 +21,7 @@ namespace allpix {
      * Singleton class to manage materials
      *
      * This manager both holds often-used, pre-defined materials and provides access to the Geant4 NIST database of
-     * materials. It is a singleton class and can be extended at run time via the set() method.
+     * materials. It is a singleton class and can be extended at run time via the \ref set method.
      */
     class Materials {
     public:
@@ -40,7 +40,8 @@ namespace allpix {
 
         /**
          * Method to add an additional material to the internal database
-         * @param material The material
+         * @param name Name of the material to be registered
+         * @param material Pointer to the material object
          */
         void set(const std::string& name, G4Material* material);
 

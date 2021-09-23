@@ -29,7 +29,8 @@ namespace allpix {
          * @param local_end_point Exit point of the particle in the sensor in local coordinates
          * @param global_end_point Exit point of the particle in the sensor in global coordinates
          * @param particle_id PDG id for this particle type
-         * @param time The arrival time of the particle in the sensor
+         * @param local_time The arrival time of the particle in the sensor in local coordinates
+         * @param global_time The arrival time of the particle in the sensor in global coordinates
          */
         MCParticle(ROOT::Math::XYZPoint local_start_point,
                    ROOT::Math::XYZPoint global_start_point,

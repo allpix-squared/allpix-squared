@@ -10,5 +10,8 @@ ALLPIX_SETUP_EIGEN_TARGETS()
 
 TARGET_LINK_LIBRARIES(${MODULE_NAME} Eigen3::Eigen)
 
+# Register module tests
+ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
+
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})

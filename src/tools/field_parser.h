@@ -332,7 +332,7 @@ namespace allpix {
 
             // Loop through all the field data
             for(size_t i = 0; i < vertices; ++i) {
-                if(i % (vertices / 100) == 0) {
+                if(vertices >= 100 && i % (vertices / 100) == 0) {
                     LOG_PROGRESS(INFO, "read_init") << "Reading field data: " << (100 * i / vertices) << "%";
                 }
 
