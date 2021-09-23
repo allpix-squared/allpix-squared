@@ -167,6 +167,11 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                 LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
                            << "The name of the missing library is " << problem_lib << std::endl
                            << "Please make sure the library is properly initialized and try again";
+            } else if(lib_error != nullptr && std::strstr(lib_error, "undefined symbol") != nullptr) {
+                LOG(ERROR) << "Library could not be loaded: library version does not match framework (undefined symbols)"
+                           << std::endl
+                           << "The name of the problematic library is " << problem_lib << std::endl
+                           << "Please make sure the library is compiled against the correct framework version";
             } else {
                 LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
                            << " - Did you enable the library during building? " << std::endl
