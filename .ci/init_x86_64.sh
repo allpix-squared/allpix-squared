@@ -30,7 +30,7 @@ fi
 
 # Determine is you have CVMFS installed
 CVMFS_MOUNT=""
-if [ "$OS" = mac1015 ]; then
+if [ "$OS" = mac1015 ] || [ "$OS" = mac11 ] ; then
     CVMFS_MOUNT="/Users/Shared"
 fi
 
