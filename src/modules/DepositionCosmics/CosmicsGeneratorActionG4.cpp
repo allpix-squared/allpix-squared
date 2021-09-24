@@ -27,6 +27,8 @@ CosmicsGeneratorActionG4::CosmicsGeneratorActionG4(const Configuration& config)
     : particle_gun_(std::make_unique<G4ParticleGun>()), config_(config) {
 
     LOG(DEBUG) << "Setting up CRY generator";
+    LOG(DEBUG) << "CRY configuration: " << config_.get<std::string>("_cry_config");
+    LOG(DEBUG) << "CRY data: " << config_.get<std::string>("data_path");
     auto setup = new CRYSetup(config_.get<std::string>("_cry_config"), config_.get<std::string>("data_path"));
     cry_generator_ = std::make_unique<CRYGenerator>(setup);
 }

@@ -17,6 +17,7 @@
 #include "../DepositionGeant4/ActionInitializationG4.hpp"
 
 #include <filesystem>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -29,6 +30,18 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
 
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Set defaults for configuration parameters:
+    config_.setDefault("return_neutrons", true);
+    config_.setDefault("return_protons", true);
+    config_.setDefault("return_gammas", true);
+    config_.setDefault("return_electrons", true);
+    config_.setDefault("return_muons", true);
+    config_.setDefault("return_pions", true);
+    config_.setDefault("return_kaons", true);
+    config_.setDefault("altitude", Units::get(0, "m"));
+    config_.setDefault("min_particles", 1);
+    config_.setDefault("max_particles", 1000000);
 
     // Register lookup path for CRY data files:
     if(config_.has("data_path")) {
@@ -67,9 +80,34 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     }
 
     // Build configuration for CRY - it expects a single string with all tokens separated by whitespace:
-    std::string cry_config;
+    std::stringstream cry_config;
 
-    config_.set<std::string>("_cry_config", cry_config);
+    cry_config << " returnNeutrons " << static_cast<int>(config_.get<bool>("return_neutrons")) << " returnProtons "
+               << static_cast<int>(config_.get<bool>("return_protons")) << " returnGammas "
+               << static_cast<int>(config_.get<bool>("return_gammas")) << " returnElectrons "
+               << static_cast<int>(config_.get<bool>("return_electrons")) << " returnMuons "
+               << static_cast<int>(config_.get<bool>("return_muons")) << " returnPions "
+               << static_cast<int>(config_.get<bool>("return_pions")) << " returnKaons "
+               << static_cast<int>(config_.get<bool>("return_kaons"));
+
+    // Select altitude:
+    auto altitude = config_.get<int>("altitude");
+    if(altitude != 0 && altitude != 2100000 && altitude != 11300000) {
+        throw InvalidValueError(config_, "altitude", "only altitudes of 0m, 2100m and 11300m are supported");
+    }
+    cry_config << " altitude " << static_cast<int>(Units::convert(altitude, "m"));
+
+    cry_config << " nParticlesMin " << config_.get<unsigned int>("min_particles") << " nParticlesMax "
+               << config_.get<unsigned int>("max_particles");
+
+    // _parmNames[CRYSetup::subboxLength]="subboxLength";
+    // _parmNames[CRYSetup::latitude]="latitude";
+    // _parmNames[CRYSetup::date]="date";
+    // _parmNames[CRYSetup::xoffset]="xoffset";
+    // _parmNames[CRYSetup::yoffset]="yoffset";
+    // _parmNames[CRYSetup::zoffset]="zoffset";
+
+    config_.set<std::string>("_cry_config", cry_config.str());
 }
 
 void DepositionCosmicsModule::initialize_g4_action() {
