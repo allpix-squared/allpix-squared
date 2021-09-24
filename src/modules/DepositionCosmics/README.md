@@ -6,6 +6,12 @@
 ### Description
 *Short description of this module*
 
+The coordinate system for this module defines the `z` axis orthogonal to the earth surface, pointing towards the earth core.
+
+The are on which incident particles will be simulated is automatically inferred from the total setup size, and the next larger set of tabulated data available is selected.
+Data are tabulated for areas of 1m, 3m, 10m, 30m, 100m, and 300m. Particles outside the selected window are dropped.
+
+
 ### Dependencies
 
 This module inherits from and therefore requires the *DepositionGeant4* module as well as an installation Geant4.
