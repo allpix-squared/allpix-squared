@@ -46,8 +46,8 @@ void interrupt_handler(int) {
 }
 
 int main(int argc, char** argv) {
-    using XYZVectorInt = DisplacementVector3D<Cartesian3D<int>>;
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
+    using XYZVectorUInt = DisplacementVector3D<Cartesian3D<unsigned int>>;
+    using XYVectorUInt = DisplacementVector2D<Cartesian2D<unsigned int>>;
     using FileType = allpix::FileType;
     using FieldQuantity = allpix::FieldQuantity;
 
@@ -182,13 +182,13 @@ int main(int argc, char** argv) {
         const auto units = config.get<std::string>("observable_units", "V/cm");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
-        XYZVectorInt divisions;
+        XYZVectorUInt divisions;
         const auto dimension = config.get<size_t>("dimension", 3);
         if(dimension == 2) {
-            auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
-            divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
+            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
+            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
         } else if(dimension == 3) {
-            divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
+            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
         } else {
             throw allpix::InvalidValueError(config, "dimension", "only two or three dimensional fields are supported");
         }
@@ -332,7 +332,7 @@ int main(int argc, char** argv) {
         unibn::Octree<Point> octree;
         octree.initialize(points);
 
-        int mesh_points_done = 0;
+        unsigned int mesh_points_done = 0;
         auto mesh_section = [&](double x, double y) {
             allpix::Log::setReportingLevel(log_level);
 
@@ -340,7 +340,7 @@ int main(int argc, char** argv) {
             std::vector<Point> new_mesh;
 
             double z = minz + zstep / 2.0;
-            for(int k = 0; k < divisions.z(); ++k) {
+            for(unsigned int k = 0; k < divisions.z(); ++k) {
                 // New mesh vertex and field
                 Point q(dimension == 2 ? -1 : x, y, z), e;
                 bool valid = false;
@@ -405,7 +405,7 @@ int main(int argc, char** argv) {
 
             mesh_points_done += divisions.z();
             LOG_PROGRESS(INFO, "m") << "Interpolating new mesh: " << mesh_points_done << " of " << mesh_points_total << ", "
-                                    << (100 * mesh_points_done / mesh_points_total) << "%";
+                                    << (mesh_points_done / (mesh_points_total / 100)) << "%";
 
             return new_mesh;
         };
@@ -429,9 +429,9 @@ int main(int argc, char** argv) {
         // Set starting point
         double x = minx + xstep / 2.0;
         // Loop over x coordinate, add tasks for each coordinate to the queue
-        for(int i = 0; i < divisions.x(); ++i) {
+        for(unsigned int i = 0; i < divisions.x(); ++i) {
             double y = miny + ystep / 2.0;
-            for(int j = 0; j < divisions.y(); ++j) {
+            for(unsigned int j = 0; j < divisions.y(); ++j) {
                 mesh_futures.push_back(pool.submit(mesh_section, x, y));
                 y += ystep;
             }
@@ -462,11 +462,10 @@ int main(int argc, char** argv) {
         // Prepare data:
         LOG(INFO) << "Preparing data for storage...";
         auto data = std::make_shared<std::vector<double>>();
-        for(int i = 0; i < divisions.x(); ++i) {
-            for(int j = 0; j < divisions.y(); ++j) {
-                for(int k = 0; k < divisions.z(); ++k) {
-                    auto& point = e_field_new_mesh[static_cast<unsigned int>(i * divisions.y() * divisions.z() +
-                                                                             j * divisions.z() + k)];
+        for(unsigned int i = 0; i < divisions.x(); ++i) {
+            for(unsigned int j = 0; j < divisions.y(); ++j) {
+                for(unsigned int k = 0; k < divisions.z(); ++k) {
+                    auto& point = e_field_new_mesh[i * divisions.y() * divisions.z() + j * divisions.z() + k];
                     // We need to convert to framework-internal units:
                     data->push_back(allpix::Units::get(point.x, units));
                     // For a vector field, we push three values:

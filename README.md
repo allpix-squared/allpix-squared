@@ -120,6 +120,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Ondrej Theiner, Charles University, @otheiner
 * Annika Vauth, University of Hamburg, @avauth
 * Mateus Vicente Barreto Pinto, CERN, @mvicente
+* Håkan Wennlöf, DESY, @hwennlof
 * Andy Wharton, Lancaster University, @awharton
 * Morag Williams, University of Glasgow, @williamm
 
