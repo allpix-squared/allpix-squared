@@ -76,7 +76,7 @@ bool CRYData::read() {
 
     std::string fileContents("");
     while(!file.getline(buffer, 1000).eof()) {
-        int i = 0;
+        size_t i = 0;
         for(i = 0; i < file.gcount() - 1; i++)
             if(buffer[i] == '%') {
                 break;
@@ -96,7 +96,7 @@ bool CRYData::read() {
         // and send the rest to the right class...
         std::istringstream iss2(token);
         std::string key = "";
-        int lastGetPosition = std::ios::beg;
+        long int lastGetPosition = std::ios::beg;
         while(key == "" && !iss2.eof()) {
             std::getline(iss2, key, ' ');
             if(key == "")

@@ -85,7 +85,7 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
 
     _subboxSize = _setup->param(CRYSetup::subboxLength);
     double bestBoxSize = 1.e99;
-    int entry = -1;
+    unsigned int entry = 0;
     for(unsigned int i = 0; i < nPartPDFs.size(); i++) {
         double pdfBoxSize = atof(nPartPDFs[i].c_str());
         if(pdfBoxSize < bestBoxSize && pdfBoxSize >= _subboxSize) {
@@ -312,7 +312,7 @@ void CRYGenerator::genEvent(std::vector<CRYParticle*>* retList) {
             sBin = _secondaryBinning->bin(keSecondary);
             double timeSecondary = _primary->timeSimulated() + _timePdfs[idSec]->draw(_utils, sBin);
 
-            int charge = (int)_chargePdfs[idSec]->draw(_utils, sBin);
+            int charge = static_cast<int>(_chargePdfs[idSec]->draw(_utils, sBin));
 
             double u, v, w;
             w = _cosThetaPdfs[idSec]->draw(_utils, sBin);

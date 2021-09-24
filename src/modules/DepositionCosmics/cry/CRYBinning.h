@@ -102,7 +102,7 @@ private:
     std::vector<double>* _bins;
 
     // Store the # of bins for conviencience only (_bins->size())
-    unsigned int _size;
+    long unsigned int _size;
 };
 
 #endif

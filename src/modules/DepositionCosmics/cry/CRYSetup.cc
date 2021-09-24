@@ -143,7 +143,7 @@ CRYSetup::CRYSetup(std::string configData, std::string dataDir) {
     }
 }
 
-double CRYSetup::parseDate(std::string date) {
+double CRYSetup::parseDate(std::string dt) {
     //  date is in the form month-day-year
     //
     //....Parse a date string and convert to a decimal number representing
@@ -158,7 +158,7 @@ double CRYSetup::parseDate(std::string date) {
     //                 ...           ...
     //              31 Dec           364 (For a non leap year)
     //
-    std::istringstream issdate(date);
+    std::istringstream issdate(dt);
 
     std::string text;
     std::getline(issdate, text, '-');
@@ -193,7 +193,7 @@ double CRYSetup::parseDate(std::string date) {
     else if((dd < 1) || (dd > nbr_days_in_mo[mm]))
         gooddate = false;
     if(!gooddate) {
-        std::cerr << "CRY::CRYSetup: The date " << date << " is invalid.  The format is m-d-y" << std::endl;
+        std::cerr << "CRY::CRYSetup: The date " << dt << " is invalid.  The format is m-d-y" << std::endl;
         assert(0);
     }
 
