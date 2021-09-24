@@ -115,5 +115,5 @@ CRYAbsFunction* CRYFunctionDict::function(std::string data) {
     if(type == CRYFunctionDict::cosLatitude)
         return new CRYCosLatitudeFunction(funcName, rhs);
 
-    return 0;
+    return nullptr;
 }

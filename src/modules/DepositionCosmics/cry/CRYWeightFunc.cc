@@ -50,7 +50,7 @@ CRYWeightFunc::CRYWeightFunc(CRYBinning* bins, std::vector<double> weights) {
 
     // consistency checks
 
-    if(_bins == 0) {
+    if(_bins == nullptr) {
         std::cerr << "CRY::CRYWeightFunc: bins = NULL passed into CRYWeightFunc. Stopping\n";
         assert(0);
     }

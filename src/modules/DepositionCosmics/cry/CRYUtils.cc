@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 CRYUtils::CRYUtils() {
-    rngdptr = 0;
+    rngdptr = nullptr;
     setRandomFunction(tmpRandom);
 }
 
