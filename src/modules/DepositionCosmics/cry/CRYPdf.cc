@@ -242,13 +242,14 @@ void CRYPdf::readSetOfParams(std::string data) {
     _cdfs->push_back(cdf);
 }
 
-double CRYPdf::draw(CRYUtils* utils, int bin) {
+double CRYPdf::draw(CRYUtils* utils, int bin_in) {
+    auto bin = static_cast<long unsigned int>(bin_in);
     double rand = utils->randomFlat();
-    int cdfSize = (*_cdfs)[bin].size();
+    long unsigned int cdfSize = (*_cdfs)[bin].size();
 
-    int i1 = 0;
-    int divit = int(sqrt((*_cdfs)[bin].size()));
-    int i1Max = cdfSize / divit;
+    long unsigned int i1 = 0;
+    auto divit = static_cast<long unsigned int>(std::sqrt((*_cdfs)[bin].size()));
+    long unsigned int i1Max = cdfSize / divit;
     if(cdfSize % divit == 0)
         i1Max--;
     for(i1 = 1; i1 <= i1Max;) {
@@ -257,14 +258,16 @@ double CRYPdf::draw(CRYUtils* utils, int bin) {
         i1++;
     }
 
-    for(int i = (i1 - 1) * divit; i < std::min(1.0 + i1 * divit, 1.0 * cdfSize); i++) {
+    for(long unsigned int i = (i1 - 1) * divit; i < std::min(1 + i1 * divit, cdfSize); i++) {
         if((*_cdfs)[bin][i] > rand) {
             if(_type == CRYPdf::DISCRETE)
-                return _min + i * (_max - _min) / (std::max(1.0, double(cdfSize) - 1));
+                return _min + static_cast<double>(i) * (_max - _min) / static_cast<double>(std::max(1ul, cdfSize - 1));
             if(_type == CRYPdf::LINEAR)
-                return _min + (i + utils->randomFlat()) * (_max - _min) / (cdfSize);
+                return _min + (static_cast<double>(i) + utils->randomFlat()) * (_max - _min) / static_cast<double>(cdfSize);
             if(_type == CRYPdf::LOG)
-                return pow(10., _min + (i + utils->randomFlat()) * (_max - _min) / (cdfSize));
+                return pow(10.,
+                           _min + (static_cast<double>(i) + utils->randomFlat()) * (_max - _min) /
+                                      static_cast<double>(cdfSize));
             std::cerr << "CRY::CRYPdf: Unknown pdf type? (impossible...)\n";
             assert(0);
         }
@@ -305,9 +308,9 @@ std::vector<double> CRYPdf::mean() {
             if(_type == CRYPdf::DISCRETE)
                 binCenter = _min + j * (_max - _min) / (std::max(1.0, double((*_cdfs)[i].size()) - 1));
             if(_type == CRYPdf::LINEAR)
-                binCenter = _min + (j + 0.5) * (_max - _min) / ((*_cdfs)[i].size());
+                binCenter = _min + (j + 0.5) * (_max - _min) / static_cast<double>((*_cdfs)[i].size());
             if(_type == CRYPdf::LOG)
-                binCenter = pow(10., _min + (j + 0.5) * (_max - _min) / ((*_cdfs)[i].size()));
+                binCenter = pow(10., _min + (j + 0.5) * (_max - _min) / static_cast<double>((*_cdfs)[i].size()));
 
             integ += (*_params)[i][j];
             retValB += binCenter * (*_params)[i][j];

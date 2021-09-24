@@ -61,7 +61,7 @@ CRYWeightFunc::CRYWeightFunc(CRYBinning* bins, std::vector<double> weights) {
 }
 
 double CRYWeightFunc::weight(double value) {
-    int b = _bins->bin(value);
+    auto b = static_cast<size_t>(_bins->bin(value));
     return (*_weights)[b];
 }
 
