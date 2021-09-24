@@ -119,9 +119,9 @@ int CRYBinning::bin(double value) {
         assert(0);
     }
 
-    int i1 = 0;
-    int divit = 5;
-    int i1Max = _size / divit;
+    long unsigned int i1 = 0;
+    const long unsigned int divit = 5;
+    long unsigned int i1Max = _size / divit;
     if(_size % divit == 0)
         i1Max--;
     for(i1 = 1; i1 <= i1Max;) {
@@ -130,10 +130,10 @@ int CRYBinning::bin(double value) {
         i1++;
     }
 
-    unsigned int t1 = int(std::min(1.0 + i1 * divit, 1.0 * _size));
-    for(unsigned int i = (i1 - 1) * divit; i < t1; i++)
+    long unsigned int t1 = std::min(1 + i1 * divit, _size);
+    for(long unsigned int i = (i1 - 1) * divit; i < t1; i++)
         if((*_bins)[i] > value)
-            return i - 1;
+            return static_cast<int>(i - 1);
 
     return 0;
 }

@@ -77,7 +77,7 @@ bool CRYData::read() {
     std::string fileContents("");
     while(!file.getline(buffer, 1000).eof()) {
         size_t i = 0;
-        for(i = 0; i < file.gcount() - 1; i++)
+        for(i = 0; i < static_cast<size_t>(file.gcount() - 1); i++)
             if(buffer[i] == '%') {
                 break;
             }
