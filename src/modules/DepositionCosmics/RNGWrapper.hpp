@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief Definition of Geant4 deposition module
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @brief Definition of the CRY RNG wrapper class
+ * @copyright Copyright (c) 2021 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -13,9 +13,24 @@
 #include <Randomize.hh>
 
 namespace allpix {
+    /**
+     * @brief This class is a wrapper that allows to pass the per-thread random number engine from Geant4 to CRY.
+     * The Geant4 engine is seeded by the Allpix Squared framework for every event, and separately per thread, so using this
+     * engine in CRY ensures a reproducible and thread-safe simulation.
+     */
     template <class T> class RNGWrapper {
     public:
+        /**
+         * @brief Setter function for the static thread-local object
+         * @param object  Pointer to the random number engine
+         * @param func    Pointer to the method to be called on the object to obtain a random number
+         */
         static thread_local void set(T* object, double (T::*func)(void));
+
+        /**
+         * @brief Wrapped call to the configured method of the stored object
+         * @return Pseudo-random number
+         */
         static thread_local double rng(void);
 
     private:
