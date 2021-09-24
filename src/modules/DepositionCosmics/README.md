@@ -6,6 +6,7 @@
 ### Description
 
 This module simulates cosmic ray particle shower distributions and their energy deposition in all sensors of the setup.
+The cosmic ray particle showers are simulated using the Cosmic-ray shower generator (CRY) [@cry], the generated particles are transported through the setup by Geant4.
 The deposited energy is converted into electron-hole pairs, the number of pairs created is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
 
 This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there. A detailed description of these configuration parameters can be found in the respective module documentation.
@@ -23,7 +24,7 @@ This module inherits from and therefore requires the *DepositionGeant4* module a
 
 * `data_path`: Directory to read the tabulated input data for the CRY framework from. By default, this is the standard installation path of the data files shipped with the framework.
 
-#### Revelant parameters inherited from *DepositionGeant4*
+#### Relevant parameters inherited from *DepositionGeant4*
 
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
@@ -62,3 +63,13 @@ max_step_length = 10.0um
 return_kaons = false
 altitude = 0m
 ```
+
+### Licenses
+
+CRY is published under a 3-Clause BSD-like license, which is available in the file `cry/COPYRIGHT.TXT`.
+The original software can be obtained from https://nuclear.llnl.gov/simulation/.
+
+[@cry]: https://ieeexplore.ieee.org/abstract/document/4437209
+[@g4physicslists]: https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsListGuide/html/index.html
+[@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
+[@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
