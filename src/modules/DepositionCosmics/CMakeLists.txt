@@ -62,6 +62,7 @@ ENDIF()
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
     DepositionCosmicsModule.cpp
     CosmicsGeneratorActionG4.cpp
+    RNGWrapper.cpp
     cry/CRYAbsFunction.cc
     cry/CRYAbsParameter.cc
     cry/CRYBinning.cc

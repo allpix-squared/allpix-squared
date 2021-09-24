@@ -9,6 +9,7 @@
  */
 
 #include "CosmicsGeneratorActionG4.hpp"
+#include "RNGWrapper.hpp"
 
 #include <limits>
 #include <memory>
@@ -31,6 +32,12 @@ CosmicsGeneratorActionG4::CosmicsGeneratorActionG4(const Configuration& config)
     LOG(DEBUG) << "CRY data: " << config_.get<std::string>("data_path");
     auto setup = new CRYSetup(config_.get<std::string>("_cry_config"), config_.get<std::string>("data_path"));
     cry_generator_ = std::make_unique<CRYGenerator>(setup);
+
+    // Set up random number generator to use the Geant4-internal one which is seeded per-event:
+    LOG(DEBUG) << "Configuring CRY random engine to use Geant4's event-seeded engine "
+               << reinterpret_cast<std::uintptr_t>(CLHEP::HepRandom::getTheEngine());
+    RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(), &CLHEP::HepRandomEngine::flat);
+    setup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
 }
 
 /**
