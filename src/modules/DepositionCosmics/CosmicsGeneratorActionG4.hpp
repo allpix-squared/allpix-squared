@@ -1,14 +1,14 @@
 /**
  * @file
- * @brief Defines the particle generator
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @brief Defines the CRY interface to Geant4
+ * @copyright Copyright (c) 2021 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-#ifndef ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
-#define ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H
+#ifndef ALLPIX_COSMICS_DEPOSITION_MODULE_GENERATOR_ACTION_H
+#define ALLPIX_COSMICS_DEPOSITION_MODULE_GENERATOR_ACTION_H
 
 #include <memory>
 
@@ -32,7 +32,7 @@ namespace allpix {
     public:
         /**
          * @brief Constructs the generator action
-         * @param config Configuration of the \ref DepositionGeant4Module module
+         * @param config Configuration of the \ref DepositionCosmicsModule module
          */
         explicit CosmicsGeneratorActionG4(const Configuration& config);
 
@@ -54,4 +54,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif /* ALLPIX_SIMPLE_DEPOSITION_MODULE_GENERATOR_ACTION_H */
+#endif /* ALLPIX_COSMICS_DEPOSITION_MODULE_GENERATOR_ACTION_H */
