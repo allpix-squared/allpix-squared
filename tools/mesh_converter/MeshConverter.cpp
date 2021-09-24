@@ -46,8 +46,8 @@ void interrupt_handler(int) {
 }
 
 int main(int argc, char** argv) {
-    using XYZVectorInt = DisplacementVector3D<Cartesian3D<unsigned int>>;
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<unsigned int>>;
+    using XYZVectorUInt = DisplacementVector3D<Cartesian3D<unsigned int>>;
+    using XYVectorUInt = DisplacementVector2D<Cartesian2D<unsigned int>>;
     using FileType = allpix::FileType;
     using FieldQuantity = allpix::FieldQuantity;
 
@@ -182,13 +182,13 @@ int main(int argc, char** argv) {
         const auto units = config.get<std::string>("observable_units", "V/cm");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
-        XYZVectorInt divisions;
+        XYZVectorUInt divisions;
         const auto dimension = config.get<size_t>("dimension", 3);
         if(dimension == 2) {
-            auto divisions_yz = config.get<XYVectorInt>("divisions", XYVectorInt(100, 100));
-            divisions = XYZVectorInt(1, divisions_yz.x(), divisions_yz.y());
+            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
+            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
         } else if(dimension == 3) {
-            divisions = config.get<XYZVectorInt>("divisions", XYZVectorInt(100, 100, 100));
+            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
         } else {
             throw allpix::InvalidValueError(config, "dimension", "only two or three dimensional fields are supported");
         }
@@ -291,7 +291,7 @@ int main(int argc, char** argv) {
                         << rot.at(2) << ")";
         }
 
-        const unsigned int mesh_points_total = divisions.x() * divisions.y() * divisions.z();
+        const auto mesh_points_total = divisions.x() * divisions.y() * divisions.z();
         LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
                     << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep << std::endl
                     << "Volume: " << cell_volume << std::endl
