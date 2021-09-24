@@ -25,13 +25,13 @@ namespace allpix {
          * @param object  Pointer to the random number engine
          * @param func    Pointer to the method to be called on the object to obtain a random number
          */
-        static thread_local void set(T* object, double (T::*func)(void));
+        static void set(T* object, double (T::*func)(void));
 
         /**
          * @brief Wrapped call to the configured method of the stored object
          * @return Pseudo-random number
          */
-        static thread_local double rng(void);
+        static double rng(void);
 
     private:
         static thread_local T* m_obj;
