@@ -80,7 +80,7 @@ CRYAbsFunction::CRYAbsFunction(std::string name, CRYFunctionDict::functype type,
     }
 }
 
-void CRYAbsFunction::print(std::ostream& o, bool printData) {
+void CRYAbsFunction::print(std::ostream& o, bool) {
     static CRYFunctionDict d;
     o << "Function name: " << _name << std::endl;
     o << "  Type " << d.type(_type) << std::endl;

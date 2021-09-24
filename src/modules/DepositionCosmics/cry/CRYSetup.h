@@ -97,7 +97,7 @@ public:
 
     void setRandomFunction(double (*newFunc)(void)) { _utils->setRandomFunction(newFunc); }
 
-    CRYData* getData(int altitude = 0) { return _data[altitude]; }
+    CRYData* getData(int altit = 0) { return _data[altit]; }
     CRYUtils* getUtils() { return _utils; }
 
 private:
@@ -109,8 +109,8 @@ private:
     CRYUtils* _utils;
     std::map<int, CRYData*> _data;
 
-    double parseDate(std::string date); //....convert date string to decimal year
-    bool isLeapYear(int yr);            // Returns true if yr is a leap year, false if not
+    double parseDate(std::string dt); //....convert date string to decimal year
+    bool isLeapYear(int yr);          // Returns true if yr is a leap year, false if not
 };
 
 #endif

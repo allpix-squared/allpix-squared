@@ -135,5 +135,5 @@ int CRYBinning::bin(double value) {
         if((*_bins)[i] > value)
             return i - 1;
 
-    assert(0);
+    return 0;
 }

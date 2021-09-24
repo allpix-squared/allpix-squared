@@ -100,7 +100,7 @@ CRYAbsParameter::CRYAbsParameter(std::string data) {
     }
 }
 
-void CRYAbsParameter::print(std::ostream& o, bool printData) {
+void CRYAbsParameter::print(std::ostream& o, bool) {
     o << "Parameter name: " << _name;
     o << "  value: " << _paramStr << std::endl;
 }
