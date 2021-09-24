@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 
+#include <G4UserLimits.hh>
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -78,6 +80,15 @@ namespace allpix {
          */
         void finalize() override;
 
+    protected:
+        Messenger* messenger_;
+        GeometryManager* geo_manager_;
+
+        // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
+        G4RunManager* run_manager_g4_;
+
+        virtual void initialize_g4_action();
+
     private:
         /**
          * @brief Construct the sensitive detectors and magnetic fields.
@@ -91,9 +102,6 @@ namespace allpix {
          * @brief Record statistics for the module run.
          */
         void record_module_statistics();
-
-        Messenger* messenger_;
-        GeometryManager* geo_manager_;
 
         // Configuration parameters:
         bool output_plots_{};
@@ -111,9 +119,6 @@ namespace allpix {
         // Class holding the limits for the step size
         std::unique_ptr<G4UserLimits> user_limits_;
         std::unique_ptr<G4UserLimits> user_limits_world_;
-
-        // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
-        G4RunManager* run_manager_g4_;
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, Histogram<TH1D>> charge_per_event_;
