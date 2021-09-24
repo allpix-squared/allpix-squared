@@ -136,15 +136,15 @@ void CRYData::print(std::ostream& o, bool printData) {
     for(unsigned int i = 0; i < _funcs.size(); i++)
         _funcs[i]->print(o, printData);
 
-    o << "\nNumber of binnings defined: " << _binnings.size() << std::endl;
+    o << "\n Number of binnings defined: " << _binnings.size() << std::endl;
     for(unsigned int i = 0; i < _binnings.size(); i++)
         _binnings[i]->print(o, printData);
 
-    o << "\nNumber of pdfs defined: " << _pdfs.size() << std::endl;
+    o << "\n Number of pdfs defined: " << _pdfs.size() << std::endl;
     for(unsigned int i = 0; i < _pdfs.size(); i++)
         _pdfs[i]->print(o, printData);
 
-    o << "\nNumber of parameters defined: " << _params.size() << std::endl;
+    o << "\n Number of parameters defined: " << _params.size() << std::endl;
     for(unsigned int i = 0; i < _params.size(); i++)
         _params[i]->print(o, printData);
     for(unsigned int i = 0; i < _paramInts.size(); i++)

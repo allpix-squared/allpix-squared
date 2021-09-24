@@ -58,7 +58,7 @@ class CRYUtils;
 class CRYPdf {
 public:
     // Types of PDFs expected:
-    //  For PDFs with 2 binning dimensions, this is relevent
+    //  For PDFs with 2 binning dimensions, this is relevant
     //  for the inner dimension. The outer is specified via
     //  CRYBinning structure as described below
     //     DISCRETE : Only discrete values are returned
@@ -77,7 +77,7 @@ public:
     //    { 0.1 0.3 0.5 0.6 0.7 }
     //  }
     // where the number of {....} sets must match
-    // the # of bins defined in the specied binning
+    // the # of bins defined in the specified binning
     //
     // The values in [] define the minimum and maximum
     // in the inner dimension of the pdf, as well as the

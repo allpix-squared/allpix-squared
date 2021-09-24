@@ -78,7 +78,7 @@ public:
     CRYParticle* getPrimary();
 
     // Given the function parameters (but NOT the weights)
-    // deterine the rate in the specifed binning
+    // determine the rate in the specified binning
     std::vector<double> partialRates(const std::vector<double>* bins) const;
     std::vector<double> partialRates(const CRYBinning* bins = nullptr) const;
 
@@ -93,7 +93,7 @@ public:
 
 private:
     // primary spectrum is a weighted sum of solar min and solar
-    // max parmaeters
+    // max parameters
     CRYAbsFunction* _solarMin;
     CRYAbsFunction* _solarMax;
     CRYParameter* _solarCycleStart;
