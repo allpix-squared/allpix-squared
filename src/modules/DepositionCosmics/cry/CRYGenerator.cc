@@ -62,7 +62,7 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     _setup = setup;
     CRYData* data = _setup->getData(int(_setup->param(CRYSetup::altitude) + 0.1));
 
-    if(data == 0) {
+    if(data == nullptr) {
         std::cerr << "CRY::CRYGenerator: Data table not available for ";
         std::cerr << _setup->param(CRYSetup::altitude) << " meters.\n";
         std::cerr << "CRY::CRYGenerator: See data directory for available altitudes.\n";
@@ -115,17 +115,17 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
 
     _particleFractionsPDF = data->getPdf("particleFractions");
 
-    if(_primaryBinning == 0) {
+    if(_primaryBinning == nullptr) {
         std::cerr << "CRY::CRYGenerator: Missing primary binning definition. Stopping " << std::endl;
         assert(0);
     }
 
-    if(_secondaryBinning == 0) {
+    if(_secondaryBinning == nullptr) {
         std::cerr << "CRY::CRYGenerator: Missing secondary binning definition. Stopping " << std::endl;
         assert(0);
     }
 
-    if(_particleFractionsPDF == 0) {
+    if(_particleFractionsPDF == nullptr) {
         std::cerr << "CRY::CRYGenerator: Missing pdf for particle fractions. Stopping " << std::endl;
         assert(0);
     }
@@ -138,7 +138,7 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     for(CRYParticle::CRYId i = CRYParticle::CRYIdMin; i <= CRYParticle::CRYIdMax; i = CRYParticle::CRYId(i + 1)) {
         std::string name = _utils->partName(i);
 
-        if(data->getParamI(name) != 0)
+        if(data->getParamI(name) != nullptr)
             _idDict[data->getParamI(name)->param()] = i;
         else {
             std::cerr << "CRY::CRYGenerator: Missing paramI for particle " << name << ". Stopping " << std::endl;
@@ -159,49 +159,49 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
         chargeKey.append("ChargeDist");
 
         CRYPdf* tPdf = data->getPdf(latKey);
-        if(tPdf == 0) {
+        if(tPdf == nullptr) {
             _latPdfs[i] = data->getPdf(latDistDef);
         } else
             _latPdfs[i] = tPdf;
 
         // horrible hack - set the latpdf min and max to the box size by hand
-        if(_latPdfs[i] != 0) {
+        if(_latPdfs[i] != nullptr) {
             _latPdfs[i]->setMin(-1.0 * _boxSize / 2.0);
             _latPdfs[i]->setMax(_boxSize / 2.0);
         }
 
         tPdf = data->getPdf(timeKey);
-        if(tPdf == 0) {
+        if(tPdf == nullptr) {
             _timePdfs[i] = data->getPdf(timeDistDef);
         } else
             _timePdfs[i] = tPdf;
 
         tPdf = data->getPdf(cosThetaKey);
-        if(tPdf == 0) {
+        if(tPdf == nullptr) {
             _cosThetaPdfs[i] = data->getPdf(cosThetaDistDef);
         } else
             _cosThetaPdfs[i] = tPdf;
 
         tPdf = data->getPdf(chargeKey);
-        if(tPdf == 0) {
+        if(tPdf == nullptr) {
             _chargePdfs[i] = data->getPdf(chargeDef);
         } else
             _chargePdfs[i] = tPdf;
 
-        if(_timePdfs[i] == 0) {
+        if(_timePdfs[i] == nullptr) {
             std::cerr << "CRY::CRYGenerator: Missing time pdf for " << name << std::endl;
             assert(0);
         }
-        if(_latPdfs[i] == 0) {
+        if(_latPdfs[i] == nullptr) {
             std::cerr << "CRY::CRYGenerator: Missing lat pdf for " << name << std::endl;
             assert(0);
         }
-        if(_kePdfs[i] == 0) {
+        if(_kePdfs[i] == nullptr) {
             std::cerr << "CRY::CRYGenerator: Missing kinetic energy pdf for " << name << std::endl;
             assert(0);
         }
 
-        if(_cosThetaPdfs[i] == 0) {
+        if(_cosThetaPdfs[i] == nullptr) {
             std::cerr << "CRY::CRYGenerator: Missing cos theta pdf for " << name << std::endl;
             assert(0);
         }
@@ -252,17 +252,17 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     _primaryWeighting = new CRYWeightFunc(_primaryBinning, fractionWithParticles);
     _primary->setWeightFunc(boxArea, _primaryWeighting);
 
-    _primaryPart = 0;
+    _primaryPart = nullptr;
 }
 
 std::vector<CRYParticle*>* CRYGenerator::genEvent() {
-    std::vector<CRYParticle*>* retList = 0;
+    std::vector<CRYParticle*>* retList = nullptr;
     genEvent(retList);
     return retList;
 }
 
 void CRYGenerator::genEvent(std::vector<CRYParticle*>* retList) {
-    if(retList == 0)
+    if(retList == nullptr)
         retList = new std::vector<CRYParticle*>;
 
     int pBin = 0, sBin = 0;

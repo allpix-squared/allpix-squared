@@ -70,11 +70,11 @@ CRYPrimary::CRYPrimary(CRYUtils* utils, CRYData* data, double date, double latit
     _solarCycleStart = data->getParameter("solarMinDate");
     _solarCycleLength = data->getParameter("solarCycleLength");
 
-    if(_solarMin == 0) {
+    if(_solarMin == nullptr) {
         std::cerr << "CRY::CRYPrimary: Missing solar minimum function" << std::endl;
         assert(0);
     }
-    if(_solarMax == 0) {
+    if(_solarMax == nullptr) {
         std::cerr << "CRY::CRYPrimary: Missing solar maximum function" << std::endl;
         assert(0);
     }
@@ -83,7 +83,7 @@ CRYPrimary::CRYPrimary(CRYUtils* utils, CRYData* data, double date, double latit
     _cycle = fabs(sin(M_PI * (date - _solarCycleStart->param()) / _solarCycleLength->param()));
 
     _binning = data->getBinning("primaryBins");
-    if(_binning == 0) {
+    if(_binning == nullptr) {
         std::cerr << "CRY::CRYPrimary: Missing primaryBins bining\n";
         assert(0);
     }
@@ -94,8 +94,8 @@ CRYPrimary::CRYPrimary(CRYUtils* utils, CRYData* data, double date, double latit
     CRYAbsFunction* cutoffMaker = data->getFunction("bfieldCorr");
     _minEnergy = std::max(_minEnergy, cutoffMaker->value(latitude));
 
-    _cachedPdf = 0;
-    setWeightFunc(1.0, 0); //....precompute the primary flux PDF
+    _cachedPdf = nullptr;
+    setWeightFunc(1.0, nullptr); //....precompute the primary flux PDF
 }
 
 //
@@ -135,8 +135,8 @@ std::vector<double> CRYPrimary::partialRates(const std::vector<double>* bins) co
 
 std::vector<double> CRYPrimary::partialRates(const CRYBinning* bins) const {
 
-    const CRYBinning* binning = 0;
-    if(bins != 0)
+    const CRYBinning* binning = nullptr;
+    if(bins != nullptr)
         binning = bins;
     else
         binning = _binning;
@@ -165,7 +165,7 @@ void CRYPrimary::setWeightFunc(double area, CRYWeightFunc* wf) {
 
     _wf = wf;
 
-    if(_wf == 0) {
+    if(_wf == nullptr) {
         _lifeTime = 1.0 / totalRate();
         calcMaxPDF();
         return;
@@ -218,7 +218,7 @@ void CRYPrimary::calcMaxPDF() {
         double kineMax = pow(10.0, minl10 + (i + 1.0) * 1. / Nbins * (maxl10 - minl10));
         double retValt = 0.;
         retValt += (1.0 - _cycle) * _solarMin->value(kine) + _cycle * _solarMax->value(kine);
-        if(_wf != 0)
+        if(_wf != nullptr)
             retValt *= _wf->weight(kine);
         pdfValues.push_back(retValt * (kineMax - kineMin));
         if(retValt > _maxPDF)

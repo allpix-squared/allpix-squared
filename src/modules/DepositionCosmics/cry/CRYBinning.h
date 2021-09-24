@@ -71,7 +71,7 @@ public:
     // Destructor. CRYBinning owns _bins so delete it
     ~CRYBinning() {
         delete _bins;
-        _bins = 0;
+        _bins = nullptr;
     }
 
     // Print to cout the name and optionally (according to printData)

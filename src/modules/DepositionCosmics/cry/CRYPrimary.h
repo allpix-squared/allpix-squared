@@ -80,10 +80,10 @@ public:
     // Given the function parameters (but NOT the weights)
     // deterine the rate in the specifed binning
     std::vector<double> partialRates(const std::vector<double>* bins) const;
-    std::vector<double> partialRates(const CRYBinning* bins = 0) const;
+    std::vector<double> partialRates(const CRYBinning* bins = nullptr) const;
 
     // either add or recompute weighting from existing function
-    void setWeightFunc(double area, CRYWeightFunc* wf = 0);
+    void setWeightFunc(double area, CRYWeightFunc* wf = nullptr);
 
     // The time elapsed during the simulation of primaries
     double timeSimulated() { return _dt; }

@@ -157,33 +157,33 @@ CRYAbsFunction* CRYData::getFunction(std::string name) {
     for(unsigned int i = 0; i < _funcs.size(); i++)
         if(_funcs[i]->name() == name)
             return _funcs[i];
-    return 0;
+    return nullptr;
 }
 CRYBinning* CRYData::getBinning(std::string name) {
     for(unsigned int i = 0; i < _binnings.size(); i++)
         if(_binnings[i]->name() == name)
             return _binnings[i];
-    return 0;
+    return nullptr;
 }
 CRYPdf* CRYData::getPdf(std::string name) {
     for(unsigned int i = 0; i < _pdfs.size(); i++)
         if(_pdfs[i]->name() == name)
             return _pdfs[i];
-    return 0;
+    return nullptr;
 }
 
 CRYParameter* CRYData::getParameter(std::string name) {
     for(unsigned int i = 0; i < _params.size(); i++)
         if(_params[i]->name() == name)
             return _params[i];
-    return 0;
+    return nullptr;
 }
 
 CRYParamI* CRYData::getParamI(std::string name) {
     for(unsigned int i = 0; i < _paramInts.size(); i++)
         if(_paramInts[i]->name() == name)
             return _paramInts[i];
-    return 0;
+    return nullptr;
 }
 
 std::vector<std::string> CRYData::getParameterList(std::string substr) {
