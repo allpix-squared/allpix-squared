@@ -51,8 +51,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CRYWeightFunc.h"
 
 #include <assert.h>
+#include <cmath>
 #include <iostream>
-#include <math.h>
 #include <stdlib.h> // For Ubuntu Linux
 
 CRYGenerator::CRYGenerator(CRYSetup* setup) {
@@ -317,7 +317,7 @@ void CRYGenerator::genEvent(std::vector<CRYParticle*>* retList) {
             double u, v, w;
             w = _cosThetaPdfs[idSec]->draw(_utils, sBin);
 
-            double maxV = sqrt(1.0 - w * w);
+            double maxV = std::sqrt(1.0 - w * w);
             double tphi = _utils->randomFlat() * 2.0 * M_PI;
             v = maxV * sin(tphi);
             u = maxV * cos(tphi);

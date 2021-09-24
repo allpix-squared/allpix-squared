@@ -40,8 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CRYPdf.h"
 #include <assert.h>
+#include <cmath>
 #include <iostream>
-#include <math.h>
 #include <sstream>
 #include <stdlib.h> // For Ubuntu Linux
 #include <string.h> // For Ubuntu Linux
