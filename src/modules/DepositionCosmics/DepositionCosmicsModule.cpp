@@ -42,6 +42,8 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     config_.setDefault("altitude", Units::get(0, "m"));
     config_.setDefault("min_particles", 1);
     config_.setDefault("max_particles", 1000000);
+    config_.setDefault("latitude", 53);
+    config_.setDefault("date", "12-31-2020");
 
     // Force source type and position:
     config_.set("source_type", "cosmics");
@@ -117,12 +119,14 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
                << ", selecting subbox of size " << size_meters << "m";
     cry_config << " subboxLength " << size_meters;
 
-    // _parmNames[CRYSetup::latitude]="latitude";
-    // _parmNames[CRYSetup::date]="date";
-    // _parmNames[CRYSetup::xoffset]="xoffset";
-    // _parmNames[CRYSetup::yoffset]="yoffset";
-    // _parmNames[CRYSetup::zoffset]="zoffset";
+    auto latitude = config_.get<int>("latitude");
+    if(latitude < -90 || latitude > 90) {
+        throw InvalidValueError(config_, "latitude", "latitude has to be between 90 (north pole) and -90 (south pole)");
+    }
+    cry_config << " latitude " << latitude;
+    cry_config << " date " << config_.get<std::string>("date");
 
+    // Set CRY configuration string as internal key:
     config_.set<std::string>("_cry_config", cry_config.str());
 }
 
