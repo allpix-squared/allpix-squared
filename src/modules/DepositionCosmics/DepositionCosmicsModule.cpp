@@ -43,6 +43,10 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     config_.setDefault("min_particles", 1);
     config_.setDefault("max_particles", 1000000);
 
+    // Force source type and position:
+    config_.set("source_type", "cosmics");
+    config_.set("source_position", ROOT::Math::XYZPoint());
+
     // Register lookup path for CRY data files:
     if(config_.has("data_path")) {
         auto path = config_.getPath("data_path", true);
