@@ -217,10 +217,10 @@ double CRYSetup::parseDate(std::string dt) {
 bool CRYSetup::isLeapYear(int yr)
 // Returns true if yr is a leap year, false if it is not
 {
-    bool leapyear = false;
+    bool leap_year = false;
     if(yr % 400 == 0)
-        leapyear = true;
+        leap_year = true;
     else if((yr % 4 == 0) && (yr % 100 != 0))
-        leapyear = true;
-    return leapyear;
+        leap_year = true;
+    return leap_year;
 }

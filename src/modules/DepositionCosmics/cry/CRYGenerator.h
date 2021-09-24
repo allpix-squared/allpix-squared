@@ -77,7 +77,7 @@ public:
     double timeSimulated() { return _primary->timeSimulated(); }
 
     // Pointer to the primary particle
-    // Note that ownership is not transfered
+    // Note that ownership is not transferred
     CRYParticle* primaryParticle() { return _primaryPart; }
 
     // which set of data tables was used

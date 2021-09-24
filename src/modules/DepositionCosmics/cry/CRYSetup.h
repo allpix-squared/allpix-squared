@@ -92,8 +92,8 @@ public:
     ~CRYSetup() {}
 
     // Get value of parameter
-    double param(CRYSetup::CRYParms parm) { return _parms[parm]; }
-    void setParam(CRYSetup::CRYParms parm, double value) { _parms[parm] = value; }
+    double param(CRYSetup::CRYParms parameter) { return _parms[parameter]; }
+    void setParam(CRYSetup::CRYParms parameter, double value) { _parms[parameter] = value; }
 
     void setRandomFunction(double (*newFunc)(void)) { _utils->setRandomFunction(newFunc); }
 

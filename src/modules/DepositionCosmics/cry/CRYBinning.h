@@ -81,7 +81,7 @@ public:
     // Returns the key
     std::string name() { return _name; }
 
-    // Direct access to the binning defintion
+    // Direct access to the binning definition
     const std::vector<double>* bins() const { return _bins; }
 
     // Given x (value), determine the corresponding bin
@@ -94,9 +94,9 @@ public:
     double max() { return (*_bins)[_bins->size() - 1]; }
 
 private:
-    // Key for this binning structur
+    // Key for this binning structure
     std::string _name;
-    // The bin defintions - For N bins, there are N+1 values
+    // The bin definitions - For N bins, there are N+1 values
     // corresponding to the lower and upper limits of each bin
     // and assuming no gaps between bins
     std::vector<double>* _bins;

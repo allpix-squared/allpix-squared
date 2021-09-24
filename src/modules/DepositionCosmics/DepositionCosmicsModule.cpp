@@ -76,7 +76,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
                     LOG(TRACE) << "Registered CRY data path from XDG_DATA_DIRS: " << data_dir;
                 } else {
                     throw ModuleError("Cannot find CRY data files, provide them in the configuration, via XDG_DATA_DIRS or "
-                                      "in system direcory " +
+                                      "in system directory " +
                                       std::string(ALLPIX_CRY_DATA_DIRECTORY));
                 }
             }

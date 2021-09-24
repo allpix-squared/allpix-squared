@@ -43,7 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //  Created October, 2006
 //
-//  CRYParticle: Defintion of particle to be returned by CRY library
+//  CRYParticle: Definition of particle to be returned by CRY library
 //
 
 #ifndef CRYParticle_h
