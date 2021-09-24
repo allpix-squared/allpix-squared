@@ -312,9 +312,9 @@ GeneratorActionInitializationMaster::GeneratorActionInitializationMaster(const C
     particle_source_->SetVerbosity(0);
 
     // Get source specific parameters
-    auto source_type = config.get<std::string>("source_type");
+    auto source_type = config.get<GeneratorActionG4::SourceType>("source_type");
 
-    if(source_type == "macro") {
+    if(source_type == GeneratorActionG4::SourceType::MACRO) {
         LOG(INFO) << "Using user macro for particle source.";
 
         // Get the macro file and apply its commands
