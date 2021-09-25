@@ -48,9 +48,12 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
     // Let CRY generate the particles
     std::vector<CRYParticle*> vect;
+    LOG(DEBUG) << "Absolute time simulated before shower: "
+               << Units::display(Units::get(cry_generator_->timeSimulated(), "s"), {"ns", "us", "ms"});
     cry_generator_->genEvent(&vect);
-
     LOG(DEBUG) << "CRY generated " << vect.size() << " particles";
+    LOG(DEBUG) << "Absolute time simulated after shower: "
+               << Units::display(Units::get(cry_generator_->timeSimulated(), "s"), {"ns", "us", "ms"});
 
     // Event time frame starts with first particle arriving
     double event_starting_time = std::numeric_limits<double>::max();
