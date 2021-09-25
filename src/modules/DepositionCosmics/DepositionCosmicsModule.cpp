@@ -44,6 +44,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     config_.setDefault("max_particles", 1000000);
     config_.setDefault("latitude", 53);
     config_.setDefault("date", "12-31-2020");
+    config_.setDefault("reset_particle_time", false);
 
     // Force source type and position:
     config_.set("source_type", "cosmics");
