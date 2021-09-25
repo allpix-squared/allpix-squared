@@ -7,12 +7,15 @@
 
 This module simulates cosmic ray particle shower distributions and their energy deposition in all sensors of the setup.
 The cosmic ray particle showers are simulated using the Cosmic-ray shower generator (CRY) [@cry], the generated particles are transported through the setup by Geant4.
+More detailed information about CRY can be found in its physics description [@cryphysics] and user manual [@crymanual].
+
+This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there.
+A detailed description of these configuration parameters can be found in the respective module documentation.
+The parameter `number_of_particles` here refers to full shower developments instead of individual particles, there can be multiple particles per shower.
 The deposited energy is converted into electron-hole pairs, the number of pairs created is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
 
-This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there. A detailed description of these configuration parameters can be found in the respective module documentation.
-The parameter `number_of_particles` here refers to full shower developments instead of individual particles, there can be multiple particles per shower.
-
-The coordinate system for this module defines the `z` axis orthogonal to the earth surface, pointing towards the earth core.
+The coordinate system for this module defines the `z` axis orthogonal to the earth surface, pointing upwards.
+This means shower particles travel along the negative `z` axis and all detectors should be placed below the incidence plane at `z = 0`.
 The area on which incident particles will be simulated is automatically inferred from the total setup size, and the next larger set of tabulated data available is selected.
 Data are tabulated for areas of 1m, 3m, 10m, 30m, 100m, and 300m. Particles outside the selected window are dropped.
 
@@ -49,7 +52,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `return_muons`: Boolean to select whether muons should be returned to Geant4. Defaults to `true`.
 * `return_pions`: Boolean to select whether pions should be returned to Geant4. Defaults to `true`.
 * `return_kaons`: Boolean to select whether kaons should be returned to Geant4. Defaults to `true`.
-* `altitude`: Altitude for which the shower particles should be simulated. Possible values are `0m`, `2100m` and `11300m`, defaults to ground level, i.e. `0m`.
+* `altitude`: Altitude for which the shower particles should be simulated. Possible values are `0m`, `2100m` and `11300m`, defaults to sea level, i.e. `0m`. It should be noted that the particle incidence plane is always located at `z = 0` independent of the simulated altitude.
 * `min_particles`: Minimum number of particles required for a shower to be considered. Defaults to `1`.
 * `max_particles`: Maximum number of particles in a shower before additional particles are cut off. Defaults to `100000`
 
@@ -70,6 +73,8 @@ CRY is published under a 3-Clause BSD-like license, which is available in the fi
 The original software can be obtained from https://nuclear.llnl.gov/simulation/.
 
 [@cry]: https://ieeexplore.ieee.org/abstract/document/4437209
+[@cryphysics]: https://nuclear.llnl.gov/simulation/doc_cry_v1.7/cry_physics.pdf
+[@crymanual]: https://nuclear.llnl.gov/simulation/doc_cry_v1.7/cry.pdf
 [@g4physicslists]: https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsListGuide/html/index.html
 [@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
 [@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
