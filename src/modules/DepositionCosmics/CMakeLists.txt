@@ -1,12 +1,29 @@
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
+# The tabulated data is downloaded at compile time since the files are too big for the repository
+INCLUDE(ExternalData)
+# cmake-lint: disable=C0103
+# Define resources for external data, copy from EOS directly if available
+SET(ExternalData_URL_TEMPLATES "file:///eos/project-a/allpix-squared/www/data/%(algo)/%(hash)"
+                               "https://project-allpix-squared.web.cern.ch/data/%(algo)/%(hash)")
+
+# Register the data files via placeholders with their name, the extension .md5 and their MD5 has as content:
+EXTERNALDATA_EXPAND_ARGUMENTS(fetch_cry_data _data_file DATA{data/cosmics_0.data})
+EXTERNALDATA_EXPAND_ARGUMENTS(fetch_cry_data _data_file DATA{data/cosmics_2100.data})
+EXTERNALDATA_EXPAND_ARGUMENTS(fetch_cry_data _data_file DATA{data/cosmics_11300.data})
+
+# Set up a CMake target for downloading the files, exclude from "make all" but make this module target depend on it:
+EXTERNALDATA_ADD_TARGET(fetch_cry_data)
+SET_TARGET_PROPERTIES(fetch_cry_data PROPERTIES EXCLUDE_FROM_ALL TRUE)
+ADD_DEPENDENCIES(${MODULE_NAME} fetch_cry_data)
+
 # Prefer local data files if not installed to other location
 GET_FILENAME_COMPONENT(ABSOLUTE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} ABSOLUTE)
 IF(ABSOLUTE_INSTALL_PREFIX STREQUAL PROJECT_SOURCE_DIR)
     # Use local data directory (unless other is given)
     SET(CRY_DATA_DIRECTORY
-        "${CMAKE_CURRENT_SOURCE_DIR}/data"
+        "${CMAKE_CURRENT_BINARY_DIR}/data"
     CACHE PATH "CRY data directory" FORCE)
 ELSE()
     # Set the install path to share
