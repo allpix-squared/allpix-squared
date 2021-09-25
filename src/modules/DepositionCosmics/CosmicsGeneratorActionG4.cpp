@@ -36,6 +36,9 @@ CosmicsGeneratorActionG4::CosmicsGeneratorActionG4(const Configuration& config)
     LOG(DEBUG) << "Configuring CRY random engine to use Geant4's event-seeded engine";
     RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(), &CLHEP::HepRandomEngine::flat);
     setup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
+
+    // Parse other configuration parameters:
+    reset_particle_time_ = config_.get<bool>("reset_particle_time");
 }
 
 /**
@@ -49,22 +52,31 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
     LOG(DEBUG) << "CRY generated " << vect.size() << " particles";
 
+    // Event time frame starts with first particle arriving
+    double event_starting_time = std::numeric_limits<double>::max();
+    if(!reset_particle_time_) {
+        for(const auto& particle : vect) {
+            event_starting_time = std::min(event_starting_time, particle->t());
+        }
+    }
+
     for(const auto& particle : vect) {
-
-        LOG(DEBUG) << "  " << CRYUtils::partName(particle->id()) << ": charge=" << particle->charge() << " "
-                   << std::setprecision(4) << "energy=" << Units::display(particle->ke(), {"MeV", "GeV"}) << " "
-                   << "pos="
-                   << Units::display(G4ThreeVector(particle->x() * 1e3, particle->y() * 1e3, particle->z() * 1e3), {"m"})
-                   << " "
-                   << "direction cosines " << G4ThreeVector(particle->u(), particle->v(), particle->w());
-
         auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_gun_->SetParticleDefinition(pdg_table->FindParticle(particle->PDGid()));
         particle_gun_->SetParticleEnergy(particle->ke() * CLHEP::MeV);
         particle_gun_->SetParticlePosition(
             G4ThreeVector(particle->x() * CLHEP::m, particle->y() * CLHEP::m, particle->z() * CLHEP::m));
         particle_gun_->SetParticleMomentumDirection(G4ThreeVector(particle->u(), particle->v(), particle->w()));
-        particle_gun_->SetParticleTime(particle->t());
+
+        double time = (reset_particle_time_ ? 0. : particle->t() - event_starting_time);
+        particle_gun_->SetParticleTime(time);
         particle_gun_->GeneratePrimaryVertex(event);
+
+        LOG(DEBUG) << "  " << CRYUtils::partName(particle->id()) << ": charge=" << particle->charge() << std::setprecision(4)
+                   << " energy=" << Units::display(particle->ke(), {"MeV", "GeV"}) << " pos="
+                   << Units::display(G4ThreeVector(particle->x() * 1e3, particle->y() * 1e3, particle->z() * 1e3), {"m"})
+                   << " dir. cos=" << G4ThreeVector(particle->u(), particle->v(), particle->w())
+                   << " t=" << Units::display(Units::get(time, "s"), {"ns", "us", "ms"});
+        ;
     }
 }

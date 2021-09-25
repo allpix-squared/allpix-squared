@@ -19,6 +19,10 @@ This means shower particles travel along the negative `z` axis and all detectors
 The area on which incident particles will be simulated is automatically inferred from the total setup size, and the next larger set of tabulated data available is selected.
 Data are tabulated for areas of 1m, 3m, 10m, 30m, 100m, and 300m. Particles outside the selected window are dropped.
 
+The first shower particle arriving in the event has a timestamp of `0ns`, all subsequent particles of the same shower have the appropriate spacing in time.
+It should be noted that the time difference between the arrival of different particles of the same shower can amount up to hundreds of microseconds.
+If this behavior is not desired, all particle timestamps can be forced to `0ns` by enabling the `reset_particle_time` switch.
+
 ### Dependencies
 
 This module inherits from and therefore requires the *DepositionGeant4* module as well as an installation Geant4.
@@ -26,6 +30,7 @@ This module inherits from and therefore requires the *DepositionGeant4* module a
 ### Parameters
 
 * `data_path`: Directory to read the tabulated input data for the CRY framework from. By default, this is the standard installation path of the data files shipped with the framework.
+* `reset_particle_time`: Boolean to force resetting all particle timestamps to `0ns`, even from different particles from the same shower. Defaults to `false`, i.e. the first particle of a shower bears a timestamp of `0ns` and all subsequent particles retain their time difference to the first one.
 
 #### Relevant parameters inherited from *DepositionGeant4*
 

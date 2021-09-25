@@ -45,6 +45,7 @@ namespace allpix {
         std::unique_ptr<G4ParticleGun> particle_gun_;
         std::unique_ptr<CRYGenerator> cry_generator_;
 
+        bool reset_particle_time_{};
         const Configuration& config_;
     };
 
