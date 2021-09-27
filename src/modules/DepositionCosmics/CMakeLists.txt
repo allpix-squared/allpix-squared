@@ -103,5 +103,8 @@ TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES} AllpixModuleDepositionG
 # Allpix Geant4 interface is required for this module
 ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})
 
+# Register module tests
+ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
+
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})
