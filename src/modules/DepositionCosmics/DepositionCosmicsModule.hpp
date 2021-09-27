@@ -12,6 +12,8 @@
 
 #include "../DepositionGeant4/DepositionGeant4Module.hpp"
 
+#include <mutex>
+
 namespace allpix {
     /**
      * @ingroup Modules
@@ -23,6 +25,8 @@ namespace allpix {
      * only CRY-specific configuration keys are handled in the constructor of this module.
      */
     class DepositionCosmicsModule : public DepositionGeant4Module {
+        friend class CosmicsGeneratorActionG4;
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -32,8 +36,22 @@ namespace allpix {
          */
         DepositionCosmicsModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
+        /**
+         * @brief Cleanup \ref RunManager for each thread
+         */
+        void finalizeThread() override;
+
+        /**
+         * @brief Display statistical summary
+         */
+        void finalize() override;
+
     private:
         void initialize_g4_action() override;
+
+        static thread_local double cry_instance_time_simulated_;
+        std::mutex stats_mutex_;
+        double total_time_simulated_;
     };
 } // namespace allpix
 
