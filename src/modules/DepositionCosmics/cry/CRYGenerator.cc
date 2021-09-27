@@ -329,7 +329,7 @@ void CRYGenerator::genEvent(std::vector<CRYParticle*>* retList) {
             daug->setDirection(u, v, w);
 
             // if the user has set a limit in the number of particles
-            if(static_cast<int>(retList->size()) < _maxParticles - 1)
+            if(static_cast<int>(retList->size()) < _maxParticles)
                 retList->push_back(daug);
             else
                 delete daug;
