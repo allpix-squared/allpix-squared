@@ -190,11 +190,11 @@ bool DetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const 
  */
 bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
-    auto x_mod_pixel = std::fmod(local_pos.x() + pixel_size_.x() / 2, pixel_size_.x()) - pixel_size_.x() / 2;
-    auto y_mod_pixel = std::fmod(local_pos.y() + pixel_size_.y() / 2, pixel_size_.y()) - pixel_size_.y() / 2;
+    auto [xpixel, ypixel] = getPixelIndex(local_pos);
+    auto inPixelPos = local_pos - getPixelCenter(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
 
-    return (std::fabs(x_mod_pixel) <= std::fabs(getImplantSize().x() / 2) &&
-            std::fabs(y_mod_pixel) <= std::fabs(getImplantSize().y() / 2));
+    return (std::fabs(inPixelPos.x()) <= std::fabs(getImplantSize().x() / 2) &&
+            std::fabs(inPixelPos.y()) <= std::fabs(getImplantSize().y() / 2));
 }
 
 /**
