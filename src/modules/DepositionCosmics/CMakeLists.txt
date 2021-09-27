@@ -8,6 +8,9 @@ INCLUDE(ExternalData)
 SET(ExternalData_URL_TEMPLATES "file:///eos/project-a/allpix-squared/www/data/%(algo)/%(hash)"
                                "https://project-allpix-squared.web.cern.ch/data/%(algo)/%(hash)")
 
+# Make copies, not symlinks so that the files can be picked up and installed by the install target
+SET(ExternalData_NO_SYMLINKS 1)
+
 # Register the data files via placeholders with their name, the extension .md5 and their MD5 has as content:
 EXTERNALDATA_EXPAND_ARGUMENTS(fetch_cry_data _data_file DATA{data/cosmics_0.data})
 EXTERNALDATA_EXPAND_ARGUMENTS(fetch_cry_data _data_file DATA{data/cosmics_2100.data})
@@ -41,14 +44,8 @@ ENDIF()
 
 # Install the files to the data directory
 # NOTE: With default install path this does not change anything
-FILE(
-    GLOB DATA_FILES
-    LIST_DIRECTORIES false
-    CONFIGURE_DEPENDS "*.data")
-INSTALL(
-    FILES ${DATA_FILES}
-    DESTINATION ${CRY_DATA_DIRECTORY}
-    COMPONENT data)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/ DESTINATION ${CRY_DATA_DIRECTORY}
+        FILES_MATCHING PATTERN "*.data")
 
 ADD_DEFINITIONS(-DALLPIX_CRY_DATA_DIRECTORY="${CRY_DATA_DIRECTORY}")
 
