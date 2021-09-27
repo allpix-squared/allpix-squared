@@ -194,7 +194,7 @@ namespace allpix {
         virtual std::string getImplantMaterial() const { return implant_material_; }
         /**
          * @brief Set the material of the implants (collection electrodes)
-         * @param Implant material
+         * @param material Implant material
          */
         void setImplantMaterial(std::string material) { implant_material_ = std::move(material); }
         /**
