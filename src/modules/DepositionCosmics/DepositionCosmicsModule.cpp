@@ -50,6 +50,9 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     config_.set("source_type", "cosmics");
     config_.set("source_position", ROOT::Math::XYZPoint());
 
+    // Add the particle source position to the geometry
+    geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
+
     // Register lookup path for CRY data files:
     if(config_.has("data_path")) {
         auto path = config_.getPath("data_path", true);
