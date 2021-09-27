@@ -8,6 +8,7 @@
  */
 
 #include "CosmicsGeneratorActionG4.hpp"
+#include "DepositionCosmicsModule.hpp"
 #include "RNGWrapper.hpp"
 
 #include <limits>
@@ -55,6 +56,9 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
     LOG(INFO) << "Absolute time simulated by CRY after shower: "
               << Units::display(Units::get(cry_generator_->timeSimulated(), "s"), {"ns", "us", "ms"});
 
+    // Update simulation time in the framework base units
+    DepositionCosmicsModule::cry_instance_time_simulated_ = cry_generator_->timeSimulated() * 1e9;
+
     // Event time frame starts with first particle arriving
     double event_starting_time = std::numeric_limits<double>::max();
     if(!reset_particle_time_) {
@@ -80,6 +84,5 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
                    << Units::display(G4ThreeVector(particle->x() * 1e3, particle->y() * 1e3, particle->z() * 1e3), {"m"})
                    << " dir. cos=" << G4ThreeVector(particle->u(), particle->v(), particle->w())
                    << " t=" << Units::display(Units::get(time, "s"), {"ns", "us", "ms"});
-        ;
     }
 }

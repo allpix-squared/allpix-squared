@@ -25,6 +25,8 @@
 
 using namespace allpix;
 
+thread_local double DepositionCosmicsModule::cry_instance_time_simulated_ = 0;
+
 DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : DepositionGeant4Module(config, messenger, geo_manager) {
 
@@ -138,4 +140,24 @@ void DepositionCosmicsModule::initialize_g4_action() {
     auto* action_initialization =
         new ActionInitializationG4<CosmicsGeneratorActionG4, GeneratorActionInitializationMaster>(config_, this);
     run_manager_g4_->SetUserInitialization(action_initialization);
+}
+
+void DepositionCosmicsModule::finalizeThread() {
+    {
+        LOG(DEBUG) << "CRY instance reports simulation time of "
+                   << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
+        std::lock_guard<std::mutex> lock{stats_mutex_};
+        total_time_simulated_ += cry_instance_time_simulated_;
+    }
+
+    // Call base class thread finalization:
+    DepositionGeant4Module::finalizeThread();
+}
+
+void DepositionCosmicsModule::finalize() {
+
+    LOG(STATUS) << "Total simulated time in CRY: " << Units::display(total_time_simulated_, {"us", "ms", "s"});
+
+    // Call base class finalization:
+    DepositionGeant4Module::finalize();
 }
