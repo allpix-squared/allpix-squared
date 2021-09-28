@@ -58,22 +58,13 @@ bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
     return false;
 }
 
-std::pair<double, double> Cluster::getIndex() const {
-    double x = 0, y = 0;
-    for(const auto& pixel : this->getPixelHits()) {
-        x += pixel->getPixel().getIndex().x() * pixel->getSignal();
-        y += pixel->getPixel().getIndex().y() * pixel->getSignal();
-    }
-    return {x / getCharge(), y / getCharge()};
-}
-
-ROOT::Math::XYZVector Cluster::getPosition() const {
+ROOT::Math::XYZPoint Cluster::getPosition() const {
     ROOT::Math::XYZVector meanPos;
     for(const auto& pixel : this->getPixelHits()) {
         meanPos = pixel->getPixel().getLocalCenter() * pixel->getSignal() + meanPos;
     }
     meanPos /= getCharge();
-    return meanPos;
+    return static_cast<ROOT::Math::XYZPoint>(meanPos);
 }
 
 std::pair<unsigned int, unsigned int> Cluster::getSizeXY() const {

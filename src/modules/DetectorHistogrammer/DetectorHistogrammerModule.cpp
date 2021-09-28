@@ -351,8 +351,8 @@ void DetectorHistogrammerModule::run(Event* event) {
         cluster_size_x->Fill(clusSizesXY.first);
         cluster_size_y->Fill(clusSizesXY.second);
 
-        auto [cluster_x, cluster_y] = clus.getIndex();
         auto clusterPos = clus.getPosition();
+        auto [cluster_x, cluster_y] = detector_->getModel()->getPixelIndex(clusterPos);
         LOG(DEBUG) << "Cluster at indices " << cluster_x << ", " << cluster_y << "(" << clusterPos
                    << " local coordinates) with charge " << Units::display(clus.getCharge(), "ke");
         cluster_map->Fill(cluster_x, cluster_y);
@@ -398,7 +398,6 @@ void DetectorHistogrammerModule::run(Event* event) {
             seed_charge_map->Fill(
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
             cluster_seed_charge->Fill(static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
-
 
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
