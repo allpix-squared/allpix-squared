@@ -372,8 +372,6 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         LOG(TRACE) << "Matching primaries: " << intersection.size();
         for(const auto& particle : intersection) {
-            auto pitch = detector_->getModel()->getPixelSize();
-
             auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
@@ -424,8 +422,6 @@ void DetectorHistogrammerModule::run(Event* event) {
 
     // Calculate efficiency: search for matching clusters for all primary MCParticles
     for(auto& particle : primary_particles) {
-        auto pitch = detector_->getModel()->getPixelSize();
-
         // Calculate 2D local position of particle:
         auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
 
