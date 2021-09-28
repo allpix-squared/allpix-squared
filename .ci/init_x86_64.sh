@@ -16,9 +16,9 @@ elif [ "$(uname)" = "Darwin" ]; then
     MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
     MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
     if [ $MACOS_MAJOR = "11" ]; then
-        OS=mac1015
-    elif [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
         OS=mac11
+    elif [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
+        OS=mac1015
     else
         echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
