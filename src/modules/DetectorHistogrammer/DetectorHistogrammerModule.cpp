@@ -378,8 +378,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             // Find the nearest pixel
             auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
-            auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(static_cast<unsigned int>(xpixel),
-                                                                                  static_cast<unsigned int>(ypixel));
+            auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(xpixel, ypixel);
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
@@ -428,8 +427,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         // Find the nearest pixel
         auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
-        auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(static_cast<unsigned int>(xpixel),
-                                                                              static_cast<unsigned int>(ypixel));
+        auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(xpixel, ypixel);
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
         auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
