@@ -156,6 +156,11 @@ void DepositionCosmicsModule::finalizeThread() {
 
 void DepositionCosmicsModule::finalize() {
 
+    // Without multithreading we need to fetch the total simulation time from the main thread:
+    if(!multithreadingEnabled()) {
+        total_time_simulated_ = cry_instance_time_simulated_;
+    }
+
     LOG(STATUS) << "Total simulated time in CRY: " << Units::display(total_time_simulated_, {"us", "ms", "s"});
 
     // Call base class finalization:
