@@ -139,7 +139,7 @@ void DetectorHistogrammerModule::initialize() {
                                                   -pitch_x / 2,
                                                   pitch_x / 2,
                                                   inpixel_bins.y(),
-                                                  -pitch_x / 2,
+                                                  -pitch_y / 2,
                                                   pitch_y / 2);
 
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
