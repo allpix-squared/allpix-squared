@@ -350,18 +350,18 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
     double arrival_time = 0;
 
     // Lambda for threshold calculation:
-    auto is_above_threshold = [](double bin, double threshold, bool ignore_polarity) {
-        if(ignore_polarity) {
-            return (std::fabs(bin) > std::fabs(threshold));
+    auto is_above_threshold = [=](double bin) {
+        if(ignore_polarity_) {
+            return (std::fabs(bin) > std::fabs(threshold_));
         } else {
-            return (threshold > 0 ? bin > threshold : bin < threshold);
+            return (threshold_ > 0 ? bin > threshold_ : bin < threshold_);
         }
     };
 
     // Find the point where the signal crosses the threshold, latch ToA
     while(arrival_time < integration_time_) {
         auto bin = pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep)));
-        if(is_above_threshold(bin, threshold_, ignore_polarity_)) {
+        if(is_above_threshold(bin)) {
             threshold_crossed = true;
             break;
         };
@@ -377,11 +377,11 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     unsigned int tot_clock_cycles = 0;
 
     // Lambda for threshold calculation:
-    auto is_below_threshold = [](double bin, double threshold, bool ignore_polarity) {
-        if(ignore_polarity) {
-            return (std::fabs(bin) < std::fabs(threshold));
+    auto is_below_threshold = [=](double bin) {
+        if(ignore_polarity_) {
+            return (std::fabs(bin) < std::fabs(threshold_));
         } else {
-            return (threshold > 0 ? bin < threshold : bin > threshold);
+            return (threshold_ > 0 ? bin < threshold_ : bin > threshold_);
         }
     };
 
@@ -389,7 +389,7 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
     while(tot_time < integration_time_) {
         auto bin = pulse.at(static_cast<size_t>(std::floor(tot_time / timestep)));
-        if(is_below_threshold(bin, threshold_, ignore_polarity_)) {
+        if(is_below_threshold(bin)) {
             break;
         }
         tot_clock_cycles++;
