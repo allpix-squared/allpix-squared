@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Implementation of object with a cluster of PixelHits
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2021 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -10,6 +10,7 @@
 #include "Cluster.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 
 #include "core/utils/log.h"
@@ -17,32 +18,38 @@
 
 using namespace allpix;
 
-Cluster::Cluster(const PixelHit* seedPixelHit) : seedPixelHit_(seedPixelHit) {
-    pixelHits_.insert(seedPixelHit);
-    clusterCharge_ = seedPixelHit->getSignal();
+Cluster::Cluster(const PixelHit* seed_pixel_hit) : seed_pixel_hit_(seed_pixel_hit) {
+    pixel_hits_.insert(seed_pixel_hit);
+    cluster_charge_ = seed_pixel_hit->getSignal();
 
-    minX_ = seedPixelHit->getPixel().getIndex().x();
+    minX_ = seed_pixel_hit->getPixel().getIndex().x();
     maxX_ = minX_;
-    minY_ = seedPixelHit->getPixel().getIndex().y();
+    minY_ = seed_pixel_hit->getPixel().getIndex().y();
     maxY_ = minY_;
 
-    for(const auto* mc_particle : seedPixelHit->getMCParticles()) {
+    for(const auto* mc_particle : seed_pixel_hit->getMCParticles()) {
         mc_particles_.insert(mc_particle);
     }
 }
 
-bool Cluster::addPixelHit(const PixelHit* pixelHit) {
-    auto ret = pixelHits_.insert(pixelHit);
+bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
+    auto ret = pixel_hits_.insert(pixel_hit);
     if(ret.second == true) {
-        clusterCharge_ += pixelHit->getSignal();
-        unsigned int pixX = pixelHit->getPixel().getIndex().x();
-        unsigned int pixY = pixelHit->getPixel().getIndex().y();
+        cluster_charge_ += pixel_hit->getSignal();
+        unsigned int pixX = pixel_hit->getPixel().getIndex().x();
+        unsigned int pixY = pixel_hit->getPixel().getIndex().y();
         minX_ = std::min(pixX, minX_);
         maxX_ = std::max(pixX, maxX_);
         minY_ = std::min(pixY, minY_);
         maxY_ = std::max(pixY, maxY_);
 
-        for(const auto* mc_particle : pixelHit->getMCParticles()) {
+        // Update seed pixel if new charge is larger:
+        if(std::signbit(seed_pixel_hit_->getSignal()) == std::signbit(pixel_hit->getSignal()) &&
+           std::abs(seed_pixel_hit_->getSignal()) < std::abs(pixel_hit->getSignal())) {
+            seed_pixel_hit_ = pixel_hit;
+        }
+
+        for(const auto* mc_particle : pixel_hit->getMCParticles()) {
             mc_particles_.insert(mc_particle);
         }
 
@@ -51,14 +58,13 @@ bool Cluster::addPixelHit(const PixelHit* pixelHit) {
     return false;
 }
 
-ROOT::Math::XYVectorD Cluster::getPosition() const {
-    ROOT::Math::XYVectorD meanPos = ROOT::Math::XYVectorD(0., 0.);
+ROOT::Math::XYZPoint Cluster::getPosition() const {
+    ROOT::Math::XYZVector meanPos;
     for(const auto& pixel : this->getPixelHits()) {
-        meanPos += ROOT::Math::XYVectorD(pixel->getPixel().getIndex().x() * pixel->getSignal(),
-                                         pixel->getPixel().getIndex().y() * pixel->getSignal());
+        meanPos = pixel->getPixel().getLocalCenter() * pixel->getSignal() + meanPos;
     }
     meanPos /= getCharge();
-    return meanPos;
+    return static_cast<ROOT::Math::XYZPoint>(meanPos);
 }
 
 std::pair<unsigned int, unsigned int> Cluster::getSizeXY() const {
