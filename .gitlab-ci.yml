@@ -152,7 +152,7 @@ fmt:cc7-llvm-lint:
     extends: .format
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
-        - ninja check-lint
+        - ninja check-lint 2> /dev/null
 
 fmt:cmake-lint:
     extends: .format
@@ -415,7 +415,7 @@ cmp:doxygen:
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Allpix-reference
+        - make Allpix-reference 1> /dev/null
         - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
