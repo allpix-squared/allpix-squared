@@ -91,13 +91,13 @@ namespace allpix {
 
         // Histograms to output
         Histogram<TH2D> hit_map, hit_global_map, hit_map_local, charge_map, cluster_map, polar_hit_map;
-        Histogram<TProfile2D> cluster_size_map, cluster_size_x_map, cluster_size_y_map;
+        Histogram<TProfile2D> cluster_size_mc_map, cluster_size_map, cluster_size_x_map, cluster_size_y_map;
         Histogram<TProfile2D> cluster_charge_map, seed_charge_map;
         Histogram<TProfile2D> residual_map, residual_x_map, residual_y_map, residual_detector, residual_x_detector,
             residual_y_detector;
         Histogram<TH1D> residual_x, residual_y, residual_r, residual_phi;
         Histogram<TProfile> residual_x_vs_x, residual_y_vs_y, residual_x_vs_y, residual_y_vs_x;
-        Histogram<TProfile2D> efficiency_map, efficiency_detector;
+        Histogram<TProfile2D> efficiency_map, efficiency_local, efficiency_detector;
         Histogram<TProfile> efficiency_vs_x, efficiency_vs_y;
         Histogram<TH1D> event_size;
         Histogram<TH1D> cluster_size, cluster_size_x, cluster_size_y;

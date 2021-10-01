@@ -110,6 +110,18 @@ void DetectorHistogrammerModule::initialize() {
     }
 
     // Create histogram of cluster map
+    std::string cluster_size_mc_map_title = "Cluster size as function of MCParticle impact position (" +
+                                            detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
+    cluster_size_mc_map = CreateHistogram<TProfile2D>(
+        "cluster_size_mc_map",
+        cluster_size_mc_map_title.c_str(),
+        static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * inpixel_bins.x(),
+        -model->getPixelSize().x() / 2,
+        model->getGridSize().x() - model->getPixelSize().x() / 2,
+        static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * inpixel_bins.y(),
+        -model->getPixelSize().y() / 2,
+        model->getGridSize().y() - model->getPixelSize().y() / 2);
+
     std::string cluster_size_map_title =
         "Cluster size as function of in-pixel impact position (" + detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
     cluster_size_map = CreateHistogram<TProfile2D>("cluster_size_map",
@@ -279,6 +291,20 @@ void DetectorHistogrammerModule::initialize() {
                                                  pitch_y / 2,
                                                  0,
                                                  1);
+    std::string efficiency_local_title =
+        "Efficiency (" + detector_->getName() + ") MCParticle positions, local coord.;x (mm);y (mm);efficiency";
+    efficiency_local = CreateHistogram<TProfile2D>(
+        "efficiency_local",
+        efficiency_local_title.c_str(),
+        static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * inpixel_bins.x(),
+        -model->getPixelSize().x() / 2,
+        model->getGridSize().x() - model->getPixelSize().x() / 2,
+        static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * inpixel_bins.y(),
+        -model->getPixelSize().y() / 2,
+        model->getGridSize().y() - model->getPixelSize().y() / 2,
+        0,
+        1);
+
     std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
     efficiency_detector = CreateHistogram<TProfile2D>("efficiency_detector",
                                                       efficiency_detector_title.c_str(),
@@ -473,6 +499,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
             cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
+            cluster_size_mc_map->Fill(particlePos.x(), particlePos.y(), static_cast<double>(clus.getSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
 
@@ -547,6 +574,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         efficiency_vs_y->Fill(inPixel_um_y, static_cast<double>(matched));
         efficiency_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(matched));
         efficiency_detector->Fill(xpixel, ypixel, static_cast<double>(matched));
+        efficiency_local->Fill(particlePos.x(), particlePos.y(), static_cast<double>(matched));
     }
 
     // Fill further histograms
@@ -567,6 +595,7 @@ void DetectorHistogrammerModule::finalize() {
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();
     auto cluster_size_map_histogram = cluster_size_map->Merge();
+    auto cluster_size_mc_map_histogram = cluster_size_mc_map->Merge();
     auto cluster_size_x_map_histogram = cluster_size_x_map->Merge();
     auto cluster_size_y_map_histogram = cluster_size_y_map->Merge();
     auto cluster_size_histogram = cluster_size->Merge();
@@ -587,6 +616,7 @@ void DetectorHistogrammerModule::finalize() {
     auto residual_y_detector_histogram = residual_y_detector->Merge();
     auto efficiency_vs_x_histogram = efficiency_vs_x->Merge();
     auto efficiency_vs_y_histogram = efficiency_vs_y->Merge();
+    auto efficiency_local_histogram = efficiency_local->Merge();
     auto efficiency_detector_histogram = efficiency_detector->Merge();
     auto efficiency_map_histogram = efficiency_map->Merge();
     auto n_cluster_histogram = n_cluster->Merge();
@@ -693,6 +723,7 @@ void DetectorHistogrammerModule::finalize() {
     cluster_size_y_histogram->Write();
     cluster_map_histogram->Write();
     cluster_size_map_histogram->Write();
+    cluster_size_mc_map_histogram->Write();
     cluster_size_x_map_histogram->Write();
     cluster_size_y_map_histogram->Write();
 
@@ -722,6 +753,7 @@ void DetectorHistogrammerModule::finalize() {
     getROOTDirectory()->mkdir("efficiency")->cd();
     efficiency_detector_histogram->Write();
     efficiency_map_histogram->Write();
+    efficiency_local_histogram->Write();
     efficiency_vs_x_histogram->Write();
     efficiency_vs_y_histogram->Write();
 
