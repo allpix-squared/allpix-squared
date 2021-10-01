@@ -64,6 +64,16 @@ void DetectorHistogrammerModule::initialize() {
     auto xpixels = static_cast<int>(model->getNPixels().x());
     auto ypixels = static_cast<int>(model->getNPixels().y());
 
+    // Calculate the granularity of in-pixel maps:
+    auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>("granularity");
+    if(inpixel_bins.x() * inpixel_bins.y() > 250000) {
+        LOG(WARNING) << "Selected plotting granularity of " << inpixel_bins << " bins creates very large histograms."
+                     << std::endl
+                     << "Consider reducing the number of bins using the granularity parameter.";
+    } else {
+        LOG(DEBUG) << "In-pixel plot granularity: " << inpixel_bins;
+    }
+
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
     std::string hit_map_title = "Hitmap (" + detector_->getName() + ");x (pixels);y (pixels);hits";
@@ -90,6 +100,18 @@ void DetectorHistogrammerModule::initialize() {
                                           -model->getPixelSize().y() / 2,
                                           model->getGridSize().y() - model->getPixelSize().y() / 2);
 
+    std::string hit_map_local_mc_title =
+        "MCParticle position hitmap (" + detector_->getName() + ") in local coord.;x (mm);y (mm);hits";
+    hit_map_local_mc =
+        CreateHistogram<TH2D>("hit_map_local_mc",
+                              hit_map_local_mc_title.c_str(),
+                              static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * inpixel_bins.x(),
+                              -model->getPixelSize().x() / 2,
+                              model->getGridSize().x() - model->getPixelSize().x() / 2,
+                              static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * inpixel_bins.y(),
+                              -model->getPixelSize().y() / 2,
+                              model->getGridSize().y() - model->getPixelSize().y() / 2);
+
     std::string charge_map_title = "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
     charge_map = CreateHistogram<TH2D>(
         "charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
@@ -98,16 +120,6 @@ void DetectorHistogrammerModule::initialize() {
     std::string cluster_map_title = "Cluster map (" + detector_->getName() + ");x (pixels);y (pixels); clusters";
     cluster_map = CreateHistogram<TH2D>(
         "cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
-
-    // Calculate the granularity of in-pixel maps:
-    auto inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>("granularity");
-    if(inpixel_bins.x() * inpixel_bins.y() > 250000) {
-        LOG(WARNING) << "Selected plotting granularity of " << inpixel_bins << " bins creates very large histograms."
-                     << std::endl
-                     << "Consider reducing the number of bins using the granularity parameter.";
-    } else {
-        LOG(DEBUG) << "In-pixel plot granularity: " << inpixel_bins;
-    }
 
     // Create histogram of cluster map
     std::string cluster_size_mc_map_title = "Cluster size as function of MCParticle impact position (" +
@@ -406,6 +418,12 @@ void DetectorHistogrammerModule::run(Event* event) {
                 polar_hit_map->Fill(hit_pos.phi(), hit_pos.r());
             }
 
+            // Plot hist in global coordinates of the first MCParticle associated:
+            auto mcparticles = pixel_hit.getPrimaryMCParticles();
+            if(!mcparticles.empty()) {
+                auto local_mc_pos = mcparticles.front()->getLocalReferencePoint();
+                hit_map_local_mc->Fill(local_mc_pos.x(), local_mc_pos.y());
+            }
             // Update statistics
             total_hits_ += 1;
         }
@@ -592,6 +610,7 @@ void DetectorHistogrammerModule::finalize() {
     auto hit_map_histogram = hit_map->Merge();
     auto hit_map_global_histogram = hit_global_map->Merge();
     auto hit_map_local_histogram = hit_map_local->Merge();
+    auto hit_map_local_mc_histogram = hit_map_local_mc->Merge();
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();
     auto cluster_size_map_histogram = cluster_size_map->Merge();
@@ -677,6 +696,7 @@ void DetectorHistogrammerModule::finalize() {
     hit_map_histogram->SetOption("colz");
     hit_map_global_histogram->SetOption("colz");
     hit_map_local_histogram->SetOption("colz");
+    hit_map_local_mc_histogram->SetOption("colz");
     // Set hit_map axis spacing
     if(static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) < 10) {
         hit_map_histogram->GetXaxis()->SetNdivisions(
@@ -716,6 +736,7 @@ void DetectorHistogrammerModule::finalize() {
     hit_map_histogram->Write();
     hit_map_global_histogram->Write();
     hit_map_local_histogram->Write();
+    hit_map_local_mc_histogram->Write();
 
     getROOTDirectory()->mkdir("cluster_size")->cd();
     cluster_size_histogram->Write();
