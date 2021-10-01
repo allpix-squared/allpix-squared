@@ -67,9 +67,15 @@ std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math:
 }
 
 bool HexagonalPixelDetectorModel::isWithinPixelGrid(const int x, const int y) const {
-    // FIXME check if this depends on pointy vs. flat!
-    return !(y < 0 || y >= static_cast<int>(number_of_pixels_.y()) || x < 0 - y / 2 ||
-             x >= static_cast<int>(number_of_pixels_.x()) - y / 2);
+    // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
+    // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:
+    if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
+        return !(y < 0 || y >= static_cast<int>(number_of_pixels_.y()) || x < 0 - y / 2 ||
+                 x >= static_cast<int>(number_of_pixels_.x()) - y / 2);
+    } else {
+        return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 - x / 2 ||
+                 y >= static_cast<int>(number_of_pixels_.y()) - x / 2);
+    }
 }
 
 bool HexagonalPixelDetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
