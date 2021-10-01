@@ -83,12 +83,12 @@ void DetectorHistogrammerModule::initialize() {
     std::string hit_map_local_title = "Hitmap (" + detector_->getName() + ") in local coord.;x (mm);y (mm);hits";
     hit_map_local = CreateHistogram<TH2D>("hit_map_local",
                                           hit_map_local_title.c_str(),
-                                          static_cast<int>(model->getSensorSize().x() / model->getPixelSize().x()),
+                                          static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()),
                                           -model->getPixelSize().x() / 2,
-                                          model->getSensorSize().x() - model->getPixelSize().x() / 2,
-                                          static_cast<int>(model->getSensorSize().y() / model->getPixelSize().y()),
+                                          model->getGridSize().x() - model->getPixelSize().x() / 2,
+                                          static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()),
                                           -model->getPixelSize().y() / 2,
-                                          model->getSensorSize().y() - model->getPixelSize().y() / 2);
+                                          model->getGridSize().y() - model->getPixelSize().y() / 2);
 
     std::string charge_map_title = "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
     charge_map = CreateHistogram<TH2D>(
