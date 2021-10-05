@@ -344,7 +344,6 @@ void ElectricFieldReaderModule::create_output_plots() {
              ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
              : model->getSensorSize());
 
-    // Use either full sensor axis or only depleted region
     double z_min = center.z() - size.z() / 2.0;
     double z_max = center.z() + size.z() / 2.0;
 
@@ -417,7 +416,7 @@ void ElectricFieldReaderModule::create_output_plots() {
         histogram_y->GetYaxis()->SetTitle("z (mm)");
         histogram_z->GetYaxis()->SetTitle("z (mm)");
     } else {
-        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
+        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * size.z();
         histogram->GetXaxis()->SetTitle("x (mm)");
         histogram_x->GetXaxis()->SetTitle("x (mm)");
         histogram_y->GetXaxis()->SetTitle("x (mm)");
@@ -445,9 +444,9 @@ void ElectricFieldReaderModule::create_output_plots() {
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
             } else if(project == 'y') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
             } else {
                 y = center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
             }
