@@ -42,10 +42,15 @@ namespace allpix {
      * @brief Type of field maps
      */
     enum class FieldMapping {
-        FULL = 0, ///< The field map spans the full volume
-        HALF_X,   ///< The field map spans half the volume and should be mirrored along x
-        HALF_Y,   ///< The field map spans half the volume and should be mirrored along y
-        QUARTER,  ///< The field map spans a quarter of the volume and should be mirrored to the other quadrants
+        FULL = 0,     ///< The field map spans the full volume
+        HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
+        HALF_RIGHT,   ///< The field map spans the right half of the volume and is mirrored along x
+        HALF_TOP,     ///< The field map spans the top half of the volume and is mirrored along y
+        HALF_BOTTOM,  ///< The field map spans the bottom half of the volume and is mirrored along y
+        QUADRANT_I,   ///< The field map spans the top right quadrant of the volume and is mirrored to the other quadrants
+        QUADRANT_II,  ///< The field map spans the top left quadrant of the volume and is mirrored to the other quadrants
+        QUADRANT_III, ///< The field map spans the lower left quadrant of the volume and is mirrored to the other quadrants
+        QUADRANT_IV,  ///< The field map spans the lower right quadrant of the volume and is mirrored to the other quadrants
     };
 
     /**
