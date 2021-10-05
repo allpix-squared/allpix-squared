@@ -334,38 +334,37 @@ void ElectricFieldReaderModule::create_output_plots() {
     }
 
     auto model = detector_->getModel();
-    if(config_.get<bool>("output_plots_single_pixel", true)) {
-        // If we need to plot a single pixel we change the model to fake the sensor to be a single pixel
-        // NOTE: This is a little hacky, but is the easiest approach
-        model = std::make_shared<DetectorModel>(*model);
-        model->setSensorExcessTop(0);
-        model->setSensorExcessBottom(0);
-        model->setSensorExcessLeft(0);
-        model->setSensorExcessRight(0);
-        model->setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>(1, 1));
-    }
-    // Use either full sensor axis or only depleted region
-    double z_min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
-    double z_max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+
+    // If we need to plot a single pixel, we use size and position of the pixel at the origin
+    auto single_pixel = config_.get<bool>("output_plots_single_pixel", true);
+    auto center = (single_pixel ? ROOT::Math::XYZPoint(model->getPixelCenter(0, 0).x(), model->getPixelCenter(0, 0).y(), 0)
+                                : model->getSensorCenter());
+    auto size =
+        (single_pixel
+             ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
+             : model->getSensorSize());
+
+    double z_min = center.z() - size.z() / 2.0;
+    double z_max = center.z() + size.z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
     double min1 = NAN, max1 = NAN;
     double min2 = NAN, max2 = NAN;
     if(project == 'x') {
-        min1 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
-        max1 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
+        min1 = center.y() - size.y() / 2.0;
+        max1 = center.y() + size.y() / 2.0;
         min2 = z_min;
         max2 = z_max;
     } else if(project == 'y') {
-        min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
-        max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
+        min1 = center.x() - size.x() / 2.0;
+        max1 = center.x() + size.x() / 2.0;
         min2 = z_min;
         max2 = z_max;
     } else {
-        min1 = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0;
-        max1 = model->getSensorCenter().x() + model->getSensorSize().x() / 2.0;
-        min2 = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0;
-        max2 = model->getSensorCenter().y() + model->getSensorSize().y() / 2.0;
+        min1 = center.x() - size.x() / 2.0;
+        max1 = center.x() + size.x() / 2.0;
+        min2 = center.y() - size.y() / 2.0;
+        max2 = center.y() + size.y() / 2.0;
     }
 
     // Create 2D histograms
@@ -397,13 +396,35 @@ void ElectricFieldReaderModule::create_output_plots() {
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
     if(project == 'x') {
-        x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
-            config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().x();
+        x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.x();
+        histogram->GetXaxis()->SetTitle("y (mm)");
+        histogram_x->GetXaxis()->SetTitle("y (mm)");
+        histogram_y->GetXaxis()->SetTitle("y (mm)");
+        histogram_z->GetXaxis()->SetTitle("y (mm)");
+        histogram->GetYaxis()->SetTitle("z (mm)");
+        histogram_x->GetYaxis()->SetTitle("z (mm)");
+        histogram_y->GetYaxis()->SetTitle("z (mm)");
+        histogram_z->GetYaxis()->SetTitle("z (mm)");
     } else if(project == 'y') {
-        y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
-            config_.get<double>("output_plots_projection_percentage", 0.5) * model->getSensorSize().y();
+        y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.y();
+        histogram->GetXaxis()->SetTitle("x (mm)");
+        histogram_x->GetXaxis()->SetTitle("x (mm)");
+        histogram_y->GetXaxis()->SetTitle("x (mm)");
+        histogram_z->GetXaxis()->SetTitle("x (mm)");
+        histogram->GetYaxis()->SetTitle("z (mm)");
+        histogram_x->GetYaxis()->SetTitle("z (mm)");
+        histogram_y->GetYaxis()->SetTitle("z (mm)");
+        histogram_z->GetYaxis()->SetTitle("z (mm)");
     } else {
-        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * (z_max - z_min);
+        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * size.z();
+        histogram->GetXaxis()->SetTitle("x (mm)");
+        histogram_x->GetXaxis()->SetTitle("x (mm)");
+        histogram_y->GetXaxis()->SetTitle("x (mm)");
+        histogram_z->GetXaxis()->SetTitle("x (mm)");
+        histogram->GetYaxis()->SetTitle("y (mm)");
+        histogram_x->GetYaxis()->SetTitle("y (mm)");
+        histogram_y->GetYaxis()->SetTitle("y (mm)");
+        histogram_z->GetYaxis()->SetTitle("y (mm)");
     }
 
     // set z axis tile
@@ -411,50 +432,23 @@ void ElectricFieldReaderModule::create_output_plots() {
     histogram_x->GetZaxis()->SetTitle("field (V/cm)");
     histogram_y->GetZaxis()->SetTitle("field (V/cm)");
     histogram_z->GetZaxis()->SetTitle("field (V/cm)");
-    // Find the electric field at every index
+
+    // Find the electric field at every index, scan axes in local coordinates!
     for(size_t j = 0; j < steps; ++j) {
         if(project == 'x') {
-            y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
-                ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
-            histogram->GetXaxis()->SetTitle("y (mm)");
-            histogram_x->GetXaxis()->SetTitle("y (mm)");
-            histogram_y->GetXaxis()->SetTitle("y (mm)");
-            histogram_z->GetXaxis()->SetTitle("y (mm)");
+            y = center.y() - size.y() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.y();
         } else if(project == 'y') {
-            x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
-                ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
-            histogram->GetXaxis()->SetTitle("x (mm)");
-            histogram_x->GetXaxis()->SetTitle("x (mm)");
-            histogram_y->GetXaxis()->SetTitle("x (mm)");
-            histogram_z->GetXaxis()->SetTitle("x (mm)");
+            x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         } else {
-            x = model->getSensorCenter().x() - model->getSensorSize().x() / 2.0 +
-                ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().x();
-            histogram->GetXaxis()->SetTitle("x (mm)");
-            histogram_x->GetXaxis()->SetTitle("x (mm)");
-            histogram_y->GetXaxis()->SetTitle("x (mm)");
-            histogram_z->GetXaxis()->SetTitle("x (mm)");
+            x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         }
         for(size_t k = 0; k < steps; ++k) {
             if(project == 'x') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
-                histogram->GetYaxis()->SetTitle("z (mm)");
-                histogram_x->GetYaxis()->SetTitle("z (mm)");
-                histogram_y->GetYaxis()->SetTitle("z (mm)");
-                histogram_z->GetYaxis()->SetTitle("z (mm)");
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
             } else if(project == 'y') {
-                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
-                histogram->GetYaxis()->SetTitle("z (mm)");
-                histogram_x->GetYaxis()->SetTitle("z (mm)");
-                histogram_y->GetYaxis()->SetTitle("z (mm)");
-                histogram_z->GetYaxis()->SetTitle("z (mm)");
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
             } else {
-                y = model->getSensorCenter().y() - model->getSensorSize().y() / 2.0 +
-                    ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * model->getSensorSize().y();
-                histogram->GetYaxis()->SetTitle("y (mm)");
-                histogram_x->GetYaxis()->SetTitle("y (mm)");
-                histogram_y->GetYaxis()->SetTitle("y (mm)");
-                histogram_z->GetYaxis()->SetTitle("y (mm)");
+                y = center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
             }
 
             // Get field strength from detector - directly convert to double to fill root histograms
