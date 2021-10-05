@@ -51,14 +51,29 @@ namespace allpix {
     template <typename T, size_t N>
     T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z) const {
 
+        // Do we need to flip the position component?
+        auto flip_x = (dist.x() > 0 && (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
+                                        mapping_ == FieldMapping::HALF_LEFT)) ||
+                      (dist.x() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_IV ||
+                                        mapping_ == FieldMapping::HALF_RIGHT));
+        auto flip_y = (dist.y() > 0 && (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
+                                        mapping_ == FieldMapping::HALF_BOTTOM)) ||
+                      (dist.y() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
+                                        mapping_ == FieldMapping::HALF_TOP));
+
+        auto fx = std::abs(dist.x()) * (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
+                                                mapping_ == FieldMapping::HALF_LEFT
+                                            ? -1.
+                                            : 1.);
+        auto fy = std::abs(dist.y()) * (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
+                                                mapping_ == FieldMapping::HALF_BOTTOM
+                                            ? -1.
+                                            : 1.);
+
         auto pitch = model_->getPixelSize();
         // Fold onto available field scale - flip coordinates if necessary
-        double x = (mapping_ == FieldMapping::HALF_X || mapping_ == FieldMapping::QUARTER
-                        ? 2 * (-std::abs(dist.x()) / pitch.x() + 0.5)
-                        : (dist.x() / pitch.x() + 0.5));
-        double y = (mapping_ == FieldMapping::HALF_Y || mapping_ == FieldMapping::QUARTER
-                        ? 2 * (-std::abs(dist.y()) / pitch.y() + 0.5)
-                        : (dist.y() / pitch.y() + 0.5));
+        double x = (fx / pitch.x() + 0.5);
+        double y = (fy / pitch.y() + 0.5);
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
@@ -87,9 +102,8 @@ namespace allpix {
 
         // Retrieve field
         auto field_vector = get_impl(tot_ind, std::make_index_sequence<N>{});
-        flip_vector_components(field_vector,
-                               (dist.x() > 0) && (mapping_ == FieldMapping::HALF_X || mapping_ == FieldMapping::QUARTER),
-                               (dist.y() > 0) && (mapping_ == FieldMapping::HALF_Y || mapping_ == FieldMapping::QUARTER));
+        // Flip sign of vector components if necessary
+        flip_vector_components(field_vector, flip_x, flip_y);
         return field_vector;
     }
 
