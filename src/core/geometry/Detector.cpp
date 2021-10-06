@@ -154,14 +154,13 @@ FieldType Detector::getElectricFieldType() const {
  * @throws std::invalid_argument If the electric field dimensions are incorrect or the thickness domain is outside the sensor
  */
 void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
-                                    std::array<size_t, 3> dimensions,
+                                    std::array<size_t, 3> bins,
                                     std::array<double, 3> size,
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
-                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
-    electric_field_.setGrid(field, dimensions, mapping, scales, offset, thickness_domain);
+    electric_field_.setGrid(field, bins, mapping, scales, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -198,14 +197,13 @@ FieldType Detector::getWeightingPotentialType() const {
  * sensor
  */
 void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
-                                         std::array<size_t, 3> dimensions,
+                                         std::array<size_t, 3> bins,
                                          std::array<double, 3> size,
                                          FieldMapping mapping,
                                          std::array<double, 2> scales,
-                                         std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
-    weighting_potential_.setGrid(potential, dimensions, mapping, scales, offset, thickness_domain);
+    weighting_potential_.setGrid(potential, bins, mapping, scales, thickness_domain);
 }
 
 void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
@@ -263,14 +261,13 @@ FieldType Detector::getDopingProfileType() const {
  * each position (x, y, z) has one index, calculated as x*Y_SIZE*Z_SIZE+y*Z_SIZE+z
  */
 void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
-                                    std::array<size_t, 3> dimensions,
+                                    std::array<size_t, 3> bins,
                                     std::array<double, 3> size,
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
-                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, scales, thickness_domain);
-    doping_profile_.setGrid(std::move(field), dimensions, mapping, scales, offset, thickness_domain);
+    doping_profile_.setGrid(std::move(field), bins, mapping, scales, thickness_domain);
 }
 
 void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {

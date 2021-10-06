@@ -87,27 +87,27 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (dimensions_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(dimensions_[0]))));
-        auto y_ind = (dimensions_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(dimensions_[1]))));
-        auto z_ind = static_cast<int>(std::floor(static_cast<double>(dimensions_[2]) * (dist.z() - thickness_domain_.first) /
+        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(bins_[0]))));
+        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(bins_[1]))));
+        auto z_ind = static_cast<int>(std::floor(static_cast<double>(bins_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
 
         // Check for indices within the field map
-        if(x_ind < 0 || x_ind >= static_cast<int>(dimensions_[0]) || y_ind < 0 ||
-           y_ind >= static_cast<int>(dimensions_[1])) {
+        if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0]) || y_ind < 0 ||
+           y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
 
         // Check if we need to extrapolate along the z axis:
         if(extrapolate_z) {
-            z_ind = std::clamp(z_ind, 0, static_cast<int>(dimensions_[2]) - 1);
-        } else if(z_ind < 0 || z_ind >= static_cast<int>(dimensions_[2])) {
+            z_ind = std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1);
+        } else if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
             return {};
         }
 
         // Compute total index
-        size_t tot_ind = static_cast<size_t>(x_ind) * dimensions_[1] * dimensions_[2] * N +
-                         static_cast<size_t>(y_ind) * dimensions_[2] * N + static_cast<size_t>(z_ind) * N;
+        size_t tot_ind = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N +
+                         static_cast<size_t>(y_ind) * bins_[2] * N + static_cast<size_t>(z_ind) * N;
 
         // Retrieve field
         auto field_vector = get_impl(tot_ind, std::make_index_sequence<N>{});
@@ -168,11 +168,11 @@ namespace allpix {
     template <typename T, size_t N> FieldType DetectorField<T, N>::getType() const { return type_; }
 
     /**
-     * @throws std::invalid_argument If the field dimensions are incorrect or the thickness domain is outside the sensor
+     * @throws std::invalid_argument If the field bins are incorrect or the thickness domain is outside the sensor
      */
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field, // NOLINT
-                                      std::array<size_t, 3> dimensions,
+                                      std::array<size_t, 3> bins,
                                       FieldMapping mapping,
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
@@ -180,7 +180,7 @@ namespace allpix {
         if(model_ == nullptr) {
             throw std::invalid_argument("field not initialized with detector model parameters");
         }
-        if(dimensions[0] * dimensions[1] * dimensions[2] * N != field->size()) {
+        if(bins[0] * bins[1] * bins[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given dimensions");
         }
         if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
@@ -192,7 +192,7 @@ namespace allpix {
         }
 
         field_ = std::move(field);
-        dimensions_ = dimensions;
+        bins_ = bins;
         mapping_ = mapping;
         scales_ = scales;
         offset_ = offset;

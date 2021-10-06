@@ -86,7 +86,7 @@ namespace allpix {
          * @brief Check if the field is valid and either a field grid or a field function is configured
          * @return Boolean indicating field validity
          */
-        bool isValid() const { return function_ || (dimensions_[0] != 0 && dimensions_[1] != 0 && dimensions_[2] != 0); };
+        bool isValid() const { return function_ || (bins_[0] != 0 && bins_[1] != 0 && bins_[2] != 0); };
 
         /**
          * @brief Return the type of field
@@ -116,16 +116,14 @@ namespace allpix {
         /**
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
-         * @param dimensions The dimensions of the flat field array
+         * @param bins The bins of the flat field array
          * @param mapping Indicator of the actual physical extent of the field in each direction
-         * @param offset Offset of the field in x and y, given in physical units
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
-                     std::array<size_t, 3> dimensions,
+                     std::array<size_t, 3> bins,
                      FieldMapping mapping,
                      std::array<double, 2> scales,
-                     std::array<double, 2> offset,
                      std::pair<double, double> thickness_domain);
         /**
          * @brief Set the field in the detector using a function
@@ -161,15 +159,13 @@ namespace allpix {
 
         /**
          * Field properties
-         * * Dimensions of the field map (bins in x, y, z)
+         * * bins of the field map (bins in x, y, z)
+         * * Mapping of the field onto the pixel cell
          * * Scale of the field in x and y direction, defaults to one full pixel cell
-         * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
-         *   Values provided as absolute shifts in um.
          */
-        std::array<size_t, 3> dimensions_{};
+        std::array<size_t, 3> bins_{};
         FieldMapping mapping_{FieldMapping::FULL};
         std::array<double, 2> scales_{{1., 1.}};
-        std::array<double_t, 2> offset_{{0., 0.}};
 
         /**
          * Field definition
