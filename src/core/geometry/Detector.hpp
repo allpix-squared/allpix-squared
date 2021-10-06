@@ -124,6 +124,7 @@ namespace allpix {
          * @param field Flat array of the field vectors (see detailed description)
          * @param bins The dimensions of the flat electric field array
          * @param size Size of the electric field along the three dimensions of the field map
+         * @param mapping Specification of the mapping of the field onto the pixel plane
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
@@ -165,6 +166,7 @@ namespace allpix {
          * @param field Flat array of the field (see detailed description)
          * @param bins The dimensions of the flat doping profile array
          * @param size Size of the doping profile along the three dimensions of the field map
+         * @param mapping Specification of the mapping of the field onto the pixel plane
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the profile holds
          */
@@ -205,6 +207,7 @@ namespace allpix {
          * @param potential Flat array of the potential vectors (see detailed description)
          * @param bins The dimensions of the flat weighting potential array
          * @param size Size of the weighting potential along the three dimensions of the field map
+         * @param mapping Specification of the mapping of the field onto the pixel plane
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */

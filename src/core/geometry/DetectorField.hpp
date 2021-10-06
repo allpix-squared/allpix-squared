@@ -117,7 +117,8 @@ namespace allpix {
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
          * @param bins The bins of the flat field array
-         * @param mapping Indicator of the actual physical extent of the field in each direction
+         * @param mapping Specification of the mapping of the field onto the pixel plane
+         * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
