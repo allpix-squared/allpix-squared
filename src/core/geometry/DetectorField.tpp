@@ -51,7 +51,7 @@ namespace allpix {
     template <typename T, size_t N>
     T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z) const {
 
-        // Do we need to flip the position component?
+        // Do we need to flip the position vector components?
         auto flip_x = (dist.x() > 0 && (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
                                         mapping_ == FieldMapping::HALF_LEFT)) ||
                       (dist.x() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_IV ||
@@ -61,19 +61,28 @@ namespace allpix {
                       (dist.y() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
                                         mapping_ == FieldMapping::HALF_TOP));
 
-        auto fx = std::abs(dist.x()) * (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
-                                                mapping_ == FieldMapping::HALF_LEFT
-                                            ? -1.
-                                            : 1.);
-        auto fy = std::abs(dist.y()) * (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
-                                                mapping_ == FieldMapping::HALF_BOTTOM
-                                            ? -1.
-                                            : 1.);
 
         auto pitch = model_->getPixelSize();
-        // Fold onto available field scale - flip coordinates if necessary
-        double x = (fx / pitch.x() + 0.5);
-        double y = (fy / pitch.y() + 0.5);
+
+        // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
+        double x, y;
+        if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
+           mapping_ == FieldMapping::HALF_LEFT) {
+            x = (flip_x ? -1.0 : 1.0) * (dist.x() / scales_[0] / pitch.x()) + 1.0;
+        } else if(mapping_ == FieldMapping::FULL) {
+            x = (dist.x() / scales_[1] / pitch.x()) + 0.5;
+        } else {
+            x = (flip_x ? -1.0 : 1.0) * (dist.x() / scales_[0] / pitch.x());
+        }
+
+        if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
+           mapping_ == FieldMapping::HALF_BOTTOM) {
+            y = (flip_y ? -1.0 : 1.0) * (dist.y() / scales_[1] / pitch.y()) + 1.0;
+        } else if(mapping_ == FieldMapping::FULL) {
+            y = (dist.y() / scales_[1] / pitch.y()) + 0.5;
+        } else {
+            y = (flip_y ? -1.0 : 1.0) * (dist.y() / scales_[1] / pitch.y());
+        }
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
