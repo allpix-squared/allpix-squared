@@ -10,6 +10,26 @@
  */
 
 namespace allpix {
+
+    /**
+     * Get field relative to the center of the pixel the point is contained in.
+     * Outside of the sensor the field is strictly zero by definition.
+     */
+    template <typename T, size_t N>
+    T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos, const bool extrapolate_z) const {
+
+        // Calculate current pixel index its center as reference point:
+        auto [px, py] = model_->getPixelIndex(pos);
+        if(!model_->isWithinPixelGrid(px, py)) {
+            return {};
+        }
+        auto ref = static_cast<ROOT::Math::XYPoint>(
+            model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py)));
+
+        // Get field relative to pixel center:
+        return getRelativeTo(pos, ref, extrapolate_z);
+    }
+
     /**
      * Get a value from the field assigned to a specific pixel. This means, we cannot wrap around at the pixel edges and
      * start using the field of the adjacent pixel, but need to calculate the total distance from the lookup point in local
@@ -108,38 +128,6 @@ namespace allpix {
         // Flip sign of vector components if necessary
         flip_vector_components(field_vector, flip_x, flip_y);
         return field_vector;
-    }
-
-    /**
-     * The field is replicated for all pixels and uses flipping at each boundary (edge effects are currently not modeled.
-     * Outside of the sensor the field is strictly zero by definition.
-     */
-    template <typename T, size_t N>
-    T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos, const bool extrapolate_z) const {
-
-        // FIXME: We need to revisit this to be faster and not too specific
-        if(type_ == FieldType::NONE) {
-            return {};
-        }
-
-        // Calculate which current pixel index and distance to its center:
-        auto [px, py] = model_->getPixelIndex(pos);
-        auto distance = pos - model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py));
-
-        // Compute using the grid or a function depending on the setting
-        if(type_ == FieldType::GRID) {
-            return get_field_from_grid(static_cast<ROOT::Math::XYZPoint>(distance), extrapolate_z);
-        } else {
-            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-            if(extrapolate_z) {
-                distance.SetZ(std::clamp(distance.z(), thickness_domain_.first, thickness_domain_.second));
-            } else if(distance.z() < thickness_domain_.first || thickness_domain_.second < distance.z()) {
-                return {};
-            }
-
-            // Calculate the field from the configured function:
-            return function_(static_cast<ROOT::Math::XYZPoint>(distance));
-        }
     }
 
     /**
