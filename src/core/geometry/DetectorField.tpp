@@ -63,23 +63,21 @@ namespace allpix {
 
 
         // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
-        double x, y;
+        auto x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0];
+        auto y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1];
+
         if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
            mapping_ == FieldMapping::HALF_LEFT) {
-            x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0] + 1.0;
+            x += 1.0;
         } else if(mapping_ == FieldMapping::FULL) {
-            x = dist.x() * normalization_[0] + 0.5;
-        } else {
-            x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0];
+            x += 0.5;
         }
 
         if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
            mapping_ == FieldMapping::HALF_BOTTOM) {
-            y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1] + 1.0;
+            y += 1.0;
         } else if(mapping_ == FieldMapping::FULL) {
-            y = dist.y() * normalization_[1] + 0.5;
-        } else {
-            y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1];
+            y += 0.5;
         }
 
         // Compute indices
@@ -91,8 +89,7 @@ namespace allpix {
                                                  (thickness_domain_.second - thickness_domain_.first)));
 
         // Check for indices within the field map
-        if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0]) || y_ind < 0 ||
-           y_ind >= static_cast<int>(bins_[1])) {
+        if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0]) || y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
 
@@ -104,8 +101,8 @@ namespace allpix {
         }
 
         // Compute total index
-        size_t tot_ind = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N +
-                         static_cast<size_t>(y_ind) * bins_[2] * N + static_cast<size_t>(z_ind) * N;
+        size_t tot_ind = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
+                         static_cast<size_t>(z_ind) * N;
 
         // Retrieve field
         auto field_vector = get_impl(tot_ind, std::make_index_sequence<N>{});
