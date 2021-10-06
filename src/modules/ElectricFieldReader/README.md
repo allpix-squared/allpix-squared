@@ -85,16 +85,9 @@ be enabled and controlled with the plotting parameter slisted below.
 - `maximum_field` : Value of the electric field at the electrode.
 
 ### Parameters for model `mesh`
-- `file_name` : Location of file containing the meshed electric field data.
-- `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for
-  fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting
-  this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single
-  cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`.
-- `field_offset`: Offset of the field from the pixel edge in x- and y-direction. By default, the framework assumes that the
-  provided electric field starts at the edge of the pixel, i.e. with an offset of `0.0`. With this parameter, the field can
-  be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
-  In this case, a parameter of `0.5 0.5` should be used. The shift is applied in positive direction of the respective
-  coordinate.
+* `file_name` : Location of file containing the meshed electric field data.
+* `field_mapping`: Description of the mapping of the field onto the pixel cell. Possible values are `FULL`, indicating that the map spans the full 2D plane and the field is centered around the pixel center, `HALF_TOP` or `HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `QUADRANT_I`, `QUADRANT_II`, `QUADRANT_III`, `QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel plane.
+* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`.
 
 ### Parameters for model `custom`
 - `field_functions` : Single equation (for a field vector along the `z` axis only) or array of three equations (for the three

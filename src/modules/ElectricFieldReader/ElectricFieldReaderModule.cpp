@@ -68,14 +68,21 @@ void ElectricFieldReaderModule::initialize() {
 
     // Calculate the field depending on the configuration
     if(field_model == ElectricField::MESH) {
-        // Read the field scales from the configuration, defaulting to the full pixel cell:
+        // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
+        auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+        // FIXME Add sanity checks for scales here
+        LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
+        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+
+        // Read field mapping from configuration
         auto field_mapping = config_.get<FieldMapping>("field_mapping");
+        LOG(DEBUG) << "Electric field maps to " << magic_enum::enum_name(field_mapping);
         auto field_data = read_field();
         detector_->setElectricFieldGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
                                         field_mapping,
-                                        {{1., 1.}},
+                                        field_scale,
                                         thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
