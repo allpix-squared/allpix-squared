@@ -57,7 +57,6 @@ void WeightingPotentialReaderModule::initialize() {
                                              field_data.getSize(),
                                              std::array<double, 2>{{field_data.getSize()[0] / model->getPixelSize().x(),
                                                                     field_data.getSize()[1] / model->getPixelSize().y()}},
-                                             std::array<double, 2>{{0, 0}},
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";

@@ -69,27 +69,13 @@ void ElectricFieldReaderModule::initialize() {
     // Calculate the field depending on the configuration
     if(field_model == ElectricField::MESH) {
         // Read the field scales from the configuration, defaulting to the full pixel cell:
-        auto field_mapping = config_.get<FieldMapping>("field_mapping", {FieldMapping::FULL});
-
-        // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
-        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
-        if(offset.x() > 1.0 || offset.y() > 1.0) {
-            throw InvalidValueError(
-                config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
-        }
-        if(offset.x() < 0.0 || offset.y() < 0.0) {
-            throw InvalidValueError(config_, "field_offset", "offsets for the electric field have to be positive");
-        }
-        LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
-        std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
-
+        auto field_mapping = config_.get<FieldMapping>("field_mapping");
         auto field_data = read_field();
         detector_->setElectricFieldGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
                                         field_mapping,
                                         {{1., 1.}},
-                                        field_offset,
                                         thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
