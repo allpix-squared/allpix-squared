@@ -165,7 +165,7 @@ namespace allpix {
          */
         std::array<size_t, 3> bins_{};
         FieldMapping mapping_{FieldMapping::FULL};
-        std::array<double, 2> scales_{{1., 1.}};
+        std::array<double, 2> normalization_{{1., 1.}};
 
         /**
          * Field definition

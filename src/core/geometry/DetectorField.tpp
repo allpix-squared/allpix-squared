@@ -62,26 +62,24 @@ namespace allpix {
                                         mapping_ == FieldMapping::HALF_TOP));
 
 
-        auto pitch = model_->getPixelSize();
-
         // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
         double x, y;
         if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
            mapping_ == FieldMapping::HALF_LEFT) {
-            x = (flip_x ? -1.0 : 1.0) * (dist.x() / scales_[0] / pitch.x()) + 1.0;
+            x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0] + 1.0;
         } else if(mapping_ == FieldMapping::FULL) {
-            x = (dist.x() / scales_[1] / pitch.x()) + 0.5;
+            x = dist.x() * normalization_[0] + 0.5;
         } else {
-            x = (flip_x ? -1.0 : 1.0) * (dist.x() / scales_[0] / pitch.x());
+            x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0];
         }
 
         if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
            mapping_ == FieldMapping::HALF_BOTTOM) {
-            y = (flip_y ? -1.0 : 1.0) * (dist.y() / scales_[1] / pitch.y()) + 1.0;
+            y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1] + 1.0;
         } else if(mapping_ == FieldMapping::FULL) {
-            y = (dist.y() / scales_[1] / pitch.y()) + 0.5;
+            y = dist.y() * normalization_[1] + 0.5;
         } else {
-            y = (flip_y ? -1.0 : 1.0) * (dist.y() / scales_[1] / pitch.y());
+            y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1];
         }
 
         // Compute indices
@@ -128,26 +126,24 @@ namespace allpix {
             return {};
         }
 
-        // Calculate which pixel we are in and the pixel center:
-        auto [px, py] = model_->getPixelIndex(pos);
-        auto pxpos = model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py));
 
-        // Calculate difference, add offset:
-        auto diff = pos - pxpos + ROOT::Math::XYZVector(offset_[0], offset_[1], 0);
+        // Calculate which current pixel index and distance to its center:
+        auto [px, py] = model_->getPixelIndex(pos);
+        auto distance = pos - model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py));
 
         // Compute using the grid or a function depending on the setting
         if(type_ == FieldType::GRID) {
-            return get_field_from_grid(static_cast<ROOT::Math::XYZPoint>(diff), extrapolate_z);
+            return get_field_from_grid(static_cast<ROOT::Math::XYZPoint>(distance), extrapolate_z);
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
-                diff.SetZ(std::clamp(diff.z(), thickness_domain_.first, thickness_domain_.second));
-            } else if(diff.z() < thickness_domain_.first || thickness_domain_.second < diff.z()) {
+                distance.SetZ(std::clamp(distance.z(), thickness_domain_.first, thickness_domain_.second));
+            } else if(distance.z() < thickness_domain_.first || thickness_domain_.second < distance.z()) {
                 return {};
             }
 
             // Calculate the field from the configured function:
-            return function_(static_cast<ROOT::Math::XYZPoint>(diff));
+            return function_(static_cast<ROOT::Math::XYZPoint>(distance));
         }
     }
 
@@ -175,7 +171,6 @@ namespace allpix {
                                       std::array<size_t, 3> bins,
                                       FieldMapping mapping,
                                       std::array<double, 2> scales,
-                                      std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
         if(model_ == nullptr) {
             throw std::invalid_argument("field not initialized with detector model parameters");
@@ -194,8 +189,11 @@ namespace allpix {
         field_ = std::move(field);
         bins_ = bins;
         mapping_ = mapping;
-        scales_ = scales;
-        offset_ = offset;
+
+        // Calculate normalization of field sizes from pitch and scales:
+        auto pitch = model_->getPixelSize();
+        normalization_[0] = 1.0 / scales[0] / pitch.x();
+        normalization_[1] = 1.0 / scales[1] / pitch.y();
 
         thickness_domain_ = std::move(thickness_domain);
         type_ = FieldType::GRID;
