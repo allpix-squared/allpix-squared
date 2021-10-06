@@ -99,6 +99,12 @@ namespace allpix {
             y += 0.5;
         }
 
+        // Shuffle quadrants for inverted maps
+        if(mapping_ == FieldMapping::FULL_INVERSE) {
+            x += (dist.x() > 0 ? 0. : 1.0);
+            y += (dist.y() > 0 ? 0. : 1.0);
+        }
+
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero

@@ -42,7 +42,8 @@ namespace allpix {
      * @brief Type of field maps
      */
     enum class FieldMapping {
-        FULL = 0,     ///< The field map spans the full volume
+        FULL = 0,     ///< The field map spans the full pixel plane
+        FULL_INVERSE, ///< The field map spans the full pixel plane, but pixel centers are at field corners
         HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
         HALF_RIGHT,   ///< The field map spans the right half of the volume and is mirrored along x
         HALF_TOP,     ///< The field map spans the top half of the volume and is mirrored along y
