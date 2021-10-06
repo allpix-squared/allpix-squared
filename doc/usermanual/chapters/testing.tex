@@ -172,7 +172,7 @@ This job requires a private API token to be set as secret project variable throu
 
 The project documentation is deployed to the project's EOS space at \dir{/eos/project/a/allpix-squared/www/} for publication on the project website.
 This comprises both the PDF and HTML versions of the user manual (subdirectory \dir{usermanual}) as well as the Doxygen code reference (subdirectory \dir{reference/}).
-The documentation is only published only for new tagged versions of the framework.
+The documentation is only published for new tagged versions of the framework.
 
 The CI jobs uses the \parameter{ci-web-deployer} Docker image from the CERN GitLab CI tools to access EOS, which requires a specific file structure of the artifact.
 All files in the artifact's \dir{public/} folder will be published to the \dir{www/} folder of the given project.
