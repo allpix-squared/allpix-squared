@@ -61,7 +61,6 @@ namespace allpix {
                       (dist.y() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
                                         mapping_ == FieldMapping::HALF_TOP));
 
-
         // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
         auto x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0];
         auto y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1];
@@ -122,7 +121,6 @@ namespace allpix {
         if(type_ == FieldType::NONE) {
             return {};
         }
-
 
         // Calculate which current pixel index and distance to its center:
         auto [px, py] = model_->getPixelIndex(pos);
