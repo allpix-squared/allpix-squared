@@ -83,7 +83,8 @@ adaptive TCAD mesh has to be interpolated and transformed into a regular grid wi
 Allpix Squared comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field,
 and writes this out in an appropriate format. A more detailed description of the tool can be found in
 [Section 13.2](../13_additional/mesh_converter.md). An example electric field can be found in the repository \[[@ap2-repo]\]
-at `etc/example_electric_field.init`.
+at `etc/example_electric_field.init`. A detailed description of supported field geometries and their mapping onto the sensor
+plane is provided in [Section 13.2](../04_framework/06_fieldmaps.md).
 
 Electric fields can be attached to a specific detector using the
 standard syntax for detector binding. A possible configuration would be:
