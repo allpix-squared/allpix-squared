@@ -54,7 +54,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
-	
+
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
     config_.setDefault<std::string>("multiplication_model", "none");
@@ -248,7 +248,7 @@ void TransientPropagationModule::run(Event* event) {
             }
 
             if(output_plots_) {
-                drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), static_cast<unsigned int>(charge_per_step * gain));
+                drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")),
                 group_size_histo_->Fill(charge_per_step);
             }
         }
