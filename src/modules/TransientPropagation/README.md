@@ -13,7 +13,7 @@ module_ouput: "PropagatedCharge"
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled via the `charge_per_step` parameter. The maximum number of charge groups to be propagated for a single deposit position can be controlled via the `max_charge_groups` parameter.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
-Impact ionisation is implemented via either the Massey model [@massey] or the extended van Overstraeten - de Man Model model that is implemented in Sentaurus TCAD [@overstraeten]. Impact ionisation is switched off by default.
+This module implements charge multiplication by impact ionization. The multiplication model can be chosen using the `multiplication_model` parameter, the list of available models can be found in the user manual. By default, the model defaults to `none` and impact ionization is switched off, generating unity gain.
 
 A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
@@ -53,9 +53,9 @@ The module can produces a variety of plots such as total integrated charge plots
 * `integration_time`: Time within which charge carriers are propagated. After exceeding this time, no further propagation is performed for the respective carriers. Defaults to the LHC bunch crossing time of 25ns.
 * `distance`: Maximum distance of pixels to be considered for current induction, calculated from the pixel the charge carrier under investigation is below. A distance of `1` for example means that the induced current for the closest pixel plus all neighbors is calculated. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, a 3x3 grid (9 pixels, distance 1) should suffice since the weighting potential at a distance of more than one pixel pitch often is small enough to be neglected while the simulation time is almost tripled for `distance = 2` (5x5 grid, 25 pixels).
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
+* `multiplication_model`: Model used to calculate impact ionization parameters and charge multiplication. Defaults to `none` which corresponds to unity gain, a list of available models can be found in the documentation.
+* `multiplication_threshold`: Threshold field above which charge multiplication is calculated. Defaults to `100kV/cm`.
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
-* `multiplication_model`: Model used to calculate impact ionisation parameters. Possible values are `massey` and `overstraeten`. Defaults to `none`.
-* `multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to `100kV/cm`.
 
 
 ## Usage
@@ -70,5 +70,3 @@ timestep = 0.02ns
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757
-[@massey]: https://ieeexplore.ieee.org/document/1677871
-[@overstraeten]: http://www.sentaurus.dsod.pl/manuals/data/sdevice_ug.pdf
