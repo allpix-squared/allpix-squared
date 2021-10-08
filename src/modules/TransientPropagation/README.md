@@ -54,9 +54,8 @@ The module can produces a variety of plots such as total integrated charge plots
 * `distance`: Maximum distance of pixels to be considered for current induction, calculated from the pixel the charge carrier under investigation is below. A distance of `1` for example means that the induced current for the closest pixel plus all neighbors is calculated. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, a 3x3 grid (9 pixels, distance 1) should suffice since the weighting potential at a distance of more than one pixel pitch often is small enough to be neglected while the simulation time is almost tripled for `distance = 2` (5x5 grid, 25 pixels).
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
-* `enable_charge_multiplication`: Enables charge multiplication. Defaults to false.
-* `charge_multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to 1e-2 MV mm^-1 (corresponds to 100 kV cm^-1).
-* `charge_multiplication_model`: Model used to calculate impact ionisation parameters. Possible values are 'massey' and 'overstraeten'. Defaults to 'massey'.
+* `multiplication_model`: Model used to calculate impact ionisation parameters. Possible values are `massey` and `overstraeten`. Defaults to `none`.
+* `multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to `100kV/cm`.
 
 
 ## Usage

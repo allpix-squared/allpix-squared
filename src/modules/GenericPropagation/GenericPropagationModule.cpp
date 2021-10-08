@@ -104,7 +104,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<std::string>("multiplication_model", "none");
-    config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
+    config_.setDefault<double>("multiplication_threshold", 1e-2);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -113,7 +113,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     timestep_start_ = config_.get<double>("timestep_start");
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
-    threshold_field_ = config_.get<double>("charge_multiplication_threshold");
+    threshold_field_ = config_.get<double>("multiplication_threshold");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");

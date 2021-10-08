@@ -60,7 +60,7 @@ This module requires an installation of Eigen3.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 * `multiplication_model`: Model used to calculate impact ionisation parameters. Possible values are `massey` and `overstraeten`. Defaults to `none`.
-* `charge_multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to `100kV/cm`.
+* `multiplication_threshold`: Threshold field below which charge multiplication is ignored to speed up the propagation. Defaults to `100kV/cm`.
 
 ## Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.

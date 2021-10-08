@@ -56,7 +56,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
     // Set defaults for charge carrier multiplication
-    config_.setDefault<double>("charge_multiplication_threshold", 1e-2);
+    config_.setDefault<double>("multiplication_threshold", 1e-2);
     config_.setDefault<std::string>("multiplication_model", "none");
 
     // Copy some variables from configuration to avoid lookups:
@@ -66,7 +66,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
-    threshold_field_ = config_.get<double>("charge_multiplication_threshold");
+    threshold_field_ = config_.get<double>("multiplication_threshold");
 
     output_plots_ = config_.get<bool>("output_plots");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
@@ -249,6 +249,7 @@ void TransientPropagationModule::run(Event* event) {
 
             if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")),
+                                        static_cast<unsigned int>(charge_per_step * gain));
                 group_size_histo_->Fill(charge_per_step);
             }
         }
