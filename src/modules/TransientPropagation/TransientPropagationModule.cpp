@@ -282,8 +282,8 @@ TransientPropagationModule::propagate(Event* event,
                                       std::map<Pixel::Index, Pulse>& pixel_map) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
-    // Initialise gain
-    double gain = 1;
+    // Initialize gain
+    double gain = 1.;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
@@ -385,11 +385,9 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Apply multiplication step, fully deterministic from local efield and step length
-        double step_length = step.value.norm();
-        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step_length);
-
+        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step.value.norm());
         LOG(DEBUG) << "Calculated gain of " << gain << " for field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
-                   << " and step of " << Units::display(step_length, {"um", "nm"});
+                   << " and step of " << Units::display(step.value.norm(), {"um", "nm"});
 
         // Update step length histogram
         if(output_plots_) {

@@ -58,7 +58,7 @@ namespace allpix {
      * @brief No multiplication
      *
      */
-    class None : virtual public ImpactIonizationModel {
+    class NoImpactIonization : virtual public ImpactIonizationModel {
     public:
         double operator()(const CarrierType&, double, double, double) const override { return 1.; };
 
@@ -242,7 +242,7 @@ namespace allpix {
                 model_ = std::make_unique<Bologna>(temperature);
             } else if(model == "none") {
                 LOG(INFO) << "No impact ionization model chosen, charge multiplication not simulated";
-                model_ = std::make_unique<None>();
+                model_ = std::make_unique<NoImpactIonization>();
             } else {
                 throw InvalidModelError(model);
             }

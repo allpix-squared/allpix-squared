@@ -764,8 +764,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
-    // Initialise gain
-    double gain = 1;
+    // Initialize gain
+    double gain = 1.;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping_concentration, double timestep) -> Eigen::Vector3d {
@@ -890,18 +890,20 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
                    << ", state: " << allpix::to_string(state);
-        // Adapt step size to match target precision
-        double uncertainty = step.error.norm();
-        double step_length = step.value.norm();
 
         // Apply multiplication step, fully deterministic from local efield and step length
-        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step_length);
+        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step.value.norm());
+        LOG(DEBUG) << "Calculated gain of " << gain << " for field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
+                   << " and step of " << Units::display(step.value.norm(), {"um", "nm"});
 
         // Update step length histogram
         if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
             uncertainty_histo_->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
         }
+
+        // Adapt step size to match target precision
+        double uncertainty = step.error.norm();
 
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
