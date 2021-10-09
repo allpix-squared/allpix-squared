@@ -142,6 +142,54 @@ This model can be selected in the configuration file via the parameter \paramete
 \subsection{Bologna Model}
 \label{sec:multi:bologna}
 
-The Bologna model~\cite{bologna}
+The Bologna model~\cite{bologna} describes impact ionization for experimental data in an electric field range from \SI{130}{kV/cm} to \SI{230}{kV/cm} and temperatures up to \SI{400}{\celsius}.
+The impact ionization coefficient takes a different form than the previous models and is given by
+\begin{equation}
+    \label{eq:multi:bologna}
+    \alpha (E, T) = \frac{E}{a(T) + b(T) e^{d(T) / \left(E + c(T) \right)}},
+\end{equation}
+for both electrons and holes.
+The temperature-dependent parameters $a(T), b(T), c(T)$ and $d(T)$ are defined as:
+\begin{equation}
+    \begin{split}
+        a(T) &= a_{0} + a_1 T^{a_2}\\
+        b(T) &= b_{0} e^{b_1 T}\\
+        c(T) &= c_{0} + c_1 T^{c_2} + c_3 T^{2}\\
+        d(T) &= d_{0} + d_1 T + d_2 T^{2}
+    \end{split}
+\end{equation}
+
+The parameter values implemented in \apsq are taken from Table~1 of~\cite{bologna} as:
+\begin{equation*}
+    \begin{split}
+        a_{0, e} &= \SI{4.3383}{V}\\
+        a_{1, e} &= \SI{-2.42e-12}{V}\\
+        a_{2, e} &= \num{4.1233}\\
+        b_{0, e} &= \SI{0.235}{V}\\
+        b_{1, e} &= 0\\
+        c_{0, e} &= \SI{1.6831e4}{V/cm}\\
+        c_{1, e} &= \SI{4.3796}{V/cm}\\
+        c_{2, e} &= 1\\
+        c_{3, e} &= \SI{0.13005}{V/cm}\\
+        d_{0, e} &= \SI{1.2337e6}{V/cm}\\
+        d_{1, e} &= \SI{1.2039e3}{V/cm}\\
+        d_{2, e} &= \SI{0.56703}{V/cm}\\
+    \end{split}
+    \qquad
+    \begin{split}
+        a_{0, h} &= \SI{2.376}{V}\\
+        a_{1, h} &= \SI{1.033e-2}{V}\\
+        a_{2, h} &= 1\\
+        b_{0, h} &= \SI{0.17714}{V}\\
+        b_{1, h} &= \SI{-2.178e-3}{/K}\\
+        c_{1, h} &= 0\\
+        c_{1, h} &= \SI{9.47e-3}{V/cm}\\
+        c_{2, h} &= \num{2.4924}\\
+        c_{3, h} &= 0\\
+        d_{0, h} &= \SI{1.4043e6}{V/cm}\\
+        d_{1, h} &= \SI{2.9744e3}{V/cm}\\
+        d_{2, h} &= \SI{1.4829}{V/cm}\\
+    \end{split}
+\end{equation*}
 
 This model can be selected in the configuration file via the parameter \parameter{multiplication_model = "bologna"}.
