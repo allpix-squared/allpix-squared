@@ -104,7 +104,38 @@ This model can be selected in the configuration file via the parameter \paramete
 \subsection{Okuto-Crowell Model}
 \label{sec:multi:oku}
 
-The Okuto-Crowell model~\cite{okuto}
+The Okuto-Crowell model~\cite{okuto} defines the impaction ionization coefficient similarly to the above models but in addition features a linear dependence on the electric field strength $E$.
+The coefficient is given by:
+\begin{equation}
+    \label{eq:multi:oku}
+    \alpha (E, T) = a(T) \cdot E \cdot e^{-\left(\frac{b(T)}{E}\right)^2}.
+\end{equation}
+The two parameters $a, b$ are temperature dependent and scale with respect to the reference temperature $T_0 = \SI{300}{K}$ as:
+
+\begin{equation}
+    \begin{split}
+        a(T) &= a_{300} \left[ 1 + c\left(T - T_0\right) \right]\\
+        b(T) &= a_{300} \left[ 1 + d\left(T - T_0\right) \right]
+    \end{split}
+\end{equation}
+
+The parameter values implemented in \apsq are taken from Table~1 of~\cite{overstraeten}, using the values for silicon, as:
+
+\begin{equation*}
+    \begin{split}
+        a_{300, e} &= \SI{0.426}{/V}\\
+        c_{e} &= \num{3.05e-4}\\
+        b_{300, e} &= \SI{4.81e5}{V/cm}\\
+        d_{e} &= \num{6.86e-4}\\
+    \end{split}
+    \qquad
+    \begin{split}
+        a_{300, h} &= \SI{0.243}{/cm}\\
+        c_{h} &= \num{5.35e-4}\\
+        b_{300, h} &= \SI{6.53e5}{V/cm}\\
+        d_{h} &= \num{5.67e-4}\\
+    \end{split}
+\end{equation*}
 
 This model can be selected in the configuration file via the parameter \parameter{multiplication_model = "okuto"}.
 
