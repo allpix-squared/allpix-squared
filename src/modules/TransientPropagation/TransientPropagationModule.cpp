@@ -231,8 +231,8 @@ void TransientPropagationModule::run(Event* event) {
     }
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) /
-                               (propagated_charges_count + recombined_charges_count));
+        auto total = (propagated_charges_count + recombined_charges_count);
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
     }
 
     // Create a new message with propagated charges
