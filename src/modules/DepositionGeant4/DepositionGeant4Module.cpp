@@ -245,7 +245,7 @@ void DepositionGeant4Module::initialize() {
     // User hook to store additional information at track initialization and termination as well as custom track ids
     LOG(TRACE) << "Constructing particle source";
 
-    auto* action_initialization = new ActionInitializationG4(config_, this);
+    auto* action_initialization = new ActionInitializationG4(config_);
     run_manager_g4_->SetUserInitialization(action_initialization);
 
     // Get the creation energy for charge (default is silicon electron hole pair energy)
