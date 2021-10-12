@@ -390,7 +390,9 @@ TransientPropagationModule::propagate(Event* event,
         auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
         auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
 
-        for(const auto& pixel_index : model_->getNeighbors(idx, last_idx, distance_)) {
+        auto neighbors = model_->getNeighbors(idx, distance_);
+        neighbors.merge(model_->getNeighbors(last_idx, distance_));
+        for(const auto& pixel_index : neighbors) {
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 

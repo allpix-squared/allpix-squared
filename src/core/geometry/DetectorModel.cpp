@@ -241,27 +241,6 @@ std::set<Pixel::Index> DetectorModel::getNeighbors(const Pixel::Index& idx, cons
     return neighbors;
 }
 
-std::set<Pixel::Index>
-DetectorModel::getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const {
-    std::set<Pixel::Index> neighbors;
-
-    auto x_lower = static_cast<int>(std::min(idx.x(), last_idx.x()) - distance);
-    auto x_higher = static_cast<int>(std::max(idx.x(), last_idx.x()) + distance);
-    auto y_lower = static_cast<int>(std::min(idx.y(), last_idx.y()) - distance);
-    auto y_higher = static_cast<int>(std::max(idx.y(), last_idx.y()) + distance);
-
-    for(int x = x_lower; x <= x_higher; x++) {
-        for(int y = y_lower; y <= y_higher; y++) {
-            if(!isWithinPixelGrid(x, y)) {
-                continue;
-            }
-            neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});
-        }
-    }
-
-    return neighbors;
-}
-
 bool DetectorModel::areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const {
     auto pixel_distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
     return (pixel_distance(seed.x(), entrant.x()) <= distance && pixel_distance(seed.y(), entrant.y()) <= distance);

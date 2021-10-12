@@ -421,18 +421,6 @@ namespace allpix {
         virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const;
 
         /**
-         * @brief Return a set containing all pixels neighboring the two given pixels with a configurable maximum distance
-         * @param idx       Index of the first pixel in question
-         * @param last_idx  Index of the second pixel in question
-         * @param distance  Distance for pixels to be considered neighbors
-         * @return Set of neighboring pixel indices, including the two initial pixels
-         *
-         * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
-         */
-        virtual std::set<Pixel::Index>
-        getNeighbors(const Pixel::Index& idx, const Pixel::Index& last_idx, const size_t distance) const;
-
-        /**
          * @brief Check if two pixel indices are neighbors to each other
          * @param  seed    Initial pixel index
          * @param  entrant Entrant pixel index to be tested
