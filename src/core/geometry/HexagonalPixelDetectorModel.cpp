@@ -112,32 +112,6 @@ std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::In
     return neighbors;
 }
 
-std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::Index& idx,
-                                                                 const Pixel::Index& last_idx,
-                                                                 const size_t distance) const {
-    std::set<Pixel::Index> neighbors;
-
-    auto x_lower = std::min(idx.x(), last_idx.x()) - static_cast<int>(distance);
-    auto x_higher = std::max(idx.x(), last_idx.x()) + static_cast<int>(distance);
-    auto y_lower = std::min(idx.y(), last_idx.y()) - static_cast<int>(distance);
-    auto y_higher = std::max(idx.y(), last_idx.y()) + static_cast<int>(distance);
-
-    for(int x = x_lower; x <= x_higher; x++) {
-        for(int y = y_lower; y <= y_higher; y++) {
-            // Remove indices outside the pixel grid
-            if(isWithinPixelGrid(x, y)) {
-                // "cut off" the corners of the rectangle around the indices in question to make it a "prolonged"
-                // hexagon
-                if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) ||
-                   std::abs(x - last_idx.x() + y - last_idx.y()) <= static_cast<int>(distance)) {
-                    neighbors.insert({x, y});
-                }
-            }
-        }
-    }
-    return neighbors;
-}
-
 bool HexagonalPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
                                                const Pixel::Index& entrant,
                                                const size_t distance) const {
