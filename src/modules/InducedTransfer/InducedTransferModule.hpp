@@ -55,7 +55,7 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
 
-        // Distance of electrodes taken into account for induction
+        // Distance of pixels taken into account for induction
         unsigned int distance_;
     };
 } // namespace allpix
