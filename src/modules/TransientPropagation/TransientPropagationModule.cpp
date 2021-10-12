@@ -373,7 +373,15 @@ TransientPropagationModule::propagate(Event* event,
         // Find the nearest pixel - before and after the step
         auto [xpixel, ypixel] = model_->getPixelIndex(static_cast<ROOT::Math::XYZPoint>(position));
         auto [last_xpixel, last_ypixel] = model_->getPixelIndex(static_cast<ROOT::Math::XYZPoint>(last_position));
+        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+        auto neighbors = model_->getNeighbors(idx, distance_);
+
+        // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
+        // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
+        // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
         if(last_xpixel != xpixel || last_ypixel != ypixel) {
+            auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
+            neighbors.merge(model_->getNeighbors(last_idx, distance_));
             LOG(TRACE) << "Carrier crossed boundary from pixel "
                        << Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel))
                        << " to pixel " << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
@@ -384,14 +392,6 @@ TransientPropagationModule::propagate(Event* event,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
                    << Units::display(initial_time + runge_kutta.getTime(), "ns");
 
-        // If the charge carrier crossed pixel boundaries, ensure that we always calculate the induced current for both of
-        // them by extending the induction matrix temporarily. Otherwise we end up doing "double-counting" because we would
-        // only jump "into" a pixel but never "out". At the border of the induction matrix, this would create an imbalance.
-        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
-        auto last_idx = Pixel::Index(static_cast<unsigned int>(last_xpixel), static_cast<unsigned int>(last_ypixel));
-
-        auto neighbors = model_->getNeighbors(idx, distance_);
-        neighbors.merge(model_->getNeighbors(last_idx, distance_));
         for(const auto& pixel_index : neighbors) {
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
