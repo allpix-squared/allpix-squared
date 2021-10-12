@@ -238,7 +238,7 @@ namespace allpix {
          * @warning The grid has zero thickness
          * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
-        ROOT::Math::XYZVector getGridSize() const {
+        virtual ROOT::Math::XYZVector getGridSize() const {
             return {getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
         }
 
@@ -409,6 +409,25 @@ namespace allpix {
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
         virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+
+        /**
+         * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
+         * @param idx       Index of the pixel in question
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return Set of neighboring pixel indices, including the initial pixel
+         *
+         * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         */
+        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const;
+
+        /**
+         * @brief Check if two pixel indices are neighbors to each other
+         * @param  seed    Initial pixel index
+         * @param  entrant Entrant pixel index to be tested
+         * @param distance  Distance for pixels to be considered neighbors
+         * @return         Boolean whether pixels are neighbors or not
+         */
+        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const;
 
     protected:
         std::string type_;

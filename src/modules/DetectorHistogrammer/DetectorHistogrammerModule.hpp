@@ -66,7 +66,7 @@ namespace allpix {
         /**
          * @brief Perform a sparse clustering on the PixelHits
          */
-        static std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message);
+        std::vector<Cluster> doClustering(std::shared_ptr<PixelHitMessage>& pixels_message) const;
 
         /**
          * @brief analyze the available MCParticles and return the all particles identified as primary (i.e. that do not have

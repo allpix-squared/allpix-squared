@@ -26,14 +26,12 @@ InducedTransferModule::InducedTransferModule(Configuration& config,
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    using XYVectorInt = DisplacementVector2D<Cartesian2D<int>>;
-
     // Save detector model
     model_ = detector_->getModel();
 
     // Set default value for config variables and store value
-    config_.setDefault<XYVectorInt>("induction_matrix", XYVectorInt(3, 3));
-    matrix_ = config_.get<XYVectorInt>("induction_matrix");
+    config_.setDefault<unsigned int>("distance", 1);
+    distance_ = config_.get<unsigned int>("distance");
 
     // Require propagated deposits for single detector
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
@@ -79,27 +77,19 @@ void InducedTransferModule::run(Event* event) {
                    << ", " << Units::display(propagated_charge.getGlobalTime() - deposited_charge->getGlobalTime(), "ns");
 
         // Loop over NxN pixels:
-        for(int x = xpixel - matrix_.x() / 2; x <= xpixel + matrix_.x() / 2; x++) {
-            for(int y = ypixel - matrix_.y() / 2; y <= ypixel + matrix_.y() / 2; y++) {
-                // Ignore if out of pixel grid
-                if(!detector_->getModel()->isWithinPixelGrid(x, y)) {
-                    LOG(TRACE) << "Pixel (" << x << "," << y << ") skipped, outside the grid";
-                    continue;
-                }
+        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+        for(const auto& pixel_index : model_->getNeighbors(idx, distance_)) {
+            auto ramo_end = detector_->getWeightingPotential(position_end, pixel_index);
+            auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);
 
-                Pixel::Index pixel_index(static_cast<unsigned int>(x), static_cast<unsigned int>(y));
-                auto ramo_end = detector_->getWeightingPotential(position_end, pixel_index);
-                auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);
+            // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
+            auto induced =
+                static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) * (ramo_end - ramo_start);
+            LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo_end - ramo_start) << ", induced "
+                       << propagated_charge.getType() << " q = " << Units::display(induced, "e");
 
-                // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-                auto induced = static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()) *
-                               (ramo_end - ramo_start);
-                LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo_end - ramo_start) << ", induced "
-                           << propagated_charge.getType() << " q = " << Units::display(induced, "e");
-
-                // Add the pixel the list of hit pixels
-                pixel_map[pixel_index].emplace_back(induced, &propagated_charge);
-            }
+            // Add the pixel the list of hit pixels
+            pixel_map[pixel_index].emplace_back(induced, &propagated_charge);
         }
     }
 

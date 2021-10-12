@@ -225,3 +225,23 @@ std::pair<int, int> DetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& pos
     auto pixel_y = static_cast<int>(std::round(position.y() / pixel_size_.y()));
     return {pixel_x, pixel_y};
 }
+
+std::set<Pixel::Index> DetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
+    std::set<Pixel::Index> neighbors;
+
+    for(int x = static_cast<int>(idx.x() - distance); x <= static_cast<int>(idx.x() + distance); x++) {
+        for(int y = static_cast<int>(idx.y() - distance); y <= static_cast<int>(idx.y() + distance); y++) {
+            if(!isWithinPixelGrid(x, y)) {
+                continue;
+            }
+            neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});
+        }
+    }
+
+    return neighbors;
+}
+
+bool DetectorModel::areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const {
+    auto pixel_distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
+    return (pixel_distance(seed.x(), entrant.x()) <= distance && pixel_distance(seed.y(), entrant.y()) <= distance);
+}
