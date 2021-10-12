@@ -12,12 +12,12 @@ Unless really required for the analysis of the simulation, it is recommended to 
 This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
 In order to use this module, one is required to install PostgreSQL and generate a database using the `create-db.sql` script in `/etc/scripts`. On Linux, this can be done as
 
-```
-$ sudo -u postgres psql
-postgres=# CREATE DATABASE mydb;
-postgres=# \q
-$ sudo -u postgres psql mydb
-postgres=# \i etc/scripts/create-db.sql
+```bash
+sudo -u postgres psql
+postgres: CREATE DATABASE mydb;
+postgres: \q
+sudo -u postgres psql mydb
+postgres: \i etc/scripts/create-db.sql
 ```
 
 This generates a database with the following structure:
@@ -48,16 +48,16 @@ Host, username and password are required to write into the database.
 A new user/password pair can be created and relevant privileges to edit the database can be created via
 
 ```
-$ sudo -u postgres createuser myuser
-$ sudo -u postgres psql mydb
-postgres=# CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
-postgres=# GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+sudo -u postgres createuser myuser
+sudo -u postgres psql mydb
+postgres: CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
+postgres: GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
 ```
 
 In case of an authentication failure error being issues, the password of the user can be changed using
 
 ```
-$ sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
+sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
 ```
 
 The database is structured so that the data are referenced according to the sequence
@@ -69,7 +69,7 @@ MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> P
 This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost and the chain is broken. The only exception to this chain rule is the direct reference MCParticle -> PixelHit. By default, each module always refers to the run and event numbers. As an example, the following is the table corresponding to the PixelHit objects for a single run of four events:
 
 ```
-mydb=# SELECT * FROM pixelhit;
+mydb: SELECT * FROM pixelhit;
  pixelhit_nr | run_nr | event_nr | mcparticle_nr | pixelcharge_nr | detector  | x | y | signal  | hittime
 -------------+--------+----------+---------------+----------------+-----------+---+---+---------+---------
            1 |      1 |        1 |             2 |              2 | detector1 | 2 | 2 | 46447.9 |       0
