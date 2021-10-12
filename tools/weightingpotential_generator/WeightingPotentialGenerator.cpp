@@ -8,7 +8,6 @@
 #include "core/geometry/DetectorModel.hpp"
 #include "core/module/ThreadPool.hpp"
 #include "core/utils/log.h"
-#include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
