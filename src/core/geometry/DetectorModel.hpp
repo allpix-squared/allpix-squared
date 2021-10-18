@@ -191,9 +191,9 @@ namespace allpix {
          * @brief Get size of the wrapper box around the model that contains all elements
          * @return Size of the detector model
          *
-         * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
+         * All elements of the model are covered by a box centered around \ref DetectorModel::getModelCenter. This
          * means that the extend of the model should be calculated using the geometrical center as reference, not the
-         * position returned by \ref DetectorModel::getCenter.
+         * position returned by \ref DetectorModel::getMatrixCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
@@ -248,7 +248,7 @@ namespace allpix {
          * @brief Get size of the sensor
          * @return Size of the sensor
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and sensor thickness
+         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
             ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
@@ -298,7 +298,7 @@ namespace allpix {
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and chip thickness
+         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),

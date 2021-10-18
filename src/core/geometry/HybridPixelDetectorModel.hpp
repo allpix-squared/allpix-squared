@@ -63,7 +63,7 @@ namespace allpix {
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", chip excess and chip thickness
+         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", chip excess and chip thickness
          */
         ROOT::Math::XYZVector getChipSize() const override {
             ROOT::Math::XYZVector excess_thickness(
