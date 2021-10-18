@@ -200,14 +200,14 @@ bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
-bool DetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+bool DetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
     return !(pixel_index.x() >= number_of_pixels_.x() || pixel_index.y() >= number_of_pixels_.y());
 }
 
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
-bool DetectorModel::isWithinPixelGrid(const int x, const int y) const {
+bool DetectorModel::isWithinMatrix(const int x, const int y) const {
     return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
@@ -231,7 +231,7 @@ std::set<Pixel::Index> DetectorModel::getNeighbors(const Pixel::Index& idx, cons
 
     for(int x = static_cast<int>(idx.x() - distance); x <= static_cast<int>(idx.x() + distance); x++) {
         for(int y = static_cast<int>(idx.y() - distance); y <= static_cast<int>(idx.y() + distance); y++) {
-            if(!isWithinPixelGrid(x, y)) {
+            if(!isWithinMatrix(x, y)) {
                 continue;
             }
             neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});

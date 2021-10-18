@@ -384,7 +384,7 @@ namespace allpix {
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
-        virtual bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+        virtual bool isWithinMatrix(const Pixel::Index& pixel_index) const;
 
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
@@ -392,7 +392,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
-        virtual bool isWithinPixelGrid(const int x, const int y) const;
+        virtual bool isWithinMatrix(const int x, const int y) const;
 
         /**
          * @brief Returns a pixel center in local coordinates

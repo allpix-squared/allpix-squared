@@ -119,7 +119,7 @@ void PulseTransferModule::run(Event* event) {
             auto [xpixel, ypixel] = model->getPixelIndex(position);
 
             // Ignore if out of pixel grid
-            if(!detector_->getModel()->isWithinPixelGrid(xpixel, ypixel)) {
+            if(!detector_->getModel()->isWithinMatrix(xpixel, ypixel)) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
