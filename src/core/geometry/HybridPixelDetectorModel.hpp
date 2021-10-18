@@ -68,7 +68,7 @@ namespace allpix {
         ROOT::Math::XYZVector getChipSize() const override {
             ROOT::Math::XYZVector excess_thickness(
                 (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_thickness_);
-            return getGridSize() + excess_thickness;
+            return getMatrixSize() + excess_thickness;
         }
         /**
          * @brief Get center of the chip in local coordinates
@@ -80,7 +80,7 @@ namespace allpix {
             ROOT::Math::XYZVector offset((chip_excess_.at(1) - chip_excess_.at(3)) / 2.0,
                                          (chip_excess_.at(0) - chip_excess_.at(2)) / 2.0,
                                          getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + getBumpHeight());
-            return getCenter() + offset;
+            return getMatrixCenter() + offset;
         }
 
         /**
@@ -146,7 +146,7 @@ namespace allpix {
         virtual ROOT::Math::XYZPoint getBumpsCenter() const {
             ROOT::Math::XYZVector offset(
                 bump_offset_.x(), bump_offset_.y(), getSensorSize().z() / 2.0 + getBumpHeight() / 2.0);
-            return getCenter() + offset;
+            return getMatrixCenter() + offset;
         }
         /**
          * @brief Get the radius of the sphere of every individual bump bond (union solid with cylinder)

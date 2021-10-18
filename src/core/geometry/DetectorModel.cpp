@@ -69,7 +69,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     }
 }
 
-ROOT::Math::XYZPoint DetectorModel::getGeometricalCenter() const {
+ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 
     // Prepare detector assembly stack (sensor, chip, supports) with z-positions and thicknesses:
     std::vector<std::pair<double, double>> stack = {{getSensorCenter().z(), getSensorSize().z()},
@@ -91,7 +91,7 @@ ROOT::Math::XYZPoint DetectorModel::getGeometricalCenter() const {
     // half thickness)
     auto center =
         ((element_first.first - element_first.second / 2.0) + (element_last.first + element_last.second / 2.0)) / 2.0;
-    return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), center);
+    return ROOT::Math::XYZPoint(getMatrixCenter().x(), getMatrixCenter().y(), center);
 }
 
 std::vector<Configuration> DetectorModel::getConfigurations() const {
@@ -144,10 +144,10 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     }
 
     ROOT::Math::XYZVector size;
-    size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
-    size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-    size.SetZ((max.z() - getCenter().z()) +
-              (getCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
+    size.SetX(2 * std::max(max.x() - getMatrixCenter().x(), getMatrixCenter().x() - min.x()));
+    size.SetY(2 * std::max(max.y() - getMatrixCenter().y(), getMatrixCenter().y() - min.y()));
+    size.SetZ((max.z() - getMatrixCenter().z()) +
+              (getMatrixCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
     return size;
 }
 
@@ -166,7 +166,7 @@ std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const
             chip_offset += layer.size_.z();
         }
 
-        layer.center_ = getCenter() + offset;
+        layer.center_ = getMatrixCenter() + offset;
     }
 
     return ret_layers;
