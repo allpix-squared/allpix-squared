@@ -22,19 +22,15 @@ void Pulse::addCharge(double charge, double time) {
     auto bin = (initialized_ ? static_cast<size_t>(std::lround(time / bin_)) : 0);
 
     // Adapt pulse storage vector:
-    if(bin >= pulse_.size()) {
-        pulse_.resize(bin + 1);
+    if(bin >= this->size()) {
+        this->resize(bin + 1);
     }
-    pulse_.at(bin) += charge;
+    this->at(bin) += charge;
 }
 
 int Pulse::getCharge() const {
-    double charge = std::accumulate(pulse_.begin(), pulse_.end(), 0.0);
+    double charge = std::accumulate(this->begin(), this->end(), 0.0);
     return static_cast<int>(std::round(charge));
-}
-
-const std::vector<double>& Pulse::getPulse() const {
-    return pulse_;
 }
 
 double Pulse::getBinning() const {
@@ -46,8 +42,6 @@ bool Pulse::isInitialized() const {
 }
 
 Pulse& Pulse::operator+=(const Pulse& rhs) {
-    auto rhs_pulse = rhs.getPulse();
-
     // Allow to initialize uninitialized pulse
     if(!this->initialized_) {
         this->bin_ = rhs.getBinning();
@@ -60,13 +54,13 @@ Pulse& Pulse::operator+=(const Pulse& rhs) {
     }
 
     // If new pulse is longer, extend:
-    if(this->pulse_.size() < rhs_pulse.size()) {
-        this->pulse_.resize(rhs_pulse.size());
+    if(this->size() < rhs.size()) {
+        this->resize(rhs.size());
     }
 
     // Add up the individual bins:
-    for(size_t bin = 0; bin < rhs_pulse.size(); bin++) {
-        this->pulse_.at(bin) += rhs_pulse.at(bin);
+    for(size_t bin = 0; bin < rhs.size(); bin++) {
+        this->at(bin) += rhs.at(bin);
     }
 
     return *this;

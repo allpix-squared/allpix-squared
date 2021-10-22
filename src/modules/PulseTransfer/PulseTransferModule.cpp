@@ -183,11 +183,10 @@ void PulseTransferModule::run(Event* event) {
             h_induced_pixel_charge_->Fill(pulse.getCharge() / 1e3);
 
             auto step = pulse.getBinning();
-            auto pulse_vec = pulse.getPulse();
             double charge = 0;
 
-            for(auto bin = pulse_vec.begin(); bin != pulse_vec.end(); ++bin) {
-                auto time = step * static_cast<double>(std::distance(pulse_vec.begin(), bin));
+            for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
+                auto time = step * static_cast<double>(std::distance(pulse.begin(), bin));
                 h_induced_pulses_->Fill(time, *bin);
                 p_induced_pulses_->Fill(time, *bin);
 
@@ -255,19 +254,18 @@ void PulseTransferModule::finalize() {
 
 void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const {
     auto step = pulse.getBinning();
-    auto pulse_vec = pulse.getPulse();
-    LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse_vec.size() << " bins of "
+    LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse.size() << " bins of "
                << Units::display(step, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
 
     // Generate x-axis:
-    std::vector<double> time(pulse_vec.size());
+    std::vector<double> time(pulse.size());
     // clang-format off
     std::generate(time.begin(), time.end(), [n = 0.0, step]() mutable { auto now = n; n += step; return now; });
     // clang-format on
 
     std::string name =
         "pulse_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
-    auto* pulse_graph = new TGraph(static_cast<int>(pulse_vec.size()), &time[0], &pulse_vec[0]);
+    auto* pulse_graph = new TGraph(static_cast<int>(pulse.size()), &time[0], &pulse[0]);
     pulse_graph->GetXaxis()->SetTitle("t [ns]");
     pulse_graph->GetYaxis()->SetTitle("Q_{ind} [e]");
     pulse_graph->SetTitle(("Induced charge per unit step time in pixel (" + std::to_string(index.x()) + "," +
@@ -276,7 +274,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
                               .c_str());
     getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
-    std::vector<double> abs_vec = pulse_vec;
+    std::vector<double> abs_vec = pulse;
     std::for_each(abs_vec.begin(), abs_vec.end(), [](auto& bin) { bin = std::fabs(bin); });
     name = "pulse_abs_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
     auto* pulse_abs_graph = new TGraph(static_cast<int>(abs_vec.size()), &time[0], &abs_vec[0]);
@@ -289,7 +287,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
                                   .c_str());
     getROOTDirectory()->WriteTObject(pulse_abs_graph, name.c_str());
 
-    std::vector<double> current_vec = pulse_vec;
+    std::vector<double> current_vec = pulse;
     // Convert charge bins to current in uA
     std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) {
         bin = static_cast<double>(Units::convert(bin, "fC") / Units::convert(step, "ns"));
@@ -309,7 +307,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
     // Generate graphs of integrated charge over time:
     std::vector<double> charge_vec;
     double charge = 0;
-    for(const auto& bin : pulse_vec) {
+    for(const auto& bin : pulse) {
         charge += bin;
         charge_vec.push_back(charge);
     }
