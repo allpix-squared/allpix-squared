@@ -331,7 +331,7 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
     if(pulse.isInitialized()) {
         auto bin = pulse.begin();
         double integrated_charge = 0;
-        for(bin; bin != pulse.end(); bin++) {
+        for(; bin != pulse.end(); bin++) {
             integrated_charge += *bin;
             if(integrated_charge >= threshold) {
                 break;
