@@ -254,17 +254,17 @@ void CSADigitizerModule::run(Event* event) {
         });
 
         std::vector<double> amplified_pulse_vec(ntimepoints);
-        auto input_length = pulse.size();
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
-        // convolution of the pulse (size input_length) with the impulse response (size ntimepoints)
+
+        // Convolution of the input pulse with the impulse response (size ntimepoints)
         for(size_t k = 0; k < ntimepoints; ++k) {
             double outsum{};
-            // convolution: multiply pulse.at(k - i) * impulse_response_function_.at(i), when (k - i) < input_length
+            // Convolution: multiply pulse.at(k - i) * impulse_response_function_.at(i), when (k - i) < input length
             // -> no point to start i at 0, start from jmin:
-            size_t jmin = (k >= input_length - 1) ? k - (input_length - 1) : 0;
+            size_t jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
-                if((k - i) < input_length) {
+                if((k - i) < pulse.size()) {
                     outsum += pulse.at(k - i) * impulse_response_function_.at(i);
                 }
             }
