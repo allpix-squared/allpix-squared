@@ -14,7 +14,16 @@
 
 using namespace allpix;
 
-Pulse::Pulse(double time_bin) : bin_(time_bin), initialized_(true) {}
+Pulse::Pulse(double time_bin) noexcept : bin_(time_bin), initialized_(true) {}
+
+Pulse::Pulse(double time_bin, double total_time) : bin_(time_bin), initialized_(true) {
+    auto bins = static_cast<size_t>(std::lround(total_time / bin_));
+    try {
+        this->reserve(bins);
+    } catch(const std::bad_alloc& e) {
+        PulseBadAllocException(bins, total_time, e.what());
+    }
+}
 
 void Pulse::addCharge(double charge, double time) {
     // For uninitialized pulses, store all charge in the first bin:

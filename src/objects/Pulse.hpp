@@ -26,8 +26,17 @@ namespace allpix {
     public:
         /**
          * @brief Construct a new pulse
+         * @param time_bin Length in time of a single bin of the pulse
          */
-        explicit Pulse(double time_bin);
+        explicit Pulse(double time_bin) noexcept;
+
+        /**
+         * @brief
+         * @param time_bin Length in time of a single bin of the pulse
+         * @param total_time Expected total length of the pulse used to pre-allocate memory
+         * @throws PulseBadAllocException if memory allocation failed
+         */
+        Pulse(double time_bin, double total_time);
 
         /**
          * @brief Construct default pulse, uninitialized
