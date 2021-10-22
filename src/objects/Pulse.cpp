@@ -8,7 +8,6 @@
  */
 
 #include "Pulse.hpp"
-#include "objects/exceptions.h"
 
 #include <cmath>
 #include <numeric>
@@ -21,11 +20,15 @@ void Pulse::addCharge(double charge, double time) {
     // For uninitialized pulses, store all charge in the first bin:
     auto bin = (initialized_ ? static_cast<size_t>(std::lround(time / bin_)) : 0);
 
-    // Adapt pulse storage vector:
-    if(bin >= this->size()) {
-        this->resize(bin + 1);
+    try {
+        // Adapt pulse storage vector:
+        if(bin >= this->size()) {
+            this->resize(bin + 1);
+        }
+        this->at(bin) += charge;
+    } catch(const std::bad_alloc& e) {
+        PulseBadAllocException(bin + 1, time, e.what());
     }
-    this->at(bin) += charge;
 }
 
 int Pulse::getCharge() const {

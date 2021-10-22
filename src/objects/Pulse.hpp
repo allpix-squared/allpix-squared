@@ -14,6 +14,8 @@
 
 #include <TObject.h>
 
+#include "objects/exceptions.h"
+
 namespace allpix {
     /**
      * @ingroup Objects

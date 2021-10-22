@@ -145,7 +145,13 @@ void PulseTransferModule::run(Event* event) {
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
-            pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
+            try {
+                pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
+            } catch(const PulseBadAllocException& e) {
+                LOG(ERROR) << e.what() << std::endl
+                           << "Ignoring pulse contribution at time "
+                           << Units::display(propagated_charge.getLocalTime(), {"ms", "us", "ns"});
+            }
             pixel_pulse_map[pixel_index] += pulse;
 
             auto px = pixel_charge_map[pixel_index];
