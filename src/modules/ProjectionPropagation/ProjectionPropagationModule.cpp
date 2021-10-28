@@ -341,8 +341,10 @@ void ProjectionPropagationModule::run(Event* event) {
     }
     charge_lost = total_charge - total_projected_charge;
 
-    LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
-              << (charge_lost / (total_charge == 0 ? 1 : total_charge) * 100.) << "%)";
+    if(total_charge > 0) {
+        LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
+                  << (charge_lost / total_charge * 100.) << "%)";
+    }
     LOG(DEBUG) << "Total count of propagated charge carriers: " << propagated_charges.size();
 
     if(output_plots_) {
