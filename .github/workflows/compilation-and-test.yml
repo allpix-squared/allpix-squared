@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_99
+  LCG_VERSION: LCG_101
 jobs:
   compile-centos7:
     strategy:

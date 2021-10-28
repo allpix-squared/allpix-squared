@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.7.2
+//               |___/  version 0.7.3
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -34,7 +34,7 @@
 
 #define MAGIC_ENUM_VERSION_MAJOR 0
 #define MAGIC_ENUM_VERSION_MINOR 7
-#define MAGIC_ENUM_VERSION_PATCH 2
+#define MAGIC_ENUM_VERSION_PATCH 3
 
 #include <array>
 #include <cassert>
@@ -44,6 +44,10 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
+
+#if defined(MAGIC_ENUM_CONFIG_FILE)
+#include MAGIC_ENUM_CONFIG_FILE
+#endif
 
 #if !defined(MAGIC_ENUM_USING_ALIAS_OPTIONAL)
 #include <optional>
@@ -139,7 +143,7 @@ namespace magic_enum {
         static_assert(MAGIC_ENUM_RANGE_MAX > MAGIC_ENUM_RANGE_MIN,
                       "MAGIC_ENUM_RANGE_MAX must be greater than MAGIC_ENUM_RANGE_MIN.");
 
-        // If need cunstom names for enum, add specialization enum_name for necessary enum type.
+        // If need custom names for enum, add specialization enum_name for necessary enum type.
         template <typename E> constexpr string_view enum_name(E) noexcept {
             static_assert(std::is_enum_v<E>, "magic_enum::customize::enum_name requires enum type.");
 

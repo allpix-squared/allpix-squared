@@ -16,12 +16,17 @@
 #include <string>
 #include <utility>
 
+#include <boost/version.hpp>
+
 #include "core/Allpix.hpp"
 #include "core/config/ConfigManager.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/exceptions.h"
-
 #include "core/utils/log.h"
+
+#ifdef ALLPIX_GEANT4_AVAILABLE
+#include <G4Version.hh>
+#endif
 
 using namespace allpix;
 
@@ -104,10 +109,22 @@ int main(int argc, const char* argv[]) {
         if(arg == "-h") {
             print_help = true;
         } else if(strcmp(argv[i], "--version") == 0) {
-            std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION << std::endl;
-            std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
+            std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION;
+#ifdef ALLPIX_BUILD_ENV
+            std::cout << " (" << ALLPIX_BUILD_ENV << ")";
+#endif
             std::cout << std::endl;
-            std::cout << "Copyright (c) 2017-2020 CERN and the Allpix Squared authors." << std::endl << std::endl;
+            std::cout << "               built on " << ALLPIX_BUILD_TIME << std::endl;
+            std::cout << "               using Boost.Random " << BOOST_VERSION / 100000 << "." // major version
+                      << BOOST_VERSION / 100 % 1000 << "."                                     // minor version
+                      << BOOST_VERSION % 100                                                   // patch level
+                      << std::endl;
+            std::cout << "                     ROOT " << ROOT_RELEASE << std::endl;
+#ifdef ALLPIX_GEANT4_AVAILABLE
+            std::cout << "                     Geant4 " << G4VERSION_NUMBER << std::endl;
+#endif
+            std::cout << std::endl;
+            std::cout << "Copyright (c) 2017-2021 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;

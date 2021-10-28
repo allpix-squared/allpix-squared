@@ -13,7 +13,7 @@ IF(COMMAND CMAKE_POLICY)
 ENDIF(COMMAND CMAKE_POLICY)
 
 # Set default version
-SET(ALLPIX_VERSION "v2.0.2")
+SET(ALLPIX_VERSION "v2.0.3")
 
 # Set default build type
 IF(NOT CMAKE_BUILD_TYPE)
@@ -43,6 +43,11 @@ PROJECT(
 # Access the project name (for install locations) in the source
 ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_VERSION="${ALLPIX_VERSION}"
                 -DALLPIX_BUILD_TIME="${BUILD_TIME}")
+
+# Read possible build environment
+IF(DEFINED ENV{ALLPIX_BUILD_ENV})
+    ADD_DEFINITIONS(-DALLPIX_BUILD_ENV=\"$ENV{ALLPIX_BUILD_ENV}\")
+ENDIF()
 
 # Include a generated configuration file
 # FIXME: this should be combined with the ADD_DEFINITIONS
@@ -274,9 +279,9 @@ ADD_RUNTIME_DEP(thisroot.sh)
 ###################################
 
 # Set the clang-format version required by the CI for correct formatting:
-SET(CLANG_FORMAT_VERSION "10")
+SET(CLANG_FORMAT_VERSION "12")
 # Set the clang-tidy version of the linter required by the CI:
-SET(CLANG_TIDY_VERSION "10")
+SET(CLANG_TIDY_VERSION "12")
 
 # Set the source files to clang-format (FIXME: determine this better)
 FILE(
@@ -350,6 +355,7 @@ ADD_SUBDIRECTORY(src/modules)
 # Build geant4 interface library if needed by modules
 IF(${ALLPIX_BUILD_GEANT4_INTERFACE})
     ADD_SUBDIRECTORY(src/tools/geant4)
+    ADD_DEFINITIONS(-DALLPIX_GEANT4_AVAILABLE)
 ENDIF()
 
 # Build the executable

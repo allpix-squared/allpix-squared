@@ -69,6 +69,8 @@ stages:
 
 # Hidden key to define the default compile job:
 .compile:
+    variables:
+        ALLPIX_BUILD_ENV: "CI/CD"
     stage: compilation
     needs: []
     script:
@@ -152,7 +154,7 @@ fmt:cc7-llvm-lint:
     extends: .format
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
-        - ninja check-lint
+        - ninja check-lint 2> /dev/null
 
 fmt:cmake-lint:
     extends: .format
@@ -415,7 +417,7 @@ cmp:doxygen:
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Allpix-reference
+        - make Allpix-reference 1> /dev/null
         - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
@@ -564,26 +566,29 @@ deploy-cvmfs:
         - rm -f allpix-squared-*.tar.gz
     retry: 1
 
-deploy-docker-latest:
+.deploy-docker:
     stage: deployment
-    tags:
-        - docker-image-build
+    image:
+        name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
+        entrypoint: [""]
     dependencies: []
+    script:
+        - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/$DOCKER_FILE --destination $IMAGE_DESTINATION
+        - echo "Image pushed successfully to ${IMAGE_DESTINATION}"
+
+deploy-docker-latest:
+    extends: .deploy-docker
+    variables:
+        IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:latest
+        ALLPIX_BUILD_ENV: "Docker"
     only:
         - schedules@allpix-squared/allpix-squared
-    script:
-        - "echo" # unused but this line is required by GitLab CI
-    variables:
-        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared
 
 deploy-docker-tag:
-    stage: deployment
-    tags:
-        - docker-image-build
-    dependencies: []
+    extends: .deploy-docker
+    variables:
+        IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
+        ALLPIX_BUILD_ENV: "Docker"
     only:
         - tags@allpix-squared/allpix-squared
-    script:
-        - "echo" # unused but this line is required by GitLab CI
-    variables:
-        TO: gitlab-registry.cern.ch/allpix-squared/allpix-squared:${CI_COMMIT_TAG}

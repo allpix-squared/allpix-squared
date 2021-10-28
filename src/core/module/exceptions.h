@@ -152,7 +152,7 @@ namespace allpix {
         /**
          * @brief Constructs request to interrupt event processing
          */
-        MissingDependenciesException() {}
+        MissingDependenciesException() = default;
     };
 } // namespace allpix
 
