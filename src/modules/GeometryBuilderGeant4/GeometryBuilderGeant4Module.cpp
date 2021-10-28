@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include <G4GlobalConfig.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -42,8 +43,15 @@ using namespace ROOT;
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
-    // Enable multithreading of this module if multithreading is enabled
+
+// Enable multithreading for Geant4 if it has been built with support for it:
+#ifdef G4MULTITHREADED
+    LOG(INFO) << "Detected Geant4 multithreading capabilities, enabling multithreading support";
     allow_multithreading();
+#else
+    LOG(ERROR) << "Geant4 has been built without multithreading support, forcing multithreading off." << std::endl
+               << "To allow multithreading, rebuild Geant4 with the GEANT4_BUILD_MULTITHREADED option enabled.";
+#endif
 
     // Read Geant4 verbosity configuration
     auto g4cerr_log_level = config_.get<std::string>("log_level_g4cerr", "WARNING");
