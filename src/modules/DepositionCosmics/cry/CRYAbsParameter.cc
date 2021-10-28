@@ -38,12 +38,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYAbsParameter.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <string.h> // For Ubuntu Linux
 #include <string>
+#include "CRYAbsParameter.h"
 
 CRYAbsParameter::CRYAbsParameter(std::string data) {
 
@@ -72,13 +74,13 @@ CRYAbsParameter::CRYAbsParameter(std::string data) {
     std::string::size_type stop = rhs.find("}");
 
     if(start == std::string::npos) {
-        std::cerr << "CRY::CRYAbsParameter: invalid parameter - missing {. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYAbsParameter: invalid parameter - missing {. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
     if(stop == std::string::npos) {
-        std::cerr << "CRY::CRYAbsParameter:invalid parameter - missing }. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYAbsParameter:invalid parameter - missing }. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -90,8 +92,8 @@ CRYAbsParameter::CRYAbsParameter(std::string data) {
         std::getline(iss3, key, ' ');
         if(key.length() > 0 && 0 != strcmp(key.c_str(), " ")) {
             if(foundIt) {
-                std::cerr << "CRY::CRYAbsParameter: Extra data/characters in parameter?? Data was:";
-                std::cerr << data << std::endl;
+                LOG(ERROR) << "CRY::CRYAbsParameter: Extra data/characters in parameter?? Data was:";
+                LOG(ERROR) << data << std::endl;
                 assert(0);
             }
             foundIt = true;

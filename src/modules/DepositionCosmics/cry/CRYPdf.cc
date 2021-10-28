@@ -38,13 +38,15 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYPdf.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h> // For Ubuntu Linux
 #include <string.h> // For Ubuntu Linux
+#include "CRYPdf.h"
 #include "CRYUtils.h"
 
 CRYPdf::CRYPdf(std::string data) {
@@ -70,18 +72,18 @@ CRYPdf::CRYPdf(std::string data) {
     std::string::size_type cbLoc = _name.find("]");
 
     if(colLoc == std::string::npos || _name[colLoc + 1] != ':') {
-        std::cerr << "CRY::CRYPdf: Function must specify type. Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: Function must specify type. Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
     if(obLoc == std::string::npos) {
-        std::cerr << "CRY::CRYPdf: Function must specify limits in []. Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: Function must specify limits in []. Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
     if(cbLoc == std::string::npos) {
-        std::cerr << "CRY::CRYPdf: Function must specify limits in []. Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: Function must specify limits in []. Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -114,8 +116,8 @@ CRYPdf::CRYPdf(std::string data) {
         _max = log10(_max);
     }
     if(_type == CRYPdf::UNKNOWN) {
-        std::cerr << "CRY::CRYPdf: Unknown pdf type " << typeStr << " Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: Unknown pdf type " << typeStr << " Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -126,13 +128,13 @@ CRYPdf::CRYPdf(std::string data) {
     std::string::size_type stop = rhs.find("}");
 
     if(start == std::string::npos) {
-        std::cerr << "CRY::CRYPdf: invalid function - missing {. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: invalid function - missing {. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
     if(stop == std::string::npos) {
-        std::cerr << "CRY::CRYPdf: invalid function - missing }. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYPdf: invalid function - missing }. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -268,14 +270,14 @@ double CRYPdf::draw(CRYUtils* utils, int bin_in) {
                 return pow(10.,
                            _min + (static_cast<double>(i) + utils->randomFlat()) * (_max - _min) /
                                       static_cast<double>(cdfSize));
-            std::cerr << "CRY::CRYPdf: Unknown pdf type? (impossible...)\n";
+            LOG(ERROR) << "CRY::CRYPdf: Unknown pdf type? (impossible...)\n";
             assert(0);
         }
     }
 
     // should never get here
-    std::cerr << "CRY::CRYPdf: Code has failed somehow (impossible...)\n";
-    std::cerr << "CRY::CRYPdf: Name " << name() << " " << bin << " " << (*_cdfs)[bin][cdfSize - 1] << std::endl;
+    LOG(ERROR) << "CRY::CRYPdf: Code has failed somehow (impossible...)\n";
+    LOG(ERROR) << "CRY::CRYPdf: Name " << name() << " " << bin << " " << (*_cdfs)[bin][cdfSize - 1] << std::endl;
     assert(0);
     return 0.0;
 }

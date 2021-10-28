@@ -38,9 +38,11 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYData.h"
+#include "core/utils/log.h"
+
 #include "CRYAbsFunction.h"
 #include "CRYBinning.h"
+#include "CRYData.h"
 #include "CRYFunctionDict.h"
 #include "CRYParamI.h"
 #include "CRYParameter.h"
@@ -56,7 +58,7 @@ CRYData::CRYData(std::string file) {
     _file = file;
     bool readOk = read();
     if(!readOk) {
-        std::cerr << "CRY::CRYData: Error reading " << _file << "....  Stopping\n";
+        LOG(ERROR) << "CRY::CRYData: Error reading " << _file << "....  Stopping\n";
         assert(0);
     }
 }
@@ -64,7 +66,7 @@ CRYData::CRYData(std::string file) {
 bool CRYData::read() {
     CRYFunctionDict fDict;
 
-    //  std::cout << "CRY::CRYData: Reading data file " << _file << std::endl;
+    LOG(DEBUG) << "CRY::CRYData: Reading data file " << _file << std::endl;
 
     std::ifstream file;
     file.open(_file.c_str(), std::ios::in);
