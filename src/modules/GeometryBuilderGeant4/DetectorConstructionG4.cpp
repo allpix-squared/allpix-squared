@@ -89,7 +89,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         ROOT::Math::XYZPoint vx, vy, vz;
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
-        auto wrapperGeoTranslation = toG4Vector(model->getCenter() - model->getGeometricalCenter());
+        auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
         wrapperGeoTranslation *= *rotWrapper;
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
@@ -128,7 +128,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         total_material_budget += (model->getSensorSize().z() / sensor_log->GetMaterial()->GetRadlen());
 
         // Place the sensor box
-        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
+        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getModelCenter());
         LOG(DEBUG) << "  - Sensor\t\t:\t" << Units::display(sensor_pos, {"mm", "um"});
         auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
             nullptr, sensor_pos, sensor_log.get(), "sensor_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -149,8 +149,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
                                                    model->getPixelSize().x(),
                                                    model->getPixelSize().y(),
-                                                   -model->getGridSize().x() / 2.0,
-                                                   -model->getGridSize().y() / 2.0,
+                                                   -model->getMatrixSize().x() / 2.0,
+                                                   -model->getMatrixSize().y() / 2.0,
                                                    0);
         geo_manager_->setExternalObject(name, "pixel_param", pixel_param);
         // WARNING: do not place the actual parameterization, only use it if we need it
@@ -178,7 +178,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             total_material_budget += (model->getChipSize().z() / chip_log->GetMaterial()->GetRadlen());
 
             // Place the chip
-            auto chip_pos = toG4Vector(model->getChipCenter() - model->getGeometricalCenter());
+            auto chip_pos = toG4Vector(model->getChipCenter() - model->getModelCenter());
             LOG(DEBUG) << "  - Chip\t\t:\t" << Units::display(chip_pos, {"mm", "um"});
             auto chip_phys = make_shared_no_delete<G4PVPlacement>(
                 nullptr, chip_pos, chip_log.get(), "chip_" + name + "_phys", wrapper_log.get(), false, 0, true);
@@ -249,7 +249,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             }
 
             // Place the support
-            auto support_pos = toG4Vector(layer.getCenter() - model->getGeometricalCenter());
+            auto support_pos = toG4Vector(layer.getCenter() - model->getModelCenter());
             LOG(DEBUG) << "  - Support\t\t:\t" << Units::display(support_pos, {"mm", "um"});
             auto support_phys =
                 make_shared_no_delete<G4PVPlacement>(nullptr,
@@ -294,7 +294,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             geo_manager_->setExternalObject(name, "bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getGeometricalCenter());
+            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getModelCenter());
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
@@ -333,9 +333,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 hybrid_model->getPixelSize().x(),
                 hybrid_model->getPixelSize().y(),
                 -(hybrid_model->getNPixels().x() * hybrid_model->getPixelSize().x()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().x() - hybrid_model->getCenter().x()),
+                    (hybrid_model->getBumpsCenter().x() - hybrid_model->getMatrixCenter().x()),
                 -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
+                    (hybrid_model->getBumpsCenter().y() - hybrid_model->getMatrixCenter().y()),
                 0);
             geo_manager_->setExternalObject(name, "bumps_param", bumps_param);
 

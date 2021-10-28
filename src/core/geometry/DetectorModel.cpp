@@ -93,7 +93,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     }
 }
 
-ROOT::Math::XYZPoint DetectorModel::getGeometricalCenter() const {
+ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 
     // Prepare detector assembly stack (sensor, chip, supports) with z-positions and thicknesses:
     std::vector<std::pair<double, double>> stack = {{getSensorCenter().z(), getSensorSize().z()},
@@ -115,7 +115,7 @@ ROOT::Math::XYZPoint DetectorModel::getGeometricalCenter() const {
     // half thickness)
     auto center =
         ((element_first.first - element_first.second / 2.0) + (element_last.first + element_last.second / 2.0)) / 2.0;
-    return ROOT::Math::XYZPoint(getCenter().x(), getCenter().y(), center);
+    return ROOT::Math::XYZPoint(getMatrixCenter().x(), getMatrixCenter().y(), center);
 }
 
 std::vector<Configuration> DetectorModel::getConfigurations() const {
@@ -168,10 +168,10 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     }
 
     ROOT::Math::XYZVector size;
-    size.SetX(2 * std::max(max.x() - getCenter().x(), getCenter().x() - min.x()));
-    size.SetY(2 * std::max(max.y() - getCenter().y(), getCenter().y() - min.y()));
-    size.SetZ((max.z() - getCenter().z()) +
-              (getCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
+    size.SetX(2 * std::max(max.x() - getMatrixCenter().x(), getMatrixCenter().x() - min.x()));
+    size.SetY(2 * std::max(max.y() - getMatrixCenter().y(), getMatrixCenter().y() - min.y()));
+    size.SetZ((max.z() - getMatrixCenter().z()) +
+              (getMatrixCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
     return size;
 }
 
@@ -190,7 +190,7 @@ std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const
             chip_offset += layer.size_.z();
         }
 
-        layer.center_ = getCenter() + offset;
+        layer.center_ = getMatrixCenter() + offset;
     }
 
     return ret_layers;
@@ -224,14 +224,14 @@ bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
-bool DetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
+bool DetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
     return !(pixel_index.x() >= number_of_pixels_.x() || pixel_index.y() >= number_of_pixels_.y());
 }
 
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
-bool DetectorModel::isWithinPixelGrid(const int x, const int y) const {
+bool DetectorModel::isWithinMatrix(const int x, const int y) const {
     return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
@@ -255,7 +255,7 @@ std::set<Pixel::Index> DetectorModel::getNeighbors(const Pixel::Index& idx, cons
 
     for(int x = static_cast<int>(idx.x() - distance); x <= static_cast<int>(idx.x() + distance); x++) {
         for(int y = static_cast<int>(idx.y() - distance); y <= static_cast<int>(idx.y() + distance); y++) {
-            if(!isWithinPixelGrid(x, y)) {
+            if(!isWithinMatrix(x, y)) {
                 continue;
             }
             neighbors.insert({static_cast<unsigned int>(x), static_cast<unsigned int>(y)});

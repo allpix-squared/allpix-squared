@@ -69,7 +69,7 @@ void Detector::build_transform() {
     // * The shift from the origin to the detector position
     ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
     // Transform from locally centered to local coordinates
-    ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getCenter()));
+    ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
     ROOT::Math::Transform3D transform_local(translation_local);
     // Compute total transform local to global by first transforming local to locally centered and then to global coordinates
     transform_ = transform_center * transform_local.Inverse();

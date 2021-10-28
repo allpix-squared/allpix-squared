@@ -290,7 +290,7 @@ void CapacitiveTransferModule::run(Event* event) {
                 auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
-                if(!detector_->getModel()->isWithinPixelGrid(xcoord, ycoord)) {
+                if(!detector_->getModel()->isWithinMatrix(xcoord, ycoord)) {
                     LOG(DEBUG) << "Skipping set of propagated charges at " << propagated_charge.getLocalPosition()
                                << " because their nearest pixel (" << xpixel << "," << ypixel
                                << ") is outside the pixel matrix";

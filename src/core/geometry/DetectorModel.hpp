@@ -182,9 +182,10 @@ namespace allpix {
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
-        virtual ROOT::Math::XYZPoint getCenter() const {
-            return {
-                getGridSize().x() / 2.0 - getPixelSize().x() / 2.0, getGridSize().y() / 2.0 - getPixelSize().y() / 2.0, 0};
+        virtual ROOT::Math::XYZPoint getMatrixCenter() const {
+            return {getMatrixSize().x() / 2.0 - getPixelSize().x() / 2.0,
+                    getMatrixSize().y() / 2.0 - getPixelSize().y() / 2.0,
+                    0};
         }
 
         /**
@@ -192,15 +193,15 @@ namespace allpix {
          * @note This returns the center of the geometry model, i.e. including all support layers, passive readout chips et
          * cetera.
          */
-        virtual ROOT::Math::XYZPoint getGeometricalCenter() const;
+        virtual ROOT::Math::XYZPoint getModelCenter() const;
 
         /**
          * @brief Get size of the wrapper box around the model that contains all elements
          * @return Size of the detector model
          *
-         * All elements of the model are covered by a box centered around \ref DetectorModel::getGeometricalCenter. This
+         * All elements of the model are covered by a box centered around \ref DetectorModel::getModelCenter. This
          * means that the extend of the model should be calculated using the geometrical center as reference, not the
-         * position returned by \ref DetectorModel::getCenter.
+         * position returned by \ref DetectorModel::getMatrixCenter.
          */
         virtual ROOT::Math::XYZVector getSize() const;
 
@@ -246,7 +247,7 @@ namespace allpix {
          * @warning The grid has zero thickness
          * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
-        virtual ROOT::Math::XYZVector getGridSize() const {
+        virtual ROOT::Math::XYZVector getMatrixSize() const {
             return {getNPixels().x() * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
         }
 
@@ -255,13 +256,13 @@ namespace allpix {
          * @brief Get size of the sensor
          * @return Size of the sensor
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and sensor thickness
+         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
             ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
                                                    (sensor_excess_.at(0) + sensor_excess_.at(2)),
                                                    sensor_thickness_);
-            return getGridSize() + excess_thickness;
+            return getMatrixSize() + excess_thickness;
         }
         /**
          * @brief Get center of the sensor in local coordinates
@@ -272,7 +273,7 @@ namespace allpix {
         virtual ROOT::Math::XYZPoint getSensorCenter() const {
             ROOT::Math::XYZVector offset(
                 (sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0, (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0, 0);
-            return getCenter() + offset;
+            return getMatrixCenter() + offset;
         }
         /**
          * @brief Set the thickness of the sensor
@@ -305,13 +306,13 @@ namespace allpix {
          * @brief Get size of the chip
          * @return Size of the chip
          *
-         * Calculated from \ref DetectorModel::getGridSize "pixel grid size", sensor excess and chip thickness
+         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
                                                    (sensor_excess_.at(0) + sensor_excess_.at(2)),
                                                    chip_thickness_);
-            return getGridSize() + excess_thickness;
+            return getMatrixSize() + excess_thickness;
         }
         /**
          * @brief Get center of the chip in local coordinates
@@ -323,7 +324,7 @@ namespace allpix {
             ROOT::Math::XYZVector offset((sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0,
                                          (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0,
                                          getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
-            return getCenter() + offset;
+            return getMatrixCenter() + offset;
         }
         /**
          * @brief Set the thickness of the sensor
@@ -391,7 +392,7 @@ namespace allpix {
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
-        virtual bool isWithinPixelGrid(const Pixel::Index& pixel_index) const;
+        virtual bool isWithinMatrix(const Pixel::Index& pixel_index) const;
 
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
@@ -399,7 +400,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
          */
-        virtual bool isWithinPixelGrid(const int x, const int y) const;
+        virtual bool isWithinMatrix(const int x, const int y) const;
 
         /**
          * @brief Returns a pixel center in local coordinates

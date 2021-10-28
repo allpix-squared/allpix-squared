@@ -118,7 +118,7 @@ void DepositionPointChargeModule::run(Event* event) {
     } else if(model_ == DepositionModel::SCAN) {
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
-        auto ref = position_ + model->getGridSize() / 2.0 + voxel_ / 2.0 -
+        auto ref = position_ + model->getMatrixSize() / 2.0 + voxel_ / 2.0 -
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << Units::display(ref, {"um", "mm"});
