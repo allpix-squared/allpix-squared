@@ -11,7 +11,31 @@
 #include "DetectorModel.hpp"
 #include "core/module/exceptions.h"
 
+#include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/MonolithicPixelDetectorModel.hpp"
+
 using namespace allpix;
+
+std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigReader& reader) {
+    Configuration config = reader.getHeaderConfiguration();
+
+    if(!config.has("type")) {
+        LOG(ERROR) << "Model file " << config.getFilePath() << " does not provide a type parameter";
+    }
+    auto type = config.get<std::string>("type");
+
+    // Instantiate the correct detector model
+    if(type == "hybrid") {
+        return std::make_shared<HybridPixelDetectorModel>(name, reader);
+    }
+    if(type == "monolithic") {
+        return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
+    }
+
+    LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
+    // FIXME: The model can probably be silently ignored if we have more model readers later
+    throw InvalidValueError(config, "type", "model type is not supported");
+}
 
 DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std::move(type)), reader_(std::move(reader)) {
     using namespace ROOT::Math;

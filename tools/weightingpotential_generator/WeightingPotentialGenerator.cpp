@@ -128,18 +128,18 @@ int main(int argc, char** argv) {
         // Parsing detector model to generate potential for:
         std::ifstream file(model_path);
         allpix::ConfigReader reader(file, model_path);
-        auto model = allpix::DetectorModel(model_path, reader);
-        auto implant = model.getImplantSize();
+        auto model = allpix::DetectorModel::factory(model_path, reader);
+        auto implant = model->getImplantSize();
 
         // Calculate thickness domain
-        auto sensor_max_z = model.getSensorCenter().z() + model.getSensorSize().z() / 2.0;
+        auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
         auto thickness_domain = std::make_pair(-sensor_max_z, sensor_max_z);
 
         // Calculate field size from induction matrix size and pixel pitch:
-        auto pixel_pitch = model.getPixelSize();
+        auto pixel_pitch = model->getPixelSize();
         auto fieldsize = ROOT::Math::XYZVector(pixel_pitch.x() * static_cast<double>(matrix.x()),
                                                pixel_pitch.y() * static_cast<double>(matrix.y()),
-                                               model.getSensorSize().z());
+                                               model->getSensorSize().z());
 
         // Binning: default to 1 bin per um:
         if(binning.mag2() == 0) {
