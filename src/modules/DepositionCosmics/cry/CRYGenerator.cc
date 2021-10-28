@@ -38,9 +38,11 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYGenerator.h"
+#include "core/utils/log.h"
+
 #include "CRYBinning.h"
 #include "CRYData.h"
+#include "CRYGenerator.h"
 #include "CRYParamI.h"
 #include "CRYParameter.h"
 #include "CRYParticle.h"
@@ -63,9 +65,9 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     CRYData* data = _setup->getData(int(_setup->param(CRYSetup::altitude) + 0.1));
 
     if(data == nullptr) {
-        std::cerr << "CRY::CRYGenerator: Data table not available for ";
-        std::cerr << _setup->param(CRYSetup::altitude) << " meters.\n";
-        std::cerr << "CRY::CRYGenerator: See data directory for available altitudes.\n";
+        LOG(ERROR) << "CRY::CRYGenerator: Data table not available for ";
+        LOG(ERROR) << _setup->param(CRYSetup::altitude) << " meters.\n";
+        LOG(ERROR) << "CRY::CRYGenerator: See data directory for available altitudes.\n";
         assert(0);
     }
     _utils = _setup->getUtils();
@@ -79,7 +81,7 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     // Figure out the best box size from the ones available...
     std::vector<std::string> nPartPDFs = data->getPdfList("nParticles");
     if(nPartPDFs.size() == 0) {
-        std::cerr << "CRY::CRYGenerator: Missing pdf for primary particles. Stopping " << std::endl;
+        LOG(ERROR) << "CRY::CRYGenerator: Missing pdf for primary particles. Stopping " << std::endl;
         assert(0);
     }
 
@@ -116,17 +118,17 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     _particleFractionsPDF = data->getPdf("particleFractions");
 
     if(_primaryBinning == nullptr) {
-        std::cerr << "CRY::CRYGenerator: Missing primary binning definition. Stopping " << std::endl;
+        LOG(ERROR) << "CRY::CRYGenerator: Missing primary binning definition. Stopping " << std::endl;
         assert(0);
     }
 
     if(_secondaryBinning == nullptr) {
-        std::cerr << "CRY::CRYGenerator: Missing secondary binning definition. Stopping " << std::endl;
+        LOG(ERROR) << "CRY::CRYGenerator: Missing secondary binning definition. Stopping " << std::endl;
         assert(0);
     }
 
     if(_particleFractionsPDF == nullptr) {
-        std::cerr << "CRY::CRYGenerator: Missing pdf for particle fractions. Stopping " << std::endl;
+        LOG(ERROR) << "CRY::CRYGenerator: Missing pdf for particle fractions. Stopping " << std::endl;
         assert(0);
     }
 
@@ -141,7 +143,7 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
         if(data->getParamI(name) != nullptr)
             _idDict[data->getParamI(name)->param()] = i;
         else {
-            std::cerr << "CRY::CRYGenerator: Missing paramI for particle " << name << ". Stopping " << std::endl;
+            LOG(ERROR) << "CRY::CRYGenerator: Missing paramI for particle " << name << ". Stopping " << std::endl;
             assert(0);
         }
 
@@ -189,20 +191,20 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
             _chargePdfs[i] = tPdf;
 
         if(_timePdfs[i] == nullptr) {
-            std::cerr << "CRY::CRYGenerator: Missing time pdf for " << name << std::endl;
+            LOG(ERROR) << "CRY::CRYGenerator: Missing time pdf for " << name << std::endl;
             assert(0);
         }
         if(_latPdfs[i] == nullptr) {
-            std::cerr << "CRY::CRYGenerator: Missing lat pdf for " << name << std::endl;
+            LOG(ERROR) << "CRY::CRYGenerator: Missing lat pdf for " << name << std::endl;
             assert(0);
         }
         if(_kePdfs[i] == nullptr) {
-            std::cerr << "CRY::CRYGenerator: Missing kinetic energy pdf for " << name << std::endl;
+            LOG(ERROR) << "CRY::CRYGenerator: Missing kinetic energy pdf for " << name << std::endl;
             assert(0);
         }
 
         if(_cosThetaPdfs[i] == nullptr) {
-            std::cerr << "CRY::CRYGenerator: Missing cos theta pdf for " << name << std::endl;
+            LOG(ERROR) << "CRY::CRYGenerator: Missing cos theta pdf for " << name << std::endl;
             assert(0);
         }
     }
@@ -219,8 +221,8 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     _minParticles = int(_setup->param(CRYSetup::nParticlesMin));
 
     if(_maxParticles < 1 || _maxParticles < _minParticles) {
-        std::cerr << "CRY::CRYGenerator: Nonsense settings for min/max particles: ";
-        std::cerr << _minParticles << " " << _maxParticles << std::endl;
+        LOG(ERROR) << "CRY::CRYGenerator: Nonsense settings for min/max particles: ";
+        LOG(ERROR) << _minParticles << " " << _maxParticles << std::endl;
         assert(0);
     }
 

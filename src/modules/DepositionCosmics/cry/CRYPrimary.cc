@@ -46,13 +46,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // getPrimary =  function will return a single primary cosmic ray
 // sampled from the flux distribution.
 //
-#include "CRYPrimary.h"
+
+#include "core/utils/log.h"
+
 #include "CRYAbsFunction.h"
 #include "CRYBinning.h"
 #include "CRYData.h"
 #include "CRYParameter.h"
 #include "CRYParticle.h"
 #include "CRYPdf.h"
+#include "CRYPrimary.h"
 #include "CRYUtils.h"
 #include "CRYWeightFunc.h"
 
@@ -71,11 +74,11 @@ CRYPrimary::CRYPrimary(CRYUtils* utils, CRYData* data, double date, double latit
     _solarCycleLength = data->getParameter("solarCycleLength");
 
     if(_solarMin == nullptr) {
-        std::cerr << "CRY::CRYPrimary: Missing solar minimum function" << std::endl;
+        LOG(ERROR) << "CRY::CRYPrimary: Missing solar minimum function" << std::endl;
         assert(0);
     }
     if(_solarMax == nullptr) {
-        std::cerr << "CRY::CRYPrimary: Missing solar maximum function" << std::endl;
+        LOG(ERROR) << "CRY::CRYPrimary: Missing solar maximum function" << std::endl;
         assert(0);
     }
 
@@ -84,7 +87,7 @@ CRYPrimary::CRYPrimary(CRYUtils* utils, CRYData* data, double date, double latit
 
     _binning = data->getBinning("primaryBins");
     if(_binning == nullptr) {
-        std::cerr << "CRY::CRYPrimary: Missing primaryBins bining\n";
+        LOG(ERROR) << "CRY::CRYPrimary: Missing primaryBins bining\n";
         assert(0);
     }
 

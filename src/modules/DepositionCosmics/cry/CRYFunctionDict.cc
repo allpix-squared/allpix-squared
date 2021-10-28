@@ -38,7 +38,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYFunctionDict.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include <sstream>
@@ -46,6 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include "CRYAbsFunction.h"
 #include "CRYCosLatitudeFunction.h"
+#include "CRYFunctionDict.h"
 #include "CRYPrimarySpectrumFunction.h"
 #include "CRYUtils.h"
 
@@ -86,8 +88,8 @@ CRYAbsFunction* CRYFunctionDict::function(std::string data) {
 
     std::string::size_type colLoc = name.find(":");
     if(colLoc == std::string::npos || name[colLoc + 1] != ':') {
-        std::cerr << "CRY::CRYFunctionDict: Function must specify type. Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYFunctionDict: Function must specify type. Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -105,8 +107,8 @@ CRYAbsFunction* CRYFunctionDict::function(std::string data) {
             type = iterKF->first;
     }
     if(type == CRYFunctionDict::UNKNOWN) {
-        std::cerr << "CRY::CRYFunctionDict: Unknown function type " << funcType << " Data was:\n";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYFunctionDict: Unknown function type " << funcType << " Data was:\n";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 

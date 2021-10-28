@@ -38,10 +38,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYWeightFunc.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include "CRYBinning.h"
+#include "CRYWeightFunc.h"
 
 CRYWeightFunc::CRYWeightFunc(CRYBinning* bins, std::vector<double> weights) {
 
@@ -51,11 +53,11 @@ CRYWeightFunc::CRYWeightFunc(CRYBinning* bins, std::vector<double> weights) {
     // consistency checks
 
     if(_bins == nullptr) {
-        std::cerr << "CRY::CRYWeightFunc: bins = NULL passed into CRYWeightFunc. Stopping\n";
+        LOG(ERROR) << "CRY::CRYWeightFunc: bins = NULL passed into CRYWeightFunc. Stopping\n";
         assert(0);
     }
     if(_bins->bins()->size() != 1 + _weights->size()) {
-        std::cerr << "CRY::CRYWeightFunc: Inconsistent set of weights and binnings. Stopping\n";
+        LOG(ERROR) << "CRY::CRYWeightFunc: Inconsistent set of weights and binnings. Stopping\n";
         assert(0);
     }
 }

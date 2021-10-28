@@ -38,12 +38,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYSetup.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h> // For Ubuntu Linux
 #include "CRYData.h"
+#include "CRYSetup.h"
 
 CRYSetup::CRYSetup(std::string configData, std::string dataDir) {
 
@@ -125,18 +127,20 @@ CRYSetup::CRYSetup(std::string configData, std::string dataDir) {
                 if(key == _parmNames[i]) {
                     _parms[i] = atof(value.c_str());
                     foundParm = true;
-                    std::cout << "CRY::CRYSetup: Setting " << _parmNames[i] << " to ";
+                    std::stringstream s;
+                    s << "CRY::CRYSetup: Setting " << _parmNames[i] << " to ";
                     if(key == _parmNames[CRYSetup::date]) {
                         _parms[i] = parseDate(value.c_str());
-                        std::cout << value << " (month-day-year)" << std::endl;
+                        s << value << " (month-day-year)" << std::endl;
                     } else {
-                        std::cout << _parms[i] << std::endl;
+                        s << _parms[i] << std::endl;
                     }
+                    LOG(DEBUG) << s.str();
                 }
             }
             if(!foundParm) {
-                std::cerr << "CRY::CRYSetup: Found unknown parameter " << key << std::endl;
-                std::cerr << "in configuration setup\n";
+                LOG(ERROR) << "CRY::CRYSetup: Found unknown parameter " << key << std::endl;
+                LOG(ERROR) << "in configuration setup\n";
                 assert(0);
             }
         }
@@ -193,7 +197,7 @@ double CRYSetup::parseDate(std::string dt) {
     else if((dd < 1) || (dd > nbr_days_in_mo[mm]))
         gooddate = false;
     if(!gooddate) {
-        std::cerr << "CRY::CRYSetup: The date " << dt << " is invalid.  The format is m-d-y" << std::endl;
+        LOG(ERROR) << "CRY::CRYSetup: The date " << dt << " is invalid.  The format is m-d-y" << std::endl;
         assert(0);
     }
 

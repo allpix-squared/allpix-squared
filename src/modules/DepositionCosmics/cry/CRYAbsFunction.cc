@@ -38,13 +38,15 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYAbsFunction.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h> // For Ubuntu Linux
 #include <string.h> // For Ubuntu Linux
 #include <string>
+#include "CRYAbsFunction.h"
 #include "CRYFunctionDict.h"
 #include "CRYUtils.h"
 
@@ -60,13 +62,13 @@ CRYAbsFunction::CRYAbsFunction(std::string name, CRYFunctionDict::functype type,
     std::string::size_type stop = rhs.find("}");
 
     if(start == std::string::npos) {
-        std::cerr << "CRY::CRYAbsFunction: invalid function - missing {. Data was:";
-        std::cerr << rhs << std::endl;
+        LOG(ERROR) << "CRY::CRYAbsFunction: invalid function - missing {. Data was:";
+        LOG(ERROR) << rhs << std::endl;
         assert(0);
     }
     if(stop == std::string::npos) {
-        std::cerr << "CRY::CRYAbsFunction: invalid function - missing }. Data was:";
-        std::cerr << rhs << std::endl;
+        LOG(ERROR) << "CRY::CRYAbsFunction: invalid function - missing }. Data was:";
+        LOG(ERROR) << rhs << std::endl;
         assert(0);
     }
 

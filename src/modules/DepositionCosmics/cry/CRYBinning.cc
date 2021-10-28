@@ -38,7 +38,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CRYBinning.h"
+#include "core/utils/log.h"
+
 #include <assert.h>
 #include <iostream>
 #include <math.h>
@@ -46,6 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h> // For Ubuntu Linux
 #include <string.h> // For Ubuntu Linux
 #include <string>
+#include "CRYBinning.h"
 
 CRYBinning::CRYBinning(std::string data) {
 
@@ -75,13 +77,13 @@ CRYBinning::CRYBinning(std::string data) {
     std::string::size_type stop = rhs.find("}");
 
     if(start == std::string::npos) {
-        std::cerr << "CRY::CRYBinning: invalid binning - missing {. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYBinning: invalid binning - missing {. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
     if(stop == std::string::npos) {
-        std::cerr << "CRY::CRYBinning: invalid binning - missing }. Data was:";
-        std::cerr << data << std::endl;
+        LOG(ERROR) << "CRY::CRYBinning: invalid binning - missing }. Data was:";
+        LOG(ERROR) << data << std::endl;
         assert(0);
     }
 
@@ -94,8 +96,8 @@ CRYBinning::CRYBinning(std::string data) {
             _bins->push_back(atof(key.c_str()));
             if(_bins->size() > 1)
                 if((*_bins)[_bins->size() - 1] <= (*_bins)[_bins->size() - 2]) {
-                    std::cerr << "CRY::CRYBinning: Bins must be in monotonically increasing order. Data was:\n";
-                    std::cerr << data << std::endl;
+                    LOG(ERROR) << "CRY::CRYBinning: Bins must be in monotonically increasing order. Data was:\n";
+                    LOG(ERROR) << data << std::endl;
                     assert(0);
                 }
         }
@@ -115,7 +117,7 @@ void CRYBinning::print(std::ostream& o, bool printData) {
 
 int CRYBinning::bin(double value) {
     if(value < (*_bins)[0]) {
-        std::cerr << "CRY::CRYBinning " << name() << ": Datum is in no bin. Stopping\n " << value << std::endl;
+        LOG(ERROR) << "CRY::CRYBinning " << name() << ": Datum is in no bin. Stopping\n " << value << std::endl;
         assert(0);
     }
 
