@@ -138,7 +138,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
 
 void DepositionCosmicsModule::initialize_g4_action() {
     auto* action_initialization =
-        new ActionInitializationG4<CosmicsGeneratorActionG4, GeneratorActionInitializationMaster>(config_, this);
+        new ActionInitializationG4<CosmicsGeneratorActionG4, GeneratorActionInitializationMaster>(config_);
     run_manager_g4_->SetUserInitialization(action_initialization);
 }
 
