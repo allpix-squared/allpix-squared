@@ -145,7 +145,7 @@ void DetectorHistogrammerModule::initialize() {
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
     std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
     cluster_size = CreateHistogram<TH1D>(
-        "cluster_size", cluster_size_title.c_str(), (xpixels * ypixels + 9) / 10, 0.5, (xpixels * ypixels + 9) / 10 + 0.5);
+        "cluster_size", cluster_size_title.c_str(), (xpixels * ypixels + 9) / 10, 0.5, (xpixels * ypixels + 9.0) / 10 + 0.5);
 
     std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
     cluster_size_x = CreateHistogram<TH1D>("cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
