@@ -94,12 +94,12 @@ void DetectorHistogrammerModule::initialize() {
     std::string hit_map_local_title = "Hitmap (" + detector_->getName() + ") in local coord.;x (mm);y (mm);hits";
     hit_map_local = CreateHistogram<TH2D>("hit_map_local",
                                           hit_map_local_title.c_str(),
-                                          static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()),
+                                          static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()),
                                           -model->getPixelSize().x() / 2,
-                                          model->getGridSize().x() - model->getPixelSize().x() / 2,
-                                          static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()),
+                                          model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+                                          static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()),
                                           -model->getPixelSize().y() / 2,
-                                          model->getGridSize().y() - model->getPixelSize().y() / 2);
+                                          model->getMatrixSize().y() - model->getPixelSize().y() / 2);
 
     auto local_inpixel_bins = config_.get<DisplacementVector2D<Cartesian2D<int>>>("granularity_local");
     std::string hit_map_local_mc_title =
@@ -107,12 +107,12 @@ void DetectorHistogrammerModule::initialize() {
     hit_map_local_mc = CreateHistogram<TH2D>(
         "hit_map_local_mc",
         hit_map_local_mc_title.c_str(),
-        static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
+        static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
         -model->getPixelSize().x() / 2,
-        model->getGridSize().x() - model->getPixelSize().x() / 2,
-        static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
+        model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+        static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
         -model->getPixelSize().y() / 2,
-        model->getGridSize().y() - model->getPixelSize().y() / 2);
+        model->getMatrixSize().y() - model->getPixelSize().y() / 2);
 
     std::string charge_map_title = "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
     charge_map = CreateHistogram<TH2D>(
@@ -129,12 +129,12 @@ void DetectorHistogrammerModule::initialize() {
     cluster_size_mc_map = CreateHistogram<TProfile2D>(
         "cluster_size_mc_map",
         cluster_size_mc_map_title.c_str(),
-        static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
+        static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
         -model->getPixelSize().x() / 2,
-        model->getGridSize().x() - model->getPixelSize().x() / 2,
-        static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
+        model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+        static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
         -model->getPixelSize().y() / 2,
-        model->getGridSize().y() - model->getPixelSize().y() / 2);
+        model->getMatrixSize().y() - model->getPixelSize().y() / 2);
 
     std::string cluster_size_map_title =
         "Cluster size as function of in-pixel impact position (" + detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
@@ -310,12 +310,12 @@ void DetectorHistogrammerModule::initialize() {
     efficiency_local = CreateHistogram<TProfile2D>(
         "efficiency_local",
         efficiency_local_title.c_str(),
-        static_cast<int>(model->getGridSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
+        static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
         -model->getPixelSize().x() / 2,
-        model->getGridSize().x() - model->getPixelSize().x() / 2,
-        static_cast<int>(model->getGridSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
+        model->getMatrixSize().x() - model->getPixelSize().x() / 2,
+        static_cast<int>(model->getMatrixSize().y() / model->getPixelSize().y()) * local_inpixel_bins.y(),
         -model->getPixelSize().y() / 2,
-        model->getGridSize().y() - model->getPixelSize().y() / 2,
+        model->getMatrixSize().y() - model->getPixelSize().y() / 2,
         0,
         1);
 
