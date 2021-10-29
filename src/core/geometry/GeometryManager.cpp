@@ -286,7 +286,7 @@ std::shared_ptr<DetectorModel> GeometryManager::getModel(const std::string& name
  * @throws InvalidModuleActionException If the passed detector is a null pointer
  * @throws ModuleError If the geometry is already closed before calling this function
  * @throws DetectorInvalidNameError If the detector name is invalid
- * @throws DetectorNameExistsError If the detector name is already registered before
+ * @throws DetectorExistsError If the detector name is already registered before
  */
 void GeometryManager::addDetector(std::shared_ptr<Detector> detector) {
     if(closed_) {
