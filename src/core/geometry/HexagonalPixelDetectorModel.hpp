@@ -44,7 +44,7 @@ namespace allpix {
          *
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
-        ROOT::Math::XYZPoint getCenter() const override;
+        ROOT::Math::XYZPoint getMatrixCenter() const override;
 
         /**
          * @brief Returns a pixel center in local coordinates
@@ -74,20 +74,20 @@ namespace allpix {
          * therefore need to check the allowed range along x as a function of the y coordinate. The integer division by two
          * ensures we allow for one more x coordinate every other row in y.
          */
-        bool isWithinPixelGrid(const int x, const int y) const override;
+        bool isWithinMatrix(const int x, const int y) const override;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
          */
-        bool isWithinPixelGrid(const Pixel::Index& pixel_index) const override;
+        bool isWithinMatrix(const Pixel::Index& pixel_index) const override;
 
         /**
          * @brief Return gridsize along X,Y of a hexagonal sensor grid.
          * @return X and Y gridlength length in mm
          */
-        ROOT::Math::XYZVector getGridSize() const override;
+        ROOT::Math::XYZVector getMatrixSize() const override;
 
         /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance

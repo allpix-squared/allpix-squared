@@ -25,8 +25,8 @@ HexagonalPixelDetectorModel::HexagonalPixelDetectorModel(std::string type, const
     }
 }
 
-ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getCenter() const {
-    auto grid = getGridSize();
+ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getMatrixCenter() const {
+    auto grid = getMatrixSize();
     auto corner_offset_left = pixel_size_.x() / 2 * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
     auto corner_offset_bottom = pixel_size_.y() / 2 * std::sin(M_PI * (start_angle() + 4) / 3); // corner 4
     return {grid.x() / 2.0 + corner_offset_left, grid.y() / 2.0 + corner_offset_bottom, 0};
@@ -66,7 +66,7 @@ std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math:
     return round_to_nearest_hex(q, r);
 }
 
-bool HexagonalPixelDetectorModel::isWithinPixelGrid(const int x, const int y) const {
+bool HexagonalPixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
     // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
@@ -78,11 +78,11 @@ bool HexagonalPixelDetectorModel::isWithinPixelGrid(const int x, const int y) co
     }
 }
 
-bool HexagonalPixelDetectorModel::isWithinPixelGrid(const Pixel::Index& pixel_index) const {
-    return isWithinPixelGrid(pixel_index.x(), pixel_index.y());
+bool HexagonalPixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
+    return isWithinMatrix(pixel_index.x(), pixel_index.y());
 }
 
-ROOT::Math::XYZVector HexagonalPixelDetectorModel::getGridSize() const {
+ROOT::Math::XYZVector HexagonalPixelDetectorModel::getMatrixSize() const {
     auto corner_offset_right = pixel_size_.x() / 2 * std::cos(M_PI * start_angle() / 3);        // corner 0
     auto corner_offset_top = pixel_size_.y() / 2 * std::sin(M_PI * (start_angle() + 1) / 3);    // corner 1
     auto corner_offset_left = pixel_size_.x() / 2 * std::cos(M_PI * (start_angle() + 3) / 3);   // corner 3
@@ -104,7 +104,7 @@ std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::In
         for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
             // "cut off" the corners of the rectangle around the index in question to make it a hexagon, remove
             // indices outside the pixel grid
-            if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) && isWithinPixelGrid(x, y)) {
+            if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) && isWithinMatrix(x, y)) {
                 neighbors.insert({x, y});
             }
         }
