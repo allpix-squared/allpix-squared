@@ -235,8 +235,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                         G4Transform3D implant_transform(
                             G4RotationMatrix(),
                             G4ThreeVector(
-                                -model->getGridSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
-                                -model->getGridSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
+                                -model->getMatrixSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
+                                -model->getMatrixSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
                                 (model->getSensorSize().z() - implants.z()) / 2.0));
 
                         // Add the new solid to the MultiUnion:
@@ -253,7 +253,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 geo_manager_->setExternalObject(name, "implants_log", implant_log);
 
                 // Place the implants box
-                auto implant_pos = toG4Vector(model->getSensorCenter() - model->getGeometricalCenter());
+                auto implant_pos = toG4Vector(model->getSensorCenter() - model->getModelCenter());
                 LOG(DEBUG) << "  - Implants\t\t:\t" << Units::display(implant_pos, {"mm", "um"});
                 auto implant_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                          implant_pos,
