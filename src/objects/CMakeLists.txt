@@ -81,5 +81,4 @@ INSTALL(
     DESTINATION include
     PATTERN "*.hpp"
     PATTERN "*.h"
-    PATTERN "objects.h" EXCLUDE
     PATTERN "Linkdef.h" EXCLUDE)
