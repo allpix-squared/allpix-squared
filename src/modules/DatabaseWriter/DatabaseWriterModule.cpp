@@ -32,11 +32,12 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     : SequentialModule(config), messenger_(messenger) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
-
     // Bind to all messages with filter
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
     config_.setDefault("global_timing", false);
+    config_.setDefault("waive_sequence_requirement", false);
+
     config_.setDefault("run_id", "none");
 }
 
@@ -52,6 +53,12 @@ void DatabaseWriterModule::initialize() {
 
     // Select pixel hit timing information to be saved:
     timing_global_ = config_.get<bool>("global_timing");
+
+    // Waive sequence requirement if requested by user
+    if(config_.get<bool>("waive_sequence_requirement")) {
+        waive_sequence_requirement();
+    }
+}
 
 void DatabaseWriterModule::initializeThread() {
     // Establishing connection to the database
