@@ -45,14 +45,24 @@ namespace allpix {
         bool filter(const std::shared_ptr<BaseMessage>& message, const std::string& name) const;
 
         /**
-         * @brief Opens the database to write the objects to
+         * @brief Parse configuration oarameters
          */
         void initialize() override;
+
+        /**
+         * @brief Initialize per-thread database connections
+         */
+        void initializeThread() override;
 
         /**
          * @brief Writes the objects fetched to their specific tree, constructing trees on the fly for new objects.
          */
         void run(Event* event) override;
+
+        /**
+         * @brief CLose database connections from each of the threads
+         */
+        void finalizeThread() override;
 
         /**
          * @brief Add the main configuration and the detector setup to the data file and write it, also write statistics
@@ -68,8 +78,8 @@ namespace allpix {
         std::set<std::string> exclude_;
 
         // postgreSQL objects
-        std::shared_ptr<pqxx::connection> conn_;
-        std::shared_ptr<pqxx::nontransaction> W_;
+        static thread_local std::shared_ptr<pqxx::connection> conn_;
+        static thread_local std::shared_ptr<pqxx::nontransaction> W_;
         std::string host_;
         std::string port_;
         std::string database_name_;

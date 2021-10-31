@@ -25,6 +25,9 @@
 
 using namespace allpix;
 
+thread_local std::shared_ptr<pqxx::connection> DatabaseWriterModule::conn_ = nullptr;
+thread_local std::shared_ptr<pqxx::nontransaction> DatabaseWriterModule::W_ = nullptr;
+
 DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
     : SequentialModule(config), messenger_(messenger) {
     // Enable multithreading of this module if multithreading is enabled
@@ -50,6 +53,7 @@ void DatabaseWriterModule::initialize() {
     // Select pixel hit timing information to be saved:
     timing_global_ = config_.get<bool>("global_timing");
 
+void DatabaseWriterModule::initializeThread() {
     // Establishing connection to the database
     conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ +
                                                " user=" + user_ + " password=" + password_);
@@ -302,10 +306,12 @@ void DatabaseWriterModule::run(Event* event) {
     }
 }
 
-void DatabaseWriterModule::finalize() {
-
+void DatabaseWriterModule::finalizeThread() {
     // disconnecting from database
     conn_->disconnect();
+}
+
+void DatabaseWriterModule::finalize() {
 
     // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to database" << std::endl;
