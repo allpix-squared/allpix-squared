@@ -52,6 +52,8 @@ sudo -u postgres createuser myuser
 sudo -u postgres psql mydb
 postgres: CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
 postgres: GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+postgres: GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO myuser;
+postgres: GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO myuser;
 ```
 
 In case of an authentication failure error being issues, the password of the user can be changed using
@@ -88,7 +90,7 @@ mydb: SELECT * FROM pixelhit;
 * `include`: Array of object names (without `allpix::` prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simultaneously with the *exclude* parameter).
 * `exclude`: Array of object names (without `allpix::` prefix) that are not written to the ROOT trees (cannot be used together simultaneously with the *include* parameter).
 * `global_timing`: Flag to select global timing information to be written to the database. By default, local information is written, i.e. only the local time information from the pixel hit in question. If enabled, the timestamp is set as the global time information of the object with respect to the event begin. Defaults to `false`.
-
+* `waive_sequence_requirement`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. The latter might change from run to run when multithreading is enabled. This does not alter the results themselves but just the resulting storage order and corresponding sequences in the output database. When enabled, no buffering is performed but all events are written to the database immediately.
 
 ### Usage
 To write objects excluding PropagatedCharge and DepositedCharge to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
