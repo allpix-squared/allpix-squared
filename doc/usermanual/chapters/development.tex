@@ -65,14 +65,14 @@ A minimal CMake setup for compiling and linking external modules to the core and
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 
-FIND_PACKAGE(ROOT REQUIRED)
-FIND_PACKAGE(Allpix REQUIRED)
+FIND_PACKAGE(Allpix 2.0 REQUIRED)
 
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} MySimulationModule.cpp)
 \end{minted}
 
-It might be necessary to set the \parameter{CMAKE_CXX_STANDARD} according to the settings used to build the framework.
+All dependencies of the framework such as ROOT or Boost.Random are automatically added as CMake targets and can be used by the module.
+The required \parameter{CMAKE_CXX_STANDARD} is automatically inferred from the settings used to build the framework.
 Additional libraries can be linked to the module using the standard CMake command
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{cmake}
 TARGET_LINK_LIBRARIES(${MODULE_NAME} MyExternalLibrary)
