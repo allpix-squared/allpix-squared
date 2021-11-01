@@ -60,6 +60,60 @@ void DatabaseWriterModule::initialize() {
     }
 }
 
+void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> connection) {
+    LOG(DEBUG) << "Preparing database statements";
+    connection->prepare("add_event", "INSERT INTO Event (run_nr, eventID) VALUES ($1, $2) RETURNING event_nr;");
+
+    connection->prepare("add_mctrack",
+                        "INSERT INTO MCTrack (run_nr, event_nr, detector, address, parentAddress, particleID, "
+                        "productionProcess, productionVolume, initialPositionX, initialPositionY, initialPositionZ, "
+                        "finalPositionX, finalPositionY, finalPositionZ, initialKineticEnergy, finalKineticEnergy) VALUES ("
+                        "$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING mctrack_nr;");
+
+    connection->prepare("add_mcparticle_with_ref",
+                        "INSERT INTO MCParticle (run_nr, event_nr, mctrack_nr, detector, address, parentAddress, "
+                        "trackAddress, particleID, localStartPointX, localStartPointY, localStartPointZ, localEndPointX, "
+                        "localEndPointY, localEndPointZ, globalStartPointX, globalStartPointY, globalStartPointZ, "
+                        "globalEndPointX, globalEndPointY, globalEndPointZ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, "
+                        "$10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING mcparticle_nr;");
+    connection->prepare(
+        "add_mcparticle",
+        "INSERT INTO MCParticle (run_nr, event_nr, detector, address, parentAddress, trackAddress, particleID, "
+        "localStartPointX, localStartPointY, localStartPointZ, localEndPointX, localEndPointY, localEndPointZ, "
+        "globalStartPointX, globalStartPointY, globalStartPointZ, globalEndPointX, globalEndPointY, globalEndPointZ) VALUES "
+        "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING mcparticle_nr;");
+
+    connection->prepare("add_depositedcharge_with_ref",
+                        "INSERT INTO DepositedCharge (run_nr, event_nr, mcparticle_nr, detector, carriertype, charge, "
+                        "localx, localy, localz, globalx, globaly, globalz) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, "
+                        "$10, $11, $12) RETURNING depositedcharge_nr;");
+    connection->prepare(
+        "add_depositedcharge",
+        "INSERT INTO DepositedCharge (run_nr, event_nr, detector, carriertype, charge, localx, localy, localz, globalx, "
+        "globaly, globalz) VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING depositedcharge_nr;");
+
+    connection->prepare("add_propagatedcharge_with_ref",
+                        "INSERT INTO PropagatedCharge (run_nr, event_nr, depositedcharge_nr, detector, carriertype, charge, "
+                        "localx, localy, localz, globalx, globaly, globalz) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, "
+                        "$10, $11, $12) RETURNING propagatedcharge_nr;");
+    connection->prepare(
+        "add_propagatedcharge",
+        "INSERT INTO PropagatedCharge (run_nr, event_nr, detector, carriertype, charge, localx, localy, localz, globalx, "
+        "globaly, globalz) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING propagatedcharge_nr;");
+
+    connection->prepare(
+        "add_pixelcharge_with_ref",
+        "INSERT INTO PixelCharge (run_nr, event_nr, propagatedcharge_nr, detector, charge, x, y, localx, localy, globalx, "
+        "globaly) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING pixelCharge_nr");
+    connection->prepare("add_pixelcharge",
+                        "INSERT INTO PixelCharge (run_nr, event_nr, detector, charge, x, y, localx, localy, globalx, "
+                        "globaly) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING pixelCharge_nr");
+
+    connection->prepare("add_pixelhit_with_refs",
+                        "INSERT INTO PixelHit (run_nr, event_nr, mcparticle_nr, pixelcharge_nr, detector, x, y, signal, "
+                        "hittime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING pixelHit_nr;");
+}
+
 void DatabaseWriterModule::initializeThread() {
     // Establishing connection to the database
     conn_ = std::make_shared<pqxx::connection>("host=" + host_ + " port=" + port_ + " dbname=" + database_name_ +
@@ -68,6 +122,7 @@ void DatabaseWriterModule::initializeThread() {
         throw ModuleError("Could not connect to database " + database_name_ + " at host " + host_);
     }
 
+    prepare_statements(conn_);
     W_ = std::make_shared<pqxx::nontransaction>(*conn_);
 
     // inserting run entry in the database
@@ -156,13 +211,9 @@ void DatabaseWriterModule::run(Event* event) {
     LOG(TRACE) << "Writing new objects to database";
 
     std::stringstream insertionLine;
-    pqxx::result insertionResult;
 
     // Writing entry to event table
-    insertionLine.str(std::string());
-    insertionLine << "INSERT INTO Event (run_nr, eventID) VALUES (" << run_nr_ << ", " << event->number
-                  << ") RETURNING event_nr;";
-    insertionResult = W_->exec(insertionLine.str());
+    auto insertionResult = W_->exec_prepared("add_event", run_nr_, event->number);
     int event_nr = atoi(insertionResult[0][0].c_str());
 
     // Looping through messages
@@ -189,119 +240,179 @@ void DatabaseWriterModule::run(Event* event) {
             // Writing objects to corresponding database tables
             if(class_name == "PixelHit") {
                 LOG(TRACE) << "inserting PixelHit" << std::endl;
-                PixelHit hit = static_cast<PixelHit&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO PixelHit (run_nr, event_nr, ";
-                if(mcparticle_nr >= 0)
-                    insertionLine << "mcparticle_nr, ";
-                if(pixelcharge_nr >= 0)
-                    insertionLine << "pixelcharge_nr, ";
-                insertionLine << "detector, x, y, signal, hittime) VALUES (" << run_nr_ << ", " << event_nr << ", ";
-                if(mcparticle_nr >= 0)
-                    insertionLine << mcparticle_nr << ", ";
-                if(pixelcharge_nr >= 0)
-                    insertionLine << pixelcharge_nr << ", ";
-                insertionLine << "'" << detectorName << "', " << hit.getIndex().X() << ", " << hit.getIndex().Y() << ", "
-                              << hit.getSignal() << ", " << (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime())
-                              << ") RETURNING pixelHit_nr;";
-                insertionResult = W_->exec(insertionLine.str());
+                auto hit = static_cast<PixelHit&>(current_object);
+                insertionResult = W_->exec_prepared("add_pixelhit_with_refs",
+                                                    run_nr_,
+                                                    event_nr,
+                                                    nullptr, //mcparticle_nr,
+                                                    nullptr, //pixelcharge_nr,
+                                                    detectorName,
+                                                    hit.getIndex().X(),
+                                                    hit.getIndex().Y(),
+                                                    hit.getSignal(),
+                                                    (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
             } else if(class_name == "PixelCharge") {
                 LOG(TRACE) << "inserting PixelCharge" << std::endl;
-                PixelCharge charge = static_cast<PixelCharge&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO PixelCharge (run_nr, event_nr, ";
-                if(propagatedcharge_nr >= 0)
-                    insertionLine << "propagatedcharge_nr, ";
-                insertionLine << "detector, charge, x, y, localx, localy, globalx, globaly) VALUES (" << run_nr_ << ", "
-                              << event_nr << ", ";
-                if(propagatedcharge_nr >= 0)
-                    insertionLine << propagatedcharge_nr << ", ";
-                insertionLine << "'" << detectorName << "', " << charge.getCharge() << ", " << charge.getIndex().X() << ", "
-                              << charge.getIndex().Y() << ", " << charge.getPixel().getLocalCenter().X() << ", "
-                              << charge.getPixel().getLocalCenter().Y() << ", " << charge.getPixel().getGlobalCenter().X()
-                              << ", " << charge.getPixel().getGlobalCenter().Y() << ") RETURNING pixelCharge_nr";
-                insertionResult = W_->exec(insertionLine.str());
+                auto charge = static_cast<PixelCharge&>(current_object);
+                if(propagatedcharge_nr >= 0) {
+                    insertionResult = W_->exec_prepared("add_pixelcharge_with_ref",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        propagatedcharge_nr,
+                                                        detectorName,
+                                                        charge.getCharge(),
+                                                        charge.getIndex().X(),
+                                                        charge.getIndex().Y(),
+                                                        charge.getPixel().getLocalCenter().X(),
+                                                        charge.getPixel().getLocalCenter().Y(),
+                                                        charge.getPixel().getGlobalCenter().X(),
+                                                        charge.getPixel().getGlobalCenter().Y());
+                } else {
+                    insertionResult = W_->exec_prepared("add_pixelcharge",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        detectorName,
+                                                        charge.getCharge(),
+                                                        charge.getIndex().X(),
+                                                        charge.getIndex().Y(),
+                                                        charge.getPixel().getLocalCenter().X(),
+                                                        charge.getPixel().getLocalCenter().Y(),
+                                                        charge.getPixel().getGlobalCenter().X(),
+                                                        charge.getPixel().getGlobalCenter().Y());
+                }
                 pixelcharge_nr = atoi(insertionResult[0][0].c_str());
             } else if(class_name == "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
                 LOG(TRACE) << "inserting PropagatedCharge" << std::endl;
                 PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO PropagatedCharge (run_nr, event_nr, ";
-                if(depositedcharge_nr >= 0)
-                    insertionLine << "depositedcharge_nr, ";
-                insertionLine << "detector, carriertype, charge, localx, localy, localz, globalx, globaly, globalz) VALUES ("
-                              << run_nr_ << ", " << event_nr << ", ";
-                if(depositedcharge_nr >= 0)
-                    insertionLine << depositedcharge_nr << ", ";
-                insertionLine << "'" << detectorName << "', " << static_cast<int>(charge.getType()) << ", "
-                              << charge.getCharge() << ", " << charge.getLocalPosition().X() << ", "
-                              << charge.getLocalPosition().Y() << ", " << charge.getLocalPosition().Z() << ", "
-                              << charge.getGlobalPosition().X() << ", " << charge.getGlobalPosition().Y() << ", "
-                              << charge.getGlobalPosition().Z() << ") RETURNING propagatedcharge_nr;";
-                insertionResult = W_->exec(insertionLine.str());
+                if(depositedcharge_nr >= 0) {
+                    insertionResult = W_->exec_prepared("add_propagatedcharge_with_ref",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        depositedcharge_nr,
+                                                        detectorName,
+                                                        static_cast<int>(charge.getType()),
+                                                        charge.getCharge(),
+                                                        charge.getLocalPosition().X(),
+                                                        charge.getLocalPosition().Y(),
+                                                        charge.getLocalPosition().Z(),
+                                                        charge.getGlobalPosition().X(),
+                                                        charge.getGlobalPosition().Y(),
+                                                        charge.getGlobalPosition().Z());
+                } else {
+                    insertionResult = W_->exec_prepared("add_propagatedcharge",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        detectorName,
+                                                        static_cast<int>(charge.getType()),
+                                                        charge.getCharge(),
+                                                        charge.getLocalPosition().X(),
+                                                        charge.getLocalPosition().Y(),
+                                                        charge.getLocalPosition().Z(),
+                                                        charge.getGlobalPosition().X(),
+                                                        charge.getGlobalPosition().Y(),
+                                                        charge.getGlobalPosition().Z());
+                }
                 propagatedcharge_nr = atoi(insertionResult[0][0].c_str());
             } else if(class_name == "MCTrack") {
                 LOG(TRACE) << "inserting MCTrack" << std::endl;
-                MCTrack track = static_cast<MCTrack&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO MCTrack (run_nr, event_nr, detector, address, parentAddress, particleID, "
-                                 "productionProcess, productionVolume, initialPositionX, initialPositionY, "
-                                 "initialPositionZ, finalPositionX, finalPositionY, finalPositionZ, initialKineticEnergy, "
-                                 "finalKineticEnergy) VALUES ("
-                              << run_nr_ << ", " << event_nr << ", '" << detectorName << "', "
-                              << reinterpret_cast<uintptr_t>(&current_object) << ", "
-                              << reinterpret_cast<uintptr_t>(track.getParent()) << ", " << track.getParticleID() << ", '"
-                              << track.getCreationProcessName() << "', '" << track.getOriginatingVolumeName() << "', "
-                              << track.getStartPoint().X() << ", " << track.getStartPoint().Y() << ", "
-                              << track.getStartPoint().Z() << ", " << track.getEndPoint().X() << ", "
-                              << track.getEndPoint().Y() << ", " << track.getEndPoint().Z() << ", "
-                              << track.getKineticEnergyInitial() << ", " << track.getKineticEnergyFinal()
-                              << ") RETURNING mctrack_nr;";
-                insertionResult = W_->exec(insertionLine.str());
+                auto track = static_cast<MCTrack&>(current_object);
+                insertionResult = W_->exec_prepared("add_mctrack",
+                                                    run_nr_,
+                                                    event_nr,
+                                                    detectorName,
+                                                    reinterpret_cast<uintptr_t>(&current_object),
+                                                    reinterpret_cast<uintptr_t>(track.getParent()),
+                                                    track.getParticleID(),
+                                                    track.getCreationProcessName(),
+                                                    track.getOriginatingVolumeName(),
+                                                    track.getStartPoint().X(),
+                                                    track.getStartPoint().Y(),
+                                                    track.getStartPoint().Z(),
+                                                    track.getEndPoint().X(),
+                                                    track.getEndPoint().Y(),
+                                                    track.getEndPoint().Z(),
+                                                    track.getKineticEnergyInitial(),
+                                                    track.getKineticEnergyFinal());
                 mctrack_nr = atoi(insertionResult[0][0].c_str());
             } else if(class_name == "DepositedCharge") {
                 LOG(TRACE) << "inserting DepositedCharge" << std::endl;
-                DepositedCharge charge = static_cast<DepositedCharge&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO DepositedCharge (run_nr, event_nr, ";
-                if(mcparticle_nr >= 0)
-                    insertionLine << "mcparticle_nr, ";
-                insertionLine << "detector, carriertype, charge, localx, localy, localz, globalx, globaly, globalz) VALUES ("
-                              << run_nr_ << ", " << event_nr << ", ";
-                if(mcparticle_nr >= 0)
-                    insertionLine << mcparticle_nr << ", ";
-                insertionLine << "'" << detectorName << "', " << static_cast<int>(charge.getType()) << ", "
-                              << charge.getCharge() << ", " << charge.getLocalPosition().X() << ", "
-                              << charge.getLocalPosition().Y() << ", " << charge.getLocalPosition().Z() << ", "
-                              << charge.getGlobalPosition().X() << ", " << charge.getGlobalPosition().Y() << ", "
-                              << charge.getGlobalPosition().Z() << ") RETURNING depositedcharge_nr";
-                insertionResult = W_->exec(insertionLine.str());
+                auto charge = static_cast<DepositedCharge&>(current_object);
+                if(mcparticle_nr >= 0) {
+                    insertionResult = W_->exec_prepared("add_depositedcharge_with_ref",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        mcparticle_nr,
+                                                        detectorName,
+                                                        static_cast<int>(charge.getType()),
+                                                        charge.getCharge(),
+                                                        charge.getLocalPosition().X(),
+                                                        charge.getLocalPosition().Y(),
+                                                        charge.getLocalPosition().Z(),
+                                                        charge.getGlobalPosition().X(),
+                                                        charge.getGlobalPosition().Y(),
+                                                        charge.getGlobalPosition().Z());
+                } else {
+                    insertionResult = W_->exec_prepared("add_depositedcharge",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        detectorName,
+                                                        static_cast<int>(charge.getType()),
+                                                        charge.getCharge(),
+                                                        charge.getLocalPosition().X(),
+                                                        charge.getLocalPosition().Y(),
+                                                        charge.getLocalPosition().Z(),
+                                                        charge.getGlobalPosition().X(),
+                                                        charge.getGlobalPosition().Y(),
+                                                        charge.getGlobalPosition().Z());
+                }
                 depositedcharge_nr = atoi(insertionResult[0][0].c_str());
             } else if(class_name == "MCParticle") {
                 LOG(TRACE) << "inserting MCParticle" << std::endl;
-                MCParticle particle = static_cast<MCParticle&>(current_object);
-                insertionLine.str(std::string());
-                insertionLine << "INSERT INTO MCParticle (run_nr, event_nr, ";
-                if(mctrack_nr >= 0)
-                    insertionLine << "mctrack_nr, ";
-                insertionLine
-                    << "detector, address, parentAddress, trackAddress, particleID, localStartPointX, localStartPointY, "
-                       "localStartPointZ, localEndPointX, localEndPointY, localEndPointZ, globalStartPointX, "
-                       "globalStartPointY, globalStartPointZ, globalEndPointX, globalEndPointY, globalEndPointZ) VALUES ("
-                    << run_nr_ << ", " << event_nr << ", ";
-                if(mctrack_nr >= 0)
-                    insertionLine << mctrack_nr << ", ";
-                insertionLine << "'" << detectorName << "', " << reinterpret_cast<uintptr_t>(&current_object) << ", "
-                              << reinterpret_cast<uintptr_t>(particle.getParent()) << ", "
-                              << reinterpret_cast<uintptr_t>(particle.getTrack()) << ", " << particle.getParticleID() << ", "
-                              << particle.getLocalStartPoint().X() << ", " << particle.getLocalStartPoint().Y() << ", "
-                              << particle.getLocalStartPoint().Z() << ", " << particle.getLocalEndPoint().X() << ", "
-                              << particle.getLocalEndPoint().Y() << ", " << particle.getLocalEndPoint().Z() << ", "
-                              << particle.getGlobalStartPoint().X() << ", " << particle.getGlobalStartPoint().Y() << ", "
-                              << particle.getGlobalStartPoint().Z() << ", " << particle.getGlobalEndPoint().X() << ", "
-                              << particle.getGlobalEndPoint().Y() << ", " << particle.getGlobalEndPoint().Z()
-                              << ") RETURNING mcparticle_nr;";
-                insertionResult = W_->exec(insertionLine.str());
+                auto particle = static_cast<MCParticle&>(current_object);
+                if(mctrack_nr >= 0) {
+                    insertionResult = W_->exec_prepared("add_mcparticle_with_ref",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        mctrack_nr,
+                                                        detectorName,
+                                                        reinterpret_cast<uintptr_t>(&current_object),
+                                                        reinterpret_cast<uintptr_t>(particle.getParent()),
+                                                        reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                        particle.getParticleID(),
+                                                        particle.getLocalStartPoint().X(),
+                                                        particle.getLocalStartPoint().Y(),
+                                                        particle.getLocalStartPoint().Z(),
+                                                        particle.getLocalEndPoint().X(),
+                                                        particle.getLocalEndPoint().Y(),
+                                                        particle.getLocalEndPoint().Z(),
+                                                        particle.getGlobalStartPoint().X(),
+                                                        particle.getGlobalStartPoint().Y(),
+                                                        particle.getGlobalStartPoint().Z(),
+                                                        particle.getGlobalEndPoint().X(),
+                                                        particle.getGlobalEndPoint().Y(),
+                                                        particle.getGlobalEndPoint().Z());
+                } else {
+                    insertionResult = W_->exec_prepared("add_mcparticle",
+                                                        run_nr_,
+                                                        event_nr,
+                                                        detectorName,
+                                                        reinterpret_cast<uintptr_t>(&current_object),
+                                                        reinterpret_cast<uintptr_t>(particle.getParent()),
+                                                        reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                        particle.getParticleID(),
+                                                        particle.getLocalStartPoint().X(),
+                                                        particle.getLocalStartPoint().Y(),
+                                                        particle.getLocalStartPoint().Z(),
+                                                        particle.getLocalEndPoint().X(),
+                                                        particle.getLocalEndPoint().Y(),
+                                                        particle.getLocalEndPoint().Z(),
+                                                        particle.getGlobalStartPoint().X(),
+                                                        particle.getGlobalStartPoint().Y(),
+                                                        particle.getGlobalStartPoint().Z(),
+                                                        particle.getGlobalEndPoint().X(),
+                                                        particle.getGlobalEndPoint().Y(),
+                                                        particle.getGlobalEndPoint().Z());
+                }
                 mcparticle_nr = atoi(insertionResult[0][0].c_str());
             } else {
                 LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name

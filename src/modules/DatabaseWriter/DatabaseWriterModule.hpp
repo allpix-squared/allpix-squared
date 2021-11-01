@@ -73,6 +73,12 @@ namespace allpix {
     private:
         Messenger* messenger_;
 
+        /**
+         * @brief Submit "prepared statements" to the database connection(s)
+         * @param connection  Database connection to be used
+         */
+        static void prepare_statements(std::shared_ptr<pqxx::connection> connection);
+
         // Object names to include or exclude from writing
         std::set<std::string> include_;
         std::set<std::string> exclude_;
