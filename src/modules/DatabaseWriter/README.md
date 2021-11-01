@@ -93,15 +93,17 @@ mydb: SELECT * FROM pixelhit;
 * `waive_sequence_requirement`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. The latter might change from run to run when multithreading is enabled. This does not alter the results themselves but just the resulting storage order and corresponding sequences in the output database. When enabled, no buffering is performed but all events are written to the database immediately.
 
 ### Usage
-To write objects excluding PropagatedCharge and DepositedCharge to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
+To write objects excluding `PropagatedCharge` and `DepositedCharge` to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
 
 ```ini
 [DatabaseWriter]
-exclude = "PropagatedCharge" "DepositedCharge"
+exclude = PropagatedCharge, DepositedCharge
 host = "localhost"
-port = "5432"
+port = 5432
 database_name = "mydb"
 user = "myuser"
 password = "mypass"
 run_id = "myRun"
 ```
+
+Optionally the password can also be provided via the command line only, using `allpix -c config.conf -o DatabaseWriter.password="mypass"`.
