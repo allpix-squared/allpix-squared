@@ -63,6 +63,8 @@ void DatabaseWriterModule::initialize() {
 
 void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> connection) {
     LOG(DEBUG) << "Preparing database statements";
+    connection->prepare("add_run", "INSERT INTO Run (run_id) VALUES ($1) RETURNING run_nr;");
+
     connection->prepare("add_event", "INSERT INTO Event (run_nr, eventID) VALUES ($1, $2) RETURNING event_nr;");
 
     connection->prepare("add_mctrack",
@@ -110,7 +112,7 @@ void DatabaseWriterModule::initializeThread() {
     W_ = std::make_shared<pqxx::nontransaction>(*conn_);
 
     // inserting run entry in the database
-    pqxx::result runR = W_->exec("INSERT INTO Run (run_id) VALUES ('" + run_id_ + "') RETURNING run_nr;");
+    pqxx::result runR = W_->exec_prepared("add_run", run_id_);
     run_nr_ = atoi(runR[0][0].c_str());
 
     // Read include and exclude list
