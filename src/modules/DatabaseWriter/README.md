@@ -1,5 +1,5 @@
 # DatabaseWriter
-**Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>)  
+**Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  
 **Input**: *all objects in simulation*
 
