@@ -113,8 +113,8 @@ void DatabaseWriterModule::initializeThread() {
     try {
         // Open new transaction
         pqxx::work transaction(*conn_);
-        pqxx::result runR = transaction.exec_prepared("add_run", run_id_);
-        run_nr_ = atoi(runR[0][0].c_str());
+        auto runR = transaction.exec_prepared1("add_run", run_id_);
+        run_nr_ = runR.front().as<int>();
         // Commit transaction to database:
         transaction.commit();
 
@@ -204,11 +204,11 @@ void DatabaseWriterModule::run(Event* event) {
     try {
         // Open new transaction
         pqxx::work transaction(*conn_);
-        LOG(TRACE) << "Started new database transaction";
+        LOG(DEBUG) << "Started new database transaction";
 
         // Writing entry to event table
-        auto insertionResult = transaction.exec_prepared("add_event", run_nr_, event->number);
-        int event_nr = atoi(insertionResult[0][0].c_str());
+        auto event_row = transaction.exec_prepared1("add_event", run_nr_, event->number);
+        int event_nr = event_row.front().as<int>();
 
         // Looping through messages
         for(auto& pair : messages) {
@@ -233,9 +233,8 @@ void DatabaseWriterModule::run(Event* event) {
                 }
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
-                    LOG(TRACE) << "inserting PixelHit" << std::endl;
                     auto hit = static_cast<PixelHit&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_pixelhit",
+                    auto hit_row = transaction.exec_prepared1("add_pixelhit",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 mcparticle_nr,
@@ -245,10 +244,10 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 hit.getIndex().Y(),
                                                                 hit.getSignal(),
                                                                 (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
+                    LOG(TRACE) << "Inserted PixelHit with db id " << hit_row.front().as<int>();
                 } else if(class_name == "PixelCharge") {
-                    LOG(TRACE) << "inserting PixelCharge" << std::endl;
                     auto charge = static_cast<PixelCharge&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_pixelcharge",
+                    auto charge_row = transaction.exec_prepared1("add_pixelcharge",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 propagatedcharge_nr,
@@ -260,12 +259,12 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 charge.getPixel().getLocalCenter().Y(),
                                                                 charge.getPixel().getGlobalCenter().X(),
                                                                 charge.getPixel().getGlobalCenter().Y());
-                    pixelcharge_nr = atoi(insertionResult[0][0].c_str());
+                    pixelcharge_nr = charge_row.front().as<int>();
+                    LOG(TRACE) << "Inserted PixelCharge  with db id " << pixelcharge_nr.value();
                 } else if(class_name ==
                           "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
-                    LOG(TRACE) << "inserting PropagatedCharge" << std::endl;
                     PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_propagatedcharge",
+                    auto prop_row = transaction.exec_prepared1("add_propagatedcharge",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 depositedcharge_nr,
@@ -278,11 +277,11 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 charge.getGlobalPosition().X(),
                                                                 charge.getGlobalPosition().Y(),
                                                                 charge.getGlobalPosition().Z());
-                    propagatedcharge_nr = atoi(insertionResult[0][0].c_str());
+                    propagatedcharge_nr = prop_row.front().as<int>();
+                    LOG(TRACE) << "Inserted PropagatedCharge with db id " << propagatedcharge_nr.value();
                 } else if(class_name == "MCTrack") {
-                    LOG(TRACE) << "inserting MCTrack" << std::endl;
                     auto track = static_cast<MCTrack&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_mctrack",
+                    auto mctrack_row = transaction.exec_prepared1("add_mctrack",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 detectorName,
@@ -299,11 +298,11 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 track.getEndPoint().Z(),
                                                                 track.getKineticEnergyInitial(),
                                                                 track.getKineticEnergyFinal());
-                    mctrack_nr = atoi(insertionResult[0][0].c_str());
+                    mctrack_nr = mctrack_row.front().as<int>();
+                    LOG(TRACE) << "Inserted MCTrack with db id " << mctrack_nr.value();
                 } else if(class_name == "DepositedCharge") {
-                    LOG(TRACE) << "inserting DepositedCharge" << std::endl;
                     auto charge = static_cast<DepositedCharge&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_depositedcharge",
+                    auto depos_row = transaction.exec_prepared1("add_depositedcharge",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 mcparticle_nr,
@@ -316,11 +315,11 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 charge.getGlobalPosition().X(),
                                                                 charge.getGlobalPosition().Y(),
                                                                 charge.getGlobalPosition().Z());
-                    depositedcharge_nr = atoi(insertionResult[0][0].c_str());
+                    depositedcharge_nr = depos_row.front().as<int>();
+                    LOG(TRACE) << "Inserted DepositedCharge with db id " << depositedcharge_nr.value();
                 } else if(class_name == "MCParticle") {
-                    LOG(TRACE) << "inserting MCParticle" << std::endl;
                     auto particle = static_cast<MCParticle&>(current_object);
-                    insertionResult = transaction.exec_prepared("add_mcparticle",
+                    auto mcp_row = transaction.exec_prepared1("add_mcparticle",
                                                                 run_nr_,
                                                                 event_nr,
                                                                 mctrack_nr,
@@ -341,10 +340,10 @@ void DatabaseWriterModule::run(Event* event) {
                                                                 particle.getGlobalEndPoint().X(),
                                                                 particle.getGlobalEndPoint().Y(),
                                                                 particle.getGlobalEndPoint().Z());
-                    mcparticle_nr = atoi(insertionResult[0][0].c_str());
+                    mcparticle_nr = mcp_row.front().as<int>();
+                    LOG(TRACE) << "Inserted MCParticle with db id " << mcparticle_nr.value();
                 } else {
-                    LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name
-                                 << std::endl;
+                    LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name;
                 }
                 write_cnt_++;
             }
@@ -353,7 +352,7 @@ void DatabaseWriterModule::run(Event* event) {
 
         // Commit transaction to database:
         transaction.commit();
-        LOG(TRACE) << "Database transaction completed";
+        LOG(DEBUG) << "Database transaction completed";
     } catch(const std::exception& e) {
         throw ModuleError("SQL error: " + std::string(e.what()));
     }
