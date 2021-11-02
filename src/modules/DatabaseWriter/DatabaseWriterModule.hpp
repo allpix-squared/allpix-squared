@@ -85,7 +85,6 @@ namespace allpix {
 
         // postgreSQL objects
         static thread_local std::shared_ptr<pqxx::connection> conn_;
-        static thread_local std::shared_ptr<pqxx::nontransaction> W_;
         std::string host_;
         std::string port_;
         std::string database_name_;

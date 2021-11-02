@@ -27,7 +27,6 @@
 using namespace allpix;
 
 thread_local std::shared_ptr<pqxx::connection> DatabaseWriterModule::conn_ = nullptr;
-thread_local std::shared_ptr<pqxx::nontransaction> DatabaseWriterModule::W_ = nullptr;
 
 DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
     : SequentialModule(config), messenger_(messenger) {
@@ -109,11 +108,19 @@ void DatabaseWriterModule::initializeThread() {
     }
 
     prepare_statements(conn_);
-    W_ = std::make_shared<pqxx::nontransaction>(*conn_);
 
-    // inserting run entry in the database
-    pqxx::result runR = W_->exec_prepared("add_run", run_id_);
-    run_nr_ = atoi(runR[0][0].c_str());
+    // Inserting run entry in the database
+    try {
+        // Open new transaction
+        pqxx::work transaction(*conn_);
+        pqxx::result runR = transaction.exec_prepared("add_run", run_id_);
+        run_nr_ = atoi(runR[0][0].c_str());
+        // Commit transaction to database:
+        transaction.commit();
+
+    } catch(const std::exception& e) {
+        throw ModuleError("SQL error: " + std::string(e.what()));
+    }
 
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
@@ -194,151 +201,161 @@ void DatabaseWriterModule::run(Event* event) {
     std::optional<int> pixelcharge_nr;
 
     LOG(TRACE) << "Writing new objects to database";
+    try {
+        // Open new transaction
+        pqxx::work transaction(*conn_);
+        LOG(TRACE) << "Started new database transaction";
 
-    std::stringstream insertionLine;
+        // Writing entry to event table
+        auto insertionResult = transaction.exec_prepared("add_event", run_nr_, event->number);
+        int event_nr = atoi(insertionResult[0][0].c_str());
 
-    // Writing entry to event table
-    auto insertionResult = W_->exec_prepared("add_event", run_nr_, event->number);
-    int event_nr = atoi(insertionResult[0][0].c_str());
+        // Looping through messages
+        for(auto& pair : messages) {
+            auto& message = pair.first;
 
-    // Looping through messages
-    for(auto& pair : messages) {
-        auto& message = pair.first;
-
-        // Storing detector's name
-        std::string detectorName = "";
-        if(message->getDetector() != nullptr) {
-            detectorName = message->getDetector()->getName();
-        } else {
-            detectorName = "global";
-        }
-        for(auto& object : message->getObjectArray()) {
-            // Retrieving object type
-            Object& current_object = object;
-            auto* cls = TClass::GetClass(typeid(current_object));
-            std::string class_name = cls->GetName();
-            std::string apx_namespace = "allpix::";
-            size_t ap_idx = class_name.find(apx_namespace);
-            if(ap_idx != std::string::npos) {
-                class_name.replace(ap_idx, apx_namespace.size(), "");
-            }
-            // Writing objects to corresponding database tables
-            if(class_name == "PixelHit") {
-                LOG(TRACE) << "inserting PixelHit" << std::endl;
-                auto hit = static_cast<PixelHit&>(current_object);
-                insertionResult = W_->exec_prepared("add_pixelhit",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    mcparticle_nr,
-                                                    pixelcharge_nr,
-                                                    detectorName,
-                                                    hit.getIndex().X(),
-                                                    hit.getIndex().Y(),
-                                                    hit.getSignal(),
-                                                    (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
-            } else if(class_name == "PixelCharge") {
-                LOG(TRACE) << "inserting PixelCharge" << std::endl;
-                auto charge = static_cast<PixelCharge&>(current_object);
-                insertionResult = W_->exec_prepared("add_pixelcharge",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    propagatedcharge_nr,
-                                                    detectorName,
-                                                    charge.getCharge(),
-                                                    charge.getIndex().X(),
-                                                    charge.getIndex().Y(),
-                                                    charge.getPixel().getLocalCenter().X(),
-                                                    charge.getPixel().getLocalCenter().Y(),
-                                                    charge.getPixel().getGlobalCenter().X(),
-                                                    charge.getPixel().getGlobalCenter().Y());
-                pixelcharge_nr = atoi(insertionResult[0][0].c_str());
-            } else if(class_name == "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
-                LOG(TRACE) << "inserting PropagatedCharge" << std::endl;
-                PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
-                insertionResult = W_->exec_prepared("add_propagatedcharge",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    depositedcharge_nr,
-                                                    detectorName,
-                                                    static_cast<int>(charge.getType()),
-                                                    charge.getCharge(),
-                                                    charge.getLocalPosition().X(),
-                                                    charge.getLocalPosition().Y(),
-                                                    charge.getLocalPosition().Z(),
-                                                    charge.getGlobalPosition().X(),
-                                                    charge.getGlobalPosition().Y(),
-                                                    charge.getGlobalPosition().Z());
-                propagatedcharge_nr = atoi(insertionResult[0][0].c_str());
-            } else if(class_name == "MCTrack") {
-                LOG(TRACE) << "inserting MCTrack" << std::endl;
-                auto track = static_cast<MCTrack&>(current_object);
-                insertionResult = W_->exec_prepared("add_mctrack",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    detectorName,
-                                                    reinterpret_cast<uintptr_t>(&current_object),
-                                                    reinterpret_cast<uintptr_t>(track.getParent()),
-                                                    track.getParticleID(),
-                                                    track.getCreationProcessName(),
-                                                    track.getOriginatingVolumeName(),
-                                                    track.getStartPoint().X(),
-                                                    track.getStartPoint().Y(),
-                                                    track.getStartPoint().Z(),
-                                                    track.getEndPoint().X(),
-                                                    track.getEndPoint().Y(),
-                                                    track.getEndPoint().Z(),
-                                                    track.getKineticEnergyInitial(),
-                                                    track.getKineticEnergyFinal());
-                mctrack_nr = atoi(insertionResult[0][0].c_str());
-            } else if(class_name == "DepositedCharge") {
-                LOG(TRACE) << "inserting DepositedCharge" << std::endl;
-                auto charge = static_cast<DepositedCharge&>(current_object);
-                insertionResult = W_->exec_prepared("add_depositedcharge",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    mcparticle_nr,
-                                                    detectorName,
-                                                    static_cast<int>(charge.getType()),
-                                                    charge.getCharge(),
-                                                    charge.getLocalPosition().X(),
-                                                    charge.getLocalPosition().Y(),
-                                                    charge.getLocalPosition().Z(),
-                                                    charge.getGlobalPosition().X(),
-                                                    charge.getGlobalPosition().Y(),
-                                                    charge.getGlobalPosition().Z());
-                depositedcharge_nr = atoi(insertionResult[0][0].c_str());
-            } else if(class_name == "MCParticle") {
-                LOG(TRACE) << "inserting MCParticle" << std::endl;
-                auto particle = static_cast<MCParticle&>(current_object);
-                insertionResult = W_->exec_prepared("add_mcparticle",
-                                                    run_nr_,
-                                                    event_nr,
-                                                    mctrack_nr,
-                                                    detectorName,
-                                                    reinterpret_cast<uintptr_t>(&current_object),
-                                                    reinterpret_cast<uintptr_t>(particle.getParent()),
-                                                    reinterpret_cast<uintptr_t>(particle.getTrack()),
-                                                    particle.getParticleID(),
-                                                    particle.getLocalStartPoint().X(),
-                                                    particle.getLocalStartPoint().Y(),
-                                                    particle.getLocalStartPoint().Z(),
-                                                    particle.getLocalEndPoint().X(),
-                                                    particle.getLocalEndPoint().Y(),
-                                                    particle.getLocalEndPoint().Z(),
-                                                    particle.getGlobalStartPoint().X(),
-                                                    particle.getGlobalStartPoint().Y(),
-                                                    particle.getGlobalStartPoint().Z(),
-                                                    particle.getGlobalEndPoint().X(),
-                                                    particle.getGlobalEndPoint().Y(),
-                                                    particle.getGlobalEndPoint().Z());
-                mcparticle_nr = atoi(insertionResult[0][0].c_str());
+            // Storing detector's name
+            std::string detectorName = "";
+            if(message->getDetector() != nullptr) {
+                detectorName = message->getDetector()->getName();
             } else {
-                LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name
-                             << std::endl;
+                detectorName = "global";
             }
-            write_cnt_++;
+            for(auto& object : message->getObjectArray()) {
+                // Retrieving object type
+                Object& current_object = object;
+                auto* cls = TClass::GetClass(typeid(current_object));
+                std::string class_name = cls->GetName();
+                std::string apx_namespace = "allpix::";
+                size_t ap_idx = class_name.find(apx_namespace);
+                if(ap_idx != std::string::npos) {
+                    class_name.replace(ap_idx, apx_namespace.size(), "");
+                }
+                // Writing objects to corresponding database tables
+                if(class_name == "PixelHit") {
+                    LOG(TRACE) << "inserting PixelHit" << std::endl;
+                    auto hit = static_cast<PixelHit&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_pixelhit",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                mcparticle_nr,
+                                                                pixelcharge_nr,
+                                                                detectorName,
+                                                                hit.getIndex().X(),
+                                                                hit.getIndex().Y(),
+                                                                hit.getSignal(),
+                                                                (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
+                } else if(class_name == "PixelCharge") {
+                    LOG(TRACE) << "inserting PixelCharge" << std::endl;
+                    auto charge = static_cast<PixelCharge&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_pixelcharge",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                propagatedcharge_nr,
+                                                                detectorName,
+                                                                charge.getCharge(),
+                                                                charge.getIndex().X(),
+                                                                charge.getIndex().Y(),
+                                                                charge.getPixel().getLocalCenter().X(),
+                                                                charge.getPixel().getLocalCenter().Y(),
+                                                                charge.getPixel().getGlobalCenter().X(),
+                                                                charge.getPixel().getGlobalCenter().Y());
+                    pixelcharge_nr = atoi(insertionResult[0][0].c_str());
+                } else if(class_name ==
+                          "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
+                    LOG(TRACE) << "inserting PropagatedCharge" << std::endl;
+                    PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_propagatedcharge",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                depositedcharge_nr,
+                                                                detectorName,
+                                                                static_cast<int>(charge.getType()),
+                                                                charge.getCharge(),
+                                                                charge.getLocalPosition().X(),
+                                                                charge.getLocalPosition().Y(),
+                                                                charge.getLocalPosition().Z(),
+                                                                charge.getGlobalPosition().X(),
+                                                                charge.getGlobalPosition().Y(),
+                                                                charge.getGlobalPosition().Z());
+                    propagatedcharge_nr = atoi(insertionResult[0][0].c_str());
+                } else if(class_name == "MCTrack") {
+                    LOG(TRACE) << "inserting MCTrack" << std::endl;
+                    auto track = static_cast<MCTrack&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_mctrack",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                detectorName,
+                                                                reinterpret_cast<uintptr_t>(&current_object),
+                                                                reinterpret_cast<uintptr_t>(track.getParent()),
+                                                                track.getParticleID(),
+                                                                track.getCreationProcessName(),
+                                                                track.getOriginatingVolumeName(),
+                                                                track.getStartPoint().X(),
+                                                                track.getStartPoint().Y(),
+                                                                track.getStartPoint().Z(),
+                                                                track.getEndPoint().X(),
+                                                                track.getEndPoint().Y(),
+                                                                track.getEndPoint().Z(),
+                                                                track.getKineticEnergyInitial(),
+                                                                track.getKineticEnergyFinal());
+                    mctrack_nr = atoi(insertionResult[0][0].c_str());
+                } else if(class_name == "DepositedCharge") {
+                    LOG(TRACE) << "inserting DepositedCharge" << std::endl;
+                    auto charge = static_cast<DepositedCharge&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_depositedcharge",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                mcparticle_nr,
+                                                                detectorName,
+                                                                static_cast<int>(charge.getType()),
+                                                                charge.getCharge(),
+                                                                charge.getLocalPosition().X(),
+                                                                charge.getLocalPosition().Y(),
+                                                                charge.getLocalPosition().Z(),
+                                                                charge.getGlobalPosition().X(),
+                                                                charge.getGlobalPosition().Y(),
+                                                                charge.getGlobalPosition().Z());
+                    depositedcharge_nr = atoi(insertionResult[0][0].c_str());
+                } else if(class_name == "MCParticle") {
+                    LOG(TRACE) << "inserting MCParticle" << std::endl;
+                    auto particle = static_cast<MCParticle&>(current_object);
+                    insertionResult = transaction.exec_prepared("add_mcparticle",
+                                                                run_nr_,
+                                                                event_nr,
+                                                                mctrack_nr,
+                                                                detectorName,
+                                                                reinterpret_cast<uintptr_t>(&current_object),
+                                                                reinterpret_cast<uintptr_t>(particle.getParent()),
+                                                                reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                                particle.getParticleID(),
+                                                                particle.getLocalStartPoint().X(),
+                                                                particle.getLocalStartPoint().Y(),
+                                                                particle.getLocalStartPoint().Z(),
+                                                                particle.getLocalEndPoint().X(),
+                                                                particle.getLocalEndPoint().Y(),
+                                                                particle.getLocalEndPoint().Z(),
+                                                                particle.getGlobalStartPoint().X(),
+                                                                particle.getGlobalStartPoint().Y(),
+                                                                particle.getGlobalStartPoint().Z(),
+                                                                particle.getGlobalEndPoint().X(),
+                                                                particle.getGlobalEndPoint().Y(),
+                                                                particle.getGlobalEndPoint().Z());
+                    mcparticle_nr = atoi(insertionResult[0][0].c_str());
+                } else {
+                    LOG(WARNING) << "Following object type is not yet accounted for in database output: " << class_name
+                                 << std::endl;
+                }
+                write_cnt_++;
+            }
+            msg_cnt_++;
         }
-        msg_cnt_++;
+
+        // Commit transaction to database:
+        transaction.commit();
+        LOG(TRACE) << "Database transaction completed";
+    } catch(const std::exception& e) {
+        throw ModuleError("SQL error: " + std::string(e.what()));
     }
 }
 
