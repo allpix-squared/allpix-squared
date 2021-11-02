@@ -75,12 +75,6 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
         }
         LOG(TRACE) << "ROOT object writer received " << allpix::demangle(typeid(*inst).name()) << name_str;
 
-        // Get the detector name
-        std::string detector_name;
-        if(message->getDetector() != nullptr) {
-            detector_name = message->getDetector()->getName();
-        }
-
         // Read the object
         auto object_array = message->getObjectArray();
         if(object_array.empty()) {
