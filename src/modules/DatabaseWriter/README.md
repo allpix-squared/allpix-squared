@@ -1,5 +1,5 @@
 # DatabaseWriter
-**Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>)  
+**Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  
 **Input**: *all objects in simulation*
 
@@ -52,6 +52,8 @@ sudo -u postgres createuser myuser
 sudo -u postgres psql mydb
 postgres: CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
 postgres: GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+postgres: GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO myuser;
+postgres: GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO myuser;
 ```
 
 In case of an authentication failure error being issues, the password of the user can be changed using
@@ -88,18 +90,20 @@ mydb: SELECT * FROM pixelhit;
 * `include`: Array of object names (without `allpix::` prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simultaneously with the *exclude* parameter).
 * `exclude`: Array of object names (without `allpix::` prefix) that are not written to the ROOT trees (cannot be used together simultaneously with the *include* parameter).
 * `global_timing`: Flag to select global timing information to be written to the database. By default, local information is written, i.e. only the local time information from the pixel hit in question. If enabled, the timestamp is set as the global time information of the object with respect to the event begin. Defaults to `false`.
-
+* `require_sequence`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. Defaults to `false`, writing events immediately. If strict adherence to the order of events is required, finished events are buffered until they can be written to the database. Since in this case database access happens single-threaded, this might impact the performance of the simulation.
 
 ### Usage
-To write objects excluding PropagatedCharge and DepositedCharge to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
+To write objects excluding `PropagatedCharge` and `DepositedCharge` to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
 
 ```ini
 [DatabaseWriter]
-exclude = "PropagatedCharge" "DepositedCharge"
+exclude = PropagatedCharge, DepositedCharge
 host = "localhost"
-port = "5432"
+port = 5432
 database_name = "mydb"
 user = "myuser"
 password = "mypass"
 run_id = "myRun"
 ```
+
+Optionally the password can also be provided via the command line only, using `allpix -c config.conf -o DatabaseWriter.password="mypass"`.
