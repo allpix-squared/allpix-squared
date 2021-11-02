@@ -73,7 +73,8 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     gain_smearing_ = config_.get<double>("gain_smearing");
 
     if(config_.has("gain_function")) {
-        gain_function_ = std::make_unique<TF1>("gain_function", (config_.get<std::string>("gain_function")).c_str(), 0., 100e3);
+        gain_function_ =
+            std::make_unique<TF1>("gain_function", (config_.get<std::string>("gain_function")).c_str(), 0., 100e3);
 
         if(!gain_function_->IsValid()) {
             throw InvalidValueError(

@@ -80,7 +80,7 @@ namespace allpix {
 
         unsigned int electronics_noise_{};
         double gain_{}, gain_smearing_{};
-	std::unique_ptr<TF1> gain_function_{};
+        std::unique_ptr<TF1> gain_function_{};
 
         bool saturation_{};
         unsigned int saturation_mean_{}, saturation_width_{};
