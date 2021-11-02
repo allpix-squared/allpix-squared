@@ -20,7 +20,7 @@ namespace allpix {
 
         // Calculate current pixel index its center as reference point:
         auto [px, py] = model_->getPixelIndex(pos);
-        if(!model_->isWithinPixelGrid(px, py)) {
+        if(!model_->isWithinMatrix(px, py)) {
             return {};
         }
         auto ref = static_cast<ROOT::Math::XYPoint>(
