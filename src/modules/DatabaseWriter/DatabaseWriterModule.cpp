@@ -144,44 +144,29 @@ bool DatabaseWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
         }
         LOG(TRACE) << "Database writer received " << allpix::demangle(typeid(*inst).name()) << name_str;
 
-        // Get the detector name
-        std::string detector_name;
-        if(message->getDetector() != nullptr) {
-            detector_name = message->getDetector()->getName();
-        }
-
         // Read the object
         auto object_array = message->getObjectArray();
-        if(!object_array.empty()) {
-            const Object& first_object = object_array[0];
-            auto* cls = TClass::GetClass(typeid(first_object));
-
-            // Remove the allpix prefix
-            std::string class_name = cls->GetName();
-            std::string apx_namespace = "allpix::";
-            size_t ap_idx = class_name.find(apx_namespace);
-            if(ap_idx != std::string::npos) {
-                class_name.replace(ap_idx, apx_namespace.size(), "");
-            }
-
-            // Check if this message should be kept
-            if((!include_.empty() && include_.find(class_name) == include_.end()) ||
-               (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
-                LOG(TRACE) << "Database writer ignored message with object " << allpix::demangle(typeid(*inst).name())
-                           << " because it has been excluded or not explicitly included";
-                return false;
-            }
-
-            return true;
+        if(object_array.empty()) {
+            return false;
         }
+        const Object& first_object = object_array[0];
+        std::string class_name = allpix::demangle(typeid(first_object).name());
 
+        // Check if this message should be kept
+        if((!include_.empty() && include_.find(class_name) == include_.end()) ||
+           (!exclude_.empty() && exclude_.find(class_name) != exclude_.end())) {
+            LOG(TRACE) << "Database writer ignored message with object " << allpix::demangle(typeid(*inst).name())
+                       << " because it has been excluded or not explicitly included";
+            return false;
+        }
     } catch(MessageWithoutObjectException& e) {
         const BaseMessage* inst = message.get();
         LOG(WARNING) << "Database writer cannot process message of type" << allpix::demangle(typeid(*inst).name())
                      << " with name " << message_name;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 void DatabaseWriterModule::run(Event* event) {
@@ -192,8 +177,7 @@ void DatabaseWriterModule::run(Event* event) {
     // within one event always follows this order: MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge ->
     // PixelCharge -> PixelHit
 
-    // Using optionals to only write values to the database if the respective references have been set by other messages
-    // stored
+    // Using optionals to only write values to database if the respective references have been set by other messages stored
     std::optional<int> mctrack_nr;
     std::optional<int> mcparticle_nr;
     std::optional<int> depositedcharge_nr;
@@ -213,95 +197,81 @@ void DatabaseWriterModule::run(Event* event) {
         // Looping through messages
         for(auto& pair : messages) {
             auto& message = pair.first;
+            auto detectorName = (message->getDetector() != nullptr ? message->getDetector()->getName() : "global");
 
-            // Storing detector's name
-            std::string detectorName = "";
-            if(message->getDetector() != nullptr) {
-                detectorName = message->getDetector()->getName();
-            } else {
-                detectorName = "global";
-            }
-            for(auto& object : message->getObjectArray()) {
-                // Retrieving object type
-                Object& current_object = object;
-                auto* cls = TClass::GetClass(typeid(current_object));
-                std::string class_name = cls->GetName();
-                std::string apx_namespace = "allpix::";
-                size_t ap_idx = class_name.find(apx_namespace);
-                if(ap_idx != std::string::npos) {
-                    class_name.replace(ap_idx, apx_namespace.size(), "");
-                }
+            for(const auto& object : message->getObjectArray()) {
+                std::string class_name = allpix::demangle(typeid(object.get()).name());
+
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
-                    auto hit = static_cast<PixelHit&>(current_object);
+                    auto hit = static_cast<PixelHit&>(object.get());
                     auto hit_row = transaction.exec_prepared1("add_pixelhit",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                mcparticle_nr,
-                                                                pixelcharge_nr,
-                                                                detectorName,
-                                                                hit.getIndex().X(),
-                                                                hit.getIndex().Y(),
-                                                                hit.getSignal(),
-                                                                (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
+                                                              run_nr_,
+                                                              event_nr,
+                                                              mcparticle_nr,
+                                                              pixelcharge_nr,
+                                                              detectorName,
+                                                              hit.getIndex().X(),
+                                                              hit.getIndex().Y(),
+                                                              hit.getSignal(),
+                                                              (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
                     LOG(TRACE) << "Inserted PixelHit with db id " << hit_row.front().as<int>();
                 } else if(class_name == "PixelCharge") {
-                    auto charge = static_cast<PixelCharge&>(current_object);
+                    auto charge = static_cast<PixelCharge&>(object.get());
                     auto charge_row = transaction.exec_prepared1("add_pixelcharge",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                propagatedcharge_nr,
-                                                                detectorName,
-                                                                charge.getCharge(),
-                                                                charge.getIndex().X(),
-                                                                charge.getIndex().Y(),
-                                                                charge.getPixel().getLocalCenter().X(),
-                                                                charge.getPixel().getLocalCenter().Y(),
-                                                                charge.getPixel().getGlobalCenter().X(),
-                                                                charge.getPixel().getGlobalCenter().Y());
+                                                                 run_nr_,
+                                                                 event_nr,
+                                                                 propagatedcharge_nr,
+                                                                 detectorName,
+                                                                 charge.getCharge(),
+                                                                 charge.getIndex().X(),
+                                                                 charge.getIndex().Y(),
+                                                                 charge.getPixel().getLocalCenter().X(),
+                                                                 charge.getPixel().getLocalCenter().Y(),
+                                                                 charge.getPixel().getGlobalCenter().X(),
+                                                                 charge.getPixel().getGlobalCenter().Y());
                     pixelcharge_nr = charge_row.front().as<int>();
                     LOG(TRACE) << "Inserted PixelCharge  with db id " << pixelcharge_nr.value();
-                } else if(class_name ==
-                          "PropagatedCharge") { // not recommended, this will slow down the simulation considerably
-                    PropagatedCharge charge = static_cast<PropagatedCharge&>(current_object);
+                } else if(class_name == "PropagatedCharge") {
+                    PropagatedCharge charge = static_cast<PropagatedCharge&>(object.get());
                     auto prop_row = transaction.exec_prepared1("add_propagatedcharge",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                depositedcharge_nr,
-                                                                detectorName,
-                                                                static_cast<int>(charge.getType()),
-                                                                charge.getCharge(),
-                                                                charge.getLocalPosition().X(),
-                                                                charge.getLocalPosition().Y(),
-                                                                charge.getLocalPosition().Z(),
-                                                                charge.getGlobalPosition().X(),
-                                                                charge.getGlobalPosition().Y(),
-                                                                charge.getGlobalPosition().Z());
+                                                               run_nr_,
+                                                               event_nr,
+                                                               depositedcharge_nr,
+                                                               detectorName,
+                                                               static_cast<int>(charge.getType()),
+                                                               charge.getCharge(),
+                                                               charge.getLocalPosition().X(),
+                                                               charge.getLocalPosition().Y(),
+                                                               charge.getLocalPosition().Z(),
+                                                               charge.getGlobalPosition().X(),
+                                                               charge.getGlobalPosition().Y(),
+                                                               charge.getGlobalPosition().Z());
                     propagatedcharge_nr = prop_row.front().as<int>();
                     LOG(TRACE) << "Inserted PropagatedCharge with db id " << propagatedcharge_nr.value();
                 } else if(class_name == "MCTrack") {
-                    auto track = static_cast<MCTrack&>(current_object);
+                    auto track = static_cast<MCTrack&>(object.get());
                     auto mctrack_row = transaction.exec_prepared1("add_mctrack",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                detectorName,
-                                                                reinterpret_cast<uintptr_t>(&current_object),
-                                                                reinterpret_cast<uintptr_t>(track.getParent()),
-                                                                track.getParticleID(),
-                                                                track.getCreationProcessName(),
-                                                                track.getOriginatingVolumeName(),
-                                                                track.getStartPoint().X(),
-                                                                track.getStartPoint().Y(),
-                                                                track.getStartPoint().Z(),
-                                                                track.getEndPoint().X(),
-                                                                track.getEndPoint().Y(),
-                                                                track.getEndPoint().Z(),
-                                                                track.getKineticEnergyInitial(),
-                                                                track.getKineticEnergyFinal());
+                                                                  run_nr_,
+                                                                  event_nr,
+                                                                  detectorName,
+                                                                  reinterpret_cast<uintptr_t>(&object),
+                                                                  reinterpret_cast<uintptr_t>(track.getParent()),
+                                                                  track.getParticleID(),
+                                                                  track.getCreationProcessName(),
+                                                                  track.getOriginatingVolumeName(),
+                                                                  track.getStartPoint().X(),
+                                                                  track.getStartPoint().Y(),
+                                                                  track.getStartPoint().Z(),
+                                                                  track.getEndPoint().X(),
+                                                                  track.getEndPoint().Y(),
+                                                                  track.getEndPoint().Z(),
+                                                                  track.getKineticEnergyInitial(),
+                                                                  track.getKineticEnergyFinal());
                     mctrack_nr = mctrack_row.front().as<int>();
                     LOG(TRACE) << "Inserted MCTrack with db id " << mctrack_nr.value();
                 } else if(class_name == "DepositedCharge") {
-                    auto charge = static_cast<DepositedCharge&>(current_object);
+                    auto charge = static_cast<DepositedCharge&>(object.get());
                     auto depos_row = transaction.exec_prepared1("add_depositedcharge",
                                                                 run_nr_,
                                                                 event_nr,
@@ -318,28 +288,28 @@ void DatabaseWriterModule::run(Event* event) {
                     depositedcharge_nr = depos_row.front().as<int>();
                     LOG(TRACE) << "Inserted DepositedCharge with db id " << depositedcharge_nr.value();
                 } else if(class_name == "MCParticle") {
-                    auto particle = static_cast<MCParticle&>(current_object);
+                    auto particle = static_cast<MCParticle&>(object.get());
                     auto mcp_row = transaction.exec_prepared1("add_mcparticle",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                mctrack_nr,
-                                                                detectorName,
-                                                                reinterpret_cast<uintptr_t>(&current_object),
-                                                                reinterpret_cast<uintptr_t>(particle.getParent()),
-                                                                reinterpret_cast<uintptr_t>(particle.getTrack()),
-                                                                particle.getParticleID(),
-                                                                particle.getLocalStartPoint().X(),
-                                                                particle.getLocalStartPoint().Y(),
-                                                                particle.getLocalStartPoint().Z(),
-                                                                particle.getLocalEndPoint().X(),
-                                                                particle.getLocalEndPoint().Y(),
-                                                                particle.getLocalEndPoint().Z(),
-                                                                particle.getGlobalStartPoint().X(),
-                                                                particle.getGlobalStartPoint().Y(),
-                                                                particle.getGlobalStartPoint().Z(),
-                                                                particle.getGlobalEndPoint().X(),
-                                                                particle.getGlobalEndPoint().Y(),
-                                                                particle.getGlobalEndPoint().Z());
+                                                              run_nr_,
+                                                              event_nr,
+                                                              mctrack_nr,
+                                                              detectorName,
+                                                              reinterpret_cast<uintptr_t>(&object),
+                                                              reinterpret_cast<uintptr_t>(particle.getParent()),
+                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                              particle.getParticleID(),
+                                                              particle.getLocalStartPoint().X(),
+                                                              particle.getLocalStartPoint().Y(),
+                                                              particle.getLocalStartPoint().Z(),
+                                                              particle.getLocalEndPoint().X(),
+                                                              particle.getLocalEndPoint().Y(),
+                                                              particle.getLocalEndPoint().Z(),
+                                                              particle.getGlobalStartPoint().X(),
+                                                              particle.getGlobalStartPoint().Y(),
+                                                              particle.getGlobalStartPoint().Z(),
+                                                              particle.getGlobalEndPoint().X(),
+                                                              particle.getGlobalEndPoint().Y(),
+                                                              particle.getGlobalEndPoint().Z());
                     mcparticle_nr = mcp_row.front().as<int>();
                     LOG(TRACE) << "Inserted MCParticle with db id " << mcparticle_nr.value();
                 } else {
@@ -359,12 +329,10 @@ void DatabaseWriterModule::run(Event* event) {
 }
 
 void DatabaseWriterModule::finalizeThread() {
-    // disconnecting from database
+    // Disconnecting from database
     conn_->disconnect();
 }
 
 void DatabaseWriterModule::finalize() {
-
-    // Print statistics
     LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to database" << std::endl;
 }
