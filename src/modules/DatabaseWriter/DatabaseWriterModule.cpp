@@ -36,7 +36,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     messenger_->registerFilter(this, &DatabaseWriterModule::filter);
 
     config_.setDefault("global_timing", false);
-    config_.setDefault("waive_sequence_requirement", false);
+    config_.setDefault("require_sequence", false);
 
     config_.setDefault("run_id", "none");
 }
@@ -55,7 +55,7 @@ void DatabaseWriterModule::initialize() {
     timing_global_ = config_.get<bool>("global_timing");
 
     // Waive sequence requirement if requested by user
-    if(config_.get<bool>("waive_sequence_requirement")) {
+    if(!config_.get<bool>("require_sequence")) {
         waive_sequence_requirement();
     }
 }
