@@ -17,7 +17,7 @@ FUNCTION(get_version project_version)
                 ARGS describe --tags HEAD
                 OUTPUT_VARIABLE ${project_version})
             STRING(REGEX REPLACE "^release-" "" ${project_version} ${${project_version}})
-            STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1+\\2^\\3" ${project_version} ${${project_version}})
+            STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1-\\2-\\3" ${project_version} ${${project_version}})
             EXEC_PROGRAM(
                 git ARGS
                 status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}
@@ -26,6 +26,7 @@ FUNCTION(get_version project_version)
                 MESSAGE(STATUS "Git project directory is clean.")
             ELSE(PROJECT_STATUS STREQUAL "")
                 MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
+                SET(${project_version} "${${project_version}}-dirty")
             ENDIF(PROJECT_STATUS STREQUAL "")
 
             # Check if commit flag has been set by the CI:
@@ -38,7 +39,8 @@ FUNCTION(get_version project_version)
         ENDIF(GIT_FOUND)
     ELSE(NOT source_package)
         # If we don't have git we can not really do anything
-        MESSAGE(STATUS "Source tarball build - no repository present.")
+        MESSAGE(STATUS "Source tarball build - no repository present, appending last commit for reference.")
+        SET(${project_version} "$Format:%(describe)$-tar")
         SET(tag_found TRUE)
     ENDIF(NOT source_package)
 
