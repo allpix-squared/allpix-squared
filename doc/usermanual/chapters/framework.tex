@@ -517,6 +517,8 @@ Flags can be added to the bind and listening methods which enable a particular b
     It can only be used for variables bound to a single message.
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
+    \item \parameter{UNNAMED_ONLY}: If this flag is specified, the module will only receive messages without explicit name.
+    The \parameter{input} parameter is ignored and forced to the value \texttt{?} and all named messages are discarded. It should be noted that \parameter{IGNORE_NAME} takes precedence over this parameter.
 \end{itemize}
 
 \subsection{Persistency}

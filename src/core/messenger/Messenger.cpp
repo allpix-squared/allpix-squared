@@ -98,6 +98,8 @@ void Messenger::add_delegate(const std::type_info& message_type,
     std::string message_name;
     if((delegate->getFlags() & MsgFlags::IGNORE_NAME) != MsgFlags::NONE) {
         message_name = "*";
+    } else if((delegate->getFlags() & MsgFlags::UNNAMED_ONLY) != MsgFlags::NONE) {
+        message_name = "?";
     } else {
         message_name = module->get_configuration().get<std::string>("input");
     }
@@ -152,6 +154,11 @@ void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage
 
     // Send to generic listeners
     send = dispatchMessage(source, message, name, "*") || send;
+
+    // Send to listeners of unnamed messages
+    if(name.empty()) {
+        send = dispatchMessage(source, message, name, "?") || send;
+    }
 
     // Display a TRACE log message if the message is send to no receiver
     if(!send) {
