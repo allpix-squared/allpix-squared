@@ -51,7 +51,7 @@ namespace allpix {
 
         static thread_local double cry_instance_time_simulated_;
         std::mutex stats_mutex_;
-        double total_time_simulated_;
+        double total_time_simulated_{};
     };
 } // namespace allpix
 
