@@ -237,7 +237,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                             G4ThreeVector(
                                 -model->getMatrixSize().x() / 2.0 + (npix_x + 0.5) * model->getPixelSize().x() + offset.x(),
                                 -model->getMatrixSize().y() / 2.0 + (npix_y + 0.5) * model->getPixelSize().y() + offset.y(),
-                                (model->getSensorSize().z() - implants.z()) / 2.0));
+                                offset.z()));
 
                         // Add the new solid to the MultiUnion:
                         implant_union->AddNode(*implant_solid, implant_transform);
