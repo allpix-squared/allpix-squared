@@ -125,6 +125,6 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
 
 
 # Install Allpix Squared dependencies
-RUN apt-get install -y libpqxx-dev postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+RUN apt-get install -y libpqxx-dev postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml git
 
 CMD ["bash"]
