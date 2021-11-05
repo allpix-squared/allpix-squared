@@ -112,18 +112,27 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     cry_config << " nParticlesMin " << config_.get<unsigned int>("min_particles") << " nParticlesMax "
                << config_.get<unsigned int>("max_particles");
 
-    // Calculate subbox length required from the maximum coordinates of the setup:
-    LOG(DEBUG) << "Calculating subbox length from setup size";
-    auto min = geo_manager_->getMinimumCoordinate();
-    auto max = geo_manager_->getMaximumCoordinate();
-    auto size = std::max(max.x() - min.x(), max.y() - min.y());
-    auto size_meters = static_cast<unsigned int>(std::ceil(Units::convert(size, "m")));
-    if(size_meters > 300) {
-        throw ModuleError("Size of the setup too large, tabulated data only available for areas up to 300m");
+    if(!config_.has("area")) {
+        // Calculate subbox length required from the maximum coordinates of the setup:
+        LOG(DEBUG) << "Calculating subbox length from setup size";
+        auto min = geo_manager_->getMinimumCoordinate();
+        auto max = geo_manager_->getMaximumCoordinate();
+        auto size = std::max(max.x() - min.x(), max.y() - min.y());
+        auto size_meters = static_cast<unsigned int>(std::ceil(Units::convert(size, "m")));
+        if(size_meters > 300) {
+            throw ModuleError("Size of the setup too large, tabulated data only available for areas up to 300m");
+        }
+        LOG(DEBUG) << "Maximum side length (in x,y): " << Units::display(size, {"mm", "cm", "m"})
+                   << ", selecting subbox of size " << size_meters << "m";
+        cry_config << " subboxLength " << size_meters;
+    } else {
+        auto area = Units::convert(config_.get<int>("area"), "m");
+        if(area > 300) {
+            throw InvalidValueError(config_, "area", "only areas with side lengths of up to 300m are supported");
+        }
+        LOG(DEBUG) << "Configuring subbox of size " << area << "m from configuration parameter";
+        cry_config << " subboxLength " << area;
     }
-    LOG(DEBUG) << "Maximum side length (in x,y): " << Units::display(size, {"mm", "cm", "m"})
-               << ", selecting subbox of size " << size_meters << "m";
-    cry_config << " subboxLength " << size_meters;
 
     auto latitude = config_.get<double>("latitude");
     if(latitude < -90 || latitude > 90) {
