@@ -88,14 +88,16 @@ namespace allpix {
         if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
            mapping_ == FieldMapping::HALF_LEFT) {
             x += 1.0;
-        } else if(mapping_ == FieldMapping::FULL) {
+        } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_TOP ||
+                  mapping_ == FieldMapping::HALF_BOTTOM) {
             x += 0.5;
         }
 
         if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
            mapping_ == FieldMapping::HALF_BOTTOM) {
             y += 1.0;
-        } else if(mapping_ == FieldMapping::FULL) {
+        } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_LEFT ||
+                  mapping_ == FieldMapping::HALF_RIGHT) {
             y += 0.5;
         }
 
