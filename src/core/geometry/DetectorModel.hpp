@@ -183,30 +183,25 @@ namespace allpix {
          */
         ROOT::Math::XYZVector getImplantSize() const { return implant_size_; }
         /**
-         * @brief Set the size of the implant (collection diode) within a pixel
-         * @param val Size of the collection diode implant
+         * @brief Set size, offset and material of the implant (collection diode) within a pixel
+         * @param size Size of the collection diode implant
+         * @param offset Offset of the collection diode implant
+         * @param material Implant material
          */
-        void setImplantSize(ROOT::Math::XYZVector val) { implant_size_ = std::move(val); }
+        void setImplant(ROOT::Math::XYZVector size, const ROOT::Math::XYVector& offset, std::string material);
         /**
          * @brief Get the material of the implants (collection electrodes)
          * @return Implant material
          */
         virtual std::string getImplantMaterial() const { return implant_material_; }
         /**
-         * @brief Set the material of the implants (collection electrodes)
-         * @param material Implant material
-         */
-        void setImplantMaterial(std::string material) { implant_material_ = std::move(material); }
-        /**
          * @brief Get offset of the collection diode from the pixel center
+         * This returns the offset of the implant volume from the pixel volume. The surface of the implant is the surface of
+         * the pixel cell / the sensor.
          * @return Offset of the collection diode implant
          */
-        virtual ROOT::Math::XYVector getImplantOffset() const { return implant_offset_; }
-        /**
-         * @brief Set the offset of the implant (collection diode) from the pixel center
-         * @param val Offset of the collection diode implant
-         */
-        void setImplantOffset(ROOT::Math::XYVector val) { implant_offset_ = std::move(val); }
+        virtual ROOT::Math::XYZVector getImplantOffset() const { return implant_offset_; }
+
         /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
@@ -450,7 +445,7 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYZVector implant_size_;
-        ROOT::Math::XYVector implant_offset_;
+        ROOT::Math::XYZVector implant_offset_;
         std::string implant_material_;
         Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 

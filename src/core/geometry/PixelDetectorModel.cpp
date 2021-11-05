@@ -46,8 +46,6 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     if(implant_size.z() > getSensorSize().z()) {
         throw InvalidValueError(config, "implant_size", "implant depth cannot be larger than sensor thickness");
     }
-    setImplantSize(implant_size);
-    setImplantMaterial(config.get<std::string>("implant_material", "aluminum"));
 
     // Offset of the collection diode implant from the pixel center, defaults to zero.
     auto implant_offset = config.get<XYVector>("implant_offset", {0, 0});
@@ -55,7 +53,7 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
        std::fabs(implant_offset.y()) + implant_size.y() / 2 > pixel_size.y() / 2) {
         throw InvalidValueError(config, "implant_offset", "implant exceeds pixel cell. Reduce implant size or offset");
     }
-    setImplantOffset(implant_offset);
+    setImplant(implant_size, implant_offset, config.get<std::string>("implant_material", "aluminum"));
 }
 
 /**
