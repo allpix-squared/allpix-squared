@@ -1,7 +1,7 @@
 # DepositionCosmics
 **Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Immature  
-**Output**: DepositedCharge, MCParticle, MCTrack
+**Status**: Functional  
+**Output**: DepositedCharge, MCParticle, MCTrack  
 
 ### Description
 
@@ -60,6 +60,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `altitude`: Altitude for which the shower particles should be simulated. Possible values are `0m`, `2100m` and `11300m`, defaults to sea level, i.e. `0m`. It should be noted that the particle incidence plane is always located at `z = 0` independent of the simulated altitude.
 * `min_particles`: Minimum number of particles required for a shower to be considered. Defaults to `1`.
 * `max_particles`: Maximum number of particles in a shower before additional particles are cut off. Defaults to `100000`
+* `area`: Side length of the squared area for which incident particles are simulated. This can maximally be `300m`. By default, the maximum size is automatically derived from the dimensions of the detector setup of the current simulation.
 
 ### Usage
 
