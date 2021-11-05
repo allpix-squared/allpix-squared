@@ -364,7 +364,6 @@ void DetectorHistogrammerModule::run(Event* event) {
                 inPixel_um_x, inPixel_um_y, static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
             cluster_seed_charge->Fill(static_cast<double>(Units::convert(seed_pixel->getSignal(), "ke")));
 
-
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y(), "um"));

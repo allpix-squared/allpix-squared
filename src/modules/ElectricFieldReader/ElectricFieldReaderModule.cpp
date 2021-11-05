@@ -337,7 +337,9 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     // If we need to plot a single pixel, we use size and position of the pixel at the origin
     auto single_pixel = config_.get<bool>("output_plots_single_pixel", true);
-    auto center = (single_pixel ? ROOT::Math::XYZPoint(model->getPixelCenter(0, 0).x(), model->getPixelCenter(0, 0).y(), 0)
+    auto center = (single_pixel ? ROOT::Math::XYZPoint(detector_->getPixel(0, 0).getLocalCenter().x(),
+                                                       detector_->getPixel(0, 0).getLocalCenter().y(),
+                                                       0)
                                 : model->getSensorCenter());
     auto size =
         (single_pixel
