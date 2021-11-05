@@ -371,6 +371,7 @@ namespace allpix {
          */
         virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
+        ROOT::Math::XYZPoint getImplantImpact(const ROOT::Math::XYZPoint previous, const ROOT::Math::XYZPoint current) const;
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked

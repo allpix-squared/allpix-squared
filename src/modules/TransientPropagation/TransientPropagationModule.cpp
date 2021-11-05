@@ -563,8 +563,19 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "nm"})
+                       << std::endl
+                       << "            before: "
+                       << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "nm"});
             // FIXME do we need an interpolation for accuracy here as well?
+            // Get impact point into implant:
+            auto newpos = model_->getImplantImpact(static_cast<ROOT::Math::XYZPoint>(last_position),
+                                                   static_cast<ROOT::Math::XYZPoint>(position));
+            LOG(WARNING) << "Darn we hit an implant. Positions: " << std::endl
+                         << "before: " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"nm"})
+                         << std::endl
+                         << "after: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"}) << std::endl
+                         << "interpolated: " << Units::display(newpos, {"nm"}) << std::endl;
             within_sensor = false;
         }
 

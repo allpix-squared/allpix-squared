@@ -82,6 +82,62 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
             local_pos.z() >= getSensorSize().z() / 2 - getImplantSize().z());
 }
 
+ROOT::Math::XYZPoint PixelDetectorModel::getImplantImpact(const ROOT::Math::XYZPoint outside,
+                                                     const ROOT::Math::XYZPoint inside) const {
+    auto implant = getImplantSize();
+    auto offset =
+        ROOT::Math::XYZVector(getImplantOffset().x(), getImplantOffset().y(), getSensorSize().Z() / 2 - implant.Z() / 2);
+
+    // Get positions relative to pixel center:
+    auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
+    // We have to be centered around the implant box, not the pixel. This means we need to shift with the implant offset
+    auto pos_out =
+        outside - getPixelCenter(static_cast<unsigned int>(xpixel_out), static_cast<unsigned int>(ypixel_out)) - offset;
+
+    auto direction = (inside - outside).Unit();
+
+    // Liang–Barsky clipping of a line against faces of a box
+    auto clip = [](double denominator, double numerator, double& t0, double& t1) {
+        if(denominator > 0) {
+            if(numerator > denominator * t1) {
+                return false;
+            }
+            if(numerator > denominator * t0) {
+                t0 = numerator / denominator;
+            }
+            return true;
+        } else if(denominator < 0) {
+            if(numerator > denominator * t0) {
+                return false;
+            }
+            if(numerator > denominator * t1) {
+                t1 = numerator / denominator;
+            }
+            return true;
+        } else {
+            return numerator <= 0;
+        }
+    };
+
+    // Clip the particle track against the six possible box faces
+    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
+    bool intersect = clip(direction.X(), -pos_out.X() - implant.X() / 2, t0, t1) &&
+                     clip(-direction.X(), pos_out.X() - implant.X() / 2, t0, t1) &&
+                     clip(direction.Y(), -pos_out.Y() - implant.Y() / 2, t0, t1) &&
+                     clip(-direction.Y(), pos_out.Y() - implant.Y() / 2, t0, t1) &&
+                     clip(direction.Z(), -pos_out.Z() - implant.Z() / 2, t0, t1) &&
+                     clip(-direction.Z(), pos_out.Z() - implant.Z() / 2, t0, t1);
+
+    // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
+    if(intersect && t0 > 0) {
+        // Return distance to impact point
+        return ROOT::Math::XYZPoint(pos_out + t0 * direction) + offset;
+    } else {
+        // Otherwise: The line does not intersect the box.
+        throw std::out_of_range("nope");
+    }
+}
+
 /**
  * The definition of the pixel grid size is determined by the detector model
  */
