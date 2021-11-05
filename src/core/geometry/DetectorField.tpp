@@ -103,8 +103,8 @@ namespace allpix {
 
         // Shuffle quadrants for inverted maps
         if(mapping_ == FieldMapping::FULL_INVERSE) {
-            x += (dist.x() > 0 ? 0. : 1.0);
-            y += (dist.y() > 0 ? 0. : 1.0);
+            x += (dist.x() >= 0 ? 0. : 1.0);
+            y += (dist.y() >= 0 ? 0. : 1.0);
         }
 
         // Compute indices
