@@ -562,20 +562,11 @@ TransientPropagationModule::propagate(Event* event,
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
+        // If charge carrier reaches implant, interpolate surface position for higher accuracy:
         if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "nm"})
-                       << std::endl
-                       << "            before: "
-                       << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "nm"});
-            // FIXME do we need an interpolation for accuracy here as well?
-            // Get impact point into implant:
-            auto newpos = model_->getImplantImpact(static_cast<ROOT::Math::XYZPoint>(last_position),
-                                                   static_cast<ROOT::Math::XYZPoint>(position));
-            LOG(WARNING) << "Darn we hit an implant. Positions: " << std::endl
-                         << "before: " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"nm"})
-                         << std::endl
-                         << "after: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"}) << std::endl
-                         << "interpolated: " << Units::display(newpos, {"nm"}) << std::endl;
+            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            position = model_->getImplantEntry(static_cast<ROOT::Math::XYZPoint>(last_position),
+                                               static_cast<ROOT::Math::XYZPoint>(position));
             within_sensor = false;
         }
 
