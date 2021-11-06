@@ -440,6 +440,15 @@ namespace allpix {
         virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const = 0;
 
     protected:
+        /**
+         * @brief Liang–Barsky clipping of a line against faces of a box
+         * @param denominator Denominator of the
+         * @param numerator Numerator of the
+         * @param t0 Line scale of first possible intersection
+         * @param t0 Line scale of second possible intersection
+         */
+        static bool liang_barsky_clipping(double denominator, double numerator, double& t0, double& t1);
+
         std::string type_;
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;

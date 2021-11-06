@@ -80,6 +80,28 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
             local_pos.z() >= getSensorSize().z() / 2 - getImplantSize().z());
 }
 
+bool PixelDetectorModel::liang_barsky_clipping(double denominator, double numerator, double& t0, double& t1) {
+    if(denominator > 0) {
+        if(numerator > denominator * t1) {
+            return false;
+        }
+        if(numerator > denominator * t0) {
+            t0 = numerator / denominator;
+        }
+        return true;
+    } else if(denominator < 0) {
+        if(numerator > denominator * t0) {
+            return false;
+        }
+        if(numerator > denominator * t1) {
+            t1 = numerator / denominator;
+        }
+        return true;
+    } else {
+        return numerator <= 0;
+    }
+};
+
 ROOT::Math::XYZPoint PixelDetectorModel::getImplantImpact(const ROOT::Math::XYZPoint outside,
                                                           const ROOT::Math::XYZPoint inside) const {
     // Get positions relative to pixel center:
@@ -90,37 +112,14 @@ ROOT::Math::XYZPoint PixelDetectorModel::getImplantImpact(const ROOT::Math::XYZP
 
     auto direction = (inside - outside).Unit();
 
-    // Liang–Barsky clipping of a line against faces of a box
-    auto clip = [](double denominator, double numerator, double& t0, double& t1) {
-        if(denominator > 0) {
-            if(numerator > denominator * t1) {
-                return false;
-            }
-            if(numerator > denominator * t0) {
-                t0 = numerator / denominator;
-            }
-            return true;
-        } else if(denominator < 0) {
-            if(numerator > denominator * t0) {
-                return false;
-            }
-            if(numerator > denominator * t1) {
-                t1 = numerator / denominator;
-            }
-            return true;
-        } else {
-            return numerator <= 0;
-        }
-    };
-
     // Clip the particle track against the six possible box faces
     double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-    bool intersect = clip(direction.X(), -pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
-                     clip(-direction.X(), pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
-                     clip(direction.Y(), -pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
-                     clip(-direction.Y(), pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
-                     clip(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
-                     clip(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
+    bool intersect = liang_barsky_clipping(direction.X(), -pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.X(), pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
+                     liang_barsky_clipping(direction.Y(), -pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.Y(), pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
+                     liang_barsky_clipping(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
 
     // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
     if(intersect && t0 > 0) {
