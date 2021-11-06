@@ -610,7 +610,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     // Set final state of charge carrier for plotting:
     if(output_linegraphs_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
-        if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+        if(!detector_->getModel()->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position)) &&
+           (time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45)) {
             std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
         } else {
             std::get<3>(output_plot_points.back().first) = state;
