@@ -366,7 +366,16 @@ namespace allpix {
          */
         virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
-        ROOT::Math::XYZPoint getImplantImpact(const ROOT::Math::XYZPoint previous, const ROOT::Math::XYZPoint current) const;
+        /**
+         * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
+         * point inside (after step).
+         * @throws std::out_of_range if no intersection of track segment with implant volume cna be found
+         * @param  previous Position before the step
+         * @param  current  Position after the step
+         * @return Entry point in implant in local coordinates of the sensor
+         */
+        ROOT::Math::XYZPoint getImplantEntry(const ROOT::Math::XYZPoint previous, const ROOT::Math::XYZPoint current) const;
+
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
@@ -441,9 +450,10 @@ namespace allpix {
 
     protected:
         /**
-         * @brief Liang–Barsky clipping of a line against faces of a box
-         * @param denominator Denominator of the
-         * @param numerator Numerator of the
+         * @brief Liang–Barsky clipping of a line against faces of a box. See Liang, Y. D., and Barsky, B., "A New Concept
+         * and Method for Line Clipping", ACM Transactions on Graphics, 3(1):1–22 for an in-depth explanation
+         * @param denominator Denominator representing the currently tested face of the box
+         * @param numerator Numerator representing the currently tested face of the box
          * @param t0 Line scale of first possible intersection
          * @param t0 Line scale of second possible intersection
          */

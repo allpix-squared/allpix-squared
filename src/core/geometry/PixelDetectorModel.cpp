@@ -102,15 +102,15 @@ bool PixelDetectorModel::liang_barsky_clipping(double denominator, double numera
     }
 };
 
-ROOT::Math::XYZPoint PixelDetectorModel::getImplantImpact(const ROOT::Math::XYZPoint outside,
-                                                          const ROOT::Math::XYZPoint inside) const {
+ROOT::Math::XYZPoint PixelDetectorModel::getImplantEntry(const ROOT::Math::XYZPoint outside,
+                                                    const ROOT::Math::XYZPoint inside) const {
+    // Get direction vector of motion
+    auto direction = (inside - outside).Unit();
     // Get positions relative to pixel center:
     auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
     // We have to be centered around the implant box, not the pixel. This means we need to shift with the implant offset
     auto pos_out = outside - getPixelCenter(static_cast<unsigned int>(xpixel_out), static_cast<unsigned int>(ypixel_out)) -
                    getImplantOffset();
-
-    auto direction = (inside - outside).Unit();
 
     // Clip the particle track against the six possible box faces
     double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
@@ -121,14 +121,14 @@ ROOT::Math::XYZPoint PixelDetectorModel::getImplantImpact(const ROOT::Math::XYZP
                      liang_barsky_clipping(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
                      liang_barsky_clipping(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
 
-    // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
-    if(intersect && t0 > 0) {
-        // Return distance to impact point
-        return ROOT::Math::XYZPoint(pos_out + t0 * direction) + getImplantOffset();
-    } else {
-        // Otherwise: The line does not intersect the box.
-        throw std::out_of_range("nope");
-    }
+     // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of the motion)
+     if(intersect && t0 > 0) {
+         // Return distance to impact point
+         return ROOT::Math::XYZPoint(outside + t0 * direction);
+     }
+
+     // Otherwise: The line does not intersect the box.
+     throw std::out_of_range("no intersection with implant volume");
 }
 
 /**
