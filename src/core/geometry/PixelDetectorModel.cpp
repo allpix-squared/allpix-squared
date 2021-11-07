@@ -121,10 +121,9 @@ ROOT::Math::XYZPoint PixelDetectorModel::getImplantEntry(const ROOT::Math::XYZPo
                      liang_barsky_clipping(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
                      liang_barsky_clipping(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
 
-     // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of the motion)
+     // The intersection is a point P + t * D with t = t0. Return impact point if positive (i.e. in direction of the motion)
      if(intersect && t0 > 0) {
-         // Return distance to impact point
-         return ROOT::Math::XYZPoint(outside + t0 * direction);
+         return (outside + t0 * direction);
      }
 
      // Otherwise: The line does not intersect the box.

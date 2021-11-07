@@ -369,7 +369,7 @@ namespace allpix {
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
          * point inside (after step).
-         * @throws std::out_of_range if no intersection of track segment with implant volume cna be found
+         * @throws std::out_of_range if no intersection of track segment with implant volume can be found
          * @param  previous Position before the step
          * @param  current  Position after the step
          * @return Entry point in implant in local coordinates of the sensor
@@ -455,7 +455,7 @@ namespace allpix {
          * @param denominator Denominator representing the currently tested face of the box
          * @param numerator Numerator representing the currently tested face of the box
          * @param t0 Line scale of first possible intersection
-         * @param t0 Line scale of second possible intersection
+         * @param t1 Line scale of second possible intersection
          */
         static bool liang_barsky_clipping(double denominator, double numerator, double& t0, double& t1);
 
