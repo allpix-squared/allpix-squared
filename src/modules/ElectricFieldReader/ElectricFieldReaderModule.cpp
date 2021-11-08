@@ -86,8 +86,12 @@ void ElectricFieldReaderModule::initialize() {
 
         auto field_data = read_field(thickness_domain, field_scale);
 
-        detector_->setElectricFieldGrid(
-            field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
+        detector_->setElectricFieldGrid(field_data.getData(),
+                                        field_data.getDimensions(),
+                                        field_data.getSize(),
+                                        field_scale,
+                                        field_offset,
+                                        thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();

@@ -59,8 +59,12 @@ void DopingProfileReaderModule::initialize() {
         std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
         auto field_data = read_field(field_scale);
-        detector_->setDopingProfileGrid(
-            field_data.getData(), field_data.getDimensions(), field_scale, field_offset, thickness_domain);
+        detector_->setDopingProfileGrid(field_data.getData(),
+                                        field_data.getDimensions(),
+                                        field_data.getSize(),
+                                        field_scale,
+                                        field_offset,
+                                        thickness_domain);
 
     } else if(field_model == DopingProfile::CONSTANT) {
         LOG(TRACE) << "Adding constant doping concentration";
