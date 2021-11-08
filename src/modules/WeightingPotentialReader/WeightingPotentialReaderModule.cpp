@@ -48,15 +48,28 @@ void WeightingPotentialReaderModule::initialize() {
 
     // Calculate the potential depending on the configuration
     if(field_model == WeightingPotential::MESH) {
+        // Read field mapping from configuration
+        auto field_mapping = config_.get<FieldMapping>("field_mapping");
+        LOG(DEBUG) << "Weighting potential maps to " << magic_enum::enum_name(field_mapping);
         auto field_data = read_field();
+
+        // By default, set field scale from physical extent read from field file:
+        std::array<double, 2> field_scale{
+            {field_data.getSize()[0] / model->getPixelSize().x(), field_data.getSize()[1] / model->getPixelSize().y()}};
+        // Read the field scales from the configuration if the key is set:
+        if(config_.has("field_scale")) {
+            auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+            // FIXME Add sanity checks for scales here
+            LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
+            field_scale = {{scales.x(), scales.y()}};
+        }
 
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
                                              field_data.getSize(),
-                                             FieldMapping::FULL,
-                                             std::array<double, 2>{{field_data.getSize()[0] / model->getPixelSize().x(),
-                                                                    field_data.getSize()[1] / model->getPixelSize().y()}},
+                                             field_mapping,
+                                             field_scale,
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
