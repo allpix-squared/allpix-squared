@@ -45,8 +45,8 @@ The reader provides the following models for electric fields:
   in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is
   available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided
   with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale`
-  parameter. By default, the module assumes the field represents a single pixel unit cell. If the field size and pixel pitch
-  do not match, a warning is printed and the field is scaled to the pixel pitch.
+  parameter. By default, the module reads the size of the field from the file. If the field size and pixel pitch do not match, 
+  a warning is printed.
 
 - The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components
   of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for
@@ -87,7 +87,7 @@ be enabled and controlled with the plotting parameter slisted below.
 ### Parameters for model `mesh`
 * `file_name` : Location of file containing the meshed electric field data.
 * `field_mapping`: Description of the mapping of the field onto the pixel cell. Possible values are `FULL`, indicating that the map spans the full 2D plane and the field is centered around the pixel center, `HALF_TOP` or `HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `QUADRANT_I`, `QUADRANT_II`, `QUADRANT_III`, `QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel plane. In addition, the `FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a pixel cell but the corner between pixels.
-* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. Defaults to `1.0 1.0`.
+* `field_scale` : Scale of the electric field in x- and y-direction. This parameter allows to use electric fields for fractions or multiple pixels. For example, an electric field calculated for a quarter pixel cell can be used by setting this parameter to `0.5 0.5` (half pitch in both directions) while a field calculated for four pixel cells in y and a single cell in x could be mapped to the pixel grid using `1 4`. By default, the scaling factors are calculated from the physical extent of the field stated in the field file.
 
 ### Parameters for model `custom`
 - `field_functions` : Single equation (for a field vector along the `z` axis only) or array of three equations (for the three
