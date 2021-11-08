@@ -1,5 +1,6 @@
 # Exclude everything from Docker build context that is not necessary:
 *
+!.git
 !3rdparty
 !cmake
 !CMakeLists.txt

@@ -574,14 +574,14 @@ deploy-cvmfs:
     dependencies: []
     script:
         - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/$DOCKER_FILE --destination $IMAGE_DESTINATION
+        - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/$DOCKER_FILE --destination $IMAGE_DESTINATION --build-arg ALLPIX_BUILD_ENV="$ALLPIX_BUILD_ENV"
         - echo "Image pushed successfully to ${IMAGE_DESTINATION}"
 
 deploy-docker-latest:
     extends: .deploy-docker
     variables:
         IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:latest
-        ALLPIX_BUILD_ENV: "Docker"
+        ALLPIX_BUILD_ENV: "CI/Docker"
     only:
         - schedules@allpix-squared/allpix-squared
 
@@ -589,6 +589,6 @@ deploy-docker-tag:
     extends: .deploy-docker
     variables:
         IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
-        ALLPIX_BUILD_ENV: "Docker"
+        ALLPIX_BUILD_ENV: "CI/Docker"
     only:
         - tags@allpix-squared/allpix-squared
