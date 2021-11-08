@@ -274,10 +274,12 @@ namespace allpix {
         /**
          * @brief Check validity of the field map for this detector
          * @param size Size of the field in the three dimensions
+         * @param mapping Specification of the mapping of the field onto the pixel plane
          * @param field_scale Scaling factors for the field
          * @param thickness_domain Thickness domain in which the field is defined in
          */
         void check_field_match(std::array<double, 3> size,
+                               FieldMapping mapping,
                                std::array<double, 2> field_scale,
                                std::pair<double, double> thickness_domain) const;
 

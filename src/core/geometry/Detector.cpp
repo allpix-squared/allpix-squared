@@ -159,7 +159,7 @@ void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& 
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
                                     std::pair<double, double> thickness_domain) {
-    check_field_match(size, scales, thickness_domain);
+    check_field_match(size, mapping, scales, thickness_domain);
     electric_field_.setGrid(field, bins, mapping, scales, thickness_domain);
 }
 
@@ -202,7 +202,7 @@ void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<doubl
                                          FieldMapping mapping,
                                          std::array<double, 2> scales,
                                          std::pair<double, double> thickness_domain) {
-    check_field_match(size, scales, thickness_domain);
+    check_field_match(size, mapping, scales, thickness_domain);
     weighting_potential_.setGrid(potential, bins, mapping, scales, thickness_domain);
 }
 
@@ -266,7 +266,7 @@ void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
                                     std::pair<double, double> thickness_domain) {
-    check_field_match(size, scales, thickness_domain);
+    check_field_match(size, mapping, scales, thickness_domain);
     doping_profile_.setGrid(std::move(field), bins, mapping, scales, thickness_domain);
 }
 
@@ -278,6 +278,7 @@ void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldTyp
 }
 
 void Detector::check_field_match(std::array<double, 3> size,
+                                 FieldMapping mapping,
                                  std::array<double, 2> field_scale,
                                  std::pair<double, double> thickness_domain) const {
 
@@ -289,18 +290,24 @@ void Detector::check_field_match(std::array<double, 3> size,
     }
 
     // Check that the total field size is n*pitch:
-    if(std::fabs(std::remainder(size[0], field_scale[0] * model_->getPixelSize().x())) >
-           std::numeric_limits<double>::epsilon() ||
-       std::fabs(std::remainder(size[1], field_scale[1] * model_->getPixelSize().y())) >
-           std::numeric_limits<double>::epsilon()) {
-        LOG(WARNING) << "Field map size is (" << Units::display(size[0], {"um", "mm"}) << ","
-                     << Units::display(size[1], {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
+    auto scale_x = field_scale[0] * (mapping == FieldMapping::FULL || mapping == FieldMapping::FULL_INVERSE ||
+                                             mapping == FieldMapping::HALF_TOP || mapping == FieldMapping::HALF_BOTTOM
+                                         ? 1.0
+                                         : 0.5);
+    auto scale_y = field_scale[1] * (mapping == FieldMapping::FULL || mapping == FieldMapping::FULL_INVERSE ||
+                                             mapping == FieldMapping::HALF_LEFT || mapping == FieldMapping::HALF_RIGHT
+                                         ? 1.0
+                                         : 0.5);
+    if(std::fabs(std::remainder(size[0] / scale_x, model_->getPixelSize().x())) > std::numeric_limits<double>::epsilon() ||
+       std::fabs(std::remainder(size[1] / scale_y, model_->getPixelSize().y())) > std::numeric_limits<double>::epsilon()) {
+        LOG(WARNING) << "Field map size is (" << Units::display(size[0] / scale_x, {"um", "mm"}) << ","
+                     << Units::display(size[1] / scale_y, {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
                      << Units::display(model_->getPixelSize().x(), {"um", "mm"}) << ", "
                      << Units::display(model_->getPixelSize().y(), {"um", "mm"}) << ")" << std::endl
                      << "The area to which the field is applied can be changed using the field_scale parameter.";
     } else {
-        LOG(INFO) << "Field map size is (" << Units::display(size[0], {"um", "mm"}) << ","
-                  << Units::display(size[1], {"um", "mm"}) << "), matching detector model with pixel pitch ("
+        LOG(INFO) << "Field map size is (" << Units::display(size[0] / scale_x, {"um", "mm"}) << ","
+                  << Units::display(size[1] / scale_y, {"um", "mm"}) << "), matching detector model with pixel pitch ("
                   << Units::display(model_->getPixelSize().x(), {"um", "mm"}) << ", "
                   << Units::display(model_->getPixelSize().y(), {"um", "mm"}) << ")";
     }
