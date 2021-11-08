@@ -67,12 +67,6 @@ void SimpleTransferModule::initialize() {
         } else {
             LOG(INFO) << "Collecting charges from implants with size " << Units::display(model->getImplantSize(), {"um"});
         }
-
-        // Check if we have a 3D or 2D implant defined:
-        if(model->getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
-            LOG(INFO) << "Implant is defined in three dimension - using its volume as collection criterion";
-            implant_is_volume_ = true;
-        }
     }
 
     if(output_plots_) {
@@ -96,18 +90,17 @@ void SimpleTransferModule::run(Event* event) {
     for(const auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
 
-        // Ignore if outside the implant region:
-        if(collect_from_implant_ && !model_->isWithinImplant(position)) {
-            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                       << " because their local position is outside the pixel implant";
-            continue;
-        }
-
-        // Ignore if outside depth range of implant - unless the implant is a volume and should govern the selection:
-        // FIXME This logic should be improved
-        if(!implant_is_volume_ && std::fabs(position.z() - (model_->getSensorCenter().z() +
-                                                            model_->getSensorSize().z() / 2.0)) > max_depth_distance_) {
+        if(collect_from_implant_) {
+            // Ignore if outside the implant region:
+            if(!model_->isWithinImplant(position, max_depth_distance_)) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their local position is outside the pixel implant";
+                continue;
+            }
+        } else if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
+                  max_depth_distance_) {
+            // Ignore if not close to the sensor surface:
             LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                        << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                        << " because their local position is not near sensor surface";

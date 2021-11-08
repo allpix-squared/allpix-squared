@@ -74,7 +74,6 @@ namespace allpix {
         // Configuration parameters:
         double max_depth_distance_{};
         bool collect_from_implant_{};
-        bool implant_is_volume_{};
 
         // Flag whether to store output plots:
         bool output_plots_{};
