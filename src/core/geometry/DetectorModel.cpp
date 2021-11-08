@@ -65,6 +65,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
 
     // Sensor thickness
     setSensorThickness(config.get<double>("sensor_thickness"));
+
     // Excess around the sensor from the pixel grid
     auto default_sensor_excess = config.get<double>("sensor_excess", 0);
     setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));

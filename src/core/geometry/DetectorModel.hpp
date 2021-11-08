@@ -369,7 +369,7 @@ namespace allpix {
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
          * point inside (after step).
-         * @throws std::out_of_range if no intersection of track segment with implant volume can be found
+         * @throws std::invalid_argument if no intersection of track segment with implant volume can be found
          * @param  previous Position before the step
          * @param  current  Position after the step
          * @return Entry point in implant in local coordinates of the sensor

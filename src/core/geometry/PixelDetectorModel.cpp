@@ -103,7 +103,7 @@ bool PixelDetectorModel::liang_barsky_clipping(double denominator, double numera
 };
 
 ROOT::Math::XYZPoint PixelDetectorModel::getImplantEntry(const ROOT::Math::XYZPoint outside,
-                                                    const ROOT::Math::XYZPoint inside) const {
+                                                         const ROOT::Math::XYZPoint inside) const {
     // Get direction vector of motion
     auto direction = (inside - outside).Unit();
     // Get positions relative to pixel center:
@@ -121,13 +121,13 @@ ROOT::Math::XYZPoint PixelDetectorModel::getImplantEntry(const ROOT::Math::XYZPo
                      liang_barsky_clipping(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
                      liang_barsky_clipping(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
 
-     // The intersection is a point P + t * D with t = t0. Return impact point if positive (i.e. in direction of the motion)
-     if(intersect && t0 > 0) {
-         return (outside + t0 * direction);
-     }
+    // The intersection is a point P + t * D with t = t0. Return impact point if positive (i.e. in direction of the motion)
+    if(intersect && t0 > 0) {
+        return (outside + t0 * direction);
+    }
 
-     // Otherwise: The line does not intersect the box.
-     throw std::out_of_range("no intersection with implant volume");
+    // Otherwise: The line does not intersect the box.
+    throw std::invalid_argument("one point needs to be outside and one inside the implant volume");
 }
 
 /**
