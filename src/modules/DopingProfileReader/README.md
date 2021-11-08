@@ -24,8 +24,7 @@ The following models for the doping profile can be used:
 * `model` : Type of the doping profile, either **constant**, **regions**  or **mesh**.
 * `file_name` : Location of file containing the doping profile in one of the supported field file formats.
 Only used if the *model* parameter has the value **mesh**.
-* `field_scale` :  Scale of the doping profile in x- and y-direction in units of pixels.
-Only used if the *model* parameter has the value **mesh**.
+* `field_scale` :  Scale of the doping profile in x- and y-direction in units of pixels. By default, the scaling factors are calculated from the physical extent of the field stated in the field file. Only used if the *model* parameter has the value **mesh**.
 * `field_mapping`: Description of the mapping of the field onto the pixel cell. Possible values are `FULL`, indicating that the map spans the full 2D plane and the field is centered around the pixel center, `HALF_TOP` or `HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `QUADRANT_I`, `QUADRANT_II`, `QUADRANT_III`, `QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel plane. In addition, the `FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
 * `doping_concentration` : Value for the doping concentration. If the *model* parameter has the value **constant** a single number should be provided. If the *model* parameter has the value **regions** a matrix is expected, which provides the sensor depth and doping concentration in each row.
 * `doping_depth` : Thickness of the doping profile region. The doping profile is extrapolated in the region below the `doping_depth`.
