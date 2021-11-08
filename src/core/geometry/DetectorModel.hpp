@@ -358,13 +358,20 @@ namespace allpix {
                                                         const ROOT::Math::XYZPoint& outside) const = 0;
 
         /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
+         * @brief Returns if a local position is within the pixel implant region of the sensitive device.
+         *
+         * If the implant is defined as 3D volume in the detector model, this method returns true if the given position is
+         * found within the implant volume. If the impland is configured with two dimensions only, i.e. an area on the sensor
+         * surface, the additional depth parameter is used to create a volume within which carriers are considered inside the
+         * implant.
+         *
          * @param local_pos Position in local coordinates of the detector model
+         * @param depth Depth from sensor surface to be considered if implant is defined only in 2D
          * @return True if a local position is within the pixel implant, false otherwise
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
+        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth = 0) const = 0;
 
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
