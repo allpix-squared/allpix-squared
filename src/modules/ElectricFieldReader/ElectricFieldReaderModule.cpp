@@ -84,8 +84,7 @@ void ElectricFieldReaderModule::initialize() {
         LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
-        auto field_data = read_field(thickness_domain, field_scale);
-
+        auto field_data = read_field();
         detector_->setElectricFieldGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
@@ -294,17 +293,13 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
  * FieldParser's getByFileName method.
  */
 FieldParser<double> ElectricFieldReaderModule::field_parser_(FieldQuantity::VECTOR);
-FieldData<double> ElectricFieldReaderModule::read_field(std::pair<double, double> thickness_domain,
-                                                        std::array<double, 2> field_scale) {
+FieldData<double> ElectricFieldReaderModule::read_field() {
 
     try {
         LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
         auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "V/cm");
-
-        // Check if electric field matches chip
-        check_detector_match(field_data.getSize(), thickness_domain, field_scale);
 
         // Warn at field values larger than 1MV/cm / 10 MV/mm. Simple lookup per vector component, not total field magnitude
         auto max_field = *std::max_element(std::begin(*field_data.getData()), std::end(*field_data.getData()));
@@ -504,39 +499,4 @@ void ElectricFieldReaderModule::create_output_plots() {
     histogram_y->Write();
     histogram_z->Write();
     histogram1D->Write();
-}
-
-/**
- * @brief Check if the detector matches the file header
- */
-void ElectricFieldReaderModule::check_detector_match(std::array<double, 3> dimensions,
-                                                     std::pair<double, double> thickness_domain,
-                                                     std::array<double, 2> field_scale) {
-    auto xpixsz = dimensions[0];
-    auto ypixsz = dimensions[1];
-    auto thickness = dimensions[2];
-
-    auto model = detector_->getModel();
-    // Do a several checks with the detector model
-    if(model != nullptr) {
-        // Check field dimension in z versus the requested thickness domain:
-        auto eff_thickness = thickness_domain.second - thickness_domain.first;
-        if(std::fabs(thickness - eff_thickness) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of electric field is " << Units::display(thickness, "um")
-                         << " but the depleted region is " << Units::display(eff_thickness, "um");
-        }
-
-        // Check the field extent along the pixel pitch in x and y:
-        auto pitch = model->getPixelSize();
-        if(std::fabs(xpixsz - field_scale[0] * pitch.x()) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - field_scale[1] * pitch.y()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Electric field size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"})
-                         << ") but current configuration results in an field area of ("
-                         << Units::display(field_scale[0] * pitch.x(), {"um", "mm"}) << ","
-                         << Units::display(field_scale[1] * pitch.y(), {"um", "mm"}) << ")" << std::endl
-                         << "The size of the area to which the electric field is applied can be changes using the "
-                            "field_scale parameter.";
-        }
-    }
 }

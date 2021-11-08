@@ -58,7 +58,7 @@ void DopingProfileReaderModule::initialize() {
         LOG(DEBUG) << "Doping concentration map starts with offset " << offset << " to pixel boundary";
         std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
-        auto field_data = read_field(field_scale);
+        auto field_data = read_field();
         detector_->setDopingProfileGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
@@ -116,16 +116,13 @@ void DopingProfileReaderModule::initialize() {
  * The field read from the INIT format are shared between module instantiations using the static FieldParser.
  */
 FieldParser<double> DopingProfileReaderModule::field_parser_(FieldQuantity::SCALAR);
-FieldData<double> DopingProfileReaderModule::read_field(std::array<double, 2> field_scale) {
+FieldData<double> DopingProfileReaderModule::read_field() {
 
     try {
         LOG(TRACE) << "Fetching doping concentration map from mesh file";
 
         // Get field from file
         auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "/cm/cm/cm");
-
-        // Check if doping concentration profile matches chip
-        check_detector_match(field_data.getSize(), field_scale);
 
         LOG(INFO) << "Set doping concentration map with " << field_data.getDimensions().at(0) << "x"
                   << field_data.getDimensions().at(1) << "x" << field_data.getDimensions().at(2) << " cells";
@@ -273,32 +270,3 @@ void DopingProfileReaderModule::create_output_plots() {
                << " 1/cm3";
 }
 
-/**
- * @brief Check if the detector matches the file header
- */
-void DopingProfileReaderModule::check_detector_match(std::array<double, 3> dimensions, std::array<double, 2> field_scale) {
-    auto xpixsz = dimensions[0];
-    auto ypixsz = dimensions[1];
-    auto thickness = dimensions[2];
-
-    auto model = detector_->getModel();
-    // Do a several checks with the detector model
-    if(model != nullptr) {
-        // Check field dimension in z versus the sensor thickness:
-        if(std::fabs(thickness - model->getSensorSize().z()) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Thickness of doping concentration map is " << Units::display(thickness, "um")
-                         << " but sensor thickness is " << Units::display(model->getSensorSize().z(), "um");
-        }
-
-        // Check the field extent along the pixel pitch in x and y:
-        if(std::fabs(xpixsz - model->getPixelSize().x() * field_scale[0]) > std::numeric_limits<double>::epsilon() ||
-           std::fabs(ypixsz - model->getPixelSize().y() * field_scale[1]) > std::numeric_limits<double>::epsilon()) {
-            LOG(WARNING) << "Doping concentration map size is (" << Units::display(xpixsz, {"um", "mm"}) << ","
-                         << Units::display(ypixsz, {"um", "mm"}) << ") but current configuration results in an map area of ("
-                         << Units::display(model->getPixelSize().x() * field_scale[0], {"um", "mm"}) << ","
-                         << Units::display(model->getPixelSize().y() * field_scale[1], {"um", "mm"}) << ")" << std::endl
-                         << "The size of the area to which the doping concentration is applied can be changes using the "
-                            "field_scale parameter.";
-        }
-    }
-}

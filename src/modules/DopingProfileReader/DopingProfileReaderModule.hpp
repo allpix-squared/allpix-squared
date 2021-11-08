@@ -50,22 +50,15 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         /**
-         * @brief Read field in the init format and apply it
-         * @param field_scale Scaling parameters for the field size in x and y
+         * @brief Read field from a file in init or apf format
+         * @return Data of the field read from file
          */
-        FieldData<double> read_field(std::array<double, 2> field_scale);
+        FieldData<double> read_field();
         static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the doping profile
          */
         void create_output_plots();
-
-        /**
-         * @brief Compare the dimensions of the detector with the field, print warnings
-         * @param dimensions Dimensions of the field read from file
-         * @param field_scale The configured scaling parameters of the electric field in x and y
-         */
-        void check_detector_match(std::array<double, 3> dimensions, std::array<double, 2> field_scale);
     };
 } // namespace allpix

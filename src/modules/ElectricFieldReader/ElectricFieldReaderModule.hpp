@@ -78,26 +78,15 @@ namespace allpix {
         FieldFunction<ROOT::Math::XYZVector> get_custom_field_function(std::pair<double, double> thickness_domain);
 
         /**
-         * @brief Read field from a file in init or apf format and apply it
-         * @param thickness_domain Domain of the thickness where the field is defined
-         * @param field_scale Scaling parameters for the field size in x and y
+         * @brief Read field from a file in init or apf format
+         * @return Data of the field read from file
          */
-        FieldData<double> read_field(std::pair<double, double> thickness_domain, std::array<double, 2> field_scale);
+        FieldData<double> read_field();
         static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the electric field profile
          */
         void create_output_plots();
-
-        /**
-         * @brief Compare the dimensions of the detector with the field, print warnings
-         * @param dimensions Dimensions of the field read from file
-         * @param thickness_domain Domain of the thickness where the field is defined
-         * @param field_scale The configured scaling parameters of the electric field in x and y
-         */
-        void check_detector_match(std::array<double, 3> dimensions,
-                                  std::pair<double, double> thickness_domain,
-                                  std::array<double, 2> field_scale);
     };
 } // namespace allpix
