@@ -1,5 +1,6 @@
 FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
+ARG ALLPIX_BUILD_ENV="Docker"
 
 # Copy currently checked out git revision:
 COPY . /opt/allpix-squared

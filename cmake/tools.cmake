@@ -36,6 +36,7 @@ FUNCTION(get_version project_version)
             ENDIF()
         ELSE(GIT_FOUND)
             MESSAGE(STATUS "Git repository present, but could not find git executable.")
+            SET(${project_version} "${${project_version}}-unknown")
         ENDIF(GIT_FOUND)
     ELSE(NOT source_package)
         # If we don't have git we can not really do anything
