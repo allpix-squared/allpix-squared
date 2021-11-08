@@ -172,7 +172,7 @@ namespace allpix {
          */
         void setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                   std::array<size_t, 3> bins,
-                                  std::array<double, 2> scales,
+                                  std::array<double, 3> size,
                                   FieldMapping mapping,
                                   std::array<double, 2> scales,
                                   std::pair<double, double> thickness_domain);
