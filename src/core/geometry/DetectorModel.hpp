@@ -457,7 +457,9 @@ namespace allpix {
          * @param t0 Line scale of first possible intersection
          * @param t1 Line scale of second possible intersection
          */
-        static bool liang_barsky_clipping(double denominator, double numerator, double& t0, double& t1);
+        static ROOT::Math::XYZPoint liang_barsky_clipping(const ROOT::Math::XYZVector& direction,
+                                                          const ROOT::Math::XYZPoint& position,
+                                                          const ROOT::Math::XYZVector& box);
 
         std::string type_;
 

@@ -95,7 +95,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
         throw InvalidCombinationError(
             config, {"geometry", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
     }
-    setImplantSize(pixel_size_);
+    setImplant({pixel_size_.X(), pixel_size_.Y(), 0}, {0, 0}, "aluminium");
 
     // Translation vector from local coordinate center to sensor focal point
     focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};

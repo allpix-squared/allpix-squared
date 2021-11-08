@@ -80,56 +80,6 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
             local_pos.z() >= getSensorSize().z() / 2 - getImplantSize().z());
 }
 
-bool PixelDetectorModel::liang_barsky_clipping(double denominator, double numerator, double& t0, double& t1) {
-    if(denominator > 0) {
-        if(numerator > denominator * t1) {
-            return false;
-        }
-        if(numerator > denominator * t0) {
-            t0 = numerator / denominator;
-        }
-        return true;
-    } else if(denominator < 0) {
-        if(numerator > denominator * t0) {
-            return false;
-        }
-        if(numerator > denominator * t1) {
-            t1 = numerator / denominator;
-        }
-        return true;
-    } else {
-        return numerator <= 0;
-    }
-};
-
-ROOT::Math::XYZPoint PixelDetectorModel::getImplantEntry(const ROOT::Math::XYZPoint outside,
-                                                         const ROOT::Math::XYZPoint inside) const {
-    // Get direction vector of motion
-    auto direction = (inside - outside).Unit();
-    // Get positions relative to pixel center:
-    auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
-    // We have to be centered around the implant box, not the pixel. This means we need to shift with the implant offset
-    auto pos_out = outside - getPixelCenter(static_cast<unsigned int>(xpixel_out), static_cast<unsigned int>(ypixel_out)) -
-                   getImplantOffset();
-
-    // Clip the particle track against the six possible box faces
-    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-    bool intersect = liang_barsky_clipping(direction.X(), -pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
-                     liang_barsky_clipping(-direction.X(), pos_out.X() - getImplantSize().X() / 2, t0, t1) &&
-                     liang_barsky_clipping(direction.Y(), -pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
-                     liang_barsky_clipping(-direction.Y(), pos_out.Y() - getImplantSize().Y() / 2, t0, t1) &&
-                     liang_barsky_clipping(direction.Z(), -pos_out.Z() - getImplantSize().Z() / 2, t0, t1) &&
-                     liang_barsky_clipping(-direction.Z(), pos_out.Z() - getImplantSize().Z() / 2, t0, t1);
-
-    // The intersection is a point P + t * D with t = t0. Return impact point if positive (i.e. in direction of the motion)
-    if(intersect && t0 > 0) {
-        return (outside + t0 * direction);
-    }
-
-    // Otherwise: The line does not intersect the box.
-    throw std::invalid_argument("one point needs to be outside and one inside the implant volume");
-}
-
 /**
  * The definition of the pixel grid size is determined by the detector model
  */

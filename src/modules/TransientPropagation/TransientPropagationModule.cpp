@@ -568,7 +568,7 @@ TransientPropagationModule::propagate(Event* event,
             auto new_position = model_->getImplantEntry(static_cast<ROOT::Math::XYZPoint>(last_position),
                                                         static_cast<ROOT::Math::XYZPoint>(position));
             position = Eigen::Vector3d(new_position.x(), new_position.y(), new_position.z());
-            within_sensor = false;
+            state = CarrierState::HALTED;
         }
 
         // Check for overshooting outside the sensor and correct for it:
