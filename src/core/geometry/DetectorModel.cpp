@@ -224,3 +224,33 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
 
     return ret_layers;
 }
+
+ROOT::Math::XYZPoint DetectorModel::getSensorExit(const ROOT::Math::XYZPoint inside,
+                                                  const ROOT::Math::XYZPoint outside) const {
+    // Get direction vector of motion
+    auto direction = (outside - inside).Unit();
+    // We have to be centered around the sensor box. This means we need to shift by the matrix center
+    auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter())).Inverse();
+    auto pos_in = translation_local(inside);
+
+    // Clip the particle track against the six possible box faces
+    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
+    bool intersect = liang_barsky_clipping(direction.X(), -pos_in.X() - getSensorSize().X() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.X(), pos_in.X() - getSensorSize().X() / 2, t0, t1) &&
+                     liang_barsky_clipping(direction.Y(), -pos_in.Y() - getSensorSize().Y() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.Y(), pos_in.Y() - getSensorSize().Y() / 2, t0, t1) &&
+                     liang_barsky_clipping(direction.Z(), -pos_in.Z() - getSensorSize().Z() / 2, t0, t1) &&
+                     liang_barsky_clipping(-direction.Z(), pos_in.Z() - getSensorSize().Z() / 2, t0, t1);
+
+    // The intersection is a point P + t * D with t = t0. Return impact point if positive (i.e. in direction of the motion)
+    if(intersect) {
+        if(t0 > 0) {
+            return (inside + t0 * direction);
+        } else if(t1 > 0) {
+            return (inside + t1 * direction);
+        }
+    }
+
+    // Otherwise: The line does not intersect the box.
+    throw std::invalid_argument("one point needs to be outside and one inside the sensor volume");
+}
