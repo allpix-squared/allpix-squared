@@ -377,11 +377,12 @@ namespace allpix {
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
          * point inside (after step).
          * @throws std::invalid_argument if no intersection of track segment with implant volume can be found
-         * @param  previous Position before the step
-         * @param  current  Position after the step
+         * @param  outside Position before the step, outside the implant volume
+         * @param  inside  Position after the step, inside the implant volume
          * @return Entry point in implant in local coordinates of the sensor
          */
-        ROOT::Math::XYZPoint getImplantEntry(const ROOT::Math::XYZPoint previous, const ROOT::Math::XYZPoint current) const;
+        ROOT::Math::XYZPoint getImplantIntercept(const ROOT::Math::XYZPoint outside,
+                                                 const ROOT::Math::XYZPoint inside) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
@@ -457,12 +458,20 @@ namespace allpix {
 
     protected:
         /**
-         * @brief Liang–Barsky clipping of a line against faces of a box. See Liang, Y. D., and Barsky, B., "A New Concept
-         * and Method for Line Clipping", ACM Transactions on Graphics, 3(1):1–22 for an in-depth explanation
-         * @param denominator Denominator representing the currently tested face of the box
-         * @param numerator Numerator representing the currently tested face of the box
-         * @param t0 Line scale of first possible intersection
-         * @param t1 Line scale of second possible intersection
+         * @brief Liang–Barsky clipping of a line against faces of a box.
+         *
+         * See Liang, Y. D., and Barsky, B., "A New Concept and Method for Line Clipping", ACM Transactions on Graphics,
+         * 3(1):1–22 for an in-depth explanation. This method requires the position to be in the coordinate system of the box
+         * to be tested for intersections, with the box center at its origin and the box sides aligned with the coordinate
+         * axes.
+         *
+         * @param direction Direction vector of the motion
+         * @param position Original ("before") position to be considered
+         * @param box Size of the box to calculate the intersections with
+         * @return Closest intersection with box in the direction indicated by input vector
+         *
+         * @throws std::invalid_argument if no intersection of track segment with the box volume can be found in positive
+         * direction from the given position.
          */
         static ROOT::Math::XYZPoint liang_barsky_clipping(const ROOT::Math::XYZVector& direction,
                                                           const ROOT::Math::XYZPoint& position,

@@ -227,8 +227,8 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     return ret_layers;
 }
 
-ROOT::Math::XYZPoint DetectorModel::getSensorExit(const ROOT::Math::XYZPoint inside,
-                                                  const ROOT::Math::XYZPoint outside) const {
+ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint inside,
+                                                       const ROOT::Math::XYZPoint outside) const {
     // Get direction vector of motion
     auto direction = (outside - inside).Unit();
     // We have to be centered around the sensor box. This means we need to shift by the matrix center
@@ -309,8 +309,8 @@ ROOT::Math::XYZPoint DetectorModel::liang_barsky_clipping(const ROOT::Math::XYZV
     throw std::invalid_argument("one point needs to be outside and one inside the sensor volume");
 }
 
-ROOT::Math::XYZPoint DetectorModel::getImplantEntry(const ROOT::Math::XYZPoint outside,
-                                                    const ROOT::Math::XYZPoint inside) const {
+ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoint outside,
+                                                        const ROOT::Math::XYZPoint inside) const {
     // Get direction vector of motion
     auto direction = (inside - outside).Unit();
     // Get positions relative to pixel center:
