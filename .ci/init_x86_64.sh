@@ -5,7 +5,7 @@ if [ "$(uname)" = "Linux" ]; then
     if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
         echo "Detected CentOS Linux 7"
         OS=centos7
-    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ]; then
+    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ] || [ "$( cat /etc/*-release | grep "CentOS Stream release 8" )" ]; then
         echo "Detected CentOS Linux 8"
         OS=centos8
     else
