@@ -58,6 +58,11 @@ void DatabaseWriterModule::initialize() {
     if(!config_.get<bool>("require_sequence")) {
         waive_sequence_requirement();
     }
+
+    // In single-threaded mode, initializeThread is not called, so let's do it manually to get a DB connection:
+    if(!multithreadingEnabled()) {
+        initializeThread();
+    }
 }
 
 void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> connection) {
