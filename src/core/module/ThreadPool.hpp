@@ -270,6 +270,7 @@ namespace allpix {
         using Task = std::unique_ptr<std::packaged_task<void()>>;
         SafeQueue<Task> queue_;
         bool with_buffered_{true};
+        std::function<void()> finalize_function_{};
 
         std::atomic_bool done_{false};
 

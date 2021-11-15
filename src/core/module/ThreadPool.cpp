@@ -47,6 +47,14 @@ ThreadPool::ThreadPool(unsigned int num_threads,
                                   worker_init_function,
                                   worker_finalize_function);
         }
+
+        // When running single-threadedly, execute initialize function directly and store finalize function for later
+        if(threads_.empty()) {
+            if(worker_init_function) {
+                worker_init_function();
+            }
+            finalize_function_ = worker_finalize_function;
+        }
     } catch(...) {
         destroy();
         throw;
@@ -148,6 +156,11 @@ void ThreadPool::destroy() {
         if(thread.joinable()) {
             thread.join();
         }
+    }
+
+    // Execute the cleanup function at the end of run if running single-threaded
+    if(threads_.empty() && finalize_function_) {
+        finalize_function_();
     }
 }
 
