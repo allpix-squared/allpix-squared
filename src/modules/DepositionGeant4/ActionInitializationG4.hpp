@@ -14,14 +14,13 @@
 
 #include "core/config/Configuration.hpp"
 
-#include "GeneratorActionG4.hpp"
 #include "SetTrackInfoUserHookG4.hpp"
 
 namespace allpix {
     /**
      * @brief Initializer for the tracker and generator actions, required for \ref RunManager
      */
-    class ActionInitializationG4 : public G4VUserActionInitialization {
+    template <class GEN, class INIT> class ActionInitializationG4 : public G4VUserActionInitialization {
     public:
         explicit ActionInitializationG4(const Configuration& config) : config_(config){};
 
@@ -31,7 +30,7 @@ namespace allpix {
          */
         void Build() const override {
             // primary particles generator
-            SetUserAction(new GeneratorActionG4(config_));
+            SetUserAction(new GEN(config_));
 
             // tracker hook
             SetUserAction(new SetTrackInfoUserHookG4());
@@ -49,7 +48,7 @@ namespace allpix {
             // We force the creation of the messenger early on master and apply UI commands so
             // that when workers are ready to use their own instances of GPS class they are
             // initialized with common UI commands
-            static GeneratorActionInitializationMaster generator(config_);
+            static INIT generator(config_);
             (void)generator;
         }
 
