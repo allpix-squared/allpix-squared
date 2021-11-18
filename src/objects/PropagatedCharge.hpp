@@ -21,7 +21,7 @@
 namespace allpix {
 
     /**
-     * @brief State of the PropagatedCharge
+     * @brief State of the charge carrier
      */
     enum class CarrierState {
         MOTION = 0, ///< The propagated charge carrier is in motion
@@ -45,6 +45,7 @@ namespace allpix {
          * @param charge Total charge propagated
          * @param local_time Time of propagation arrival after energy deposition, local reference frame
          * @param global_time Total time of propagation arrival after event start, global reference frame
+         * @param state State of the charge carrier when reaching its position
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
@@ -64,6 +65,7 @@ namespace allpix {
          * @param pulses Map of pulses induced at electrodes identified by their index
          * @param local_time Time of propagation arrival after energy deposition, local reference frame
          * @param global_time Total time of propagation arrival after event start, global reference frame
+         * @param state State of the charge carrier when reaching its position
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
@@ -93,6 +95,10 @@ namespace allpix {
          */
         std::map<Pixel::Index, Pulse> getPulses() const;
 
+        /**
+         * @brief Get state of the charge carrier
+         * @return Charge carrier state
+         */
         CarrierState getState() const;
 
         /**
