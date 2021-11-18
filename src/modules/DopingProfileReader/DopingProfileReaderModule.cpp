@@ -54,7 +54,7 @@ void DopingProfileReaderModule::initialize() {
                 "shifting doping concentration map by more than one pixel (offset > 1.0) is not allowed");
         }
         LOG(DEBUG) << "Doping concentration map starts with offset " << offset << " to pixel boundary";
-        std::array<double, 2> field_offset{{offset.x(), offset.y()}};
+        std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
 
         auto field_data = read_field(field_scale);
         detector_->setDopingProfileGrid(
