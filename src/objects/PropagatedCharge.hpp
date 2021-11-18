@@ -19,6 +19,16 @@
 #include "SensorCharge.hpp"
 
 namespace allpix {
+
+    /**
+     * @brief State of the PropagatedCharge
+     */
+    enum class CarrierState {
+        MOTION = 0, ///< The propagated charge carrier is in motion
+        RECOMBINED, ///< The propagated charge carrier has recombined with the lattice
+        TRAPPED,    ///< The propagated charge carrier is trapped temporarily
+    };
+
     /**
      * @ingroup Objects
      * @brief Set of charges propagated through the sensor
@@ -43,6 +53,7 @@ namespace allpix {
                          unsigned int charge,
                          double local_time,
                          double global_time,
+                         CarrierState state = CarrierState::MOTION,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -61,6 +72,7 @@ namespace allpix {
                          std::map<Pixel::Index, Pulse> pulses,
                          double local_time,
                          double global_time,
+                         CarrierState state = CarrierState::MOTION,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -81,6 +93,8 @@ namespace allpix {
          */
         std::map<Pixel::Index, Pulse> getPulses() const;
 
+        CarrierState getState() const;
+
         /**
          * @brief Print an ASCII representation of PropagatedCharge to the given stream
          * @param out Stream to print to
@@ -90,7 +104,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PropagatedCharge, 6); // NOLINT
+        ClassDefOverride(PropagatedCharge, 7); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -104,6 +118,8 @@ namespace allpix {
         PointerWrapper<MCParticle> mc_particle_;
 
         std::map<Pixel::Index, Pulse> pulses_;
+
+        CarrierState state_{CarrierState::MOTION};
     };
 
     /**
