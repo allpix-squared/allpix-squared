@@ -644,6 +644,7 @@ void GenericPropagationModule::run(Event* event) {
                                                charge_per_step,
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
+                                               (alive ? CarrierState::MOTION : CarrierState::RECOMBINED),
                                                &deposit);
 
             propagated_charges.push_back(std::move(propagated_charge));

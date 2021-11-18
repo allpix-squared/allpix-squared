@@ -204,6 +204,7 @@ void TransientPropagationModule::run(Event* event) {
                                                std::move(px_map),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
+                                               (alive ? CarrierState::MOTION : CarrierState::RECOMBINED),
                                                &deposit);
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(local_position, {"mm", "um"})
