@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <magic_enum/magic_enum.hpp>
 #include <numeric>
 
 #include "PropagatedCharge.hpp"
@@ -91,6 +92,7 @@ CarrierState PropagatedCharge::getState() const {
 
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
+    out << "State: " << magic_enum::enum_name(state_) << "\n";
     SensorCharge::print(out);
 }
 
