@@ -137,8 +137,11 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points) {
-    LOG(TRACE) << "Writing output plots";
+void GenericPropagationModule::create_output_plots(uint64_t event_num,
+                                                   OutputPlotPoints& output_plot_points,
+                                                   CarrierState plotting_state) {
+    auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
+    LOG(TRACE) << "Writing output plots, for " << title << " charge carriers";
 
     // Convert to pixel units if necessary
     if(config_.get<bool>("output_plots_use_pixel_units")) {
@@ -226,7 +229,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
-    auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
+    auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num) + "_" + title).c_str(),
                                             ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
                                             1280,
                                             1024);
@@ -247,6 +250,11 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
     for(auto& [deposit, points] : output_plot_points) {
+        // Check if we should plot this point:
+        if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+            continue;
+        }
+
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : points) {
             line->SetNextPoint(point.x(), point.y(), point.z());
@@ -267,7 +275,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     lines.clear();
 
     // Create canvas for GIF animition of process
-    canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num)).c_str(),
+    canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_" + title).c_str(),
                                        ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
                                        1280,
                                        1024);
@@ -292,7 +300,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
         // Create the contour histogram
         std::vector<std::string> file_name_contour;
         std::vector<TH2F*> histogram_contour;
-        file_name_contour.push_back(createOutputFile("contourX" + std::to_string(event_num) + ".gif"));
+        file_name_contour.push_back(createOutputFile("contourX" + std::to_string(event_num) + "_" + title + ".gif"));
         histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                              "",
                                              100,
@@ -386,6 +394,11 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             // Plot all the required points
             for(auto& [deposit, points] : output_plot_points) {
                 auto& [time, charge, type, state] = deposit;
+
+                // Check if we should plot this point:
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != state) {
+                    continue;
+                }
 
                 auto diff = static_cast<unsigned long>(
                     std::round((time - start_time) / config_.get<long double>("output_plots_step")));
@@ -668,7 +681,7 @@ void GenericPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        create_output_plots(event->number, output_plot_points);
+        create_output_plots(event->number, output_plot_points, CarrierState::UNKNOWN);
     }
 
     // Write summary and update statistics
