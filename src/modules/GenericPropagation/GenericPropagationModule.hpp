@@ -100,7 +100,8 @@ namespace allpix {
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
             target_spatial_precision_{}, output_plots_step_{};
-        bool output_plots_{}, output_linegraphs_{}, output_animations_{}, output_plots_lines_at_implants_{};
+        bool output_plots_{}, output_linegraphs_{}, output_animations_{}, output_plots_lines_at_implants_{},
+            output_plots_lines_recombined_{};
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
 

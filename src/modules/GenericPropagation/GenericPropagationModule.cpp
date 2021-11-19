@@ -83,6 +83,14 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
     config_.setDefault<bool>("output_plots_lines_at_implants", false);
+    config_.setDefault<bool>("output_plots_lines_recombined", false);
+
+    if(config_.get<bool>("output_plots_lines_at_implants") && config_.get<bool>("output_plots_lines_recombined")) {
+        throw InvalidCombinationError(
+            config_,
+            {"output_plots_lines_at_implants", "output_plots_lines_recombined"},
+            "Line graphs can be created either for charge carriers reaching the implants or for those that have recombined");
+    }
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -108,6 +116,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
+    output_plots_lines_recombined_ = config_.get<bool>("output_plots_lines_recombined");
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
@@ -855,9 +864,14 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     }
 
     // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
-    if(output_linegraphs_ && output_plots_lines_at_implants_) {
-        // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
-        if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+    if(output_linegraphs_) {
+        if(output_plots_lines_at_implants_) {
+            // If drift time is larger than integration time or the charge carriers have been collected at the backside,
+            // remove
+            if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+                output_plot_points.pop_back();
+            }
+        } else if(output_plots_lines_recombined_ && !is_alive) {
             output_plot_points.pop_back();
         }
     }
