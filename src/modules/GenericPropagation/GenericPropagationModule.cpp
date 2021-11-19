@@ -131,20 +131,14 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 }
 
 void GenericPropagationModule::create_output_plots(uint64_t event_num,
-                                                   OutputPlotPoints& output_plot_points,
+                                                   const OutputPlotPoints& output_plot_points,
                                                    CarrierState plotting_state) {
     auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
     LOG(TRACE) << "Writing output plots, for " << title << " charge carriers";
 
     // Convert to pixel units if necessary
-    if(config_.get<bool>("output_plots_use_pixel_units")) {
-        for(auto& deposit_points : output_plot_points) {
-            for(auto& point : deposit_points.second) {
-                point.SetX(point.x() / model_->getPixelSize().x());
-                point.SetY(point.y() / model_->getPixelSize().y());
-            }
-        }
-    }
+    double scale_x = (config_.get<bool>("output_plots_use_pixel_units") ? model_->getPixelSize().x() : 1);
+    double scale_y = (config_.get<bool>("output_plots_use_pixel_units") ? model_->getPixelSize().y() : 1);
 
     // Calculate the axis limits
     double minX = FLT_MAX, maxX = FLT_MIN;
@@ -155,11 +149,11 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
     unsigned int max_charge = 0;
     for(auto& [deposit, points] : output_plot_points) {
         for(auto& point : points) {
-            minX = std::min(minX, point.x());
-            maxX = std::max(maxX, point.x());
+            minX = std::min(minX, point.x() / scale_x);
+            maxX = std::max(maxX, point.x() / scale_x);
 
-            minY = std::min(minY, point.y());
-            maxY = std::max(maxY, point.y());
+            minY = std::min(minY, point.y() / scale_y);
+            maxY = std::max(maxY, point.y() / scale_y);
         }
         auto& [time, charge, type, state] = deposit;
         start_time = std::min(start_time, time);
@@ -208,7 +202,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
     }
 
     // Use a histogram to create the underlying frame
-    auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+    auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
                                      "",
                                      10,
                                      minX,
@@ -250,7 +244,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
 
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : points) {
-            line->SetNextPoint(point.x(), point.y(), point.z());
+            line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
         }
         // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
@@ -415,13 +409,13 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
                 if(config_.get<bool>("output_animations_color_markers")) {
                     marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
                 }
-                marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
+                marker->SetNextPoint(points[idx].x() / scale_x, points[idx].y() / scale_y, points[idx].z());
                 marker->Draw();
                 markers.push_back(std::move(marker));
 
-                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), charge);
-                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), charge);
-                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), charge);
+                histogram_contour[0]->Fill(points[idx].y() / scale_y, points[idx].z(), charge);
+                histogram_contour[1]->Fill(points[idx].x() / scale_x, points[idx].z(), charge);
+                histogram_contour[2]->Fill(points[idx].x() / scale_x, points[idx].y() / scale_y, charge);
                 ++point_cnt;
             }
 

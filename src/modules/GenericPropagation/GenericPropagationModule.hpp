@@ -81,7 +81,8 @@ namespace allpix {
          * @param output_plot_points List of points cached for plotting
          * @param plotting_state State of charge carriers to be plotted
          */
-        void create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points, CarrierState plotting_state);
+        void
+        create_output_plots(uint64_t event_num, const OutputPlotPoints& output_plot_points, CarrierState plotting_state);
 
         /**
          * @brief Propagate a single set of charges through the sensor
