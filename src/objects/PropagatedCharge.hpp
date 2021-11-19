@@ -27,6 +27,7 @@ namespace allpix {
         MOTION = 0, ///< The propagated charge carrier is in motion
         RECOMBINED, ///< The propagated charge carrier has recombined with the lattice
         TRAPPED,    ///< The propagated charge carrier is trapped temporarily
+        HALTED,     ///< The carrier has come to a halt because it, for example, has reached the sensor surface or an implant
     };
 
     /**
