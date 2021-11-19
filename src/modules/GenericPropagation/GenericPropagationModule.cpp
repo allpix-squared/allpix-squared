@@ -73,6 +73,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<std::string>("recombination_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
+    config_.setDefault<bool>("output_linegraphs_collected", false);
+    config_.setDefault<bool>("output_linegraphs_recombined", false);
     config_.setDefault<bool>("output_animations", false);
     config_.setDefault<bool>("output_plots",
                              config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
@@ -82,15 +84,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
-    config_.setDefault<bool>("output_plots_lines_at_implants", false);
-    config_.setDefault<bool>("output_plots_lines_recombined", false);
-
-    if(config_.get<bool>("output_plots_lines_at_implants") && config_.get<bool>("output_plots_lines_recombined")) {
-        throw InvalidCombinationError(
-            config_,
-            {"output_plots_lines_at_implants", "output_plots_lines_recombined"},
-            "Line graphs can be created either for charge carriers reaching the implants or for those that have recombined");
-    }
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -113,10 +106,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
+    output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
-    output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
-    output_plots_lines_recombined_ = config_.get<bool>("output_plots_lines_recombined");
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
@@ -682,6 +675,12 @@ void GenericPropagationModule::run(Event* event) {
     // Output plots if required
     if(output_linegraphs_) {
         create_output_plots(event->number, output_plot_points, CarrierState::UNKNOWN);
+        if(output_linegraphs_collected_) {
+            create_output_plots(event->number, output_plot_points, CarrierState::HALTED);
+        }
+        if(output_linegraphs_recombined_) {
+            create_output_plots(event->number, output_plot_points, CarrierState::RECOMBINED);
+        }
     }
 
     // Write summary and update statistics
@@ -873,19 +872,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
-    // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
+    // Set final state of charge carrier for plotting:
     if(output_linegraphs_) {
-        // Set final state of charge carrier for plotting:
-        std::get<3>(output_plot_points.back().first) = state;
-
-        if(output_plots_lines_at_implants_) {
-            // If drift time is larger than integration time or the charge carriers have been collected at the backside,
-            // remove
-            if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-                output_plot_points.pop_back();
-            }
-        } else if(output_plots_lines_recombined_ && state == CarrierState::RECOMBINED) {
-            output_plot_points.pop_back();
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
+        if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+            std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
+        } else {
+            std::get<3>(output_plot_points.back().first) = state;
         }
     }
 
