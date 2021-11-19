@@ -24,10 +24,11 @@ namespace allpix {
      * @brief State of the charge carrier
      */
     enum class CarrierState {
-        MOTION = 0, ///< The propagated charge carrier is in motion
-        RECOMBINED, ///< The propagated charge carrier has recombined with the lattice
-        TRAPPED,    ///< The propagated charge carrier is trapped temporarily
-        HALTED,     ///< The carrier has come to a halt because it, for example, has reached the sensor surface or an implant
+        UNKNOWN = 0, ///< State of the propagated charge carrier is unknown
+        MOTION,      ///< The propagated charge carrier is in motion
+        RECOMBINED,  ///< The propagated charge carrier has recombined with the lattice
+        TRAPPED,     ///< The propagated charge carrier is trapped temporarily
+        HALTED, ///< The carrier has come to a halt because it, for example, has reached the sensor surface or an implant
     };
 
     /**
@@ -55,7 +56,7 @@ namespace allpix {
                          unsigned int charge,
                          double local_time,
                          double global_time,
-                         CarrierState state = CarrierState::MOTION,
+                         CarrierState state = CarrierState::UNKNOWN,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -75,7 +76,7 @@ namespace allpix {
                          std::map<Pixel::Index, Pulse> pulses,
                          double local_time,
                          double global_time,
-                         CarrierState state = CarrierState::MOTION,
+                         CarrierState state = CarrierState::UNKNOWN,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -126,7 +127,7 @@ namespace allpix {
 
         std::map<Pixel::Index, Pulse> pulses_;
 
-        CarrierState state_{CarrierState::MOTION};
+        CarrierState state_{CarrierState::UNKNOWN};
     };
 
     /**

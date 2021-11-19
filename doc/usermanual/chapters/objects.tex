@@ -47,6 +47,7 @@ Timing information giving the total time to arrive at the final location, from t
 The state of the charge carrier at the end of the propagation can be retrieved via the \parameter{getState()} method. The following values are available:
 
 \begin{description}
+\item[\parameter{CarrierState::UNKNOWN}] The final state of the charge carrier is unknown, it might not have been provided by the propagation algorithm, for example.
 \item[\parameter{CarrierState::MOTION}] The charge carrier was still in motion when the propagation routine finished, for example when the configured integration time was reached.
 \item[\parameter{CarrierState::RECOMBINED}] The charge carrier has recombined with the silicon lattice at the given position.
 \item[\parameter{CarrierState::TRAPPED}] The charge carrier has been trapped by a lattice defect at the given position.
