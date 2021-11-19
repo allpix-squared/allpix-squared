@@ -88,14 +88,14 @@ namespace allpix {
          * @param initial_time Initial time passed before propagation starts in local time coordinates
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
-         * @return Tuple with the point where the deposit ended after propagation, the time the propagation took and a flag
-         * whether it has recombined
+         * @return Tuple with the point where the deposit ended after propagation, the time the propagation took and the
+         * final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, bool> propagate(const ROOT::Math::XYZPoint& pos,
-                                                                 const CarrierType& type,
-                                                                 const double initial_time,
-                                                                 RandomNumberGenerator& random_generator,
-                                                                 OutputPlotPoints& output_plot_points) const;
+        std::tuple<ROOT::Math::XYZPoint, double, CarrierState> propagate(const ROOT::Math::XYZPoint& pos,
+                                                                         const CarrierType& type,
+                                                                         const double initial_time,
+                                                                         RandomNumberGenerator& random_generator,
+                                                                         OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
