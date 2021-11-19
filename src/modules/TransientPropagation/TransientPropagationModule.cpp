@@ -18,8 +18,6 @@
 
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
-#include "objects/PixelCharge.hpp"
-#include "objects/PropagatedCharge.hpp"
 #include "tools/runge_kutta.h"
 
 using namespace allpix;
@@ -193,7 +191,7 @@ void TransientPropagationModule::run(Event* event) {
             std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto [local_position, time, alive] = propagate(
+            auto [local_position, time, state] = propagate(
                 event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
@@ -204,7 +202,7 @@ void TransientPropagationModule::run(Event* event) {
                                                std::move(px_map),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
-                                               (alive ? CarrierState::MOTION : CarrierState::RECOMBINED),
+                                               state,
                                                &deposit);
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(local_position, {"mm", "um"})
@@ -213,7 +211,7 @@ void TransientPropagationModule::run(Event* event) {
 
             propagated_charges.push_back(std::move(propagated_charge));
 
-            if(alive) {
+            if(state != CarrierState::RECOMBINED) {
                 propagated_charges_count += charge_per_step;
             } else {
                 recombined_charges_count += charge_per_step;
@@ -242,7 +240,7 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, bool>
+std::tuple<ROOT::Math::XYZPoint, double, CarrierState>
 TransientPropagationModule::propagate(Event* event,
                                       const ROOT::Math::XYZPoint& pos,
                                       const CarrierType& type,
@@ -308,9 +306,8 @@ TransientPropagationModule::propagate(Event* event,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
-    bool within_sensor = true;
-    bool is_alive = true;
-    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
+    auto state = CarrierState::MOTION;
+    while(state == CarrierState::MOTION && (initial_time + runge_kutta.getTime()) < integration_time_) {
         // Save previous position and time
         last_position = position;
 
@@ -330,10 +327,12 @@ TransientPropagationModule::propagate(Event* event,
         runge_kutta.setValue(position);
 
         // Check if charge carrier is still alive:
-        is_alive = !recombination_(type,
-                                   detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                   survival(event->getRandomEngine()),
-                                   timestep_);
+        if(recombination_(type,
+                          detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                          survival(event->getRandomEngine()),
+                          timestep_)) {
+            state = CarrierState::RECOMBINED;
+        }
 
         // Update step length histogram
         if(output_plots_) {
@@ -357,7 +356,7 @@ TransientPropagationModule::propagate(Event* event,
                     LOG(DEBUG) << "Not stopping carrier " << type << " at "
                                << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
                 } else {
-                    within_sensor = false;
+                    state = CarrierState::HALTED;
                 }
 
                 // Carrier left sensor on top or bottom surface, interpolate
@@ -367,7 +366,7 @@ TransientPropagationModule::propagate(Event* event,
                 position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
                 LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             } else {
-                within_sensor = false;
+                state = CarrierState::HALTED;
             }
         }
 
@@ -419,7 +418,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), state);
 }
 
 void TransientPropagationModule::finalize() {
