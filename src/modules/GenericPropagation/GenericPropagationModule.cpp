@@ -165,9 +165,10 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
             minY = std::min(minY, point.y());
             maxY = std::max(maxY, point.y());
         }
-        start_time = std::min(start_time, deposit.getGlobalTime());
-        total_charge += deposit.getCharge();
-        max_charge = std::max(max_charge, deposit.getCharge());
+        auto& [time, charge, type, state] = deposit;
+        start_time = std::min(start_time, time);
+        total_charge += charge;
+        max_charge = std::max(max_charge, charge);
 
         tot_point_cnt += points.size();
     }
@@ -252,7 +253,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
         }
         // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
-            EColor plot_color = (deposit.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+            EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
             line->SetLineColor(current_color);
             line->Draw("same");
@@ -384,8 +385,10 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 
             // Plot all the required points
             for(auto& [deposit, points] : output_plot_points) {
+                auto& [time, charge, type, state] = deposit;
+
                 auto diff = static_cast<unsigned long>(
-                    std::round((deposit.getGlobalTime() - start_time) / config_.get<long double>("output_plots_step")));
+                    std::round((time - start_time) / config_.get<long double>("output_plots_step")));
                 if(plot_idx < diff) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                     continue;
@@ -398,9 +401,8 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(
-                    static_cast<float>(deposit.getCharge() * config_.get<double>("output_animations_marker_size", 1)) /
-                    static_cast<float>(max_charge));
+                marker->SetMarkerSize(static_cast<float>(charge * config_.get<double>("output_animations_marker_size", 1)) /
+                                      static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
                 initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
@@ -411,9 +413,9 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
                 marker->Draw();
                 markers.push_back(std::move(marker));
 
-                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit.getCharge());
-                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit.getCharge());
-                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit.getCharge());
+                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), charge);
+                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), charge);
+                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), charge);
                 ++point_cnt;
             }
 
@@ -620,15 +622,10 @@ void GenericPropagationModule::run(Event* event) {
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
-                auto global_position = detector_->getGlobalPosition(initial_position);
                 std::lock_guard<std::mutex> lock{stats_mutex_};
-                output_plot_points.emplace_back(PropagatedCharge(initial_position,
-                                                                 global_position,
-                                                                 deposit.getType(),
-                                                                 charge_per_step,
-                                                                 deposit.getLocalTime(),
-                                                                 deposit.getGlobalTime()),
-                                                std::vector<ROOT::Math::XYZPoint>());
+                output_plot_points.emplace_back(
+                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
+                    std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
@@ -865,13 +862,16 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
     if(output_linegraphs_) {
+        // Set final state of charge carrier for plotting:
+        std::get<3>(output_plot_points.back().first) = state;
+
         if(output_plots_lines_at_implants_) {
             // If drift time is larger than integration time or the charge carriers have been collected at the backside,
             // remove
             if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
                 output_plot_points.pop_back();
             }
-        } else if(output_plots_lines_recombined_ && !is_alive) {
+        } else if(output_plots_lines_recombined_ && state == CarrierState::RECOMBINED) {
             output_plot_points.pop_back();
         }
     }

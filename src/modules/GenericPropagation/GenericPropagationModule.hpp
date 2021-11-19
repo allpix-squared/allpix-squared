@@ -32,7 +32,8 @@
 #include "tools/ROOT.h"
 
 namespace allpix {
-    using OutputPlotPoints = std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>>;
+    using OutputPlotPoints = std::vector<
+        std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
 
     /**
      * @ingroup Modules
