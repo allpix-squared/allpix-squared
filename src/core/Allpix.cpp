@@ -284,7 +284,7 @@ void Allpix::set_style() {
 
     // Title offset: distance between given text and axis
     style->SetLabelOffset(0.01f, "xyz");
-    style->SetTitleOffset(1.6f, "yz");
+    style->SetTitleOffset(1.4f, "yz");
     style->SetTitleOffset(1.4f, "x");
 
     // Set font settings
