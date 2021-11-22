@@ -57,6 +57,11 @@ namespace allpix {
         static FieldParser<double> field_parser_;
 
         /**
+         * @brief Create output plots of the doping profile
+         */
+        void create_output_plots();
+
+        /**
          * @brief Compare the dimensions of the detector with the field, print warnings
          * @param dimensions Dimensions of the field read from file
          * @param field_scale The configured scaling parameters of the electric field in x and y

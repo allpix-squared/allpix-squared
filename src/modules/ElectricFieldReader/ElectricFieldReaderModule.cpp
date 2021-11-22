@@ -369,29 +369,30 @@ void ElectricFieldReaderModule::create_output_plots() {
 
     // Create 2D histograms
     auto* histogram = new TH2F("field_magnitude",
-                               "electric field magnitude",
+                               "Electric field magnitude",
                                static_cast<int>(steps),
                                min1,
                                max1,
                                static_cast<int>(steps),
                                min2,
                                max2);
-    histogram->SetMinimum(0);
+    histogram->SetMinimum(-0.01);
     histogram->SetOption("colz");
 
     auto* histogram_x = new TH2F(
-        "field_x", "electric field (x-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+        "field_x", "Electric field (x-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     auto* histogram_y = new TH2F(
-        "field_y", "electric field (y-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+        "field_y", "Electric field (y-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     auto* histogram_z = new TH2F(
-        "field_z", "electric field (z-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
+        "field_z", "Electric field (z-component)", static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_x->SetOption("colz");
     histogram_y->SetOption("colz");
     histogram_z->SetOption("colz");
 
     // Create 1D histogram
     auto* histogram1D = new TH1F(
-        "field1d_z", "electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
+        "field1d_z", "Electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
+    histogram1D->SetOption("hist");
 
     // Determine the coordinate to use for projection
     double x = 0, y = 0, z = 0;
@@ -405,6 +406,10 @@ void ElectricFieldReaderModule::create_output_plots() {
         histogram_x->GetYaxis()->SetTitle("z (mm)");
         histogram_y->GetYaxis()->SetTitle("z (mm)");
         histogram_z->GetYaxis()->SetTitle("z (mm)");
+        histogram->SetTitle(("Electric field magnitude at x=" + std::to_string(x) + " mm").c_str());
+        histogram_x->SetTitle(("Electric field (x-component) at x=" + std::to_string(x) + " mm").c_str());
+        histogram_y->SetTitle(("Electric field (y-component) at x=" + std::to_string(x) + " mm").c_str());
+        histogram_z->SetTitle(("Electric field (z-component) at x=" + std::to_string(x) + " mm").c_str());
     } else if(project == 'y') {
         y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.y();
         histogram->GetXaxis()->SetTitle("x (mm)");
@@ -415,6 +420,10 @@ void ElectricFieldReaderModule::create_output_plots() {
         histogram_x->GetYaxis()->SetTitle("z (mm)");
         histogram_y->GetYaxis()->SetTitle("z (mm)");
         histogram_z->GetYaxis()->SetTitle("z (mm)");
+        histogram->SetTitle(("Electric field magnitude at y=" + std::to_string(y) + " mm").c_str());
+        histogram_x->SetTitle(("Electric field (x-component) at y=" + std::to_string(y) + " mm").c_str());
+        histogram_y->SetTitle(("Electric field (y-component) at y=" + std::to_string(y) + " mm").c_str());
+        histogram_z->SetTitle(("Electric field (z-component) at y=" + std::to_string(y) + " mm").c_str());
     } else {
         z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5) * size.z();
         histogram->GetXaxis()->SetTitle("x (mm)");
@@ -425,6 +434,10 @@ void ElectricFieldReaderModule::create_output_plots() {
         histogram_x->GetYaxis()->SetTitle("y (mm)");
         histogram_y->GetYaxis()->SetTitle("y (mm)");
         histogram_z->GetYaxis()->SetTitle("y (mm)");
+        histogram->SetTitle(("Electric field magnitude at z=" + std::to_string(z) + " mm").c_str());
+        histogram_x->SetTitle(("Electric field (x-component) at z=" + std::to_string(z) + " mm").c_str());
+        histogram_y->SetTitle(("Electric field (y-component) at z=" + std::to_string(z) + " mm").c_str());
+        histogram_z->SetTitle(("Electric field (z-component) at z=" + std::to_string(z) + " mm").c_str());
     }
 
     // set z axis tile
@@ -457,6 +470,7 @@ void ElectricFieldReaderModule::create_output_plots() {
             auto field_x_strength = static_cast<double>(Units::convert(field.x(), "V/cm"));
             auto field_y_strength = static_cast<double>(Units::convert(field.y(), "V/cm"));
             auto field_z_strength = static_cast<double>(Units::convert(field.z(), "V/cm"));
+
             // Fill the main histogram
             if(project == 'x') {
                 histogram->Fill(y, z, field_strength);

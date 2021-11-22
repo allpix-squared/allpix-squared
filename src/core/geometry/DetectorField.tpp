@@ -130,7 +130,6 @@ namespace allpix {
             // Calculate the field from the configured function:
             ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
         }
-
         // Flip vector if necessary
         flip_vector_components(ret_val, replica_x % 2, replica_y % 2);
         return ret_val;

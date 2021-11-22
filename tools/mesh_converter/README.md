@@ -72,6 +72,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `dimension`: Specify mesh dimensionality (defaults to 3).
 * `region`: Region name or list of region names to be meshed (defaults to `bulk`).
 * `observable`: Observable to be interpolated (defaults to `ElectricField`).
+* `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
 * `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.
 * `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
 * `max_radius`: Maximum search radius (default is `50um`).
@@ -79,7 +80,6 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
-* `observable_units`: Units in which the observable is stored in the input file (Defaults to `V/cm` matching the default observable `ElectricField`).
 * `vector_field`: Select if the observable is a vector field or scalar field (Defaults to `true` matching the default observable `ElectricField`).
 
 ### Usage
