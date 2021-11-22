@@ -152,24 +152,16 @@ void DepositionCosmicsModule::initialize_g4_action() {
 }
 
 void DepositionCosmicsModule::finalizeThread() {
-    {
-        LOG(DEBUG) << "CRY instance reports simulation time of "
-                   << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
-        std::lock_guard<std::mutex> lock{stats_mutex_};
-        total_time_simulated_ += cry_instance_time_simulated_;
-    }
-
     // Call base class thread finalization:
     DepositionGeant4Module::finalizeThread();
+
+    LOG(DEBUG) << "CRY instance reports simulation time of "
+               << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
+    std::lock_guard<std::mutex> lock{stats_mutex_};
+    total_time_simulated_ += cry_instance_time_simulated_;
 }
 
 void DepositionCosmicsModule::finalize() {
-
-    // Without multithreading we need to fetch the total simulation time from the main thread:
-    if(!multithreadingEnabled()) {
-        total_time_simulated_ = cry_instance_time_simulated_;
-    }
-
     LOG(STATUS) << "Total simulated time in CRY: " << Units::display(total_time_simulated_, {"us", "ms", "s"});
 
     // Call base class finalization:
