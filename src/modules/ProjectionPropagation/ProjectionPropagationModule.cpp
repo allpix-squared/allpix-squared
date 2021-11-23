@@ -334,7 +334,7 @@ void ProjectionPropagationModule::run(Event* event) {
                                             charge_per_step,
                                             local_time,
                                             global_time,
-                                            CarrierState::MOTION,
+                                            CarrierState::HALTED,
                                             &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " " << type << " to "
