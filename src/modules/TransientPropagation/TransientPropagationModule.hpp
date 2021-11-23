@@ -87,11 +87,11 @@ namespace allpix {
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
         std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(Event* event,
-                                                                         const ROOT::Math::XYZPoint& pos,
-                                                                         const CarrierType& type,
-                                                                         const unsigned int charge,
-                                                                         const double initial_time,
-                                                                         std::map<Pixel::Index, Pulse>& pixel_map);
+                                                                                 const ROOT::Math::XYZPoint& pos,
+                                                                                 const CarrierType& type,
+                                                                                 const unsigned int charge,
+                                                                                 const double initial_time,
+                                                                                 std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, threshold_field_{};
@@ -112,7 +112,6 @@ namespace allpix {
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;
         double hole_Hall_;
-
 
         // Magnetic field
         bool has_magnetic_field_{};
