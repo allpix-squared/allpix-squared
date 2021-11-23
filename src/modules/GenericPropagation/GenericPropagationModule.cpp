@@ -665,7 +665,7 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, state] = propagate(
+            auto [final_position, time, gain, state] = propagate(
                 initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
 
             if(state == CarrierState::RECOMBINED) {
