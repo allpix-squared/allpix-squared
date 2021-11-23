@@ -32,7 +32,8 @@
 #include "tools/ROOT.h"
 
 namespace allpix {
-    using OutputPlotPoints = std::vector<std::pair<PropagatedCharge, std::vector<ROOT::Math::XYZPoint>>>;
+    using OutputPlotPoints = std::vector<
+        std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
 
     /**
      * @ingroup Modules
@@ -78,8 +79,10 @@ namespace allpix {
          * @brief Create output plots in every event
          * @param event_num Index for this event
          * @param output_plot_points List of points cached for plotting
+         * @param plotting_state State of charge carriers to be plotted
          */
-        void create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points);
+        void
+        create_output_plots(uint64_t event_num, const OutputPlotPoints& output_plot_points, CarrierState plotting_state);
 
         /**
          * @brief Propagate a single set of charges through the sensor
@@ -100,7 +103,8 @@ namespace allpix {
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
             target_spatial_precision_{}, output_plots_step_{};
-        bool output_plots_{}, output_linegraphs_{}, output_animations_{}, output_plots_lines_at_implants_{};
+        bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
+            output_animations_{};
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
 

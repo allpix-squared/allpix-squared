@@ -73,6 +73,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<std::string>("recombination_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
+    config_.setDefault<bool>("output_linegraphs_collected", false);
+    config_.setDefault<bool>("output_linegraphs_recombined", false);
     config_.setDefault<bool>("output_animations", false);
     config_.setDefault<bool>("output_plots",
                              config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
@@ -82,7 +84,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
-    config_.setDefault<bool>("output_plots_lines_at_implants", false);
 
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
@@ -105,9 +106,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     target_spatial_precision_ = config_.get<double>("spatial_precision");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
+    output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
-    output_plots_lines_at_implants_ = config_.get<bool>("output_plots_lines_at_implants");
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
@@ -128,18 +130,15 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     hole_Hall_ = 0.9;
 }
 
-void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlotPoints& output_plot_points) {
-    LOG(TRACE) << "Writing output plots";
+void GenericPropagationModule::create_output_plots(uint64_t event_num,
+                                                   const OutputPlotPoints& output_plot_points,
+                                                   CarrierState plotting_state) {
+    auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
+    LOG(TRACE) << "Writing output plots, for " << title << " charge carriers";
 
     // Convert to pixel units if necessary
-    if(config_.get<bool>("output_plots_use_pixel_units")) {
-        for(auto& deposit_points : output_plot_points) {
-            for(auto& point : deposit_points.second) {
-                point.SetX(point.x() / model_->getPixelSize().x());
-                point.SetY(point.y() / model_->getPixelSize().y());
-            }
-        }
-    }
+    double scale_x = (config_.get<bool>("output_plots_use_pixel_units") ? model_->getPixelSize().x() : 1);
+    double scale_y = (config_.get<bool>("output_plots_use_pixel_units") ? model_->getPixelSize().y() : 1);
 
     // Calculate the axis limits
     double minX = FLT_MAX, maxX = FLT_MIN;
@@ -150,15 +149,16 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     unsigned int max_charge = 0;
     for(auto& [deposit, points] : output_plot_points) {
         for(auto& point : points) {
-            minX = std::min(minX, point.x());
-            maxX = std::max(maxX, point.x());
+            minX = std::min(minX, point.x() / scale_x);
+            maxX = std::max(maxX, point.x() / scale_x);
 
-            minY = std::min(minY, point.y());
-            maxY = std::max(maxY, point.y());
+            minY = std::min(minY, point.y() / scale_y);
+            maxY = std::max(maxY, point.y() / scale_y);
         }
-        start_time = std::min(start_time, deposit.getGlobalTime());
-        total_charge += deposit.getCharge();
-        max_charge = std::max(max_charge, deposit.getCharge());
+        auto& [time, charge, type, state] = deposit;
+        start_time = std::min(start_time, time);
+        total_charge += charge;
+        max_charge = std::max(max_charge, charge);
 
         tot_point_cnt += points.size();
     }
@@ -202,7 +202,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     }
 
     // Use a histogram to create the underlying frame
-    auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
+    auto* histogram_frame = new TH3F(("frame_" + getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
                                      "",
                                      10,
                                      minX,
@@ -216,7 +216,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     histogram_frame->SetDirectory(getROOTDirectory());
 
     // Create the canvas for the line plot and set orientation
-    auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num)).c_str(),
+    auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num) + "_" + title).c_str(),
                                             ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
                                             1280,
                                             1024);
@@ -237,13 +237,18 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
     for(auto& [deposit, points] : output_plot_points) {
+        // Check if we should plot this point:
+        if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+            continue;
+        }
+
         auto line = std::make_unique<TPolyLine3D>();
         for(auto& point : points) {
-            line->SetNextPoint(point.x(), point.y(), point.z());
+            line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
         }
         // Plot all lines with at least three points with different color
         if(line->GetN() >= 3) {
-            EColor plot_color = (deposit.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+            EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
             line->SetLineColor(current_color);
             line->Draw("same");
@@ -257,7 +262,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
     lines.clear();
 
     // Create canvas for GIF animition of process
-    canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num)).c_str(),
+    canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_" + title).c_str(),
                                        ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
                                        1280,
                                        1024);
@@ -282,7 +287,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
         // Create the contour histogram
         std::vector<std::string> file_name_contour;
         std::vector<TH2F*> histogram_contour;
-        file_name_contour.push_back(createOutputFile("contourX" + std::to_string(event_num) + ".gif"));
+        file_name_contour.push_back(createOutputFile("contourX" + std::to_string(event_num) + "_" + title + ".gif"));
         histogram_contour.push_back(new TH2F(("contourX_" + getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                                              "",
                                              100,
@@ -375,8 +380,15 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 
             // Plot all the required points
             for(auto& [deposit, points] : output_plot_points) {
+                auto& [time, charge, type, state] = deposit;
+
+                // Check if we should plot this point:
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != state) {
+                    continue;
+                }
+
                 auto diff = static_cast<unsigned long>(
-                    std::round((deposit.getGlobalTime() - start_time) / config_.get<long double>("output_plots_step")));
+                    std::round((time - start_time) / config_.get<long double>("output_plots_step")));
                 if(plot_idx < diff) {
                     min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                     continue;
@@ -389,22 +401,21 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 
                 auto marker = std::make_unique<TPolyMarker3D>();
                 marker->SetMarkerStyle(kFullCircle);
-                marker->SetMarkerSize(
-                    static_cast<float>(deposit.getCharge() * config_.get<double>("output_animations_marker_size", 1)) /
-                    static_cast<float>(max_charge));
+                marker->SetMarkerSize(static_cast<float>(charge * config_.get<double>("output_animations_marker_size", 1)) /
+                                      static_cast<float>(max_charge));
                 auto initial_z_perc = static_cast<int>(
                     ((points[0].z() + model_->getSensorSize().z() / 2.0) / model_->getSensorSize().z()) * 80);
                 initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
                 if(config_.get<bool>("output_animations_color_markers")) {
                     marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
                 }
-                marker->SetNextPoint(points[idx].x(), points[idx].y(), points[idx].z());
+                marker->SetNextPoint(points[idx].x() / scale_x, points[idx].y() / scale_y, points[idx].z());
                 marker->Draw();
                 markers.push_back(std::move(marker));
 
-                histogram_contour[0]->Fill(points[idx].y(), points[idx].z(), deposit.getCharge());
-                histogram_contour[1]->Fill(points[idx].x(), points[idx].z(), deposit.getCharge());
-                histogram_contour[2]->Fill(points[idx].x(), points[idx].y(), deposit.getCharge());
+                histogram_contour[0]->Fill(points[idx].y() / scale_y, points[idx].z(), charge);
+                histogram_contour[1]->Fill(points[idx].x() / scale_x, points[idx].z(), charge);
+                histogram_contour[2]->Fill(points[idx].x() / scale_x, points[idx].y() / scale_y, charge);
                 ++point_cnt;
             }
 
@@ -611,15 +622,10 @@ void GenericPropagationModule::run(Event* event) {
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
-                auto global_position = detector_->getGlobalPosition(initial_position);
                 std::lock_guard<std::mutex> lock{stats_mutex_};
-                output_plot_points.emplace_back(PropagatedCharge(initial_position,
-                                                                 global_position,
-                                                                 deposit.getType(),
-                                                                 charge_per_step,
-                                                                 deposit.getLocalTime(),
-                                                                 deposit.getGlobalTime()),
-                                                std::vector<ROOT::Math::XYZPoint>());
+                output_plot_points.emplace_back(
+                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
+                    std::vector<ROOT::Math::XYZPoint>());
             }
 
             // Propagate a single charge deposit
@@ -662,7 +668,13 @@ void GenericPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        create_output_plots(event->number, output_plot_points);
+        create_output_plots(event->number, output_plot_points, CarrierState::UNKNOWN);
+        if(output_linegraphs_collected_) {
+            create_output_plots(event->number, output_plot_points, CarrierState::HALTED);
+        }
+        if(output_linegraphs_recombined_) {
+            create_output_plots(event->number, output_plot_points, CarrierState::RECOMBINED);
+        }
     }
 
     // Write summary and update statistics
@@ -854,11 +866,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
-    // If requested, remove charge drift lines from plots if they did not reach the implant side within the integration time:
-    if(output_linegraphs_ && output_plots_lines_at_implants_) {
-        // If drift time is larger than integration time or the charge carriers have been collected at the backside, remove
+    // Set final state of charge carrier for plotting:
+    if(output_linegraphs_) {
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-            output_plot_points.pop_back();
+            std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
+        } else {
+            std::get<3>(output_plot_points.back().first) = state;
         }
     }
 
