@@ -623,10 +623,10 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, alive] = propagate(
+            auto [final_position, time, state] = propagate(
                 initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
 
-            if(!alive) {
+            if(state == CarrierState::RECOMBINED) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 recombined_charges_count += charge_per_step;
@@ -644,6 +644,7 @@ void GenericPropagationModule::run(Event* event) {
                                                charge_per_step,
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
+                                               state,
                                                &deposit);
 
             propagated_charges.push_back(std::move(propagated_charge));
@@ -690,7 +691,7 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, bool>
+std::tuple<ROOT::Math::XYZPoint, double, CarrierState>
 GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
@@ -758,9 +759,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     Eigen::Vector3d last_position = position;
     double last_time = 0;
     size_t next_idx = 0;
-    bool is_alive = true;
-    while(detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
+    auto state = CarrierState::MOTION;
+    while(state == CarrierState::MOTION && (initial_time + runge_kutta.getTime()) < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -790,16 +790,23 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         position += diffusion;
         runge_kutta.setValue(position);
 
+        // Check if we are still in the sensor:
+        if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+            state = CarrierState::HALTED;
+        }
+
         // Check if charge carrier is still alive:
-        is_alive = !recombination_(type,
-                                   detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                   survival(random_generator),
-                                   timestep);
+        if(recombination_(type,
+                          detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
+                          survival(random_generator),
+                          timestep)) {
+            state = CarrierState::RECOMBINED;
+        }
 
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
-                   << (is_alive ? "" : ", recombined");
+                   << ", state: " << allpix::to_string(state);
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
 
@@ -830,7 +837,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // Find proper final position in the sensor
     auto time = runge_kutta.getTime();
-    if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+    if(state == CarrierState::HALTED) {
         auto check_position = position;
         check_position.z() = last_position.z();
         if(position.z() > 0 && detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
@@ -855,12 +862,12 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
-    if(!is_alive) {
+    if(state == CarrierState::RECOMBINED) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
     }
 
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, state);
 }
 
 void GenericPropagationModule::finalize() {

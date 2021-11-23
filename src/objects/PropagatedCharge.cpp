@@ -7,6 +7,7 @@
  * Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
+#include <magic_enum/magic_enum.hpp>
 #include <numeric>
 
 #include "PropagatedCharge.hpp"
@@ -21,8 +22,10 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    unsigned int charge,
                                    double local_time,
                                    double global_time,
+                                   CarrierState state,
                                    const DepositedCharge* deposited_charge)
-    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time) {
+    : SensorCharge(std::move(local_position), std::move(global_position), type, charge, local_time, global_time),
+      state_(state) {
     deposited_charge_ = PointerWrapper<DepositedCharge>(deposited_charge);
     if(deposited_charge != nullptr) {
         mc_particle_ = deposited_charge->mc_particle_;
@@ -35,6 +38,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                    std::map<Pixel::Index, Pulse> pulses,
                                    double local_time,
                                    double global_time,
+                                   CarrierState state,
                                    const DepositedCharge* deposited_charge)
     : PropagatedCharge(std::move(local_position),
                        std::move(global_position),
@@ -47,6 +51,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                                        }),
                        local_time,
                        global_time,
+                       state,
                        deposited_charge) {
     pulses_ = std::move(pulses);
 }
@@ -81,8 +86,13 @@ std::map<Pixel::Index, Pulse> PropagatedCharge::getPulses() const {
     return pulses_;
 }
 
+CarrierState PropagatedCharge::getState() const {
+    return state_;
+}
+
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
+    out << "State: " << magic_enum::enum_name(state_) << "\n";
     SensorCharge::print(out);
 }
 

@@ -44,6 +44,16 @@ The object should store the final \underline{local} position of the propagated c
 This is either on the pixel implant (if the set of charge carriers are ready to be collected) or on any other position in the sensor if the set of charge carriers got trapped or was lost in another process.
 Timing information giving the total time to arrive at the final location, from the start of the event, can also be stored.
 
+The state of the charge carrier at the end of the propagation can be retrieved via the \parameter{getState()} method. The following values are available:
+
+\begin{description}
+\item[\parameter{CarrierState::UNKNOWN}] The final state of the charge carrier is unknown, it might not have been provided by the propagation algorithm, for example.
+\item[\parameter{CarrierState::MOTION}] The charge carrier was still in motion when the propagation routine finished, for example when the configured integration time was reached.
+\item[\parameter{CarrierState::RECOMBINED}] The charge carrier has recombined with the silicon lattice at the given position.
+\item[\parameter{CarrierState::TRAPPED}] The charge carrier has been trapped by a lattice defect at the given position.
+\item[\parameter{CarrierState::HALTED}] The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface.
+\end{description}
+
 \nlparagraph{PixelCharge}
 The set of charge carriers collected at a single pixel.
 The pixel indices are stored in both the $x$ and $y$ direction, starting from zero for the first pixel.

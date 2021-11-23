@@ -328,8 +328,14 @@ void ProjectionPropagationModule::run(Event* event) {
             auto global_position = detector_->getGlobalPosition(local_position);
 
             // Produce charge carrier at this position
-            propagated_charges.emplace_back(
-                local_position, global_position, deposit.getType(), charge_per_step, local_time, global_time, &deposit);
+            propagated_charges.emplace_back(local_position,
+                                            global_position,
+                                            deposit.getType(),
+                                            charge_per_step,
+                                            local_time,
+                                            global_time,
+                                            CarrierState::HALTED,
+                                            &deposit);
 
             LOG(DEBUG) << "Propagated " << charge_per_step << " " << type << " to "
                        << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(global_time, "ns")

@@ -19,6 +19,18 @@
 #include "SensorCharge.hpp"
 
 namespace allpix {
+
+    /**
+     * @brief State of the charge carrier
+     */
+    enum class CarrierState {
+        UNKNOWN = 0, ///< State of the propagated charge carrier is unknown
+        MOTION,      ///< The propagated charge carrier is in motion
+        RECOMBINED,  ///< The propagated charge carrier has recombined with the lattice
+        TRAPPED,     ///< The propagated charge carrier is trapped temporarily
+        HALTED, ///< The carrier has come to a halt because it, for example, has reached the sensor surface or an implant
+    };
+
     /**
      * @ingroup Objects
      * @brief Set of charges propagated through the sensor
@@ -35,6 +47,7 @@ namespace allpix {
          * @param charge Total charge propagated
          * @param local_time Time of propagation arrival after energy deposition, local reference frame
          * @param global_time Total time of propagation arrival after event start, global reference frame
+         * @param state State of the charge carrier when reaching its position
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
@@ -43,6 +56,7 @@ namespace allpix {
                          unsigned int charge,
                          double local_time,
                          double global_time,
+                         CarrierState state = CarrierState::UNKNOWN,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -53,6 +67,7 @@ namespace allpix {
          * @param pulses Map of pulses induced at electrodes identified by their index
          * @param local_time Time of propagation arrival after energy deposition, local reference frame
          * @param global_time Total time of propagation arrival after event start, global reference frame
+         * @param state State of the charge carrier when reaching its position
          * @param deposited_charge Optional pointer to related deposited charge
          */
         PropagatedCharge(ROOT::Math::XYZPoint local_position,
@@ -61,6 +76,7 @@ namespace allpix {
                          std::map<Pixel::Index, Pulse> pulses,
                          double local_time,
                          double global_time,
+                         CarrierState state = CarrierState::UNKNOWN,
                          const DepositedCharge* deposited_charge = nullptr);
 
         /**
@@ -82,6 +98,12 @@ namespace allpix {
         std::map<Pixel::Index, Pulse> getPulses() const;
 
         /**
+         * @brief Get state of the charge carrier
+         * @return Charge carrier state
+         */
+        CarrierState getState() const;
+
+        /**
          * @brief Print an ASCII representation of PropagatedCharge to the given stream
          * @param out Stream to print to
          */
@@ -90,7 +112,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PropagatedCharge, 6); // NOLINT
+        ClassDefOverride(PropagatedCharge, 7); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -104,6 +126,8 @@ namespace allpix {
         PointerWrapper<MCParticle> mc_particle_;
 
         std::map<Pixel::Index, Pulse> pulses_;
+
+        CarrierState state_{CarrierState::UNKNOWN};
     };
 
     /**
