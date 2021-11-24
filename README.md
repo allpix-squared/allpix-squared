@@ -93,7 +93,8 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Tobias Bisanz, CERN, @tbisanz
 * Marco Bomben, Université de Paris, @mbomben
 * Koen van den Brandt, Nikhef, @kvandenb
-* Carsten Daniel Burgard, DESY @cburgard
+* Carsten Daniel Burgard, DESY, @cburgard
+* Maximilian Felix Caspar, DESY, @mcaspar
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
 * Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
