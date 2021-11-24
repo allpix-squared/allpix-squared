@@ -348,16 +348,9 @@ TransientPropagationModule::propagate(Event* event,
             check_position.z() = last_position.z();
             // Correct for position in z by interpolation to increase precision:
             if(detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
-                // FIXME this currently depends in the direction of the drift
-                if(position.z() > 0 && type == CarrierType::HOLE) {
-                    LOG(DEBUG) << "Not stopping carrier " << type << " at "
-                               << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
-                } else if(position.z() < 0 && type == CarrierType::ELECTRON) {
-                    LOG(DEBUG) << "Not stopping carrier " << type << " at "
-                               << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
-                } else {
-                    state = CarrierState::HALTED;
-                }
+                LOG(DEBUG) << "Stopping carrier " << type << " at "
+                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
+                state = CarrierState::HALTED;
 
                 // Carrier left sensor on top or bottom surface, interpolate
                 auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
