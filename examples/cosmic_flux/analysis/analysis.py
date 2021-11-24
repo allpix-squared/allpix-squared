@@ -18,20 +18,19 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-l", metavar='libAllpixObjects', required=False,
                     help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)) ")
 args = parser.parse_args()
+
 if args.l is not None:  # Try to find Allpix Library
     lib_file_name = (str(args.l))
-    if (not os.path.isfile(lib_file_name)):
-        print("WARNING: ", lib_file_name, " does not exist, exiting")
-        exit(1)
+else:  # Look in LD_LIBRARY_PATH
+    libraryPaths = os.environ['LD_LIBRARY_PATH'].split(':')
+    for p in libraryPaths:
+        if p.endswith("lib/libAllpixObjects.so"):
+            lib_file_name = p
+            break
 
-elif os.path.isfile(path.abspath(path.join(__file__, "..", "..", "opt", "allpix-squared", "lib", "libAllpixObjects.so"))):  # For native installs
-    lib_file_name = path.abspath(path.join(
-        __file__, "..", "..", "opt", "allpix-squared", "lib", "libAllpixObjects.so"))
-
-elif os.path.isfile(path.join(path.sep, "opt", "allpix-squared", "lib", "libAllpixObjects.so")):  # For Docker installs
-    lib_file_name = path.join(
-        path.sep, "opt", "allpix-squared", "lib", "libAllpixObjects.so")
-
+if (not os.path.isfile(lib_file_name)):
+    print("WARNING: ", lib_file_name, " does not exist, exiting")
+    exit(1)
 
 histogram = Histogram(granularity=[1, 15])
 
@@ -39,6 +38,7 @@ histogram = Histogram(granularity=[1, 15])
 gSystem.Load(lib_file_name)
 rootFile = ROOT.TFile("output/cosmicsMC.root")
 McParticle = rootFile.Get('MCParticle')
+
 
 def getTracks():
     "Load tracks from the ROOT file"
@@ -54,7 +54,7 @@ def getTracks():
         endPoint = None
 
         for mc_part in br_mc_part:
-            #Only consider muons
+            # Only consider muons
             if abs(mc_part.getParticleID()) == 13:
                 startPoint = mc_part.getLocalStartPoint()
                 endPoint = mc_part.getLocalEndPoint()
@@ -64,10 +64,11 @@ def getTracks():
                               direction.x(), direction.y(), direction.z()], 0, 0, 0, 0))
     return tracks, time
 
+
 # Get tracks from file
 tracks, time = getTracks()
 histogram.addTracks(tracks, time)
 
-#Do the analysis and show the plot
+# Do the analysis and show the plot
 histogram.printFlux()
 histogram.plotZenith()
