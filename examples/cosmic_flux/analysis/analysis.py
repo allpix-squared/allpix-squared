@@ -1,6 +1,5 @@
 from track import Track
 from tqdm import tqdm
-from simulatedTime import SimulatedTime
 from histogram import Histogram
 import argparse
 import os
@@ -24,8 +23,8 @@ if args.l is not None:  # Try to find Allpix Library
 else:  # Look in LD_LIBRARY_PATH
     libraryPaths = os.environ['LD_LIBRARY_PATH'].split(':')
     for p in libraryPaths:
-        if p.endswith("lib/libAllpixObjects.so"):
-            lib_file_name = p
+        if path.isfile(path.join(p, "libAllpixObjects.so")):
+            lib_file_name = path.join(p, "libAllpixObjects.so")
             break
 
 if (not os.path.isfile(lib_file_name)):
@@ -42,7 +41,10 @@ McParticle = rootFile.Get('MCParticle')
 
 def getTracks():
     "Load tracks from the ROOT file"
-    time = SimulatedTime("cosmic_flux_log.txt").time
+
+    # time is given in ns
+    time = float(
+        str(rootFile.config.DepositionCosmics.total_time_simulated)) / 1e9
     tracks = []
 
     for i in tqdm(range(0, McParticle.GetEntries())):
