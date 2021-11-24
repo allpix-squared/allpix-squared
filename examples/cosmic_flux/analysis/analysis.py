@@ -9,7 +9,7 @@ import ROOT
 from ROOT import gSystem
 
 """
-Analyse the MCTracks.txt file and plot the observed muon flux
+Analyse the cosmicsMC.root file and plot the observed muon flux
 """
 
 
