@@ -173,8 +173,8 @@ int main(int argc, char** argv) {
         auto parser = MeshParser::factory(config);
 
         // Region, observable and binning of output field
-        auto regions = config.getArray<std::string>("region", {"bulk"});
-        auto observable = config.get<std::string>("observable", "ElectricField");
+        auto regions = config.getArray<std::string>("region");
+        auto observable = config.get<std::string>("observable");
 
         const auto radius_step = config.get<double>("radius_step", 0.5);
         const auto max_radius = config.get<double>("max_radius", 50);
