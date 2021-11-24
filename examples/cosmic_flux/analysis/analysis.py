@@ -1,32 +1,73 @@
 from track import Track
-from parse import compile
 from tqdm import tqdm
 from simulatedTime import SimulatedTime
 from histogram import Histogram
+import argparse
+import os
+import os.path as path
+import ROOT
+from ROOT import gSystem
 
 """
 Analyse the MCTracks.txt file and plot the observed muon flux
 """
 
+
+# argument parser
+parser = argparse.ArgumentParser()
+parser.add_argument("-l", metavar='libAllpixObjects', required=False,
+                    help="specify path to the libAllpixObjects library (generally in allpix-squared/lib/)) ")
+args = parser.parse_args()
+if args.l is not None:  # Try to find Allpix Library
+    lib_file_name = (str(args.l))
+    if (not os.path.isfile(lib_file_name)):
+        print("WARNING: ", lib_file_name, " does not exist, exiting")
+        exit(1)
+
+elif os.path.isfile(path.abspath(path.join(__file__, "..", "..", "opt", "allpix-squared", "lib", "libAllpixObjects.so"))):  # For native installs
+    lib_file_name = path.abspath(path.join(
+        __file__, "..", "..", "opt", "allpix-squared", "lib", "libAllpixObjects.so"))
+
+elif os.path.isfile(path.join(path.sep, "opt", "allpix-squared", "lib", "libAllpixObjects.so")):  # For Docker installs
+    lib_file_name = path.join(
+        path.sep, "opt", "allpix-squared", "lib", "libAllpixObjects.so")
+
+
 histogram = Histogram(granularity=[1, 15])
 
-trackParser = compile("({:g},{:g},{:g}) ({:g},{:g},{:g})")
-
+# load library and rootfile
+gSystem.Load(lib_file_name)
+rootFile = ROOT.TFile("output/cosmicsMC.root")
+McParticle = rootFile.Get('MCParticle')
 
 def getTracks():
+    "Load tracks from the ROOT file"
     time = SimulatedTime("cosmic_flux_log.txt").time
     tracks = []
-    input = "MCTracks.txt"
-    for l in open(input, "r").readlines():
-        l = l.strip()
-        res = trackParser.parse(l)
-        tracks.append(Track(res[0:3], res[3:6], 0, 0, 0, 0))
+
+    for i in tqdm(range(0, McParticle.GetEntries())):
+        McParticle.GetEntry(i)
+        McParticle_branch = McParticle.GetBranch("telescope0_0")
+        br_mc_part = getattr(McParticle, McParticle_branch.GetName())
+
+        startPoint = None
+        endPoint = None
+
+        for mc_part in br_mc_part:
+            #Only consider muons
+            if abs(mc_part.getParticleID()) == 13:
+                startPoint = mc_part.getLocalStartPoint()
+                endPoint = mc_part.getLocalEndPoint()
+                direction = startPoint - endPoint
+                direction = direction / direction.z()
+                tracks.append(Track([startPoint.x(), startPoint.y(), startPoint.z()], [
+                              direction.x(), direction.y(), direction.z()], 0, 0, 0, 0))
     return tracks, time
 
-
+# Get tracks from file
 tracks, time = getTracks()
-
 histogram.addTracks(tracks, time)
 
+#Do the analysis and show the plot
 histogram.printFlux()
 histogram.plotZenith()

@@ -6,24 +6,9 @@ First of all, change into the example directory. Because the time output of the 
 ```bash
 allpix -c cosmic_flux.conf >> cosmic_flux_log.txt
 ```
-To analyse the tracks of the *MCParticles*, we convert them into a text list. Open the root framework and issue
-```
-.L PATH_TO_ALLPIX_INSTALL/lib/libAllpixObjects.so
-```
-Next, load the conversion macro via
-```
-.L analysis/rootMacro.cc
-```
-Finally, execute it with
-```
-rootMacro()
-```
-and close root with
-```
-.q
-```
-Now you can analyse the result by issuing
+To analyse the tracks of the *MCParticles*, issue
 ```bash
-python analysis/analysis.py
+python analysis/analysis.py -l PATH_TO_ALLPIX_INSTALL/lib/libAllpixObjects.so
 ```
-Notice that the analysis script relies on the python modules *uncertainties*, *parse*, *matplotlib* and *numpy.*
+The library flag is required when your Allpix installation is not in a standard path.
+Notice that the analysis script relies on the python modules *uncertainties*, *tqdm*, *matplotlib* and *numpy.*
