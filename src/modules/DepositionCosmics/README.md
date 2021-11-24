@@ -23,6 +23,9 @@ The first shower particle arriving in the event has a timestamp of `0ns`, all su
 It should be noted that the time difference between the arrival of different particles of the same shower can amount up to hundreds of microseconds.
 If this behavior is not desired, all particle timestamps can be forced to `0ns` by enabling the `reset_particle_time` switch.
 
+The total time elapsed in the CRY simulation for the given number of showers is stored in the module configuration under the key `total_time_simulated`. If the ROOTObjectWriter is used to store the simulation result, this value is available from the output file.
+In other cases, the value can be obtained from the log output of the run.
+
 ### Dependencies
 
 This module inherits from and therefore requires the *DepositionGeant4* module as well as an installation Geant4.

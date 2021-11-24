@@ -163,6 +163,7 @@ void DepositionCosmicsModule::finalizeThread() {
 
 void DepositionCosmicsModule::finalize() {
     LOG(STATUS) << "Total simulated time in CRY: " << Units::display(total_time_simulated_, {"us", "ms", "s"});
+    config_.set("total_time_simulated", total_time_simulated_);
 
     // Call base class finalization:
     DepositionGeant4Module::finalize();
