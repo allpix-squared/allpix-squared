@@ -497,12 +497,19 @@ bool filter(std::shared_ptr<Message<Object>> message) const {
 }
 \end{minted}
 \end{enumerate}
+It should be noted that the \command{registerFilter} function by default adds the \parameter{IGNORE_NAME} message flag to receive all available messages if called without the message flag parameter:
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
+messenger->registerFilter(this, &TestModule::filter);
+\end{minted}
+This means that a possibly set \parameter{input} parameter of the respective module has no effect.
+If this behavior is undesired, the filter should be registered explicitly stating the desired message flags or \parameter{MsgFlags::NONE}.
+The available message flags are described in detail in the following section.
 
 \subsection{Message flags}
 \label{sec:messageflags}
 Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
 \begin{itemize}
-    \item \textbf{REQUIRED}: Specifies that this message is required during the event processing.
+    \item \parameter{REQUIRED}: Specifies that this message is required during the event processing.
     If this particular message is not received before it is time to execute the module's run function, the execution of the method is automatically skipped by the framework for the current event.
     This can be used to ignore modules which cannot perform any action without received messages, for example charge carrier propagation without any deposited charge carriers.
     \item \parameter{ALLOW_OVERWRITE}: By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple times instead of once).
@@ -510,6 +517,8 @@ Flags can be added to the bind and listening methods which enable a particular b
     It can only be used for variables bound to a single message.
     \item \parameter{IGNORE_NAME}: If this flag is specified, the name of the dispatched message is not considered.
     Thus, the \parameter{input} parameter is ignored and forced to the value \texttt{*}.
+    \item \parameter{UNNAMED_ONLY}: If this flag is specified, the module will only receive messages without explicit name.
+    The \parameter{input} parameter is ignored and forced to the value \texttt{?} and all named messages are discarded. It should be noted that \parameter{IGNORE_NAME} takes precedence over this parameter.
 \end{itemize}
 
 \subsection{Persistency}

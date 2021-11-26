@@ -53,7 +53,8 @@ namespace allpix {
         NONE = 0,                   ///< No enabled flags
         REQUIRED = (1 << 0),        ///< Require a message before running a module
         ALLOW_OVERWRITE = (1 << 1), ///< Allow overwriting a previous message
-        IGNORE_NAME = (1 << 2)      ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
+        IGNORE_NAME = (1 << 2),     ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
+        UNNAMED_ONLY = (1 << 3)     ///< Listen to all messages without explicit name (equal to ? as configuration parameter)
     };
     /**
      * @ingroup Delegates

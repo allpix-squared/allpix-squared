@@ -32,10 +32,13 @@ Messenger::~Messenger() {
 }
 #endif
 
-// Check if the detectors match for the message and the delegate
-static bool check_send(BaseMessage* message, BaseDelegate* delegate) {
+// Check if the detectors match for the message and the delegate and that we don't have self-dispatch
+static bool check_send(Module* source, BaseMessage* message, BaseDelegate* delegate) {
     if(delegate->getDetector() != nullptr &&
        (message->getDetector() == nullptr || delegate->getDetector()->getName() != message->getDetector()->getName())) {
+        return false;
+    }
+    if(delegate->getUniqueName() == source->getUniqueName()) {
         return false;
     }
     return true;
@@ -55,25 +58,25 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
 
     // Check if a normal specific listener exists
     for(auto& delegate : delegates_[type_idx][name]) {
-        if(check_send(message.get(), delegate.get())) {
+        if(check_send(source, message.get(), delegate.get())) {
             return true;
         }
     }
     // Check if a normal generic listener exists
     for(auto& delegate : delegates_[type_idx]["*"]) {
-        if(check_send(message.get(), delegate.get())) {
+        if(check_send(source, message.get(), delegate.get())) {
             return true;
         }
     }
     // Check if a base message specific listener exists
     for(auto& delegate : delegates_[typeid(BaseMessage)][name]) {
-        if(check_send(message.get(), delegate.get())) {
+        if(check_send(source, message.get(), delegate.get())) {
             return true;
         }
     }
     // Check if a base message generic listener exists
     for(auto& delegate : delegates_[typeid(BaseMessage)]["*"]) {
-        if(check_send(message.get(), delegate.get())) {
+        if(check_send(source, message.get(), delegate.get())) {
             return true;
         }
     }
@@ -95,6 +98,8 @@ void Messenger::add_delegate(const std::type_info& message_type,
     std::string message_name;
     if((delegate->getFlags() & MsgFlags::IGNORE_NAME) != MsgFlags::NONE) {
         message_name = "*";
+    } else if((delegate->getFlags() & MsgFlags::UNNAMED_ONLY) != MsgFlags::NONE) {
+        message_name = "?";
     } else {
         message_name = module->get_configuration().get<std::string>("input");
     }
@@ -150,6 +155,11 @@ void LocalMessenger::dispatchMessage(Module* source, std::shared_ptr<BaseMessage
     // Send to generic listeners
     send = dispatchMessage(source, message, name, "*") || send;
 
+    // Send to listeners of unnamed messages
+    if(name.empty()) {
+        send = dispatchMessage(source, message, name, "?") || send;
+    }
+
     // Display a TRACE log message if the message is send to no receiver
     if(!send) {
         const BaseMessage* inst = message.get();
@@ -178,7 +188,7 @@ bool LocalMessenger::dispatchMessage(Module* source,
         if(msg_name_iterator != msg_type_iterator->second.end()) {
             // Send messages only to their specific listeners
             for(const auto& delegate : msg_name_iterator->second) {
-                if(check_send(message.get(), delegate.get())) {
+                if(check_send(source, message.get(), delegate.get())) {
                     LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
                                << source->getUniqueName() << " to " << delegate->getUniqueName();
                     // Construct BaseMessage where message should be stored
@@ -198,7 +208,7 @@ bool LocalMessenger::dispatchMessage(Module* source,
         const auto msg_name_iterator = base_msg_type_iterator->second.find(id);
         if(msg_name_iterator != base_msg_type_iterator->second.end()) {
             for(const auto& delegate : msg_name_iterator->second) {
-                if(check_send(message.get(), delegate.get())) {
+                if(check_send(source, message.get(), delegate.get())) {
                     LOG(TRACE) << "Sending message " << allpix::demangle(type_idx.name()) << " from "
                                << source->getUniqueName() << " to generic listener " << delegate->getUniqueName();
                     auto& dest = messages_[delegate->getUniqueName()][typeid(BaseMessage)];
