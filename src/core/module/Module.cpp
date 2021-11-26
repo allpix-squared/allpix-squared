@@ -107,7 +107,7 @@ std::string Module::createOutputFile(const std::string& path, const std::string&
         // Open the file to check if it can be accessed
         std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
-            throw std::invalid_argument("file not accessible");
+            throw ModuleError("File " + file + " not accessible");
         }
 
         // Convert the file to an absolute path
