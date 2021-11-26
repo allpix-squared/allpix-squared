@@ -69,8 +69,9 @@ std::shared_ptr<Detector> Module::getDetector() const {
  * The output path is automatically created if it does not exists. The path is always accessible if this functions returns.
  * Obeys the "deny_overwrite" parameter of the module.
  */
-std::string Module::createOutputFile(const std::string& path, const std::string& extension, bool global, bool delete_file) {
-    std::string file;
+std::string
+Module::createOutputFile(const std::string& pathname, const std::string& extension, bool global, bool delete_file) {
+    std::filesystem::path file;
     if(global) {
         file = config_.get<std::string>("_global_dir", std::string());
     } else {
@@ -83,37 +84,45 @@ std::string Module::createOutputFile(const std::string& path, const std::string&
     }
 
     try {
-        // Create all the required main directories
-        std::filesystem::create_directories(file);
 
-        // Add the file itself
-        file += "/";
-        file +=
-            (extension.empty() ? path : static_cast<std::string>(std::filesystem::path(path).replace_extension(extension)));
+        // Check if the requested path is an absolute path and issue a warning:
+        std::filesystem::path path = pathname;
+        if(path.is_absolute() && std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end()) {
+            LOG(WARNING) << "Storing file at requested absolute location " << path
+                         << " - this is outside the module output folder";
+        }
+
+        // Add the file itself - this fully replaces the "file" path in case "path" is absolute:
+        file /= (extension.empty() ? path : path.replace_extension(extension));
+
+        // Create all the required main directories and possible subdirectories from the filename
+        std::filesystem::create_directories(file.parent_path());
 
         if(std::filesystem::is_regular_file(file)) {
             auto global_overwrite = getConfigManager()->getGlobalConfiguration().get<bool>("deny_overwrite", false);
             if(config_.get<bool>("deny_overwrite", global_overwrite)) {
-                throw ModuleError("Overwriting of existing file " + file + " denied.");
+                throw ModuleError("Overwriting of existing file " + file.string() + " denied.");
             }
             LOG(WARNING) << "File " << file << " exists and will be overwritten.";
             try {
                 std::filesystem::remove(file);
             } catch(std::filesystem::filesystem_error& e) {
-                throw ModuleError("Deleting file " + file + " failed: " + e.what());
+                throw ModuleError("Deleting file " + file.string() + " failed: " + e.what());
             }
+        } else if(std::filesystem::is_directory(file)) {
+            throw ModuleError("Requested output file " + file.string() + " is an existing directory");
         }
 
         // Open the file to check if it can be accessed
         std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
-            throw std::invalid_argument("file not accessible");
+            throw ModuleError("File " + file.string() + " not accessible");
         }
 
         // Convert the file to an absolute path
         file = std::filesystem::canonical(file);
     } catch(std::filesystem::filesystem_error& e) {
-        throw ModuleError("Path " + file + " cannot be created");
+        throw ModuleError("Path " + file.string() + " cannot be created");
     }
 
     if(delete_file) {
