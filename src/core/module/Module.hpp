@@ -106,13 +106,13 @@ namespace allpix {
 
         /**
          * @brief Create and return an absolute path to be used for output from a relative path
-         * @param path Relative path to add after the main output directory
+         * @param pathname Relative path to add after the main output directory
          * @param extension File extension to be added to filename if it doesn't exist yet
          * @param global True if the global output directory should be used instead of the module-specific version
          * @param delete_file True if the created output file should be deleted after testing access
          * @return Canonical path to an output file
          */
-        std::string createOutputFile(const std::string& path,
+        std::string createOutputFile(const std::string& pathname,
                                      const std::string& extension = "",
                                      bool global = false,
                                      bool delete_file = false);
