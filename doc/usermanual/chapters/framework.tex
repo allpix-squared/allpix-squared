@@ -497,7 +497,7 @@ bool filter(std::shared_ptr<Message<Object>> message) const {
 }
 \end{minted}
 \end{enumerate}
-It should be noted that the \command{registerFilter} function by defaults adds the \parameter{IGNORE_NAME} message flag to receive all available messages if called without the message flag parameter:
+It should be noted that the \command{registerFilter} function by default adds the \parameter{IGNORE_NAME} message flag to receive all available messages if called without the message flag parameter:
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{c++}
 messenger->registerFilter(this, &TestModule::filter);
 \end{minted}
