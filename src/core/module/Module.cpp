@@ -87,7 +87,7 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
 
         // Check if the requested path is an absolute path and issue a warning:
         std::filesystem::path path = pathname;
-        if(path.is_absolute()) {
+        if(path.is_absolute() && std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end()) {
             LOG(WARNING) << "Storing file at requested absolute location " << path
                          << " - this is outside the module output folder";
         }
