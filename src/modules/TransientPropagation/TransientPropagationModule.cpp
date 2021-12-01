@@ -402,8 +402,14 @@ TransientPropagationModule::propagate(Event* event,
                        << " q = " << Units::display(induced, "e");
 
             // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
-            auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_));
-            pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
+            auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_, integration_time_));
+            try {
+                pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
+            } catch(const PulseBadAllocException& e) {
+                LOG(ERROR) << e.what() << std::endl
+                           << "Ignoring pulse contribution at time "
+                           << Units::display(initial_time + runge_kutta.getTime(), {"ms", "us", "ns"});
+            }
 
             if(output_plots_) {
                 potential_difference_->Fill(std::fabs(ramo - last_ramo));

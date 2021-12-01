@@ -8,33 +8,41 @@
  */
 
 #include "Pulse.hpp"
-#include "objects/exceptions.h"
 
 #include <cmath>
 #include <numeric>
 
 using namespace allpix;
 
-Pulse::Pulse(double time_bin) : bin_(time_bin), initialized_(true) {}
+Pulse::Pulse(double time_bin) noexcept : bin_(time_bin), initialized_(true) {}
+
+Pulse::Pulse(double time_bin, double total_time) : bin_(time_bin), initialized_(true) {
+    auto bins = static_cast<size_t>(std::lround(total_time / bin_));
+    try {
+        this->reserve(bins);
+    } catch(const std::bad_alloc& e) {
+        PulseBadAllocException(bins, total_time, e.what());
+    }
+}
 
 void Pulse::addCharge(double charge, double time) {
     // For uninitialized pulses, store all charge in the first bin:
     auto bin = (initialized_ ? static_cast<size_t>(std::lround(time / bin_)) : 0);
 
-    // Adapt pulse storage vector:
-    if(bin >= pulse_.size()) {
-        pulse_.resize(bin + 1);
+    try {
+        // Adapt pulse storage vector:
+        if(bin >= this->size()) {
+            this->resize(bin + 1);
+        }
+        this->at(bin) += charge;
+    } catch(const std::bad_alloc& e) {
+        PulseBadAllocException(bin + 1, time, e.what());
     }
-    pulse_.at(bin) += charge;
 }
 
 int Pulse::getCharge() const {
-    double charge = std::accumulate(pulse_.begin(), pulse_.end(), 0.0);
+    double charge = std::accumulate(this->begin(), this->end(), 0.0);
     return static_cast<int>(std::round(charge));
-}
-
-const std::vector<double>& Pulse::getPulse() const {
-    return pulse_;
 }
 
 double Pulse::getBinning() const {
@@ -46,8 +54,6 @@ bool Pulse::isInitialized() const {
 }
 
 Pulse& Pulse::operator+=(const Pulse& rhs) {
-    auto rhs_pulse = rhs.getPulse();
-
     // Allow to initialize uninitialized pulse
     if(!this->initialized_) {
         this->bin_ = rhs.getBinning();
@@ -60,13 +66,13 @@ Pulse& Pulse::operator+=(const Pulse& rhs) {
     }
 
     // If new pulse is longer, extend:
-    if(this->pulse_.size() < rhs_pulse.size()) {
-        this->pulse_.resize(rhs_pulse.size());
+    if(this->size() < rhs.size()) {
+        this->resize(rhs.size());
     }
 
     // Add up the individual bins:
-    for(size_t bin = 0; bin < rhs_pulse.size(); bin++) {
-        this->pulse_.at(bin) += rhs_pulse.at(bin);
+    for(size_t bin = 0; bin < rhs.size(); bin++) {
+        this->at(bin) += rhs.at(bin);
     }
 
     return *this;

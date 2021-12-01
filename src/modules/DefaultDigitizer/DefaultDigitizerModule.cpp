@@ -329,16 +329,15 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
     // If this PixelCharge has a pulse, we can find out when it crossed the threshold:
     const auto& pulse = pixel_charge.getPulse();
     if(pulse.isInitialized()) {
-        auto charges = pulse.getPulse();
-        std::vector<double>::iterator bin;
+        auto bin = pulse.begin();
         double integrated_charge = 0;
-        for(bin = charges.begin(); bin != charges.end(); bin++) {
+        for(; bin != pulse.end(); bin++) {
             integrated_charge += *bin;
             if(integrated_charge >= threshold) {
                 break;
             }
         }
-        return pulse.getBinning() * static_cast<double>(std::distance(charges.begin(), bin));
+        return pulse.getBinning() * static_cast<double>(std::distance(pulse.begin(), bin));
     } else {
         LOG_ONCE(INFO) << "Simulation chain does not allow for time-of-arrival calculation";
         return 0;

@@ -14,18 +14,29 @@
 
 #include <TObject.h>
 
+#include "objects/exceptions.h"
+
 namespace allpix {
     /**
      * @ingroup Objects
      * @brief Pulse holding induced charges as a function of time
      * @warning This object is special and is not meant to be written directly to a tree (not inheriting from \ref Object)
      */
-    class Pulse {
+    class Pulse : public std::vector<double> {
     public:
         /**
          * @brief Construct a new pulse
+         * @param time_bin Length in time of a single bin of the pulse
          */
-        explicit Pulse(double time_bin);
+        explicit Pulse(double time_bin) noexcept;
+
+        /**
+         * @brief
+         * @param time_bin Length in time of a single bin of the pulse
+         * @param total_time Expected total length of the pulse used to pre-allocate memory
+         * @throws PulseBadAllocException if memory allocation failed
+         */
+        Pulse(double time_bin, double total_time);
 
         /**
          * @brief Construct default pulse, uninitialized
@@ -44,12 +55,6 @@ namespace allpix {
          * @return Integrated charge
          */
         int getCharge() const;
-
-        /**
-         * @brief Function to retrieve the full pulse shape
-         * @return Constant reference to the pulse vector
-         */
-        const std::vector<double>& getPulse() const;
 
         /**
          * @brief Function to retrieve time binning of pulse
@@ -72,10 +77,9 @@ namespace allpix {
         /**
          * @brief Default constructor for ROOT I/O
          */
-        ClassDef(Pulse, 2); // NOLINT
+        ClassDef(Pulse, 3); // NOLINT
 
     private:
-        std::vector<double> pulse_;
         double bin_{};
         bool initialized_{};
     };

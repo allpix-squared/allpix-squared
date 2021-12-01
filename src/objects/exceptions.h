@@ -14,6 +14,7 @@
 #include <string>
 
 #include "core/utils/exceptions.h"
+#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 namespace allpix {
@@ -56,6 +57,31 @@ namespace allpix {
             error_message_ += " and ";
             error_message_ += allpix::demangle(source2.name());
             error_message_ += " have incompatible types";
+
+            if(!reason.empty()) {
+                error_message_ += ": " + reason;
+            }
+        }
+    };
+
+    /**
+     * @ingroup Exceptions
+     * @brief Indicates that a pulse object could not be allocated
+     */
+    class PulseBadAllocException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs an error for a pulse which could not be extended to the requested size
+         * @param bins Number of bins attempted to allocate
+         * @param time Total integration time of the pulse
+         * @param reason Reason why the allocation failed
+         */
+        explicit PulseBadAllocException(const size_t bins, const double time, const std::string& reason) {
+            error_message_ = "Unable to allocate memory for pulse with ";
+            error_message_ += allpix::to_string(bins);
+            error_message_ += " bins and total duration of ";
+            error_message_ += allpix::to_string(time);
+            error_message_ += "ns";
 
             if(!reason.empty()) {
                 error_message_ += ": " + reason;
