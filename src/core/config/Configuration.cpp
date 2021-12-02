@@ -130,14 +130,11 @@ std::vector<std::filesystem::path> Configuration::getPathArray(const std::string
 /**
  * @throws std::invalid_argument If the path does not exists
  */
-std::filesystem::path Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
+std::filesystem::path Configuration::path_to_absolute(std::filesystem::path path, bool canonicalize_path) const {
     // If not a absolute path, make it an absolute path
-    if(path.front() != '/') {
-        // Get base directory of config file
-        std::string directory = path_.substr(0, path_.find_last_of('/'));
-
-        // Set new path
-        path = directory + "/" + path;
+    if(!path.is_absolute()) {
+        // Get base directory of config file and append the relative path
+        path = path_.parent_path() / path;
     }
 
     // Normalize path only if we have to check if it exists
@@ -146,7 +143,7 @@ std::filesystem::path Configuration::path_to_absolute(std::string path, bool can
         try {
             path = std::filesystem::canonical(path);
         } catch(std::filesystem::filesystem_error&) {
-            throw std::invalid_argument("path " + path + " not found");
+            throw std::invalid_argument("path " + path.string() + " not found");
         }
     }
     return path;
