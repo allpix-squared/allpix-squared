@@ -11,6 +11,14 @@ ENDIF()
 # Add "geant4.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(geant4.sh)
 
+# Print message if GDML support is not enabled in Geant4
+IF(Geant4_gdml_FOUND)
+  message(STATUS "Geometry export in GDML format is enabled.")
+  ADD_DEFINITIONS(-DGeant4_GDML)
+ELSE()
+  message(STATUS "Geometry export in GDML format is disabled. To enable it, configure and compile Geant4 with the option -DGEANT4_USE_GDML=ON.")
+ENDIF()
+
 # Add Geant4 flags before our own flags
 ADD_DEFINITIONS(${Geant4_DEFINITIONS})
 SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
