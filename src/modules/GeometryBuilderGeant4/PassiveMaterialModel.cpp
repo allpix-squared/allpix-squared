@@ -107,29 +107,36 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     geo_manager_->setExternalObject(getName(), "passive_material_log", log_volume);
 
     // Set VisAttribute of the material
-    auto pm_color = config_.get<ROOT::Math::XYZPoint>("color", ROOT::Math::XYZPoint());
-    auto opacity = config_.get<double>("opacity", 0.4);
-    if(pm_color != ROOT::Math::XYZPoint()) {
-        auto* pm_vol_col = new G4VisAttributes(G4Colour(pm_color.x(), pm_color.y(), pm_color.z(), opacity));
-        log_volume->SetVisAttributes(pm_vol_col);
-    }
-    // Set VisAttribute to invisible if material is equal to the material of its mother volume
-    else if(g4material == mother_log_volume->GetMaterial()) {
-        LOG(WARNING) << "Material of passive material " << getName()
-                     << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
-        log_volume->SetVisAttributes(G4VisAttributes::GetInvisible());
-    }
-    // Set VisAttribute to white if material = world_material
-    else if(g4material == materials.get("world_material")) {
-        auto* white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.4));
-        log_volume->SetVisAttributes(white_vol);
-    }
+    set_visualization_attributes(log_volume.get(), mother_log_volume);
 
     // Place the physical volume of the passive material
     auto phys_volume = make_shared_no_delete<G4PVPlacement>(
         transform_phys, log_volume.get(), getName() + "_phys", mother_log_volume, false, 0, true);
     geo_manager_->setExternalObject(getName(), "passive_material_phys", phys_volume);
     LOG(TRACE) << " Constructed passive material " << getName() << " successfully";
+}
+
+void PassiveMaterialModel::set_visualization_attributes(G4LogicalVolume* volume, G4LogicalVolume* mother_volume) {
+
+    auto& materials = Materials::getInstance();
+
+    auto pm_color = config_.get<ROOT::Math::XYZPoint>("color", ROOT::Math::XYZPoint());
+    auto opacity = config_.get<double>("opacity", 0.4);
+    if(pm_color != ROOT::Math::XYZPoint()) {
+        auto* pm_vol_col = new G4VisAttributes(G4Colour(pm_color.x(), pm_color.y(), pm_color.z(), opacity));
+        volume->SetVisAttributes(pm_vol_col);
+    }
+    // Set VisAttribute to invisible if material is equal to the material of its mother volume
+    else if(volume->GetMaterial() == mother_volume->GetMaterial()) {
+        LOG(WARNING) << "Material of passive material " << getName()
+                     << " is the same as the material of its mother volume! Material will not be shown in the simulation.";
+        volume->SetVisAttributes(G4VisAttributes::GetInvisible());
+    }
+    // Set VisAttribute to white if material = world_material
+    else if(volume->GetMaterial() == materials.get("world_material")) {
+        auto* white_vol = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.4));
+        volume->SetVisAttributes(white_vol);
+    }
 }
 
 void PassiveMaterialModel::add_points() {
