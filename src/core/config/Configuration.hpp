@@ -294,8 +294,7 @@ namespace allpix {
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file
          */
-        // TODO [doc] Fix name clash with getPath
-        std::string getFilePath() const;
+        std::filesystem::path getFilePath() const;
 
         /**
          * @brief Merge other configuration, only adding keys that are not yet defined in this configuration

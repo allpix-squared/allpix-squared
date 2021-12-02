@@ -62,7 +62,7 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
 std::string Configuration::getName() const {
     return name_;
 }
-std::string Configuration::getFilePath() const {
+std::filesystem::path Configuration::getFilePath() const {
     return path_;
 }
 
