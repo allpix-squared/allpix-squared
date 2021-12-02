@@ -97,12 +97,11 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             // If library is not loaded then try to load it first from the config directories
             if(global_config.has("library_directories")) {
                 LOG(TRACE) << "Attempting to load library from configured paths";
-                std::vector<std::string> lib_paths = global_config.getPathArray("library_directories", true);
-                for(auto& lib_path : lib_paths) {
-                    std::string full_lib_path = lib_path;
-                    full_lib_path += "/";
-                    full_lib_path += lib_name;
-                    LOG(TRACE) << "Searching in path \"" << full_lib_path << "\"";
+                auto lib_paths = global_config.getPathArray("library_directories", true);
+                for(const auto& lib_path : lib_paths) {
+                    auto full_lib_path = lib_path;
+                    full_lib_path /= lib_name;
+                    LOG(TRACE) << "Searching in path " << full_lib_path;
 
                     // Check if the absolute file exists and try to load if it exists
                     std::ifstream check_file(full_lib_path);
