@@ -87,6 +87,7 @@ namespace allpix {
                 throw InvalidValueError(config_, "file_name", error);
             }
 
+            bool color_from_gdml = false;
             auto gdml_no_daughters = gdml_log->GetNoDaughters();
             LOG(DEBUG) << "Number of daughter volumes " << gdml_no_daughters;
             if(gdml_no_daughters != 0) {
@@ -112,18 +113,21 @@ namespace allpix {
                     // Add offset to current daughter location
                     gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
 
-                    // Get auxiliary information
-                    G4GDMLAuxListType aux_info = parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log);
-
                     // Check if color information is available and set it to the daughter volume
-                    for(auto aux : aux_info) {
+                    for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
                         std::string str = aux.type;
                         std::string val = aux.value;
                         std::transform(str.begin(), str.end(), str.begin(), ::tolower);
                         if(str == "color" || str == "colour") {
                             G4Colour color = get_color(val);
                             gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
+                            color_from_gdml = true;
                         }
+                    }
+
+                    // Check if there was color information in the configuration:
+                    if(config_.has("color") && !color_from_gdml) {
+                        set_visualization_attributes(gdml_daughter_log, mother_log_volume);
                     }
 
                     // Add the physical daughter volume to the world volume
@@ -137,6 +141,11 @@ namespace allpix {
                 gdml_phys->SetTranslation(position_vector);
                 LOG(DEBUG) << "Volume " << gdml_phys->GetName();
                 mother_log_volume->AddDaughter(gdml_phys);
+            }
+
+            if(config_.has("color") && color_from_gdml) {
+                LOG(INFO) << "Configured visualization attributes of passive material \"" << getName()
+                          << "\" was partially overwritten by GDML information";
             }
         };
 
