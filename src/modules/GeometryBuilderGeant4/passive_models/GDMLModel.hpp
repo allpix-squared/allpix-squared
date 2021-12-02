@@ -76,71 +76,56 @@ namespace allpix {
             G4Transform3D transform_phys(*rotation_, position_vector);
 
             std::vector<std::string> name_list; // Contains the names of the daughter volumes
-            G4VPhysicalVolume* gdml_phys = parser_.GetWorldVolume();
-            G4LogicalVolume* gdml_log = gdml_phys->GetLogicalVolume();
-
-            if(gdml_log->GetName() == "World") {
-                std::string error = "The geometry you requested to import in GDML";
-                error += "contains a World Volume with the name \"World\" which is colliding";
-                error += "with the one of the framework. Please rename it in order to "
-                         "proceed.";
-                throw InvalidValueError(config_, "file_name", error);
-            }
+            auto* gdml_world_phys = parser_.GetWorldVolume();
+            auto* gdml_world_log = gdml_world_phys->GetLogicalVolume();
 
             bool color_from_gdml = false;
-            auto gdml_no_daughters = gdml_log->GetNoDaughters();
-            LOG(DEBUG) << "Number of daughter volumes " << gdml_no_daughters;
-            if(gdml_no_daughters != 0) {
-                for(size_t i = 0; i < gdml_no_daughters; i++) {
-                    G4VPhysicalVolume* gdml_daughter = gdml_log->GetDaughter(static_cast<int>(i));
-                    G4LogicalVolume* gdml_daughter_log = gdml_daughter->GetLogicalVolume();
+            auto daughters = gdml_world_log->GetNoDaughters();
+            LOG(DEBUG) << "Number of daughter volumes " << daughters;
+            for(size_t i = 0; i < daughters; i++) {
+                G4VPhysicalVolume* gdml_daughter = gdml_world_log->GetDaughter(static_cast<int>(i));
+                G4LogicalVolume* gdml_daughter_log = gdml_daughter->GetLogicalVolume();
 
-                    // Remove the daughter from its world volume in order to add it to the
-                    // global one
-                    gdml_log->RemoveDaughter(gdml_daughter);
+                // Remove the daughter from its world volume in order to add it to the
+                // global one
+                gdml_world_log->RemoveDaughter(gdml_daughter);
 
-                    std::string gdml_daughter_name = gdml_daughter->GetName();
-                    if(std::find(name_list.begin(), name_list.end(), gdml_daughter_name) != name_list.end()) {
-                        gdml_daughter_name += "_";
-                        gdml_daughter->SetName(gdml_daughter_name);
-                        gdml_daughter->SetCopyNo(gdml_daughter->GetCopyNo() + 1);
-                        gdml_daughter_log->SetName(gdml_daughter_name);
-                    }
-
-                    LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
-                    name_list.push_back(gdml_daughter_name);
-
-                    // Add offset to current daughter location
-                    gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
-
-                    // Check if color information is available and set it to the daughter volume
-                    for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
-                        std::string str = aux.type;
-                        std::string val = aux.value;
-                        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-                        if(str == "color" || str == "colour") {
-                            G4Colour color = get_color(val);
-                            gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
-                            color_from_gdml = true;
-                        }
-                    }
-
-                    // Check if there was color information in the configuration:
-                    if(config_.has("color") && !color_from_gdml) {
-                        set_visualization_attributes(gdml_daughter_log, mother_log_volume);
-                    }
-
-                    // Add the physical daughter volume to the world volume
-                    mother_log_volume->AddDaughter(gdml_daughter);
-
-                    // Set new mother volume to the global one
-                    gdml_daughter->SetMotherLogical(mother_log_volume);
+                std::string gdml_daughter_name = gdml_daughter->GetName();
+                if(std::find(name_list.begin(), name_list.end(), gdml_daughter_name) != name_list.end()) {
+                    gdml_daughter_name += "_";
+                    gdml_daughter->SetName(gdml_daughter_name);
+                    gdml_daughter->SetCopyNo(gdml_daughter->GetCopyNo() + 1);
+                    gdml_daughter_log->SetName(gdml_daughter_name);
                 }
-            } else {
-                LOG(DEBUG) << "Add daughter";
-                gdml_phys->SetTranslation(position_vector);
-                LOG(DEBUG) << "Volume " << gdml_phys->GetName();
-                mother_log_volume->AddDaughter(gdml_phys);
+
+                LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
+                name_list.push_back(gdml_daughter_name);
+
+                // Add offset to current daughter location
+                gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
+
+                // Check if color information is available and set it to the daughter volume
+                for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
+                    std::string str = aux.type;
+                    std::string val = aux.value;
+                    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+                    if(str == "color" || str == "colour") {
+                        G4Colour color = get_color(val);
+                        gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
+                        color_from_gdml = true;
+                    }
+                }
+
+                // Check if there was color information in the configuration:
+                if(config_.has("color") && !color_from_gdml) {
+                    set_visualization_attributes(gdml_daughter_log, mother_log_volume);
+                }
+
+                // Add the physical daughter volume to the world volume
+                mother_log_volume->AddDaughter(gdml_daughter);
+
+                // Set new mother volume to the global one
+                gdml_daughter->SetMotherLogical(mother_log_volume);
             }
 
             if(config_.has("color") && color_from_gdml) {
