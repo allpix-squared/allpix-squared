@@ -145,338 +145,122 @@ void GeometryConstructionG4::check_overlaps() {
     }
     G4LoggingDestination::setG4coutReportingLevel(current_level);
 
-    // Create required elements:
-    G4Element* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
-    G4Element* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
-    G4Element* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
-    G4Element* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
-    G4Element* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
-    G4Element* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
-
-    // Add vacuum
-    materials_["vacuum"] = new G4Material("Vacuum", 1, 1.01 * CLHEP::g / CLHEP::mole, 0.0001 * CLHEP::g / CLHEP::cm3);
-
-    // Create Epoxy material
-    G4Material* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
-    Epoxy->AddElement(H, 44);
-    Epoxy->AddElement(C, 15);
-    Epoxy->AddElement(O, 7);
-    materials_["epoxy"] = Epoxy;
-
-    // Create Carbon Fiber material:
-    G4Material* CarbonFiber = new G4Material("CarbonFiber", 1.5 * CLHEP::g / CLHEP::cm3, 2);
-    CarbonFiber->AddMaterial(Epoxy, 0.4);
-    CarbonFiber->AddElement(C, 0.6);
-    materials_["carbonfiber"] = CarbonFiber;
-
-    // Create PCB G-10 material
-    G4Material* GTen = new G4Material("G10", 1.7 * CLHEP::g / CLHEP::cm3, 3);
-    GTen->AddMaterial(nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE"), 0.773);
-    GTen->AddMaterial(Epoxy, 0.147);
-    GTen->AddElement(Cl, 0.08);
-    materials_["g10"] = GTen;
-
-    // Create solder material
-    G4Material* Solder = new G4Material("Solder", 8.4 * CLHEP::g / CLHEP::cm3, 2);
-    Solder->AddElement(Sn, 0.63);
-    Solder->AddElement(Pb, 0.37);
-    materials_["solder"] = Solder;
-}
-
-void GeometryConstructionG4::build_detectors() {
-    // Loop through all detectors and construct them
-    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-    LOG(TRACE) << "Building " << detectors.size() << " device(s)";
-
-    for(auto& detector : detectors) {
-        // Get pointer to the model of the detector
-        auto model = detector->getModel();
-
-        std::string name = detector->getName();
-        LOG(DEBUG) << "Creating Geant4 model for " << name;
-        LOG(DEBUG) << " Wrapper dimensions of model: " << Units::display(model->getSize(), {"mm", "um"});
-        LOG(TRACE) << " Sensor dimensions: " << model->getSensorSize();
-        LOG(TRACE) << " Chip dimensions: " << model->getChipSize();
-
-        LOG(DEBUG) << " Global position and orientation of the detector:";
-
-        // Create the wrapper box and logical volume
-        auto wrapper_box = std::make_shared<G4Box>(
-            "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
-        solids_.push_back(wrapper_box);
-        auto wrapper_log =
-            make_shared_no_delete<G4LogicalVolume>(wrapper_box.get(), world_material_, "wrapper_" + name + "_log");
-        detector->setExternalObject("wrapper_log", wrapper_log);
-
-        // Get position and orientation
-        auto position = detector->getPosition();
-        ROOT::Math::Rotation3D orientation = detector->getOrientation();
-        std::vector<double> copy_vec(9);
-        orientation.GetComponents(copy_vec.begin(), copy_vec.end());
-
-        LOG(DEBUG) << " - Position\t\t:\t" << Units::display(position, {"mm", "um"});
-
-        G4ThreeVector posWrapper = toG4Vector(position);
-        auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
-        detector->setExternalObject("rotation_matrix", rotWrapper);
-
-        // Place the wrapper
-        auto wrapper_phys = make_shared_no_delete<G4PVPlacement>(
-            rotWrapper.get(), posWrapper, wrapper_log.get(), "wrapper_" + name + "_phys", world_log_.get(), false, 0, true);
-        detector->setExternalObject("wrapper_phys", wrapper_phys);
-
-        LOG(DEBUG) << " Center of the geometry parts relative to the origin:";
-
-        /* SENSOR
-         * the sensitive detector is the part that collects the deposits
-         */
-
-        // Create the sensor box and logical volume
-        auto sensor_box = std::make_shared<G4Box>("sensor_" + name,
-                                                  model->getSensorSize().x() / 2.0,
-                                                  model->getSensorSize().y() / 2.0,
-                                                  model->getSensorSize().z() / 2.0);
-        solids_.push_back(sensor_box);
-        auto sensor_log =
-            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials_["silicon"], "sensor_" + name + "_log");
-        detector->setExternalObject("sensor_log", sensor_log);
-
-        // Place the sensor box
-        auto sensor_pos = toG4Vector(model->getSensorCenter() - model->getCenter());
-        LOG(DEBUG) << "  - Sensor\t\t:\t" << Units::display(sensor_pos, {"mm", "um"});
-        auto sensor_phys = make_shared_no_delete<G4PVPlacement>(
-            nullptr, sensor_pos, sensor_log.get(), "sensor_" + name + "_phys", wrapper_log.get(), false, 0, true);
-        detector->setExternalObject("sensor_phys", sensor_phys);
-
-        // Create the pixel box and logical volume
-        auto pixel_box = std::make_shared<G4Box>("pixel_" + name,
-                                                 model->getPixelSize().x() / 2.0,
-                                                 model->getPixelSize().y() / 2.0,
-                                                 model->getSensorSize().z() / 2.0);
-        solids_.push_back(pixel_box);
-        auto pixel_log =
-            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials_["silicon"], "pixel_" + name + "_log");
-        detector->setExternalObject("pixel_log", pixel_log);
-
-        // Create the parameterization for the pixel grid
-        std::shared_ptr<G4VPVParameterisation> pixel_param =
-            std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
-                                                   model->getPixelSize().x(),
-                                                   model->getPixelSize().y(),
-                                                   -model->getGridSize().x() / 2.0,
-                                                   -model->getGridSize().y() / 2.0,
-                                                   0);
-        detector->setExternalObject("pixel_param", pixel_param);
-
-        // WARNING: do not place the actual parameterization, only use it if we need it
-
-        /* CHIP
-         * the chip connected to the bumps bond and the support
-         */
-
-        // Construct the chips only if necessary
-        if(model->getChipSize().z() > 1e-9) {
-            // Create the chip box
-            auto chip_box = std::make_shared<G4Box>("chip_" + name,
-                                                    model->getChipSize().x() / 2.0,
-                                                    model->getChipSize().y() / 2.0,
-                                                    model->getChipSize().z() / 2.0);
-            solids_.push_back(chip_box);
-
-            // Create the logical volume for the chip
-            auto chip_log =
-                make_shared_no_delete<G4LogicalVolume>(chip_box.get(), materials_["silicon"], "chip_" + name + "_log");
-            detector->setExternalObject("chip_log", chip_log);
-
-            // Place the chip
-            auto chip_pos = toG4Vector(model->getChipCenter() - model->getCenter());
-            LOG(DEBUG) << "  - Chip\t\t:\t" << Units::display(chip_pos, {"mm", "um"});
-            auto chip_phys = make_shared_no_delete<G4PVPlacement>(
-                nullptr, chip_pos, chip_log.get(), "chip_" + name + "_phys", wrapper_log.get(), false, 0, true);
-            detector->setExternalObject("chip_phys", chip_phys);
-        }
-
-        /*
-         * SUPPORT
-         * optional layers of support
-         */
-        auto supports_log = std::make_shared<std::vector<std::shared_ptr<G4LogicalVolume>>>();
-        auto supports_phys = std::make_shared<std::vector<std::shared_ptr<G4PVPlacement>>>();
-        int support_idx = 0;
-        for(auto& layer : model->getSupportLayers()) {
-            // Create the box containing the support
-            auto support_box = std::make_shared<G4Box>("support_" + name + "_" + std::to_string(support_idx),
-                                                       layer.getSize().x() / 2.0,
-                                                       layer.getSize().y() / 2.0,
-                                                       layer.getSize().z() / 2.0);
-            solids_.push_back(support_box);
-
-            std::shared_ptr<G4VSolid> support_solid = support_box;
-            if(layer.hasHole()) {
-                // NOTE: Double the hole size in the z-direction to ensure no fake surfaces are created
-                auto hole_box = std::make_shared<G4Box>("support_" + name + "_hole_" + std::to_string(support_idx),
-                                                        layer.getHoleSize().x() / 2.0,
-                                                        layer.getHoleSize().y() / 2.0,
-                                                        layer.getHoleSize().z());
-                solids_.push_back(hole_box);
-
-                G4Transform3D transform(G4RotationMatrix(), toG4Vector(layer.getHoleCenter() - layer.getCenter()));
-                auto subtraction_solid =
-                    std::make_shared<G4SubtractionSolid>("support_" + name + "_subtraction_" + std::to_string(support_idx),
-                                                         support_box.get(),
-                                                         hole_box.get(),
-                                                         transform);
-                solids_.push_back(subtraction_solid);
-                support_solid = subtraction_solid;
-            }
-
-            // Create the logical volume for the support
-            auto support_material_iter = materials_.find(layer.getMaterial());
-            if(support_material_iter == materials_.end()) {
-                throw ModuleError("Cannot construct a support layer of material '" + layer.getMaterial() + "'");
-            }
-            auto support_log =
-                make_shared_no_delete<G4LogicalVolume>(support_solid.get(),
-                                                       support_material_iter->second,
-                                                       "support_" + name + "_log_" + std::to_string(support_idx));
-            supports_log->push_back(support_log);
-
-            // Place the support
-            auto support_pos = toG4Vector(layer.getCenter() - model->getCenter());
-            LOG(DEBUG) << "  - Support\t\t:\t" << Units::display(support_pos, {"mm", "um"});
-            auto support_phys =
-                make_shared_no_delete<G4PVPlacement>(nullptr,
-                                                     support_pos,
-                                                     support_log.get(),
-                                                     "support_" + name + "_phys_" + std::to_string(support_idx),
-                                                     wrapper_log.get(),
-                                                     false,
-                                                     0,
-                                                     true);
-            supports_phys->push_back(support_phys);
-
-            ++support_idx;
-        }
-        detector->setExternalObject("supports_log", supports_log);
-        detector->setExternalObject("supports_phys", supports_phys);
-
-        // Build the bump bonds only for hybrid pixel detectors
-        auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
-        if(hybrid_model != nullptr) {
-            /* BUMPS
-             * the bump bonds connect the sensor to the readout chip
-             */
-
-            // Get parameters from model
-            auto bump_height = hybrid_model->getBumpHeight();
-            auto bump_sphere_radius = hybrid_model->getBumpSphereRadius();
-            auto bump_cylinder_radius = hybrid_model->getBumpCylinderRadius();
-
-            // Create the volume containing the bumps
-            auto bump_box = std::make_shared<G4Box>("bump_box_" + name,
-                                                    hybrid_model->getSensorSize().x() / 2.0,
-                                                    hybrid_model->getSensorSize().y() / 2.0,
-                                                    bump_height / 2.);
-            solids_.push_back(bump_box);
-
-            // Create the logical wrapper volume
-            auto bumps_wrapper_log =
-                make_shared_no_delete<G4LogicalVolume>(bump_box.get(), world_material_, "bumps_wrapper_" + name + "_log");
-            detector->setExternalObject("bumps_wrapper_log", bumps_wrapper_log);
-
-            // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getCenter());
-            LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
-            auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
-                                                                           bumps_pos,
-                                                                           bumps_wrapper_log.get(),
-                                                                           "bumps_wrapper_" + name + "_phys",
-                                                                           wrapper_log.get(),
-                                                                           false,
-                                                                           0,
-                                                                           true);
-            detector->setExternalObject("bumps_wrapper_phys", bumps_wrapper_phys);
-
-            // Create the individual bump solid
-            auto bump_sphere = std::make_shared<G4Sphere>(
-                "bumps_" + name + "_sphere", 0, bump_sphere_radius, 0, 360 * CLHEP::deg, 0, 360 * CLHEP::deg);
-            solids_.push_back(bump_sphere);
-            auto bump_tube = std::make_shared<G4Tubs>(
-                "bumps_" + name + "_tube", 0., bump_cylinder_radius, bump_height / 2., 0., 360 * CLHEP::deg);
-            solids_.push_back(bump_tube);
-            auto bump = std::make_shared<G4UnionSolid>("bumps_" + name, bump_sphere.get(), bump_tube.get());
-            solids_.push_back(bump);
-
-            // Create the logical volume for the individual bumps
-            auto bumps_cell_log =
-                make_shared_no_delete<G4LogicalVolume>(bump.get(), materials_["solder"], "bumps_" + name + "_log");
-            detector->setExternalObject("bumps_cell_log", bumps_cell_log);
-
-            // Place the bump bonds grid
-            std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
-                hybrid_model->getNPixels().x(),
-                hybrid_model->getPixelSize().x(),
-                hybrid_model->getPixelSize().y(),
-                -(hybrid_model->getNPixels().x() * hybrid_model->getPixelSize().x()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().x() - hybrid_model->getCenter().x()),
-                -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().y() - hybrid_model->getCenter().y()),
-                0);
-            detector->setExternalObject("bumps_param", bumps_param);
-
-            std::shared_ptr<G4PVParameterised> bumps_param_phys =
-                std::make_shared<ParameterisedG4>("bumps_" + name + "_phys",
-                                                  bumps_cell_log.get(),
-                                                  bumps_wrapper_log.get(),
-                                                  kUndefined,
-                                                  hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
-                                                  bumps_param.get(),
-                                                  false);
-            detector->setExternalObject("bumps_param_phys", bumps_param_phys);
-        }
-
-        LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
-        name_list.push_back(gdml_daughter_name);
-
-        // Add offset to current daughter location
-        gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + GDML_input_offset);
-
-        // Get auxiliary information
-        G4GDMLAuxListType aux_info = parser.GetVolumeAuxiliaryInformation(gdml_daughter_log);
-
-        // Check if color information is available and set it to the daughter
-        // volume
-        for(auto aux : aux_info) {
-            std::string str = aux.type;
-            std::string val = aux.value;
-            std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-            if(str == "color" || str == "colour") {
-                G4Colour color = get_color(val);
-                gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
-            }
-        }
-
-        // Add the physical daughter volume to the world volume
-        world_log_.get()->AddDaughter(gdml_daughter);
-
-        // Set new mother volume to the global one
-        gdml_daughter->SetMotherLogical(world_log_.get());
+    if(overlapFlag) {
+        LOG(ERROR) << "Overlapping volumes detected.";
+    } else {
+        LOG(INFO) << "No overlapping volumes detected.";
     }
 }
-else {
-    LOG(DEBUG) << "Add daughter";
-    gdml_phys->SetTranslation(GDML_input_offset);
-    LOG(DEBUG) << "Volume " << gdml_phys->GetName();
-    world_log_.get()->AddDaughter(gdml_phys);
-}
-}
+
+void GeometryConstructionG4::import_gdml() {
+#ifdef Geant4_GDML
+    std::vector<std::string> GDML_input_files = config_.getPathArray("GDML_input_file");
+
+    // Initialize offset positions at origin
+    std::vector<std::vector<double>> GDML_input_offsets(GDML_input_files.size(), std::vector<double>(3, 0));
+
+    // Set the offset values
+    if(config_.has("GDML_input_offset")) {
+        GDML_input_offsets = config_.getMatrix<double>("GDML_input_offset");
+        if(GDML_input_files.size() != GDML_input_offsets.size()) {
+            throw allpix::InvalidValueError(config_,
+                                            "GDML_input_offset",
+                                            "If GDML offsets are specified, number "
+                                            "of values has to be consistent with the "
+                                            "number of specified models.");
+        }
+        for(auto row : GDML_input_offsets) {
+            if(row.size() != 3) {
+                throw allpix::InvalidValueError(config_, "GDML_input_offset", "GDML offsets need to be three dimensional.");
+            }
+        }
+    }
+
+    // Loop over all GDML input files
+    int idx = 0;
+    std::vector<std::string> name_list; // Contains the names of the daughter volumes
+
+    for(auto GDML_input_file : GDML_input_files) {
+        std::vector<double> offset = GDML_input_offsets.at(static_cast<long unsigned int>(idx));
+        G4ThreeVector GDML_input_offset = G4ThreeVector(offset[0], offset[1], offset[2]);
+        idx++;
+
+        G4GDMLParser parser;
+        parser.Read(GDML_input_file, false);
+        G4VPhysicalVolume* gdml_phys = parser.GetWorldVolume();
+
+        G4LogicalVolume* gdml_log = gdml_phys->GetLogicalVolume();
+        if(gdml_log->GetName() == "World") {
+            std::string error = "The geometry you requested to import in GDML";
+            error += "contains a World Volume with the name \"World\" which is colliding";
+            error += "with the one of the framework. Please rename it in order to "
+                     "proceed.";
+            throw allpix::InvalidValueError(config_, "GDML_input_file", error);
+        }
+
+        int gdml_no_daughters = gdml_log->GetNoDaughters();
+        LOG(DEBUG) << "Number of daughter volumes " << gdml_no_daughters;
+        if(gdml_no_daughters != 0) {
+            // gdml_phys->SetTranslation(gdml_phys->GetTranslation() +
+            // GDML_input_offset);
+            for(int i = 0; i < gdml_no_daughters; i++) {
+                G4VPhysicalVolume* gdml_daughter = gdml_log->GetDaughter(i);
+                G4LogicalVolume* gdml_daughter_log = gdml_daughter->GetLogicalVolume();
+
+                // Remove the daughter from its world volume in order to add it to the
+                // global one
+                gdml_log->RemoveDaughter(gdml_daughter);
+
+                std::string gdml_daughter_name = gdml_daughter->GetName();
+                if(!name_list.empty() &&
+                   std::find(name_list.begin(), name_list.end(), gdml_daughter_name) != name_list.end()) {
+                    gdml_daughter_name += "_";
+                    gdml_daughter->SetName(gdml_daughter_name);
+                    gdml_daughter->SetCopyNo(gdml_daughter->GetCopyNo() + 1);
+                    gdml_daughter_log->SetName(gdml_daughter_name);
+                }
+
+                LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
+                name_list.push_back(gdml_daughter_name);
+
+                // Add offset to current daughter location
+                gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + GDML_input_offset);
+
+                // Get auxiliary information
+                G4GDMLAuxListType aux_info = parser.GetVolumeAuxiliaryInformation(gdml_daughter_log);
+
+                // Check if color information is available and set it to the daughter
+                // volume
+                for(auto aux : aux_info) {
+                    std::string str = aux.type;
+                    std::string val = aux.value;
+                    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+                    if(str == "color" || str == "colour") {
+                        G4Colour color = get_color(val);
+                        gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
+                    }
+                }
+
+                // Add the physical daughter volume to the world volume
+                world_log_.get()->AddDaughter(gdml_daughter);
+
+                // Set new mother volume to the global one
+                gdml_daughter->SetMotherLogical(world_log_.get());
+            }
+        } else {
+            LOG(DEBUG) << "Add daughter";
+            gdml_phys->SetTranslation(GDML_input_offset);
+            LOG(DEBUG) << "Volume " << gdml_phys->GetName();
+            world_log_.get()->AddDaughter(gdml_phys);
+        }
+    }
 
 #else
-std::string error = "You requested to import the geometry in GDML. ";
-error += "However, GDML support is currently disabled in Geant4. ";
-error += "To enable it, configure and compile Geant4 with the option "
-         "-DGEANT4_USE_GDML=ON.";
-throw allpix::InvalidValueError(config_, "GDML_input_file", error);
+    std::string error = "You requested to import the geometry in GDML. ";
+    error += "However, GDML support is currently disabled in Geant4. ";
+    error += "To enable it, configure and compile Geant4 with the option "
+             "-DGEANT4_USE_GDML=ON.";
+    throw allpix::InvalidValueError(config_, "GDML_input_file", error);
 #endif
 }
 
