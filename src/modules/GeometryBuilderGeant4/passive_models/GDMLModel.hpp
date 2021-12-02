@@ -127,16 +127,16 @@ namespace allpix {
                     }
 
                     // Add the physical daughter volume to the world volume
-                    world_log->AddDaughter(gdml_daughter);
+                    mother_log_volume->AddDaughter(gdml_daughter);
 
                     // Set new mother volume to the global one
-                    gdml_daughter->SetMotherLogical(world_log.get());
+                    gdml_daughter->SetMotherLogical(mother_log_volume);
                 }
             } else {
                 LOG(DEBUG) << "Add daughter";
                 gdml_phys->SetTranslation(position_vector);
                 LOG(DEBUG) << "Volume " << gdml_phys->GetName();
-                world_log->AddDaughter(gdml_phys);
+                mother_log_volume->AddDaughter(gdml_phys);
             }
         };
 
