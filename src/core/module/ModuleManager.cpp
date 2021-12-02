@@ -68,19 +68,19 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     messenger_ = messenger;
 
     // (Re)create the main ROOT file
-    auto path = std::string(gSystem->pwd()) + "/" + global_config.get<std::string>("root_file", "modules");
-    path = std::filesystem::path(path).replace_extension("root");
+    auto path = std::filesystem::path(gSystem->pwd()) / global_config.get<std::string>("root_file", "modules");
+    path.replace_extension("root");
 
     if(std::filesystem::is_regular_file(path)) {
         if(global_config.get<bool>("deny_overwrite", false)) {
-            throw RuntimeError("Overwriting of existing main ROOT file " + path + " denied");
+            throw RuntimeError("Overwriting of existing main ROOT file " + path.string() + " denied");
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
         std::filesystem::remove(path);
     }
     modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(modules_file_->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + path);
+        throw RuntimeError("Cannot create main ROOT file " + path.string());
     }
     modules_file_->cd();
 
@@ -305,12 +305,10 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
 
     // Specialize instance configuration
-    std::string output_dir;
-    output_dir = instance_config.get<std::string>("_global_dir");
-    output_dir += "/";
-    std::string path_mod_name = identifier.getUniqueName();
+    std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");
+    auto path_mod_name = identifier.getUniqueName();
     std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '_');
-    output_dir += path_mod_name;
+    output_dir /= path_mod_name;
 
     // Convert to correct generator function
     auto module_generator = reinterpret_cast<Module* (*)(Configuration&, Messenger*, GeometryManager*)>(generator); // NOLINT
@@ -427,12 +425,10 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
 
         // Add internal module config
-        std::string output_dir;
-        output_dir = instance_config.get<std::string>("_global_dir");
-        output_dir += "/";
-        std::string path_mod_name = instance.second.getUniqueName();
+        std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");
+        auto path_mod_name = instance.second.getUniqueName();
         std::replace(path_mod_name.begin(), path_mod_name.end(), ':', '/');
-        output_dir += path_mod_name;
+        output_dir /= path_mod_name;
 
         // Set module specific log settings
         auto old_settings = set_module_before(instance.second.getUniqueName(), instance_config, "C:");
