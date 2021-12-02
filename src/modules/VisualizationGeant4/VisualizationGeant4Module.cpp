@@ -156,7 +156,7 @@ void VisualizationGeant4Module::initialize() {
 
     // Execute initialization macro if provided
     if(config_.has("macro_init")) {
-        UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true));
+        UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true).string());
     }
 }
 
