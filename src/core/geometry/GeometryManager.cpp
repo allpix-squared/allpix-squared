@@ -89,7 +89,6 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
                 throw MissingKeyError(key, cfg.getName());
             }
         };
-        check_key(passive_element, "material");
         check_key(passive_element, "type");
     }
 
