@@ -52,7 +52,7 @@ namespace allpix {
             auto gdml_file = config_.getPath("file_name");
             parser_.Read(gdml_file, false);
 
-            // FIXME here we need to know the maximum size already!
+            // Adding points to extend world volume as much as necessary
             LOG(DEBUG) << "Adding points for volume";
             add_points();
         }
@@ -84,7 +84,7 @@ namespace allpix {
                 error += "contains a World Volume with the name \"World\" which is colliding";
                 error += "with the one of the framework. Please rename it in order to "
                          "proceed.";
-                throw allpix::InvalidValueError(config_, "GDML_input_file", error);
+                throw InvalidValueError(config_, "file_name", error);
             }
 
             auto gdml_no_daughters = gdml_log->GetNoDaughters();
@@ -140,9 +140,15 @@ namespace allpix {
             }
         };
 
-        // Set the override functions of PassiveMaterialModel
-        // FIXME we  need to figure out total size of this GDML blob!
-        double getMaxSize() const override { return 1; }
+        // Provide maximum extend of this model by looking at the GDML world volume
+        double getMaxSize() const override {
+            auto world = parser_.GetWorldVolume();
+            auto box = dynamic_cast<G4Box*>(world->GetLogicalVolume()->GetSolid());
+            if(box == nullptr) {
+                throw InvalidValueError(config_, "file_name", "Could not deduce world size from GDML file");
+            }
+            return 2. * std::max({box->GetXHalfLength(), box->GetYHalfLength(), box->GetZHalfLength()});
+        }
 
     private:
         std::shared_ptr<G4VSolid> get_solid() const override { return nullptr; }
