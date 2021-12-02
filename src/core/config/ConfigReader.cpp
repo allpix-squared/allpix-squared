@@ -22,7 +22,7 @@
 using namespace allpix;
 
 ConfigReader::ConfigReader() = default;
-ConfigReader::ConfigReader(std::istream& stream, std::string file_name) : ConfigReader() {
+ConfigReader::ConfigReader(std::istream& stream, std::filesystem::path file_name) : ConfigReader() {
     add(stream, std::move(file_name));
 }
 
@@ -96,7 +96,7 @@ std::pair<std::string, std::string> ConfigReader::parseKeyValue(std::string line
  *
  * The configuration is immediately parsed and all of its configurations are available after the functions returns.
  */
-void ConfigReader::add(std::istream& stream, std::string file_name) {
+void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
     LOG(TRACE) << "Parsing configuration file " << file_name;
 
     // Convert file name to absolute path (if given)

@@ -92,7 +92,7 @@ namespace allpix {
          * @param name Name of the section header (empty section if not specified)
          * @param path Path to the file containing the configuration (or empty if not stored in a file)
          */
-        explicit Configuration(std::string name = "", std::string path = "");
+        explicit Configuration(std::string name = "", std::filesystem::path path = "");
 
         /// @{
         /**
