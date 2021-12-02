@@ -324,7 +324,7 @@ namespace allpix {
          * @param path Path to make absolute (if it is not already absolute)
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
-        std::filesystem::path path_to_absolute(std::string path, bool canonicalize_path) const;
+        std::filesystem::path path_to_absolute(std::filesystem::path path, bool canonicalize_path) const;
 
         /**
          * @brief Node in a parse tree
@@ -342,7 +342,7 @@ namespace allpix {
         static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
-        std::string path_;
+        std::filesystem::path path_;
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;
