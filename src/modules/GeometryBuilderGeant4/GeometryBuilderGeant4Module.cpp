@@ -68,7 +68,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
         LogLevel log_level = Log::getLevelFromString(g4cerr_log_level);
         G4LoggingDestination::setG4cerrReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "geant4_cerr_log_level", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
     }
 
     // Set Geant G4cout log level
@@ -76,7 +76,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
         LogLevel log_level = Log::getLevelFromString(g4cout_log_level);
         G4LoggingDestination::setG4coutReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "geant4_cout_log_level", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
     }
 
     geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
