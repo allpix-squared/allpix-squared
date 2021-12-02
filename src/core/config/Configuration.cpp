@@ -39,7 +39,8 @@ void Configuration::AccessMarker::registerMarker(const std::string& key) {
     markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
 }
 
-Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
+Configuration::Configuration(std::string name, std::filesystem::path path)
+    : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();

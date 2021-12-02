@@ -10,6 +10,7 @@
 #ifndef ALLPIX_CONFIG_READER_H
 #define ALLPIX_CONFIG_READER_H
 
+#include <filesystem>
 #include <istream>
 #include <list>
 #include <map>
@@ -38,7 +39,7 @@ namespace allpix {
          * @param stream Stream to read configuration from
          * @param file_name Name of the file related to the stream or empty if not linked to a file
          */
-        explicit ConfigReader(std::istream& stream, std::string file_name = "");
+        explicit ConfigReader(std::istream& stream, std::filesystem::path file_name = "");
 
         /**
          * @brief Parse a line as key-value pair
@@ -52,7 +53,7 @@ namespace allpix {
          * @param stream Stream to read configuration from
          * @param file_name Name of the file related to the stream or empty if not linked to a file
          */
-        void add(std::istream&, std::string file_name = "");
+        void add(std::istream&, std::filesystem::path file_name = "");
 
         /**
          * @brief Directly add a configuration object to the reader
