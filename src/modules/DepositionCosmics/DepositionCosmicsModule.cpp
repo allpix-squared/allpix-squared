@@ -72,13 +72,9 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
                 data_dirs_env = "/usr/local/share/:/usr/share/:";
             }
 
-            std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
+            auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
             for(auto data_dir : data_dirs) {
-                if(data_dir.back() != '/') {
-                    data_dir += "/";
-                }
-                data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/data");
-
+                data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / "data";
                 if(std::filesystem::is_directory(data_dir)) {
                     config_.set<std::string>("data_path", data_dir);
                     LOG(TRACE) << "Registered CRY data path from XDG_DATA_DIRS: " << data_dir;
