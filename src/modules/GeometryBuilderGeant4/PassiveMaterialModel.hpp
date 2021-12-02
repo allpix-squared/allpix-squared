@@ -58,12 +58,6 @@ namespace allpix {
         virtual ~PassiveMaterialModel() = default;
 
         /**
-         * @brief Virtual function that will return a G4VSolid corresponding to the specific model
-         * @return Shared pointer to the model solid
-         */
-        virtual std::shared_ptr<G4VSolid> getSolid() const = 0;
-
-        /**
          * @brief Virtual function that will return the maximum size parameter of the model
          * @return Maximum size of the model
          */
@@ -84,6 +78,12 @@ namespace allpix {
         std::string getMotherVolume() const { return mother_volume_; }
 
     protected:
+        /**
+         * @brief Virtual function that will return a G4VSolid corresponding to the specific model
+         * @return Shared pointer to the model solid
+         */
+        virtual std::shared_ptr<G4VSolid> get_solid() const = 0;
+
         /**
          * @brief Delivers the points which represent the outer corners of the passive material to the GeometryManager
          */
