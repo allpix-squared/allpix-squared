@@ -342,7 +342,7 @@ TransientPropagationModule::propagate(Event* event,
         // Check for overshooting outside the sensor and correct for it:
         if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
             LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            // within_sensor = false;
+            state = CarrierState::HALTED;
 
             auto check_position = position;
             check_position.z() = last_position.z();
@@ -350,7 +350,6 @@ TransientPropagationModule::propagate(Event* event,
             if(detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
                 LOG(DEBUG) << "Stopping carrier " << type << " at "
                            << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
-                state = CarrierState::HALTED;
 
                 // Carrier left sensor on top or bottom surface, interpolate
                 auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
@@ -358,8 +357,6 @@ TransientPropagationModule::propagate(Event* event,
                 auto z_total = z_cur_border + z_last_border;
                 position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
                 LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            } else {
-                state = CarrierState::HALTED;
             }
         }
 
