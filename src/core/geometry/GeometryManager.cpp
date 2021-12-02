@@ -108,13 +108,9 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
     if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
         data_dirs_env = "/usr/local/share/:/usr/share/:";
     }
-    std::vector<std::string> data_dirs = split<std::string>(data_dirs_env, ":");
+    auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
     for(auto data_dir : data_dirs) {
-        if(data_dir.back() != '/') {
-            data_dir += "/";
-        }
-
-        data_dir += std::string(ALLPIX_PROJECT_NAME) + std::string("/models");
+        data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / std::string("models");
         if(std::filesystem::is_directory(data_dir)) {
             model_paths_.emplace_back(data_dir);
             LOG(TRACE) << "Registered global model path: " << data_dir;
