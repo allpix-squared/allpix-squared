@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <G4GlobalConfig.hh>
+#include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -42,7 +43,6 @@ using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
 
 // Enable multithreading for Geant4 if it has been built with support for it:
 #ifdef G4MULTITHREADED
@@ -74,6 +74,8 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "geant4_cout_log_level", "invalid log level provided");
     }
+
+    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
 }
 
 /**
