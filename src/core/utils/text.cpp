@@ -58,7 +58,7 @@ std::string allpix::from_string_impl(std::string str, type_tag<std::string>) {
 }
 
 /**
- * First parse as normal string and then constrcut path from it.
+ * First parse as normal string and then construct path from it.
  */
 std::filesystem::path allpix::from_string_impl(std::string str, type_tag<std::filesystem::path>) {
     return std::filesystem::path(from_string<std::string>(str));
