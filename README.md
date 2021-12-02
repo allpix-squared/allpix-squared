@@ -112,6 +112,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
+* Sebastian Schmidt, FAU Erlangen, @schmidtseb
 * Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
 * Viktor Sonesten, GSOC2018 Student, @tmplt
