@@ -97,7 +97,7 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     LOG(TRACE) << " -Position\t\t:\t " << Units::display(position_, {"mm", "um"});
 
     // Get the solid from the Model
-    auto solid = getSolid();
+    auto solid = get_solid();
 
     // Place the logical volume of the passive material
     auto log_volume = make_shared_no_delete<G4LogicalVolume>(solid.get(), g4material, getName() + "_log");
