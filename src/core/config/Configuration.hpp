@@ -11,6 +11,7 @@
 #define ALLPIX_CONFIGURATION_H
 
 #include <atomic>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -193,7 +194,7 @@ namespace allpix {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPath(const std::string& key, bool check_exists = false) const;
+        std::filesystem::path getPath(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Get absolute path to file with paths relative to the configuration
@@ -202,7 +203,8 @@ namespace allpix {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
+        std::filesystem::path
+        getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
@@ -210,7 +212,7 @@ namespace allpix {
          * @return List of absolute path to all the requested files
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
+        std::vector<std::filesystem::path> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Set value for a key in a given type
@@ -322,7 +324,7 @@ namespace allpix {
          * @param path Path to make absolute (if it is not already absolute)
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
-        std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+        std::filesystem::path path_to_absolute(std::string path, bool canonicalize_path) const;
 
         /**
          * @brief Node in a parse tree

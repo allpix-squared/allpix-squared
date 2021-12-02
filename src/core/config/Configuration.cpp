@@ -88,7 +88,7 @@ std::string Configuration::getText(const std::string& key, const std::string& de
  * For a relative path the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
-std::string Configuration::getPath(const std::string& key, bool check_exists) const {
+std::filesystem::path Configuration::getPath(const std::string& key, bool check_exists) const {
     try {
         return path_to_absolute(get<std::string>(key), check_exists);
     } catch(std::invalid_argument& e) {
@@ -100,7 +100,7 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
  *
  * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
-std::string
+std::filesystem::path
 Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
     try {
         return path_to_absolute(std::filesystem::path(get<std::string>(key)).replace_extension(extension), check_exists);
@@ -114,13 +114,13 @@ Configuration::getPathWithExtension(const std::string& key, const std::string& e
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
-std::vector<std::string> Configuration::getPathArray(const std::string& key, bool check_exists) const {
-    std::vector<std::string> path_array = getArray<std::string>(key);
+std::vector<std::filesystem::path> Configuration::getPathArray(const std::string& key, bool check_exists) const {
+    std::vector<std::filesystem::path> path_array;
 
     // Convert all paths to absolute
     try {
-        for(auto& path : path_array) {
-            path = path_to_absolute(path, check_exists);
+        for(auto& path : getArray<std::string>(key)) {
+            path_array.emplace_back(path_to_absolute(path, check_exists));
         }
         return path_array;
     } catch(std::invalid_argument& e) {
@@ -130,7 +130,7 @@ std::vector<std::string> Configuration::getPathArray(const std::string& key, boo
 /**
  * @throws std::invalid_argument If the path does not exists
  */
-std::string Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
+std::filesystem::path Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
     // If not a absolute path, make it an absolute path
     if(path.front() != '/') {
         // Get base directory of config file
