@@ -50,13 +50,18 @@ namespace allpix {
             : PassiveMaterialModel(config, geo_manager) {
 
             auto gdml_file = config_.getPath("file_name");
-            parser_.Read(gdml_file, false);
+            parser_.ReadModule(gdml_file, false);
 
             // Adding points to extend world volume as much as necessary
             LOG(DEBUG) << "Adding points for volume";
             add_points();
         }
 
+        /**
+         * @brief Method to build the volumes and add it to the world. Overrides the parent class method to be able to handle
+         * complex structurs with may solids from GDML files
+         * @param world_log Pointer to the world volume
+         */
         void buildVolume(const std::shared_ptr<G4LogicalVolume>& world_log) override {
 
             LOG(TRACE) << "Building passive material: " << getName();
@@ -86,8 +91,7 @@ namespace allpix {
                 G4VPhysicalVolume* gdml_daughter = gdml_world_log->GetDaughter(static_cast<int>(i));
                 G4LogicalVolume* gdml_daughter_log = gdml_daughter->GetLogicalVolume();
 
-                // Remove the daughter from its world volume in order to add it to the
-                // global one
+                // Remove the daughter from its world volume in order to add it to the global one
                 gdml_world_log->RemoveDaughter(gdml_daughter);
 
                 std::string gdml_daughter_name = gdml_daughter->GetName();
@@ -106,12 +110,9 @@ namespace allpix {
 
                 // Check if color information is available and set it to the daughter volume
                 for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
-                    std::string str = aux.type;
-                    std::string val = aux.value;
-                    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-                    if(str == "color" || str == "colour") {
-                        G4Colour color = get_color(val);
-                        gdml_daughter_log->SetVisAttributes(G4VisAttributes(color));
+                    std::transform(aux.type.begin(), aux.type.end(), aux.type.begin(), ::tolower);
+                    if(aux.type == "color" || aux.type == "colour") {
+                        gdml_daughter_log->SetVisAttributes(G4VisAttributes(get_color(aux.value)));
                         color_from_gdml = true;
                     }
                 }
@@ -121,10 +122,8 @@ namespace allpix {
                     set_visualization_attributes(gdml_daughter_log, mother_log_volume);
                 }
 
-                // Add the physical daughter volume to the world volume
+                // Add the physical daughter volume to the mother volume and configure logical mother volume
                 mother_log_volume->AddDaughter(gdml_daughter);
-
-                // Set new mother volume to the global one
                 gdml_daughter->SetMotherLogical(mother_log_volume);
             }
 
