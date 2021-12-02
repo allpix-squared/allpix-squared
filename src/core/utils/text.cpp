@@ -58,6 +58,13 @@ std::string allpix::from_string_impl(std::string str, type_tag<std::string>) {
 }
 
 /**
+ * First parse as normal string and then constrcut path from it.
+ */
+std::filesystem::path allpix::from_string_impl(std::string str, type_tag<std::filesystem::path>) {
+    return std::filesystem::path(from_string<std::string>(str));
+}
+
+/**
  * Both numerical (0, 1) and textual representations ("false", "true") are supported for booleans. No enclosing quotation
  * marks should be used.
  */
