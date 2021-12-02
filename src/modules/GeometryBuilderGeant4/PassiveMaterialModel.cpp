@@ -26,6 +26,7 @@
 #include "PassiveMaterialModel.hpp"
 #include "passive_models/BoxModel.hpp"
 #include "passive_models/CylinderModel.hpp"
+#include "passive_models/GDMLModel.hpp"
 #include "passive_models/SphereModel.hpp"
 
 using namespace allpix;
@@ -39,6 +40,8 @@ allpix::PassiveMaterialModel::factory(const std::string& type, const Configurati
         return std::make_shared<CylinderModel>(config, geo_manager);
     } else if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
+    } else if(type == "gdml") {
+        return std::make_shared<GDMLModel>(config, geo_manager);
     } else {
         throw ModuleError("Passive Material has an unknown type " + type);
     }
