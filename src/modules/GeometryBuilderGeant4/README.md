@@ -51,6 +51,11 @@ Note: If the VisualizationGeant4 module is used in conjunction with and `arc_len
 This model allows to load arbitrary GDML files [@gdml] as passive materials. All volumes from the GDML file which are contained within the world volume are processed and added to the geometry of the simulation.
 The only parameter specific to this model is `file_name` which should provide the path to the GDML file to be read.
 
+This functionality requires Geant4 to be built with GDML support enabled. This can be enabled via CMake when compiling Geant4 using
+
+```
+cmake -DDGEANT4_USE_GDML=ON ..
+```
 
 #### Visualization Options
 
