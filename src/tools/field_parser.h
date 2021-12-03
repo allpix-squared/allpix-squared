@@ -249,7 +249,7 @@ namespace allpix {
          */
         FieldData<T> parse_apf_file(const std::string& file_name) {
             std::ifstream file(file_name, std::ios::binary);
-            FieldData<double> field_data;
+            FieldData<T> field_data;
 
             // Parse the file with cereal, scope ensures flushing:
             try {
