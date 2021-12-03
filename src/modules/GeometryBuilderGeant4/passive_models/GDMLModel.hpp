@@ -66,9 +66,6 @@ namespace allpix {
                 throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
             }
 
-            G4ThreeVector position_vector = toG4Vector(position_);
-            G4Transform3D transform_phys(*rotation_, position_vector);
-
             std::vector<std::string> name_list; // Contains the names of the daughter volumes
             auto* gdml_world_phys = parser_.GetWorldVolume();
             auto* gdml_world_log = gdml_world_phys->GetLogicalVolume();
@@ -94,8 +91,11 @@ namespace allpix {
                 LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
                 name_list.push_back(gdml_daughter_name);
 
-                // Add offset to current daughter location
+                // Add offset and rotation to current daughter location
+                G4ThreeVector position_vector = toG4Vector(position_);
+                auto rotation_matrix = new G4RotationMatrix(*gdml_daughter->GetRotation() * *rotation_.get());
                 gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
+                gdml_daughter->SetRotation(rotation_matrix);
 
                 // Check if color information is available and set it to the daughter volume
                 for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
