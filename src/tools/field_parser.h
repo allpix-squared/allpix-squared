@@ -181,6 +181,9 @@ namespace allpix {
          * @param units      Optional units to convert the field from after reading from file. Only used by some formats.
          * @return           Field data object read from file or internal cache
          *
+         * @throws std::runtime_error if the file format is unknown or invalid field dimensions are detected
+         * @throws std::filesystem::filesystem_error if the provided path does not exist
+         *
          * The type of the field data file to be read is deducted automatically from the file content
          */
         FieldData<T> getByFileName(const std::filesystem::path& file_name, const std::string& units = std::string()) {
@@ -403,6 +406,8 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the output file to be created
          * @param file_type  Type of file (file format) to be produced
          * @param units      Optional units to convert the field into before writing. Only used by some formats.
+         * @throws std::runtime_error if the file format is unknown or invalid field dimensions are detected
+         * @throws std::filesystem::filesystem_error if the provided path does not exist
          */
         void writeFile(const FieldData<T>& field_data,
                        const std::filesystem::path& file_name,
