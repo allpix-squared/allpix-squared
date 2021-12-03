@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -182,16 +183,19 @@ namespace allpix {
          *
          * The type of the field data file to be read is deducted automatically from the file content
          */
-        FieldData<T> getByFileName(const std::string& file_name, const std::string& units = std::string()) {
-            // Search in cache (NOTE: the path reached here is always a canonical name)
-            auto iter = field_map_.find(file_name);
+        FieldData<T> getByFileName(const std::filesystem::path& file_name, const std::string& units = std::string()) {
+
+            auto path = std::filesystem::canonical(file_name);
+
+            // Search in cache
+            auto iter = field_map_.find(path);
             if(iter != field_map_.end()) {
                 LOG(INFO) << "Using cached field data";
                 return iter->second;
             }
 
             // Deduce the file format
-            auto file_type = guess_file_type(file_name);
+            auto file_type = guess_file_type(path);
             LOG(DEBUG) << "Assuming file type \"" << (file_type == FileType::APF ? "APF" : "INIT") << "\"";
 
             switch(file_type) {
@@ -220,7 +224,7 @@ namespace allpix {
          * This helper function checks the first 256 characters of a file for the occurrence of a nullbyte.
          * For binary files it is very unlikely not to have at least one. This approach is also used e.g. by diff
          */
-        bool file_is_binary(const std::string& path) const {
+        bool file_is_binary(const std::filesystem::path& path) const {
             std::ifstream file(path);
             for(size_t i = 0; i < 256; i++) {
                 if(file.get() == '\0') {
@@ -237,7 +241,7 @@ namespace allpix {
          *
          * This function checks if the file contains binary data to interpret it as APF formator INIT format otherwise.
          */
-        FileType guess_file_type(const std::string& path) const {
+        FileType guess_file_type(const std::filesystem::path& path) const {
             return (file_is_binary(path) ? FileType::APF : FileType::INIT);
         }
 
@@ -247,7 +251,7 @@ namespace allpix {
          * itself as well as the field size.
          * @param file_name  File name (as canonical path) of the input file to be parsed
          */
-        FieldData<T> parse_apf_file(const std::string& file_name) {
+        FieldData<T> parse_apf_file(const std::filesystem::path& file_name) {
             std::ifstream file(file_name, std::ios::binary);
             FieldData<T> field_data;
 
@@ -298,7 +302,7 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the input file to be parsed
          * @param units      Units to convert the values of the field data from
          */
-        FieldData<T> parse_init_file(const std::string& file_name, const std::string& units) {
+        FieldData<T> parse_init_file(const std::filesystem::path& file_name, const std::string& units) {
             // Load file
             std::ifstream file(file_name);
             std::string header;
@@ -371,7 +375,7 @@ namespace allpix {
         }
 
         size_t N_;
-        std::map<std::string, FieldData<T>> field_map_;
+        std::map<std::filesystem::path, FieldData<T>> field_map_;
     };
 
     /**
@@ -401,9 +405,12 @@ namespace allpix {
          * @param units      Optional units to convert the field into before writing. Only used by some formats.
          */
         void writeFile(const FieldData<T>& field_data,
-                       const std::string& file_name,
+                       const std::filesystem::path& file_name,
                        const FileType& file_type,
                        const std::string& units = std::string()) {
+
+            auto path = std::filesystem::canonical(file_name);
+
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
                 throw std::runtime_error("invalid field dimensions");
@@ -414,13 +421,13 @@ namespace allpix {
                 if(units.empty()) {
                     LOG(WARNING) << "No field units provided, writing field data in internal units.";
                 }
-                write_init_file(field_data, file_name, units);
+                write_init_file(field_data, path, units);
                 break;
             case FileType::APF:
                 if(!units.empty()) {
                     LOG(WARNING) << "Units will be ignored, APF file content is written in internal units.";
                 }
-                write_apf_file(field_data, file_name);
+                write_apf_file(field_data, path);
                 break;
             default:
                 throw std::runtime_error("unknown file format");
@@ -435,7 +442,7 @@ namespace allpix {
          * @param field_data Field data object to store
          * @param file_name  File name (as canonical path) of the output file to be created
          */
-        void write_apf_file(const FieldData<T>& field_data, const std::string& file_name) {
+        void write_apf_file(const FieldData<T>& field_data, const std::filesystem::path& file_name) {
             std::ofstream file(file_name, std::ios::binary);
 
             // Write the file with cereal:
@@ -455,7 +462,8 @@ namespace allpix {
          * @param file_name  File name (as canonical path) of the output file to be created
          * @param units      Units to convert the values of the field data to.
          */
-        void write_init_file(const FieldData<T>& field_data, const std::string& file_name, const std::string& units) {
+        void
+        write_init_file(const FieldData<T>& field_data, const std::filesystem::path& file_name, const std::string& units) {
             std::ofstream file(file_name);
 
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
