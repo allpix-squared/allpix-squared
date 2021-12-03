@@ -11,27 +11,16 @@
 #ifndef ALLPIX_PASSIVE_MATERIAL_GDML_H
 #define ALLPIX_PASSIVE_MATERIAL_GDML_H
 
+#ifdef Geant4_GDML
+
 #include <string>
 
 #include <G4Color.hh>
+#include <G4GDMLParser.hh>
 #include <G4SubtractionSolid.hh>
 #include <G4VSolid.hh>
+
 #include "PassiveMaterialModel.hpp"
-
-// Include GDML if Geant4 version has it
-#ifdef Geant4_GDML
-#include "G4GDMLParser.hh"
-#endif
-
-// #ifdef Geant4_GDML
-//
-// #else
-// std::string error = "You requested to import the geometry in GDML. ";
-// error += "However, GDML support is currently disabled in Geant4. ";
-// error += "To enable it, configure and compile Geant4 with the option "
-// "-DGEANT4_USE_GDML=ON.";
-// throw allpix::InvalidValueError(config_, "GDML_input_file", error);
-// #endif
 
 namespace allpix {
 
@@ -177,4 +166,5 @@ namespace allpix {
     };
 } // namespace allpix
 
+#endif /* Geant4_GDML */
 #endif /* ALLPIX_PASSIVE_MATERIAL_GDML_H */

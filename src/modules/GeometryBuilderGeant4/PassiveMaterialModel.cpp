@@ -41,7 +41,14 @@ allpix::PassiveMaterialModel::factory(const std::string& type, const Configurati
     } else if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
     } else if(type == "gdml") {
+#ifdef Geant4_GDML
         return std::make_shared<GDMLModel>(config, geo_manager);
+#else
+        throw allpix::InvalidValueError(
+            config,
+            "type",
+            "GDML not supported by Geant4 version. Recompile Geant4 with the option -DGEANT4_USE_GDML=ON to enable support");
+#endif
     } else {
         throw ModuleError("Passive Material has an unknown type " + type);
     }
