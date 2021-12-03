@@ -201,21 +201,28 @@ namespace allpix {
             auto file_type = guess_file_type(path);
             LOG(DEBUG) << "Assuming file type \"" << (file_type == FileType::APF ? "APF" : "INIT") << "\"";
 
+            FieldData<T> field_data;
             switch(file_type) {
             case FileType::INIT:
                 if(units.empty()) {
                     LOG(WARNING) << "No field units provided, interpreting field data in internal units, this might lead to "
                                     "unexpected results.";
                 }
-                return parse_init_file(file_name, units);
+                field_data = parse_init_file(path, units);
+                break;
             case FileType::APF:
                 if(!units.empty()) {
                     LOG(DEBUG) << "Units will be ignored, APF file content is interpreted in internal units.";
                 }
-                return parse_apf_file(file_name);
+                field_data = parse_apf_file(path);
+                break;
             default:
                 throw std::runtime_error("unknown file format");
             }
+
+            // Store the parsed field data for further reference:
+            field_map_[path] = field_data;
+            return field_data;
         }
 
     private:
@@ -369,12 +376,8 @@ namespace allpix {
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
 
-            FieldData<T> field_data(
+            return FieldData<T>(
                 header, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<T, 3>{{xpixsz, ypixsz, thickness}}, field);
-
-            // Store the parsed field data for further reference:
-            field_map_[file_name] = field_data;
-            return field_data;
         }
 
         size_t N_;
