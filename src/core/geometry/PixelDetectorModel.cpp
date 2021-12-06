@@ -88,8 +88,8 @@ std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint
 std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
-    for(int x = static_cast<int>(idx.x() - distance); x <= static_cast<int>(idx.x() + distance); x++) {
-        for(int y = static_cast<int>(idx.y() - distance); y <= static_cast<int>(idx.y() + distance); y++) {
+    for(int x = idx.x() - static_cast<int>(distance); x <= idx.x() + static_cast<int>(distance); x++) {
+        for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
             if(!isWithinMatrix(x, y)) {
                 continue;
             }
@@ -101,6 +101,6 @@ std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx,
 }
 
 bool PixelDetectorModel::areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const {
-    auto pixel_distance = [](unsigned int lhs, unsigned int rhs) { return (lhs > rhs ? lhs - rhs : rhs - lhs); };
-    return (pixel_distance(seed.x(), entrant.x()) <= distance && pixel_distance(seed.y(), entrant.y()) <= distance);
+    return (static_cast<size_t>(std::abs(seed.x() - entrant.x())) <= distance &&
+            static_cast<size_t>(std::abs(seed.y() - entrant.y())) <= distance);
 }
