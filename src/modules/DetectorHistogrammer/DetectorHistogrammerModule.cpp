@@ -63,16 +63,16 @@ void DetectorHistogrammerModule::initialize() {
 
     // Create histogram of hitmap
     LOG(TRACE) << "Creating histograms";
-    std::string hit_map_title = "Hitmap for " + detector_->getName() + ";x (pixels);y (pixels);hits";
+    std::string hit_map_title = "Hitmap (" + detector_->getName() + ");x (pixels);y (pixels);hits";
     hit_map =
         CreateHistogram<TH2D>("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
-    std::string charge_map_title = "Charge map for " + detector_->getName() + ";x (pixels);y (pixels); charge [ke]";
+    std::string charge_map_title = "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
     charge_map = CreateHistogram<TH2D>(
         "charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Create histogram of cluster map
-    std::string cluster_map_title = "Cluster map for " + detector_->getName() + ";x (pixels);y (pixels); clusters";
+    std::string cluster_map_title = "Cluster map (" + detector_->getName() + ");x (pixels);y (pixels); clusters";
     cluster_map = CreateHistogram<TH2D>(
         "cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
@@ -87,13 +87,13 @@ void DetectorHistogrammerModule::initialize() {
     }
 
     // Create histogram of cluster map
-    std::string cluster_size_map_title = "Cluster size as function of in-pixel impact position for " + detector_->getName() +
-                                         ";x%pitch [#mum];y%pitch [#mum]";
+    std::string cluster_size_map_title =
+        "Cluster size as function of in-pixel impact position (" + detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
     cluster_size_map = CreateHistogram<TProfile2D>(
         "cluster_size_map", cluster_size_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
-    std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position for " +
-                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
+    std::string cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position (" +
+                                           detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
     cluster_size_x_map = CreateHistogram<TProfile2D>("cluster_size_x_map",
                                                      cluster_size_x_map_title.c_str(),
                                                      inpixel_bins.x(),
@@ -103,8 +103,8 @@ void DetectorHistogrammerModule::initialize() {
                                                      0.,
                                                      pitch_y);
 
-    std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position for " +
-                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum]";
+    std::string cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position (" +
+                                           detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
     cluster_size_y_map = CreateHistogram<TProfile2D>("cluster_size_y_map",
                                                      cluster_size_y_map_title.c_str(),
                                                      inpixel_bins.x(),
@@ -115,8 +115,8 @@ void DetectorHistogrammerModule::initialize() {
                                                      pitch_y);
 
     // Charge maps:
-    std::string cluster_charge_map_title = "Cluster charge as function of in-pixel impact position for " +
-                                           detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
+    std::string cluster_charge_map_title = "Cluster charge as function of in-pixel impact position (" +
+                                           detector_->getName() + ");x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
     cluster_charge_map = CreateHistogram<TProfile2D>("cluster_charge_map",
                                                      cluster_charge_map_title.c_str(),
                                                      inpixel_bins.x(),
@@ -125,71 +125,70 @@ void DetectorHistogrammerModule::initialize() {
                                                      inpixel_bins.y(),
                                                      0.,
                                                      pitch_y);
-    std::string seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position for " +
-                                        detector_->getName() + ";x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
+    std::string seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position (" +
+                                        detector_->getName() + ");x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
     seed_charge_map = CreateHistogram<TProfile2D>(
         "seed_charge_map", seed_charge_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
 
     // Create cluster size plots, preventing a zero-bin histogram by scaling with integer ceiling: (x + y - 1) / y
-    std::string cluster_size_title = "Cluster size for " + detector_->getName() + ";cluster size [px];clusters";
+    std::string cluster_size_title = "Cluster size (" + detector_->getName() + ");cluster size [px];clusters";
     cluster_size = CreateHistogram<TH1D>(
         "cluster_size", cluster_size_title.c_str(), (xpixels * ypixels + 9) / 10, 0.5, (xpixels * ypixels + 9.0) / 10 + 0.5);
 
-    std::string cluster_size_x_title = "Cluster size X for " + detector_->getName() + ";cluster size x [px];clusters";
+    std::string cluster_size_x_title = "Cluster size in X (" + detector_->getName() + ");cluster size x [px];clusters";
     cluster_size_x = CreateHistogram<TH1D>("cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
 
-    std::string cluster_size_y_title = "Cluster size Y for " + detector_->getName() + ";cluster size y [px];clusters";
+    std::string cluster_size_y_title = "Cluster size in Y (" + detector_->getName() + ");cluster size y [px];clusters";
     cluster_size_y = CreateHistogram<TH1D>("cluster_size_y", cluster_size_y_title.c_str(), ypixels, 0.5, ypixels + 0.5);
 
     // Create event size plot
-    std::string event_size_title = "Event size for " + detector_->getName() + ";event size [px];events";
-    event_size =
-        CreateHistogram<TH1D>("event_size", event_size_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
+    std::string event_size_title = "Pixel hits per event (" + detector_->getName() + ");# pixels;events";
+    event_size = CreateHistogram<TH1D>(
+        "event_size_pixels", event_size_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
 
     // Create residual plots
-    std::string residual_x_title = "Residual in X for " + detector_->getName() + ";x_{track} - x_{cluster} [#mum];events";
+    std::string residual_x_title = "Residual in X (" + detector_->getName() + ");x_{track} - x_{cluster} [#mum];events";
     residual_x = CreateHistogram<TH1D>(
         "residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
-    std::string residual_y_title = "Residual in Y for " + detector_->getName() + ";y_{track} - y_{cluster} [#mum];events";
+    std::string residual_y_title = "Residual in Y (" + detector_->getName() + ");y_{track} - y_{cluster} [#mum];events";
     residual_y = CreateHistogram<TH1D>(
         "residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
     // Residual projections
-    std::string residual_x_vs_x_title = "Mean absolute deviation of residual in X as function of in-pixel X position for " +
-                                        detector_->getName() + ";x%pitch [#mum];MAD(#Deltax) [#mum]";
+    std::string residual_x_vs_x_title = "Mean absolute deviation of residual in X as function of in-pixel X position (" +
+                                        detector_->getName() + ");x%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_vs_x =
         CreateHistogram<TProfile>("residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
-    std::string residual_y_vs_y_title = "Mean absolute deviation of residual in Y as function of in-pixel Y position for " +
-                                        detector_->getName() + ";y%pitch [#mum];MAD(#Deltay) [#mum]";
+    std::string residual_y_vs_y_title = "Mean absolute deviation of residual in Y as function of in-pixel Y position (" +
+                                        detector_->getName() + ");y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_vs_y =
         CreateHistogram<TProfile>("residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
-    std::string residual_x_vs_y_title = "Mean absolute deviation of residual in X as function of in-pixel Y position for " +
-                                        detector_->getName() + ";y%pitch [#mum];MAD(#Deltax) [#mum]";
+    std::string residual_x_vs_y_title = "Mean absolute deviation of residual in X as function of in-pixel Y position (" +
+                                        detector_->getName() + ");y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_vs_y =
         CreateHistogram<TProfile>("residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y);
-    std::string residual_y_vs_x_title = "Mean absolute deviation of residual in Y as function of in-pixel X position for " +
-                                        detector_->getName() + ";x%pitch [#mum];MAD(#Deltay) [#mum]";
+    std::string residual_y_vs_x_title = "Mean absolute deviation of residual in Y as function of in-pixel X position (" +
+                                        detector_->getName() + ");x%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_vs_x =
         CreateHistogram<TProfile>("residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x);
 
     // Residual maps
-    std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position for " +
+    std::string residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position (" +
                                      detector_->getName() +
-                                     ";x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+                                     ");x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
     residual_map = CreateHistogram<TProfile2D>(
         "residual_map", residual_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
-    std::string residual_detector_title = "Mean absolute deviation of residual of " + detector_->getName() +
-                                          ";x (pixels);y (pixels);MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
+    std::string residual_detector_title = "Mean absolute deviation of residual (" + detector_->getName() +
+                                          ");x (pixels);y (pixels);MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
     residual_detector = CreateHistogram<TProfile2D>(
         "residual_detector", residual_detector_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
-    std::string residual_x_map_title =
-        "Mean absolute deviation of residual in X as function of in-pixel impact position for " + detector_->getName() +
-        ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
+    std::string residual_x_map_title = "Mean absolute deviation of residual in X as function of in-pixel impact position (" +
+                                       detector_->getName() + ");x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
     residual_x_map = CreateHistogram<TProfile2D>(
         "residual_x_map", residual_x_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_x_detector_title =
-        "Mean absolute deviation of residual in X of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltax) [#mum]";
+        "Mean absolute deviation of residual in X (" + detector_->getName() + ");x (pixels);y (pixels);MAD(#Deltax) [#mum]";
     residual_x_detector = CreateHistogram<TProfile2D>("residual_x_detector",
                                                       residual_x_detector_title.c_str(),
                                                       xpixels,
@@ -199,13 +198,12 @@ void DetectorHistogrammerModule::initialize() {
                                                       -0.5,
                                                       ypixels - 0.5);
 
-    std::string residual_y_map_title =
-        "Mean absolute deviation of residual in Y as function of in-pixel impact position for " + detector_->getName() +
-        ";x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
+    std::string residual_y_map_title = "Mean absolute deviation of residual in Y as function of in-pixel impact position (" +
+                                       detector_->getName() + ");x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
     residual_y_map = CreateHistogram<TProfile2D>(
         "residual_y_map", residual_y_map_title.c_str(), inpixel_bins.x(), 0., pitch_x, inpixel_bins.y(), 0., pitch_y);
     std::string residual_y_detector_title =
-        "Mean absolute deviation of residual in Y of " + detector_->getName() + ";x (pixels);y (pixels);MAD(#Deltay) [#mum]";
+        "Mean absolute deviation of residual in Y (" + detector_->getName() + ");x (pixels);y (pixels);MAD(#Deltay) [#mum]";
     residual_y_detector = CreateHistogram<TProfile2D>("residual_y_detector",
                                                       residual_y_detector_title.c_str(),
                                                       xpixels,
@@ -216,8 +214,8 @@ void DetectorHistogrammerModule::initialize() {
                                                       ypixels - 0.5);
 
     // Efficiency maps:
-    std::string efficiency_map_title = "Efficiency as function of in-pixel impact position for " + detector_->getName() +
-                                       ";x%pitch [#mum];y%pitch [#mum];efficiency";
+    std::string efficiency_map_title = "Efficiency as function of in-pixel impact position (" + detector_->getName() +
+                                       ");x%pitch [#mum];y%pitch [#mum];efficiency";
     efficiency_map = CreateHistogram<TProfile2D>(
         "efficiency_map", efficiency_map_title.c_str(), inpixel_bins.x(), 0, pitch_x, inpixel_bins.y(), 0, pitch_y, 0, 1);
     std::string efficiency_detector_title = "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
@@ -233,33 +231,34 @@ void DetectorHistogrammerModule::initialize() {
                                                       1);
     // Efficiency projections
     std::string efficiency_vs_x_title =
-        "Efficiency as function of in-pixel X position for " + detector_->getName() + ";x%pitch [#mum];efficiency";
+        "Efficiency as function of in-pixel X position (" + detector_->getName() + ");x%pitch [#mum];efficiency";
     efficiency_vs_x =
         CreateHistogram<TProfile>("efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), 0., pitch_x, 0, 1);
     std::string efficiency_vs_y_title =
-        "Efficiency as function of in-pixel Y position for " + detector_->getName() + ";y%pitch [#mum];efficiency";
+        "Efficiency as function of in-pixel Y position (" + detector_->getName() + ");y%pitch [#mum];efficiency";
     efficiency_vs_y =
         CreateHistogram<TProfile>("efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), 0., pitch_y, 0, 1);
 
     // Create number of clusters plot
-    std::string n_cluster_title = "Number of clusters for " + detector_->getName() + ";clusters;events";
-    n_cluster = CreateHistogram<TH1D>("n_cluster", n_cluster_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
+    std::string n_cluster_title = "Clusters per event (" + detector_->getName() + ");# clusters;events";
+    n_cluster = CreateHistogram<TH1D>(
+        "event_size_clusters", n_cluster_title.c_str(), xpixels * ypixels, 0.5, xpixels * ypixels + 0.5);
 
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge"), "ke");
-    std::string cluster_charge_title = "Cluster charge for " + detector_->getName() + ";cluster charge [ke];clusters";
+    std::string cluster_charge_title = "Cluster charge (" + detector_->getName() + ");cluster charge [ke];clusters";
     cluster_charge = CreateHistogram<TH1D>(
         "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
-    std::string cluster_seed_charge_title = "Cluster seed charge for " + detector_->getName() + ";seed charge [ke];clusters";
+    std::string cluster_seed_charge_title = "Seed pixel charge (" + detector_->getName() + ");seed charge [ke];clusters";
     cluster_seed_charge = CreateHistogram<TH1D>(
-        "cluster_seed_charge", cluster_seed_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+        "seed_charge", cluster_seed_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
-    std::string pixel_charge_title = "Pixel charge for " + detector_->getName() + ";pixel charge [ke];pixels";
+    std::string pixel_charge_title = "Pixel charge (" + detector_->getName() + ");pixel charge [ke];pixels";
     pixel_charge =
         CreateHistogram<TH1D>("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
-    std::string total_charge_title = "Total charge per event for " + detector_->getName() + ";total charge [ke];events";
+    std::string total_charge_title = "Total charge per event (" + detector_->getName() + ");total charge [ke];events";
     total_charge = CreateHistogram<TH1D>(
         "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 }
