@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
         std::string log_file_name;
 
         std::string conf_file_name;
-        allpix::LogLevel log_level = allpix::LogLevel::INFO;
+        allpix::LogLevel log_level = allpix::LogLevel::NONE;
 
         for(int i = 1; i < argc; i++) {
             if(strcmp(argv[i], "-h") == 0) {
@@ -143,6 +143,23 @@ int main(int argc, char** argv) {
             return return_code;
         }
 
+        std::ifstream file(conf_file_name);
+        allpix::ConfigReader reader(file, conf_file_name);
+        allpix::Configuration config = reader.getHeaderConfiguration();
+
+        if(allpix::Log::getReportingLevel() == allpix::LogLevel::NONE) {
+            auto log_level_string = config.get<std::string>("log_level", "INFO");
+            std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
+            try {
+                log_level = allpix::Log::getLevelFromString(log_level_string);
+                allpix::Log::setReportingLevel(log_level);
+            } catch(std::invalid_argument& e) {
+                LOG(ERROR) << "Log level \"" << log_level_string
+                           << "\" specified in the configuration is invalid, defaulting to INFO instead";
+                allpix::Log::setReportingLevel(allpix::LogLevel::INFO);
+            }
+        }
+
         // NOTE: this stream should be available for the duration of the logging
         std::ofstream log_file;
         if(!log_file_name.empty()) {
@@ -157,9 +174,6 @@ int main(int argc, char** argv) {
 
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
         LOG(STATUS) << "Using " << conf_file_name << " configuration file";
-        std::ifstream file(conf_file_name);
-        allpix::ConfigReader reader(file, conf_file_name);
-        allpix::Configuration config = reader.getHeaderConfiguration();
 
         // Output file format:
         auto format = config.get<std::string>("model", "apf");

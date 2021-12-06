@@ -81,6 +81,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
 * `vector_field`: Select if the observable is a vector field or scalar field (Defaults to `true` matching the default observable `ElectricField`).
+* `log_level`: Specifies the lowest log level which should be reported. Possible values are the same as for the Allpix Squared framework.
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
