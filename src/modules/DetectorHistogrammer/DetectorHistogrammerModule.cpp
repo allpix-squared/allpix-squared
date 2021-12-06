@@ -547,15 +547,31 @@ void DetectorHistogrammerModule::finalize() {
     // Write histograms
     LOG(TRACE) << "Writing histograms to file";
     hit_map_histogram->Write();
-    charge_map_histogram->Write();
+    event_size_histogram->Write();
+    n_cluster_histogram->Write();
+
+    getROOTDirectory()->mkdir("cluster_size")->cd();
     cluster_map_histogram->Write();
-    cluster_size_map_histogram->Write();
-    cluster_size_x_map_histogram->Write();
-    cluster_size_y_map_histogram->Write();
     cluster_size_histogram->Write();
     cluster_size_x_histogram->Write();
     cluster_size_y_histogram->Write();
-    event_size_histogram->Write();
+    cluster_size_map_histogram->Write();
+    cluster_size_x_map_histogram->Write();
+    cluster_size_y_map_histogram->Write();
+
+    getROOTDirectory()->mkdir("charge")->cd();
+    charge_map_histogram->Write();
+    cluster_charge_histogram->Write();
+    cluster_seed_charge_histogram->Write();
+    pixel_charge_histogram->Write();
+    total_charge_histogram->Write();
+    cluster_charge_map_histogram->Write();
+    seed_charge_map_histogram->Write();
+
+    getROOTDirectory()->mkdir("residuals")->cd();
+    residual_detector_histogram->Write();
+    residual_x_detector_histogram->Write();
+    residual_y_detector_histogram->Write();
     residual_x_histogram->Write();
     residual_y_histogram->Write();
     residual_x_vs_x_histogram->Write();
@@ -565,20 +581,12 @@ void DetectorHistogrammerModule::finalize() {
     residual_map_histogram->Write();
     residual_x_map_histogram->Write();
     residual_y_map_histogram->Write();
-    residual_detector_histogram->Write();
-    residual_x_detector_histogram->Write();
-    residual_y_detector_histogram->Write();
-    efficiency_vs_x_histogram->Write();
-    efficiency_vs_y_histogram->Write();
+
+    getROOTDirectory()->mkdir("efficiency")->cd();
     efficiency_detector_histogram->Write();
     efficiency_map_histogram->Write();
-    n_cluster_histogram->Write();
-    cluster_charge_histogram->Write();
-    cluster_seed_charge_histogram->Write();
-    pixel_charge_histogram->Write();
-    cluster_charge_map_histogram->Write();
-    seed_charge_map_histogram->Write();
-    total_charge_histogram->Write();
+    efficiency_vs_x_histogram->Write();
+    efficiency_vs_y_histogram->Write();
 }
 
 /**
