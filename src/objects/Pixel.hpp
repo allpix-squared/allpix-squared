@@ -69,7 +69,7 @@ namespace allpix {
         /**
          * @brief Default constructor for ROOT I/O
          */
-        ClassDef(Pixel, 1); // NOLINT
+        ClassDef(Pixel, 2); // NOLINT
 
     private:
         Pixel::Index index_;
