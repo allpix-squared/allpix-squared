@@ -53,6 +53,14 @@ ENDIF()
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
+# Configure the installation prefix to allow both local as system-wide installation
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET(CMAKE_INSTALL_PREFIX
+        "${PROJECT_SOURCE_DIR}"
+        CACHE PATH "Prefix prepended to install directories" FORCE)
+ENDIF()
+MESSAGE(STATUS "Installing to \"${CMAKE_INSTALL_PREFIX}\"")
+
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
 
@@ -121,14 +129,6 @@ ENABLE_LANGUAGE(CXX)
 
 # Additional packages to be searched for by cmake
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
-# Configure the installation prefix to allow both local as system-wide installation
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    SET(CMAKE_INSTALL_PREFIX
-        "${PROJECT_SOURCE_DIR}"
-        CACHE PATH "Prefix prepended to install directories" FORCE)
-ENDIF()
-MESSAGE(STATUS "Installing to \"${CMAKE_INSTALL_PREFIX}\"")
 
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)
