@@ -417,7 +417,7 @@ namespace allpix {
                        const FileType& file_type,
                        const std::string& units = std::string()) {
 
-            auto path = std::filesystem::canonical(file_name);
+            auto path = std::filesystem::weakly_canonical(file_name);
 
             auto dimensions = field_data.getDimensions();
             if(field_data.getData()->size() != N_ * dimensions[0] * dimensions[1] * dimensions[2]) {
