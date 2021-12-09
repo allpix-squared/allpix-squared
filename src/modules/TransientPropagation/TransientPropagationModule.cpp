@@ -85,11 +85,7 @@ void TransientPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    try {
-        mobility_ = Mobility(config_.get<std::string>("mobility_model"), temperature_, detector->hasDopingProfile());
-    } catch(ModelError& e) {
-        throw InvalidValueError(config_, "mobility_model", e.what());
-    }
+    mobility_ = Mobility(config_, detector->hasDopingProfile());
 
     // Prepare recombination model
     try {

@@ -86,7 +86,7 @@ namespace allpix {
         double electron_Ec_;
 
         // Models for electron and hole mobility and lifetime
-        Mobility mobility_;
+        std::unique_ptr<JacoboniCanali> mobility_;
         Recombination recombination_;
 
         // Precalculated value for Boltzmann constant:
