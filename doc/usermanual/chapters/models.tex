@@ -223,6 +223,45 @@ where $\mu_{m}(N)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.
 
+\subsection{Custom Mobility Models}
+\apsq provides the possibility to use fully custom mobility models.
+In order to use a custom model, the parameter \parameter{mobility_model = "custom"} needs to be set in the configuration file.
+Additionally, the following configuration keys have to be provided:
+\begin{description}
+    \item[\parameter{mobility_function_electrons}] the formula describing the electron mobility
+    \item[\parameter{mobility_function_holes}] the formula describing the hole mobility
+\end{description}
+
+The functions defined via these parameters can depend on the local electric field and the local doping concentration.
+In order to use the electric field magnitude in the formula, an \parameter{x} has to be placed at the respective position, for the doping concentration a \parameter{y} is used as placeholder.
+
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{mobility_parameters_electrons} and \parameter{mobility_parameters_electrons}.
+Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example \parameter{[0]} for the first parameter provided.
+Parameters specified separately from the formula can contain units which will be interpreted automatically.
+
+\begin{warning}
+Parameters directly placed in the mobility formula have to be supplied in framework-internal units since the function will be evaluated with both electric field strength and doping concentration in internal units.
+It is recommended to use the possibility of separately configuring the parameters and to make use of units to avoid conversion mistakes.
+\end{warning}
+
+The following set of parameters re-implements the mobility model presented in Section~\ref{sec:mob:jac} using a custom mobility model.
+The mobility is calculated at a fixed temperature of \SI{293}{K}.
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Replicating the Jacoboni-Canali mobility model at T = 293K
+mobility_model = "custom"
+
+mobility_function_electrons = "[0]/[1]/pow(1.0+pow(x/[1],[2]),1.0/[2])"
+mobility_parameters_electrons = 1.0927393e7cm/s, 6729.24V/cm, 1.0916
+
+mobility_function_holes = "[0]/[1]/pow(1.0+pow(x/[1],[2]),1.0/[2])"
+mobility_parameters_holes = 8.447804e6cm/s, 17288.57V/cm, 1.2081
+\end{minted}
+
+\begin{warning}
+It should be noted that the temperature passed via the module configuration is not evaluated for the custom mobility model, but the model parameters need to be manually adjusted to the required temperature.
+\end{warning}
+
+The interpretation of the custom mobility functions is based on the \command{ROOT::TFormula} class~\cite{rootformula} and supports all corresponding features, mathematical expressions and constants.
 
 \section{Charge Carrier Lifetime \& Recombination}
 \label{sec:recombination}
