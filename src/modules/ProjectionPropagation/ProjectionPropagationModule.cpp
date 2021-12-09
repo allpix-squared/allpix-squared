@@ -59,7 +59,8 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
 
     // Mobility fixed to Jacoboni:
-    mobility_ = Mobility("jacoboni", temperature);
+    mobility_ = std::make_unique<JacoboniCanali>(temperature);
+
     // We need direct access to the critical field values of the model since we have a discrete integration of the formula
     // for the total drift time. Taken from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
     electron_Ec_ = Units::get(1.01 * std::pow(temperature, 1.55), "V/cm");
@@ -196,7 +197,7 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
+                double diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
                 double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
@@ -261,13 +262,13 @@ void ProjectionPropagationModule::run(Event* event) {
                 double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
-                       mobility_(type, 0, doping);
+                       (*mobility_)(type, 0, doping);
             };
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
             // Assume linear electric field over the depleted part of the sensor
             double diffusion_constant =
-                boltzmann_kT_ * (mobility_(type, efield_mag, doping) + mobility_(type, efield_mag_top, doping)) / 2.;
+                boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
             double drift_time = calc_drift_time();
             double propagation_time = deposit.getLocalTime() + drift_time + diffusion_time;
