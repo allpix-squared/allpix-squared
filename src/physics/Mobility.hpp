@@ -305,7 +305,12 @@ namespace allpix {
         std::unique_ptr<TF2> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
             std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("mobility_function_" + name);
-            auto parameters = config.getArray<double>("mobility_parameters_" + name);
+            auto parameters = config.getArray<double>("mobility_parameters_" + name, {});
+
+            // Check if a doping concentration dependency can be detected by checking for a Y variable:
+            if(!doping && function.find("y") != std::string::npos) {
+                throw ModelUnsuitable("No doping profile available but doping dependence found");
+            }
 
             auto mobility = std::make_unique<TF2>(("mobility_" + name).c_str(), function.c_str(), 0, 1, 0, 1);
 
@@ -324,11 +329,6 @@ namespace allpix {
             // Set the parameters
             for(size_t n = 0; n < parameters.size(); ++n) {
                 mobility->SetParameter(static_cast<int>(n), parameters[n]);
-            }
-
-            // Check if a doping concentration dependency can be detected by comparing min and max of the function in Y:
-            if(!doping && (mobility->GetYmin() != mobility->GetYmax())) {
-                throw ModelUnsuitable("No doping profile available but doping dependence found");
             }
 
             return mobility;
