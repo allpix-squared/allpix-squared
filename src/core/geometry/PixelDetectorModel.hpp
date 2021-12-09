@@ -76,7 +76,7 @@ namespace allpix {
          * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
          */
-        ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const override;
+        ROOT::Math::XYZPoint getPixelCenter(const int x, const int y) const override;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.

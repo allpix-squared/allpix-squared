@@ -70,7 +70,7 @@ bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
-ROOT::Math::XYZPoint DetectorModel::getPixelCenter(const int x, const int y) const {
+ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(const int x, const int y) const {
     auto size = getPixelSize();
     auto local_x = size.x() * x;
     auto local_y = size.y() * y;
