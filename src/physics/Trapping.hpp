@@ -110,6 +110,33 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Effective trapping model developed by the CMS Tracker Group
+     *
+     * Parametrization taken from https://doi.org/10.1088/1748-0221/11/04/P04023, effective trapping time from Table 2.
+     * Interpolation between evaluated fluence points by M. Bomben
+     *
+     * FIXME no temperature dependence
+     */
+    class CMSTracker : virtual public TrappingModel {
+    public:
+        CMSTracker(double fluence)
+            : tau_eff_electron_(1. / (Units::get(1.71e-16, "cm*cm/ns") * fluence + Units::get(0.114, "/ns"))),
+              tau_eff_hole_(1. / (Units::get(2.79e-16, "cm*cm/ns") * fluence + Units::get(0.093, "/ns"))) {}
+
+        std::pair<bool, double>
+        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
+            return {trapping_prob <
+                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
+                    std::numeric_limits<double>::max()};
+        };
+
+    private:
+        double tau_eff_electron_;
+        double tau_eff_hole_;
+    };
+
+    /**
      * @brief Wrapper class and factory for trapping models.
      *
      * This class allows to store trapping  objects independently of the model chosen and simplifies access to the
