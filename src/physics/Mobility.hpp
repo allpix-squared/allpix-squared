@@ -297,25 +297,31 @@ namespace allpix {
          * @param temperature Temperature for which the mobility model should be initialized
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Mobility(const std::string& model, double temperature, bool doping = false) {
-            if(model == "jacoboni") {
-                model_ = std::make_unique<JacoboniCanali>(temperature);
-            } else if(model == "canali") {
-                model_ = std::make_unique<Canali>(temperature);
-            } else if(model == "hamburg") {
-                model_ = std::make_unique<Hamburg>(temperature);
-            } else if(model == "hamburg_highfield") {
-                model_ = std::make_unique<HamburgHighField>(temperature);
-            } else if(model == "masetti") {
-                model_ = std::make_unique<Masetti>(temperature, doping);
-            } else if(model == "masetti_canali") {
-                model_ = std::make_unique<MasettiCanali>(temperature, doping);
-            } else if(model == "arora") {
-                model_ = std::make_unique<Arora>(temperature, doping);
-            } else {
-                throw InvalidModelError(model);
+        Mobility(const Configuration& config, bool doping = false) {
+            try {
+                auto model = config.get<std::string>("mobility_model");
+                auto temperature = config.get<double>("temperature");
+                if(model == "jacoboni") {
+                    model_ = std::make_unique<JacoboniCanali>(temperature);
+                } else if(model == "canali") {
+                    model_ = std::make_unique<Canali>(temperature);
+                } else if(model == "hamburg") {
+                    model_ = std::make_unique<Hamburg>(temperature);
+                } else if(model == "hamburg_highfield") {
+                    model_ = std::make_unique<HamburgHighField>(temperature);
+                } else if(model == "masetti") {
+                    model_ = std::make_unique<Masetti>(temperature, doping);
+                } else if(model == "masetti_canali") {
+                    model_ = std::make_unique<MasettiCanali>(temperature, doping);
+                } else if(model == "arora") {
+                    model_ = std::make_unique<Arora>(temperature, doping);
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "mobility_model", e.what());
             }
-            LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
         }
 
         /**
