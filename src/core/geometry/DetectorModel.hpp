@@ -207,10 +207,10 @@ namespace allpix {
 
         /* PIXEL GRID */
         /**
-         * @brief Get number of pixel (replicated blocks in generic sensors)
+         * @brief Get number of pixels (replicated blocks in generic sensors)
          * @return Number of two dimensional pixels
          */
-        virtual ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> getNPixels() const {
+        ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> getNPixels() const {
             return number_of_pixels_;
         }
         /**
@@ -224,7 +224,7 @@ namespace allpix {
          * @brief Get size of a single pixel
          * @return Size of a pixel
          */
-        virtual ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
+        ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
         /**
          * @brief Set the size of a pixel
          * @param val Size of a pixel
@@ -234,7 +234,7 @@ namespace allpix {
          * @brief Get size of the collection diode
          * @return Size of the collection diode implant
          */
-        virtual ROOT::Math::XYVector getImplantSize() const { return implant_size_; }
+        ROOT::Math::XYVector getImplantSize() const { return implant_size_; }
         /**
          * @brief Set the size of the implant (collection diode) within a pixel
          * @param val Size of the collection diode implant
@@ -377,47 +377,59 @@ namespace allpix {
          * @brief Returns if a local position is within the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the sensor, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const;
+        virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the pixel implant, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinMatrix(const Pixel::Index& pixel_index) const;
+        virtual bool isWithinMatrix(const Pixel::Index& pixel_index) const = 0;
 
         /**
          * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
          * @param x X- (or column-) coordinate to be checked
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinMatrix(const int x, const int y) const;
+        virtual bool isWithinMatrix(const int x, const int y) const = 0;
 
         /**
          * @brief Returns a pixel center in local coordinates
          * @param x X- (or column-) coordinate of the pixel
          * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const;
+        virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const = 0;
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
-         * @param position Position in local coordinates of the detector model
+         * @param local_pos Position in local coordinates of the detector model
          * @return X,Y pixel indices
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const;
+        virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
@@ -426,8 +438,10 @@ namespace allpix {
          * @return Set of neighboring pixel indices, including the initial pixel
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const;
+        virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const = 0;
 
         /**
          * @brief Check if two pixel indices are neighbors to each other
@@ -435,8 +449,10 @@ namespace allpix {
          * @param  entrant Entrant pixel index to be tested
          * @param distance  Distance for pixels to be considered neighbors
          * @return         Boolean whether pixels are neighbors or not
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const;
+        virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const = 0;
 
     protected:
         std::string type_;
