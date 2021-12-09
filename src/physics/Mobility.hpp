@@ -11,6 +11,8 @@
 #ifndef ALLPIX_MOBILITY_MODELS_H
 #define ALLPIX_MOBILITY_MODELS_H
 
+#include <TF2.h>
+
 #include "exceptions.h"
 
 #include "core/utils/log.h"
@@ -278,6 +280,62 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Custom mobility model for charge carriers
+     */
+    class Custom : public MobilityModel {
+    public:
+        Custom(const Configuration& config, bool doping) {
+            electron_mobility_ = configure_mobility(config, CarrierType::ELECTRON, doping);
+            hole_mobility_ = configure_mobility(config, CarrierType::HOLE, doping);
+        };
+
+        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_mobility_->Eval(efield_mag, doping);
+            } else {
+                return hole_mobility_->Eval(efield_mag, doping);
+            }
+        };
+
+    private:
+        std::unique_ptr<TF2> electron_mobility_;
+        std::unique_ptr<TF2> hole_mobility_;
+
+        std::unique_ptr<TF2> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
+            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            auto function = config.get<std::string>("mobility_function_" + name);
+            auto parameters = config.getArray<double>("mobility_parameters_" + name);
+
+            auto mobility = std::make_unique<TF2>(("mobility_" + name).c_str(), function.c_str(), 0, 1, 0, 1);
+
+            if(!mobility->IsValid()) {
+                throw InvalidValueError(
+                    config, "mobility_function_" + name, "The provided model is not a valid ROOT::TFormula expression");
+            }
+
+            // Check if number of parameters match up
+            if(static_cast<size_t>(mobility->GetNumberFreeParameters()) != parameters.size()) {
+                throw InvalidValueError(config,
+                                        "mobility_parameters_" + name,
+                                        "The number of provided parameters and parameters in the function do not match");
+            }
+
+            // Set the parameters
+            for(size_t n = 0; n < parameters.size(); ++n) {
+                mobility->SetParameter(static_cast<int>(n), parameters[n]);
+            }
+
+            // Check if a doping concentration dependency can be detected by comparing min and max of the function in Y:
+            if(!doping && (mobility->GetYmin() != mobility->GetYmax())) {
+                throw ModelUnsuitable("No doping profile available but doping dependence found");
+            }
+
+            return mobility;
+        };
+    };
+
+    /**
      * @brief Wrapper class and factory for mobility models.
      *
      * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
@@ -315,6 +373,8 @@ namespace allpix {
                     model_ = std::make_unique<MasettiCanali>(temperature, doping);
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(temperature, doping);
+                } else if(model == "custom") {
+                    model_ = std::make_unique<Custom>(config, doping);
                 } else {
                     throw InvalidModelError(model);
                 }
