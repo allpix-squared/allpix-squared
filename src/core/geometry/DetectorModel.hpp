@@ -377,6 +377,8 @@ namespace allpix {
          * @brief Returns if a local position is within the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the sensor, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
@@ -384,6 +386,8 @@ namespace allpix {
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the pixel implant, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
@@ -391,6 +395,8 @@ namespace allpix {
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual bool isWithinMatrix(const Pixel::Index& pixel_index) const = 0;
 
@@ -399,6 +405,8 @@ namespace allpix {
          * @param x X- (or column-) coordinate to be checked
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual bool isWithinMatrix(const int x, const int y) const = 0;
 
@@ -407,6 +415,8 @@ namespace allpix {
          * @param x X- (or column-) coordinate of the pixel
          * @param y Y- (or row-) coordinate of the pixel
          * @return Coordinates of the pixel center
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const = 0;
 
@@ -416,6 +426,8 @@ namespace allpix {
          * @return X,Y pixel indices
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
@@ -426,6 +438,8 @@ namespace allpix {
          * @return Set of neighboring pixel indices, including the initial pixel
          *
          * @note The returned set should always also include the initial pixel indices the neighbors are calculated for
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual std::set<Pixel::Index> getNeighbors(const Pixel::Index& idx, const size_t distance) const = 0;
 
@@ -435,6 +449,8 @@ namespace allpix {
          * @param  entrant Entrant pixel index to be tested
          * @param distance  Distance for pixels to be considered neighbors
          * @return         Boolean whether pixels are neighbors or not
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
         virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const = 0;
 
