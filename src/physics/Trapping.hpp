@@ -43,8 +43,8 @@ namespace allpix {
          * @param timestep Current time step performed for the charge carrier
          * @return Trapping status and expected time of the charge carrier being trapped
          */
-        virtual std::pair<bool, double> operator()(
-            const CarrierType& type, double fluence, double efield_mag, double trapping_prob, double timestep) const = 0;
+        virtual std::pair<bool, double>
+        operator()(const CarrierType& type, double efield_mag, double trapping_prob, double timestep) const = 0;
     };
 
     /**
@@ -68,24 +68,20 @@ namespace allpix {
      */
     class Ljubljana : virtual public TrappingModel {
     public:
-        Ljubljana(double temperature)
-            : beta_electron_(Units::get(5.6e-16 * std::pow(temperature / 300, -0.86), "cm*cm/ns")),
-              beta_hole_(Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns")) {}
+        Ljubljana(double temperature, double fluence)
+            : tau_eff_electron_(1. / Units::get(5.6e-16 * std::pow(temperature / 300, -0.86), "cm*cm/ns") / fluence),
+              tau_eff_hole_(1. / Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns") / fluence) {}
 
         std::pair<bool, double>
-        operator()(const CarrierType& type, double fluence, double, double trapping_prob, double timestep) const override {
-            return {trapping_prob < (1 - std::exp(-1. * timestep / tau_eff(type, fluence))),
+        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
+            return {trapping_prob <
+                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
                     std::numeric_limits<double>::max()};
         };
 
-    protected:
-        double tau_eff(const CarrierType& type, double fluence) const {
-            return 1 / ((type == CarrierType::ELECTRON ? beta_electron_ : beta_hole_) * fluence);
-        }
-
     private:
-        double beta_electron_;
-        double beta_hole_;
+        double tau_eff_electron_;
+        double tau_eff_hole_;
     };
 
     /**
@@ -97,22 +93,20 @@ namespace allpix {
      */
     class Dortmund : virtual public TrappingModel {
     public:
-        Dortmund() : gamma_electron_(Units::get(5.13e-16, "cm*cm/ns")), gamma_hole_(Units::get(5.04e-16, "cm*cm/ns")) {}
+        Dortmund()
+            : tau_eff_electron_(1. / Units::get(5.13e-16, "cm*cm/ns")),
+              tau_eff_hole_(1. / Units::get(5.04e-16, "cm*cm/ns")) {}
 
         std::pair<bool, double>
-        operator()(const CarrierType& type, double fluence, double, double trapping_prob, double timestep) const override {
-            return {trapping_prob < (1 - std::exp(-1. * timestep / tau_eff(type, fluence))),
+        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
+            return {trapping_prob <
+                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
                     std::numeric_limits<double>::max()};
         };
 
-    protected:
-        double tau_eff(const CarrierType& type, double fluence) const {
-            return 1 / ((type == CarrierType::ELECTRON ? gamma_electron_ : gamma_hole_) * fluence);
-        }
-
     private:
-        double gamma_electron_;
-        double gamma_hole_;
+        double tau_eff_electron_;
+        double tau_eff_hole_;
     };
 
     /**
@@ -134,9 +128,9 @@ namespace allpix {
          * @param model       Name of the trapping model
          * @param temperature Temperature for which the trapping model should be initialized
          */
-        Trapping(const std::string& model, double temperature) {
+        Trapping(const std::string& model, double temperature, double fluence) {
             if(model == "ljubljana" || model == "kramberger") {
-                model_ = std::make_unique<Ljubljana>(temperature);
+                model_ = std::make_unique<Ljubljana>(temperature, fluence);
             } else if(model == "dortmund" || model == "krasel") {
                 model_ = std::make_unique<Dortmund>();
             } else if(model == "none") {
