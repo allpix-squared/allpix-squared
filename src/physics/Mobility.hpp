@@ -351,8 +351,7 @@ namespace allpix {
 
         /**
          * Mobility constructor
-         * @param model       Name of the mobility model
-         * @param temperature Temperature for which the mobility model should be initialized
+         * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
         Mobility(const Configuration& config, bool doping = false) {
