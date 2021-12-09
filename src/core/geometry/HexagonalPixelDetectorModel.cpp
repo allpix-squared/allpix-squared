@@ -14,7 +14,7 @@
 using namespace allpix;
 
 HexagonalPixelDetectorModel::HexagonalPixelDetectorModel(std::string type, const ConfigReader& reader)
-    : DetectorModel(std::move(type), reader) {
+    : PixelDetectorModel(std::move(type), reader) {
     auto config = reader.getHeaderConfiguration();
 
     // Select shape orientation

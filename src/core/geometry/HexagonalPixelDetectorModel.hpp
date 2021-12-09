@@ -11,7 +11,7 @@
 #ifndef ALLPIX_HEXAGONAL_PIXEL_DETECTOR_H
 #define ALLPIX_HEXAGONAL_PIXEL_DETECTOR_H
 
-#include "DetectorModel.hpp"
+#include "PixelDetectorModel.hpp"
 
 namespace allpix {
     /**
@@ -22,7 +22,7 @@ namespace allpix {
      * along the rows and (slanted) columns of the hexagonal grid are defined. An excellent description of this coordinate
      * systam along with all necessary math and transformations can be found at https://www.redblobgames.com/grids/hexagons
      */
-    class HexagonalPixelDetectorModel : public DetectorModel {
+    class HexagonalPixelDetectorModel : public PixelDetectorModel {
     public:
         /**
          * @brief constructor of a hexagonal pixel detector model
