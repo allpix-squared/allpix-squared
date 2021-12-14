@@ -283,6 +283,39 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Ruch-Kino mobility model for charge carriers in GaAs:Cr
+     *
+     * Parameterization variables from B. Bergmann et al 2020 JINST 15 C03013
+     */
+    class RuchKinoGaAs : virtual public MobilityModel {
+    public:
+        RuchKinoGaAs()
+            : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
+              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(200.0, "cm*cm/V/s")) {}
+
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
+            // Compute carrier mobility from constants and electric field magnitude
+            if(type == CarrierType::ELECTRON) {
+                double val;
+                if(efield_mag < E0_gaas_)
+                    val = mu_e_gaas_;
+                else
+                    val = mu_e_gaas_ / sqrt(1 + std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2));
+                return val;
+            } else {
+                return mu_h_gaas_;
+            }
+        };
+
+    private:
+        double E0_gaas_;
+        double mu_e_gaas_;
+        double Ec_gaas_;
+        double mu_h_gaas_;
+    };
+
+    /**
+     * @ingroup Models
      * @brief Constant mobility of electrons and holes
      */
     class ConstantMobility : public MobilityModel {
@@ -392,6 +425,8 @@ namespace allpix {
                     model_ = std::make_unique<MasettiCanali>(temperature, doping);
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(temperature, doping);
+                } else if(model == "ruch_kino_gaas") {
+                    model_ = std::make_unique<RuchKinoGaAs>();
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantMobility>(config.get<double>("mobility_electron"),
                                                                 config.get<double>("mobility_hole"));
