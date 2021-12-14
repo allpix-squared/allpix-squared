@@ -20,7 +20,7 @@
 
 #include "objects/PixelCharge.hpp"
 
-#include <TF1.h>
+#include <TFormula.h>
 #include <TH1D.h>
 #include <TH2D.h>
 
@@ -77,7 +77,7 @@ namespace allpix {
         DigitizerType model_;
 
         // Function to calculate impulse response
-        std::unique_ptr<TF1> calculate_impulse_response_;
+        std::unique_ptr<TFormula> calculate_impulse_response_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
