@@ -134,6 +134,14 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                 config_, "response_function", "The response function is not a valid ROOT::TFormula expression.");
         }
 
+        if(calculate_impulse_response_->GetNdim() != 1) {
+            throw InvalidValueError(config_,
+                                    "response_function",
+                                    "The response function has " +
+                                        allpix::to_string(calculate_impulse_response_->GetNdim()) +
+                                        " dimensions, only one expected.");
+        }
+
         auto parameters = config_.getArray<double>("response_parameters");
 
         // check if number of parameters match up
@@ -150,9 +158,6 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
     }
-
-    // Compile Lambda expression using Cling:
-    calculate_impulse_response_->Compile();
 
     output_plots_ = config_.get<bool>("output_plots");
     output_pulsegraphs_ = config_.get<bool>("output_pulsegraphs");
