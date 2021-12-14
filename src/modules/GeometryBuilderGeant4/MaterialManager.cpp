@@ -70,6 +70,9 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - plexiglass
  *   - silicon
  *   - tungsten
+ *   - gallium_arsenide
+ *   - nickel
+ *   - gold
  * - Composite or custom materials:
  *   - carbon fiber
  *   - epoxy
@@ -95,6 +98,9 @@ void Materials::init_materials() {
     materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
     materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
+    materials_["gallium_arsenide"] = nistman->FindOrBuildMaterial("G4_GALLIUM_ARSENIDE");
+    materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
+    materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
 
     // Create required elements:
     auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);

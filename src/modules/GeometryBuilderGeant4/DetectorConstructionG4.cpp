@@ -145,6 +145,10 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          * the sensitive detector is the part that collects the deposits
          */
 
+        // Get sensor material
+        auto sensor_material = materials.get(model->getSensorMaterial());
+        LOG(DEBUG) << " - Sensor material\t\t:\t" << model->getSensorMaterial();
+
         // Build a trapezoidal sensor box if radial strip model is used, otherwise build a rectangular box
         if(radial_model != nullptr) {
             auto sensor_trd = make_shared_no_delete<G4Trd>("sensor_" + name,
@@ -164,7 +168,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
         // Create the sensor logical volume
         auto sensor_log = make_shared_no_delete<G4LogicalVolume>(
-            solids_.back().get(), materials.get("silicon"), "sensor_" + name + "_log");
+            solids_.back().get(), sensor_material, "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
 
         // Add sensor material to total material budget:
@@ -392,8 +396,6 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                   false);
             geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);
         }
-
-        // ALERT: NO COVER LAYER YET
 
         // Store the total material budget:
         LOG(DEBUG) << "Storing total material budget of " << total_material_budget << " x/X0 for detector " << name;
