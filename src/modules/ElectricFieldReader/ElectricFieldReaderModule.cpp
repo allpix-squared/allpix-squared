@@ -93,7 +93,7 @@ void ElectricFieldReaderModule::initialize() {
         auto field_z = config_.get<double>("bias_voltage") / getDetector()->getModel()->getSensorSize().z();
         LOG(INFO) << "Set constant electric field with magnitude " << Units::display(field_z, {"V/um", "V/mm"});
         FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
-            return ROOT::Math::XYZVector(0, 0, -field_z);
+            return ROOT::Math::XYZVector(0, 0, field_z);
         };
         detector_->setElectricFieldFunction(function, thickness_domain, FieldType::CONSTANT);
     } else if(field_model == ElectricField::LINEAR) {
