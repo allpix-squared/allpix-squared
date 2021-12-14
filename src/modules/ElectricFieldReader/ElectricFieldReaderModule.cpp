@@ -18,7 +18,7 @@
 #include <utility>
 
 #include <Math/Vector3D.h>
-#include <TF3.h>
+#include <TFormula.h>
 #include <TH2F.h>
 
 #include "core/config/exceptions.h"
@@ -116,8 +116,7 @@ void ElectricFieldReaderModule::initialize() {
             get_parabolic_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM);
     } else if(field_model == ElectricField::CUSTOM) {
         LOG(TRACE) << "Adding custom electric field";
-        detector_->setElectricFieldFunction(
-            get_custom_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM);
+        detector_->setElectricFieldFunction(get_custom_field_function(), thickness_domain, FieldType::CUSTOM);
     }
 
     // Produce histograms if needed
@@ -181,31 +180,18 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
     };
 }
 
-FieldFunction<ROOT::Math::XYZVector>
-ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> thickness_domain) {
+FieldFunction<ROOT::Math::XYZVector> ElectricFieldReaderModule::get_custom_field_function() {
 
     auto field_functions = config_.getArray<std::string>("field_function");
     auto field_parameters = config_.getArray<double>("field_parameters");
 
-    // Derive field extent from pixel boundaries:
-    auto model = detector_->getModel();
-    auto min = -0.5 * model->getPixelSize();
-    auto max = 0.5 * model->getPixelSize();
-
     // 1D field, interpret as field along z-axis:
     if(field_functions.size() == 1) {
         LOG(DEBUG) << "Found definition of 1D custom field, applying to z axis";
-        auto z = std::make_shared<TF3>("z",
-                                       field_functions.front().c_str(),
-                                       min.x(),
-                                       max.x(),
-                                       min.y(),
-                                       max.y(),
-                                       thickness_domain.first,
-                                       thickness_domain.second);
+        auto z = std::make_shared<TFormula>("ez", field_functions.front().c_str(), false);
 
         // Check if number of parameters match up
-        if(static_cast<size_t>(z->GetNumberFreeParameters()) != field_parameters.size()) {
+        if(static_cast<size_t>(z->GetNpar()) != field_parameters.size()) {
             throw InvalidValueError(
                 config_,
                 "field_parameters",
@@ -223,34 +209,12 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
         };
     } else if(field_functions.size() == 3) {
         LOG(DEBUG) << "Found definition of 3D custom field, applying to three Cartesian axes";
-        auto x = std::make_shared<TF3>("x",
-                                       field_functions.at(0).c_str(),
-                                       min.x(),
-                                       max.x(),
-                                       min.y(),
-                                       max.y(),
-                                       thickness_domain.first,
-                                       thickness_domain.second);
-        auto y = std::make_shared<TF3>("y",
-                                       field_functions.at(1).c_str(),
-                                       min.x(),
-                                       max.x(),
-                                       min.y(),
-                                       max.y(),
-                                       thickness_domain.first,
-                                       thickness_domain.second);
-        auto z = std::make_shared<TF3>("z",
-                                       field_functions.at(2).c_str(),
-                                       min.x(),
-                                       max.x(),
-                                       min.y(),
-                                       max.y(),
-                                       thickness_domain.first,
-                                       thickness_domain.second);
+        auto x = std::make_shared<TFormula>("ex", field_functions.at(0).c_str(), false);
+        auto y = std::make_shared<TFormula>("ey", field_functions.at(1).c_str(), false);
+        auto z = std::make_shared<TFormula>("ez", field_functions.at(2).c_str(), false);
 
         // Check if number of parameters match up
-        if(static_cast<size_t>(x->GetNumberFreeParameters() + y->GetNumberFreeParameters() + z->GetNumberFreeParameters()) !=
-           field_parameters.size()) {
+        if(static_cast<size_t>(x->GetNpar() + y->GetNpar() + z->GetNpar()) != field_parameters.size()) {
             throw InvalidValueError(
                 config_,
                 "field_parameters",
@@ -258,16 +222,14 @@ ElectricFieldReaderModule::get_custom_field_function(std::pair<double, double> t
         }
 
         // Apply parameters to the functions
-        for(auto n = 0; n < x->GetNumberFreeParameters(); ++n) {
+        for(auto n = 0; n < x->GetNpar(); ++n) {
             x->SetParameter(n, field_parameters.at(static_cast<size_t>(n)));
         }
-        for(auto n = 0; n < y->GetNumberFreeParameters(); ++n) {
-            y->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNumberFreeParameters())));
+        for(auto n = 0; n < y->GetNpar(); ++n) {
+            y->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNpar())));
         }
-        for(auto n = 0; n < z->GetNumberFreeParameters(); ++n) {
-            z->SetParameter(
-                n,
-                field_parameters.at(static_cast<size_t>(n + x->GetNumberFreeParameters() + y->GetNumberFreeParameters())));
+        for(auto n = 0; n < z->GetNpar(); ++n) {
+            z->SetParameter(n, field_parameters.at(static_cast<size_t>(n + x->GetNpar() + y->GetNpar())));
         }
 
         LOG(DEBUG) << "Value of custom field at pixel center: "
