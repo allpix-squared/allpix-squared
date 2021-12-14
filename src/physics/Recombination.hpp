@@ -152,6 +152,29 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Simple recombination of charge carriers in GaAs through lifetimes of holes and electrons
+     */
+    class GaAsLifetime : virtual public RecombinationModel {
+    public:
+        GaAsLifetime(double electron_lifetime, double hole_lifetime)
+            : electron_lifetime_(electron_lifetime), hole_lifetime_(hole_lifetime) {}
+
+        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
+            return survival_prob < (1 - std::exp(-1. * timestep / lifetime(type)));
+        };
+
+    protected:
+        double lifetime(const CarrierType& type) const {
+            return type == CarrierType::ELECTRON ? electron_lifetime_ : hole_lifetime_;
+        }
+
+    private:
+        double electron_lifetime_;
+        double hole_lifetime_;
+    };
+
+    /**
      * @brief Wrapper class and factory for recombination models.
      *
      * This class allows to store recombination objects independently of the model chosen and simplifies access to the
@@ -180,6 +203,8 @@ namespace allpix {
                     model_ = std::make_unique<Auger>(doping);
                 } else if(model == "combined" || model == "srh_auger") {
                     model_ = std::make_unique<ShockleyReadHallAuger>(temperature, doping);
+                } else if(model == "lifetimes_gaas") {
+                    model_ = std::make_unique<GaAsLifetime>(electron_lifetime, hole_lifetime);
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
                     model_ = std::make_unique<None>();
