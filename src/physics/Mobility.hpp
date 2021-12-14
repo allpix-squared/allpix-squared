@@ -11,7 +11,7 @@
 #ifndef ALLPIX_MOBILITY_MODELS_H
 #define ALLPIX_MOBILITY_MODELS_H
 
-#include <TF2.h>
+#include <TFormula.h>
 
 #include "exceptions.h"
 
@@ -298,28 +298,28 @@ namespace allpix {
         };
 
     private:
-        std::unique_ptr<TF2> electron_mobility_;
-        std::unique_ptr<TF2> hole_mobility_;
+        std::unique_ptr<TFormula> electron_mobility_;
+        std::unique_ptr<TFormula> hole_mobility_;
 
-        std::unique_ptr<TF2> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
+        std::unique_ptr<TFormula> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
             std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
             auto function = config.get<std::string>("mobility_function_" + name);
             auto parameters = config.getArray<double>("mobility_parameters_" + name, {});
 
-            // Check if a doping concentration dependency can be detected by checking for a Y variable:
-            if(!doping && function.find("y") != std::string::npos) {
-                throw ModelUnsuitable("No doping profile available but doping dependence found");
-            }
-
-            auto mobility = std::make_unique<TF2>(("mobility_" + name).c_str(), function.c_str(), 0, 1, 0, 1);
+            auto mobility = std::make_unique<TFormula>(("mobility_" + name).c_str(), function.c_str());
 
             if(!mobility->IsValid()) {
                 throw InvalidValueError(
                     config, "mobility_function_" + name, "The provided model is not a valid ROOT::TFormula expression");
             }
 
+            // Check if a doping concentration dependency can be detected by checking for the number of dimensions:
+            if(!doping && mobility->GetNdim() == 2) {
+                throw ModelUnsuitable("No doping profile available but doping dependence found");
+            }
+
             // Check if number of parameters match up
-            if(static_cast<size_t>(mobility->GetNumberFreeParameters()) != parameters.size()) {
+            if(static_cast<size_t>(mobility->GetNpar()) != parameters.size()) {
                 throw InvalidValueError(config,
                                         "mobility_parameters_" + name,
                                         "The number of provided parameters and parameters in the function do not match");
