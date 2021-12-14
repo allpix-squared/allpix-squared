@@ -149,7 +149,14 @@ void PulseTransferModule::run(Event* event) {
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
             try {
-                pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
+                if(detector_->getElectricFieldType() == FieldType::CONSTANT) {
+                    const ROOT::Math::XYZPoint pos(0, 0, 0);
+                    auto direction =
+                        std::signbit(detector_->getElectricField(pos).Z()); // 1 == negative bias, 0 == positive bias
+                    pulse.addCharge(static_cast<double>(direction ? -1 : 1) * propagated_charge.getCharge(),
+                                    propagated_charge.getLocalTime());
+                } else
+                    pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
             } catch(const PulseBadAllocException& e) {
                 LOG(ERROR) << e.what() << std::endl
                            << "Ignoring pulse contribution at time "
