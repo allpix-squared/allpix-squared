@@ -73,9 +73,7 @@ ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(unsigned int x, unsigned
     auto size = getPixelSize();
     auto local_x = size.x() * x;
     auto local_y = size.y() * y;
-    auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
-
-    return {local_x, local_y, local_z};
+    return {local_x, local_y, 0};
 }
 
 std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
