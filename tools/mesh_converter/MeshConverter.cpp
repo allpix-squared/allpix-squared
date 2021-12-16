@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
         double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
         double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
         for(auto& point : points) {
-            if(dimension == 2) {
+            if(point.dim == 2) {
                 maxx = 1;
                 minx = 0;
                 maxy = std::max(maxy, point.y);
@@ -286,7 +286,7 @@ int main(int argc, char** argv) {
                 minz = std::min(minz, point.z);
             }
 
-            if(dimension == 3) {
+            if(point.dim == 3) {
                 maxx = std::max(maxx, point.x);
                 maxy = std::max(maxy, point.y);
                 maxz = std::max(maxz, point.z);
@@ -340,10 +340,6 @@ int main(int argc, char** argv) {
             }
         }
 
-        rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
-        rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
-        rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
-
         auto end = std::chrono::system_clock::now();
         auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
         LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
@@ -362,7 +358,8 @@ int main(int argc, char** argv) {
             double z = minz + zstep / 2.0;
             for(unsigned int k = 0; k < divisions.z(); ++k) {
                 // New mesh vertex and field
-                Point q(dimension == 2 ? -1 : x, y, z), e;
+                auto q = (dimension == 2 ? Point(y, z) : Point(x, y, z));
+                Point e;
                 bool valid = false;
 
                 size_t prev_neighbours = 0;
