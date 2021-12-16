@@ -61,6 +61,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 
 ## Features
 - TCAD DF-ISE file format parser.
+- Automatic determination of the input mesh dimensionality (2D/3D).
 - Fast radius neighbor search for three-dimensional point clouds.
 - Barycentric interpolation between non-regular mesh points.
 - Several cuts available on the interpolation algorithm variables.
@@ -69,7 +70,6 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 ### Parameters
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `parser`: Parser class to interpret input data in. Currently, only **DF-ISE** is supported and used as default.
-* `dimension`: Specify mesh dimensionality (defaults to 3).
 * `region`: Region name or list of region names to be meshed, such as for example `bulk` or `"bulk","epi"` (No default value; required parameter).
 * `observable`: Observable to be interpolated, such as for example `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
