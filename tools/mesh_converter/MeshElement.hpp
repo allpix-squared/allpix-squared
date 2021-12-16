@@ -53,7 +53,7 @@ namespace mesh_converter {
          * @param volume_cut Threshold for the minimum tetrahedron volume
          * @param qp Desired point for the interpolation
          */
-        bool validElement(double volume_cut, Point& qp) const;
+        bool isValid(double volume_cut, Point& qp) const;
 
         /**
          * @brief Barycentric interpolation implementation
@@ -129,20 +129,22 @@ namespace mesh_converter {
             // Dimensionality is number of iterator elements minus one:
             size_t dimensions = static_cast<size_t>(end - begin) - 1;
             size_t idx = 0;
+
+            LOG(TRACE) << "Constructing " << dimensions << "D element at " << reference_ << " with mesh points:";
             for(; begin < end; begin++) {
+                LOG(TRACE) << "\t\t" << (*grid_)[*begin];
                 grid_elements[idx] = (*grid_)[*begin];
                 field_elements[idx++] = (*field_)[*begin];
             }
 
-            LOG(TRACE) << "Constructing element with dim " << dimensions << " at " << reference_;
             MeshElement element(dimensions, grid_elements, field_elements);
-            valid_ = element.validElement(cut_, reference_);
+            valid_ = element.isValid(cut_, reference_);
             if(valid_) {
                 LOG(DEBUG) << element.print(reference_);
                 result_ = element.getObservable(reference_);
             }
 
-            return valid_; // Don't break out of the loop if element is invalid
+            return valid_;
         }
 
         /**
