@@ -13,9 +13,11 @@ namespace mesh_converter {
     class Point {
     public:
         Point() noexcept = default;
-        Point(double px, double py, double pz = 0) noexcept : x(px), y(py), z(pz) {}
+        Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3){};
+        Point(double px, double py) noexcept : x(px), y(py), dim(2){};
 
         double x{0}, y{0}, z{0};
+        unsigned int dim{0};
 
         friend std::ostream& operator<<(std::ostream& out, const Point& pt) {
             out << "(" << pt.x << "," << pt.y << "," << pt.z << ")";
