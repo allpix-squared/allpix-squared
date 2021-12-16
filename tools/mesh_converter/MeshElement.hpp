@@ -14,7 +14,7 @@ namespace mesh_converter {
     public:
         Point() noexcept = default;
         Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3){};
-        Point(double px, double py) noexcept : x(px), y(py), dim(2){};
+        Point(double py, double pz) noexcept : y(py), z(pz), dim(2){};
 
         double x{0}, y{0}, z{0};
         unsigned int dim{0};
