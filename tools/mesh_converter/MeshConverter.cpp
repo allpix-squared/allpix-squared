@@ -274,27 +274,14 @@ int main(int argc, char** argv) {
         field = field_temp;
 
         // Find minimum and maximum from mesh coordinates
-        double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
-        double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
-        for(auto& point : points) {
-            if(point.dim == 2) {
-                maxx = 1;
-                minx = 0;
-                maxy = std::max(maxy, point.y);
-                maxz = std::max(maxz, point.z);
-                miny = std::min(miny, point.y);
-                minz = std::min(minz, point.z);
-            }
-
-            if(point.dim == 3) {
-                maxx = std::max(maxx, point.x);
-                maxy = std::max(maxy, point.y);
-                maxz = std::max(maxz, point.z);
-                minx = std::min(minx, point.x);
-                miny = std::min(miny, point.y);
-                minz = std::min(minz, point.z);
-            }
-        }
+        auto maxx =
+            (dimension == 2 ? 1
+                            : std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x);
+        auto minx = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x;
+        auto maxy = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto miny = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto maxz = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
+        auto minz = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
 
         // Creating a new mesh points cloud with a regular pitch
         const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
