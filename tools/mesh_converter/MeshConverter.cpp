@@ -368,6 +368,12 @@ int main(int argc, char** argv) {
                     octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
+                    if(radius == initial_radius && results.size() > 100) {
+                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within search radius of "
+                                     << allpix::Units::display(radius, {"um", "nm"})
+                                     << " - consider decreasing initial radius";
+                    }
+
                     // If after a radius step no new neighbours are found, go to the next radius step
                     if(results.size() <= prev_neighbours || results.empty()) {
                         prev_neighbours = results.size();
