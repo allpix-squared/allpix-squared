@@ -32,7 +32,9 @@
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
+using allpix::Log;
 using allpix::ThreadPool;
+using allpix::Units;
 
 void interrupt_handler(int);
 
@@ -41,7 +43,7 @@ void interrupt_handler(int);
  */
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
-    allpix::Log::finish();
+    Log::finish();
     std::exit(0);
 }
 
@@ -66,7 +68,7 @@ int main(int argc, char** argv) {
         }
 
         // Add stream and set default logging level
-        allpix::Log::addStream(std::cout);
+        Log::addStream(std::cout);
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
         std::signal(SIGQUIT, interrupt_handler);
@@ -84,7 +86,7 @@ int main(int argc, char** argv) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                    log_level = Log::getLevelFromString(std::string(argv[++i]));
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                     return_code = 1;
@@ -136,7 +138,7 @@ int main(int argc, char** argv) {
                 << std::endl;
             std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
-            allpix::Log::finish();
+            Log::finish();
             return return_code;
         }
 
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
             auto log_level_string = config.get<std::string>("log_level", "INFO");
             std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
             try {
-                log_level = allpix::Log::getLevelFromString(log_level_string);
+                log_level = Log::getLevelFromString(log_level_string);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Log level \"" << log_level_string
                            << "\" specified in the configuration is invalid, defaulting to INFO instead";
@@ -157,7 +159,7 @@ int main(int argc, char** argv) {
         }
 
         // Set log level:
-        allpix::Log::setReportingLevel(log_level);
+        Log::setReportingLevel(log_level);
 
         // NOTE: this stream should be available for the duration of the logging
         std::ofstream log_file;
@@ -165,10 +167,10 @@ int main(int argc, char** argv) {
             log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
             if(!log_file.good()) {
                 LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
-                allpix::Log::finish();
+                Log::finish();
                 return 1;
             }
-            allpix::Log::addStream(log_file);
+            Log::addStream(log_file);
         }
 
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
@@ -347,7 +349,7 @@ int main(int argc, char** argv) {
 
         unsigned int mesh_points_done = 0;
         auto mesh_section = [&](double x, double y) {
-            allpix::Log::setReportingLevel(log_level);
+            Log::setReportingLevel(log_level);
 
             // New mesh slice
             std::vector<Point> new_mesh;
@@ -369,9 +371,8 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     if(radius == initial_radius && results.size() > 100) {
-                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within search radius of "
-                                     << allpix::Units::display(radius, {"um", "nm"})
-                                     << " - consider decreasing initial radius";
+                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within search radius of " << radius
+                                     << "um - consider decreasing initial radius";
                     }
 
                     // If after a radius step no new neighbours are found, go to the next radius step
@@ -436,11 +437,11 @@ int main(int argc, char** argv) {
         std::vector<Point> e_field_new_mesh;
 
         // clang-format off
-        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
+        auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
             // clang-format on
             // Initialize the threads to the same log level and format as the master setting
-            allpix::Log::setReportingLevel(log_level);
-            allpix::Log::setFormat(log_format);
+            Log::setReportingLevel(log_level);
+            Log::setFormat(log_format);
         };
 
         ThreadPool pool(num_threads, num_threads * 1024, init_function);
@@ -471,9 +472,8 @@ int main(int argc, char** argv) {
         // Prepare header and auxiliary information:
         std::string header =
             "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-        std::array<double, 3> size{{allpix::Units::get(maxx - minx, "um"),
-                                    allpix::Units::get(maxy - miny, "um"),
-                                    allpix::Units::get(maxz - minz, "um")}};
+        std::array<double, 3> size{
+            {Units::get(maxx - minx, "um"), Units::get(maxy - miny, "um"), Units::get(maxz - minz, "um")}};
         std::array<size_t, 3> gridsize{
             {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
@@ -486,11 +486,11 @@ int main(int argc, char** argv) {
                 for(unsigned int k = 0; k < divisions.z(); ++k) {
                     auto& point = e_field_new_mesh[i * divisions.y() * divisions.z() + j * divisions.z() + k];
                     // We need to convert to framework-internal units:
-                    data->push_back(allpix::Units::get(point.x, units));
+                    data->push_back(Units::get(point.x, units));
                     // For a vector field, we push three values:
                     if(quantity == FieldQuantity::VECTOR) {
-                        data->push_back(allpix::Units::get(point.y, units));
-                        data->push_back(allpix::Units::get(point.z, units));
+                        data->push_back(Units::get(point.y, units));
+                        data->push_back(Units::get(point.z, units));
                     }
                 }
             }
@@ -518,6 +518,6 @@ int main(int argc, char** argv) {
     }
 
     // Finish the logging
-    allpix::Log::finish();
+    Log::finish();
     return return_code;
 }
