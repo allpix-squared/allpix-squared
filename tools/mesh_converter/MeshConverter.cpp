@@ -197,27 +197,32 @@ int main(int argc, char** argv) {
         const auto units = config.get<std::string>("observable_units");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
-        XYZVectorUInt divisions;
-        const auto dimension = config.get<size_t>("dimension", 3);
-        if(dimension == 2) {
-            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
-            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
-        } else if(dimension == 3) {
-            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
-        } else {
-            throw allpix::InvalidValueError(config, "dimension", "only two or three dimensional fields are supported");
-        }
-
         // Swapping elements
         auto rot = config.getArray<std::string>("xyz", {"x", "y", "z"});
         if(rot.size() != 3) {
-            throw allpix::InvalidValueError(config, "xyz", "three entries required");
+            throw allpix::InvalidValueError(config, "xyz", "Three entries required");
         }
 
         auto start = std::chrono::system_clock::now();
 
         std::string grid_file = file_prefix + ".grd";
         std::vector<Point> points = parser->getMesh(grid_file, regions);
+
+        // Obtain number of mesh dimensions from mesh point:
+        XYZVectorUInt divisions;
+        const auto dimension = points.front().dim;
+        LOG(STATUS) << "Determined dimensionality of input mesh to be " << dimension << "D";
+        if(dimension == 2) {
+            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
+            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
+        } else if(dimension == 3) {
+            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
+        }
+
+        // If we are looking at a 2D mesh, we force x to be the coordinate out of range:
+        if(dimension == 2 && rot.at(0) != "-x" && rot.at(0) != "x") {
+            throw allpix::InvalidValueError(config, "xyz", "For 2D meshes the first coordinate has to remain 'x'");
+        }
 
         std::string data_file = file_prefix + ".dat";
         std::vector<Point> field = parser->getField(data_file, observable, regions);
