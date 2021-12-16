@@ -190,12 +190,11 @@ int main(int argc, char** argv) {
         // Region, observable and binning of output field
         auto regions = config.getArray<std::string>("region");
         auto observable = config.get<std::string>("observable");
-
-        const auto radius_step = config.get<double>("radius_step", 0.5);
-        const auto max_radius = config.get<double>("max_radius", 50);
-        const auto volume_cut = config.get<double>("volume_cut", 10e-9);
         const auto units = config.get<std::string>("observable_units");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
+
+        const auto radius_step = config.get<double>("radius_step", 0.5);
+        const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
         // Swapping elements
         auto rot = config.getArray<std::string>("xyz", {"x", "y", "z"});
@@ -291,7 +290,9 @@ int main(int argc, char** argv) {
 
         // Using the minimal cell dimension as initial search radius for the point cloud:
         const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
-        LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
+        const auto max_radius = config.get<double>("max_radius", std::max(initial_radius, 50.));
+        LOG(INFO) << "Using initial neighbor search radius of " << initial_radius << " and maximum search radius of "
+                  << max_radius;
 
         if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
             LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
@@ -352,7 +353,7 @@ int main(int argc, char** argv) {
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
 
-                while(radius < max_radius) {
+                while(radius <= max_radius) {
                     LOG(DEBUG) << "Search radius: " << radius;
                     // Calling octree neighbours search and sorting the results list with the closest neighbours first
                     std::vector<unsigned int> results;
@@ -360,8 +361,12 @@ int main(int argc, char** argv) {
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
 
                     if(radius == initial_radius && results.size() > 100) {
-                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within search radius of " << radius
-                                     << "um - consider decreasing initial radius";
+                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within initial search radius of "
+                                     << initial_radius << "um." << std::endl
+                                     << "This might indicate that the output mesh granularity is too low and field features "
+                                        "might be missed."
+                                     << std::endl
+                                     << "Consider increasing output mesh granularity.";
                     }
 
                     // If after a radius step no new neighbours are found, go to the next radius step
