@@ -825,6 +825,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
+    ROOT::Math::XYZVector efield{}, last_efield{};
     double last_time = 0;
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
@@ -841,6 +842,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Save previous position and time
         last_position = position;
         last_time = runge_kutta.getTime();
+        last_efield = efield;
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
@@ -852,7 +854,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
 
         // Get electric field at current position and fall back to empty field if it does not exist
-        auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
@@ -891,10 +893,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
                    << ", state: " << allpix::to_string(state);
 
-        // Apply multiplication step, fully deterministic from local efield and step length
-        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step.value.norm());
-        LOG(DEBUG) << "Calculated gain of " << gain << " for field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
-                   << " and step of " << Units::display(step.value.norm(), {"um", "nm"});
+        // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
+        gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
+        if(gain > 1.) {
+            LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
+                       << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                       << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+        }
 
         // Update step length histogram
         if(output_plots_) {
