@@ -106,7 +106,7 @@ namespace allpix {
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
-            target_spatial_precision_{}, threshold_field_{}, output_plots_step_{};
+            target_spatial_precision_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
             output_linegraphs_trapped_{}, output_animations_{};
         bool propagate_electrons_{}, propagate_holes_{};

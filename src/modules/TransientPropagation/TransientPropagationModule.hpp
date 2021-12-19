@@ -94,7 +94,7 @@ namespace allpix {
                                                                                  std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Local copies of configuration parameters to avoid costly lookup:
-        double temperature_{}, timestep_{}, integration_time_{}, threshold_field_{};
+        double temperature_{}, timestep_{}, integration_time_{};
         bool output_plots_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};

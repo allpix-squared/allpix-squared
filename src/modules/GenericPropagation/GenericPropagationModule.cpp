@@ -113,7 +113,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     timestep_start_ = config_.get<double>("timestep_start");
     integration_time_ = config_.get<double>("integration_time");
     target_spatial_precision_ = config_.get<double>("spatial_precision");
-    threshold_field_ = config_.get<double>("multiplication_threshold");
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
@@ -589,7 +588,8 @@ void GenericPropagationModule::initialize() {
 
     // Impact ionization model
     try {
-        multiplication_ = ImpactIonization(config_.get<std::string>("multiplication_model"), temperature_);
+        multiplication_ = ImpactIonization(
+            config_.get<std::string>("multiplication_model"), temperature_, config_.get<double>("multiplication_threshold"));
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "multiplication_model", e.what());
     }

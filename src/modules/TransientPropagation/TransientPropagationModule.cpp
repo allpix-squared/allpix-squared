@@ -66,7 +66,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
-    threshold_field_ = config_.get<double>("multiplication_threshold");
 
     output_plots_ = config_.get<bool>("output_plots");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
@@ -103,7 +102,8 @@ void TransientPropagationModule::initialize() {
 
     // Impact ionization model
     try {
-        multiplication_ = ImpactIonization(config_.get<std::string>("multiplication_model"), temperature_);
+        multiplication_ = ImpactIonization(
+            config_.get<std::string>("multiplication_model"), temperature_, config_.get<double>("multiplication_threshold"));
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "multiplication_model", e.what());
     }
@@ -385,7 +385,7 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Apply multiplication step, fully deterministic from local efield and step length
-        gain *= multiplication_(type, std::sqrt(efield.Mag2()), threshold_field_, step.value.norm());
+        gain *= multiplication_(type, std::sqrt(efield.Mag2()), step.value.norm());
         LOG(DEBUG) << "Calculated gain of " << gain << " for field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
                    << " and step of " << Units::display(step.value.norm(), {"um", "nm"});
 
