@@ -645,7 +645,7 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time";
+                       << " in " << Units::display(time, "ns") << " time, final state: " << allpix::to_string(state);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(final_position);
