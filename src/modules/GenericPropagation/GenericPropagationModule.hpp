@@ -30,6 +30,7 @@
 
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
+#include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
 
