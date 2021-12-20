@@ -554,6 +554,8 @@ void GenericPropagationModule::initialize() {
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
+
+    trapping_ = Trapping(config_);
 }
 
 void GenericPropagationModule::run(Event* event) {
@@ -755,8 +757,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     double last_time = 0;
     size_t next_idx = 0;
     bool is_alive = true;
+    bool is_trapped = false;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
+          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive && !is_trapped) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -792,10 +795,14 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                    survival(random_generator),
                                    timestep);
 
+        // Check if the charge carrier has been trapped:
+        auto [trapped, traptime] = trapping_(type, survival(random_generator), timestep, std::sqrt(efield.Mag2()));
+        is_trapped = trapped;
+
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
-                   << (is_alive ? "" : ", recombined");
+                   << (is_alive ? "" : ", recombined") << (trapped ? ", trapped" : "");
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
 
@@ -853,8 +860,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     if(!is_alive) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
+    } else if(is_trapped) {
+        LOG(DEBUG) << "Charge carrier trapped after " << Units::display(last_time, {"ns"}) << " at "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
-
     // Return the final position of the propagated charge
     return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive);
 }

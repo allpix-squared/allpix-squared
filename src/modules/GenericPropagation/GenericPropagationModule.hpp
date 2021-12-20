@@ -108,6 +108,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
