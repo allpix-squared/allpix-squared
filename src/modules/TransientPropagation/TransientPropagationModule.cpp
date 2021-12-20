@@ -91,6 +91,8 @@ void TransientPropagationModule::initialize() {
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());
 
+    trapping_ = Trapping(config_);
+
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
     if(has_magnetic_field_) {
@@ -326,6 +328,13 @@ TransientPropagationModule::propagate(Event* event,
                           survival(event->getRandomEngine()),
                           timestep_)) {
             state = CarrierState::RECOMBINED;
+        }
+
+        // Check if the charge carrier has been trapped:
+        auto [trapped, traptime] = trapping_(type, survival(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
+        if(trapped) {
+            state = CarrierState::TRAPPED;
+            // FIXME advance carrier time by traptime and allow de-trapping?
         }
 
         // Update step length histogram
