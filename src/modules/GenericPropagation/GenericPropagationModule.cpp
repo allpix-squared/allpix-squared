@@ -559,6 +559,7 @@ void GenericPropagationModule::initialize() {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
 
+    // Prepare trapping model
     trapping_ = Trapping(config_);
 }
 
