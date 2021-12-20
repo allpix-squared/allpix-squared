@@ -901,7 +901,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
         gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
-        if(gain > 1.) {
+        if(gain > 20.) {
+            LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                         << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+        } else if(gain > 1.) {
             LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
                        << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
