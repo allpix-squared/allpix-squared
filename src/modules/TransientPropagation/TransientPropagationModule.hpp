@@ -81,14 +81,14 @@ namespace allpix {
          * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
          *                  result in
          * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took and a
-         * flag whether it is still alive or has recombined
+         * flag whether it is still alive or has recombined or was trapped
          */
-        std::tuple<ROOT::Math::XYZPoint, double, bool> propagate(Event* event,
-                                                                 const ROOT::Math::XYZPoint& pos,
-                                                                 const CarrierType& type,
-                                                                 const unsigned int charge,
-                                                                 const double initial_time,
-                                                                 std::map<Pixel::Index, Pulse>& pixel_map);
+        std::tuple<ROOT::Math::XYZPoint, double, bool, bool> propagate(Event* event,
+                                                                       const ROOT::Math::XYZPoint& pos,
+                                                                       const CarrierType& type,
+                                                                       const unsigned int charge,
+                                                                       const double initial_time,
+                                                                       std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
@@ -117,5 +117,6 @@ namespace allpix {
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
+        Histogram<TH1D> trapped_histo_;
     };
 } // namespace allpix
