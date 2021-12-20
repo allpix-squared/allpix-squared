@@ -209,9 +209,9 @@ namespace allpix {
          */
         Trapping(const Configuration& config) {
             try {
-                auto model = config.get<std::string>("trapping_model");
+                auto model = config.get<std::string>("trapping_model", "none");
                 auto temperature = config.get<double>("temperature");
-                auto fluence = config.get<double>("fluence");
+                auto fluence = config.get<double>("fluence", 0);
 
                 if(model == "ljubljana" || model == "kramberger") {
                     model_ = std::make_unique<Ljubljana>(temperature, fluence);
