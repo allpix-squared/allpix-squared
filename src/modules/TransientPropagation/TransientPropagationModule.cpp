@@ -104,6 +104,8 @@ void TransientPropagationModule::initialize() {
 
     trapping_ = Trapping(config_);
 
+    trapping_ = Trapping(config_);
+
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
     if(has_magnetic_field_) {
