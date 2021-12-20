@@ -594,6 +594,12 @@ void GenericPropagationModule::initialize() {
         throw InvalidValueError(config_, "multiplication_model", e.what());
     }
 
+    // Check multiplication and step size larger than a picosecond:
+    if(multiplication_.type() != typeid(NoImpactIonization) && timestep_max_ > 0.001) {
+        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps - this might lead to "
+                        "unphysical gain values.";
+    }
+
     // Prepare trapping model
     trapping_ = Trapping(config_);
 }

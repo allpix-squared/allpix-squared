@@ -261,6 +261,12 @@ namespace allpix {
             return model_->operator()(std::forward<ARGS>(args)...);
         }
 
+        /**
+         * @brief Helper to get type of mimpact ionization model currently instantiated
+         * @return Type of impact ionization model
+         */
+        const std::type_index type() { return std::move(typeid(*model_.get())); }
+
     private:
         std::unique_ptr<ImpactIonizationModel> model_{};
     };

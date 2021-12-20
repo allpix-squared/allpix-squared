@@ -108,6 +108,12 @@ void TransientPropagationModule::initialize() {
         throw InvalidValueError(config_, "multiplication_model", e.what());
     }
 
+    // Check multiplication and step size larger than a picosecond:
+    if(multiplication_.type() != typeid(NoImpactIonization) && timestep_ > 0.001) {
+        LOG(WARNING)
+            << "Charge multiplication enabled with timestep larger than 1ps - this might lead to unphysical gain values.";
+    }
+
     // Check for magnetic field
     has_magnetic_field_ = detector_->hasMagneticField();
     if(has_magnetic_field_) {
