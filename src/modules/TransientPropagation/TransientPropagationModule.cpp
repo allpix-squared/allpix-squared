@@ -148,6 +148,8 @@ void TransientPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+        trapped_histo_ = CreateHistogram<TH1D>(
+            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
     }
 }
 
@@ -158,6 +160,7 @@ void TransientPropagationModule::run(Event* event) {
     std::vector<PropagatedCharge> propagated_charges;
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -203,14 +206,17 @@ void TransientPropagationModule::run(Event* event) {
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(local_position, {"mm", "um"})
                        << " in " << Units::display(time, "ns") << " time, induced "
-                       << Units::display(propagated_charge.getCharge(), {"e"});
+                       << Units::display(propagated_charge.getCharge(), {"e"})
+                       << ", final state: " << allpix::to_string(state);
 
             propagated_charges.push_back(std::move(propagated_charge));
 
-            if(state != CarrierState::RECOMBINED) {
-                propagated_charges_count += charge_per_step;
-            } else {
+            if(state == CarrierState::RECOMBINED) {
                 recombined_charges_count += charge_per_step;
+            } else if(state == CarrierState::TRAPPED) {
+                trapped_charges_count += charge_per_step;
+            } else {
+                propagated_charges_count += charge_per_step;
             }
 
             if(output_plots_) {
@@ -220,8 +226,9 @@ void TransientPropagationModule::run(Event* event) {
     }
 
     if(output_plots_) {
-        auto total = (propagated_charges_count + recombined_charges_count);
+        auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / (total == 0 ? 1 : total));
     }
 
     // Create a new message with propagated charges
@@ -414,6 +421,7 @@ void TransientPropagationModule::finalize() {
         step_length_histo_->Write();
         drift_time_histo_->Write();
         recombine_histo_->Write();
+        trapped_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
