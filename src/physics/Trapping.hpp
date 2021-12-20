@@ -38,13 +38,13 @@ namespace allpix {
          * Function call operator to obtain trapping time for the given carrier
          * @param type Type of charge carrier (electron or hole)
          * @param fluence Fluence 1MeV-neutron equivalent
-         * @param efield_mag Magnitude of the electric field
-         * @param trapping_prob Current trapping probability for this charge carrier
+         * @param probability Current trapping probability for this charge carrier
          * @param timestep Current time step performed for the charge carrier
+         * @param efield_mag Magnitude of the electric field
          * @return Trapping status and expected time of the charge carrier being trapped
          */
         virtual std::pair<bool, double>
-        operator()(const CarrierType& type, double efield_mag, double trapping_prob, double timestep) const = 0;
+        operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const = 0;
     };
 
     /**
@@ -54,7 +54,7 @@ namespace allpix {
      */
     class NoTrapping : virtual public TrappingModel {
     public:
-        std::pair<bool, double> operator()(const CarrierType&, double, double, double, double) const override {
+        std::pair<bool, double> operator()(const CarrierType&, double, double, double) const override {
             return {false, 0.};
         };
     };
@@ -73,8 +73,8 @@ namespace allpix {
               tau_eff_hole_(1. / Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns") / fluence) {}
 
         std::pair<bool, double>
-        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
-            return {trapping_prob <
+        operator()(const CarrierType& type, double probability, double timestep, double) const override {
+            return {probability <
                         (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
                     std::numeric_limits<double>::max()};
         };
@@ -98,8 +98,8 @@ namespace allpix {
               tau_eff_hole_(1. / Units::get(5.04e-16, "cm*cm/ns")) {}
 
         std::pair<bool, double>
-        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
-            return {trapping_prob <
+        operator()(const CarrierType& type, double probability, double timestep, double) const override {
+            return {probability <
                         (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
                     std::numeric_limits<double>::max()};
         };
@@ -125,8 +125,8 @@ namespace allpix {
               tau_eff_hole_(1. / (Units::get(2.79e-16, "cm*cm/ns") * fluence + Units::get(0.093, "/ns"))) {}
 
         std::pair<bool, double>
-        operator()(const CarrierType& type, double, double trapping_prob, double timestep) const override {
-            return {trapping_prob <
+        operator()(const CarrierType& type, double probability, double timestep, double) const override {
+            return {probability <
                         (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
                     std::numeric_limits<double>::max()};
         };
