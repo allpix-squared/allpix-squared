@@ -107,7 +107,7 @@ namespace allpix {
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
             target_spatial_precision_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
-            output_animations_{};
+            output_linegraphs_trapped_{}, output_animations_{};
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
 
@@ -136,6 +136,7 @@ namespace allpix {
         Histogram<TH1D> uncertainty_histo_;
         Histogram<TH1D> group_size_histo_;
         Histogram<TH1D> recombine_histo_;
+        Histogram<TH1D> trapped_histo_;
     };
 
 } // namespace allpix

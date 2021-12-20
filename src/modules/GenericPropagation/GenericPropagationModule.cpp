@@ -110,6 +110,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
     output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
+    output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
@@ -556,6 +557,9 @@ void GenericPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+
+        trapped_histo_ = CreateHistogram<TH1D>(
+            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
     }
 
     // Prepare mobility model
@@ -580,6 +584,7 @@ void GenericPropagationModule::run(Event* event) {
     LOG(TRACE) << "Propagating charges in sensor";
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
     for(const auto& deposit : deposits_message->getData()) {
@@ -632,6 +637,11 @@ void GenericPropagationModule::run(Event* event) {
                            << " in " << Units::display(time, "ns") << " time, removing";
                 recombined_charges_count += charge_per_step;
                 continue;
+            } else if(state == CarrierState::TRAPPED) {
+                LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
+                           << " in " << Units::display(time, "ns") << " time, removing";
+                trapped_charges_count += charge_per_step;
+                continue;
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
@@ -670,20 +680,25 @@ void GenericPropagationModule::run(Event* event) {
         if(output_linegraphs_recombined_) {
             create_output_plots(event->number, output_plot_points, CarrierState::RECOMBINED);
         }
+        if(output_linegraphs_trapped_) {
+            create_output_plots(event->number, output_plot_points, CarrierState::TRAPPED);
+        }
     }
 
     // Write summary and update statistics
     long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns") << std::endl
-              << "Recombined " << recombined_charges_count << " charges during transport";
+              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+              << "Trapped " << trapped_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) /
-                               (propagated_charges_count + recombined_charges_count));
+        auto total_charges = propagated_charges_count + recombined_charges_count + trapped_charges_count;
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charges);
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / total_charges);
     }
 
     // Create a new message with propagated charges
@@ -885,6 +900,7 @@ void GenericPropagationModule::finalize() {
         uncertainty_histo_->Write();
         group_size_histo_->Write();
         recombine_histo_->Write();
+        trapped_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
