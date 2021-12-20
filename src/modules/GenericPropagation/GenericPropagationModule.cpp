@@ -570,6 +570,7 @@ void GenericPropagationModule::initialize() {
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());
 
+    // Prepare trapping model
     trapping_ = Trapping(config_);
 }
 
