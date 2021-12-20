@@ -543,6 +543,9 @@ void GenericPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+
+        trapped_histo_ = CreateHistogram<TH1D>(
+            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
     }
 
     // Prepare mobility model
@@ -571,6 +574,7 @@ void GenericPropagationModule::run(Event* event) {
     LOG(TRACE) << "Propagating charges in sensor";
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
     for(const auto& deposit : deposits_message->getData()) {
@@ -621,13 +625,18 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, alive] = propagate(
+            auto [final_position, time, alive, trapped] = propagate(
                 initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
 
             if(!alive) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 recombined_charges_count += charge_per_step;
+                continue;
+            } else if(trapped) {
+                LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
+                           << " in " << Units::display(time, "ns") << " time, removing";
+                trapped_charges_count += charge_per_step;
                 continue;
             }
 
@@ -666,14 +675,16 @@ void GenericPropagationModule::run(Event* event) {
     long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns") << std::endl
-              << "Recombined " << recombined_charges_count << " charges during transport";
+              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+              << "Trapped " << trapped_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) /
-                               (propagated_charges_count + recombined_charges_count));
+        auto total_charges = propagated_charges_count + recombined_charges_count + trapped_charges_count;
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charges);
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / total_charges);
     }
 
     // Create a new message with propagated charges
@@ -688,7 +699,7 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, bool>
+std::tuple<ROOT::Math::XYZPoint, double, bool, bool>
 GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
@@ -865,7 +876,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive, is_trapped);
 }
 
 void GenericPropagationModule::finalize() {
@@ -875,6 +886,7 @@ void GenericPropagationModule::finalize() {
         uncertainty_histo_->Write();
         group_size_histo_->Write();
         recombine_histo_->Write();
+        trapped_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
