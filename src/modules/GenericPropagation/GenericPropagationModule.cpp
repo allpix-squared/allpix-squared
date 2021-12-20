@@ -563,6 +563,8 @@ void GenericPropagationModule::initialize() {
 
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());
+
+    trapping_ = Trapping(config_);
 }
 
 void GenericPropagationModule::run(Event* event) {
@@ -808,6 +810,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
             state = CarrierState::RECOMBINED;
         }
 
+        // Check if the charge carrier has been trapped:
+        auto [trapped, traptime] = trapping_(type, survival(random_generator), timestep, std::sqrt(efield.Mag2()));
+        if(trapped) {
+            state = CarrierState::TRAPPED;
+            // FIXME advance carrier time by traptime and allow de-trapping?
+        }
+
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
@@ -860,6 +869,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     if(state == CarrierState::RECOMBINED) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
+    } else if(state == CarrierState::TRAPPED) {
+        LOG(DEBUG) << "Charge carrier trapped after " << Units::display(last_time, {"ns"}) << " at "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
 
     // Return the final position of the propagated charge
