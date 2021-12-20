@@ -77,6 +77,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_linegraphs_collected", false);
     config_.setDefault<bool>("output_linegraphs_recombined", false);
+    config_.setDefault<bool>("output_linegraphs_trapped", false);
     config_.setDefault<bool>("output_animations", false);
     config_.setDefault<bool>("output_plots",
                              config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
