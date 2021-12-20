@@ -11,6 +11,8 @@
 #ifndef ALLPIX_TRAPPING_MODELS_H
 #define ALLPIX_TRAPPING_MODELS_H
 
+#include <TFormula.h>
+
 #include "exceptions.h"
 
 #include "core/utils/unit.h"
@@ -137,6 +139,58 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Custom trapping model for charge carriers
+     */
+    class CustomTrapping : virtual public TrappingModel {
+    public:
+        CustomTrapping(const Configuration& config) {
+            tau_eff_electron_ = configure_tau_eff(config, CarrierType::ELECTRON);
+            tau_eff_hole_ = configure_tau_eff(config, CarrierType::HOLE);
+        };
+
+        std::pair<bool, double>
+        operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const override {
+            return {probability <
+                        (1 - std::exp(-1. * timestep /
+                                      (type == CarrierType::ELECTRON ? tau_eff_electron_->Eval(timestep, efield_mag)
+                                                                     : tau_eff_hole_->Eval(timestep, efield_mag)))),
+                    std::numeric_limits<double>::max()};
+        };
+
+    private:
+        std::unique_ptr<TFormula> tau_eff_electron_;
+        std::unique_ptr<TFormula> tau_eff_hole_;
+
+        std::unique_ptr<TFormula> configure_tau_eff(const Configuration& config, const CarrierType type) {
+            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            auto function = config.get<std::string>("trapping_function_" + name);
+            auto parameters = config.getArray<double>("trapping_parameters_" + name, {});
+
+            auto trapping = std::make_unique<TFormula>(("trapping_" + name).c_str(), function.c_str());
+
+            if(!trapping->IsValid()) {
+                throw InvalidValueError(
+                    config, "trapping_function_" + name, "The provided model is not a valid ROOT::TFormula expression");
+            }
+
+            // Check if number of parameters match up
+            if(static_cast<size_t>(trapping->GetNpar()) != parameters.size()) {
+                throw InvalidValueError(config,
+                                        "trapping_parameters_" + name,
+                                        "The number of provided parameters and parameters in the function do not match");
+            }
+
+            // Set the parameters
+            for(size_t n = 0; n < parameters.size(); ++n) {
+                trapping->SetParameter(static_cast<int>(n), parameters[n]);
+            }
+
+            return trapping;
+        };
+    };
+
+    /**
      * @brief Wrapper class and factory for trapping models.
      *
      * This class allows to store trapping  objects independently of the model chosen and simplifies access to the
@@ -152,21 +206,30 @@ namespace allpix {
 
         /**
          * Recombination constructor
-         * @param model       Name of the trapping model
+         * @param config      Configuration of the calling module
          * @param temperature Temperature for which the trapping model should be initialized
          */
-        Trapping(const std::string& model, double temperature, double fluence) {
-            if(model == "ljubljana" || model == "kramberger") {
-                model_ = std::make_unique<Ljubljana>(temperature, fluence);
-            } else if(model == "dortmund" || model == "krasel") {
-                model_ = std::make_unique<Dortmund>();
-            } else if(model == "none") {
-                LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
-                model_ = std::make_unique<NoTrapping>();
-            } else {
-                throw InvalidModelError(model);
+        Trapping(const Configuration& config, double fluence) {
+            try {
+                auto model = config.get<std::string>("trapping_model");
+                auto temperature = config.get<double>("temperature");
+
+                if(model == "ljubljana" || model == "kramberger") {
+                    model_ = std::make_unique<Ljubljana>(temperature, fluence);
+                } else if(model == "dortmund" || model == "krasel") {
+                    model_ = std::make_unique<Dortmund>();
+                } else if(model == "none") {
+                    LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
+                    model_ = std::make_unique<NoTrapping>();
+                } else if(model == "custom") {
+                    model_ = std::make_unique<CustomTrapping>(config);
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(DEBUG) << "Selected trapping model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "trapping_model", e.what());
             }
-            LOG(DEBUG) << "Selected trapping model \"" << model << "\"";
         }
 
         /**
