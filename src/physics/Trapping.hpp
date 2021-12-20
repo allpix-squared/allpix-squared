@@ -39,7 +39,6 @@ namespace allpix {
         /**
          * Function call operator to obtain trapping time for the given carrier
          * @param type Type of charge carrier (electron or hole)
-         * @param fluence Fluence 1MeV-neutron equivalent
          * @param probability Current trapping probability for this charge carrier
          * @param timestep Current time step performed for the charge carrier
          * @param efield_mag Magnitude of the electric field
@@ -206,13 +205,13 @@ namespace allpix {
 
         /**
          * Recombination constructor
-         * @param config      Configuration of the calling module
-         * @param temperature Temperature for which the trapping model should be initialized
+         * @param config Configuration of the calling module
          */
-        Trapping(const Configuration& config, double fluence) {
+        Trapping(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("trapping_model");
                 auto temperature = config.get<double>("temperature");
+                auto fluence = config.get<double>("fluence");
 
                 if(model == "ljubljana" || model == "kramberger") {
                     model_ = std::make_unique<Ljubljana>(temperature, fluence);
