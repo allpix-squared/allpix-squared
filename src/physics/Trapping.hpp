@@ -41,7 +41,7 @@ namespace allpix {
          * @param type Type of charge carrier (electron or hole)
          * @param probability Current trapping probability for this charge carrier
          * @param timestep Current time step performed for the charge carrier
-         * @param efield_mag Magnitude of the electric field
+         * additional possible parameter: efield_mag Magnitude of the electric field
          * @return Trapping status of the charge carrier
          */
         virtual bool operator()(const CarrierType& type, double probability, double timestep, double) const {
@@ -78,13 +78,7 @@ namespace allpix {
          * @param efield_mag Magnitude of the electric field
          * @return Expected time of the charge carrier being trapped
          */
-        virtual double operator()(const CarrierType& type, double, double, double) const {
-            return (type == CarrierType::ELECTRON ? trap_time_electron_ : trap_time_hole_);
-        };
-
-    protected:
-        double trap_time_electron_{std::numeric_limits<double>::max()};
-        double trap_time_hole_{std::numeric_limits<double>::max()};
+        virtual double operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const = 0;
     };
 
     /**
@@ -95,6 +89,18 @@ namespace allpix {
     class NoTrapping : virtual public TrappingModel {
     public:
         bool operator()(const CarrierType&, double, double, double) const override { return false; };
+    };
+
+    /**
+     * @ingroup Models
+     * @brief No detrapping
+     *
+     */
+    class NoDetrapping : virtual public DetrappingModel {
+    public:
+        double operator()(const CarrierType&, double, double, double) const override {
+            return std::numeric_limits<double>::max();
+        };
     };
 
     /**
@@ -252,7 +258,8 @@ namespace allpix {
             }
 
             try {
-                model_detrap_ = std::make_unique<DetrappingModel>();
+                LOG(INFO) << "No charge carrier detrapping simulated";
+                model_detrap_ = std::make_unique<NoDetrapping>();
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "detrapping_model", e.what());
             }
