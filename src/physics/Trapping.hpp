@@ -42,18 +42,47 @@ namespace allpix {
          * @param probability Current trapping probability for this charge carrier
          * @param timestep Current time step performed for the charge carrier
          * @param efield_mag Magnitude of the electric field
-         * @return Trapping status and expected time of the charge carrier being trapped
+         * @return Trapping status of the charge carrier
          */
-        virtual std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double) const {
-            return {probability <
-                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
-                    (type == CarrierType::ELECTRON ? trap_time_electron_ : trap_time_hole_)};
+        virtual bool operator()(const CarrierType& type, double probability, double timestep, double) const {
+            return probability <
+                   (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_)));
         };
 
     protected:
         double tau_eff_electron_{std::numeric_limits<double>::max()};
         double tau_eff_hole_{std::numeric_limits<double>::max()};
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Charge carrier detrapping time models
+     */
+    class DetrappingModel {
+    public:
+        /**
+         * Default constructor
+         */
+        DetrappingModel() = default;
+
+        /**
+         * Default virtual destructor
+         */
+        virtual ~DetrappingModel() = default;
+
+        /**
+         * Function call operator to obtain trapping time for the given carrier
+         * @param type Type of charge carrier (electron or hole)
+         * @param probability Current trapping probability for this charge carrier
+         * @param timestep Current time step performed for the charge carrier
+         * @param efield_mag Magnitude of the electric field
+         * @return Expected time of the charge carrier being trapped
+         */
+        virtual double operator()(const CarrierType& type, double, double, double) const {
+            return (type == CarrierType::ELECTRON ? trap_time_electron_ : trap_time_hole_);
+        };
+
+    protected:
         double trap_time_electron_{std::numeric_limits<double>::max()};
         double trap_time_hole_{std::numeric_limits<double>::max()};
     };
@@ -65,9 +94,7 @@ namespace allpix {
      */
     class NoTrapping : virtual public TrappingModel {
     public:
-        std::pair<bool, double> operator()(const CarrierType&, double, double, double) const override {
-            return {false, 0.};
-        };
+        bool operator()(const CarrierType&, double, double, double) const override { return false; };
     };
 
     /**
@@ -143,13 +170,11 @@ namespace allpix {
             tf_tau_eff_hole_ = configure_tau_eff(config, CarrierType::HOLE);
         };
 
-        std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const override {
-            return {probability <
-                        (1 - std::exp(-1. * timestep /
-                                      (type == CarrierType::ELECTRON ? tf_tau_eff_electron_->Eval(timestep, efield_mag)
-                                                                     : tf_tau_eff_hole_->Eval(timestep, efield_mag)))),
-                    std::numeric_limits<double>::max()};
+        bool operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const override {
+            return probability <
+                   (1 - std::exp(-1. * timestep /
+                                 (type == CarrierType::ELECTRON ? tf_tau_eff_electron_->Eval(timestep, efield_mag)
+                                                                : tf_tau_eff_hole_->Eval(timestep, efield_mag))));
         };
 
     private:
@@ -210,14 +235,14 @@ namespace allpix {
                 auto fluence = config.get<double>("fluence", 0);
 
                 if(model == "ljubljana" || model == "kramberger") {
-                    model_ = std::make_unique<Ljubljana>(temperature, fluence);
+                    model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
                 } else if(model == "dortmund" || model == "krasel") {
-                    model_ = std::make_unique<Dortmund>();
+                    model_trap_ = std::make_unique<Dortmund>();
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
-                    model_ = std::make_unique<NoTrapping>();
+                    model_trap_ = std::make_unique<NoTrapping>();
                 } else if(model == "custom") {
-                    model_ = std::make_unique<CustomTrapping>(config);
+                    model_trap_ = std::make_unique<CustomTrapping>(config);
                 } else {
                     throw InvalidModelError(model);
                 }
@@ -225,18 +250,26 @@ namespace allpix {
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "trapping_model", e.what());
             }
+
+            try {
+                model_detrap_ = std::make_unique<DetrappingModel>();
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "detrapping_model", e.what());
+            }
         }
 
         /**
-         * Function call operator forwarded to the trapping model
-         * @return Trapping time
+         * Function call operator forwarded to the trapping and detrapping model
+         * @return Trapping state and detrapping time
          */
         template <class... ARGS> std::pair<bool, double> operator()(ARGS&&... args) const {
-            return model_->operator()(std::forward<ARGS>(args)...);
+            return {model_trap_->operator()(std::forward<ARGS>(args)...),
+                    model_detrap_->operator()(std::forward<ARGS>(args)...)};
         }
 
     private:
-        std::unique_ptr<TrappingModel> model_{};
+        std::unique_ptr<TrappingModel> model_trap_{};
+        std::unique_ptr<DetrappingModel> model_detrap_{};
     };
 
 } // namespace allpix
