@@ -348,7 +348,16 @@ TransientPropagationModule::propagate(Event* event,
 
         // Check if the charge carrier has been trapped:
         auto [trapped, traptime] = trapping_(type, survival(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
-        is_trapped = trapped;
+        if(trapped) {
+            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+                // De-trap and advance in time if still below integration time
+                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
+                runge_kutta.advanceTime(traptime);
+            } else {
+                // Mark as trapped otherwise
+                is_trapped = true;
+            }
+        }
 
         // Update step length histogram
         if(output_plots_) {
