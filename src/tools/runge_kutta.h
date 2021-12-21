@@ -91,6 +91,11 @@ namespace allpix {
          * @return Current time
          */
         T getTime() const { return t_; }
+        /**
+         * @brief Advance the time of the integration
+         * @param t Time step to advance the integration by
+         */
+        void advanceTime(double t) { t_ += t; }
 
         /**
          * @brief Execute a single time step of the integration
