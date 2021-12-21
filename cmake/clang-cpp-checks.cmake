@@ -150,7 +150,6 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                     ${CLANG_TIDY}
                     --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
                     --header-filter=${CMAKE_SOURCE_DIR}
-                    --use-color
                     -p=${CMAKE_BINARY_DIR}
                     ${srcfile}
                     | tee -a ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt)
@@ -159,7 +158,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
         ADD_CUSTOM_TARGET(
             check-lint-diff
-            COMMAND > ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt ${COMMANDS}
+            COMMAND > ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt
+            ${COMMANDS}
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt > /dev/null
             COMMENT "Checking for problems in source files")
     ENDIF()
