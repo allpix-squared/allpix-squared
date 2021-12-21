@@ -830,8 +830,14 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Check if the charge carrier has been trapped:
         auto [trapped, traptime] = trapping_(type, survival(random_generator), timestep, std::sqrt(efield.Mag2()));
         if(trapped) {
-            state = CarrierState::TRAPPED;
-            // FIXME advance carrier time by traptime and allow de-trapping?
+            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+                // De-trap and advance in time if still below integration time
+                LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
+                runge_kutta.advanceTime(traptime);
+            } else {
+                // Mark as trapped otherwise
+                state = CarrierState::TRAPPED;
+            }
         }
 
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
