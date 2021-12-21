@@ -45,7 +45,17 @@ namespace allpix {
          * @return Trapping status and expected time of the charge carrier being trapped
          */
         virtual std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const = 0;
+        operator()(const CarrierType& type, double probability, double timestep, double) const {
+            return {probability <
+                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
+                    (type == CarrierType::ELECTRON ? trap_time_electron_ : trap_time_hole_)};
+        };
+
+    protected:
+        double tau_eff_electron_{std::numeric_limits<double>::max()};
+        double tau_eff_hole_{std::numeric_limits<double>::max()};
+        double trap_time_electron_{std::numeric_limits<double>::max()};
+        double trap_time_hole_{std::numeric_limits<double>::max()};
     };
 
     /**
@@ -69,20 +79,10 @@ namespace allpix {
      */
     class Ljubljana : virtual public TrappingModel {
     public:
-        Ljubljana(double temperature, double fluence)
-            : tau_eff_electron_(1. / Units::get(5.6e-16 * std::pow(temperature / 300, -0.86), "cm*cm/ns") / fluence),
-              tau_eff_hole_(1. / Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns") / fluence) {}
-
-        std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double) const override {
-            return {probability <
-                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
-                    std::numeric_limits<double>::max()};
-        };
-
-    private:
-        double tau_eff_electron_;
-        double tau_eff_hole_;
+        Ljubljana(double temperature, double fluence) {
+            tau_eff_electron_ = 1. / Units::get(5.6e-16 * std::pow(temperature / 300, -0.86), "cm*cm/ns") / fluence;
+            tau_eff_hole_ = 1. / Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns") / fluence;
+        }
     };
 
     /**
@@ -94,20 +94,10 @@ namespace allpix {
      */
     class Dortmund : virtual public TrappingModel {
     public:
-        Dortmund()
-            : tau_eff_electron_(1. / Units::get(5.13e-16, "cm*cm/ns")),
-              tau_eff_hole_(1. / Units::get(5.04e-16, "cm*cm/ns")) {}
-
-        std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double) const override {
-            return {probability <
-                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
-                    std::numeric_limits<double>::max()};
-        };
-
-    private:
-        double tau_eff_electron_;
-        double tau_eff_hole_;
+        Dortmund() {
+            tau_eff_electron_ = 1. / Units::get(5.13e-16, "cm*cm/ns");
+            tau_eff_hole_ = 1. / Units::get(5.04e-16, "cm*cm/ns");
+        }
     };
 
     /**
@@ -121,20 +111,10 @@ namespace allpix {
      */
     class CMSTracker : virtual public TrappingModel {
     public:
-        CMSTracker(double fluence)
-            : tau_eff_electron_(1. / (Units::get(1.71e-16, "cm*cm/ns") * fluence + Units::get(0.114, "/ns"))),
-              tau_eff_hole_(1. / (Units::get(2.79e-16, "cm*cm/ns") * fluence + Units::get(0.093, "/ns"))) {}
-
-        std::pair<bool, double>
-        operator()(const CarrierType& type, double probability, double timestep, double) const override {
-            return {probability <
-                        (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_))),
-                    std::numeric_limits<double>::max()};
-        };
-
-    private:
-        double tau_eff_electron_;
-        double tau_eff_hole_;
+        CMSTracker(double fluence) {
+            tau_eff_electron_ = 1. / (Units::get(1.71e-16, "cm*cm/ns") * fluence + Units::get(0.114, "/ns"));
+            tau_eff_hole_ = 1. / (Units::get(2.79e-16, "cm*cm/ns") * fluence + Units::get(0.093, "/ns"));
+        }
     };
 
     /**
@@ -144,22 +124,22 @@ namespace allpix {
     class CustomTrapping : virtual public TrappingModel {
     public:
         CustomTrapping(const Configuration& config) {
-            tau_eff_electron_ = configure_tau_eff(config, CarrierType::ELECTRON);
-            tau_eff_hole_ = configure_tau_eff(config, CarrierType::HOLE);
+            tf_tau_eff_electron_ = configure_tau_eff(config, CarrierType::ELECTRON);
+            tf_tau_eff_hole_ = configure_tau_eff(config, CarrierType::HOLE);
         };
 
         std::pair<bool, double>
         operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const override {
             return {probability <
                         (1 - std::exp(-1. * timestep /
-                                      (type == CarrierType::ELECTRON ? tau_eff_electron_->Eval(timestep, efield_mag)
-                                                                     : tau_eff_hole_->Eval(timestep, efield_mag)))),
+                                      (type == CarrierType::ELECTRON ? tf_tau_eff_electron_->Eval(timestep, efield_mag)
+                                                                     : tf_tau_eff_hole_->Eval(timestep, efield_mag)))),
                     std::numeric_limits<double>::max()};
         };
 
     private:
-        std::unique_ptr<TFormula> tau_eff_electron_;
-        std::unique_ptr<TFormula> tau_eff_hole_;
+        std::unique_ptr<TFormula> tf_tau_eff_electron_;
+        std::unique_ptr<TFormula> tf_tau_eff_hole_;
 
         std::unique_ptr<TFormula> configure_tau_eff(const Configuration& config, const CarrierType type) {
             std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
