@@ -109,9 +109,6 @@ int main(int argc, char** argv) {
             }
         }
 
-        // Set log level:
-        allpix::Log::setReportingLevel(log_level);
-
         if(file_prefix.empty()) {
             print_help = true;
             return_code = 1;
@@ -147,18 +144,20 @@ int main(int argc, char** argv) {
         allpix::ConfigReader reader(file, conf_file_name);
         allpix::Configuration config = reader.getHeaderConfiguration();
 
-        if(allpix::Log::getReportingLevel() == allpix::LogLevel::NONE) {
+        if(log_level == allpix::LogLevel::NONE) {
             auto log_level_string = config.get<std::string>("log_level", "INFO");
             std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
             try {
                 log_level = allpix::Log::getLevelFromString(log_level_string);
-                allpix::Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Log level \"" << log_level_string
                            << "\" specified in the configuration is invalid, defaulting to INFO instead";
-                allpix::Log::setReportingLevel(allpix::LogLevel::INFO);
+                log_level = allpix::LogLevel::INFO;
             }
         }
+
+        // Set log level:
+        allpix::Log::setReportingLevel(log_level);
 
         // NOTE: this stream should be available for the duration of the logging
         std::ofstream log_file;
