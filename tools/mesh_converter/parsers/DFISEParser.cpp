@@ -51,7 +51,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
 
         // Log the parsing progress:
         if(num_lines > 0 && num_lines_parsed % 1000 == 0) {
-            LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: " << (100 * num_lines_parsed / num_lines) << "%";
+            LOG_PROGRESS(STATUS, "gridlines") << "Parsing grid file: " << (100 * num_lines_parsed / num_lines) << "%";
         }
         num_lines_parsed++;
 
@@ -352,7 +352,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             break;
         }
     }
-    LOG_PROGRESS(INFO, "gridlines") << "Parsing grid file: done.";
+    LOG_PROGRESS(STATUS, "gridlines") << "Parsing grid file: done.";
 
     std::map<std::string, std::vector<Point>> ret_map;
     for(auto& name_region_vertices : regions_vertices) {
@@ -406,7 +406,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name) {
 
         // Log the parsing progress:
         if(num_lines > 0 && num_lines_parsed % 1000 == 0) {
-            LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: " << (100 * num_lines_parsed / num_lines) << "%";
+            LOG_PROGRESS(STATUS, "fieldlines") << "Parsing field data file: " << (100 * num_lines_parsed / num_lines) << "%";
         }
         num_lines_parsed++;
 
@@ -678,7 +678,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name) {
             }
         }
     }
-    LOG_PROGRESS(INFO, "fieldlines") << "Parsing field data file: done.";
+    LOG_PROGRESS(STATUS, "fieldlines") << "Parsing field data file: done.";
 
     return region_electric_field_map;
 }
