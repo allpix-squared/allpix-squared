@@ -291,7 +291,7 @@ namespace allpix {
     public:
         RuchKinoGaAs()
             : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
-              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(200.0, "cm*cm/V/s")) {}
+              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {}
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude

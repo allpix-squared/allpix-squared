@@ -161,7 +161,7 @@ namespace allpix {
         GaAsLifetime(double electron_lifetime, double hole_lifetime)
             : electron_lifetime_(electron_lifetime), hole_lifetime_(hole_lifetime) {}
 
-        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
+        bool operator()(const CarrierType& type, double, double survival_prob, double timestep) const override {
             return survival_prob < (1 - std::exp(-1. * timestep / lifetime(type)));
         };
 
