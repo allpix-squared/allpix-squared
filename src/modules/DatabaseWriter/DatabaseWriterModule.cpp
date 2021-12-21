@@ -205,7 +205,8 @@ void DatabaseWriterModule::run(Event* event) {
             auto detectorName = (message->getDetector() != nullptr ? message->getDetector()->getName() : "global");
 
             for(const auto& object : message->getObjectArray()) {
-                std::string class_name = allpix::demangle(typeid(object.get()).name());
+                auto& o = object.get();
+                std::string class_name = allpix::demangle(typeid(o).name());
 
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
@@ -334,8 +335,12 @@ void DatabaseWriterModule::run(Event* event) {
 }
 
 void DatabaseWriterModule::finalizeThread() {
-    // Disconnecting from database
+// Disconnecting from database
+#if PQXX_VERSION_MAJOR > 6
+    conn_->close();
+#else
     conn_->disconnect();
+#endif
 }
 
 void DatabaseWriterModule::finalize() {
