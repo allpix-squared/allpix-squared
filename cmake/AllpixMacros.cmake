@@ -204,10 +204,11 @@ FUNCTION(add_allpix_test test name)
     FILE(STRINGS ${test} PASS_LST_ REGEX "#PASS ")
     FILE(STRINGS ${test} FAIL_LST_ REGEX "#FAIL ")
 
-    # Check for number of arguments - should only be one:
+    # Check for number of pass or fail conditions - we should have at least one of them
     LIST(LENGTH PASS_LST_ listcount_pass)
-    IF(listcount_pass GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one PASS expressions defined in test ${inp}")
+    LIST(LENGTH FAIL_LST_ listcount_fail)
+    IF(listcount_pass EQUAL 0 AND listcount_fail EQUAL 0)
+        MESSAGE(FATAL_ERROR "Neither PASS nor FAIL defined for test \"${name}\"")
     ENDIF()
 
     # Escape possible regex patterns in the expected output:
