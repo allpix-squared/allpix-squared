@@ -58,7 +58,10 @@ void abort_handler(int) {
 void interrupt_handler(int) {
     // Stop the framework if it is loaded
     if(apx_ready) {
-        LOG(STATUS) << "Interrupted! Finishing up active events...";
+        // Use signal-safe way of writing to STDERR
+        const char str[] = "\nReceived interruption signal, finishing simulation...\n";
+        if(write(STDERR_FILENO, str, sizeof(str) - 1)) {
+        };
         apx->terminate();
     }
 }
