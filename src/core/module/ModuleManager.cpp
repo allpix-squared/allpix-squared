@@ -1019,8 +1019,10 @@ void ModuleManager::finalize() {
  * All modules in the event loop continue to finish the current event
  */
 void ModuleManager::terminate() {
-    terminate_ = true;
-    if(thread_pool_) {
-        thread_pool_->destroy();
+    if(!terminate_) {
+        terminate_ = true;
+        if(thread_pool_) {
+            thread_pool_->destroy();
+        }
     }
 }
