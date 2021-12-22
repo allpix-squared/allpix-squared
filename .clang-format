@@ -1,5 +1,6 @@
 ---
 Language: Cpp
+Standard: c++17
 BasedOnStyle: LLVM
 SortIncludes: true
 AccessModifierOffset: -4
