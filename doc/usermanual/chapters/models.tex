@@ -267,11 +267,20 @@ This model can be selected in the configuration file via the parameter \paramete
 
 \subsection{Auger Recombination}
 
-The charge carrier lifetime according to the Auger recombination model is calculated as:
+At high doping levels exceeding $\SI{5e18}{\centi\metre^{-3}}$~\cite{FOSSUM1983569}, the Auger recombination model becomes increasingly important.
+It assumes that the excess energy created by electron-hole recombinations is transferred to another electron (\textit{e-e-h process}) or another hole (\textit{e-h-h process}).
+The total recombination rate is then given by~\cite{kerr}:
+
+\begin{align*}
+	R_{Auger} = C_n n^2p + C_p n p^2\textrm{,}
+\end{align*}
+where $C_n$ and $C_p$ are the Auger coefficients.
+The first term corresponds to the e-e-h process and the second term to the e-h-h process.
+In highly-doped silicon, the Auger lifetime for minority charge carriers can be written as:
 \begin{equation}
     \tau(N) = \frac{1}{C_{a} \cdot N^2}
 \end{equation}
-where $C_{a}$ is the Auger coefficient, taken as $C_{a} = \SI{3.8e-31}{\cm^6 \per \s}$ from~\cite{dziewior}.
+where $C_{a} = C_{n} + C_{p}$ is the ambipolar Auger coefficient, taken as $C_{a} = \SI{3.8e-31}{\cm^6 \per \s}$ from~\cite{dziewior}.
 
 This recombination mode applies to minority charge carriers only, majority charge carriers have an infinite life time under this model and Equation~\eqref{eq:recomb:prob} will always evaluate to \emph{true}.
 
