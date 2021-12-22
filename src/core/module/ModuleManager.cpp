@@ -245,7 +245,11 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             mod->set_identifier(identifier);
 
             // Check if module can't run in parallel
-            can_parallelize_ = mod->multithreadingEnabled() && can_parallelize_;
+            auto module_can_parallelize = mod->multithreadingEnabled();
+            if(multithreading_flag_ && !module_can_parallelize) {
+                LOG(WARNING) << "Module instance " << mod->getUniqueName() << " prevents multithreading";
+            }
+            can_parallelize_ = module_can_parallelize && can_parallelize_;
 
             // Add the new module to the run list
             modules_.emplace_back(std::move(mod));
