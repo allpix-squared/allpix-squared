@@ -192,7 +192,7 @@ namespace allpix {
               electron_d_(Units::get(1.2337e6, "V/cm") + Units::get(1.2039e3, "V/cm") * temperature +
                           Units::get(0.56703, "V/cm") * std::pow(temperature, 2)),
               hole_a_(Units::get(2.376, "V") + Units::get(1.033e-2, "V") * temperature),
-              hole_b_(Units::get(0.17714, "V") * std::exp(-2.178e-3 * temperature)),
+              hole_b_(Units::get(0.17714, "V") * std::exp(Units::get(-2.178e-3, "/K") * temperature)),
               hole_c_(Units::get(9.47e-3, "V/cm") * std::pow(temperature, 2.4924)),
               hole_d_(Units::get(1.4043e6, "V/cm") + Units::get(2.9744e3, "V/cm") * temperature +
                       Units::get(1.4829, "V/cm") * std::pow(temperature, 2)) {}
