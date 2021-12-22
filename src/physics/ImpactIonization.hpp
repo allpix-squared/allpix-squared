@@ -109,7 +109,7 @@ namespace allpix {
      * Chynoweth's law, parameter values taken from abstract.
      *
      * Temperature scaling via Synopsys Sentaurus user manual, but T0 reference value for gamma_ is not entirely clear since
-     * it it never stated explicitly. Assuming 300K.
+     * it it never stated explicitly. Assuming 300K, Weightfield2 uses 298K.
      */
     class VanOverstraetenDeMan : virtual public ImpactIonizationModel {
     public:
