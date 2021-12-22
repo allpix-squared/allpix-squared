@@ -623,7 +623,6 @@ void GenericPropagationModule::run(Event* event) {
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
-                std::lock_guard<std::mutex> lock{stats_mutex_};
                 output_plot_points.emplace_back(
                     std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
                     std::vector<ROOT::Math::XYZPoint>());
