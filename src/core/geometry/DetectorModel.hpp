@@ -32,6 +32,14 @@
 
 namespace allpix {
     /**
+     * @brief Sensor materials
+     */
+    enum class SensorMaterial {
+        SILICON = 1, ///< No field is applied
+        GAAS,        ///< Gallium Arsenide
+    };
+
+    /**
      * @ingroup DetectorModels
      * @brief Base of all detector models
      *
@@ -380,6 +388,7 @@ namespace allpix {
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
+        SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         double chip_thickness_{};
 
