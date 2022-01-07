@@ -13,6 +13,7 @@
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
+#include "core/geometry/RadialStripDetectorModel.hpp"
 
 using namespace allpix;
 
@@ -30,6 +31,9 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     }
     if(type == "monolithic") {
         return std::make_shared<MonolithicPixelDetectorModel>(name, reader);
+    }
+    if(type == "radial_strip") {
+        return std::make_shared<RadialStripDetectorModel>(name, reader);
     }
 
     LOG(ERROR) << "Model file " << config.getFilePath() << " type parameter is not valid";
