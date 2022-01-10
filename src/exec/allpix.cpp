@@ -15,6 +15,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <unistd.h>
 #include <utility>
 
 #include <boost/version.hpp>
