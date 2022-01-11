@@ -75,14 +75,21 @@ void MCParticle::setParent(const MCParticle* mc_particle) {
 }
 
 /**
- * Object is stored as TRef and can only be accessed if pointed object is in scope
+ * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getParent() const {
     return parent_.get();
 }
 
 /**
- * Object is stored as TRef and can only be accessed if pointed object is in scope
+ * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
+ */
+bool MCParticle::isPrimary() const {
+    return (parent_.get() == nullptr);
+}
+
+/**
+ * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
 const MCParticle* MCParticle::getPrimary() const {
     auto* parent = parent_.get();
@@ -94,7 +101,7 @@ void MCParticle::setTrack(const MCTrack* mc_track) {
 }
 
 /**
- * Object is stored as TRef and can only be accessed if pointed object is in scope
+ * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
 const MCTrack* MCParticle::getTrack() const {
     return track_.get();
