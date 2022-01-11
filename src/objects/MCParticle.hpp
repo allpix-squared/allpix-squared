@@ -69,6 +69,12 @@ namespace allpix {
         ROOT::Math::XYZPoint getLocalReferencePoint() const;
 
         /**
+         * @brief Check if this MCParticle is a primary particle by checking if the parent particle reference is a nullptr.
+         * @return Bollean flag indicating whether this MCParticle is a primary particle
+         */
+        bool isPrimary() const;
+
+        /**
          * @brief Get PDG particle id for the particle
          * @return Particle id
          */

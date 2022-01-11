@@ -20,7 +20,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "DetectorModel.hpp"
+#include "PixelDetectorModel.hpp"
 
 namespace allpix {
 
@@ -28,7 +28,7 @@ namespace allpix {
      * @ingroup DetectorModels
      * @brief Model of a hybrid pixel detector. This a model where the sensor is bump-bonded to the chip
      */
-    class HybridPixelDetectorModel : public DetectorModel {
+    class HybridPixelDetectorModel : public PixelDetectorModel {
     public:
         /**
          * @brief Constructs the hybrid pixel detector model
@@ -36,7 +36,7 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          */
         explicit HybridPixelDetectorModel(std::string type, const ConfigReader& reader)
-            : DetectorModel(std::move(type), reader) {
+            : PixelDetectorModel(std::move(type), reader) {
             auto config = reader.getHeaderConfiguration();
 
             // Excess around the chip from the pixel grid

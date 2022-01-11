@@ -248,12 +248,11 @@ CMake automatically searches for \apsq configuration files in the different dire
 
 Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraph.
 
-\paragraph{Pass and Fail Conditions}
+\paragraph{Test Tags, Pass and Fail Conditions}
 
-The output of any test is compared to a search string in order to determine whether it passed or failed.
-These expressions are simply placed in the configuration file of the corresponding tests, a tag at the beginning of the line indicates whether it should be used for passing or failing the test.
-Each test can only contain one passing and one failing expression.
-If different functionality and thus outputs need to be tested, a second test should be added to cover the corresponding expression.
+Test tags allow to influence the execution condition of the given test configuration, or to define a required condition for passing or failing the test.
+These expressions are simply placed in the configuration file of the corresponding tests, a tag at the beginning of the line indicates which test tag the line corresponds to.
+The following tags are available:
 
 \begin{description}
   \item[Passing a test] The expression marked with the tag \parameter{#PASS} has to be found in the output in order for the test to pass. If the expression is not found, the test fails.
@@ -267,6 +266,8 @@ If different functionality and thus outputs need to be tested, a second test sho
 
 Multiple pass or fail conditions can be separated by a semicolon or by adding multiple \parameter{#PASS} or \parameter{#FAIL} expressions.
 It should however be noted that test passes or fails \emph{if any of these conditions is met}, i.e.\ the conditions are combined with a logical \parameter{OR}.
+At least one pass or one fail conditions must be present in every test.
+
 Pass and fail condition are not interpreted as regular expressions but relevant characters are automatically escaped.
 This allows to directly copy corresponding lines form the log into the respective condition without manually creating a matching regular expression.
 A noteworthy exception to this are line breaks.

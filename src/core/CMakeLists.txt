@@ -21,6 +21,7 @@ ADD_LIBRARY(
     geometry/Detector.cpp
     geometry/DetectorField.cpp
     geometry/DetectorModel.cpp
+    geometry/PixelDetectorModel.cpp
     geometry/GeometryManager.cpp
     Allpix.cpp)
 

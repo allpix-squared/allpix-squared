@@ -20,7 +20,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "DetectorModel.hpp"
+#include "PixelDetectorModel.hpp"
 
 namespace allpix {
 
@@ -29,9 +29,9 @@ namespace allpix {
      * @brief Model of a monolithic pixel detector. This a model where sensor and readout electronics are placed within the
      * same silicon wafer.
      *
-     * This model is already fully implemented in the \ref DetectorModel base class.
+     * This model is already fully implemented in the \ref PixelDetectorModel base class.
      */
-    class MonolithicPixelDetectorModel : public DetectorModel {
+    class MonolithicPixelDetectorModel : public PixelDetectorModel {
     public:
         /**
          * @brief Constructs the monolithic pixel detector model
@@ -39,7 +39,7 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          */
         explicit MonolithicPixelDetectorModel(std::string type, const ConfigReader& reader)
-            : DetectorModel(std::move(type), reader) {}
+            : PixelDetectorModel(std::move(type), reader) {}
     };
 } // namespace allpix
 
