@@ -53,8 +53,41 @@ ENDIF()
 # FIXME: this should be combined with the ADD_DEFINITIONS
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
+# Configure the installation prefix to allow both local as system-wide installation
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET(CMAKE_INSTALL_PREFIX
+        "${PROJECT_SOURCE_DIR}"
+        CACHE PATH "Prefix prepended to install directories" FORCE)
+ENDIF()
+MESSAGE(STATUS "Installing to \"${CMAKE_INSTALL_PREFIX}\"")
+
 INCLUDE(cmake/CPackConfig.cmake)
 INCLUDE(CPack)
+
+# Include allpix cmake functions
+INCLUDE("cmake/AllpixMacros.cmake")
+
+###################################
+# Setup tests for allpix          #
+###################################
+
+OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
+OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
+OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
+OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
+
+SET(_MODULES_WITH_TESTS
+    ""
+    CACHE INTERNAL "MODULES_WITH_TESTS")
+
+# Enable testing
+ENABLE_TESTING()
+
+# Include example configurations:
+ADD_SUBDIRECTORY(examples)
+
+# Include all tests
+ADD_SUBDIRECTORY(etc/unittests)
 
 ###############################################
 # Setup the environment for the documentation #
@@ -67,6 +100,23 @@ ADD_SUBDIRECTORY(doc)
 
 # If only building docs, stop processing the rest of the CMake file:
 IF(BUILD_DOCS_ONLY)
+    FILE(
+        GLOB_RECURSE module_tests
+        LIST_DIRECTORIES false
+        RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src/modules"
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/*/*/[00-99]*.conf)
+    FOREACH(test ${module_tests})
+        GET_FILENAME_COMPONENT(title ${test} NAME_WE)
+        GET_FILENAME_COMPONENT(dir "${test}/../.." ABSOLUTE)
+        GET_FILENAME_COMPONENT(mod "${dir}" NAME)
+        ADD_ALLPIX_TEST(${CMAKE_CURRENT_SOURCE_DIR}/src/modules/${test} "modules/${mod}/${title}")
+    ENDFOREACH()
+
+    SET(MODULES_TEST_DESCRIPTIONS "${TEST_DESCRIPTIONS}")
+    GET_PROPERTY(CORE_TEST_DESCRIPTIONS GLOBAL PROPERTY CORE_TEST_DESCRIPTIONS)
+    GET_PROPERTY(PERF_TEST_DESCRIPTIONS GLOBAL PROPERTY PERF_TEST_DESCRIPTIONS)
+    CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/chapters/tests.cmake.tex"
+                   "${CMAKE_CURRENT_BINARY_DIR}/usermanual/usermanual/tests.tex" @ONLY)
     RETURN()
 ENDIF()
 
@@ -79,13 +129,6 @@ ENABLE_LANGUAGE(CXX)
 
 # Additional packages to be searched for by cmake
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
-# Configure the installation prefix to allow both local as system-wide installation
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    SET(CMAKE_INSTALL_PREFIX
-        "${PROJECT_SOURCE_DIR}"
-        CACHE PATH "Prefix prepended to install directories" FORCE)
-ENDIF()
 
 # Set up the RPATH so executables find the libraries even when installed in non-default location
 SET(CMAKE_MACOSX_RPATH TRUE)
@@ -114,9 +157,6 @@ IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
         TRUE
         CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
-
-# Include allpix cmake functions
-INCLUDE("cmake/AllpixMacros.cmake")
 
 ###################################
 # Define build flags for allpix   #
@@ -306,28 +346,6 @@ LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cma
 INCLUDE("cmake/cmake-checks.cmake")
 
 ###################################
-# Setup tests for allpix          #
-###################################
-
-OPTION(TEST_CORE "Perform unit tests to ensure framework core functionality?" ON)
-OPTION(TEST_MODULES "Perform unit tests to ensure module functionality?" ON)
-OPTION(TEST_PERFORMANCE "Perform unit tests to ensure framework performance?" ON)
-OPTION(TEST_EXAMPLES "Perform unit tests to ensure example validity?" ON)
-
-SET(_MODULES_WITH_TESTS
-    ""
-    CACHE INTERNAL "MODULES_WITH_TESTS")
-
-# Enable testing
-ENABLE_TESTING()
-
-# Include example configurations:
-ADD_SUBDIRECTORY(examples)
-
-# Include all tests
-ADD_SUBDIRECTORY(etc/unittests)
-
-###################################
 # Define build targets for allpix #
 ###################################
 
@@ -403,6 +421,12 @@ IF(TEST_PERFORMANCE)
 ELSE()
     MESSAGE(STATUS "Unit tests: performance tests deactivated.")
 ENDIF()
+
+GET_PROPERTY(CORE_TEST_DESCRIPTIONS GLOBAL PROPERTY CORE_TEST_DESCRIPTIONS)
+GET_PROPERTY(MODULES_TEST_DESCRIPTIONS GLOBAL PROPERTY MODULES_TEST_DESCRIPTIONS)
+GET_PROPERTY(PERF_TEST_DESCRIPTIONS GLOBAL PROPERTY PERF_TEST_DESCRIPTIONS)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/chapters/tests.cmake.tex"
+               "${CMAKE_CURRENT_BINARY_DIR}/usermanual/usermanual/tests.tex" @ONLY)
 
 ############################
 # Create local setup files #
