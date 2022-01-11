@@ -24,7 +24,6 @@
 #include <Math/Rotation3D.h>
 #include <Math/Transform3D.h>
 
-#include "Detector.hpp"
 #include "DetectorField.hpp"
 #include "DetectorModel.hpp"
 
@@ -123,12 +122,14 @@ namespace allpix {
          * @brief Set the electric field in a single pixel in the detector using a grid
          * @param field Flat array of the field vectors (see detailed description)
          * @param dimensions The dimensions of the flat electric field array
+         * @param size Size of the electric field along the three dimensions of the field map
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& field,
                                   std::array<size_t, 3> dimensions,
+                                  std::array<double, 3> size,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
                                   std::pair<double, double> thickness_domain);
@@ -163,12 +164,14 @@ namespace allpix {
          * @brief Set the doping profile in a single pixel in the detector using a grid
          * @param field Flat array of the field (see detailed description)
          * @param dimensions The dimensions of the flat doping profile array
+         * @param size Size of the doping profile along the three dimensions of the field map
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the profile holds
          */
         void setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                   std::array<size_t, 3> dimensions,
+                                  std::array<double, 3> size,
                                   std::array<double, 2> scales,
                                   std::array<double, 2> offset,
                                   std::pair<double, double> thickness_domain);
@@ -202,12 +205,14 @@ namespace allpix {
          * @brief Set the weighting potential in a single pixel in the detector using a grid
          * @param potential Flat array of the potential vectors (see detailed description)
          * @param dimensions The dimensions of the flat weighting potential array
+         * @param size Size of the weighting potential along the three dimensions of the field map
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param offset Offset of the field from the pixel border
          * @param thickness_domain Domain in local coordinates in the thickness direction where the potential holds
          */
         void setWeightingPotentialGrid(const std::shared_ptr<std::vector<double>>& potential,
                                        std::array<size_t, 3> dimensions,
+                                       std::array<double, 3> size,
                                        std::array<double, 2> scales,
                                        std::array<double, 2> offset,
                                        std::pair<double, double> thickness_domain);
@@ -264,6 +269,16 @@ namespace allpix {
          * @brief Create the coordinate transformation
          */
         void build_transform();
+
+        /**
+         * @brief Check validity of the field map for this detector
+         * @param size Size of the field in the three dimensions
+         * @param field_scale Scaling factors for the field
+         * @param thickness_domain Thickness domain in which the field is defined in
+         */
+        void check_field_match(std::array<double, 3> size,
+                               std::array<double, 2> field_scale,
+                               std::pair<double, double> thickness_domain) const;
 
         std::string name_;
         std::shared_ptr<DetectorModel> model_;

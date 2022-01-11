@@ -59,22 +59,15 @@ namespace allpix {
                                                          std::pair<double, double> thickness_domain);
 
         /**
-         * @brief Read pre-calculated field from file and apply it
-         * @param thickness_domain Domain of the thickness where the field is defined
+         * @brief Read field from a file in init or apf format
+         * @return Data of the field read from file
          */
-        FieldData<double> read_field(std::pair<double, double> thickness_domain);
+        FieldData<double> read_field();
         static FieldParser<double> field_parser_;
 
         /**
          * @brief Create output plots of the weighting potential profile
          */
         void create_output_plots();
-
-        /**
-         * @brief Compare the dimensions of the detector with the field, print warnings
-         * @param dimensions Dimensions of the field read from file
-         * @param thickness_domain Domain of the thickness where the field is defined
-         */
-        void check_detector_match(std::array<double, 3> dimensions, std::pair<double, double> thickness_domain);
     };
 } // namespace allpix
