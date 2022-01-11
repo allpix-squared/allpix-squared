@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <G4GlobalConfig.hh>
+#include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -33,6 +34,7 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
@@ -42,7 +44,9 @@ using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
+
+    // Set exception handler for Geant4 exceptions:
+    G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
 
 // Enable multithreading for Geant4 if it has been built with support for it:
 #ifdef G4MULTITHREADED
@@ -64,7 +68,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
         LogLevel log_level = Log::getLevelFromString(g4cerr_log_level);
         G4LoggingDestination::setG4cerrReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "geant4_cerr_log_level", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
     }
 
     // Set Geant G4cout log level
@@ -72,8 +76,14 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
         LogLevel log_level = Log::getLevelFromString(g4cout_log_level);
         G4LoggingDestination::setG4coutReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config_, "geant4_cout_log_level", "invalid log level provided");
+        throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
     }
+
+    // Set up UI manager with logging destination
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+
+    geometry_construction_ = new GeometryConstructionG4(geo_manager_, config_);
 }
 
 /**
@@ -116,9 +126,6 @@ void GeometryBuilderGeant4Module::initialize() {
 
     // Suppress all stdout output due to a part in Geant4 where G4cout is not used
     SUPPRESS_STREAM(std::cout);
-
-    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
-    ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
 
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
