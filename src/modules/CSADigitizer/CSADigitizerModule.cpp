@@ -13,7 +13,6 @@
 #include "core/utils/unit.h"
 #include "tools/ROOT.h"
 
-#include <TF1.h>
 #include <TFile.h>
 #include <TGraph.h>
 #include <TH1D.h>
@@ -84,8 +83,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto resistance_feedback = tauF / capacitance_feedback;
 
-        calculate_impulse_response_ = std::make_unique<TF1>(
-            "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
+        calculate_impulse_response_ =
+            std::make_unique<TFormula>("response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])");
         calculate_impulse_response_->SetParameters(resistance_feedback, tauF, tauR);
 
         LOG(DEBUG) << "Parameters: cf = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
@@ -114,8 +113,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto tauF = resistance_feedback * capacitance_feedback;
         auto tauR = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
 
-        calculate_impulse_response_ = std::make_unique<TF1>(
-            "response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])", 0., integration_time_);
+        calculate_impulse_response_ =
+            std::make_unique<TFormula>("response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])");
         calculate_impulse_response_->SetParameters(resistance_feedback, tauF, tauR);
 
         LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback, "V*s/C")
@@ -127,18 +126,26 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"})
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     } else if(model_ == DigitizerType::CUSTOM) {
-        calculate_impulse_response_ = std::make_unique<TF1>(
-            "response_function", (config_.get<std::string>("response_function")).c_str(), 0., integration_time_);
+        calculate_impulse_response_ =
+            std::make_unique<TFormula>("response_function", (config_.get<std::string>("response_function")).c_str());
 
         if(!calculate_impulse_response_->IsValid()) {
             throw InvalidValueError(
                 config_, "response_function", "The response function is not a valid ROOT::TFormula expression.");
         }
 
+        if(calculate_impulse_response_->GetNdim() != 1) {
+            throw InvalidValueError(config_,
+                                    "response_function",
+                                    "The response function has " +
+                                        allpix::to_string(calculate_impulse_response_->GetNdim()) +
+                                        " dimensions, only one expected.");
+        }
+
         auto parameters = config_.getArray<double>("response_parameters");
 
         // check if number of parameters match up
-        if(static_cast<size_t>(calculate_impulse_response_->GetNumberFreeParameters()) != parameters.size()) {
+        if(static_cast<size_t>(calculate_impulse_response_->GetNpar()) != parameters.size()) {
             throw InvalidValueError(
                 config_,
                 "response_parameters",
