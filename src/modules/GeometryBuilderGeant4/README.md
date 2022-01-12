@@ -103,8 +103,6 @@ This module requires an installation of Geant4.
 * `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not requiring any minimum margin.
 * `log_level_g4cerr`: Target logging level for Geant4 messages from the G4cerr (error) stream. Defaults to `WARNING`.
 * `log_level_g4cout`: Target logging level for Geant4 messages from the G4cout stream. Defaults to `TRACE`.
-* `GDML_input_file` : Optional argument to import the geometry of one or multiple GDML files. Like in `GDML_output_file`, the GDML support in Geant4 has to be enabled. Please notice that the world size needs to be large enough to include the new geometry.
-* `GDML_input_offset` : Optional position arguments to the imported GDML geometries. Specified as an array of three dimensional values. Its size has to be equal to the number of imported files. If no offset is specified, the geometries are placed at the origin.
 
 ### Usage
 To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size in every dimension, the following configuration could be used:
@@ -114,13 +112,6 @@ To create a Geant4 geometry using vacuum as world material and with always exact
 world_material = "vacuum"
 world_margin_percentage = 0
 world_minimum_margin = 1m 1m 1m
-```
-To import multiple GDML files, the file names are placed next to each other like in the example configuration below:
-
-```ini
-[GeometryBuilderGeant4]
-GDML_input_file = "assembly.gdml" "assembly2.gdml"
-GDML_input_offset = [[-1cm 0cm 0cm], [0 1cm 0cm]]
 ```
 
 [@g4materials]: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Appendix/materialNames.html
