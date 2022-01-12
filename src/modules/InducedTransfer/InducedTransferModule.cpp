@@ -71,13 +71,13 @@ void InducedTransferModule::run(Event* event) {
         // Find the nearest pixel
         auto [xpixel, ypixel] = model_->getPixelIndex(position_end);
 
-        LOG(TRACE) << "Calculating induced charge from carriers below pixel "
-                   << Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)) << ", moved from "
-                   << Units::display(position_start, {"um", "mm"}) << " to " << Units::display(position_end, {"um", "mm"})
-                   << ", " << Units::display(propagated_charge.getGlobalTime() - deposited_charge->getGlobalTime(), "ns");
+        LOG(TRACE) << "Calculating induced charge from carriers below pixel " << Pixel::Index(xpixel, ypixel)
+                   << ", moved from " << Units::display(position_start, {"um", "mm"}) << " to "
+                   << Units::display(position_end, {"um", "mm"}) << ", "
+                   << Units::display(propagated_charge.getGlobalTime() - deposited_charge->getGlobalTime(), "ns");
 
         // Loop over NxN pixels:
-        auto idx = Pixel::Index(static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel));
+        auto idx = Pixel::Index(xpixel, ypixel);
         for(const auto& pixel_index : model_->getNeighbors(idx, distance_)) {
             auto ramo_end = detector_->getWeightingPotential(position_end, pixel_index);
             auto ramo_start = detector_->getWeightingPotential(position_start, pixel_index);

@@ -36,8 +36,8 @@ bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
     auto ret = pixel_hits_.insert(pixel_hit);
     if(ret.second == true) {
         cluster_charge_ += pixel_hit->getSignal();
-        unsigned int pixX = pixel_hit->getPixel().getIndex().x();
-        unsigned int pixY = pixel_hit->getPixel().getIndex().y();
+        auto pixX = pixel_hit->getPixel().getIndex().x();
+        auto pixY = pixel_hit->getPixel().getIndex().y();
         minX_ = std::min(pixX, minX_);
         maxX_ = std::max(pixX, maxX_);
         minY_ = std::min(pixY, minY_);
@@ -79,7 +79,7 @@ std::set<const MCParticle*> Cluster::getMCParticles() const {
     return mc_particles_;
 }
 
-const PixelHit* Cluster::getPixelHit(unsigned int x, unsigned int y) const {
+const PixelHit* Cluster::getPixelHit(int x, int y) const {
     for(const auto& pixel : this->getPixelHits()) {
         if(pixel->getPixel().getIndex().x() == x && pixel->getPixel().getIndex().y() == y) {
             return pixel;

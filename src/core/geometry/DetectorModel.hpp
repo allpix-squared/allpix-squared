@@ -418,8 +418,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual ROOT::Math::XYZPoint getPixelCenter(unsigned int x, unsigned int y) const = 0;
-
+        virtual ROOT::Math::XYZPoint getPixelCenter(const int x, const int y) const = 0;
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
          * @param local_pos Position in local coordinates of the detector model

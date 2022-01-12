@@ -21,8 +21,8 @@ using allpix::ThreadPool;
 
 void interrupt_handler(int);
 
-bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& lhs,
-                           const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>>& rhs) {
+bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
+                           const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs) {
     if(lhs.x() == rhs.x()) {
         return lhs.y() < rhs.y();
     }
