@@ -60,7 +60,7 @@ cmake -DDGEANT4_USE_GDML=ON ..
 #### Visualization Options
 
 For each of the above mentioned models, a color and opacity can be added to the passive material.
-* The `color` of the passive material is given in an R G B vector, where each color value is between 0 and 1. Defaults to `color = 0 0 1` (blue)
+* The `color` of the passive material is given in an R G B vector, where each color value is between 0 and 1. Defaults to `color = 0 0 1` (blue).
 * The `opacity` of the passive material is given as a number between 0 and 1, where 0 is completely transparent, and 1 is completely opaque.
 
 
@@ -104,7 +104,7 @@ This module requires an installation of Geant4.
 * `log_level_g4cerr`: Target logging level for Geant4 messages from the G4cerr (error) stream. Defaults to `WARNING`.
 * `log_level_g4cout`: Target logging level for Geant4 messages from the G4cout stream. Defaults to `TRACE`.
 * `GDML_input_file` : Optional argument to import the geometry of one or multiple GDML files. Like in `GDML_output_file`, the GDML support in Geant4 has to be enabled. Please notice that the world size needs to be large enough to include the new geometry.
-* `GDML_input_offset' : Optional position arguments to the imported GDML geometries. Specified as an array of three dimensional values. Its size has to be equal to the number of imported files. If no offset is specified, the geometries are placed at the origin.
+* `GDML_input_offset` : Optional position arguments to the imported GDML geometries. Specified as an array of three dimensional values. Its size has to be equal to the number of imported files. If no offset is specified, the geometries are placed at the origin.
 
 ### Usage
 To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size in every dimension, the following configuration could be used:
