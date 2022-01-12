@@ -68,7 +68,7 @@ namespace allpix {
          * @brief Return the time step
          * @return Current time step of the integration
          */
-        T getTimeStep() { return h_; }
+        T getTimeStep() const { return h_; }
 
         /**
          * @brief Changes the current value during integration
@@ -80,17 +80,22 @@ namespace allpix {
          * @brief Get the value to integrate
          * @return Current value
          */
-        Eigen::Matrix<T, D, 1> getValue() { return y_; }
+        Eigen::Matrix<T, D, 1> getValue() const { return y_; }
         /**
          * @brief Get the total integration error
          * @return Total integrated error
          */
-        Eigen::Matrix<T, D, 1> getError() { return error_; }
+        Eigen::Matrix<T, D, 1> getError() const { return error_; }
         /**
          * @brief Get the time during integration
          * @return Current time
          */
-        T getTime() { return t_; }
+        T getTime() const { return t_; }
+        /**
+         * @brief Advance the time of the integration
+         * @param t Time step to advance the integration by
+         */
+        void advanceTime(double t) { t_ += t; }
 
         /**
          * @brief Execute a single time step of the integration
