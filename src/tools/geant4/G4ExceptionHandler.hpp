@@ -20,7 +20,7 @@ namespace allpix {
      * @brief Exception handler for Geant4
      *
      * This class is registered with the G4StateManager and handles exceptions thrown in the Geant4 framework. It simply
-     * constructs an \ref allpix::ModuleError exception and throws it, for the frameworkto take further action such as
+     * constructs an \ref allpix::ModuleError exception and throws it, for the framework to take further action such as
      * terminating the run
      */
     class G4ExceptionHandler : public G4VExceptionHandler {
