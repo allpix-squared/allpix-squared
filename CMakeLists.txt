@@ -300,8 +300,7 @@ FILE(
     LIST_DIRECTORIES false
     RELATIVE ${PROJECT_SOURCE_DIR}
     "cmake/*.cmake" "CMakeLists.txt")
-LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/FindPQXX.cmake"
-     "cmake/CodeCoverage.cmake")
+LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/CodeCoverage.cmake")
 
 INCLUDE("cmake/cmake-checks.cmake")
 
