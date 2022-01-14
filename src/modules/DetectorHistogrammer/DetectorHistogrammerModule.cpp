@@ -420,8 +420,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             // If model is radial_strip, calculate r and phi residuals and recalculate inPixelPos
             if(radial_model != nullptr) {
                 // Transform coordinates to polar representation
-                auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(
-                    static_cast<unsigned int>(xpixel), static_cast<unsigned int>(ypixel)));
+                auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
                 auto particle_polar = radial_model->getPositionPolar(particlePos);
                 auto cluster_polar = radial_model->getPositionPolar(clusterPos);
 
@@ -499,8 +498,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         // If model is radial_strip, recalculate inPixelPos
         if(radial_model != nullptr) {
             // Transform coordinates to polar representation
-            auto strip_polar = radial_model->getPositionPolar(
-                detector_->getModel()->getPixelCenter(xpixel, ypixel));
+            auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
             auto particle_polar = radial_model->getPositionPolar(particlePos);
 
             // Overwrite inPixelPos with correct values
@@ -696,7 +694,7 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_map_histogram->Write();
     efficiency_vs_x_histogram->Write();
     efficiency_vs_y_histogram->Write();
-    
+
     // Write additional histograms if radial_strip model is used
     if(radial_model != nullptr) {
         auto polar_hit_map_histogram = polar_hit_map->Merge();

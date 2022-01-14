@@ -117,21 +117,24 @@ bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local
 
     // Get polar coordinates of the corresponding strip center
     auto [xstrip, ystrip] = getPixelIndex(local_pos);
-    auto strip_center = getPixelCenter(static_cast<unsigned int>(xstrip), static_cast<unsigned int>(ystrip));
+    auto strip_center = getPixelCenter(xstrip, ystrip);
     auto strip_center_polar = getPositionPolar(strip_center);
 
     return (polar_pos.phi() * sin(std::fabs(strip_center_polar.phi() - polar_pos.phi())) < implant_size_.x() / 2);
 }
 
 bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) const {
-    return !(strip_index.y() >= getNPixels().y() || strip_index.x() >= number_of_strips_.at(strip_index.y()));
+    return !(strip_index.y() < 0 || strip_index.y() >= static_cast<int>(getNPixels().y()) || strip_index.x() < 0 ||
+             strip_index.x() >= static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y()))));
 }
 
-ROOT::Math::XYZPoint RadialStripDetectorModel::getPixelCenter(unsigned int x, unsigned int y) const {
+ROOT::Math::XYZPoint RadialStripDetectorModel::getPixelCenter(int x, int y) const {
     // Calculate the radial coordinate of the strip center
-    auto local_r = (row_radius_.at(y) + row_radius_.at(y + 1)) / 2;
+    auto local_r = (row_radius_.at(static_cast<unsigned int>(y)) + row_radius_.at(static_cast<unsigned int>(y + 1))) / 2;
     // Calculate the angular coordinate of the strip center
-    auto local_phi = -angular_pitch_.at(y) * number_of_strips_.at(y) / 2 + (x + 0.5) * angular_pitch_.at(y);
+    auto local_phi =
+        -angular_pitch_.at(static_cast<unsigned int>(y)) * number_of_strips_.at(static_cast<unsigned int>(y)) / 2 +
+        (x + 0.5) * angular_pitch_.at(static_cast<unsigned int>(y));
 
     // Convert strip center position to cartesian coordinates
     auto center = getPositionCartesian(ROOT::Math::Polar2DPoint(local_r, local_phi));
@@ -147,20 +150,21 @@ std::pair<int, int> RadialStripDetectorModel::getPixelIndex(const ROOT::Math::XY
     auto polar_pos = getPositionPolar(position);
 
     // Get row index
-    unsigned int strip_y{};
+    int strip_y{};
     for(unsigned int row = 0; row < getNPixels().y(); row++) {
         // Find the correct strip row by comparing to inner and outer row radii
         if(polar_pos.r() > row_radius_.at(row) && polar_pos.r() <= row_radius_.at(row + 1)) {
-            strip_y = row;
+            strip_y = static_cast<int>(row);
             break;
         }
     }
     // Get the strip pitch in the correct strip row
-    auto pitch = angular_pitch_.at(strip_y);
+    auto pitch = angular_pitch_.at(static_cast<unsigned int>(strip_y));
     // Calculate the strip x-index
-    auto strip_x = static_cast<int>(std::floor((polar_pos.phi() + pitch * number_of_strips_.at(strip_y) / 2) / pitch));
+    auto strip_x = static_cast<int>(
+        std::floor((polar_pos.phi() + pitch * number_of_strips_.at(static_cast<unsigned int>(strip_y)) / 2) / pitch));
 
-    return {strip_x, static_cast<int>(strip_y)};
+    return {strip_x, strip_y};
 }
 
 std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
@@ -169,12 +173,11 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
 
     // Position of the global seed in polar coordinates
     auto seed_pol = getPositionPolar(getPixelCenter(idx.x(), idx.y()));
-    auto idx_y = static_cast<int>(idx.y());
 
     // Iterate over eligible strip rows
     for(int y = static_cast<int>(-distance); y <= static_cast<int>(distance); y++) {
         // Skip row if outside of pixel matrix
-        if(!isWithinMatrix(0, idx_y + y)) {
+        if(!isWithinMatrix(0, idx.y() + y)) {
             continue;
         }
 
@@ -184,8 +187,10 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
         // Move row seed position to the center of a requested row
         for(unsigned int shift_y = 1; shift_y <= std::labs(y); shift_y++) {
             // Add or subtract position based on whether given row is below or above global seed
-            row_seed_r += (y < 0) ? -strip_length_.at(idx.y() - shift_y + 1) / 2 - strip_length_.at(idx.y() - shift_y) / 2
-                                  : strip_length_.at(idx.y() + shift_y - 1) / 2 + strip_length_.at(idx.y() + shift_y) / 2;
+            row_seed_r += (y < 0) ? -strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y + 1) / 2 -
+                                        strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y) / 2
+                                  : strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y - 1) / 2 +
+                                        strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y) / 2;
         }
 
         // Get cartesian position and pixel indices of the row seed
@@ -196,7 +201,7 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
         for(int j = static_cast<int>(-distance); j <= static_cast<int>(distance); j++) {
             // Add to final neighbors if strip is within the pixel matrix
             if(isWithinMatrix(row_seed_x + j, row_seed_y)) {
-                neighbors.push_back({static_cast<unsigned int>(row_seed_x + j), static_cast<unsigned int>(row_seed_y)});
+                neighbors.push_back({row_seed_x + j, row_seed_y});
             }
         }
     }
@@ -207,14 +212,18 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
 bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
                                             const Pixel::Index& entrant,
                                             const size_t distance) const {
+    // If either pixel is outside of matrix, return false
+    if(!isWithinMatrix(seed) || !isWithinMatrix(entrant)) {
+        return false;
+    }
+
     // y-index distance between the seed and the entrant
-    auto dist_y = static_cast<int>(entrant.y()) - static_cast<int>(seed.y());
+    auto dist_y = entrant.y() - seed.y();
 
     // Seed and entrant in the same strip row
     if(dist_y == 0) {
         // Compare x-index distance to the requested distance
-        return (static_cast<unsigned int>(std::labs(static_cast<int>(seed.x()) - static_cast<int>(entrant.x()))) <=
-                distance);
+        return (static_cast<size_t>(std::abs(seed.x() - entrant.x())) <= distance);
     }
 
     // Position of the global seed in polar coordinates
@@ -224,9 +233,11 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto row_seed_r = seed_pol.r();
 
     // Move row seed position to the center of the requested row
-    for(unsigned int shift_y = 0; shift_y < std::labs(dist_y); shift_y++) {
-        row_seed_r += (dist_y < 0) ? -strip_length_.at(seed.y() - shift_y) / 2 - strip_length_.at(seed.y() - shift_y - 1) / 2
-                                   : strip_length_.at(seed.y() + shift_y) / 2 + strip_length_.at(seed.y() + shift_y + 1) / 2;
+    for(unsigned int shift_y = 0; shift_y < static_cast<unsigned int>(std::abs(dist_y)); shift_y++) {
+        row_seed_r += (dist_y < 0) ? -strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y) / 2 -
+                                         strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y - 1) / 2
+                                   : strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y) / 2 +
+                                         strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y + 1) / 2;
     }
 
     // Get cartesian position and pixel indices of the row seed
@@ -234,6 +245,6 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     auto [row_seed_x, row_seed_y] = getPixelIndex({row_seed.x(), row_seed.y(), 0});
 
     // Compare row seed and entrant positions
-    return (static_cast<unsigned int>(std::labs(row_seed_x - static_cast<int>(entrant.x()))) <= distance) &&
-           (static_cast<unsigned int>(std::labs(dist_y)) <= distance);
+    return (static_cast<size_t>(std::abs(row_seed_x - entrant.x())) <= distance) &&
+           (static_cast<size_t>(std::abs(dist_y)) <= distance);
 }
