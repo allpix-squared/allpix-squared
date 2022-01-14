@@ -32,7 +32,9 @@
 
 using namespace mesh_converter;
 using namespace ROOT::Math;
+using allpix::Log;
 using allpix::ThreadPool;
+using allpix::Units;
 
 void interrupt_handler(int);
 
@@ -41,7 +43,7 @@ void interrupt_handler(int);
  */
 void interrupt_handler(int) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
-    allpix::Log::finish();
+    Log::finish();
     std::exit(0);
 }
 
@@ -66,7 +68,7 @@ int main(int argc, char** argv) {
         }
 
         // Add stream and set default logging level
-        allpix::Log::addStream(std::cout);
+        Log::addStream(std::cout);
 
         // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
         std::signal(SIGQUIT, interrupt_handler);
@@ -84,7 +86,7 @@ int main(int argc, char** argv) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    log_level = allpix::Log::getLevelFromString(std::string(argv[++i]));
+                    log_level = Log::getLevelFromString(std::string(argv[++i]));
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                     return_code = 1;
@@ -136,7 +138,7 @@ int main(int argc, char** argv) {
                 << std::endl;
             std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
-            allpix::Log::finish();
+            Log::finish();
             return return_code;
         }
 
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
             auto log_level_string = config.get<std::string>("log_level", "INFO");
             std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
             try {
-                log_level = allpix::Log::getLevelFromString(log_level_string);
+                log_level = Log::getLevelFromString(log_level_string);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Log level \"" << log_level_string
                            << "\" specified in the configuration is invalid, defaulting to INFO instead";
@@ -157,7 +159,7 @@ int main(int argc, char** argv) {
         }
 
         // Set log level:
-        allpix::Log::setReportingLevel(log_level);
+        Log::setReportingLevel(log_level);
 
         // NOTE: this stream should be available for the duration of the logging
         std::ofstream log_file;
@@ -165,10 +167,10 @@ int main(int argc, char** argv) {
             log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
             if(!log_file.good()) {
                 LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
-                allpix::Log::finish();
+                Log::finish();
                 return 1;
             }
-            allpix::Log::addStream(log_file);
+            Log::addStream(log_file);
         }
 
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
@@ -188,34 +190,38 @@ int main(int argc, char** argv) {
         // Region, observable and binning of output field
         auto regions = config.getArray<std::string>("region");
         auto observable = config.get<std::string>("observable");
-
-        const auto radius_step = config.get<double>("radius_step", 0.5);
-        const auto max_radius = config.get<double>("max_radius", 50);
-        const auto volume_cut = config.get<double>("volume_cut", 10e-9);
         const auto units = config.get<std::string>("observable_units");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
-        XYZVectorUInt divisions;
-        const auto dimension = config.get<size_t>("dimension", 3);
-        if(dimension == 2) {
-            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
-            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
-        } else if(dimension == 3) {
-            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
-        } else {
-            throw allpix::InvalidValueError(config, "dimension", "only two or three dimensional fields are supported");
-        }
+        const auto radius_step = config.get<double>("radius_step", 0.5);
+        const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
         // Swapping elements
         auto rot = config.getArray<std::string>("xyz", {"x", "y", "z"});
         if(rot.size() != 3) {
-            throw allpix::InvalidValueError(config, "xyz", "three entries required");
+            throw allpix::InvalidValueError(config, "xyz", "Three entries required");
         }
 
         auto start = std::chrono::system_clock::now();
 
         std::string grid_file = file_prefix + ".grd";
         std::vector<Point> points = parser->getMesh(grid_file, regions);
+
+        // Obtain number of mesh dimensions from mesh point:
+        XYZVectorUInt divisions;
+        const auto dimension = points.front().dim;
+        LOG(STATUS) << "Determined dimensionality of input mesh to be " << dimension << "D";
+        if(dimension == 2) {
+            auto divisions_yz = config.get<XYVectorUInt>("divisions", XYVectorUInt(100, 100));
+            divisions = XYZVectorUInt(1, divisions_yz.x(), divisions_yz.y());
+        } else if(dimension == 3) {
+            divisions = config.get<XYZVectorUInt>("divisions", XYZVectorUInt(100, 100, 100));
+        }
+
+        // If we are looking at a 2D mesh, we force x to be the coordinate out of range:
+        if(dimension == 2 && rot.at(0) != "-x" && rot.at(0) != "x") {
+            throw allpix::InvalidValueError(config, "xyz", "For 2D meshes the first coordinate has to remain 'x'");
+        }
 
         std::string data_file = file_prefix + ".dat";
         std::vector<Point> field = parser->getField(data_file, observable, regions);
@@ -267,27 +273,14 @@ int main(int argc, char** argv) {
         field = field_temp;
 
         // Find minimum and maximum from mesh coordinates
-        double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
-        double maxx = DBL_MIN, maxy = DBL_MIN, maxz = DBL_MIN;
-        for(auto& point : points) {
-            if(dimension == 2) {
-                maxx = 1;
-                minx = 0;
-                maxy = std::max(maxy, point.y);
-                maxz = std::max(maxz, point.z);
-                miny = std::min(miny, point.y);
-                minz = std::min(minz, point.z);
-            }
-
-            if(dimension == 3) {
-                maxx = std::max(maxx, point.x);
-                maxy = std::max(maxy, point.y);
-                maxz = std::max(maxz, point.z);
-                minx = std::min(minx, point.x);
-                miny = std::min(miny, point.y);
-                minz = std::min(minz, point.z);
-            }
-        }
+        auto maxx =
+            (dimension == 2 ? 1
+                            : std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x);
+        auto minx = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.x < b.x; })->x;
+        auto maxy = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto miny = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.y < b.y; })->y;
+        auto maxz = std::max_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
+        auto minz = std::min_element(points.begin(), points.end(), [](auto& a, auto& b) { return a.z < b.z; })->z;
 
         // Creating a new mesh points cloud with a regular pitch
         const double xstep = (maxx - minx) / static_cast<double>(divisions.x());
@@ -297,7 +290,9 @@ int main(int argc, char** argv) {
 
         // Using the minimal cell dimension as initial search radius for the point cloud:
         const auto initial_radius = config.get<double>("initial_radius", std::min({xstep, ystep, zstep}));
-        LOG(INFO) << "Using initial neighbor search radius of " << initial_radius;
+        const auto max_radius = config.get<double>("max_radius", std::max(initial_radius, 50.));
+        LOG(INFO) << "Using initial neighbor search radius of " << initial_radius << " and maximum search radius of "
+                  << max_radius;
 
         if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
             LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
@@ -333,10 +328,6 @@ int main(int argc, char** argv) {
             }
         }
 
-        rot.at(0).erase(std::remove(rot.at(0).begin(), rot.at(0).end(), '-'), rot.at(0).end());
-        rot.at(1).erase(std::remove(rot.at(1).begin(), rot.at(1).end(), '-'), rot.at(1).end());
-        rot.at(2).erase(std::remove(rot.at(2).begin(), rot.at(2).end(), '-'), rot.at(2).end());
-
         auto end = std::chrono::system_clock::now();
         auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
         LOG(INFO) << "Reading the files took " << elapsed_seconds << " seconds.";
@@ -347,7 +338,7 @@ int main(int argc, char** argv) {
 
         unsigned int mesh_points_done = 0;
         auto mesh_section = [&](double x, double y) {
-            allpix::Log::setReportingLevel(log_level);
+            Log::setReportingLevel(log_level);
 
             // New mesh slice
             std::vector<Point> new_mesh;
@@ -355,18 +346,28 @@ int main(int argc, char** argv) {
             double z = minz + zstep / 2.0;
             for(unsigned int k = 0; k < divisions.z(); ++k) {
                 // New mesh vertex and field
-                Point q(dimension == 2 ? -1 : x, y, z), e;
+                auto q = (dimension == 2 ? Point(y, z) : Point(x, y, z));
+                Point e;
                 bool valid = false;
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
 
-                while(radius < max_radius) {
+                while(radius <= max_radius) {
                     LOG(DEBUG) << "Search radius: " << radius;
                     // Calling octree neighbours search and sorting the results list with the closest neighbours first
                     std::vector<unsigned int> results;
                     octree.radiusNeighbors<unibn::L2Distance<Point>>(q, radius, results);
                     LOG(DEBUG) << "Number of vertices found: " << results.size();
+
+                    if(radius == initial_radius && results.size() > 100) {
+                        LOG(WARNING) << "Found " << results.size() << " mesh vertices within initial search radius of "
+                                     << initial_radius << "um." << std::endl
+                                     << "This might indicate that the output mesh granularity is too low and field features "
+                                        "might be missed."
+                                     << std::endl
+                                     << "Consider increasing output mesh granularity.";
+                    }
 
                     // If after a radius step no new neighbours are found, go to the next radius step
                     if(results.size() <= prev_neighbours || results.empty()) {
@@ -430,11 +431,11 @@ int main(int argc, char** argv) {
         std::vector<Point> e_field_new_mesh;
 
         // clang-format off
-        auto init_function = [log_level = allpix::Log::getReportingLevel(), log_format = allpix::Log::getFormat()]() {
+        auto init_function = [log_level = Log::getReportingLevel(), log_format = Log::getFormat()]() {
             // clang-format on
             // Initialize the threads to the same log level and format as the master setting
-            allpix::Log::setReportingLevel(log_level);
-            allpix::Log::setFormat(log_format);
+            Log::setReportingLevel(log_level);
+            Log::setFormat(log_format);
         };
 
         ThreadPool pool(num_threads, num_threads * 1024, init_function);
@@ -465,9 +466,8 @@ int main(int argc, char** argv) {
         // Prepare header and auxiliary information:
         std::string header =
             "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-        std::array<double, 3> size{{allpix::Units::get(maxx - minx, "um"),
-                                    allpix::Units::get(maxy - miny, "um"),
-                                    allpix::Units::get(maxz - minz, "um")}};
+        std::array<double, 3> size{
+            {Units::get(maxx - minx, "um"), Units::get(maxy - miny, "um"), Units::get(maxz - minz, "um")}};
         std::array<size_t, 3> gridsize{
             {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
@@ -480,11 +480,11 @@ int main(int argc, char** argv) {
                 for(unsigned int k = 0; k < divisions.z(); ++k) {
                     auto& point = e_field_new_mesh[i * divisions.y() * divisions.z() + j * divisions.z() + k];
                     // We need to convert to framework-internal units:
-                    data->push_back(allpix::Units::get(point.x, units));
+                    data->push_back(Units::get(point.x, units));
                     // For a vector field, we push three values:
                     if(quantity == FieldQuantity::VECTOR) {
-                        data->push_back(allpix::Units::get(point.y, units));
-                        data->push_back(allpix::Units::get(point.z, units));
+                        data->push_back(Units::get(point.y, units));
+                        data->push_back(Units::get(point.z, units));
                     }
                 }
             }
@@ -512,6 +512,6 @@ int main(int argc, char** argv) {
     }
 
     // Finish the logging
-    allpix::Log::finish();
+    Log::finish();
     return return_code;
 }

@@ -38,8 +38,6 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
 
     std::map<std::string, std::vector<long unsigned int>> regions_vertices;
 
-    Point point(-1.0, -1.0, -1.0);
-
     std::string region;
     long unsigned int dimension = 1;
     long unsigned int data_count = 0;
@@ -192,19 +190,15 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         case DFSection::VERTICES: {
             // Read vertex points
             if(dimension == 3) {
-                point.x = -1.0;
-                point.y = -1.0;
-                point.z = -1.0;
-                while(sstr >> point.x >> point.y >> point.z) {
-                    vertices.push_back(point);
+                double x = 0, y = 0, z = 0;
+                while(sstr >> x >> y >> z) {
+                    vertices.emplace_back(x, y, z);
                 }
             }
             if(dimension == 2) {
-                point.x = -1.0;
-                point.y = -1.0;
-                point.z = -1.0;
-                while(sstr >> point.y >> point.z) {
-                    vertices.push_back(point);
+                double y = 0, z = 0;
+                while(sstr >> y >> z) {
+                    vertices.emplace_back(y, z);
                 }
             }
         } break;
