@@ -4,34 +4,22 @@
 # TODO: at some point this should probably be replaced by a proper use of CMAKE_CXX_COMPILE_FEATURES
 # https://cmake.org/cmake/help/latest/manual/cmake-compile-features.7.html
 
-# Minimum GCC versions for C++14 and C++17 feature support.
+# Minimum GCC versions for C++17 feature support.
 # based on
 # https://gcc.gnu.org/projects/cxx-status.html
 # https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#status.iso.2017
-SET(GCC_CXX_14_VERSION_MIN "6.1")
-SET(GCC_CXX_17_VERSION_MIN "8.0")
+# Note: Version >=9 required by MagicEnum
+SET(GCC_VERSION_MIN "9.0")
 
-# Minimum Clang versions for C++14 and C++17 feature support.
+# Minimum Clang versions for C++17 feature support.
 # based on
 # https://clang.llvm.org/cxx_status.html
-SET(CLANG_CXX_14_VERSION_MIN "3.4")
-SET(CLANG_CXX_17_VERSION_MIN "7.0")
+SET(CLANG_VERSION_MIN "7.0")
 
-# Minimum Apple Clang versions for C++14 and C++17 feature support.
+# Minimum Apple Clang versions for C++17 feature support.
 # based on
 # https://trac.macports.org/wiki/XcodeVersionInfo
-SET(APPLECLANG_CXX_14_VERSION_MIN "6.1")
-SET(APPLECLANG_CXX_17_VERSION_MIN "10.0")
-
-IF(CMAKE_CXX_STANDARD EQUAL 17)
-    SET(GCC_VERSION_MIN ${GCC_CXX_17_VERSION_MIN})
-    SET(CLANG_VERSION_MIN ${CLANG_CXX_17_VERSION_MIN})
-    SET(APPLECLANG_VERSION_MIN ${APPLECLANG_CXX_17_VERSION_MIN})
-ELSE()
-    SET(GCC_VERSION_MIN ${GCC_CXX_14_VERSION_MIN})
-    SET(CLANG_VERSION_MIN ${CLANG_CXX_14_VERSION_MIN})
-    SET(APPLECLANG_VERSION_MIN ${APPLECLANG_CXX_14_VERSION_MIN})
-ENDIF()
+SET(APPLECLANG_VERSION_MIN "10.0")
 
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_VERSION_MIN)
