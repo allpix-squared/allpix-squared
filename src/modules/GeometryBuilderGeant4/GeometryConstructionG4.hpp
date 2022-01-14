@@ -13,9 +13,9 @@
 #include <memory>
 #include <utility>
 
-#include "G4Material.hh"
-#include "G4VSolid.hh"
-#include "G4VUserDetectorConstruction.hh"
+#include <G4Material.hh>
+#include <G4VSolid.hh>
+#include <G4VUserDetectorConstruction.hh>
 
 #include "DetectorConstructionG4.hpp"
 #include "PassiveMaterialConstructionG4.hpp"

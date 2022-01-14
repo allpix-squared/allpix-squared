@@ -11,6 +11,11 @@ ENDIF()
 # Add "geant4.sh" as runtime dependency for setup.sh file:
 ADD_RUNTIME_DEP(geant4.sh)
 
+# Add GDML flag if supported
+IF(Geant4_gdml_FOUND)
+    ADD_DEFINITIONS(-DGeant4_GDML)
+ENDIF()
+
 # Add Geant4 flags before our own flags
 ADD_DEFINITIONS(${Geant4_DEFINITIONS})
 SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")

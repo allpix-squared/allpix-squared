@@ -12,10 +12,11 @@ All available detector models are fully supported.
 
 #### Passive Volumes
 
-For passive materials, the implemented models are "box", "cylinder" and "sphere".
+For passive materials, the implemented models are "box", "cylinder", "sphere" as well as "gdml".
 The dimensions of the individual volumes are defined by the following parameters for the specific models and to be set within the corresponding section of the geometry configuration:
 
-For each model, a set of specific size parameters need to be given, of which some are optional.\\
+For each model, a set of specific size parameters need to be given, of which some are optional.
+
 ##### Box:
 A rectangular box which can be massive or have an hole in the middle along the z-axis.
 * The `size` of the box is an XYZ vector which defines the total size of the box.
@@ -38,15 +39,28 @@ A full or partly made sphere with an inner- and outer radius.
 * (Optional) The `starting_angle_phi` of the sphere is the azimuthal angle at which circumference of the sphere will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
 * (Optional) The `arc_length_phi` of the sphere is the arc-length of the circumference that will be drawn, starting from the given `starting_angle_phi` in the XY-plane. Defaults to 360deg which is the full circumference.
 * (Optional) The `starting_angle_theta` of the sphere is the polar angle at which the `arc_length_theta` will start. 0 degrees refers to the point along the positive z-axis. Defaults to 0deg.
-* (Optional) The `arc_length_theta` of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given `starting_angle_theta`. Defaults to 100deg which creates the full circle.\\
+* (Optional) The `arc_length_theta` of the sphere is the arc-length of the polar angle which will be rotated around the z-axis to build the sphere, starting from the given `starting_angle_theta`. Defaults to 100deg which creates the full circle.
+*
 Note that `arc_length_phi` works the same as the `arc_length` from the cylinder, but the `arc_length_theta` works different.
 The \apsq framework will only draw the full circle if `starting_angle_theta` = 0deg, and `arc_length_theta` = 180deg.
 In all other situations, the sphere will start at `starting_angle_theta` and continue the `arc_length_theta` until `arc_length_theta` + `starting_angle_theta` = 180deg. After this it will stop.
 The necessary module errors and warnings have been included to make sure the user will know will and won't be build.
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
+##### GDML:
+This model allows to load arbitrary GDML files [@gdml] as passive materials. All volumes from the GDML file which are contained within the world volume are processed and added to the geometry of the simulation.
+The only parameter specific to this model is `file_name` which should provide the path to the GDML file to be read.
+
+This functionality requires Geant4 to be built with GDML support enabled. This can be enabled via CMake when compiling Geant4 using
+
+```
+cmake -DDGEANT4_USE_GDML=ON ..
+```
+
+#### Visualization Options
+
 For each of the above mentioned models, a color and opacity can be added to the passive material.
-* The `color` of the passive material is given in an R G B vector, where each color value is between 0 and 1. Defaults to `color = 0 0 1` (blue) 
+* The `color` of the passive material is given in an R G B vector, where each color value is between 0 and 1. Defaults to `color = 0 0 1` (blue).
 * The `opacity` of the passive material is given as a number between 0 and 1, where 0 is completely transparent, and 1 is completely opaque.
 
 
@@ -101,3 +115,4 @@ world_minimum_margin = 1m 1m 1m
 ```
 
 [@g4materials]: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Appendix/materialNames.html
+[@gdml]: https://gdml.web.cern.ch/GDML/

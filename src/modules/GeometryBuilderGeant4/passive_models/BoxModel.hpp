@@ -87,10 +87,11 @@ namespace allpix {
         }
 
         // Set the override functions of PassiveMaterialModel
-        std::shared_ptr<G4VSolid> getSolid() const override { return solid_; }
         double getMaxSize() const override { return max_size_; }
 
     private:
+        std::shared_ptr<G4VSolid> get_solid() const override { return solid_; }
+
         // G4VSolid returnables
         std::shared_ptr<G4VSolid> solid_;
 
