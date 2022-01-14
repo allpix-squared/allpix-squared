@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Definition of ProjectionPropagation module
+ *
  * @copyright MIT License
  *
  * Contains minimal dummy module to use as a start for the development of your own module

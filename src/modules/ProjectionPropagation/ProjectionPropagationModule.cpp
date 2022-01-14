@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Implementation of ProjectionPropagation module
+ *
  * @copyright MIT License
  */
 
