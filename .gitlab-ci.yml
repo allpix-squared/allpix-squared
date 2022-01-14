@@ -155,6 +155,15 @@ fmt:cc7-llvm-lint:
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
         - ninja check-lint 2> /dev/null
+    only:
+        - schedules
+        - tags
+
+fmt:cc7-llvm-lint-diff:
+    extends: .format
+    script:
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR ..
+        - ninja check-lint-diff 2> /dev/null
 
 fmt:cmake-lint:
     extends: .format

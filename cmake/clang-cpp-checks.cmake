@@ -125,6 +125,44 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ELSE()
         MESSAGE(STATUS "Could NOT find run-clang-tidy script")
     ENDIF()
+
+    # Add targets for differing files only, directly calling clang-tidy
+    IF(NOT TARGET_BRANCH)
+        SET(TARGET_BRANCH "master")
+    ENDIF()
+
+    EXEC_PROGRAM(
+        git ${CMAKE_PROJECT_SOURCE_DIR}
+        ARGS diff origin/${TARGET_BRANCH} --name-only --line-prefix=`git rev-parse --show-toplevel`/
+        OUTPUT_VARIABLE changed_files
+        RETURN_VALUE retval)
+
+    IF(NOT retval)
+        STRING(REPLACE "\n" ";" changed_files "${changed_files}")
+
+        SET(COMMANDS)
+        FOREACH(srcfile ${changed_files})
+            IF("${srcfile}" IN_LIST CHECK_CXX_SOURCE_FILES)
+                LIST(
+                    APPEND
+                    COMMANDS
+                    COMMAND
+                    ${CLANG_TIDY}
+                    --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+                    --header-filter=${CMAKE_SOURCE_DIR}
+                    -p=${CMAKE_BINARY_DIR}
+                    ${srcfile}
+                    | tee -a ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt)
+            ENDIF()
+        ENDFOREACH()
+
+        ADD_CUSTOM_TARGET(
+            check-lint-diff
+            COMMAND > ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt
+            ${COMMANDS}
+            COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt > /dev/null
+            COMMENT "Checking for problems in source files")
+    ENDIF()
 ELSE()
     IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         MESSAGE(STATUS "Could NOT find clang-tidy version ${CLANG_FORMAT_VERSION}")
