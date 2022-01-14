@@ -39,7 +39,8 @@ void Configuration::AccessMarker::registerMarker(const std::string& key) {
     markers_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple());
 }
 
-Configuration::Configuration(std::string name, std::string path) : name_(std::move(name)), path_(std::move(path)) {}
+Configuration::Configuration(std::string name, std::filesystem::path path)
+    : name_(std::move(name)), path_(std::move(path)) {}
 
 bool Configuration::has(const std::string& key) const {
     return config_.find(key) != config_.cend();
@@ -62,7 +63,7 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
 std::string Configuration::getName() const {
     return name_;
 }
-std::string Configuration::getFilePath() const {
+std::filesystem::path Configuration::getFilePath() const {
     return path_;
 }
 
@@ -88,7 +89,7 @@ std::string Configuration::getText(const std::string& key, const std::string& de
  * For a relative path the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
-std::string Configuration::getPath(const std::string& key, bool check_exists) const {
+std::filesystem::path Configuration::getPath(const std::string& key, bool check_exists) const {
     try {
         return path_to_absolute(get<std::string>(key), check_exists);
     } catch(std::invalid_argument& e) {
@@ -100,7 +101,7 @@ std::string Configuration::getPath(const std::string& key, bool check_exists) co
  *
  * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
-std::string
+std::filesystem::path
 Configuration::getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const {
     try {
         return path_to_absolute(std::filesystem::path(get<std::string>(key)).replace_extension(extension), check_exists);
@@ -114,13 +115,13 @@ Configuration::getPathWithExtension(const std::string& key, const std::string& e
  * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
-std::vector<std::string> Configuration::getPathArray(const std::string& key, bool check_exists) const {
-    std::vector<std::string> path_array = getArray<std::string>(key);
+std::vector<std::filesystem::path> Configuration::getPathArray(const std::string& key, bool check_exists) const {
+    std::vector<std::filesystem::path> path_array;
 
     // Convert all paths to absolute
     try {
-        for(auto& path : path_array) {
-            path = path_to_absolute(path, check_exists);
+        for(auto& path : getArray<std::string>(key)) {
+            path_array.emplace_back(path_to_absolute(path, check_exists));
         }
         return path_array;
     } catch(std::invalid_argument& e) {
@@ -130,14 +131,11 @@ std::vector<std::string> Configuration::getPathArray(const std::string& key, boo
 /**
  * @throws std::invalid_argument If the path does not exists
  */
-std::string Configuration::path_to_absolute(std::string path, bool canonicalize_path) const {
+std::filesystem::path Configuration::path_to_absolute(std::filesystem::path path, bool canonicalize_path) const {
     // If not a absolute path, make it an absolute path
-    if(path.front() != '/') {
-        // Get base directory of config file
-        std::string directory = path_.substr(0, path_.find_last_of('/'));
-
-        // Set new path
-        path = directory + "/" + path;
+    if(!path.is_absolute()) {
+        // Get base directory of config file and append the relative path
+        path = path_.parent_path() / path;
     }
 
     // Normalize path only if we have to check if it exists
@@ -146,7 +144,7 @@ std::string Configuration::path_to_absolute(std::string path, bool canonicalize_
         try {
             path = std::filesystem::canonical(path);
         } catch(std::filesystem::filesystem_error&) {
-            throw std::invalid_argument("path " + path + " not found");
+            throw std::invalid_argument("path " + path.string() + " not found");
         }
     }
     return path;

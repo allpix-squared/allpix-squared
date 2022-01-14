@@ -11,6 +11,7 @@
 #define ALLPIX_CONFIGURATION_H
 
 #include <atomic>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -91,7 +92,7 @@ namespace allpix {
          * @param name Name of the section header (empty section if not specified)
          * @param path Path to the file containing the configuration (or empty if not stored in a file)
          */
-        explicit Configuration(std::string name = "", std::string path = "");
+        explicit Configuration(std::string name = "", std::filesystem::path path = "");
 
         /// @{
         /**
@@ -193,7 +194,7 @@ namespace allpix {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPath(const std::string& key, bool check_exists = false) const;
+        std::filesystem::path getPath(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Get absolute path to file with paths relative to the configuration
@@ -202,7 +203,8 @@ namespace allpix {
          * @param check_exists If the file should be checked for existence (if yes always returns a canonical path)
          * @return Absolute path to a file
          */
-        std::string getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
+        std::filesystem::path
+        getPathWithExtension(const std::string& key, const std::string& extension, bool check_exists) const;
         /**
          * @brief Get array of absolute paths to files with paths relative to the configuration
          * @param key Key to get path of
@@ -210,7 +212,7 @@ namespace allpix {
          * @return List of absolute path to all the requested files
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        std::vector<std::string> getPathArray(const std::string& key, bool check_exists = false) const;
+        std::vector<std::filesystem::path> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
          * @brief Set value for a key in a given type
@@ -292,8 +294,7 @@ namespace allpix {
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file
          */
-        // TODO [doc] Fix name clash with getPath
-        std::string getFilePath() const;
+        std::filesystem::path getFilePath() const;
 
         /**
          * @brief Merge other configuration, only adding keys that are not yet defined in this configuration
@@ -322,7 +323,7 @@ namespace allpix {
          * @param path Path to make absolute (if it is not already absolute)
          * @param canonicalize_path If the path should be canonicalized (throws an error if the path does not exist)
          */
-        std::string path_to_absolute(std::string path, bool canonicalize_path) const;
+        std::filesystem::path path_to_absolute(std::filesystem::path path, bool canonicalize_path) const;
 
         /**
          * @brief Node in a parse tree
@@ -340,7 +341,7 @@ namespace allpix {
         static std::unique_ptr<parse_node> parse_value(std::string str, int depth = 0);
 
         std::string name_;
-        std::string path_;
+        std::filesystem::path path_;
 
         using ConfigMap = std::map<std::string, std::string>;
         ConfigMap config_;

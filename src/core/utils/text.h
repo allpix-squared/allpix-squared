@@ -18,6 +18,7 @@
 #define ALLPIX_TEXT_H
 
 #include <cctype>
+#include <filesystem>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -71,6 +72,14 @@ namespace allpix {
      * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
      */
     std::string from_string_impl(std::string str, type_tag<std::string>);
+    /**
+     * @ingroup StringConversions
+     * @brief Conversion handler for filesystem paths
+     * @throws std::invalid_argument If no closing quotation mark as last character after an opening quotation mark
+     * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
+     */
+    std::filesystem::path from_string_impl(std::string str, type_tag<std::filesystem::path>);
+
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for booleans
