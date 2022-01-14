@@ -417,7 +417,7 @@ std::string DefaultLogger::get_current_date() {
     return ss.str();
 }
 
-/*
+/**
  * It is impossible to know for sure a terminal has support for all extra terminal features, but every modern terminal has
  * this so we just assume it.
  */

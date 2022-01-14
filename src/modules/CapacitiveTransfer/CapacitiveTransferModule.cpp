@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  *
  * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.

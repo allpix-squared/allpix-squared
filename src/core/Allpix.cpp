@@ -238,7 +238,7 @@ void Allpix::finalize() {
     }
 }
 
-/*
+/**
  * This function can be called safely from any signal handler. Time between the request to terminate
  * and the actual termination is not always negigible.
  */
