@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # DepositionGeant4
 **Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)  
 **Status**: Functional  

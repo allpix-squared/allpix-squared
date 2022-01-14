@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Additional targets to perform cmake-lint/cmake-format
 
 FIND_PROGRAM(CMAKELINT "cmake-lint")

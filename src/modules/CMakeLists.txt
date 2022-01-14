@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Option to build all modules
 OPTION(BUILD_ALL_MODULES "Build all modules?" OFF)
 

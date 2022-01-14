@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 ###########################################
 # Reference tests for configuration files #
 # provided as example and in manual       #

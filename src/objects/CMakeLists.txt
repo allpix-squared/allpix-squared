@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Include the standard dependencies
 INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 

@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # MagneticFieldReader
 **Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
 **Status**: Functional

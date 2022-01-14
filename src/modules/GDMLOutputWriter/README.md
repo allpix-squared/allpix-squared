@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # GDMLOutputWriter
 **Maintainer**: Koen van den Brandt (<kbrandt@nikhef.nl>)  
 **Status**: Functional

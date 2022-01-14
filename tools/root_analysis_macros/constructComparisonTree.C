@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+// SPDX-License-Identifier: MIT
+
 #include <Math/DisplacementVector2D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>

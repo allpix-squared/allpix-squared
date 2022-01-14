@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # LCIOWriter
 **Maintainer**: Andreas Nurnberg (<andreas.nurnberg@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Tobias Bisanz(<tobias.bisanz@phys.uni-goettingen.de>)  
 **Status**: Functional  

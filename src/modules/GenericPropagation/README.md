@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # GenericPropagation
 **Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  

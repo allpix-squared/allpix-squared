@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 #############################################
 # Doxygen target to generate API reference  #
 #############################################

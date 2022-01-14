@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # PulseTransfer
 **Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
 **Status**: Functional  

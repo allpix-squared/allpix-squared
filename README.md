@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 [![](doc/logo_small.png)](https://cern.ch/allpix-squared)
 
 # Allpix<sup>2</sup>

@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # RCEWriter
 **Author**: Salman Maqbool (<salman.maqbool@cern.ch>)   
 **Maintainer**: Moritz Kiehn (<msmk@cern.ch>)   

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"

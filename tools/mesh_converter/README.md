@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Mesh Converter
 
 This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster field value lookup as reuqired by Monte Carlo simulations tools such as Allpix Squared.

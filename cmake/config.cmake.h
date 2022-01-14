@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 // CMake uses config.cmake.h to generate config.h within the build folder.

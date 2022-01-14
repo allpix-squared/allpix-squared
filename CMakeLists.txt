@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 ###############################################
 # CMake File for the Allpix Squared Framework #
 ###############################################

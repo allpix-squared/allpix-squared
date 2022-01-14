@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Additional targets to perform clang-format/clang-tidy/cppcheck
 
 # Check if the git hooks are installed and upt-to-date:

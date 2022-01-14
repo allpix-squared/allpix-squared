@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # For every module, build a separate library to be loaded by allpix core
 MACRO(ALLPIX_ENABLE_DEFAULT val)
     # Get the name of the module

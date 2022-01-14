@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Telescope Simulation with Corryvreckan Writer
 
 This example demonstrates how to simulate a full telescope setup and how to store the simulation in a format readable by the Corryvreckan reconstruction framework.

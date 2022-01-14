@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC0-1.0
+
 # Exclude everything from Docker build context that is not necessary:
 *
 !.git

@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Example for Replaying a Simulation
 
 This example demonstrates the possibility of reading data files from previous simulation runs and replaying the messages to the framework, dispatching them to modules with altered parameters. In this case, the output of the fast simulation example is reprocessed with a new charge threshold in the digitization step.

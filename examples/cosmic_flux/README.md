@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Cosmic Muon Flux Simulation
 This example illustrates how the *depositionCosmics* module is used to model the flux of cosmic muons in Allpix Squared. Python analysis code is included to calculate the flux through the detector from the *MCParticle* objects
 

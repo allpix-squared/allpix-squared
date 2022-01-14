@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # git pre-push hook that checks that the hard-coded CMake version matches the tag name
 
 ##################################################################
