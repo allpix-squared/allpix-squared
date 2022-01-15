@@ -39,7 +39,7 @@ namespace allpix {
             : PassiveMaterialModel(config, geo_manager) {
 
             auto gdml_file = config_.getPath("file_name");
-            parser_.ReadModule(gdml_file, false);
+            parser_.ReadModule(gdml_file.string(), false);
 
             // Adding points to extend world volume as much as necessary
             LOG(DEBUG) << "Adding points for volume";
