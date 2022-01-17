@@ -22,6 +22,8 @@
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 
+#include <G4LogicalVolume.hh>
+#include <G4RotationMatrix.hh>
 #include <G4VSolid.hh>
 
 namespace allpix {
