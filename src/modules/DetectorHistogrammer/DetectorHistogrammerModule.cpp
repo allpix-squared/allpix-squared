@@ -307,7 +307,7 @@ void DetectorHistogrammerModule::initialize() {
         auto max_angle = radial_model->getRowAngleMax();
         auto max_pitch = static_cast<double>(Units::convert(radial_model->getAngularPitchMax(), "mrad"));
 
-        std::string polar_hit_map_title = "Polar hitmap for " + detector_->getName() + ";#varphi (rad);r [mm];hits";
+        std::string polar_hit_map_title = "Polar hitmap (" + detector_->getName() + ");#varphi (rad);r [mm];hits";
         polar_hit_map = CreateHistogram<TH2D>("polar_hit_map",
                                               polar_hit_map_title.c_str(),
                                               xpixels,
@@ -317,11 +317,11 @@ void DetectorHistogrammerModule::initialize() {
                                               radial_model->getRowRadius(0),
                                               radial_model->getRowRadius(radial_model->getNPixels().y()));
 
-        std::string residual_r_title = "Residual in R for " + detector_->getName() + ";r_{track} - r_{cluster} [um];events";
+        std::string residual_r_title = "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [um];events";
         residual_r = CreateHistogram<TH1D>("residual_r", residual_r_title.c_str(), 1000, -2 * pitch_y, 2 * pitch_y);
 
         std::string residual_phi_title =
-            "Residual in #varphi for " + detector_->getName() + ";#varphi_{track} - #varphi_{cluster} [mrad];events";
+            "Residual in #varphi (" + detector_->getName() + ");#varphi_{track} - #varphi_{cluster} [mrad];events";
         residual_phi =
             CreateHistogram<TH1D>("residual_phi", residual_phi_title.c_str(), 1000, -2 * max_pitch, 2 * max_pitch);
     }
@@ -417,7 +417,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y(), "um"));
 
-            // If model is radial_strip, calculate r and phi residuals and recalculate inPixelPos
+            // If model is radial_strip, (re)calculate residuals and inPixelPos
             if(radial_model != nullptr) {
                 // Transform coordinates to polar representation
                 auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
@@ -427,7 +427,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 auto cluster_r = cluster_polar.r();
                 auto cluster_phi = cluster_polar.phi();
 
-                // Calculate residuals
+                // Recalculate x,y residuals and calculate r,phi residuals
                 residual_um_x = static_cast<double>(Units::convert(particlePos.x() - cluster_r * sin(cluster_phi), "um"));
                 residual_um_y = static_cast<double>(Units::convert(particlePos.y() - cluster_r * cos(cluster_phi), "um"));
                 auto residual_um_r = static_cast<double>(Units::convert(particle_polar.r() - cluster_r, "um"));
@@ -435,7 +435,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 auto residual_mrad_phi = static_cast<double>(Units::convert(particle_polar.phi() - cluster_phi, "mrad"));
                 residual_phi->Fill(residual_mrad_phi);
 
-                // Overwrite inPixelPos with correct values
+                // Recalculate inPixelPos
                 auto delta_phi = particle_polar.phi() - strip_polar.phi();
                 auto strip_size = radial_model->getStripSize(static_cast<unsigned int>(ypixel));
                 inPixelPos = {particle_polar.r() * sin(delta_phi) + strip_size.x() / 2,
@@ -490,11 +490,6 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(xpixel, ypixel);
 
-        auto matched_cluster = std::find_if(clusters.begin(), clusters.end(), [this, &particlePos](const Cluster& clus) {
-            return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
-                   (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
-        });
-
         // If model is radial_strip, recalculate inPixelPos
         if(radial_model != nullptr) {
             // Transform coordinates to polar representation
@@ -511,6 +506,11 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
         auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+
+        auto matched_cluster = std::find_if(clusters.begin(), clusters.end(), [this, &particlePos](const Cluster& clus) {
+            return (std::fabs(clus.getPosition().x() - particlePos.x()) < matching_cut_.x()) &&
+                   (std::fabs(clus.getPosition().y() - particlePos.y()) < matching_cut_.y());
+        });
 
         // Do we have a match?
         bool matched = matched_cluster != clusters.end();
@@ -533,8 +533,6 @@ void DetectorHistogrammerModule::finalize() {
     if(total_hits_ != 0) {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
-
-    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(detector_->getModel());
 
     // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
@@ -696,6 +694,7 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_vs_y_histogram->Write();
 
     // Write additional histograms if radial_strip model is used
+    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(detector_->getModel());
     if(radial_model != nullptr) {
         auto polar_hit_map_histogram = polar_hit_map->Merge();
         auto residual_r_histogram = residual_r->Merge();

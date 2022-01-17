@@ -74,16 +74,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         LOG(TRACE) << " Chip dimensions: " << Units::display(model->getChipSize(), {"mm", "um"});
         LOG(DEBUG) << " Global position and orientation of the detector:";
 
-        // Create the wrapper box
-        auto wrapper_box = make_shared_no_delete<G4Box>(
-            "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
-        solids_.push_back(wrapper_box);
-
-        // Build a trapezoidal wrapper if radial_strip model is used
+        // Build a trapezoidal wrapper if radial strip model is used, otherwise build a box wrapper
         auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
         if(radial_model != nullptr) {
-            // Remove the improperly created wrapper_box
-            solids_.pop_back();
             // Create the wrapper trapezoid
             auto wrapper_trd = make_shared_no_delete<G4Trd>("wrapper_" + name,
                                                             radial_model->getSensorBaseInner() / 2,
@@ -92,6 +85,11 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                             radial_model->getSize().z() / 2,
                                                             radial_model->getSize().y() / 2);
             solids_.push_back(wrapper_trd);
+        } else {
+            // Create the wrapper box
+            auto wrapper_box = make_shared_no_delete<G4Box>(
+                "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
+            solids_.push_back(wrapper_box);
         }
 
         // Create the wrapper logical volume
@@ -145,18 +143,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          * the sensitive detector is the part that collects the deposits
          */
 
-        // Create the sensor box
-        auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
-                                                       model->getSensorSize().x() / 2.0,
-                                                       model->getSensorSize().y() / 2.0,
-                                                       model->getSensorSize().z() / 2.0);
-        solids_.push_back(sensor_box);
-
-        // Build a trapezoidal sensor box if radial_strip model is used
+        // Build a trapezoidal sensor box if radial strip model is used, otherwise build a rectangular box
         if(radial_model != nullptr) {
-            // Remove the improperly created sensor_box
-            solids_.pop_back();
-            // Create the sensor trapezoid
             auto sensor_trd = make_shared_no_delete<G4Trd>("sensor_" + name,
                                                            radial_model->getSensorBaseInner() / 2,
                                                            radial_model->getSensorBaseOuter() / 2,
@@ -164,6 +152,12 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                            radial_model->getSensorSize().z() / 2,
                                                            radial_model->getSensorSize().y() / 2);
             solids_.push_back(sensor_trd);
+        } else {
+            auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
+                                                           model->getSensorSize().x() / 2.0,
+                                                           model->getSensorSize().y() / 2.0,
+                                                           model->getSensorSize().z() / 2.0);
+            solids_.push_back(sensor_box);
         }
 
         // Create the sensor logical volume
