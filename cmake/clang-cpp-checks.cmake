@@ -82,9 +82,24 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+
     # If debug build enabled do automatic clang tidy
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
         SET(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} "-header-filter='${CMAKE_SOURCE_DIR}'")
+    ENDIF()
+
+    # write a .clang-tidy file in the binary dir to disable checks for created files
+    FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
+
+    # Set export commands on
+    SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    # Get amount of processors to speed up linting
+    INCLUDE(ProcessorCount)
+    PROCESSORCOUNT(NPROC)
+    IF(NPROC EQUAL 0)
+        SET(NPROC 1)
     ENDIF()
 
     # Enable checking and formatting through run-clang-tidy if available
@@ -96,19 +111,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         NAMES "run-clang-tidy.py" "run-clang-tidy-${CLANG_FORMAT_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
-        MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
-        # write a .clang-tidy file in the binary dir to disable checks for created files
-        FILE(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "\n---\nChecks: '-*,llvm-twine-local'\n...\n")
-
-        # Set export commands on
-        SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-        # Get amount of processors to speed up linting
-        INCLUDE(ProcessorCount)
-        PROCESSORCOUNT(NPROC)
-        IF(NPROC EQUAL 0)
-            SET(NPROC 1)
-        ENDIF()
+        MESSAGE(STATUS "Found ${RUN_CLANG_TIDY}, adding full-code linting targets")
 
         ADD_CUSTOM_TARGET(
             lint
@@ -126,43 +129,38 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         MESSAGE(STATUS "Could NOT find run-clang-tidy script")
     ENDIF()
 
-    # Add targets for differing files only, directly calling clang-tidy
-    IF(NOT TARGET_BRANCH)
-        SET(TARGET_BRANCH "master")
-    ENDIF()
+    FIND_PROGRAM(
+        CLANG_TIDY_DIFF
+        NAMES "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_FORMAT_VERSION}.py"
+        HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
+    IF(RUN_CLANG_TIDY)
+        MESSAGE(STATUS "Found ${CLANG_TIDY_DIFF}, adding code-diff linting targets")
 
-    EXEC_PROGRAM(
-        git ${CMAKE_PROJECT_SOURCE_DIR}
-        ARGS diff origin/${TARGET_BRANCH} --name-only --line-prefix=`git rev-parse --show-toplevel`/
-        OUTPUT_VARIABLE changed_files
-        RETURN_VALUE retval)
+        # Set target branch to perform the diff against
+        IF(NOT TARGET_BRANCH)
+            SET(TARGET_BRANCH "master")
+        ENDIF()
 
-    IF(NOT retval)
-        STRING(REPLACE "\n" ";" changed_files "${changed_files}")
-
-        SET(COMMANDS)
-        FOREACH(srcfile ${changed_files})
-            IF("${srcfile}" IN_LIST CHECK_CXX_SOURCE_FILES)
-                LIST(
-                    APPEND
-                    COMMANDS
-                    COMMAND
-                    ${CLANG_TIDY}
-                    --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
-                    --header-filter=${CMAKE_SOURCE_DIR}
-                    -p=${CMAKE_BINARY_DIR}
-                    ${srcfile}
-                    | tee -a ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt)
-            ENDIF()
-        ENDFOREACH()
+        ADD_CUSTOM_TARGET(
+            lint-diff
+            COMMAND git diff --unified=0 origin/${TARGET_BRANCH} | ${CLANG_TIDY_DIFF} -path=${CMAKE_BINARY_DIR} -p1 -fix
+                    -j${NPROC}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            COMMENT "Auto fixing problems in differing source files")
 
         ADD_CUSTOM_TARGET(
             check-lint-diff
-            COMMAND > ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt
-            ${COMMANDS}
-            COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_diff_file.txt > /dev/null
-            COMMENT "Checking for problems in source files")
+            COMMAND
+                git diff --unified=0 origin/${TARGET_BRANCH} | ${CLANG_TIDY_DIFF} -path=${CMAKE_BINARY_DIR} -p1 -j${NPROC} |
+                tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
+                # WARNING: fix to stop with error if there are problems
+            COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            COMMENT "Checking for problems in differing source files")
+    ELSE()
+        MESSAGE(STATUS "Could NOT find clang-tidy-diff script")
     ENDIF()
+
 ELSE()
     IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         MESSAGE(STATUS "Could NOT find clang-tidy version ${CLANG_FORMAT_VERSION}")
