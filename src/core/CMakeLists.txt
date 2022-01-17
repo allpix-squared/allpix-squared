@@ -23,6 +23,7 @@ ADD_LIBRARY(
     geometry/DetectorModel.cpp
     geometry/PixelDetectorModel.cpp
     geometry/GeometryManager.cpp
+    geometry/RadialStripDetectorModel.cpp
     Allpix.cpp)
 
 # Link the dependencies

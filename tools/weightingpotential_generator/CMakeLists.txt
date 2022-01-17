@@ -37,6 +37,7 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/config/exceptions.cpp
     ${ALLPIX_SRC}/core/geometry/DetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/PixelDetectorModel.cpp
+    ${ALLPIX_SRC}/core/geometry/RadialStripDetectorModel.cpp
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
 # Include Eigen dependency

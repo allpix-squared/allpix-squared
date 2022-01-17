@@ -26,6 +26,7 @@
 #include <G4StepLimiterPhysics.hh>
 #include <G4SubtractionSolid.hh>
 #include <G4ThreeVector.hh>
+#include <G4Trd.hh>
 #include <G4Tubs.hh>
 #include <G4UnionSolid.hh>
 #include <G4UserLimits.hh>
@@ -34,6 +35,7 @@
 #include "G4Material.hh"
 
 #include "core/geometry/HybridPixelDetectorModel.hpp"
+#include "core/geometry/RadialStripDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
@@ -72,12 +74,27 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         LOG(TRACE) << " Chip dimensions: " << Units::display(model->getChipSize(), {"mm", "um"});
         LOG(DEBUG) << " Global position and orientation of the detector:";
 
-        // Create the wrapper box and logical volume
-        auto wrapper_box = make_shared_no_delete<G4Box>(
-            "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
-        solids_.push_back(wrapper_box);
+        // Build a trapezoidal wrapper if radial strip model is used, otherwise build a box wrapper
+        auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
+        if(radial_model != nullptr) {
+            // Create the wrapper trapezoid
+            auto wrapper_trd = make_shared_no_delete<G4Trd>("wrapper_" + name,
+                                                            radial_model->getSensorBaseInner() / 2,
+                                                            radial_model->getSensorBaseOuter() / 2,
+                                                            radial_model->getSize().z() / 2,
+                                                            radial_model->getSize().z() / 2,
+                                                            radial_model->getSize().y() / 2);
+            solids_.push_back(wrapper_trd);
+        } else {
+            // Create the wrapper box
+            auto wrapper_box = make_shared_no_delete<G4Box>(
+                "wrapper_" + name, model->getSize().x() / 2.0, model->getSize().y() / 2.0, model->getSize().z() / 2.0);
+            solids_.push_back(wrapper_box);
+        }
+
+        // Create the wrapper logical volume
         auto wrapper_log = make_shared_no_delete<G4LogicalVolume>(
-            wrapper_box.get(), materials.get("world_material"), "wrapper_" + name + "_log");
+            solids_.back().get(), materials.get("world_material"), "wrapper_" + name + "_log");
         geo_manager_->setExternalObject(name, "wrapper_log", wrapper_log);
 
         // Get position and orientation
@@ -91,9 +108,21 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
         auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
         wrapperGeoTranslation *= *rotWrapper;
+        // Additional rotation for radial_strip models
+        if(radial_model != nullptr) {
+            auto rotRad = std::make_shared<G4RotationMatrix>();
+            rotRad->rotateX(-90.0 * CLHEP::degree);
+            wrapperGeoTranslation *= *rotRad;
+        }
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
+        // Additional rotation for radial_strip models
+        if(radial_model != nullptr) {
+            auto rotRad = std::make_shared<G4RotationMatrix>();
+            rotRad->rotateX(-90.0 * CLHEP::degree);
+            transform_phys = G4Transform3D(*rotWrapper * *rotRad, posWrapper);
+        }
 
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
         G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("World_log");
@@ -114,14 +143,26 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          * the sensitive detector is the part that collects the deposits
          */
 
-        // Create the sensor box and logical volume
-        auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
-                                                       model->getSensorSize().x() / 2.0,
-                                                       model->getSensorSize().y() / 2.0,
-                                                       model->getSensorSize().z() / 2.0);
-        solids_.push_back(sensor_box);
-        auto sensor_log =
-            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials.get("silicon"), "sensor_" + name + "_log");
+        // Build a trapezoidal sensor box if radial strip model is used, otherwise build a rectangular box
+        if(radial_model != nullptr) {
+            auto sensor_trd = make_shared_no_delete<G4Trd>("sensor_" + name,
+                                                           radial_model->getSensorBaseInner() / 2,
+                                                           radial_model->getSensorBaseOuter() / 2,
+                                                           radial_model->getSensorSize().z() / 2,
+                                                           radial_model->getSensorSize().z() / 2,
+                                                           radial_model->getSensorSize().y() / 2);
+            solids_.push_back(sensor_trd);
+        } else {
+            auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
+                                                           model->getSensorSize().x() / 2.0,
+                                                           model->getSensorSize().y() / 2.0,
+                                                           model->getSensorSize().z() / 2.0);
+            solids_.push_back(sensor_box);
+        }
+
+        // Create the sensor logical volume
+        auto sensor_log = make_shared_no_delete<G4LogicalVolume>(
+            solids_.back().get(), materials.get("silicon"), "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
 
         // Add sensor material to total material budget:
