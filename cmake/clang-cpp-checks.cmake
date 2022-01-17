@@ -145,7 +145,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             lint-diff
             COMMAND git diff --unified=0 origin/${TARGET_BRANCH} | ${CLANG_TIDY_DIFF} -path=${CMAKE_BINARY_DIR} -p1 -fix
                     -j${NPROC}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "Auto fixing problems in differing source files")
 
         ADD_CUSTOM_TARGET(
@@ -155,7 +155,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 tee ${CMAKE_BINARY_DIR}/check_lint_file.txt
                 # WARNING: fix to stop with error if there are problems
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "Checking for problems in differing source files")
     ELSE()
         MESSAGE(STATUS "Could NOT find clang-tidy-diff script")
