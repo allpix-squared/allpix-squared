@@ -108,7 +108,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(
         RUN_CLANG_TIDY
-        NAMES "run-clang-tidy.py" "run-clang-tidy-${CLANG_FORMAT_VERSION}.py"
+        NAMES "run-clang-tidy.py" "run-clang-tidy-${CLANG_TIDY_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${RUN_CLANG_TIDY}, adding full-code linting targets")
@@ -131,7 +131,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     FIND_PROGRAM(
         CLANG_TIDY_DIFF
-        NAMES "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_FORMAT_VERSION}.py"
+        NAMES "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${CLANG_TIDY_DIFF}, adding code-diff linting targets")
@@ -163,7 +163,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 ELSE()
     IF(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        MESSAGE(STATUS "Could NOT find clang-tidy version ${CLANG_FORMAT_VERSION}")
+        MESSAGE(STATUS "Could NOT find clang-tidy version ${CLANG_TIDY_VERSION}")
     ELSE()
         MESSAGE(STATUS "Could NOT check for clang-tidy, wrong compiler: ${CMAKE_CXX_COMPILER_ID}")
     ENDIF()
