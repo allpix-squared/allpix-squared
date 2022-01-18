@@ -225,7 +225,7 @@ std::vector<std::string> Configuration::getUnusedKeys() const {
  * String is recursively parsed for all pair of [ and ] brackets. All parts between single or double quotation marks are
  * skipped.
  */
-std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::string str, int depth) {
+std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::string str, int depth) { // NOLINT
 
     auto node = std::make_unique<parse_node>();
     str = allpix::trim(str);

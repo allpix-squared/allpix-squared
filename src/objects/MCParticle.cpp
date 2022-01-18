@@ -91,7 +91,7 @@ bool MCParticle::isPrimary() const {
 /**
  * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
-const MCParticle* MCParticle::getPrimary() const {
+const MCParticle* MCParticle::getPrimary() const { // NOLINT
     auto* parent = parent_.get();
     return (parent == nullptr ? this : parent->getPrimary());
 }
