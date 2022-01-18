@@ -16,7 +16,7 @@ CLANG_FORMAT_VERSION=$(git cat-file blob master:"$VERSIONFILE" | grep -m 1 'CLAN
 # set path to clang-format binary
 for bin in "clang-format-$CLANG_FORMAT_VERSION" "clang-format";
 do
-    CLANG_FORMAT=$(which "$bin")
+    CLANG_FORMAT=$(command -v "$bin")
     [ -n "$CLANG_FORMAT" ] && break
 done
 
