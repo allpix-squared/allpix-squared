@@ -17,10 +17,10 @@
 #include <G4ThreeVector.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 
-#include "cry/CRYGenerator.h"
-#include "cry/CRYParticle.h"
-#include "cry/CRYSetup.h"
-#include "cry/CRYUtils.h"
+#include <CRYGenerator.h>
+#include <CRYParticle.h>
+#include <CRYSetup.h>
+#include <CRYUtils.h>
 
 #include "core/config/Configuration.hpp"
 
