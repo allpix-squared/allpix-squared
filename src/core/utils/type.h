@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cxxabi.h>
 #include <memory>
+#include <string>
 
 // TODO: This should be reworked to show complex types in a better way
 

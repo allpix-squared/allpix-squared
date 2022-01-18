@@ -16,7 +16,9 @@
 #include <G4Box.hh>
 #include <G4SubtractionSolid.hh>
 #include <G4VSolid.hh>
+
 #include "PassiveMaterialModel.hpp"
+#include "tools/geant4/geant4.h"
 
 namespace allpix {
 

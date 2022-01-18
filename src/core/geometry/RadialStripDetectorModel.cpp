@@ -201,7 +201,7 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
         for(int j = static_cast<int>(-distance); j <= static_cast<int>(distance); j++) {
             // Add to final neighbors if strip is within the pixel matrix
             if(isWithinMatrix(row_seed_x + j, row_seed_y)) {
-                neighbors.push_back({row_seed_x + j, row_seed_y});
+                neighbors.emplace_back(row_seed_x + j, row_seed_y);
             }
         }
     }

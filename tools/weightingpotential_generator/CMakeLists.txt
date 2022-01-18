@@ -41,11 +41,11 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
 # Include Eigen dependency
-FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
-ALLPIX_SETUP_EIGEN_TARGETS()
+FIND_PACKAGE(PkgConfig REQUIRED)
+PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 # Link the dependency libraries
-TARGET_LINK_LIBRARIES(generate_potential ROOT::Core Threads::Threads Eigen3::Eigen)
+TARGET_LINK_LIBRARIES(generate_potential ROOT::Core Threads::Threads PkgConfig::Eigen3)
 
 # Create install target
 INSTALL(

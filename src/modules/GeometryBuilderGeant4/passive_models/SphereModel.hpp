@@ -16,6 +16,7 @@
 #include <G4Sphere.hh>
 
 #include "PassiveMaterialModel.hpp"
+#include "tools/geant4/geant4.h"
 
 namespace allpix {
 

@@ -453,7 +453,7 @@ void DepositionGeant4Module::record_module_statistics() {
 G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel>& model) {
     // For radial_strip models a rotation around X-axis is necessary to align G4 and APSQ coordinate systems
     if(std::dynamic_pointer_cast<RadialStripDetectorModel>(model) != nullptr) {
-        auto radialRot = new G4RotationMatrix();
+        auto* radialRot = new G4RotationMatrix();
         radialRot->rotateX(-90.0 * CLHEP::degree);
         return radialRot;
     }

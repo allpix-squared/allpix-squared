@@ -25,29 +25,29 @@ namespace allpix {
          * @param object  Pointer to the random number engine
          * @param func    Pointer to the method to be called on the object to obtain a random number
          */
-        static void set(T* object, double (T::*func)(void));
+        static void set(T* object, double (T::*func)());
 
         /**
          * @brief Wrapped call to the configured method of the stored object
          * @return Pseudo-random number
          */
-        static double rng(void);
+        static double rng();
 
     private:
         static thread_local T* m_obj;
-        static thread_local double (T::*m_func)(void);
+        static thread_local double (T::*m_func)();
     };
 
     template <class T> thread_local T* RNGWrapper<T>::m_obj;
 
-    template <class T> thread_local double (T::*RNGWrapper<T>::m_func)(void);
+    template <class T> thread_local double (T::*RNGWrapper<T>::m_func)();
 
-    template <class T> void RNGWrapper<T>::set(T* object, double (T::*func)(void)) {
+    template <class T> void RNGWrapper<T>::set(T* object, double (T::*func)()) {
         m_obj = object;
         m_func = func;
     }
 
-    template <class T> double RNGWrapper<T>::rng(void) { return (m_obj->*m_func)(); }
+    template <class T> double RNGWrapper<T>::rng() { return (m_obj->*m_func)(); }
 
 } // namespace allpix
 
