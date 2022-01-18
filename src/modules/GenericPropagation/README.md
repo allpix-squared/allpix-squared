@@ -49,7 +49,7 @@ This module requires an installation of Eigen3.
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_linegraphs` : Determines if line graphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_linegraphs_collected` : Determine whether to also generate line graphs *only* for charge carriers that have reached the implant side within the allotted integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
-* `output_plots_lines_recombined` : Boolean flag to select whether line graphs should also be generated only from charge carriers that have recombined with the lattice during the integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
+* `output_linegraphs_recombined` : Boolean flag to select whether line graphs should also be generated only from charge carriers that have recombined with the lattice during the integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
 * `output_plots_step` : Timestep to use between two points plotted. Indirectly determines the amount of points plotted. Defaults to *timestep_max* if not explicitly specified.
 * `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
 * `output_plots_phi` : Viewpoint angle of the 3D animation and the 3D line graph around the world Z-axis. Defaults to zero.
