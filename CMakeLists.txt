@@ -256,6 +256,10 @@ FIND_PACKAGE(Threads REQUIRED)
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
 
+# Include Eigen3 without requiring it at this moment
+FIND_PACKAGE(PkgConfig REQUIRED)
+PKG_CHECK_MODULES(Eigen3 QUIET IMPORTED_TARGET eigen3)
+
 #####################################
 # Prerequisistes for Allpix Squared #
 #####################################
@@ -305,6 +309,11 @@ SET(ALLPIX_DEPS_LIBRARIES
     ROOT::Geom
     ROOT::RIO
     ROOT::Hist)
+
+# If Eigen3 has been found, link it:
+IF(Eigen3_FOUND)
+    LIST(APPEND ALLPIX_DEPS_LIBRARIES PkgConfig::Eigen3)
+ENDIF()
 
 # Add the LCG view as dependency if set:
 IF(DEFINED ENV{LCG_VIEW})
