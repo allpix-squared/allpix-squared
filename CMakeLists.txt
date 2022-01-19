@@ -158,6 +158,9 @@ IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
         CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
 
+# We need PkgConfig for some dependencies:
+FIND_PACKAGE(PkgConfig REQUIRED)
+
 ###################################
 # Define build flags for allpix   #
 ###################################
@@ -257,7 +260,6 @@ FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
 
 # Include Eigen3 without requiring it at this moment
-FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 QUIET IMPORTED_TARGET eigen3)
 
 #####################################

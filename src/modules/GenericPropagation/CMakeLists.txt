@@ -8,7 +8,6 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME} GenericPropagationModule.cpp)
 ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
 
 # Eigen is required for Runge-Kutta propagation
-FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ROOT::Graf3d PkgConfig::Eigen3)
