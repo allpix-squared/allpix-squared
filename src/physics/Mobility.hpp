@@ -15,6 +15,7 @@
 
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
@@ -354,7 +355,7 @@ namespace allpix {
          * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Mobility(const Configuration& config, bool doping = false) {
+        explicit Mobility(const Configuration& config, bool doping = false) {
             try {
                 auto model = config.get<std::string>("mobility_model");
                 auto temperature = config.get<double>("temperature");
