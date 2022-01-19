@@ -10,7 +10,11 @@
 
 // Missing ROOT objects
 #pragma link C++ class ROOT::Math::Cartesian2D < unsigned int> + ;
+#pragma link C++ class ROOT::Math::Cartesian2D < int> + ;
 #pragma link C++ class ROOT::Math::DisplacementVector2D < ROOT::Math::Cartesian2D < unsigned int>,                          \
+    ROOT::Math::DefaultCoordinateSystemTag> +                                                                               \
+    ;
+#pragma link C++ class ROOT::Math::DisplacementVector2D < ROOT::Math::Cartesian2D < int>,                                   \
     ROOT::Math::DefaultCoordinateSystemTag> +                                                                               \
     ;
 
