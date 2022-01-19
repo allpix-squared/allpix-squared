@@ -124,6 +124,11 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
             LOG(TRACE) << "Registered global model path: " << data_dir;
         }
     }
+    auto config_file_path = global_config.getFilePath();
+    if(!config_file_path.empty() && std::filesystem::is_directory(config_file_path.parent_path())) {
+        model_paths_.emplace_back(config_file_path.parent_path());
+        LOG(TRACE) << "Registered path of configuration file as model location.";
+    }
 }
 
 /**
