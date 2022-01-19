@@ -164,7 +164,7 @@ fmt:cc7-llvm-lint-diff:
     extends: .format
     script:
         - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DLCIO_DIR=$LCIO_DIR -DTARGET_REMOTE="upstream" ..
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
         - ninja check-lint-diff 2> /dev/null
 
 fmt:cmake-lint:
