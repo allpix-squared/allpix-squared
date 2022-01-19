@@ -136,8 +136,6 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         NAMES "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
-        MESSAGE(STATUS "Found ${CLANG_TIDY_DIFF}, adding code-diff linting targets")
-
         # Set target branch and remote to perform the diff against
         IF(NOT TARGET_BRANCH)
             SET(TARGET_BRANCH "master")
@@ -145,6 +143,8 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         IF(NOT TARGET_REMOTE)
             SET(TARGET_REMOTE "origin")
         ENDIF()
+        MESSAGE(
+            STATUS "Found ${CLANG_TIDY_DIFF}, adding code-diff linting targets against ${TARGET_REMOTE}/${TARGET_BRANCH}")
 
         ADD_CUSTOM_TARGET(
             lint-diff
