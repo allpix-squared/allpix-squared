@@ -435,7 +435,7 @@ void GeometryManager::load_models() {
     }
 }
 
-/*
+/**
  * After closing the geometry new parts of the geometry cannot be added anymore. All the models for the detectors in the
  * configuration are resolved to requested type (and an error is thrown if this is not possible). Also if a parameter is
  * specialized in the detector config a copy of the model is created with those specialized settings.
@@ -486,7 +486,7 @@ void GeometryManager::close_geometry() {
     closed_ = true;
     LOG(TRACE) << "Closed geometry";
 }
-/*
+/**
  * Calculates the position and orientation of the object from the provided configuration file
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Configuration& config) {

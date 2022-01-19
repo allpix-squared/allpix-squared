@@ -1,6 +1,8 @@
-/** @file
- *  @brief Implementation of interface to the core framework
- *  @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+/**
+ * @file
+ * @brief Implementation of interface to the core framework
+ *
+ * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -236,7 +238,7 @@ void Allpix::finalize() {
     }
 }
 
-/*
+/**
  * This function can be called safely from any signal handler. Time between the request to terminate
  * and the actual termination is not always negigible.
  */

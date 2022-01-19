@@ -2,6 +2,7 @@
  * @file
  * @brief The TrackInfoManager class, contains a factory method for TrackInfoG4 to be used in AP2 as well as handling and
  * dispatching MCTracks
+ *
  * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
