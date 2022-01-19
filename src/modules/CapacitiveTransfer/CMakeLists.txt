@@ -5,7 +5,6 @@ ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} CapacitiveTransferModule.cpp)
 
 # Eigen is required for finding the coupling distances
-FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 TARGET_LINK_LIBRARIES(${MODULE_NAME} PkgConfig::Eigen3)

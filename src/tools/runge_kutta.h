@@ -1,5 +1,6 @@
 /**
  * @file
+ *
  * @brief Utility to execute Runge-Kutta integration using Eigen
  * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".

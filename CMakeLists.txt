@@ -158,6 +158,9 @@ IF(NOT APPLE AND NOT CMAKE_LINK_WHAT_YOU_USE)
         CACHE STRING "Choose whether to only link libraries which contain symbols actually used by the target." FORCE)
 ENDIF()
 
+# We need PkgConfig for some dependencies:
+FIND_PACKAGE(PkgConfig REQUIRED)
+
 ###################################
 # Define build flags for allpix   #
 ###################################
@@ -256,6 +259,9 @@ FIND_PACKAGE(Threads REQUIRED)
 # Include Boost.Random
 FIND_PACKAGE(Boost 1.64.0 REQUIRED COMPONENTS random)
 
+# Include Eigen3 without requiring it at this moment
+PKG_CHECK_MODULES(Eigen3 QUIET IMPORTED_TARGET eigen3)
+
 #####################################
 # Prerequisistes for Allpix Squared #
 #####################################
@@ -305,6 +311,11 @@ SET(ALLPIX_DEPS_LIBRARIES
     ROOT::Geom
     ROOT::RIO
     ROOT::Hist)
+
+# If Eigen3 has been found, link it:
+IF(Eigen3_FOUND)
+    LIST(APPEND ALLPIX_DEPS_LIBRARIES PkgConfig::Eigen3)
+ENDIF()
 
 # Add the LCG view as dependency if set:
 IF(DEFINED ENV{LCG_VIEW})
