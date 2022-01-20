@@ -11,8 +11,12 @@
 #ifndef ALLPIX_IMPACTIONIZATION_MODELS_H
 #define ALLPIX_IMPACTIONIZATION_MODELS_H
 
+#include <limits>
+#include <typeindex>
+
 #include "exceptions.h"
 
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
@@ -28,7 +32,7 @@ namespace allpix {
          * Default constructor
          * @param threshold Threshold electric field for impact ionization
          */
-        ImpactIonizationModel(double threshold) : threshold_(threshold){};
+        explicit ImpactIonizationModel(double threshold) : threshold_(threshold){};
 
         /**
          * Default virtual destructor
@@ -51,7 +55,7 @@ namespace allpix {
 
     protected:
         virtual double gain_factor(const CarrierType& type, double efield_mag) const = 0;
-        double threshold_{DBL_MAX};
+        double threshold_{std::numeric_limits<double>::max()};
     };
 
     /**
@@ -61,7 +65,7 @@ namespace allpix {
      */
     class NoImpactIonization : virtual public ImpactIonizationModel {
     public:
-        NoImpactIonization() : ImpactIonizationModel(DBL_MAX){};
+        NoImpactIonization() : ImpactIonizationModel(std::numeric_limits<double>::max()){};
         double operator()(const CarrierType&, double, double) const override { return 1.; };
 
     private:
@@ -266,8 +270,8 @@ namespace allpix {
          * @return Type of impact ionization model
          */
         const std::type_index type() {
-            auto& m = *model_.get();
-            return std::move(typeid(m));
+            auto& m = *(model_.get());
+            return typeid(m);
         }
 
     private:
