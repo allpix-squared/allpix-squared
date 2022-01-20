@@ -2,7 +2,7 @@
  * @file
  * @brief Executable running the framework
  *
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -124,7 +124,7 @@ int main(int argc, const char* argv[]) {
             std::cout << "                     Geant4 " << G4VERSION_NUMBER << std::endl;
 #endif
             std::cout << std::endl;
-            std::cout << "Copyright (c) 2017-2021 CERN and the Allpix Squared authors." << std::endl << std::endl;
+            std::cout << "Copyright (c) 2016-2022 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;
