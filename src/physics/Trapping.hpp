@@ -15,6 +15,8 @@
 
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 
@@ -144,7 +146,7 @@ namespace allpix {
      */
     class CMSTracker : virtual public TrappingModel {
     public:
-        CMSTracker(double fluence) {
+        explicit CMSTracker(double fluence) {
             tau_eff_electron_ = 1. / (Units::get(1.71e-16, "cm*cm/ns") * fluence + Units::get(0.114, "/ns"));
             tau_eff_hole_ = 1. / (Units::get(2.79e-16, "cm*cm/ns") * fluence + Units::get(0.093, "/ns"));
         }
@@ -159,7 +161,7 @@ namespace allpix {
      */
     class Mandic : virtual public TrappingModel {
     public:
-        Mandic(double fluence) {
+        explicit Mandic(double fluence) {
             tau_eff_electron_ = 0.054 * pow(fluence / Units::get(1e16, "/cm/cm"), -0.62);
             tau_eff_hole_ = tau_eff_electron_ * (4.9 / 6.2);
         }
@@ -171,7 +173,7 @@ namespace allpix {
      */
     class CustomTrapping : virtual public TrappingModel {
     public:
-        CustomTrapping(const Configuration& config) {
+        explicit CustomTrapping(const Configuration& config) {
             tf_tau_eff_electron_ = configure_tau_eff(config, CarrierType::ELECTRON);
             tf_tau_eff_hole_ = configure_tau_eff(config, CarrierType::HOLE);
         };
@@ -233,7 +235,7 @@ namespace allpix {
          * Recombination constructor
          * @param config Configuration of the calling module
          */
-        Trapping(const Configuration& config) {
+        explicit Trapping(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("trapping_model", "none");
                 std::transform(model.begin(), model.end(), model.begin(), ::tolower);
