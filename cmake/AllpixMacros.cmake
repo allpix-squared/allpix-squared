@@ -167,8 +167,13 @@ ENDFUNCTION()
 
 # Add a test to the unit test suite and parse its configuration file for options
 FUNCTION(add_allpix_test)
-    SET(oneValueArgs NAME FILE)
+    SET(oneValueArgs NAME FILE WORKING_DIRECTORY)
     CMAKE_PARSE_ARGUMENTS(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Set default working directory
+    IF(NOT DEFINED TEST_WORKING_DIRECTORY)
+        SET(TEST_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/etc/unittests")
+    ENDIF()
 
     # Allow the test to specify additional module CLI parameters:
     FILE(STRINGS ${TEST_FILE} OPTS REGEX "#OPTION ")
@@ -213,7 +218,7 @@ FUNCTION(add_allpix_test)
 
     ADD_TEST(
         NAME "${TEST_NAME}"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/etc/unittests
+        WORKING_DIRECTORY ${TEST_WORKING_DRECTORY}
         COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${TEST_NAME}"
                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE} ${clioptions}"
                 ${before_script})
