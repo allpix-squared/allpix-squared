@@ -174,12 +174,14 @@ FUNCTION(add_allpix_test)
 
     # Set default working directory
     IF(NOT DEFINED TEST_WORKING_DIRECTORY)
+        # cmake-lint: disable=C0103
         SET(TEST_WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/testing")
         FILE(MAKE_DIRECTORY ${TEST_WORKING_DIRECTORY})
     ENDIF()
 
     # Default executable is "allpix"
     IF(NOT DEFINED TEST_EXECUTABLE)
+        # cmake-lint: disable=C0103
         SET(TEST_EXECUTABLE "allpix")
     ENDIF()
 
