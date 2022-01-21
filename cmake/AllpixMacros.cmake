@@ -174,7 +174,8 @@ FUNCTION(add_allpix_test)
 
     # Set default working directory
     IF(NOT DEFINED TEST_WORKING_DIRECTORY)
-        SET(TEST_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/etc/unittests")
+        SET(TEST_WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/testing")
+        FILE(MAKE_DIRECTORY ${TEST_WORKING_DIRECTORY})
     ENDIF()
 
     # Default executable is "allpix"
@@ -225,8 +226,8 @@ FUNCTION(add_allpix_test)
 
     ADD_TEST(
         NAME "${TEST_NAME}"
-        WORKING_DIRECTORY ${TEST_WORKING_DRECTORY}
-        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${TEST_NAME}"
+        WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
+        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "${TEST_NAME}"
                 "${CMAKE_INSTALL_PREFIX}/bin/${TEST_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE} ${clioptions}"
                 ${before_script})
 
