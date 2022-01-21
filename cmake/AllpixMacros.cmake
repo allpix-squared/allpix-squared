@@ -228,7 +228,7 @@ FUNCTION(add_allpix_test)
         NAME "${TEST_NAME}"
         WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
         COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "${TEST_NAME}"
-                "${CMAKE_INSTALL_PREFIX}/bin/${TEST_EXECUTABLE} -c ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE} ${clioptions}"
+                "${CMAKE_INSTALL_PREFIX}/bin/${TEST_EXECUTABLE} -c ${TEST_FILE} ${clioptions}"
                 ${before_script})
 
     # Parse configuration file for pass/fail conditions:
@@ -304,13 +304,27 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
 
     IF(TEST_MODULES)
         FILE(
+            GLOB AUX_FILES_MODULES
+            RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+            ${directory}/[!00-99]*)
+
+        # Copy and configure auxiliary files
+        FOREACH(file ${AUX_FILES_MODULES})
+            CONFIGURE_FILE(${file} "${CMAKE_CURRENT_BINARY_DIR}/${file}" @ONLY)
+        ENDFOREACH()
+
+        FILE(
             GLOB TEST_LIST_MODULES
             RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
             ${directory}/[00-99]*)
 
+        # Copy and configure tests
         FOREACH(test ${TEST_LIST_MODULES})
             GET_FILENAME_COMPONENT(title ${test} NAME_WE)
-            ADD_ALLPIX_TEST(NAME "modules/${_allpix_module_dir}/${title}" FILE ${test})
+            SET(TEST_DIRECTORY "${PROJECT_BINARY_DIR}/testing/modules/${_allpix_module_dir}/${title}")
+
+            CONFIGURE_FILE(${test} "${CMAKE_CURRENT_BINARY_DIR}/${test}" @ONLY)
+            ADD_ALLPIX_TEST(NAME "modules/${_allpix_module_dir}/${title}" FILE ${CMAKE_CURRENT_BINARY_DIR}/${test})
 
             GET_PROPERTY(old_count GLOBAL PROPERTY COUNT_TESTS_MODULES)
             MATH(EXPR new_count "${old_count}+1")
