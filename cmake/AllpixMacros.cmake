@@ -167,7 +167,9 @@ ENDFUNCTION()
 
 # Add a test to the unit test suite and parse its configuration file for options
 FUNCTION(add_allpix_test)
+    SET(options IGNORE_PASS_CONDITION)
     SET(oneValueArgs NAME FILE EXECUTABLE WORKING_DIRECTORY)
+    SET(multiValueArgs DEPENDS)
     CMAKE_PARSE_ARGUMENTS(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Set default working directory
@@ -239,14 +241,16 @@ FUNCTION(add_allpix_test)
         MESSAGE(FATAL_ERROR "Neither PASS nor FAIL defined for test \"${TEST_NAME}\"")
     ENDIF()
 
-    # Escape possible regex patterns in the expected output:
-    FOREACH(pass ${PASS_LST_})
-        ESCAPE_REGEX("${pass}" pass)
-        SET_PROPERTY(
-            TEST ${TEST_NAME}
-            APPEND
-            PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
-    ENDFOREACH()
+    IF(NOT TEST_IGNORE_PASS_CONDITION)
+        # Escape possible regex patterns in the expected output:
+        FOREACH(pass ${PASS_LST_})
+            ESCAPE_REGEX("${pass}" pass)
+            SET_PROPERTY(
+                TEST ${TEST_NAME}
+                APPEND
+                PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
+        ENDFOREACH()
+    ENDIF()
     FOREACH(fail ${FAIL_LST_})
         ESCAPE_REGEX("${fail}" fail)
         SET_PROPERTY(
@@ -264,6 +268,10 @@ FUNCTION(add_allpix_test)
         STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${DEPENDENCY}")
     ENDIF()
+    FOREACH(depend ${TEST_DEPENDS})
+        MESSAGE(STATUS "DEP ${depend}")
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${depend}")
+    ENDFOREACH()
 
     # Add individual timeout criteria:
     FILE(STRINGS ${TEST_FILE} TESTTIMEOUT REGEX "#TIMEOUT ")
