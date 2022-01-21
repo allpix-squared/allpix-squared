@@ -278,6 +278,19 @@ FUNCTION(add_allpix_test)
         STRING(REPLACE "#LABEL " "" TESTLABEL "${TESTLABEL}")
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY LABELS "${TESTLABEL}")
     ENDIF()
+
+    # Add required files if specified
+    FILE(STRINGS ${TEST_FILE} TESTDATA REGEX "#DATA ")
+    IF(TESTDATA)
+        STRING(REPLACE "#DATA " "" TESTDATA "${TESTDATA}")
+
+        # Register the data for retrieval
+        FOREACH(file ${TESTDATA})
+            EXTERNALDATA_EXPAND_ARGUMENTS(fetch_test_data_tools _data_file DATA{${file}})
+        ENDFOREACH()
+
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
+    ENDIF()
 ENDFUNCTION()
 
 # Macro for adding module tests to CTest
