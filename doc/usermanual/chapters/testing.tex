@@ -307,8 +307,8 @@ Variables can be used both in test files and the auxiliary configuration files s
 The following variables are available:
 
 \begin{description}
-  \item[\parameter{@TEST_DIRECTORY@}:] Directory in which the current test is executed, i.e. where all output files will be placed.
-  \item[\parameter{@TEST_BASE_DIRECTORY@}:] Base directory under which all tests are being executed. This can be used to reference the output files from another test. it should be noted that the respective test has to be referenced using the \parameter{#DEPENDS} keyword to ensure that it successfully ran before.
+  \item[\parameter{@TEST_DIR@}:] Directory in which the current test is executed, i.e. where all output files will be placed.
+  \item[\parameter{@TEST_BASE_DIR@}:] Base directory under which all tests are being executed. This can be used to reference the output files from another test. it should be noted that the respective test has to be referenced using the \parameter{#DEPENDS} keyword to ensure that it successfully ran before.
   \item[\parameter{@PROJECT_SOURCE_DIR@}:] The root directory of the project. This can for example be used to call a script provided in the \dir{etc/scripts} directory of the repository.
 \end{description}
 
