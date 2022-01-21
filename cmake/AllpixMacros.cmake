@@ -291,12 +291,7 @@ FUNCTION(add_allpix_test)
     FILE(STRINGS ${TEST_FILE} TESTDATA REGEX "#DATA ")
     IF(TESTDATA)
         STRING(REPLACE "#DATA " "" TESTDATA "${TESTDATA}")
-
-        # Register the data for retrieval
-        FOREACH(file ${TESTDATA})
-            EXTERNALDATA_EXPAND_ARGUMENTS(fetch_test_data_tools _data_file DATA{${file}})
-        ENDFOREACH()
-
+        STRING(REPLACE " " ";" TESTDATA ${TESTDATA})
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
     ENDIF()
 ENDFUNCTION()
