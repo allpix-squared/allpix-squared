@@ -302,6 +302,7 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
     # Get the name of the module
     GET_FILENAME_COMPONENT(_allpix_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
+    SET(TEST_BASE_DIRECTORY "${PROJECT_BINARY_DIR}/testing")
     IF(TEST_MODULES)
         FILE(
             GLOB AUX_FILES_MODULES
@@ -321,10 +322,12 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
         # Copy and configure tests
         FOREACH(test ${TEST_LIST_MODULES})
             GET_FILENAME_COMPONENT(title ${test} NAME_WE)
-            SET(TEST_DIRECTORY "${PROJECT_BINARY_DIR}/testing/modules/${_allpix_module_dir}/${title}")
+            SET(TEST_DIRECTORY "${TEST_BASE_DIRECTORY}/modules/${_allpix_module_dir}/${title}")
 
             CONFIGURE_FILE(${test} "${CMAKE_CURRENT_BINARY_DIR}/${test}" @ONLY)
-            ADD_ALLPIX_TEST(NAME "modules/${_allpix_module_dir}/${title}" FILE ${CMAKE_CURRENT_BINARY_DIR}/${test})
+            ADD_ALLPIX_TEST(NAME "modules/${_allpix_module_dir}/${title}"
+                            FILE ${CMAKE_CURRENT_BINARY_DIR}/${test}
+                            WORKING_DIRECTORY ${TEST_BASE_DIRECTORY})
 
             GET_PROPERTY(old_count GLOBAL PROPERTY COUNT_TESTS_MODULES)
             MATH(EXPR new_count "${old_count}+1")
