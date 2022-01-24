@@ -29,7 +29,7 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 * `timestep`: Time step for the pulse to be generated from charge carrier arrival times. Only used if no pulse information is available for the propagated charge object. Default value is 0.01ns.
 * `max_depth_distance` : Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Only used if no pulse information is available for the propagated charge object. Defaults to `5um`.
 * `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Only used if no pulse information is available for the propagated charge object. Should only be used with non-linear electric fields and defaults to `false`.
-*
+
 ### Usage
 The default configuration is equal to the following:
 
