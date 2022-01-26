@@ -238,27 +238,6 @@ ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoin
     return translation_local(liang_barsky_clipping(direction, pos_in, getSensorSize()));
 }
 
-/**
- * The definition of inside the implant region is determined by the detector model
- *
- * @warning this currently only works for the sensor top surface, not for the backside
- */
-bool DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth) const {
-
-    auto [xpixel, ypixel] = getPixelIndex(local_pos);
-    auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
-
-    // Boundary in z is either defined by implant volume or by depth parameter in case of 2D implants:
-    double z_boundary = getSensorCenter().z() + getSensorSize().z() / 2.0 - depth;
-    if(getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
-        z_boundary = getImplantOffset().z() - getImplantSize().z() / 2;
-    }
-
-    return (std::fabs(inPixelPos.x() + getImplantOffset().x()) <= std::fabs(getImplantSize().x() / 2) &&
-            std::fabs(inPixelPos.y() + getImplantOffset().y()) <= std::fabs(getImplantSize().y() / 2) &&
-            local_pos.z() >= z_boundary);
-}
-
 ROOT::Math::XYZPoint DetectorModel::liang_barsky_clipping(const ROOT::Math::XYZVector& direction,
                                                           const ROOT::Math::XYZPoint& position,
                                                           const ROOT::Math::XYZVector& box) {

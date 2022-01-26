@@ -67,10 +67,15 @@ namespace allpix {
 
         /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
+         *
          * @param local_pos Position in local coordinates of the detector model
+         * @param depth Depth from sensor surface to be considered if implant is defined only in 2D
          * @return True if a local position is within the pixel implant, false otherwise
+         *
+         * @note Pixel implant region is not implemented properly when using radial_strip
+         *      detectors due to the requirement of a TCAD electric field.
          */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const override;
+        bool isWithinImplant(const ROOT::Math::XYZPoint& position, const double depth = 0) const override;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device

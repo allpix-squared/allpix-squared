@@ -119,7 +119,7 @@ bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_
     return false;
 }
 
-bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
+bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double) const {
     // Convert local position to polar coordinates
     auto polar_pos = getPositionPolar(local_pos);
 
