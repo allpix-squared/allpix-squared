@@ -246,7 +246,7 @@ $ ctest -R test_performance
 The configuration of the tests can be found in the \dir{etc/unittests/test_*} directories of the repository and are automatically discovered by CMake.
 CMake automatically searches for \apsq configuration files in the different directories and passes them to the \apsq executable~(cf.\ Section~\ref{sec:allpix_executable}).
 
-Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraph.
+Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraphs.
 
 \paragraph{Test Tags, Pass and Fail Conditions}
 
@@ -295,4 +295,32 @@ If a test is expected to create multiple error or warning messages which cannot 
 # fail expression by explicitly defining it as FATAL only:
 #PASS (ERROR) Multithreading disabled since the current module configuration does not support it
 #FAIL FATAL
+\end{minted}
+
+\paragraph{Directory Variables in Tests}
+
+Sometimes it is necessary to pass directories or file names as test input.
+To facilitate this, the test files can contain variables which are replaced with the respective paths before being executed.
+All variable names have to be enclosed in \parameter{@} symbols to be detected and parsed correctly.
+Variables can be used both in test files and the auxiliary configuration files such as detector geometry definitions.
+
+The following variables are available:
+
+\begin{description}
+  \item[\parameter{@TEST_DIR@}:] Directory in which the current test is executed, i.e. where all output files will be placed.
+  \item[\parameter{@TEST_BASE_DIR@}:] Base directory under which all tests are being executed. This can be used to reference the output files from another test. it should be noted that the respective test has to be referenced using the \parameter{#DEPENDS} keyword to ensure that it successfully ran before.
+  \item[\parameter{@PROJECT_SOURCE_DIR@}:] The root directory of the project. This can for example be used to call a script provided in the \dir{etc/scripts} directory of the repository.
+\end{description}
+
+The following example demonstrates the use of these variables.
+A script is called before executing the test and an input file is expected:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+[Allpix]
+detectors_file = "detector.conf"
+
+[DepositionReader]
+file_name = "@TEST_DIRECTORY@/deposition.root"
+
+#BEFORE_SCRIPT python @PROJECT_SOURCE_DIR@/etc/scripts/create_deposition_file.py --type a --detector mydetector
 \end{minted}

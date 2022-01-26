@@ -166,35 +166,53 @@ FUNCTION(add_default_fail_conditions name)
 ENDFUNCTION()
 
 # Add a test to the unit test suite and parse its configuration file for options
-FUNCTION(add_allpix_test test name)
+FUNCTION(add_allpix_test)
+    SET(options IGNORE_PASS_CONDITION)
+    SET(oneValueArgs NAME FILE EXECUTABLE WORKING_DIRECTORY)
+    SET(multiValueArgs DEPENDS)
+    CMAKE_PARSE_ARGUMENTS(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Set default working directory
+    IF(NOT DEFINED TEST_WORKING_DIRECTORY)
+        # cmake-lint: disable=C0103
+        SET(TEST_WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/testing")
+    ENDIF()
+    FILE(MAKE_DIRECTORY ${TEST_WORKING_DIRECTORY})
+
+    # Default executable is "allpix"
+    IF(NOT DEFINED TEST_EXECUTABLE)
+        # cmake-lint: disable=C0103
+        SET(TEST_EXECUTABLE "allpix")
+    ENDIF()
+
     # Allow the test to specify additional module CLI parameters:
-    FILE(STRINGS ${test} OPTS REGEX "#OPTION ")
+    FILE(STRINGS ${TEST_FILE} OPTS REGEX "#OPTION ")
     FOREACH(opt ${OPTS})
         STRING(REPLACE "#OPTION " "" opt "${opt}")
         SET(clioptions "${clioptions} -o ${opt}")
     ENDFOREACH()
     # Allow the test to specify additional geometry CLI parameters:
-    FILE(STRINGS ${test} OPTS REGEX "#DETOPTION ")
+    FILE(STRINGS ${TEST_FILE} OPTS REGEX "#DETOPTION ")
     FOREACH(opt ${OPTS})
         STRING(REPLACE "#DETOPTION " "" opt "${opt}")
         SET(clioptions "${clioptions} -g ${opt}")
     ENDFOREACH()
     # Allow the test to specify additional CLI parameters:
-    FILE(STRINGS ${test} OPTS REGEX "#CLIOPTION ")
+    FILE(STRINGS ${TEST_FILE} OPTS REGEX "#CLIOPTION ")
     FOREACH(opt ${OPTS})
         STRING(REPLACE "#CLIOPTION " "" opt "${opt}")
         SET(clioptions "${clioptions} ${opt}")
     ENDFOREACH()
 
     # Register the test for inclusion in the documentation:
-    FILE(STRINGS ${test} DESC REGEX "#DESC ")
+    FILE(STRINGS ${TEST_FILE} DESC REGEX "#DESC ")
     LIST(LENGTH DESC listcount_desc)
     IF(listcount_desc EQUAL 0)
-        MESSAGE(WARNING "Test ${name} does not provide a description")
+        MESSAGE(WARNING "Test ${TEST_NAME} does not provide a description")
     ELSEIF(listcount_desc GREATER 1)
-        MESSAGE(FATAL_ERROR "More than one DESC expressions defined in test ${name}")
+        MESSAGE(FATAL_ERROR "More than one DESC expressions defined in test ${TEST_NAME}")
     ELSE()
-        STRING(REPLACE "#DESC " "\\item[\\file{${name}}] " DESC "${DESC}")
+        STRING(REPLACE "#DESC " "\\item[\\file{${TEST_NAME}}] " DESC "${DESC}")
         LIST(APPEND TEST_DESCRIPTIONS ${DESC})
     ENDIF()
     SET(TEST_DESCRIPTIONS
@@ -202,68 +220,82 @@ FUNCTION(add_allpix_test test name)
         PARENT_SCOPE)
 
     # Parse possible commands to be run before
-    FILE(STRINGS ${test} OPTS REGEX "#BEFORE_SCRIPT ")
+    FILE(STRINGS ${TEST_FILE} OPTS REGEX "#BEFORE_SCRIPT ")
     FOREACH(opt ${OPTS})
         STRING(REPLACE "#BEFORE_SCRIPT " "" opt "${opt}")
         LIST(APPEND before_script ${opt})
     ENDFOREACH()
 
     ADD_TEST(
-        NAME "${name}"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/etc/unittests
-        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${name}"
-                "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_CURRENT_SOURCE_DIR}/${test} ${clioptions}"
+        NAME "${TEST_NAME}"
+        WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
+        COMMAND ${PROJECT_SOURCE_DIR}/etc/unittests/run_directory.sh "${TEST_NAME}"
+                "${CMAKE_INSTALL_PREFIX}/bin/${TEST_EXECUTABLE} -c ${TEST_FILE} ${clioptions}"
                 ${before_script})
 
     # Parse configuration file for pass/fail conditions:
-    FILE(STRINGS ${test} PASS_LST_ REGEX "#PASS ")
-    FILE(STRINGS ${test} FAIL_LST_ REGEX "#FAIL ")
+    FILE(STRINGS ${TEST_FILE} PASS_LST_ REGEX "#PASS ")
+    FILE(STRINGS ${TEST_FILE} FAIL_LST_ REGEX "#FAIL ")
 
     # Check for number of pass or fail conditions - we should have at least one of them
     LIST(LENGTH PASS_LST_ listcount_pass)
     LIST(LENGTH FAIL_LST_ listcount_fail)
     IF(listcount_pass EQUAL 0 AND listcount_fail EQUAL 0)
-        MESSAGE(FATAL_ERROR "Neither PASS nor FAIL defined for test \"${name}\"")
+        MESSAGE(FATAL_ERROR "Neither PASS nor FAIL defined for test \"${TEST_NAME}\"")
     ENDIF()
 
-    # Escape possible regex patterns in the expected output:
-    FOREACH(pass ${PASS_LST_})
-        ESCAPE_REGEX("${pass}" pass)
-        SET_PROPERTY(
-            TEST ${name}
-            APPEND
-            PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
-    ENDFOREACH()
+    IF(NOT TEST_IGNORE_PASS_CONDITION)
+        # Escape possible regex patterns in the expected output:
+        FOREACH(pass ${PASS_LST_})
+            ESCAPE_REGEX("${pass}" pass)
+            SET_PROPERTY(
+                TEST ${TEST_NAME}
+                APPEND
+                PROPERTY PASS_REGULAR_EXPRESSION "${pass}")
+        ENDFOREACH()
+    ENDIF()
     FOREACH(fail ${FAIL_LST_})
         ESCAPE_REGEX("${fail}" fail)
         SET_PROPERTY(
-            TEST ${name}
+            TEST ${TEST_NAME}
             APPEND
             PROPERTY FAIL_REGULAR_EXPRESSION "${fail}")
     ENDFOREACH()
 
     # Add default fail conditions
-    ADD_DEFAULT_FAIL_CONDITIONS(${name})
+    ADD_DEFAULT_FAIL_CONDITIONS(${TEST_NAME})
 
     # Some tests might depend on others:
-    FILE(STRINGS ${test} DEPENDENCY REGEX "#DEPENDS ")
+    FILE(STRINGS ${TEST_FILE} DEPENDENCY REGEX "#DEPENDS ")
     IF(DEPENDENCY)
         STRING(REPLACE "#DEPENDS " "" DEPENDENCY "${DEPENDENCY}")
-        SET_PROPERTY(TEST ${name} PROPERTY DEPENDS "${DEPENDENCY}")
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${DEPENDENCY}")
     ENDIF()
+    FOREACH(depend ${TEST_DEPENDS})
+        MESSAGE(STATUS "DEP ${depend}")
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${depend}")
+    ENDFOREACH()
 
     # Add individual timeout criteria:
-    FILE(STRINGS ${test} TESTTIMEOUT REGEX "#TIMEOUT ")
+    FILE(STRINGS ${TEST_FILE} TESTTIMEOUT REGEX "#TIMEOUT ")
     IF(TESTTIMEOUT)
         STRING(REPLACE "#TIMEOUT " "" TESTTIMEOUT "${TESTTIMEOUT}")
-        SET_PROPERTY(TEST ${name} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Starting event loop")
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY TIMEOUT_AFTER_MATCH "${TESTTIMEOUT}" "Starting event loop")
     ENDIF()
 
     # Allow to add test labels
-    FILE(STRINGS ${test} TESTLABEL REGEX "#LABEL ")
+    FILE(STRINGS ${TEST_FILE} TESTLABEL REGEX "#LABEL ")
     IF(TESTLABEL)
         STRING(REPLACE "#LABEL " "" TESTLABEL "${TESTLABEL}")
-        SET_PROPERTY(TEST ${name} PROPERTY LABELS "${TESTLABEL}")
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY LABELS "${TESTLABEL}")
+    ENDIF()
+
+    # Add required files if specified
+    FILE(STRINGS ${TEST_FILE} TESTDATA REGEX "#DATA ")
+    IF(TESTDATA)
+        STRING(REPLACE "#DATA " "" TESTDATA "${TESTDATA}")
+        STRING(REPLACE " " ";" TESTDATA ${TESTDATA})
+        SET_PROPERTY(TEST ${TEST_NAME} PROPERTY REQUIRED_FILES "${TESTDATA}")
     ENDIF()
 ENDFUNCTION()
 
@@ -272,15 +304,32 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
     # Get the name of the module
     GET_FILENAME_COMPONENT(_allpix_module_dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
+    SET(TEST_BASE_DIR "${PROJECT_BINARY_DIR}/testing")
     IF(TEST_MODULES)
+        FILE(
+            GLOB AUX_FILES_MODULES
+            RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+            ${directory}/[!00-99]*)
+
+        # Copy and configure auxiliary files
+        FOREACH(file ${AUX_FILES_MODULES})
+            CONFIGURE_FILE(${file} "${CMAKE_CURRENT_BINARY_DIR}/${file}" @ONLY)
+        ENDFOREACH()
+
         FILE(
             GLOB TEST_LIST_MODULES
             RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
             ${directory}/[00-99]*)
 
+        # Copy and configure tests
         FOREACH(test ${TEST_LIST_MODULES})
             GET_FILENAME_COMPONENT(title ${test} NAME_WE)
-            ADD_ALLPIX_TEST(${test} "modules/${_allpix_module_dir}/${title}")
+            SET(TEST_DIR "${TEST_BASE_DIR}/modules/${_allpix_module_dir}/${title}")
+
+            CONFIGURE_FILE(${test} "${CMAKE_CURRENT_BINARY_DIR}/${test}" @ONLY)
+            ADD_ALLPIX_TEST(NAME "modules/${_allpix_module_dir}/${title}"
+                            FILE ${CMAKE_CURRENT_BINARY_DIR}/${test}
+                            WORKING_DIRECTORY ${TEST_BASE_DIR})
 
             GET_PROPERTY(old_count GLOBAL PROPERTY COUNT_TESTS_MODULES)
             MATH(EXPR new_count "${old_count}+1")

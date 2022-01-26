@@ -109,7 +109,7 @@ IF(BUILD_DOCS_ONLY)
         GET_FILENAME_COMPONENT(title ${test} NAME_WE)
         GET_FILENAME_COMPONENT(dir "${test}/../.." ABSOLUTE)
         GET_FILENAME_COMPONENT(mod "${dir}" NAME)
-        ADD_ALLPIX_TEST(${CMAKE_CURRENT_SOURCE_DIR}/src/modules/${test} "modules/${mod}/${title}")
+        ADD_ALLPIX_TEST(NAME "modules/${mod}/${title}" FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/${test})
     ENDFOREACH()
 
     SET(MODULES_TEST_DESCRIPTIONS "${TEST_DESCRIPTIONS}")
