@@ -371,7 +371,7 @@ namespace allpix {
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth = 0) const = 0;
+        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth) const = 0;
 
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
@@ -381,8 +381,8 @@ namespace allpix {
          * @param  inside  Position after the step, inside the implant volume
          * @return Entry point in implant in local coordinates of the sensor
          */
-        ROOT::Math::XYZPoint getImplantIntercept(const ROOT::Math::XYZPoint outside,
-                                                 const ROOT::Math::XYZPoint inside) const;
+        ROOT::Math::XYZPoint getImplantIntercept(const ROOT::Math::XYZPoint& outside,
+                                                 const ROOT::Math::XYZPoint& inside) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device

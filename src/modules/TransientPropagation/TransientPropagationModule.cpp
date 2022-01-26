@@ -563,7 +563,7 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // If charge carrier reaches implant, interpolate surface position for higher accuracy:
-        if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position), 0)) {
             LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             auto new_position = model_->getImplantIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
                                                             static_cast<ROOT::Math::XYZPoint>(position));

@@ -75,7 +75,7 @@ namespace allpix {
          * @note Pixel implant region is not implemented properly when using radial_strip
          *      detectors due to the requirement of a TCAD electric field.
          */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth = 0) const override;
+        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth) const override;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device

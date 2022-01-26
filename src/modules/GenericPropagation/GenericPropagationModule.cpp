@@ -522,7 +522,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Check if we are still in the sensor and not in an implant:
         if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) ||
-           model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+           model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position), 0)) {
             state = CarrierState::HALTED;
         }
 
@@ -610,7 +610,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     // Set final state of charge carrier for plotting:
     if(output_linegraphs_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
-        if(!detector_->getModel()->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position)) &&
+        if(!model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position), 0) &&
            (time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45)) {
             std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
         } else {
