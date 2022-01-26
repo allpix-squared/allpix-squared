@@ -23,8 +23,7 @@ namespace allpix {
         if(!model_->isWithinMatrix(px, py)) {
             return {};
         }
-        auto ref = static_cast<ROOT::Math::XYPoint>(
-            model_->getPixelCenter(static_cast<unsigned int>(px), static_cast<unsigned int>(py)));
+        auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(px, py));
 
         // Get field relative to pixel center:
         return getRelativeTo(pos, ref, extrapolate_z);
