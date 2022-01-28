@@ -52,6 +52,14 @@ namespace allpix {
         static std::shared_ptr<DetectorModel> factory(const std::string& name, const ConfigReader&);
 
         /**
+         * @brief Helper method to determine if this detector model is of a given type
+         * The template parameter needs to be specified speicifcally, i.e.
+         *     if(model->is<HybridPixelDetectorModel>()) { }
+         * @return Boolean indication whether this model is of the given type or not
+         */
+        template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
+
+        /**
          * @brief Helper class to hold support layers for a detector model
          */
         class SupportLayer {
