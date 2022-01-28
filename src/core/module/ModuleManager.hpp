@@ -171,8 +171,10 @@ namespace allpix {
 
         Messenger* messenger_{};
 
-        // User defined multithreading flag in configuration
+        // User defined multithreading flags and parameters from configuration
         bool multithreading_flag_{false};
+        unsigned int number_of_threads_{0};
+        size_t max_buffer_size_{1};
 
         // Possibility of running loaded modules in parallel
         bool can_parallelize_{true};
