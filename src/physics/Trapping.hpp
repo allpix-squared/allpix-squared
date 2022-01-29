@@ -241,7 +241,7 @@ namespace allpix {
                 auto model = config.get<std::string>("trapping_model", "none");
                 std::transform(model.begin(), model.end(), model.begin(), ::tolower);
                 auto temperature = config.get<double>("temperature");
-                auto fluence = config.get<double>("fluence", 0);
+                auto fluence = config.get<double>("fluence");
 
                 if(model == "ljubljana" || model == "kramberger") {
                     model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
