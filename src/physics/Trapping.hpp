@@ -130,9 +130,9 @@ namespace allpix {
      */
     class Dortmund : virtual public TrappingModel {
     public:
-        Dortmund() {
-            tau_eff_electron_ = 1. / Units::get(5.13e-16, "cm*cm/ns");
-            tau_eff_hole_ = 1. / Units::get(5.04e-16, "cm*cm/ns");
+        Dortmund(double fluence) {
+            tau_eff_electron_ = 1. / Units::get(5.13e-16, "cm*cm/ns") / fluence;
+            tau_eff_hole_ = 1. / Units::get(5.04e-16, "cm*cm/ns") / fluence;
         }
     };
 
@@ -246,7 +246,7 @@ namespace allpix {
                 if(model == "ljubljana" || model == "kramberger") {
                     model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
                 } else if(model == "dortmund" || model == "krasel") {
-                    model_trap_ = std::make_unique<Dortmund>();
+                    model_trap_ = std::make_unique<Dortmund>(fluence);
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
                     model_trap_ = std::make_unique<NoTrapping>();
