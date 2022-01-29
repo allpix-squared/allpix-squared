@@ -30,7 +30,7 @@ The survival probability is calculated at each step of the propagation by drawin
 Trapping of charge carriers can be enabled by setting a trapping model via the parameter `trapping_model`.
 The default value is `none`, corresponding to no charge carrier trapping being simulated.
 All models require the 1MeV-neutron equivalent fluence to be set via the parameter `fluence`.
-Some model include temperature-dependent scaling of trapping probabilities, and the corresponding temperature is taken from the `temperature` parameter.
+Some models include temperature-dependent scaling of trapping probabilities, and the corresponding temperature is taken from the `temperature` parameter.
 The trapping probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`1 - e^{-dt/\tau_{eff}}`$, where $`dt`$ is the time step of the last charge carrier movement and $`\tau_{eff}`$ the effective trapping time constant.
 A list of available models can be found in the user manual.
 
