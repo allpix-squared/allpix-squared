@@ -111,12 +111,13 @@ namespace allpix {
      *
      * Parametrization taken from https://doi.org/10.1016/S0168-9002(01)01263-3, effective trapping time from Eq. 4 with beta
      * values from Table 2 (pions/protons), temperature dependency according to Eq. 9, scaling factors kappa from Table 3.
+     * The reference temperature at which the measurements were conducted is 263K.
      */
     class Ljubljana : virtual public TrappingModel {
     public:
         Ljubljana(double temperature, double fluence) {
-            tau_eff_electron_ = 1. / Units::get(5.6e-16 * std::pow(temperature / 300, -0.86), "cm*cm/ns") / fluence;
-            tau_eff_hole_ = 1. / Units::get(7.7e-16 * std::pow(temperature / 300, -1.52), "cm*cm/ns") / fluence;
+            tau_eff_electron_ = 1. / Units::get(5.6e-16 * std::pow(temperature / 263, -0.86), "cm*cm/ns") / fluence;
+            tau_eff_hole_ = 1. / Units::get(7.7e-16 * std::pow(temperature / 263, -1.52), "cm*cm/ns") / fluence;
         }
     };
 
