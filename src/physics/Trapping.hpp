@@ -241,7 +241,7 @@ namespace allpix {
                 auto model = config.get<std::string>("trapping_model", "none");
                 std::transform(model.begin(), model.end(), model.begin(), ::tolower);
                 auto temperature = config.get<double>("temperature");
-                auto fluence = config.get<double>("fluence");
+                auto fluence = config.get<double>("fluence", 0);
 
                 // Warn for fluences >= 1e17 neq/cm^2 since this might be the result of a wrong unit and not intentional
                 if(fluence >= 1e15) {
