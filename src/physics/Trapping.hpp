@@ -233,7 +233,7 @@ namespace allpix {
         Trapping() = default;
 
         /**
-         * Recombination constructor
+         * Trapping model constructor
          * @param config Configuration of the calling module
          */
         explicit Trapping(const Configuration& config) {
@@ -242,6 +242,12 @@ namespace allpix {
                 std::transform(model.begin(), model.end(), model.begin(), ::tolower);
                 auto temperature = config.get<double>("temperature");
                 auto fluence = config.get<double>("fluence");
+
+                // Warn for fluences >= 1e17 neq/cm^2 since this might be the result of a wrong unit and not intentional
+                if(fluence >= 1e15) {
+                    LOG(WARNING) << "High fluence of " << Units::display(fluence, "neq/cm/cm")
+                                 << " detected, units might not be set correctly";
+                }
 
                 if(model == "ljubljana" || model == "kramberger") {
                     model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
