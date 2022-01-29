@@ -130,7 +130,7 @@ namespace allpix {
      */
     class Dortmund : virtual public TrappingModel {
     public:
-        Dortmund(double fluence) {
+        explicit Dortmund(double fluence) {
             tau_eff_electron_ = 1. / Units::get(5.13e-16, "cm*cm/ns") / fluence;
             tau_eff_hole_ = 1. / Units::get(5.04e-16, "cm*cm/ns") / fluence;
         }
