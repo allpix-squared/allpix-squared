@@ -69,6 +69,16 @@ void DetectorHistogrammerModule::initialize() {
     hit_map =
         CreateHistogram<TH2D>("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
+    std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x [mm];y [mm];hits";
+    hit_global_map = CreateHistogram<TH2D>("hit_map_global",
+                                           hit_map_title.c_str(),
+                                           static_cast<int>(model->getSensorSize().x()) * 10,
+                                           -model->getSensorSize().x() / 2,
+                                           model->getSensorSize().x() / 2,
+                                           static_cast<int>(model->getSensorSize().y()) * 10,
+                                           -model->getSensorSize().y() / 2,
+                                           model->getSensorSize().y() / 2);
+
     std::string charge_map_title = "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
     charge_map = CreateHistogram<TH2D>(
         "charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
@@ -344,9 +354,11 @@ void DetectorHistogrammerModule::run(Event* event) {
         // Fill 2D hitmap histogram
         for(const auto& pixel_hit : pixels_message->getData()) {
             auto pixel_idx = pixel_hit.getPixel().getIndex();
+            auto global_pos = pixel_hit.getPixel().getGlobalCenter();
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
+            hit_global_map->Fill(global_pos.x(), global_pos.y());
             charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
             pixel_charge->Fill(static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
             // For radial_strip models also fill the polar hit map
@@ -537,6 +549,7 @@ void DetectorHistogrammerModule::finalize() {
 
     // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
+    auto hit_map_global_histogram = hit_global_map->Merge();
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();
     auto cluster_size_map_histogram = cluster_size_map->Merge();
@@ -655,6 +668,7 @@ void DetectorHistogrammerModule::finalize() {
     event_size_histogram->Write();
     n_cluster_histogram->Write();
     hit_map_histogram->Write();
+    hit_map_global_histogram->Write();
 
     getROOTDirectory()->mkdir("cluster_size")->cd();
     cluster_size_histogram->Write();
