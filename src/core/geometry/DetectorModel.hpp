@@ -406,7 +406,7 @@ namespace allpix {
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
-        SensorMaterial sensor_material_{SensorMaterial::SILICON};
+        // SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         double chip_thickness_{};
 
