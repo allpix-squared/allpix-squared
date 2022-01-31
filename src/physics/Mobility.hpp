@@ -402,10 +402,11 @@ namespace allpix {
 
         /**
          * Mobility constructor
-         * @param config      Configuration of the calling module
-         * @param doping      Boolean to indicate presence of doping profile information
+         * @param config    Configuration of the calling module
+         * @param material  Material of the sensor in question
+         * @param doping    Boolean to indicate presence of doping profile information
          */
-        explicit Mobility(const Configuration& config, bool doping = false) {
+        explicit Mobility(const Configuration& config, SensorMaterial /*material*/, bool doping = false) {
             try {
                 auto model = config.get<std::string>("mobility_model");
                 auto temperature = config.get<double>("temperature");

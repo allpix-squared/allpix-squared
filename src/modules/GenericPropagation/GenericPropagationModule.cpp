@@ -474,6 +474,7 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num, OutputPlo
 void GenericPropagationModule::initialize() {
 
     auto detector = getDetector();
+    auto model = detector_->getModel();
 
     // Check for electric field and output warning for slow propagation if not defined
     if(!detector->hasElectricField()) {
@@ -482,7 +483,6 @@ void GenericPropagationModule::initialize() {
 
     // For linear fields we can in addition check if the correct carriers are propagated
     if(detector->getElectricFieldType() == FieldType::LINEAR) {
-        auto model = detector_->getModel();
         auto probe_point = ROOT::Math::XYZPoint(model->getSensorCenter().x(),
                                                 model->getSensorCenter().y(),
                                                 model->getSensorCenter().z() + model->getSensorSize().z() / 2.01);
@@ -562,7 +562,7 @@ void GenericPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, detector->hasDopingProfile());
+    mobility_ = Mobility(config_, model->getSensorMaterial(), detector->hasDopingProfile());
 
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());
