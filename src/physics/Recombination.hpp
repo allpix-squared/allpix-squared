@@ -154,21 +154,17 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief Simple recombination of charge carriers in GaAs through lifetimes of holes and electrons
+     * @brief Simple recombination of charge carriers through constant lifetimes of holes and electrons
      */
-    class GaAsLifetime : virtual public RecombinationModel {
+    class ConstantLifetime : virtual public RecombinationModel {
     public:
-        GaAsLifetime(double electron_lifetime, double hole_lifetime)
+        ConstantLifetime(double electron_lifetime, double hole_lifetime)
             : electron_lifetime_(electron_lifetime), hole_lifetime_(hole_lifetime) {}
 
         bool operator()(const CarrierType& type, double, double survival_prob, double timestep) const override {
-            return survival_prob < (1 - std::exp(-1. * timestep / lifetime(type)));
+            return survival_prob <
+                   (1 - std::exp(-1. * timestep / (type == CarrierType::ELECTRON ? electron_lifetime_ : hole_lifetime_)));
         };
-
-    protected:
-        double lifetime(const CarrierType& type) const {
-            return type == CarrierType::ELECTRON ? electron_lifetime_ : hole_lifetime_;
-        }
 
     private:
         double electron_lifetime_;
@@ -204,8 +200,9 @@ namespace allpix {
                     model_ = std::make_unique<Auger>(doping);
                 } else if(model == "combined" || model == "srh_auger") {
                     model_ = std::make_unique<ShockleyReadHallAuger>(temperature, doping);
-                } else if(model == "lifetimes_gaas") {
-                    model_ = std::make_unique<GaAsLifetime>(electron_lifetime, hole_lifetime);
+                } else if(model == "constant") {
+                    model_ = std::make_unique<ConstantLifetime>(config.get<double>("lifetime_electron"),
+                                                                config.get<double>("lifetime_hole"));
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
                     model_ = std::make_unique<None>();
