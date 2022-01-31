@@ -65,7 +65,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
 
     // Sensor material:
-    sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
+    // sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
     // Chip thickness
     setChipThickness(config.get<double>("chip_thickness", 0));
