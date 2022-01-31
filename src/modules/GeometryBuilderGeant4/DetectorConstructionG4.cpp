@@ -167,8 +167,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         }
 
         // Create the sensor logical volume
-        auto sensor_log = make_shared_no_delete<G4LogicalVolume>(
-            solids_.back().get(), sensor_material, "sensor_" + name + "_log");
+        auto sensor_log =
+            make_shared_no_delete<G4LogicalVolume>(solids_.back().get(), sensor_material, "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
 
         // Add sensor material to total material budget:
