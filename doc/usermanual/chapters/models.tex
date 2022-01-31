@@ -326,7 +326,7 @@ This model can be selected in the configuration file via the parameter \paramete
 
 \subsection{Auger Recombination}
 
-At high doping levels exceeding $\SI{5e18}{\centi\metre^{-3}}$~\cite{FOSSUM1983569}, the Auger recombination model becomes increasingly important.
+At high doping levels exceeding $\SI{5e18}{\centi\metre^{-3}}$~\cite{fossum-lee}, the Auger recombination model becomes increasingly important.
 It assumes that the excess energy created by electron-hole recombinations is transferred to another electron (\textit{e-e-h process}) or another hole (\textit{e-h-h process}).
 The total recombination rate is then given by~\cite{kerr}:
 
@@ -360,14 +360,13 @@ This model can be selected in the configuration file via the parameter \paramete
 
 \subsection{Recombination with Constant Lifetimes}
 
-Some materials require constant lifetimes for charge carriers.
+Some materials require constant lifetimes for charge carriers $\tau (N) = \tau$.
 This can be simulated with this model, which can be selected in the configuration file via the parameter \parameter{recombination_model = "constant"}.
 It requires the additional configuration keys \parameter{lifetime_electron} and \parameter{lifetime_hole} to be present in the module configuration section, for example:
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Constant lifetimes for electrons and holes in GaAs with Cr compensation:
-recombination_model = "custom"
-
+recombination_model = "constant"
 lifetime_electron = 30ns
 lifetime_hole = 4.5ns
 \end{minted}
