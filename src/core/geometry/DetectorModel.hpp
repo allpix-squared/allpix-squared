@@ -37,8 +37,8 @@ namespace allpix {
      * @brief Sensor materials
      */
     enum class SensorMaterial {
-        SILICON = 1, ///< No field is applied
-        GAAS,        ///< Gallium Arsenide
+        SILICON = 1,      ///< No field is applied
+        GALLIUM_ARSENIDE, ///< Gallium Arsenide
     };
 
     /**
@@ -293,23 +293,10 @@ namespace allpix {
             return getMatrixCenter() + offset;
         }
         /**
-         * @brief Set the material of the sensor
-         * @param val Material of the sensor
-         */
-        void setSensorMaterial(const std::string& val) {
-            if(val == "si") {
-                sensor_material_ = "silicon";
-            } else if(val == "gaas") {
-                sensor_material_ = "gallium_arsenide";
-            } else {
-                throw std::invalid_argument("Wrong sensor material \"" + val + ". Available materials are si and gaas. \"");
-            }
-        }
-        /**
          * @brief Get the material of the sensor
          * @return Material of the sensor
          */
-        std::string getSensorMaterial() { return sensor_material_; }
+        SensorMaterial getSensorMaterial() { return sensor_material_; }
         /**
          * @brief Set the thickness of the sensor
          * @param val Thickness of the sensor
@@ -510,13 +497,11 @@ namespace allpix {
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
-        // SensorMaterial sensor_material_{SensorMaterial::SILICON};
+        SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         double chip_thickness_{};
 
         std::vector<SupportLayer> support_layers_;
-
-        std::string sensor_material_;
 
     private:
         ConfigReader reader_;

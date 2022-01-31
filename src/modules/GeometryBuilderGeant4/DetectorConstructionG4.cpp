@@ -146,8 +146,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          */
 
         // Get sensor material
-        auto* sensor_material = materials.get(model->getSensorMaterial());
-        LOG(DEBUG) << " - Sensor material\t\t:\t" << model->getSensorMaterial();
+        auto sensor_material_name = allpix::to_string(model->getSensorMaterial());
+        auto* sensor_material = materials.get(sensor_material_name);
+        LOG(DEBUG) << " - Sensor material\t\t:\t" << sensor_material_name;
 
         // Build a trapezoidal sensor box if radial strip model is used, otherwise build a rectangular box
         if(radial_model != nullptr) {
