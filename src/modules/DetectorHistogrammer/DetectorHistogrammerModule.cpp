@@ -721,6 +721,10 @@ void DetectorHistogrammerModule::finalize() {
     }
 
     cluster_map_histogram->SetOption("colz");
+    cluster_size_map_histogram->SetOption("colz");
+    cluster_size_mc_map_histogram->SetOption("colz");
+    cluster_size_x_map_histogram->SetOption("colz");
+    cluster_size_y_map_histogram->SetOption("colz");
     // Set cluster_map axis spacing
     if(static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) < 10) {
         cluster_map_histogram->GetXaxis()->SetNdivisions(
@@ -781,6 +785,7 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_vs_y_histogram->Write();
 
     // Write additional histograms if radial_strip model is used
+    getROOTDirectory()->mkdir("polar")->cd();
     auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(detector_->getModel());
     if(radial_model != nullptr) {
         auto polar_hit_map_histogram = polar_hit_map->Merge();
