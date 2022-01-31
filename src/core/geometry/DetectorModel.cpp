@@ -55,18 +55,6 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
         throw InvalidValueError(config, "sensor_material", e.what());
     }
 
-    // Common electrode material
-    auto electrode_material = config.get<std::string>("electrode_material", "al"); // Al -- default
-    std::transform(electrode_material.begin(), electrode_material.end(), electrode_material.begin(), ::tolower);
-    try {
-        setElectrodeMaterial(electrode_material);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config, "electrode_material", e.what());
-    }
-
-    // Electrode thickness
-    setElectrodeThickness(config.get<double>("electrode_thickness", 0));
-
     // Sensor thickness
     setSensorThickness(config.get<double>("sensor_thickness"));
     // Excess around the sensor from the pixel grid
