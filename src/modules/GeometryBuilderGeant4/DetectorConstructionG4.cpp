@@ -115,8 +115,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          */
 
         // Get sensor material
-        auto* sensor_material = materials.get(model->getSensorMaterial());
-        LOG(DEBUG) << " - Sensor material\t\t:\t" << model->getSensorMaterial();
+        auto sensor_material_name = allpix::to_string(model->getSensorMaterial());
+        auto* sensor_material = materials.get(sensor_material_name);
+        LOG(DEBUG) << " - Sensor material\t\t:\t" << sensor_material_name;
 
         // Create the sensor box and logical volume
         auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,

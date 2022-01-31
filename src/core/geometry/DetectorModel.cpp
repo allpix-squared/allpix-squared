@@ -41,15 +41,6 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     using namespace ROOT::Math;
     auto config = reader_.getHeaderConfiguration();
 
-    // Sensor material
-    auto sensor_material = config.get<std::string>("sensor_material", "si"); // Si -- default
-    std::transform(sensor_material.begin(), sensor_material.end(), sensor_material.begin(), ::tolower);
-    try {
-        setSensorMaterial(sensor_material);
-    } catch(std::invalid_argument& e) {
-        throw InvalidValueError(config, "sensor_material", e.what());
-    }
-
     // Number of pixels
     setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels
@@ -72,7 +63,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
 
     // Sensor material:
-    // sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
+    sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
     // Chip thickness
     setChipThickness(config.get<double>("chip_thickness", 0));
