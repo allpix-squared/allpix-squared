@@ -125,7 +125,7 @@ void DetectorHistogrammerModule::initialize() {
 
     // Create histogram of cluster map
     std::string cluster_size_mc_map_title = "Cluster size as function of MCParticle impact position (" +
-                                            detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
+                                            detector_->getName() + ");x [mm];y [mm]";
     cluster_size_mc_map = CreateHistogram<TProfile2D>(
         "cluster_size_mc_map",
         cluster_size_mc_map_title.c_str(),
