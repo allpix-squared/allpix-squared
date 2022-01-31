@@ -325,63 +325,6 @@ namespace allpix {
          */
         void setSensorExcessLeft(double val) { sensor_excess_.at(3) = val; }
 
-        /* COMMON ELECTRODE */
-        /**
-         * @brief Set the material of the common electrode
-         * @param val Material of the common electrode
-         */
-        void setElectrodeMaterial(const std::string& val) {
-            if(val == "al") {
-                electrode_material_ = "aluminum";
-            } else if(val == "ni") {
-                electrode_material_ = "nickel";
-            } else if(val == "au") {
-                electrode_material_ = "gold";
-            } else {
-                throw std::invalid_argument("Wrong common electode material \"" + val +
-                                            ". Available materials are al, ni and au. \"");
-            }
-        }
-        /**
-         * @brief Get the material of the common electrode
-         * @return Material of the common electrode
-         */
-        std::string getElectrodeMaterial() { return electrode_material_; }
-        /**
-         * @brief Set the thickness of the common electrode
-         * @param val Thickness of the common electrode
-         */
-        void setElectrodeThickness(double val) { electrode_thickness_ = val; }
-        /**
-         * @brief Get the thickness of the common electrode
-         * @return Thickness of the common electrode
-         */
-        double getElectrodeThickness() { return electrode_thickness_; }
-        /**
-         * @brief Get center of the electrode in local coordinates
-         * @return Center of the electrode
-         *
-         * Center of the electrode with excess taken into account
-         */
-        virtual ROOT::Math::XYZPoint getElectrodeCenter() const {
-            ROOT::Math::XYZVector offset((sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0,
-                                         (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0,
-                                         -getSensorSize().z() / 2.0 - electrode_thickness_ / 2.0);
-            return getMatrixCenter() + offset;
-        }
-        /**
-         * @brief Get size of the common electrode
-         * @return Size of the common electrode
-         *
-         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and common electrode thickness
-         */
-        virtual ROOT::Math::XYZVector getElectrodeSize() const {
-            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
-                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
-                                                   electrode_thickness_);
-            return getMatrixSize() + excess_thickness;
-        }
-
         /* CHIP */
         /**
          * @brief Get size of the chip
@@ -467,13 +410,9 @@ namespace allpix {
 
         double chip_thickness_{};
 
-        double electrode_thickness_{};
-
         std::vector<SupportLayer> support_layers_;
 
         std::string sensor_material_;
-
-        std::string electrode_material_;
 
     private:
         ConfigReader reader_;
