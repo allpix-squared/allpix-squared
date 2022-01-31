@@ -39,6 +39,7 @@ namespace allpix {
     enum class SensorMaterial {
         SILICON = 1,      ///< Silicon
         GALLIUM_ARSENIDE, ///< Gallium Arsenide
+        GERMANIUM,        //< Germanium
     };
 
     /**
