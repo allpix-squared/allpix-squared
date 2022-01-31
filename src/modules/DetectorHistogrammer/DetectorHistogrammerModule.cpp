@@ -69,7 +69,7 @@ void DetectorHistogrammerModule::initialize() {
     hit_map =
         CreateHistogram<TH2D>("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
-    std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x;y;hits";
+    std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x [mm];y [mm];hits";
     hit_global_map = CreateHistogram<TH2D>("hit_map_global",
                                            hit_map_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
