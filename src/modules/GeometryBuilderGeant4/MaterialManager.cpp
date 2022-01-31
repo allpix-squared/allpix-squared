@@ -96,6 +96,7 @@ void Materials::init_materials() {
     materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
     materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
     materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
+    materials_["germanium"] = nistman->FindOrBuildMaterial("G4_Ge");
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
     materials_["gallium_arsenide"] = nistman->FindOrBuildMaterial("G4_GALLIUM_ARSENIDE");
     materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
