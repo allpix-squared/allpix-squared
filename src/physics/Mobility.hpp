@@ -295,12 +295,11 @@ namespace allpix {
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
-                double val;
-                if(efield_mag < E0_gaas_)
-                    val = mu_e_gaas_;
-                else
-                    val = mu_e_gaas_ / sqrt(1 + std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2));
-                return val;
+                if(efield_mag < E0_gaas_) {
+                    return mu_e_gaas_;
+                } else {
+                    return mu_e_gaas_ / sqrt(1 + std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2));
+                }
             } else {
                 return mu_h_gaas_;
             }
