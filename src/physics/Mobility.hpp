@@ -11,8 +11,11 @@
 #ifndef ALLPIX_MOBILITY_MODELS_H
 #define ALLPIX_MOBILITY_MODELS_H
 
+#include <TFormula.h>
+
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
@@ -278,6 +281,62 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Custom mobility model for charge carriers
+     */
+    class Custom : public MobilityModel {
+    public:
+        Custom(const Configuration& config, bool doping) {
+            electron_mobility_ = configure_mobility(config, CarrierType::ELECTRON, doping);
+            hole_mobility_ = configure_mobility(config, CarrierType::HOLE, doping);
+        };
+
+        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_mobility_->Eval(efield_mag, doping);
+            } else {
+                return hole_mobility_->Eval(efield_mag, doping);
+            }
+        };
+
+    private:
+        std::unique_ptr<TFormula> electron_mobility_;
+        std::unique_ptr<TFormula> hole_mobility_;
+
+        std::unique_ptr<TFormula> configure_mobility(const Configuration& config, const CarrierType type, bool doping) {
+            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            auto function = config.get<std::string>("mobility_function_" + name);
+            auto parameters = config.getArray<double>("mobility_parameters_" + name, {});
+
+            auto mobility = std::make_unique<TFormula>(("mobility_" + name).c_str(), function.c_str());
+
+            if(!mobility->IsValid()) {
+                throw InvalidValueError(
+                    config, "mobility_function_" + name, "The provided model is not a valid ROOT::TFormula expression");
+            }
+
+            // Check if a doping concentration dependency can be detected by checking for the number of dimensions:
+            if(!doping && mobility->GetNdim() == 2) {
+                throw ModelUnsuitable("No doping profile available but doping dependence found");
+            }
+
+            // Check if number of parameters match up
+            if(static_cast<size_t>(mobility->GetNpar()) != parameters.size()) {
+                throw InvalidValueError(config,
+                                        "mobility_parameters_" + name,
+                                        "The number of provided parameters and parameters in the function do not match");
+            }
+
+            // Set the parameters
+            for(size_t n = 0; n < parameters.size(); ++n) {
+                mobility->SetParameter(static_cast<int>(n), parameters[n]);
+            }
+
+            return mobility;
+        };
+    };
+
+    /**
      * @brief Wrapper class and factory for mobility models.
      *
      * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
@@ -293,29 +352,36 @@ namespace allpix {
 
         /**
          * Mobility constructor
-         * @param model       Name of the mobility model
-         * @param temperature Temperature for which the mobility model should be initialized
+         * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Mobility(const std::string& model, double temperature, bool doping = false) {
-            if(model == "jacoboni") {
-                model_ = std::make_unique<JacoboniCanali>(temperature);
-            } else if(model == "canali") {
-                model_ = std::make_unique<Canali>(temperature);
-            } else if(model == "hamburg") {
-                model_ = std::make_unique<Hamburg>(temperature);
-            } else if(model == "hamburg_highfield") {
-                model_ = std::make_unique<HamburgHighField>(temperature);
-            } else if(model == "masetti") {
-                model_ = std::make_unique<Masetti>(temperature, doping);
-            } else if(model == "masetti_canali") {
-                model_ = std::make_unique<MasettiCanali>(temperature, doping);
-            } else if(model == "arora") {
-                model_ = std::make_unique<Arora>(temperature, doping);
-            } else {
-                throw InvalidModelError(model);
+        explicit Mobility(const Configuration& config, bool doping = false) {
+            try {
+                auto model = config.get<std::string>("mobility_model");
+                auto temperature = config.get<double>("temperature");
+                if(model == "jacoboni") {
+                    model_ = std::make_unique<JacoboniCanali>(temperature);
+                } else if(model == "canali") {
+                    model_ = std::make_unique<Canali>(temperature);
+                } else if(model == "hamburg") {
+                    model_ = std::make_unique<Hamburg>(temperature);
+                } else if(model == "hamburg_highfield") {
+                    model_ = std::make_unique<HamburgHighField>(temperature);
+                } else if(model == "masetti") {
+                    model_ = std::make_unique<Masetti>(temperature, doping);
+                } else if(model == "masetti_canali") {
+                    model_ = std::make_unique<MasettiCanali>(temperature, doping);
+                } else if(model == "arora") {
+                    model_ = std::make_unique<Arora>(temperature, doping);
+                } else if(model == "custom") {
+                    model_ = std::make_unique<Custom>(config, doping);
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "mobility_model", e.what());
             }
-            LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
         }
 
         /**
