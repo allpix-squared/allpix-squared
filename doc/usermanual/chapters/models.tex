@@ -137,8 +137,8 @@ The mobility is parametrized as
 \begin{equation}
     \label{eq:mob:mas}
     \begin{split}
-        \mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / N)^{\beta_e})}\\
-        \mu_h(N) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / N)^{\beta_h})} + e^{P_c / N}\\
+        \mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{1 + (C_{s,e} / N)^{\beta_e}}\\
+        \mu_h(N) &= \mu_{0,h} \cdot e^{-P_c / N} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{1 + (C_{s,h} / N)^{\beta_h}}\\
 \end{split}
 \end{equation}
 as taken from equations~1 (for electrons) and~4 (for holes) of~\cite{masetti}.
