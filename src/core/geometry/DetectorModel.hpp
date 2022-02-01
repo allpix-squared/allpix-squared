@@ -37,7 +37,7 @@ namespace allpix {
      * @brief Sensor materials
      */
     enum class SensorMaterial {
-        SILICON = 1,      ///< No field is applied
+        SILICON = 1,      ///< Silicon
         GALLIUM_ARSENIDE, ///< Gallium Arsenide
     };
 
