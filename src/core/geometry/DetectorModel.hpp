@@ -78,6 +78,55 @@ namespace allpix {
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
         /**
+         * @brief Helper class to hold implant definitions for a detector model
+         */
+        class Implant {
+            friend class DetectorModel;
+
+        public:
+            enum class Type { FRONTSIDE, BACKSIDE };
+
+            /**
+             * @brief Get the offset of the implant with respect to the pixel center
+             * @return Implant offset
+             */
+            ROOT::Math::XYZPoint getOffset() const { return offset_; }
+            /**
+             * @brief Get the size of the implant
+             * @return Size of the implant
+             */
+            ROOT::Math::XYZVector getSize() const { return size_; }
+            /**
+             * @brief Get the material of the implant
+             * @return Implant material
+             */
+            std::string getMaterial() const { return material_; }
+            /**
+             * @brief Return the type of the implant
+             * @return implant type
+             */
+            Type getType() { return type_; }
+
+        private:
+            /**
+             * @brief Constructs an implant, used in \ref DetectorModel::addImplant
+             * @param type Type of the implant
+             * @param size Size of the implant
+             * @param offset Offset of the implant from the pixel center
+             * @param material Material of the implant
+             */
+            Implant(Type type, ROOT::Math::XYZVector size, ROOT::Math::XYZVector offset, std::string material)
+                : type_(type), size_(std::move(size)), offset_(std::move(offset)), material_(std::move(material)) {}
+
+            // Actual parameters returned
+            Type type_;
+            ROOT::Math::XYZVector size_;
+            ROOT::Math::XYZPoint offset_;
+            std::string material_;
+        };
+
+
+        /**
          * @brief Constructs the base detector model
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
