@@ -200,12 +200,6 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     return size;
 }
 
-void DetectorModel::setImplant(ROOT::Math::XYZVector size, const ROOT::Math::XYVector& offset, std::string material) {
-    implant_size_ = std::move(size);
-    implant_material_ = std::move(material);
-    implant_offset_ = ROOT::Math::XYZVector(offset.x(), offset.y(), (getSensorSize().Z() - implant_size_.Z()) / 2);
-}
-
 std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     auto ret_layers = support_layers_;
 

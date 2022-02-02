@@ -90,7 +90,7 @@ namespace allpix {
              * @brief Get the offset of the implant with respect to the pixel center
              * @return Implant offset
              */
-            ROOT::Math::XYZPoint getOffset() const { return offset_; }
+            ROOT::Math::XYZVector getOffset() const { return offset_; }
             /**
              * @brief Get the size of the implant
              * @return Size of the implant
@@ -121,7 +121,7 @@ namespace allpix {
             // Actual parameters returned
             Type type_;
             ROOT::Math::XYZVector size_;
-            ROOT::Math::XYZPoint offset_;
+            ROOT::Math::XYZVector offset_;
             std::string material_;
         };
 
@@ -226,30 +226,21 @@ namespace allpix {
          * @param val Size of a pixel
          */
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+
         /**
-         * @brief Get size of the collection diode
-         * @return Size of the collection diode implant
+         * @brief Add a new implant
+         * @param type Type of the implant
+         * @param size Size of the implant in the x,y-plane
+         * @param offset Offset of the implant from ther pixel center
+         * @param material Material of the implant
          */
-        ROOT::Math::XYZVector getImplantSize() const { return implant_size_; }
-        /**
-         * @brief Set size, offset and material of the implant (collection diode) within a pixel
-         * @param size Size of the collection diode implant
-         * @param offset Offset of the collection diode implant
-         * @param material Implant material
-         */
-        void setImplant(ROOT::Math::XYZVector size, const ROOT::Math::XYVector& offset, std::string material);
-        /**
-         * @brief Get the material of the implants (collection electrodes)
-         * @return Implant material
-         */
-        virtual std::string getImplantMaterial() const { return implant_material_; }
-        /**
-         * @brief Get offset of the collection diode from the pixel center
-         * This returns the offset of the implant volume from the pixel volume. The surface of the implant is the surface of
-         * the pixel cell / the sensor.
-         * @return Offset of the collection diode implant
-         */
-        virtual ROOT::Math::XYZVector getImplantOffset() const { return implant_offset_; }
+        void addImplant(const Implant::Type& type,
+                        const ROOT::Math::XYVector& size,
+                        ROOT::Math::XYZVector offset,
+                        std::string material) {
+            ROOT::Math::XYZVector full_size(size.x(), size.y(), 0.);
+            implants_.push_back(Implant(type, full_size, std::move(offset), std::move(material)));
+        }
 
         /**
          * @brief Get total size of the pixel grid
@@ -530,9 +521,6 @@ namespace allpix {
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
-        ROOT::Math::XYZVector implant_size_;
-        ROOT::Math::XYZVector implant_offset_;
-        std::string implant_material_;
         Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 
         double sensor_thickness_{};
@@ -540,6 +528,7 @@ namespace allpix {
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         std::shared_ptr<DetectorAssembly> assembly_;
+        std::vector<Implant> implants_;
         std::vector<SupportLayer> support_layers_;
 
     private:
