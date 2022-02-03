@@ -45,7 +45,7 @@ bool PixelDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) c
 /**
  * The definition of inside the implant region is determined by the detector model
  */
-bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
+std::optional<DetectorModel::Implant> PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
     auto [xpixel, ypixel] = getPixelIndex(local_pos);
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
@@ -56,10 +56,10 @@ bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) 
                        local_pos.z() >= (implant.getOffset().z() - implant.getSize().z() / 2));
 
         if(inside) {
-            return true;
+            return implant;
         }
     }
-    return false;
+    return std::nullopt;
 }
 
 /**

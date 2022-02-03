@@ -409,11 +409,11 @@ namespace allpix {
          * implant.
          *
          * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
+         * @return Either the implant in which the position is located, or false
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
+        virtual std::optional<Implant> isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
