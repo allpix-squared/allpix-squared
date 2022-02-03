@@ -106,13 +106,13 @@ namespace allpix {
              * @brief Return the type of the implant
              * @return implant type
              */
-            Type getType() { return type_; }
+            Type getType() const { return type_; }
 
             /**
              * @brief Return the shape of the implant
              * @return implant shape
              */
-            Shape getShape() { return shape_; }
+            Shape getShape() const { return shape_; }
 
         private:
             /**
