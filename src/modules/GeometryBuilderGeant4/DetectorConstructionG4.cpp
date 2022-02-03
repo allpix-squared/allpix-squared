@@ -228,10 +228,20 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 LOG(DEBUG) << "  - Implant " << implant_count << "\t\t:\t" << Units::display(offset, {"mm", "um"});
 
                 // FIXME: We should extend the implant and shift it to avoid fake surfaces
-                auto implant_box = std::make_shared<G4Box>("implant_" + std::to_string(implant_count) + "_box_" + name,
+                std::shared_ptr<G4VSolid> implant_box;
+
+                if(implant.getShape() == DetectorModel::Implant::Shape::RECTANGLE) {
+                    implant_box = std::make_shared<G4Box>("implant_" + std::to_string(implant_count) + "_box_" + name,
+                                                          size.x() / 2.0,
+                                                          size.y() / 2.0,
+                                                          size.z() / 2.0);
+                } else {
+                    implant_box =
+                        std::make_shared<G4EllipticalTube>("implant_" + std::to_string(implant_count) + "_box_" + name,
                                                            size.x() / 2.0,
                                                            size.y() / 2.0,
                                                            size.z() / 2.0);
+                }
                 solids_.push_back(implant_box);
 
                 auto implant_log = make_shared_no_delete<G4LogicalVolume>(
