@@ -80,25 +80,25 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
 
     // Read implants
     for(auto& implant_config : reader_.getConfigurations("implant")) {
-        auto type = implant_config.get<Implant::Type>("type");
+        auto imtype = implant_config.get<Implant::Type>("type");
         auto size = implant_config.get<XYZVector>("size");
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto material = implant_config.get<std::string>("material", "silicon");
 
-        if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
-            throw InvalidValueError(implant_config, "size", "implant size cannot be larger than pixel pitch");
-        }
-        if(size.z() > getSensorSize().z()) {
-            throw InvalidValueError(implant_config, "size", "implant depth cannot be larger than sensor thickness");
-        }
+        // if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
+        // throw InvalidValueError(implant_config, "size", "implant size cannot be larger than pixel pitch");
+        // }
+        // if(size.z() > getSensorSize().z()) {
+        // throw InvalidValueError(implant_config, "size", "implant depth cannot be larger than sensor thickness");
+        // }
 
         // Offset of the collection diode implant from the pixel center, defaults to zero.
-        if(std::fabs(offset.x()) + size.x() / 2 > pixel_size.x() / 2 ||
-           std::fabs(offset.y()) + size.y() / 2 > pixel_size.y() / 2) {
-            throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
-        }
+        // if(std::fabs(offset.x()) + size.x() / 2 > pixel_size.x() / 2 ||
+        // std::fabs(offset.y()) + size.y() / 2 > pixel_size.y() / 2) {
+        // throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+        // }
 
-        addImplant(type, size, offset, material);
+        addImplant(imtype, size, offset, material);
     }
 
     // Read support layers
@@ -130,10 +130,18 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
 }
 
 void DetectorModel::addImplant(const Implant::Type& type,
-                               const ROOT::Math::XYZVector& size,
-                               ROOT::Math::XYZVector offset,
+                               ROOT::Math::XYZVector size,
+                               const ROOT::Math::XYVector& offset,
                                std::string material) {
-    implants_.push_back(Implant(type, full_size, std::move(offset), std::move(material)));
+    ROOT::Math::XYZVector full_offset(
+        offset.x(),
+        offset.y(),
+        0.); // FIXME z offset from center should be calculated from size and position (front/backside)
+    implants_.push_back(Implant(type, std::move(size), full_offset, std::move(material)));
+}
+
+std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
+    return implants_;
 }
 
 ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
@@ -320,8 +328,9 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoi
     auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
     // We have to be centered around the implant box, not the pixel. This means we need to shift with the implant offset
     auto translation_px = ROOT::Math::Translation3D(
-        static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out) + getImplantOffset()));
+        static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out))); // + getImplantOffset()));
     auto pos_out = translation_px.Inverse()(outside);
 
-    return translation_px(liang_barsky_clipping(direction, pos_out, getImplantSize()));
+    // return translation_px(liang_barsky_clipping(direction, pos_out, getImplantSize()));
+    return translation_px(liang_barsky_clipping(direction, pos_out, {0., 0., 0.}));
 }

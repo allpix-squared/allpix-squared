@@ -228,15 +228,21 @@ namespace allpix {
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
 
         /**
+         * @brief Return all implants
+         * @return List of all the implants
+         */
+        std::vector<Implant> getImplants() const;
+
+        /**
          * @brief Add a new implant
          * @param type Type of the implant
-         * @param size Size of the implant in the x,y-plane
-         * @param offset Offset of the implant from ther pixel center
+         * @param size Size of the implant
+         * @param offset Offset of the implant from the pixel center
          * @param material Material of the implant
          */
         void addImplant(const Implant::Type& type,
-                        const ROOT::Math::XYVector& size,
-                        ROOT::Math::XYZVector offset,
+                        ROOT::Math::XYZVector size,
+                        const ROOT::Math::XYVector& offset,
                         std::string material);
 
         /**
@@ -403,12 +409,11 @@ namespace allpix {
          * implant.
          *
          * @param local_pos Position in local coordinates of the detector model
-         * @param depth Depth from sensor surface to be considered if implant is defined only in 2D
          * @return True if a local position is within the pixel implant, false otherwise
          *
          * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth) const = 0;
+        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
