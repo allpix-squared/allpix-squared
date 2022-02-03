@@ -51,12 +51,22 @@ std::optional<DetectorModel::Implant> PixelDetectorModel::isWithinImplant(const 
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
 
     for(const auto& implant : getImplants()) {
-        bool inside = (std::fabs(inPixelPos.x() + implant.getOffset().x()) <= std::fabs(implant.getSize().x() / 2) &&
-                       std::fabs(inPixelPos.y() + implant.getOffset().y()) <= std::fabs(implant.getSize().y() / 2) &&
-                       local_pos.z() >= (implant.getOffset().z() - implant.getSize().z() / 2));
-
-        if(inside) {
-            return implant;
+        if(implant.getShape() == Implant::Shape::RECTANGLE) {
+            // Check if point is within rectangle centered around implant offset
+            if(std::fabs(inPixelPos.x() + implant.getOffset().x()) <= std::fabs(implant.getSize().x() / 2) &&
+               std::fabs(inPixelPos.y() + implant.getOffset().y()) <= std::fabs(implant.getSize().y() / 2) &&
+               local_pos.z() >= (implant.getOffset().z() - implant.getSize().z() / 2)) {
+                return implant;
+            }
+        } else if(implant.getShape() == Implant::Shape::ELLIPSE) {
+            // Check if point is within ellipsis centered around getOffset() and with major axis getSize()
+            if((inPixelPos.x() - implant.getOffset().x()) * (inPixelPos.x() - implant.getOffset().x()) /
+                       (implant.getSize().x() * implant.getSize().x() / 4) +
+                   (inPixelPos.y() - implant.getOffset().y()) * (inPixelPos.y() - implant.getOffset().y()) /
+                       (implant.getSize().y() * implant.getSize().y() / 4) <=
+               1) {
+                return implant;
+            }
         }
     }
     return std::nullopt;
