@@ -214,9 +214,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
              * excise implants from sensor volume and fill them with the implant material
              */
             std::shared_ptr<G4VSolid> sensor_solid = sensor_box;
-            if(model->getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
+            for(const auto& implant : model->getImplants()) {
                 LOG(TRACE) << "Found implant with non-negligible depth, excising implants from sensor volume.";
-                auto implants = model->getImplantSize();
+                auto size = implant.getSize();
 
                 // Collect all implants in a G4MultiUnion solid to subtract from sensor solid:
                 auto implant_union = std::make_shared<G4MultiUnion>();
@@ -225,13 +225,13 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 for(unsigned int npix_x = 0; npix_x < model->getNPixels().x(); npix_x++) {
                     for(unsigned int npix_y = 0; npix_y < model->getNPixels().y(); npix_y++) {
                         // FIXME: We should extend the implant and shift it to avoid fake surfaces
-                        auto implant_box = std::make_shared<G4Box>(
-                            "implant_box_" + name, implants.x() / 2.0, implants.y() / 2.0, implants.z() / 2.0);
+                        auto implant_box =
+                            std::make_shared<G4Box>("implant_box_" + name, size.x() / 2.0, size.y() / 2.0, size.z() / 2.0);
                         solids_.push_back(implant_box);
                         std::shared_ptr<G4VSolid> implant_solid = implant_box;
 
                         // Calculate transformation for the solid including possible offsets from pixel center
-                        auto offset = model->getImplantOffset();
+                        auto offset = implant.getOffset();
                         G4Transform3D implant_transform(
                             G4RotationMatrix(),
                             G4ThreeVector(
@@ -249,7 +249,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
                 // Place physical instance of implant extrusion in model (conductor):
                 auto implant_log = make_shared_no_delete<G4LogicalVolume>(
-                    implant_union.get(), materials.get(model->getImplantMaterial()), "implants_" + name + "_log");
+                    implant_union.get(), materials.get(implant.getMaterial()), "implants_" + name + "_log");
                 geo_manager_->setExternalObject(name, "implants_log", implant_log);
 
                 // Place the implants box
