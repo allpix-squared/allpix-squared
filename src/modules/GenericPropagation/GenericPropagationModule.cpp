@@ -601,7 +601,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // Find proper final position in the sensor
     auto time = runge_kutta.getTime();
-    if(state == CarrierState::HALTED) {
+    if(state == CarrierState::HALTED && !model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
         auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
                                                     static_cast<ROOT::Math::XYZPoint>(position));
         position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
