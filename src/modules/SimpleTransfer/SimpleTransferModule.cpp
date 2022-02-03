@@ -94,10 +94,17 @@ void SimpleTransferModule::run(Event* event) {
 
         if(collect_from_implant_) {
             // Ignore if outside the implant region:
-            if(!model_->isWithinImplant(position)) {
+            auto implant = model_->isWithinImplant(position);
+            if(!implant.has_value()) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their local position is outside the pixel implant";
+                continue;
+            }
+            if(implant->getType() != DetectorModel::Implant::Type::FRONTSIDE) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because the pixel implant is located at " << allpix::to_string(implant->getType());
                 continue;
             }
         } else if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
