@@ -29,31 +29,6 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
     setPixelSize(pixel_size);
-
-    // Size of the collection diode implant on each pixels, defaults to the full pixel size when not specified
-    XYZVector implant_size;
-    try {
-        // Attempt to read a three-dimensional implant definition:
-        implant_size = config.get<XYZVector>("implant_size");
-    } catch(ConfigurationError&) {
-        // If 3D fails or key is not set at all, attempt to read a (flat) 2D implant definition, defaulting to full pixel
-        auto implant_area = config.get<XYVector>("implant_size", pixel_size);
-        implant_size = XYZVector(implant_area.x(), implant_area.y(), 0);
-    }
-    if(implant_size.x() > pixel_size.x() || implant_size.y() > pixel_size.y()) {
-        throw InvalidValueError(config, "implant_size", "implant size cannot be larger than pixel pitch");
-    }
-    if(implant_size.z() > getSensorSize().z()) {
-        throw InvalidValueError(config, "implant_size", "implant depth cannot be larger than sensor thickness");
-    }
-
-    // Offset of the collection diode implant from the pixel center, defaults to zero.
-    auto implant_offset = config.get<XYVector>("implant_offset", {0, 0});
-    if(std::fabs(implant_offset.x()) + implant_size.x() / 2 > pixel_size.x() / 2 ||
-       std::fabs(implant_offset.y()) + implant_size.y() / 2 > pixel_size.y() / 2) {
-        throw InvalidValueError(config, "implant_offset", "implant exceeds pixel cell. Reduce implant size or offset");
-    }
-    setImplant(implant_size, implant_offset, config.get<std::string>("implant_material", "aluminum"));
 }
 
 /**
@@ -70,20 +45,21 @@ bool PixelDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) c
 /**
  * The definition of inside the implant region is determined by the detector model
  */
-bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double depth) const {
+bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
     auto [xpixel, ypixel] = getPixelIndex(local_pos);
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
 
-    // Boundary in z is either defined by implant volume or by depth parameter in case of 2D implants:
-    double z_boundary = getSensorCenter().z() + getSensorSize().z() / 2.0 - depth;
-    if(getImplantSize().z() > std::numeric_limits<double>::epsilon()) {
-        z_boundary = getImplantOffset().z() - getImplantSize().z() / 2;
-    }
+    for(const auto& implant : getImplants()) {
+        bool inside = (std::fabs(inPixelPos.x() + implant.getOffset().x()) <= std::fabs(implant.getSize().x() / 2) &&
+                       std::fabs(inPixelPos.y() + implant.getOffset().y()) <= std::fabs(implant.getSize().y() / 2) &&
+                       local_pos.z() >= (implant.getOffset().z() - implant.getSize().z() / 2));
 
-    return (std::fabs(inPixelPos.x() + getImplantOffset().x()) <= std::fabs(getImplantSize().x() / 2) &&
-            std::fabs(inPixelPos.y() + getImplantOffset().y()) <= std::fabs(getImplantSize().y() / 2) &&
-            local_pos.z() >= z_boundary);
+        if(inside) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**

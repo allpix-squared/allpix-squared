@@ -89,13 +89,6 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
     // Pixel size is defined as the rectangular wrapper size divided by the maximum
     // number of strips (x-value) or strip rows (y-value)
     setPixelSize({getSize().x() / number_of_pixels_.x(), getSize().y() / number_of_pixels_.y()});
-    // Set implant size; for now disallow setting this parameter
-    auto implant_size = config.get<ROOT::Math::XYVector>("implant_size", pixel_size_);
-    if(implant_size != pixel_size_) {
-        throw InvalidCombinationError(
-            config, {"geometry", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
-    }
-    setImplant({pixel_size_.X(), pixel_size_.Y(), 0}, {0, 0}, "aluminium");
 
     // Translation vector from local coordinate center to sensor focal point
     focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};
@@ -119,7 +112,7 @@ bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_
     return false;
 }
 
-bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos, const double) const {
+bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
     // Convert local position to polar coordinates
     auto polar_pos = getPositionPolar(local_pos);
 
@@ -128,7 +121,15 @@ bool RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local
     auto strip_center = getPixelCenter(xstrip, ystrip);
     auto strip_center_polar = getPositionPolar(strip_center);
 
-    return (polar_pos.phi() * sin(std::fabs(strip_center_polar.phi() - polar_pos.phi())) < implant_size_.x() / 2);
+    for(const auto& implant : getImplants()) {
+        bool inside =
+            (polar_pos.phi() * sin(std::fabs(strip_center_polar.phi() - polar_pos.phi())) < implant.getSize().x() / 2);
+
+        if(inside) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) const {
