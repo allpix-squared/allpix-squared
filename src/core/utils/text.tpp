@@ -102,9 +102,7 @@ namespace allpix {
     }
 
     template <typename T, std::enable_if_t<std::is_enum<T>::value, bool>> std::string to_string_impl(T inp, empty_tag) {
-        auto out = std::string(magic_enum::enum_name(inp));
-        std::transform(out.begin(), out.end(), out.begin(), ::tolower);
-        return out;
+        return allpix::transform(std::string(magic_enum::enum_name(inp)), ::tolower);
     }
 
     template <typename T> std::vector<T> split(std::string str, const std::string& delims) {

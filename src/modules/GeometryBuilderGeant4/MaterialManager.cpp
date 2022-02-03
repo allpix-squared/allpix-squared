@@ -11,6 +11,7 @@
 #include "MaterialManager.hpp"
 
 #include "core/module/exceptions.h"
+#include "core/utils/text.h"
 
 using namespace allpix;
 
@@ -24,9 +25,7 @@ G4Material* Materials::get(const std::string& material) const {
     LOG(DEBUG) << "Searching for material \"" << material << "\"";
     // Look in our materials definitions
     // FIXME tolower for this comparison but not for the rest
-    auto material_lower = material;
-    std::transform(material_lower.begin(), material_lower.end(), material_lower.begin(), ::tolower);
-
+    auto material_lower = allpix::transform(material, ::tolower);
     if(materials_.find(material_lower) != materials_.end()) {
         LOG(DEBUG) << "Found material \"" << material << "\" in internal database";
         return materials_.at(material_lower);
