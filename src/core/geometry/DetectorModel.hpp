@@ -85,6 +85,7 @@ namespace allpix {
 
         public:
             enum class Type { FRONTSIDE, BACKSIDE };
+            enum class Shape { RECTANGLE, ELLIPSE };
 
             /**
              * @brief Get the offset of the implant with respect to the pixel center
@@ -107,6 +108,12 @@ namespace allpix {
              */
             Type getType() { return type_; }
 
+            /**
+             * @brief Return the shape of the implant
+             * @return implant shape
+             */
+            Shape getShape() { return shape_; }
+
         private:
             /**
              * @brief Constructs an implant, used in \ref DetectorModel::addImplant
@@ -115,11 +122,13 @@ namespace allpix {
              * @param offset Offset of the implant from the pixel center
              * @param material Material of the implant
              */
-            Implant(Type type, ROOT::Math::XYZVector size, ROOT::Math::XYZVector offset, std::string material)
-                : type_(type), size_(std::move(size)), offset_(std::move(offset)), material_(std::move(material)) {}
+            Implant(Type type, Shape shape, ROOT::Math::XYZVector size, ROOT::Math::XYZVector offset, std::string material)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)),
+                  material_(std::move(material)) {}
 
             // Actual parameters returned
             Type type_;
+            Shape shape_;
             ROOT::Math::XYZVector size_;
             ROOT::Math::XYZVector offset_;
             std::string material_;
@@ -236,11 +245,13 @@ namespace allpix {
         /**
          * @brief Add a new implant
          * @param type Type of the implant
+         * @param shape Shape of the implant cross-section
          * @param size Size of the implant
          * @param offset Offset of the implant from the pixel center
          * @param material Material of the implant
          */
         void addImplant(const Implant::Type& type,
+                        const Implant::Shape& shape,
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
                         std::string material);

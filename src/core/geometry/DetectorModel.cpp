@@ -81,6 +81,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
     // Read implants
     for(auto& implant_config : reader_.getConfigurations("implant")) {
         auto imtype = implant_config.get<Implant::Type>("type");
+        auto shape = implant_config.get<Implant::Shape>("shape", Implant::Shape::RECTANGLE);
         auto size = implant_config.get<XYZVector>("size");
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto material = implant_config.get<std::string>("material", "silicon");
@@ -98,7 +99,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         // throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
         // }
 
-        addImplant(imtype, size, offset, material);
+        addImplant(imtype, shape, size, offset, material);
     }
 
     // Read support layers
@@ -130,13 +131,14 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
 }
 
 void DetectorModel::addImplant(const Implant::Type& type,
+                               const Implant::Shape& shape,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
                                std::string material) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(Implant(type, std::move(size), full_offset, std::move(material)));
+    implants_.push_back(Implant(type, shape, std::move(size), full_offset, std::move(material)));
 }
 
 std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
