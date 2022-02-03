@@ -64,9 +64,11 @@ void SimpleTransferModule::initialize() {
     if(collect_from_implant_) {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
-        } else {
-            LOG(INFO) << "Collecting charges from implants";
         }
+        LOG(INFO) << "Collecting charges from implants";
+    } else if(!model->getImplants().empty()) {
+        LOG(WARNING) << "Detector " << detector_->getName() << " of type " << model->getType()
+                     << " has implants defined but collecting charge carriers from full sensor surface";
     }
 
     if(output_plots_) {
