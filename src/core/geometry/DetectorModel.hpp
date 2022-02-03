@@ -237,10 +237,7 @@ namespace allpix {
         void addImplant(const Implant::Type& type,
                         const ROOT::Math::XYVector& size,
                         ROOT::Math::XYZVector offset,
-                        std::string material) {
-            ROOT::Math::XYZVector full_size(size.x(), size.y(), 0.);
-            implants_.push_back(Implant(type, full_size, std::move(offset), std::move(material)));
-        }
+                        std::string material);
 
         /**
          * @brief Get total size of the pixel grid

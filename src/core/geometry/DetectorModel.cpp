@@ -78,6 +78,29 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
     // Sensor material:
     sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
+    // Read implants
+    for(auto& implant_config : reader_.getConfigurations("implant")) {
+        auto type = implant_config.get<Implant::Type>("type");
+        auto size = implant_config.get<XYZVector>("size");
+        auto offset = implant_config.get<XYVector>("offset", {0, 0});
+        auto material = implant_config.get<std::string>("material", "silicon");
+
+        if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
+            throw InvalidValueError(implant_config, "size", "implant size cannot be larger than pixel pitch");
+        }
+        if(size.z() > getSensorSize().z()) {
+            throw InvalidValueError(implant_config, "size", "implant depth cannot be larger than sensor thickness");
+        }
+
+        // Offset of the collection diode implant from the pixel center, defaults to zero.
+        if(std::fabs(offset.x()) + size.x() / 2 > pixel_size.x() / 2 ||
+           std::fabs(offset.y()) + size.y() / 2 > pixel_size.y() / 2) {
+            throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+        }
+
+        addImplant(type, size, offset, material);
+    }
+
     // Read support layers
     for(auto& support_config : reader_.getConfigurations("support")) {
         auto thickness = support_config.get<double>("thickness");
@@ -104,6 +127,13 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
         addSupportLayer(size, thickness, offset, material, hole_type, location, hole_size, hole_offset);
     }
+}
+
+void DetectorModel::addImplant(const Implant::Type& type,
+                               const ROOT::Math::XYZVector& size,
+                               ROOT::Math::XYZVector offset,
+                               std::string material) {
+    implants_.push_back(Implant(type, full_size, std::move(offset), std::move(material)));
 }
 
 ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
