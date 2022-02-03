@@ -118,6 +118,7 @@ namespace allpix {
             /**
              * @brief Constructs an implant, used in \ref DetectorModel::addImplant
              * @param type Type of the implant
+             * @param shape Shape of the implant cross-section
              * @param size Size of the implant
              * @param offset Offset of the implant from the pixel center
              * @param material Material of the implant
