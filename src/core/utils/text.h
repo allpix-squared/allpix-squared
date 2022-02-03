@@ -127,6 +127,15 @@ namespace allpix {
      * @return List of all the substrings with all empty substrings ignored (thus removed)
      */
     template <typename T> std::vector<T> split(std::string str, const std::string& delims = " \t,");
+
+    /**
+     * @brief Transforms a string and returns the transformed string
+     * @param str String that should be transformed
+     * @param op Unary operator to act on the string
+     * @return Transformed string
+     */
+    template <typename T> std::string transform(const std::string& str, const T& op);
+
 } // namespace allpix
 
 // Include template definitions

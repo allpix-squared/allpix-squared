@@ -132,4 +132,10 @@ namespace allpix {
 
         return elems;
     }
+
+    template <typename T> std::string transform(const std::string& str, const T& op) {
+        auto output = str;
+        std::transform(output.begin(), output.end(), output.begin(), op);
+        return output;
+    }
 } // namespace allpix
