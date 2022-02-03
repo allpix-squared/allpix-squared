@@ -133,10 +133,9 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
                                std::string material) {
-    ROOT::Math::XYZVector full_offset(
-        offset.x(),
-        offset.y(),
-        0.); // FIXME z offset from center should be calculated from size and position (front/backside)
+    // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
+    auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
+    ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
     implants_.push_back(Implant(type, std::move(size), full_offset, std::move(material)));
 }
 
