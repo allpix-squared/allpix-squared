@@ -65,7 +65,7 @@ void SimpleTransferModule::initialize() {
         if(detector_->getElectricFieldType() == FieldType::LINEAR) {
             throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
         } else {
-            LOG(INFO) << "Collecting charges from implants with size " << Units::display(model->getImplantSize(), {"um"});
+            LOG(INFO) << "Collecting charges from implants";
         }
     }
 
@@ -92,7 +92,7 @@ void SimpleTransferModule::run(Event* event) {
 
         if(collect_from_implant_) {
             // Ignore if outside the implant region:
-            if(!model_->isWithinImplant(position, max_depth_distance_)) {
+            if(!model_->isWithinImplant(position)) {
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their local position is outside the pixel implant";

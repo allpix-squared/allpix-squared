@@ -117,7 +117,7 @@ void PulseTransferModule::run(Event* event) {
                 }
 
                 // Ignore if outside the implant region:
-                if(!model->isWithinImplant(position, max_depth_distance_)) {
+                if(!model->isWithinImplant(position)) {
                     LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                                << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                                << " because their local position is outside the pixel implant";
