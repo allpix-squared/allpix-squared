@@ -63,7 +63,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     std::string driver;
     try {
         driver = config_.get<std::string>("driver", "");
-    } catch(InvalidKeyError& e) {
+    } catch(ConfigurationError& e) {
         driver = "";
     }
 
