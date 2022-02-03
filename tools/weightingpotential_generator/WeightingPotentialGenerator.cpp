@@ -139,7 +139,12 @@ int main(int argc, char** argv) {
         std::ifstream file(model_path);
         allpix::ConfigReader reader(file, model_path);
         auto model = allpix::DetectorModel::factory(model_path, reader);
-        auto implant = model->getImplantSize();
+        auto implants = model->getImplants();
+        if(implants.size() > 1) {
+            throw std::invalid_argument("Detector model has more than one implant, this is not supported");
+        }
+
+        auto implant = implants.front().getSize();
 
         // Calculate thickness domain
         auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
