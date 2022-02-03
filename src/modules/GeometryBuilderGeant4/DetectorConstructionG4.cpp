@@ -247,8 +247,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                     solids_.push_back(implant_box);
 
                     auto implant_log = make_shared_no_delete<G4LogicalVolume>(
-                        implant_box.get(), material, "implant_" + std::to_string(implant_count) + "_log_" + name);
-                    geo_manager_->setExternalObject(name, "implant_" + std::to_string(implant_count) + "_log", implant_log);
+                        implant_box.get(), material, "implant_log_" + std::to_string(implant_count) + "_" + name);
+                    geo_manager_->setExternalObject(name, "implant_log_" + std::to_string(implant_count) + "_", implant_log);
 
                     // Loop over pixel matrix to add the implant for every pixel
                     for(unsigned int npix_x = 0; npix_x < model->getNPixels().x(); npix_x++) {

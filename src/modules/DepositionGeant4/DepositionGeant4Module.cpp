@@ -461,6 +461,14 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
 
         // Add the sensitive detector action
         logical_volume->SetSensitiveDetector(sensitive_detector_action);
+
+        // Add the sensitive detector action to all implant volumes
+        for(const auto& implant :
+            geo_manager_->getExternalObjects<G4LogicalVolume>(detector->getName(), std::regex("implant_log_.*"))) {
+            implant->SetUserLimits(user_limits_.get());
+            implant->SetSensitiveDetector(sensitive_detector_action);
+        }
+
         sensors_.push_back(sensitive_detector_action);
 
         // If requested, prepare output plots
