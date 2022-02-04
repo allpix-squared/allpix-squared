@@ -15,6 +15,7 @@
 #include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/geometry/MonolithicPixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
+#include "tools/liang_barsky.h"
 
 using namespace allpix;
 
@@ -187,4 +188,15 @@ std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const
     }
 
     return ret_layers;
+}
+
+ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
+                                                       const ROOT::Math::XYZPoint& outside) const {
+    // Get direction vector of motion
+    auto direction = (outside - inside).Unit();
+    // We have to be centered around the sensor box. This means we need to shift by the matrix center
+    auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
+    auto pos_in = translation_local.Inverse()(inside);
+
+    return translation_local(LiangBarsky(direction, pos_in, getSensorSize()));
 }
