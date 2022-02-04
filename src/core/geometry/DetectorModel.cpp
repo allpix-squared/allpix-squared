@@ -328,7 +328,7 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
     // Shift position to implant coordinate system and apply rotation around z axis!
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Use Liang-Barsky line clipping method:
-        return LiangBarsky(direction, orientation_(position - offset_), size_);
+        return LiangBarsky(orientation_(direction), orientation_(position - offset_), size_);
     } else if(shape_ == Implant::Shape::ELLIPSE) {
         // FIXME implement line clipping with ellipse
     }
