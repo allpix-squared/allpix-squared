@@ -30,8 +30,7 @@ namespace allpix {
                                                                         const std::regex& regex) const {
         std::vector<std::shared_ptr<T>> matched_objects;
         try {
-            auto objects = external_objects_.at(typeid(T));
-            for(const auto& [key, object] : objects) {
+            for(const auto& [key, object] : external_objects_.at(typeid(T))) {
                 const auto& [name, id] = key;
                 if(name == associated_name && std::regex_match(id, regex)) {
                     matched_objects.push_back(std::static_pointer_cast<T>(object));
