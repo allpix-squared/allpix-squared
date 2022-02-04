@@ -268,13 +268,12 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                 offset.z());
 
                             // Add the new solid to the MultiUnion:
-                            G4Transform3D transform(G4RotationMatrix(), translation);
+                            G4Transform3D transform(G4RotationMatrix(0, 0, implant.getOrientation().Angle()), translation);
                             implant_union->AddNode(*implant_box, transform);
 
                             // Place physical instance of implant extrusion in model:
                             auto implant_phys =
-                                make_shared_no_delete<G4PVPlacement>(nullptr,
-                                                                     translation,
+                                make_shared_no_delete<G4PVPlacement>(transform,
                                                                      implant_log.get(),
                                                                      "implant_" + implant_name + "_phys_" + name, // NOLINT
                                                                      wrapper_log.get(),
