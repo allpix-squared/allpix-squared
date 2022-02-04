@@ -15,6 +15,7 @@
 #include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
+#include "tools/liang_barsky.h"
 
 #include <Math/Translation3D.h>
 
@@ -291,57 +292,7 @@ ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoin
     auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
     auto pos_in = translation_local.Inverse()(inside);
 
-    return translation_local(liang_barsky_clipping(direction, pos_in, getSensorSize()));
-}
-
-ROOT::Math::XYZPoint DetectorModel::liang_barsky_clipping(const ROOT::Math::XYZVector& direction,
-                                                          const ROOT::Math::XYZPoint& position,
-                                                          const ROOT::Math::XYZVector& box) {
-
-    auto clip = [](double denominator, double numerator, double& t0, double& t1) {
-        if(denominator > 0) {
-            if(numerator > denominator * t1) {
-                return false;
-            }
-            if(numerator > denominator * t0) {
-                t0 = numerator / denominator;
-            }
-            return true;
-        } else if(denominator < 0) {
-            if(numerator > denominator * t0) {
-                return false;
-            }
-            if(numerator > denominator * t1) {
-                t1 = numerator / denominator;
-            }
-            return true;
-        } else {
-            return numerator <= 0;
-        }
-    };
-
-    // Clip the particle track against the six possible box faces
-    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-    bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
-                     clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
-                     clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
-                     clip(-direction.Y(), position.Y() - box.Y() / 2, t0, t1) &&
-                     clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
-                     clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
-
-    // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the motion)
-    if(intersect) {
-        if(t0 > 0 && t1 > 0) {
-            return (position + std::min(t0, t1) * direction);
-        } else if(t0 > 0) {
-            return (position + t0 * direction);
-        } else if(t1 > 0) {
-            return (position + t1 * direction);
-        }
-    }
-
-    // Otherwise: The line does not intersect the box.
-    throw std::invalid_argument("one point needs to be outside and one inside the sensor volume");
+    return translation_local(LiangBarsky(direction, pos_in, getSensorSize()));
 }
 
 ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoint& outside,
@@ -356,5 +307,5 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoi
     auto pos_out = translation_px.Inverse()(outside);
 
     // return translation_px(liang_barsky_clipping(direction, pos_out, getImplantSize()));
-    return translation_px(liang_barsky_clipping(direction, pos_out, {0., 0., 0.}));
+    return translation_px(LiangBarsky(direction, pos_out, {0., 0., 0.}));
 }
