@@ -96,6 +96,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Carsten Daniel Burgard, DESY, @cburgard
 * Maximilian Felix Caspar, DESY, @mcaspar
 * Liejian Chen, Institute of High Energy Physics Beijing, @chenlj
+* Manuel Alejandro Del Rio Viera, DESY, @mdelriov
 * Katharina Dort, University of Gie\ss en, @kdort
 * Neal Gauvin, Université de Genève, @ngauvin
 * Lennart Huth, DESY, @lhuth
