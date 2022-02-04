@@ -137,24 +137,24 @@ The mobility is parametrized as
 \begin{equation}
     \label{eq:mob:mas}
     \begin{split}
-        \mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{(1 + (C_{s,e} / N)^{\beta_e})}\\
-        \mu_h(N) &= \mu_{0,h} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{(1 + (C_{s,h} / N)^{\beta_h})} + e^{P_c / N}\\
+        \mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{1 + (C_{s,e} / N)^{\beta_e}}\\
+        \mu_h(N) &= \mu_{0,h} \cdot e^{-P_c / N} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{1 + (C_{s,h} / N)^{\beta_h}}\\
 \end{split}
 \end{equation}
 as taken from equations~1 (for electrons) and~4 (for holes) of~\cite{masetti}.
 
 Only the parameters $\mu_{max}$ for both electrons and holes are temperature dependent and are scaled according to Equation~\eqref{eq:mob:ham:temp} with parameters $\gamma_e = -2.5$ for electrons and $\gamma_h = -2.2$ for holes.
 
-The parameter values implemented in \apsq are taken from Table~I of~\cite{masetti} as:
+The parameter values implemented in \apsq are taken from Table~I of~\cite{masetti} for phosphorus and boron as:
 \begin{equation*}
     \begin{split}
-        \mu_{0,e}   &= \SI{52.2}{cm^2 \per V \per s}\\
-        \mu_{max,e} &= \SI{1417}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.5}\\
-        C_{r,e}     &= \SI{9.68e16}{\per \cubic \cm}\\
-        \alpha_{e}  &= 0.68\\
-        \mu_{1,e}   &= \SI{43.4}{cm^2 \per V \per s}\\
-        C_{s,e}     &= \SI{3.43e20}{\per \cubic \cm}\\
-        \beta_{e}   &= 2.0\\
+        \mu_{0,e}   &= \SI{68.5}{cm^2 \per V \per s}\\
+        \mu_{max,e} &= \SI{1414}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-2.5}\\
+        C_{r,e}     &= \SI{9.20e16}{\per \cubic \cm}\\
+        \alpha_{e}  &= 0.711\\
+        \mu_{1,e}   &= \SI{56.1}{cm^2 \per V \per s}\\
+        C_{s,e}     &= \SI{3.41e20}{\per \cubic \cm}\\
+        \beta_{e}   &= 1.98\\
     \end{split}
     \qquad
     \begin{split}
@@ -187,10 +187,10 @@ The mobility is parametrized as
         \mu_h(N) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (N / N_{ref,h})^{\alpha}\right)\\
     \end{split}
 \end{equation}
-as taken from equations~8 (for electrons) and~12 (for holes) of~\cite{arora}.
+as taken from equations~8 (for electrons) and~13 (for holes) of~\cite{arora}.
 
 The parameter values are provided at the reference temperature of \SI{300}{K} and scaled to different temperatures according to Equation~\eqref{eq:mob:ham:temp}.
-The values implemented in \apsq are taken from Table~1 of~\cite{arora} as:
+The values implemented in \apsq are taken from Table~1 and the formulas of~\cite{arora} as:
 \begin{equation*}
     \begin{split}
         \mu_{min,e} &= \SI{88.0}{cm^2 \per V \per s} \cdot (T / \SI{300}{K})^{-0.57}\\

@@ -168,16 +168,16 @@ namespace allpix {
      * @brief Masetti mobility model for charge carriers in silicon
      *
      * Parameterization variables from https://doi.org/10.1109/T-ED.1983.21207, formulae (1) for electrons and (4) for holes.
-     * The values are taken from Table I, for Arsenic and Boron
+     * The values are taken from Table I, for Phosphorus and Boron
      */
     class Masetti : virtual public MobilityModel {
     public:
         Masetti(double temperature, bool doping)
-            : electron_mu0_(Units::get(52.2, "cm*cm/V/s")),
-              electron_mumax_(Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
-              electron_cr_(Units::get(9.68e16, "/cm/cm/cm")), electron_alpha_(0.68),
-              electron_mu1_(Units::get(43.4, "cm*cm/V/s")), electron_cs_(Units::get(3.43e20, "/cm/cm/cm")),
-              electron_beta_(2.0), hole_mu0_(Units::get(44.9, "cm*cm/V/s")), hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
+            : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
+              electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
+              electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_alpha_(0.711),
+              electron_mu1_(Units::get(56.1, "cm*cm/V/s")), electron_cs_(Units::get(3.41e20, "/cm/cm/cm")),
+              electron_beta_(1.98), hole_mu0_(Units::get(44.9, "cm*cm/V/s")), hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
               hole_mumax_(Units::get(470.5, "cm*cm/V/s") * std::pow(temperature / 300, -2.2)),
               hole_cr_(Units::get(2.23e17, "/cm/cm/cm")), hole_alpha_(0.719), hole_mu1_(Units::get(29.0, "cm*cm/V/s")),
               hole_cs_(Units::get(6.1e20, "/cm/cm/cm")), hole_beta_(2.0) {
