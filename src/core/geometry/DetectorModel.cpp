@@ -154,8 +154,8 @@ bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) con
 
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Check if point is within rectangle centered around implant offset
-        if(std::fabs(position.x() + offset_.x()) <= std::fabs(size_.x() / 2) &&
-           std::fabs(position.y() + offset_.y()) <= std::fabs(size_.y() / 2)) {
+        if(std::fabs(position.x() - offset_.x()) <= size_.x() / 2 &&
+           std::fabs(position.y() - offset_.y()) <= size_.y() / 2) {
             return true;
         }
     } else if(shape_ == Implant::Shape::ELLIPSE) {
