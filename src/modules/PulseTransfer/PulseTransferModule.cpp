@@ -111,6 +111,12 @@ void PulseTransferModule::run(Event* event) {
             auto position = propagated_charge.getLocalPosition();
 
             if(collect_from_implant_) {
+                if(model->getImplants().empty()) {
+                    throw InvalidValueError(
+                        config_,
+                        "collect_from_implant",
+                        "Detector model does not have implants defined, but collection requested from implants");
+                }
                 if(detector_->getElectricFieldType() == FieldType::LINEAR) {
                     throw ModuleError(
                         "Charge collection from implant region should not be used with linear electric fields.");
