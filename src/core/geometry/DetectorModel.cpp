@@ -284,6 +284,19 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     return ret_layers;
 }
 
+std::optional<DetectorModel::Implant> DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
+
+    auto [xpixel, ypixel] = getPixelIndex(local_pos);
+    auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
+
+    for(const auto& implant : getImplants()) {
+        if(implant.contains(inPixelPos)) {
+            return implant;
+        }
+    }
+    return std::nullopt;
+}
+
 ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
                                                        const ROOT::Math::XYZPoint& outside) const {
     // Get direction vector of motion

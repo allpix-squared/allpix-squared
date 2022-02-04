@@ -66,14 +66,6 @@ namespace allpix {
                                                 const ROOT::Math::XYZPoint& outside) const override;
 
         /**
-         * @brief Returns if a local position is within a pixel implant region of the sensitive device
-         *
-         * @param local_pos Position in local coordinates of the detector model
-         * @return Either the implant in which the position is located, or false
-         */
-        std::optional<Implant> isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const override;
-
-        /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
