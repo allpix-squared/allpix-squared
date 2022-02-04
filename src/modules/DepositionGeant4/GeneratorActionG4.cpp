@@ -184,8 +184,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
         // Find Geant4 particle
         auto* pdg_table = G4ParticleTable::GetParticleTable();
-        particle_type_ = config_.get<std::string>("particle_type", "");
-        std::transform(particle_type_.begin(), particle_type_.end(), particle_type_.begin(), ::tolower);
+        particle_type_ = allpix::transform(config_.get<std::string>("particle_type", ""), ::tolower);
         auto particle_code = config_.get<int>("particle_code", 0);
         G4ParticleDefinition* particle = nullptr;
 

@@ -175,8 +175,7 @@ void ConfigReader::add(std::istream& stream, std::filesystem::path file_name) {
 void ConfigReader::addConfiguration(Configuration config) {
     conf_array_.push_back(std::move(config));
 
-    std::string section_name = conf_array_.back().getName();
-    std::transform(section_name.begin(), section_name.end(), section_name.begin(), ::tolower);
+    auto section_name = allpix::transform(conf_array_.back().getName(), ::tolower);
     conf_map_[section_name].push_back(--conf_array_.end());
 }
 

@@ -42,11 +42,7 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     ConfigReader reader(file, file_name);
 
     // Convert all global and ignored names to lower case and store them
-    auto lowercase = [](const std::string& in) {
-        std::string out(in);
-        std::transform(out.begin(), out.end(), out.begin(), ::tolower);
-        return out;
-    };
+    auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
     std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
     std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
@@ -56,8 +52,7 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     // Store all the configurations read
     for(auto& config : reader.getConfigurations()) {
         // Skip all ignored sections
-        std::string config_name = config.getName();
-        std::transform(config_name.begin(), config_name.end(), config_name.begin(), ::tolower);
+        std::string config_name = allpix::transform(config.getName(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {
             continue;
         }

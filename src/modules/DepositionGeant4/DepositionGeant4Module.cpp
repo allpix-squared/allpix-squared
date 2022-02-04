@@ -137,8 +137,7 @@ void DepositionGeant4Module::initialize() {
         G4EmParameters::Instance();
 
         auto pai_model = config_.get<std::string>("pai_model");
-        auto lcase_model = pai_model;
-        std::transform(lcase_model.begin(), lcase_model.end(), lcase_model.begin(), ::tolower);
+        auto lcase_model = allpix::transform(pai_model, ::tolower);
         if(lcase_model == "pai") {
             pai_model = "PAI";
         } else if(lcase_model == "paiphoton") {
