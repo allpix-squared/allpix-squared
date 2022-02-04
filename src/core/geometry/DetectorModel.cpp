@@ -306,9 +306,8 @@ ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoin
     auto direction = (outside - inside).Unit();
     // We have to be centered around the sensor box. This means we need to shift by the matrix center
     auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
-    auto pos_in = translation_local.Inverse()(inside);
-
-    return translation_local(LiangBarsky(direction, pos_in, getSensorSize()));
+    // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
+    return translation_local(LiangBarsky(direction, translation_local.Inverse()(inside), getSensorSize()));
 }
 
 ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
@@ -318,11 +317,20 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
     auto direction = (inside - outside).Unit();
     // Get positions relative to pixel center:
     auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
-    // We have to be centered around the implant box, not the pixel. This means we need to shift with the implant offset
-    auto translation_px = ROOT::Math::Translation3D(
-        static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out))); // + getImplantOffset()));
-    auto pos_out = translation_px.Inverse()(outside);
+    auto transl = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out)));
 
-    // FIXME this needs to be reworked and should probably happen within the Implant class!
-    return translation_px(LiangBarsky(direction, pos_out, implant.getSize()));
+    // Call implant intersection and re-transform back to local coordinates:
+    return transl(implant.intersect(direction, transl.Inverse()(inside)));
+}
+
+ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVector& direction,
+                                                       const ROOT::Math::XYZPoint& position) const {
+    // Shift position to implant coordinate system and apply rotation around z axis!
+    if(shape_ == Implant::Shape::RECTANGLE) {
+        // Use Liang-Barsky line clipping method:
+        return LiangBarsky(direction, orientation_(position - offset_), size_);
+    } else if(shape_ == Implant::Shape::ELLIPSE) {
+        // FIXME implement line clipping with ellipse
+    }
+    throw std::invalid_argument("Intersection not implemented for this implant type");
 }

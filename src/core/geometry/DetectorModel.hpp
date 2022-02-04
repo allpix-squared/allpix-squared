@@ -127,6 +127,17 @@ namespace allpix {
              */
             bool contains(const ROOT::Math::XYZVector& position) const;
 
+            /**
+             * @brief calculate intersection of line segment with implant. The first intersection in the given direction is
+             * returned.
+             * @throws std::invalid_argument if no intersection can be found.
+             * @param  direction Direction vector of line
+             * @param  position  Position vector of line
+             * @return Intersection point with implant
+             */
+            ROOT::Math::XYZPoint intersect(const ROOT::Math::XYZVector& direction,
+                                           const ROOT::Math::XYZPoint& position) const;
+
         private:
             /**
              * @brief Constructs an implant, used in \ref DetectorModel::addImplant
