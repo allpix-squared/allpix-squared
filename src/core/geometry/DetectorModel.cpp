@@ -150,16 +150,13 @@ std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
-    // Shift position to implant coordinate system:
-    auto pos = position - offset_;
+    // Shift position to implant coordinate system and apply rotation around z axis:
+    auto pos = orientation_(position - offset_);
 
     // Check z-position to be within implant
     if(std::fabs(pos.z()) >= size_.z() / 2) {
         return false;
     }
-
-    // Apply rotation
-    pos = orientation_(pos);
 
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Check if point is within rectangle with side lengths size_
