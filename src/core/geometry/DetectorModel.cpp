@@ -85,6 +85,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         auto shape = implant_config.get<Implant::Shape>("shape", Implant::Shape::RECTANGLE);
         auto size = implant_config.get<XYZVector>("size");
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
+        auto orientation = implant_config.get<double>("orientation", 0.);
         auto material = implant_config.get<std::string>("material", "silicon");
 
         // if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
@@ -100,7 +101,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         // throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
         // }
 
-        addImplant(imtype, shape, size, offset, material);
+        addImplant(imtype, shape, size, offset, orientation, material);
     }
 
     // Read support layers
@@ -135,11 +136,13 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                const Implant::Shape& shape,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
+                               double orientation,
                                std::string material) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(Implant(type, shape, std::move(size), full_offset, std::move(material)));
+    implants_.push_back(
+        Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(material)));
 }
 
 std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
@@ -147,22 +150,25 @@ std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
+    // Shift position to implant coordinate system:
+    auto pos = position - offset_;
+
     // Check z-position to be within implant
-    if(std::fabs(position.z() - offset_.z()) >= size_.z() / 2) {
+    if(std::fabs(pos.z()) >= size_.z() / 2) {
         return false;
     }
 
+    // Apply rotation
+    pos = orientation_(pos);
+
     if(shape_ == Implant::Shape::RECTANGLE) {
-        // Check if point is within rectangle centered around implant offset
-        if(std::fabs(position.x() - offset_.x()) <= size_.x() / 2 &&
-           std::fabs(position.y() - offset_.y()) <= size_.y() / 2) {
+        // Check if point is within rectangle with side lengths size_
+        if(std::fabs(pos.x()) <= size_.x() / 2 && std::fabs(pos.y()) <= size_.y() / 2) {
             return true;
         }
     } else if(shape_ == Implant::Shape::ELLIPSE) {
-        // Check if point is within ellipsis centered around offset_ and with major axis size_
-        if((position.x() - offset_.x()) * (position.x() - offset_.x()) / (size_.x() * size_.x() / 4) +
-               (position.y() - offset_.y()) * (position.y() - offset_.y()) / (size_.y() * size_.y() / 4) <=
-           1) {
+        // Check if point is within ellipsis with major axis size_
+        if(pos.x() * pos.x() / (size_.x() * size_.x() / 4) + pos.y() * pos.y() / (size_.y() * size_.y() / 4) <= 1) {
             return true;
         }
     }

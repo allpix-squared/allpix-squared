@@ -23,6 +23,7 @@
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
+#include <Math/RotationZ.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
@@ -93,6 +94,11 @@ namespace allpix {
              */
             ROOT::Math::XYZVector getOffset() const { return offset_; }
             /**
+             * @brief Get the implant orientation as rotation around its z-axis
+             * @return Implant orientation
+             */
+            ROOT::Math::RotationZ getOrientation() const { return orientation_; }
+            /**
              * @brief Get the size of the implant
              * @return Size of the implant
              */
@@ -128,10 +134,16 @@ namespace allpix {
              * @param shape Shape of the implant cross-section
              * @param size Size of the implant
              * @param offset Offset of the implant from the pixel center
+             * @param orientation Rotation angle around the implant z-axis
              * @param material Material of the implant
              */
-            Implant(Type type, Shape shape, ROOT::Math::XYZVector size, ROOT::Math::XYZVector offset, std::string material)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)),
+            Implant(Type type,
+                    Shape shape,
+                    ROOT::Math::XYZVector size,
+                    ROOT::Math::XYZVector offset,
+                    ROOT::Math::RotationZ orientation,
+                    std::string material)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
                   material_(std::move(material)) {}
 
             // Actual parameters returned
@@ -139,6 +151,7 @@ namespace allpix {
             Shape shape_;
             ROOT::Math::XYZVector size_;
             ROOT::Math::XYZVector offset_;
+            ROOT::Math::RotationZ orientation_;
             std::string material_;
         };
 
@@ -256,12 +269,14 @@ namespace allpix {
          * @param shape Shape of the implant cross-section
          * @param size Size of the implant
          * @param offset Offset of the implant from the pixel center
+         * @param orientation Rotation angle around the implant z-axis
          * @param material Material of the implant
          */
         void addImplant(const Implant::Type& type,
                         const Implant::Shape& shape,
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
+                        double orientation,
                         std::string material);
 
         /**
