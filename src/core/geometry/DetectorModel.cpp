@@ -146,8 +146,11 @@ std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
-    // Check z-position
-    // position.z() >= (offset_.z() - size_.z() / 2)
+    // Check z-position to be within implant
+    if(std::fabs(position.z() - offset_.z()) >= size_.z() / 2) {
+        return false;
+    }
+
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Check if point is within rectangle centered around implant offset
         if(std::fabs(position.x() + offset_.x()) <= std::fabs(size_.x() / 2) &&
