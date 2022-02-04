@@ -330,7 +330,33 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         // Use Liang-Barsky line clipping method:
         return LiangBarsky(orientation_(direction), orientation_(position - offset_), size_);
     } else if(shape_ == Implant::Shape::ELLIPSE) {
-        // FIXME implement line clipping with ellipse
+        // Translate so the ellipse is centered at the origin.
+        auto pos = orientation_(position - offset_);
+        auto dir = orientation_(direction);
+        // FIXME treat z!
+
+        // Get the semimajor and semiminor axes.
+        auto a = size_.x() / 2;
+        auto b = size_.y() / 2;
+
+        // Calculate the quadratic parameters.
+        auto A = dir.x() * dir.x() / a / a + dir.y() * dir.y() / b / b;
+        auto B = 2 * pos.x() * dir.x() / a / a + 2 * pos.y() * dir.y() / b / b;
+        auto C = pos.x() * pos.x() / a / a + pos.y() * pos.y() / b / b - 1;
+
+        // Calculate the discriminant.
+        auto discriminant = B * B - 4 * A * C;
+        if(discriminant == 0) {
+            // One real solution.
+            auto t = -B / 2 / A;
+            return orientation_.Inverse()(pos + dir * t) + offset_;
+        } else if(discriminant > 0) {
+            // Two real solutions, take closer one
+            auto t = (-B - std::sqrt(discriminant)) / 2 / A;
+            return orientation_.Inverse()(pos + dir * t) + offset_;
+        } else {
+            throw std::invalid_argument("no intersection with volume boundaries found");
+        }
     }
     throw std::invalid_argument("Intersection not implemented for this implant type");
 }
