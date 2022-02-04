@@ -145,6 +145,26 @@ std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
     return implants_;
 }
 
+bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
+    // Check z-position
+    // position.z() >= (offset_.z() - size_.z() / 2)
+    if(shape_ == Implant::Shape::RECTANGLE) {
+        // Check if point is within rectangle centered around implant offset
+        if(std::fabs(position.x() + offset_.x()) <= std::fabs(size_.x() / 2) &&
+           std::fabs(position.y() + offset_.y()) <= std::fabs(size_.y() / 2)) {
+            return true;
+        }
+    } else if(shape_ == Implant::Shape::ELLIPSE) {
+        // Check if point is within ellipsis centered around offset_ and with major axis size_
+        if((position.x() - offset_.x()) * (position.x() - offset_.x()) / (size_.x() * size_.x() / 4) +
+               (position.y() - offset_.y()) * (position.y() - offset_.y()) / (size_.y() * size_.y() / 4) <=
+           1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 
     // Prepare detector assembly stack (sensor, chip, supports) with z-positions and thicknesses:

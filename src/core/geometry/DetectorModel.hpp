@@ -114,6 +114,13 @@ namespace allpix {
              */
             Shape getShape() const { return shape_; }
 
+            /**
+             * @brief helper to calculate containment of points with this implant
+             * @param  position Position relative to the pixel center
+             * @return True if point lies within implant, false otherwise
+             */
+            bool contains(const ROOT::Math::XYZVector& position) const;
+
         private:
             /**
              * @brief Constructs an implant, used in \ref DetectorModel::addImplant
