@@ -451,11 +451,13 @@ namespace allpix {
          * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
          * point inside (after step).
          * @throws std::invalid_argument if no intersection of track segment with implant volume can be found
+         * @param implant The implant the intercept should be caluclated for
          * @param  outside Position before the step, outside the implant volume
          * @param  inside  Position after the step, inside the implant volume
          * @return Entry point in implant in local coordinates of the sensor
          */
-        ROOT::Math::XYZPoint getImplantIntercept(const ROOT::Math::XYZPoint& outside,
+        ROOT::Math::XYZPoint getImplantIntercept(const Implant& implant,
+                                                 const ROOT::Math::XYZPoint& outside,
                                                  const ROOT::Math::XYZPoint& inside) const;
 
         /**

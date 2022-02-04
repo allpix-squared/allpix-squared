@@ -314,7 +314,8 @@ ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoin
     return translation_local(LiangBarsky(direction, pos_in, getSensorSize()));
 }
 
-ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoint& outside,
+ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
+                                                        const ROOT::Math::XYZPoint& outside,
                                                         const ROOT::Math::XYZPoint& inside) const {
     // Get direction vector of motion
     auto direction = (inside - outside).Unit();
@@ -325,6 +326,6 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const ROOT::Math::XYZPoi
         static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out))); // + getImplantOffset()));
     auto pos_out = translation_px.Inverse()(outside);
 
-    // return translation_px(liang_barsky_clipping(direction, pos_out, getImplantSize()));
-    return translation_px(LiangBarsky(direction, pos_out, {0., 0., 0.}));
+    // FIXME this needs to be reworked and should probably happen within the Implant class!
+    return translation_px(LiangBarsky(direction, pos_out, implant.getSize()));
 }
