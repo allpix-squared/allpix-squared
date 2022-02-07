@@ -337,11 +337,11 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         // Normal vector for top and bottom faces of cylinder
         const auto norm = ROOT::Math::XYZVector(0, 0, 1);
 
-        auto intersection_caps = [&](const ROOT::Math::XYZVector& pos, const ROOT::Math::XYZVector& dir) {
-            auto d1 = (ROOT::Math::XYZVector(0, 0, size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(pos)).Dot(norm) /
-                      dir.Dot(norm);
-            auto d2 = (ROOT::Math::XYZVector(0, 0, -size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(pos)).Dot(norm) /
-                      dir.Dot(norm);
+        auto intersection_caps = [&](const ROOT::Math::XYZVector& p, const ROOT::Math::XYZVector& d) {
+            auto d1 =
+                (ROOT::Math::XYZVector(0, 0, size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(p)).Dot(norm) / d.Dot(norm);
+            auto d2 = (ROOT::Math::XYZVector(0, 0, -size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(p)).Dot(norm) /
+                      d.Dot(norm);
             // Return the smaller d value, closer to the reference point
             return std::min(d1, d2);
         };
