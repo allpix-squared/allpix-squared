@@ -145,11 +145,11 @@ int main(int argc, char** argv) {
         if(implants.size() > 1) {
             throw std::invalid_argument("Detector model contains more than one implant, not supported for pad potential");
         }
-        auto implant =
-            (implants.empty() ? model->getPixelSize()
-                              : ROOT::Math::XYVector({implants.front().getSize().x(), implants.front().getSize().y()}));
+
+        auto implant = (implants.empty() ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0)
+                                         : implants.front().getSize());
         // This module currently only works with pad definition, i.e. 2D implant deinition:
-        if(implants.front().getSize().z() > std::numeric_limits<double>::epsilon()) {
+        if(implant.z() > std::numeric_limits<double>::epsilon()) {
             throw std::invalid_argument("Generator can only be used with 2D implants, but non-zero thickness found");
         }
 
