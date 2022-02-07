@@ -97,14 +97,16 @@ void WeightingPotentialReaderModule::initialize() {
         if(implants.size() > 1) {
             throw ModuleError("Detector model contains more than one implant, not supported for pad potential");
         }
-        auto implant_size = implants.front().getSize();
+        auto implant_size =
+            (implants.empty() ? model->getPixelSize()
+                              : ROOT::Math::XYVector({implants.front().getSize().x(), implants.front().getSize().y()}));
         // This module currently only works with pad definition, i.e. 2D implant deinition:
-        if(implant_size.z() > std::numeric_limits<double>::epsilon()) {
+        if(implants.front().getSize().z() > std::numeric_limits<double>::epsilon()) {
             throw InvalidValueError(
-                config_, "model", "model 'pad' cal only be used with 2D implants, but 3D implants found");
+                config_, "model", "model 'pad' can only be used with 2D implants, but non-zero thickness found");
         }
 
-        auto function = get_pad_potential_function({implant_size.x(), implant_size.y()}, thickness_domain);
+        auto function = get_pad_potential_function(implant_size, thickness_domain);
         detector_->setWeightingPotentialFunction(function, thickness_domain, FieldType::CUSTOM);
     }
 
