@@ -112,27 +112,6 @@ bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_
     return false;
 }
 
-std::optional<DetectorModel::Implant>
-RadialStripDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
-    // Convert local position to polar coordinates
-    auto polar_pos = getPositionPolar(local_pos);
-
-    // Get polar coordinates of the corresponding strip center
-    auto [xstrip, ystrip] = getPixelIndex(local_pos);
-    auto strip_center = getPixelCenter(xstrip, ystrip);
-    auto strip_center_polar = getPositionPolar(strip_center);
-
-    for(const auto& implant : getImplants()) {
-        bool inside =
-            (polar_pos.phi() * sin(std::fabs(strip_center_polar.phi() - polar_pos.phi())) < implant.getSize().x() / 2);
-
-        if(inside) {
-            return implant;
-        }
-    }
-    return std::nullopt;
-}
-
 bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) const {
     return !(strip_index.y() < 0 || strip_index.y() >= static_cast<int>(getNPixels().y()) || strip_index.x() < 0 ||
              strip_index.x() >= static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y()))));
