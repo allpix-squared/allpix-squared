@@ -32,9 +32,9 @@ namespace allpix {
      * @throws std::invalid_argument if no intersection of track segment with the box volume can be found in positive
      * direction from the given position.
      */
-    ROOT::Math::XYZPoint LiangBarsky(const ROOT::Math::XYZVector& direction,
-                                     const ROOT::Math::XYZPoint& position,
-                                     const ROOT::Math::XYZVector& box) {
+    inline ROOT::Math::XYZPoint LiangBarsky(const ROOT::Math::XYZVector& direction,
+                                            const ROOT::Math::XYZPoint& position,
+                                            const ROOT::Math::XYZVector& box) {
 
         auto clip = [](double denominator, double numerator, double& t0, double& t1) {
             if(denominator > 0) {
