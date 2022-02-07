@@ -333,30 +333,59 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         // Translate so the ellipse is centered at the origin.
         auto pos = orientation_(position - offset_);
         auto dir = orientation_(direction);
-        // FIXME treat z!
 
-        // Get the semimajor and semiminor axes.
-        auto a = size_.x() / 2;
-        auto b = size_.y() / 2;
+        // Normal vector for top and bottom faces of cylinder
+        const auto norm = ROOT::Math::XYZVector(0, 0, 1);
 
-        // Calculate the quadratic parameters.
-        auto A = dir.x() * dir.x() / a / a + dir.y() * dir.y() / b / b;
-        auto B = 2 * pos.x() * dir.x() / a / a + 2 * pos.y() * dir.y() / b / b;
-        auto C = pos.x() * pos.x() / a / a + pos.y() * pos.y() / b / b - 1;
+        auto intersection_caps = [&](const ROOT::Math::XYZVector& pos, const ROOT::Math::XYZVector& dir) {
+            auto d1 = (ROOT::Math::XYZVector(0, 0, size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(pos)).Dot(norm) /
+                      dir.Dot(norm);
+            auto d2 = (ROOT::Math::XYZVector(0, 0, -size_.z() / 2) - static_cast<ROOT::Math::XYZVector>(pos)).Dot(norm) /
+                      dir.Dot(norm);
+            // Return the smaller d value, closer to the reference point
+            return std::min(d1, d2);
+        };
 
-        // Calculate the discriminant.
+        // Calculate quadratic parameters with semimajor/minor axes (half-diameter) and discriminant.
+        double A = 4 * dir.x() * dir.x() / size_.x() / size_.x() + 4 * dir.y() * dir.y() / size_.y() / size_.y();
+        double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
+        double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
+
         if(discriminant == 0) {
-            // One real solution.
-            auto t = -B / 2 / A;
-            return orientation_.Inverse()(pos + dir * t) + offset_;
+            if(dir.Dot(norm) < std::numeric_limits<double>::epsilon()) {
+                // We are parallel to implant cylinder
+                auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(pos), dir);
+                auto intersection = pos + dir * t;
+
+                // Check if solution found is within cylinder area, i.e. end cap:
+                if(intersection.x() * intersection.x() / (size_.x() * size_.x() / 4) +
+                       intersection.y() * intersection.y() / (size_.y() * size_.y() / 4) <=
+                   1) {
+                    return orientation_.Inverse()(intersection) + offset_;
+                }
+            } else {
+                // One real solution, we're cutting the surface. Only need to check z position:
+                auto intersection = pos + dir * (-B / 2 / A);
+                if(std::fabs(intersection.z()) < size_.z() / 2) {
+                    return orientation_.Inverse()(intersection) + offset_;
+                }
+            }
         } else if(discriminant > 0) {
             // Two real solutions, take closer one
-            auto t = (-B - std::sqrt(discriminant)) / 2 / A;
-            return orientation_.Inverse()(pos + dir * t) + offset_;
-        } else {
-            throw std::invalid_argument("no intersection with volume boundaries found");
+            auto sol_a = pos + dir * (-B - std::sqrt(discriminant)) / 2 / A;
+            auto sol_b = pos + dir * (-B + std::sqrt(discriminant)) / 2 / A;
+
+            if(std::fabs(sol_a.z()) < size_.z() / 2) {
+                // Closer solution hits cylinder wall, return as intersection
+                return orientation_.Inverse()(sol_a) + offset_;
+            } else if(std::fabs(sol_b.z()) < size_.z() / 2) {
+                // Farther solution hits the wall, we're on a cap. Take the first solution as reference:
+                auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(sol_a), dir);
+                return orientation_.Inverse()(sol_a + dir * t) + offset_;
+            }
         }
+        throw std::invalid_argument("no intersection with volume boundaries found");
     }
     throw std::invalid_argument("Intersection not implemented for this implant type");
 }
