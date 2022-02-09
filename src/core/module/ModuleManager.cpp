@@ -733,7 +733,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << finished_events << " events because of request to terminate";
-            thread_pool->destroy();
+            thread_pool_->destroy();
             global_config.set<uint64_t>("number_of_events", finished_events);
             break;
         }
