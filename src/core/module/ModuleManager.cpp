@@ -865,6 +865,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
     LOG(TRACE) << "Destroying thread pool";
+    thread_pool_.reset();
 }
 
 static std::string seconds_to_time(long double seconds) {
