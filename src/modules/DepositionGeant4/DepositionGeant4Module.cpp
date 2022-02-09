@@ -73,6 +73,8 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault<double>("max_step_length", Units::get(1.0, "um"));
     // Default value chosen to ensure proper gamma generation for Cs137 decay
     config_.setDefault<double>("cutoff_time", 2.21e+11);
+    // By default, only record MCTracks connected to MCParticles in the sensitive volume
+    config_.setDefault<bool>("record_all_tracks", false);
 
     // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
@@ -254,7 +256,7 @@ void DepositionGeant4Module::initialize() {
     // Construct the sensitive detectors and fields.
     if(run_manager_mt == nullptr) {
         // Create the info track manager for the main thread before creating the Sensitive detectors.
-        track_info_manager_ = std::make_unique<TrackInfoManager>();
+        track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
         construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy, cutoff_time);
     } else {
         // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
@@ -284,7 +286,7 @@ void DepositionGeant4Module::initializeThread() {
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
         if(track_info_manager_ == nullptr) {
-            track_info_manager_ = std::make_unique<TrackInfoManager>();
+            track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
         }
 
         run_manager_mt->InitializeForThread();
