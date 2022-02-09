@@ -35,10 +35,10 @@ void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_inf
     auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
 
     if(record_all_ || element != to_store_track_ids_.end()) {
-        LOG(TRACE) << "Storing MCTrack with ID " << track_id;
+        LOG(DEBUG) << "Storing MCTrack with ID " << track_id;
         stored_track_infos_.push_back(std::move(the_track_info));
     } else {
-        LOG(TRACE) << "Not storing MCTrack with ID " << track_id;
+        LOG(DEBUG) << "Not storing MCTrack with ID " << track_id;
     }
 
     if(element != to_store_track_ids_.end()) {
