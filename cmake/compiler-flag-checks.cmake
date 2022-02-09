@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Check for supported flags and remove unsupported warnings
 INCLUDE(CheckCXXCompilerFlag)
 FOREACH(flag ${COMPILER_FLAGS})

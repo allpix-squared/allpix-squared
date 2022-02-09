@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC0-1.0
+
 parse:
   _help_additional_commands:
   - Specify structure for custom cmake functions

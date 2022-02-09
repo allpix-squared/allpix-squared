@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Magnetic Field Example
 
 This example demonstrates the charged particle propagation inside a sensor with a magnetic field applied.

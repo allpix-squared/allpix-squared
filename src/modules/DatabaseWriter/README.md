@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # DatabaseWriter
 **Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
 **Status**: Functional  

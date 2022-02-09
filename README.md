@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 [![](doc/logo_small.png)](https://cern.ch/allpix-squared)
 
 # Allpix<sup>2</sup>
@@ -10,6 +15,7 @@ For more details about the project please have a look at the website at https://
 [![build status](https://gitlab.cern.ch/allpix-squared/allpix-squared/badges/master/pipeline.svg)](https://gitlab.cern.ch/allpix-squared/allpix-squared/commits/master)
 [![coverity status](https://scan.coverity.com/projects/21520/badge.svg)](https://scan.coverity.com/projects/allpix-squared)
 [![zenodo record](https://zenodo.org/badge/DOI/10.5281/zenodo.3550935.svg)](https://doi.org/10.5281/zenodo.3550935)
+[![REUSE status](https://api.reuse.software/badge/gitlab.cern.ch/allpix-squared/allpix-squared)](https://api.reuse.software/info/gitlab.cern.ch/allpix-squared/allpix-squared)
 
 
 ## Dependencies
@@ -155,16 +161,16 @@ Before adding changes it is very much recommended to carefully read through the 
 
 
 ## Licenses
-This software is distributed under the terms of the MIT license. A copy of this license can be found in [LICENSE.md](LICENSE.md).
-
-The documentation is distributed under the terms of the CC-BY-4.0 license. This license can be found in [doc/COPYING.md](doc/COPYING.md).
+This software is distributed under the terms of the MIT license. The documentation is distributed under the terms of the CC-BY-4.0 license.
 
 The following third-party codes are included in the repository:
-
-* The LaTeX, Pandoc and PostgreSQL CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
-* The CodeCoverage CMake module is copyright 2012 - 2017 by Lars Bilke, the full license can be found in the [module file](cmake/CodeCoverage.cmake).
-* The octree library of the TCAD DF-ISE converter is made available under the MIT license, more information [here](tools/tcad_dfise_converter/README.md).
+* The LaTeX, Pandoc and CodeCoverage CMake modules used by Allpix<sup>2</sup> are licensed under the BSD 3-Clause License.
+* The octree library by Jens Behley is made available under the MIT license, the original source code can be found [here](https://github.com/jbehley/octree).
 * The cereal C++11 serialization library used by Allpix<sup>2</sup> is published under the BSD 3-Clause License, the original source code can be found [here](https://github.com/USCiLab/cereal).
 * The combination algorithms by Howard Hinnant are published under the Boost Software License Version 1.0, the code can be found [here](https://github.com/HowardHinnant/combinations) and the documentation of the class is published [here](https://howardhinnant.github.io/combinations/combinations.html).
 * The CTest to JUnit XSL template is published under the MIT License, the original source code can be found [here](https://github.com/rpavlik/jenkins-ctest-plugin).
 * The Magic Enum library by Daniil Goncharov is published under the MIT license, the code can be found [here](https://github.com/Neargye/magic_enum).
+
+A copy of all licenses can be found in the [LICENSES](LICENSES/) folder.
+
+This repositroy follows the [REUSE](https://reuse.software/) specification, a full copyright report can be created via `reuse spdx`.

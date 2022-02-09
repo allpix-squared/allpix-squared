@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 AllpixSquared_version="@ALLPIX_VERSION@"
 
 # Dependencies - directory changes required for zsh compatibility

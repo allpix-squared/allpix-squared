@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Packaging configuration
 SET(CPACK_PACKAGE_NAME "allpix-squared")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Generic Pixel Detector Simulation Framework")

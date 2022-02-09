@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Include set of separate tools shipped with the framework
 OPTION(BUILD_TOOLS "Build additional tools and executables" ON)
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 import sys
 import lxml.etree as et
 

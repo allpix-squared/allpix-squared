@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # CSADigitizer
 **Maintainer**: Annika Vauth (<annika.vauth@desy.de>), Simon Spannagel (<simon.spannagel@desy.de>)  
 **Status**: Functional  

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Retrieve the allpix version string from git describe
 FUNCTION(get_version project_version)
     # Check if this is a source tarball build

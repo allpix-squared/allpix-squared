@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Determine which OS you are using
 if [ "$(uname)" = "Linux" ]; then
     if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then

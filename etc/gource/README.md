@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Create Development Visualization with Gource:
 
 * Captions with UNIX timestamps are located in `captions.txt`

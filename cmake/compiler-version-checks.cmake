@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # General overview for compiler support of CXX language and library features:
 # https://en.cppreference.com/w/cpp/compiler_support
 #

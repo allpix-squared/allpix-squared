@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 @PACKAGE_INIT@
 
 SET_AND_CHECK(ALLPIX_INCLUDE_DIR "@PACKAGE_ALLPIX_INCLUDE_DIR@")

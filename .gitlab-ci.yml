@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
@@ -211,6 +214,17 @@ fmt:coverity:
         - tar cfz cov-int.tar.gz cov-int
         - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
 
+fmt:reuse:
+    image:
+        name: fsfe/reuse:latest
+        entrypoint: [""]
+    tags:
+      - docker
+    stage: formatting
+    needs: []
+    dependencies: []
+    script:
+        - reuse lint
 
 ##############
 # Unit tests #

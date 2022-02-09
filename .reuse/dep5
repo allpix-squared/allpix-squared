@@ -1,0 +1,53 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Allpix Squared
+Upstream-Contact: Simon Spannagel <simon.spannagel@cern.ch>
+Source: https://gitlab.cern.ch/allpix-squared/allpix-squared
+
+Files: .gitlab/ci/ctest-to-junit.xsl
+Copyright: 2011 Ryan Pavlik <rpavlik@iastate.edu>
+License: MIT
+
+Files: 3rdparty/cereal/*
+Copyright: 2014, Randolph Voorhies, Shane Grant
+License: BSD-3-Clause
+
+Files: 3rdparty/combinations/*
+Copyright: Howard Hinnant 2005-2011
+License: BSL-1.0
+
+Files: 3rdparty/octree/*
+Copyright: 2015 Jens Behley, Unversity of Bonn
+License: MIT
+
+Files: cmake/CodeCoverage.cmake
+Copyright: 2012 - 2017, Lars Bilke
+License: BSD-3-Clause
+
+Files: cmake/LATEX.cmake
+Copyright: 2004, 2015 Sandia Corporation
+License: BSD-3-Clause
+
+Files: cmake/PANDOC.cmake
+Copyright: 2015 Jeet Sukumaran <jeetsukumaran@gmail.com>
+License: BSD-3-Clause
+
+Files: doc/*
+Copyright: 2016-2022 CERN and the Allpix Squared authors
+License: CC-BY-4.0
+
+Files: etc/manual*.conf
+Copyright: 2017-2022 CERN and the Allpix Squared authors
+License: CC-BY-4.0
+
+Files: examples/*
+Copyright: 2017-2022 CERN and the Allpix Squared authors
+License: CC0-1.0 OR CC-BY-4.0
+
+Files: src/modules/DepositionCosmics/cry/*
+Copyright: 2007-2012, The Regents of the University of California
+           2021-2022 CERN and the Allpix Squared authors
+License: BSD-3-Clause
+
+Files: src/modules/DepositionCosmics/data/*
+Copyright: 2017-2022 CERN and the Allpix Squared authors
+License: CC0-1.0

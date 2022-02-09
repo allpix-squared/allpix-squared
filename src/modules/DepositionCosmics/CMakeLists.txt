@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 

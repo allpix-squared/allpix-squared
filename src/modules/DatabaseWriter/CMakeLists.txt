@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 ALLPIX_ENABLE_DEFAULT(OFF)
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 

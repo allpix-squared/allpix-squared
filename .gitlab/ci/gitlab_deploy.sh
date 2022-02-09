@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 #Get the line for the CVMFS status and check if server is transaction
 clicdp_status=`cvmfs_server list | grep clicdp`
 if [[ $clicdp_status == *"(stratum0 / S3)"* ]]; then

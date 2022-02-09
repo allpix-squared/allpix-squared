@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # EUDET RD53a Simulation Example
 
 This example is similar to the EUDET-type telescope example but with extra DUTs added to match the DESY testbeam setup with RD53a modules.

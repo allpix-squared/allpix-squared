@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # CMake file for the allpix2 framework
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)

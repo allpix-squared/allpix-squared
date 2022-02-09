@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+-- SPDX-License-Identifier: MIT
+
 DROP TABLE IF EXISTS MCTrack;
 DROP TABLE IF EXISTS MCParticle;
 DROP TABLE IF EXISTS Propagatedcharge;

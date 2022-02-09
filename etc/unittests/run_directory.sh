@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 ABSOLUTE_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )"
 
 # Load dependencies if run by the CI

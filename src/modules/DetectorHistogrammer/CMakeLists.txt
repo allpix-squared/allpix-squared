@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: MIT
+
 # Define module
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
