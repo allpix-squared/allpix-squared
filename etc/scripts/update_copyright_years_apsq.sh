@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
-#
 # SPDX-License-Identifier: MIT
 
 set -e
