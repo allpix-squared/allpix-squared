@@ -16,6 +16,8 @@ INCLUDE(CMakeFindDependencyMacro)
 FIND_DEPENDENCY(Threads)
 FIND_DEPENDENCY(Boost 1.64.0 COMPONENTS random)
 FIND_DEPENDENCY(ROOT COMPONENTS Geom Core GenVector Hist RIO NO_MODULE)
+FIND_DEPENDENCY(PkgConfig)
+PKG_CHECK_MODULES(Eigen3 QUIET IMPORTED_TARGET eigen3)
 
 # Add targets and configure for external module generation
 INCLUDE("${CMAKE_CURRENT_LIST_DIR}/AllpixConfigTargets.cmake")
