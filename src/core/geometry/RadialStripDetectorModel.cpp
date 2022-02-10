@@ -255,7 +255,7 @@ ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Ma
 
     auto check_position = outside;
     check_position.SetZ(inside.z());
-    if(outside.z() > 0 && isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
+    if(outside.z() > 0 && isWithinSensor(check_position)) {
         // Carrier left sensor on the side of the sensor, interpolate end point on surface
         auto z_cur_border = std::fabs(outside.z() - getSensorSize().z() / 2.0);
         auto z_last_border = std::fabs(getSensorSize().z() / 2.0 - inside.z());
