@@ -398,9 +398,11 @@ namespace allpix {
          * @param  inside Position before the step, inside the sensor volume
          * @param  outside  Position after the step, outside the sensor volume
          * @return Exit point of the sensor in local coordinates
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
          */
-        ROOT::Math::XYZPoint getSensorIntercept(const ROOT::Math::XYZPoint& inside,
-                                                const ROOT::Math::XYZPoint& outside) const;
+        virtual ROOT::Math::XYZPoint getSensorIntercept(const ROOT::Math::XYZPoint& inside,
+                                                        const ROOT::Math::XYZPoint& outside) const = 0;
 
         /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
