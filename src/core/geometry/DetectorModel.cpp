@@ -319,8 +319,12 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
     auto [xpixel_in, ypixel_in] = getPixelIndex(inside);
     auto transl = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_in, ypixel_in)));
 
-    // Call implant intersection and re-transform back to local coordinates:
-    return transl(implant.intersect(direction, transl.Inverse()(outside)));
+    try {
+        // Call implant intersection and re-transform back to local coordinates:
+        return transl(implant.intersect(direction, transl.Inverse()(outside)));
+    } catch(std::invalid_argument&) {
+        return inside;
+    }
 }
 
 ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVector& direction,
