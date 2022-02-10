@@ -17,6 +17,8 @@
 #include "core/geometry/RadialStripDetectorModel.hpp"
 #include "tools/liang_barsky.h"
 
+#include <Math/Translation3D.h>
+
 using namespace allpix;
 
 std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigReader& reader) {

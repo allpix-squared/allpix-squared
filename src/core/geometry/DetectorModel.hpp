@@ -392,6 +392,17 @@ namespace allpix {
         virtual bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
+         * @brief Calculate exit point of step outside sensor volume from one point inside the sensor (before step) and one
+         * point outside (after step).
+         * @throws std::invalid_argument if no intersection of track segment with sensor volume can be found
+         * @param  inside Position before the step, inside the sensor volume
+         * @param  outside  Position after the step, outside the sensor volume
+         * @return Exit point of the sensor in local coordinates
+         */
+        ROOT::Math::XYZPoint getSensorIntercept(const ROOT::Math::XYZPoint& inside,
+                                                const ROOT::Math::XYZPoint& outside) const;
+
+        /**
          * @brief Returns if a local position is within the pixel implant region of the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the pixel implant, false otherwise
