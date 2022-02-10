@@ -351,7 +351,6 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
         double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
-
         if(discriminant == 0) {
             if(dir.Dot(norm) < std::numeric_limits<double>::epsilon()) {
                 // We are parallel to implant cylinder
@@ -373,16 +372,27 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
             }
         } else if(discriminant > 0) {
             // Two real solutions, take closer one
-            auto sol_a = pos + dir * (-B - std::sqrt(discriminant)) / 2 / A;
-            auto sol_b = pos + dir * (-B + std::sqrt(discriminant)) / 2 / A;
+            auto t1 = (-B - std::sqrt(discriminant));
+            auto t2 = (-B + std::sqrt(discriminant));
 
-            if(std::fabs(sol_a.z()) < size_.z() / 2) {
-                // Closer solution hits cylinder wall, return as intersection
-                return orientation_.Inverse()(sol_a) + offset_;
-            } else if(std::fabs(sol_b.z()) < size_.z() / 2) {
-                // Farther solution hits the wall, we're on a cap. Take the first solution as reference:
-                auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(sol_a), dir);
-                return orientation_.Inverse()(sol_a + dir * t) + offset_;
+            // Both intersections are in direction of motion
+            if(t1 > 0 && t2 > 0) {
+                auto sol_a = pos + dir * std::min(t1, t2) / 2 / A;
+                if(std::fabs(sol_a.z()) < size_.z() / 2) {
+                    // Closer solution hits cylinder wall, return as intersection
+                    return orientation_.Inverse()(sol_a) + offset_;
+                }
+            }
+
+            // Only one is - so we're hitting a cap
+            auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(pos), dir);
+            auto intersection = pos + dir * t;
+
+            // Check if solution found is within cylinder area, i.e. end cap:
+            if(intersection.x() * intersection.x() / (size_.x() * size_.x() / 4) +
+                   intersection.y() * intersection.y() / (size_.y() * size_.y() / 4) <=
+               1) {
+                return orientation_.Inverse()(intersection) + offset_;
             }
         }
         throw std::invalid_argument("no intersection with volume boundaries found");
