@@ -351,50 +351,36 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         double B = 8 * pos.x() * dir.x() / size_.x() / size_.x() + 8 * pos.y() * dir.y() / size_.y() / size_.y();
         double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
-        if(discriminant == 0) {
-            if(dir.Dot(norm) < std::numeric_limits<double>::epsilon()) {
-                // We are parallel to implant cylinder
-                auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(pos), dir);
-                auto intersection = pos + dir * t;
 
-                // Check if solution found is within cylinder area, i.e. end cap:
-                if(intersection.x() * intersection.x() / (size_.x() * size_.x() / 4) +
-                       intersection.y() * intersection.y() / (size_.y() * size_.y() / 4) <=
-                   1) {
-                    return orientation_.Inverse()(intersection) + offset_;
-                }
-            } else {
-                // One real solution, we're cutting the surface. Only need to check z position:
-                auto intersection = pos + dir * (-B / 2 / A);
-                if(std::fabs(intersection.z()) < size_.z() / 2) {
-                    return orientation_.Inverse()(intersection) + offset_;
-                }
-            }
-        } else if(discriminant > 0) {
-            // Two real solutions, take closer one
-            auto t1 = (-B - std::sqrt(discriminant));
-            auto t2 = (-B + std::sqrt(discriminant));
+        if(discriminant < 0) {
+            throw std::invalid_argument("no intersection with volume boundaries found");
+        }
 
-            // Both intersections are in direction of motion
-            if(t1 > 0 && t2 > 0) {
-                auto sol_a = pos + dir * std::min(t1, t2) / 2 / A;
-                if(std::fabs(sol_a.z()) < size_.z() / 2) {
-                    // Closer solution hits cylinder wall, return as intersection
-                    return orientation_.Inverse()(sol_a) + offset_;
-                }
-            }
+        auto t1 = (-B - std::sqrt(discriminant));
+        auto t2 = (-B + std::sqrt(discriminant));
 
-            // Only one is - so we're hitting a cap
-            auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(pos), dir);
-            auto intersection = pos + dir * t;
-
-            // Check if solution found is within cylinder area, i.e. end cap:
-            if(intersection.x() * intersection.x() / (size_.x() * size_.x() / 4) +
-                   intersection.y() * intersection.y() / (size_.y() * size_.y() / 4) <=
-               1) {
-                return orientation_.Inverse()(intersection) + offset_;
+        // Two intersections and both are in direction of motion
+        if(discriminant > 0 && t1 > 0 && t2 > 0) {
+            auto intersect = pos + dir * std::min(t1, t2) / 2 / A;
+            // Closer solution hits cylinder wall, return as intersection
+            if(std::fabs(intersect.z()) < size_.z() / 2) {
+                return orientation_.Inverse()(intersect) + offset_;
             }
         }
+
+        // Only one solution - either discriminant is 0 or one solution is in negative direction of motion.
+        // We only check for cylinder cap intersections here, pure contact solutions (discr = 0) are ignored
+        auto t = intersection_caps(static_cast<ROOT::Math::XYZVector>(pos), dir);
+        auto intersection = pos + dir * t;
+
+        // Check if solution found is within cylinder area, i.e. end cap:
+        if(intersection.x() * intersection.x() / (size_.x() * size_.x() / 4) +
+               intersection.y() * intersection.y() / (size_.y() * size_.y() / 4) <=
+           1) {
+            return orientation_.Inverse()(intersection) + offset_;
+        }
+
+        // No intersection or only contact point found.
         throw std::invalid_argument("no intersection with volume boundaries found");
     }
     throw std::invalid_argument("Intersection not implemented for this implant type");
