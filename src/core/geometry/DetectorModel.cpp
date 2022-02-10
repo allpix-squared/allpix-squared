@@ -302,7 +302,7 @@ std::optional<DetectorModel::Implant> DetectorModel::isWithinImplant(const ROOT:
 
 ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
                                                        const ROOT::Math::XYZPoint& outside) const {
-    // Get direction vector of motion
+    // Get direction vector of motion *out of* sensor
     auto direction = (outside - inside).Unit();
     // We have to be centered around the sensor box. This means we need to shift by the matrix center
     auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
@@ -313,14 +313,14 @@ ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoin
 ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
                                                         const ROOT::Math::XYZPoint& outside,
                                                         const ROOT::Math::XYZPoint& inside) const {
-    // Get direction vector of motion
+    // Get direction vector of motion *into* implant
     auto direction = (inside - outside).Unit();
     // Get positions relative to pixel center:
-    auto [xpixel_out, ypixel_out] = getPixelIndex(outside);
-    auto transl = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_out, ypixel_out)));
+    auto [xpixel_in, ypixel_in] = getPixelIndex(inside);
+    auto transl = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_in, ypixel_in)));
 
     // Call implant intersection and re-transform back to local coordinates:
-    return transl(implant.intersect(direction, transl.Inverse()(inside)));
+    return transl(implant.intersect(direction, transl.Inverse()(outside)));
 }
 
 ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVector& direction,
