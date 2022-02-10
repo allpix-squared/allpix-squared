@@ -266,13 +266,12 @@ namespace allpix {
         }
 
         /**
-         * @brief Helper to get type of mimpact ionization model currently instantiated
-         * @return Type of impact ionization model
+         * @brief Helper method to determine if this model is of a given type
+         * The template parameter needs to be specified speicifcally, i.e.
+         *     if(model->is<MyModel>()) { }
+         * @return Boolean indication whether this model is of the given type or not
          */
-        const std::type_index type() {
-            auto& m = *(model_.get());
-            return typeid(m);
-        }
+        template <class T> bool is() { return dynamic_cast<T*>(model_.get()) != nullptr; }
 
     private:
         std::unique_ptr<ImpactIonizationModel> model_{};
