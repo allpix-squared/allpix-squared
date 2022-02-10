@@ -300,21 +300,6 @@ std::optional<DetectorModel::Implant> DetectorModel::isWithinImplant(const ROOT:
     return std::nullopt;
 }
 
-ROOT::Math::XYZPoint DetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
-                                                       const ROOT::Math::XYZPoint& outside) const {
-    // Get direction vector of motion *out of* sensor
-    auto direction = (outside - inside).Unit();
-    // We have to be centered around the sensor box. This means we need to shift by the matrix center
-    auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
-
-    try {
-        // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
-        return translation_local(LiangBarsky(direction, translation_local.Inverse()(inside), getSensorSize()));
-    } catch(std::invalid_argument&) {
-        return inside;
-    }
-}
-
 ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
                                                         const ROOT::Math::XYZPoint& outside,
                                                         const ROOT::Math::XYZPoint& inside) const {
