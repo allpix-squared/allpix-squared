@@ -116,6 +116,10 @@ void MCTrack::print(std::ostream& out) const {
         << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
         << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
         << " mm |" << std::setw(med_gap) << end_point_.Y() << " mm |" << std::setw(med_gap) << end_point_.Z() << " mm\n"
+        << std::left << std::setw(big_gap) << "Initial time:" << std::right << std::setw(med_gap) << global_start_time_
+        << " ns\n"
+        << std::left << std::setw(big_gap) << "Final time:" << std::right << std::setw(med_gap) << global_end_time_
+        << " ns\n"
         << std::left << std::setw(big_gap) << "Initial kinetic energy: " << std::right << std::setw(med_gap)
         << initial_kin_E_ << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap)
         << "Final kinetic energy: " << std::right << std::setw(med_gap) << final_kin_E_ << std::setw(small_gap)
