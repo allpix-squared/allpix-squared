@@ -68,11 +68,13 @@ void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> 
 
     connection->prepare("add_event", "INSERT INTO Event (run_nr, eventID) VALUES ($1, $2) RETURNING event_nr;");
 
-    connection->prepare("add_mctrack",
-                        "INSERT INTO MCTrack (run_nr, event_nr, detector, address, parentAddress, particleID, "
-                        "productionProcess, productionVolume, initialPositionX, initialPositionY, initialPositionZ, "
-                        "finalPositionX, finalPositionY, finalPositionZ, initialKineticEnergy, finalKineticEnergy) VALUES ("
-                        "$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING mctrack_nr;");
+    connection->prepare(
+        "add_mctrack",
+        "INSERT INTO MCTrack (run_nr, event_nr, detector, address, parentAddress, particleID, "
+        "productionProcess, productionVolume, initialPositionX, initialPositionY, initialPositionZ, "
+        "finalPositionX, finalPositionY, finalPositionZ, initialTime, finalTime, initialKineticEnergy, finalKineticEnergy) "
+        "VALUES ("
+        "$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING mctrack_nr;");
 
     connection->prepare("add_mcparticle",
                         "INSERT INTO MCParticle (run_nr, event_nr, mctrack_nr, detector, address, parentAddress, "
@@ -269,6 +271,8 @@ void DatabaseWriterModule::run(Event* event) {
                                                                   track.getEndPoint().X(),
                                                                   track.getEndPoint().Y(),
                                                                   track.getEndPoint().Z(),
+                                                                  track.getGlobalStartTime(),
+                                                                  track.getGlobalEndTime(),
                                                                   track.getKineticEnergyInitial(),
                                                                   track.getKineticEnergyFinal());
                     mctrack_nr = mctrack_row.front().as<int>();
