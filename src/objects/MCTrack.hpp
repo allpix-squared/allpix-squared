@@ -31,6 +31,8 @@ namespace allpix {
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
          * @param particle_id PDG particle id
+         * @param start_time Time of first appearance
+         * @param end_time Time of last appearance
          * @param initial_kin_E Initial kinetic energy (in MeV)
          * @param final_kin_E Final kinetic energy (in MeV)
          * @param initial_tot_E Initial total energy (in MeV)
@@ -42,6 +44,8 @@ namespace allpix {
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
                 int particle_id,
+                double start_time,
+                double end_time,
                 double initial_kin_E,
                 double final_kin_E,
                 double initial_tot_E,
