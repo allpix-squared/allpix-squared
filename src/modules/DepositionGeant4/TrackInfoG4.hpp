@@ -72,6 +72,18 @@ namespace allpix {
         int getParticleID() const;
 
         /**
+         * @brief Get the starting time of the particle
+         * @return The time at the beginning of the track
+         */
+        double getStartTime() const;
+
+        /**
+         * @brief Get the end time of the particle
+         * @return The time at the end of the track
+         */
+        double getEndTime() const;
+
+        /**
          * @brief Get the Geant4 internal ID of the process which created the particle
          * @return The Geant4 process type, or "-1" if no such process exists
          */
@@ -127,6 +139,10 @@ namespace allpix {
         ROOT::Math::XYZPoint start_point_{};
         // End point of track (in mm)
         ROOT::Math::XYZPoint end_point_{};
+        // Starting time (in ns)
+        double start_time_{};
+        // Ending time (in ns)
+        double end_time_{};
         // Geant4 volume in which the track was created
         std::string origin_g4_vol_name_{};
         // Name of Geant4 process which created this track
