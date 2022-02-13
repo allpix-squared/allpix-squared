@@ -43,6 +43,14 @@ int MCTrack::getParticleID() const {
     return particle_id_;
 }
 
+double MCTrack::getGlobalStartTime() const {
+    return global_start_time_;
+}
+
+double MCTrack::getGlobalEndTime() const {
+    return global_end_time_;
+}
+
 int MCTrack::getCreationProcessType() const {
     return origin_g4_process_type_;
 }

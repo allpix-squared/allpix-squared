@@ -60,6 +60,18 @@ namespace allpix {
         ROOT::Math::XYZPoint getEndPoint() const;
 
         /**
+         * @brief Get the time of first appearance of this track
+         * @return Time of appearance of this track in the global reference system
+         */
+        double getGlobalStartTime() const;
+
+        /**
+         * @brief Get the time of last appearance of this track
+         * @return Time of disappearance of this track in the global reference system
+         */
+        double getGlobalEndTime() const;
+
+        /**
          * @brief Get PDG particle id for the particle
          * @return Particle id
          */
@@ -131,7 +143,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 4); // NOLINT
+        ClassDefOverride(MCTrack, 5); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -149,6 +161,9 @@ namespace allpix {
 
         int origin_g4_process_type_{};
         int particle_id_{};
+
+        double global_start_time_{};
+        double global_end_time_{};
 
         double initial_kin_E_{};
         double final_kin_E_{};
