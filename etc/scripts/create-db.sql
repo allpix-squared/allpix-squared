@@ -33,11 +33,13 @@ CREATE TABLE MCTrack(
     productionProcess VARCHAR (100) NOT NULL,
     productionVolume VARCHAR (100) NOT NULL,
     initialPositionX FLOAT NOT NULL,
-    initialPositionY FLOAT NOT NULL,	
-    initialPositionZ FLOAT NOT NULL,	
+    initialPositionY FLOAT NOT NULL,
+    initialPositionZ FLOAT NOT NULL,
     finalPositionX FLOAT NOT NULL,
-    finalPositionY FLOAT NOT NULL,	
+    finalPositionY FLOAT NOT NULL,
     finalPositionZ FLOAT NOT NULL,
+    initialTime FLOAT,
+    finalTime FLOAT,
     initialKineticEnergy FLOAT NOT NULL,
     finalKineticEnergy FLOAT NOT NULL,
     PRIMARY KEY (mctrack_nr)
@@ -54,17 +56,17 @@ CREATE TABLE MCParticle(
     trackAddress BIGINT NOT NULL,
     particleID INT NOT NULL,
     localStartPointX FLOAT NOT NULL,
-    localStartPointY FLOAT NOT NULL,	
-    localStartPointZ FLOAT NOT NULL,	
+    localStartPointY FLOAT NOT NULL,
+    localStartPointZ FLOAT NOT NULL,
     localEndPointX FLOAT NOT NULL,
-    localEndPointY FLOAT NOT NULL,	
-    localEndPointZ FLOAT NOT NULL,	
+    localEndPointY FLOAT NOT NULL,
+    localEndPointZ FLOAT NOT NULL,
     globalStartPointX FLOAT NOT NULL,
-    globalStartPointY FLOAT NOT NULL,	
-    globalStartPointZ FLOAT NOT NULL,	
+    globalStartPointY FLOAT NOT NULL,
+    globalStartPointZ FLOAT NOT NULL,
     globalEndPointX FLOAT NOT NULL,
-    globalEndPointY FLOAT NOT NULL,	
-    globalEndPointZ FLOAT NOT NULL,	
+    globalEndPointY FLOAT NOT NULL,
+    globalEndPointZ FLOAT NOT NULL,
     PRIMARY KEY (mcparticle_nr)
 );
 
@@ -76,10 +78,10 @@ CREATE TABLE Depositedcharge(
     detector VARCHAR (100) NOT NULL,
     carriertype INT NOT NULL,
     charge INT NOT NULL,
-    localx FLOAT NOT NULL,	  
+    localx FLOAT NOT NULL,
     localy FLOAT NOT NULL,
     localz FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
+    globalx FLOAT NOT NULL,
     globaly FLOAT NOT NULL,
     globalz FLOAT NOT NULL,
     PRIMARY KEY (depositedcharge_nr)
@@ -93,10 +95,10 @@ CREATE TABLE Propagatedcharge(
     detector VARCHAR (100) NOT NULL,
     carriertype INT NOT NULL,
     charge INT NOT NULL,
-    localx FLOAT NOT NULL,	  
+    localx FLOAT NOT NULL,
     localy FLOAT NOT NULL,
     localz FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
+    globalx FLOAT NOT NULL,
     globaly FLOAT NOT NULL,
     globalz FLOAT NOT NULL,
     PRIMARY KEY (propagatedcharge_nr)
@@ -109,11 +111,11 @@ CREATE TABLE PixelCharge(
     propagatedcharge_nr INT REFERENCES Propagatedcharge (propagatedcharge_nr),
     detector VARCHAR (100) NOT NULL,
     charge INT NOT NULL,
-    x INT NOT NULL,	  
+    x INT NOT NULL,
     y INT NOT NULL,
-    localx FLOAT NOT NULL,	  
+    localx FLOAT NOT NULL,
     localy FLOAT NOT NULL,
-    globalx FLOAT NOT NULL,	  
+    globalx FLOAT NOT NULL,
     globaly FLOAT NOT NULL,
     PRIMARY KEY (pixelCharge_nr)
 );
@@ -125,7 +127,7 @@ CREATE TABLE PixelHit(
     mcparticle_nr INT REFERENCES MCParticle (mcparticle_nr),
     pixelcharge_nr INT REFERENCES Pixelcharge (pixelcharge_nr),
     detector VARCHAR (100) NOT NULL,
-    x INT NOT NULL,	  
+    x INT NOT NULL,
     y INT NOT NULL,
     signal FLOAT NOT NULL,
     hitTime INT NOT NULL,
@@ -137,7 +139,7 @@ GRANT ALL PRIVILEGES ON TABLE Event TO myuser;
 GRANT ALL PRIVILEGES ON TABLE PixelHit TO myuser;
 GRANT ALL PRIVILEGES ON TABLE PixelCharge TO myuser;
 GRANT ALL PRIVILEGES ON TABLE PropagatedCharge TO myuser;
-GRANT ALL PRIVILEGES ON TABLE DepositedCharge TO myuser;	
+GRANT ALL PRIVILEGES ON TABLE DepositedCharge TO myuser;
 GRANT ALL PRIVILEGES ON TABLE MCTrack TO myuser;
 GRANT ALL PRIVILEGES ON TABLE MCParticle TO myuser;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public to myuser;
