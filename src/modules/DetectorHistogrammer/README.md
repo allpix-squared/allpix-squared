@@ -40,6 +40,7 @@ For technical reasons, this offset is drawn randomly from a Gauss distribution i
 ### Parameters
 
 * `granularity`: 2D integer vector defining the number of bins along the *x* and *y* axis for in-pixel maps. Defaults to the pixel pitch in micro meters, e.g. a detector with 100um x 100um pixels would be represented in a histogram with `100 * 100 = 10000` bins.
+* `granularity_local`: 2D integer vector defining the number of bins for each pixel along the *x* and *y* axis for maps in local coordinates where particle positions are used as reference. Defaults to `1 1` corresponding to a single bin per pixel.
 * `max_cluster_charge`: Upper limit for the cluster charge histogram, defaults to `50ke`.
 * `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `2um 2um`.
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
