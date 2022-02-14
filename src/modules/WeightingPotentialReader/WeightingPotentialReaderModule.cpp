@@ -158,6 +158,15 @@ void WeightingPotentialReaderModule::create_output_plots() {
                                   min,
                                   max);
 
+    auto* histogram2Dz = new TH2F("potential_z",
+                                  "#phi_{w}/V_{w};x (mm); y (mm); unit potential",
+                                  static_cast<int>(steps),
+                                  -1.5 * model->getPixelSize().x(),
+                                  1.5 * model->getPixelSize().x(),
+                                  static_cast<int>(steps),
+                                  -1.5 * model->getPixelSize().y(),
+                                  1.5 * model->getPixelSize().y());
+
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
@@ -170,13 +179,25 @@ void WeightingPotentialReaderModule::create_output_plots() {
             double y = -0.5 * model->getPixelSize().y() +
                        ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().y();
 
-            // Get potential from detector and fill histogram. We calculate relative to pixel (1,0) so we need to shift x:
+            // Get potential from detector and fill histogram. We calculate relative to pixel (1,0) so we need to shift:
             auto potential_x = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, 0, z), Pixel::Index(1, 0));
-            // Same holds along y axis:
             auto potential_y = detector_->getWeightingPotential(ROOT::Math::XYZPoint(0, y, z), Pixel::Index(0, 1));
 
             histogram2Dx->Fill(x - model->getPixelSize().x(), z, potential_x);
             histogram2Dy->Fill(y - model->getPixelSize().y(), z, potential_y);
+        }
+    }
+
+    for(size_t j = 0; j < steps; ++j) {
+        LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
+        double x = -0.5 * model->getPixelSize().x() +
+                   ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
+        // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
+        for(size_t k = 0; k < steps; ++k) {
+            double y = -0.5 * model->getPixelSize().y() +
+                       ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().y();
+            auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, 0), Pixel::Index(1, 1));
+            histogram2Dz->Fill(x - model->getPixelSize().x(), y - model->getPixelSize().y(), potential_z);
         }
     }
     LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: done ";
@@ -184,11 +205,13 @@ void WeightingPotentialReaderModule::create_output_plots() {
     histogram->SetOption("hist");
     histogram2Dx->SetOption("colz");
     histogram2Dy->SetOption("colz");
+    histogram2Dz->SetOption("colz");
 
     // Write the histogram to module file
     histogram->Write();
     histogram2Dx->Write();
     histogram2Dy->Write();
+    histogram2Dz->Write();
 }
 
 /**
