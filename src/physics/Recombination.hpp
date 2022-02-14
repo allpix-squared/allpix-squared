@@ -68,7 +68,7 @@ namespace allpix {
      */
     class ShockleyReadHall : virtual public RecombinationModel {
     public:
-        ShockleyReadHall(bool doping)
+        ShockleyReadHall(double temperature, bool doping)
             : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(1e16, "/cm/cm/cm")),
               hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
             if(!doping) {
@@ -130,7 +130,7 @@ namespace allpix {
      */
     class ShockleyReadHallAuger : public ShockleyReadHall, public Auger {
     public:
-        ShockleyReadHallAuger(bool doping) : ShockleyReadHall(doping), Auger(doping) {}
+        ShockleyReadHallAuger(double temperature, bool doping) : ShockleyReadHall(temperature, doping), Auger(doping) {}
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
@@ -168,12 +168,13 @@ namespace allpix {
         Recombination(const Configuration& config, bool doping = false) {
             try {
                 auto model = config.get<std::string>("recombination_model");
+                auto temperature = config.get<double>("temperature");
                 if(model == "srh") {
-                    model_ = std::make_unique<ShockleyReadHall>(doping);
+                    model_ = std::make_unique<ShockleyReadHall>(temperature, doping);
                 } else if(model == "auger") {
                     model_ = std::make_unique<Auger>(doping);
                 } else if(model == "combined" || model == "srh_auger") {
-                    model_ = std::make_unique<ShockleyReadHallAuger>(doping);
+                    model_ = std::make_unique<ShockleyReadHallAuger>(temperature, doping);
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
                     model_ = std::make_unique<None>();
