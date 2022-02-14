@@ -170,7 +170,7 @@ namespace allpix {
          * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Recombination(const Configuration& config, bool doping = false) {
+        explicit Recombination(const Configuration& config, bool doping = false) {
             try {
                 auto model = config.get<std::string>("recombination_model");
                 auto temperature = config.get<double>("temperature");
