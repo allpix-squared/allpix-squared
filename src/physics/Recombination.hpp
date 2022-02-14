@@ -65,12 +65,15 @@ namespace allpix {
      * Reference lifetime and doping concentrations, taken from:
      *  - https://doi.org/10.1016/0038-1101(82)90203-9
      *  - https://doi.org/10.1016/0038-1101(76)90022-8
+     *
+     * Lifetime temperature scaling taken from https://doi.org/10.1016/0038-1101(92)90184-E, Eq. 56 on page 1594
      */
     class ShockleyReadHall : virtual public RecombinationModel {
     public:
         ShockleyReadHall(double temperature, bool doping)
             : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(1e16, "/cm/cm/cm")),
-              hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
+              hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")),
+              temperature_scaling_(std::pow(300 / temperature, 1.5)) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
@@ -84,7 +87,8 @@ namespace allpix {
         double lifetime(const CarrierType& type, double doping) const {
             return (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
                    (1 + std::fabs(doping) /
-                            (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+                            (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_)) *
+                   temperature_scaling_;
         }
 
     private:
@@ -92,6 +96,7 @@ namespace allpix {
         double electron_doping_reference_;
         double hole_lifetime_reference_;
         double hole_doping_reference_;
+        double temperature_scaling_;
     };
 
     /**
