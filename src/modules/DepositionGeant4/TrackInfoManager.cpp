@@ -11,7 +11,7 @@
 
 using namespace allpix;
 
-TrackInfoManager::TrackInfoManager() : counter_(1) {}
+TrackInfoManager::TrackInfoManager(bool record_all) : counter_(1), record_all_(record_all) {}
 
 std::unique_ptr<TrackInfoG4> TrackInfoManager::makeTrackInfo(const G4Track* const track) {
     auto custom_id = counter_++;
@@ -33,8 +33,15 @@ void TrackInfoManager::setTrackInfoToBeStored(int track_id) {
 void TrackInfoManager::storeTrackInfo(std::unique_ptr<TrackInfoG4> the_track_info) {
     auto track_id = the_track_info->getID();
     auto element = std::find(to_store_track_ids_.begin(), to_store_track_ids_.end(), track_id);
-    if(element != to_store_track_ids_.end()) {
+
+    if(record_all_ || element != to_store_track_ids_.end()) {
+        LOG(DEBUG) << "Storing MCTrack with ID " << track_id;
         stored_track_infos_.push_back(std::move(the_track_info));
+    } else {
+        LOG(DEBUG) << "Not storing MCTrack with ID " << track_id;
+    }
+
+    if(element != to_store_track_ids_.end()) {
         to_store_track_ids_.erase(element);
     }
 }
