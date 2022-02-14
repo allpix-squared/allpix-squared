@@ -89,11 +89,7 @@ void TransientPropagationModule::initialize() {
     mobility_ = Mobility(config_, detector->hasDopingProfile());
 
     // Prepare recombination model
-    try {
-        recombination_ = Recombination(config_.get<std::string>("recombination_model"), detector->hasDopingProfile());
-    } catch(ModelError& e) {
-        throw InvalidValueError(config_, "recombination_model", e.what());
-    }
+    recombination_ = Recombination(config_, detector->hasDopingProfile());
 
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();

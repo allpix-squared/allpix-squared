@@ -84,11 +84,7 @@ void ProjectionPropagationModule::initialize() {
     }
 
     // Prepare recombination model
-    try {
-        recombination_ = Recombination(config_.get<std::string>("recombination_model"), detector_->hasDopingProfile());
-    } catch(ModelError& e) {
-        throw InvalidValueError(config_, "recombination_model", e.what());
-    }
+    recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
         throw ModuleError("This module should not be used with magnetic fields. Add the option 'ignore_magnetic_field' to "

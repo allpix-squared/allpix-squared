@@ -162,23 +162,28 @@ namespace allpix {
 
         /**
          * Recombination constructor
-         * @param model       Name of the recombination model
+         * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Recombination(const std::string& model, bool doping = false) {
-            if(model == "srh") {
-                model_ = std::make_unique<ShockleyReadHall>(doping);
-            } else if(model == "auger") {
-                model_ = std::make_unique<Auger>(doping);
-            } else if(model == "combined" || model == "srh_auger") {
-                model_ = std::make_unique<ShockleyReadHallAuger>(doping);
-            } else if(model == "none") {
-                LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
-                model_ = std::make_unique<None>();
-            } else {
-                throw InvalidModelError(model);
+        Recombination(const Configuration& config, bool doping = false) {
+            try {
+                auto model = config.get<std::string>("recombination_model");
+                if(model == "srh") {
+                    model_ = std::make_unique<ShockleyReadHall>(doping);
+                } else if(model == "auger") {
+                    model_ = std::make_unique<Auger>(doping);
+                } else if(model == "combined" || model == "srh_auger") {
+                    model_ = std::make_unique<ShockleyReadHallAuger>(doping);
+                } else if(model == "none") {
+                    LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
+                    model_ = std::make_unique<None>();
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(DEBUG) << "Selected recombination model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "recombination_model", e.what());
             }
-            LOG(DEBUG) << "Selected recombination model \"" << model << "\"";
         }
 
         /**
