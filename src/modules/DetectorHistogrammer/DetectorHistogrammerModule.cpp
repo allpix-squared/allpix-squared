@@ -420,12 +420,6 @@ void DetectorHistogrammerModule::run(Event* event) {
                 polar_hit_map->Fill(hit_pos.phi(), hit_pos.r());
             }
 
-            // Plot hist in global coordinates of the first MCParticle associated:
-            auto mcparticles = pixel_hit.getPrimaryMCParticles();
-            if(!mcparticles.empty()) {
-                auto local_mc_pos = mcparticles.front()->getLocalReferencePoint();
-                hit_map_local_mc->Fill(local_mc_pos.x(), local_mc_pos.y());
-            }
             // Update statistics
             total_hits_ += 1;
         }
@@ -476,7 +470,11 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         LOG(TRACE) << "Matching primaries: " << intersection.size();
         for(const auto& particle : intersection) {
-            auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
+            auto particlePos = particle->getLocalReferencePoint();
+            // Plot hist in global coordinates of the associated MCParticles:
+            hit_map_local_mc->Fill(particlePos.x(), particlePos.y());
+            // Add track smearing to the particle position:
+            particlePos += track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
             // Find the nearest pixel
