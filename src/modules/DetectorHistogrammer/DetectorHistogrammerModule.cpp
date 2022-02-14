@@ -82,7 +82,7 @@ void DetectorHistogrammerModule::initialize() {
         CreateHistogram<TH2D>("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x [mm];y [mm];hits";
-    hit_global_map = CreateHistogram<TH2D>("hit_map_global",
+    hit_map_global = CreateHistogram<TH2D>("hit_map_global",
                                            hit_map_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
                                            -model->getSensorSize().x() / 2,
@@ -124,11 +124,11 @@ void DetectorHistogrammerModule::initialize() {
         "cluster_map", cluster_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Create histogram of cluster map
-    std::string cluster_size_mc_map_title =
+    std::string cluster_size_map_local_title =
         "Cluster size as function of MCParticle impact position (" + detector_->getName() + ");x [mm];y [mm]";
-    cluster_size_mc_map = CreateHistogram<TProfile2D>(
-        "cluster_size_mc_map",
-        cluster_size_mc_map_title.c_str(),
+    cluster_size_map_local = CreateHistogram<TProfile2D>(
+        "cluster_size_map_local",
+        cluster_size_map_local_title.c_str(),
         static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
         -model->getPixelSize().x() / 2,
         model->getMatrixSize().x() - model->getPixelSize().x() / 2,
@@ -410,7 +410,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 
             // Add pixel
             hit_map->Fill(pixel_idx.x(), pixel_idx.y());
-            hit_global_map->Fill(global_pos.x(), global_pos.y());
+            hit_map_global->Fill(global_pos.x(), global_pos.y());
             hit_map_local->Fill(local_pos.x(), local_pos.y());
             charge_map->Fill(pixel_idx.x(), pixel_idx.y(), static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
             pixel_charge->Fill(static_cast<double>(Units::convert(pixel_hit.getSignal(), "ke")));
@@ -519,7 +519,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto inPixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
 
             cluster_size_map->Fill(inPixel_um_x, inPixel_um_y, static_cast<double>(clus.getSize()));
-            cluster_size_mc_map->Fill(particlePos.x(), particlePos.y(), static_cast<double>(clus.getSize()));
+            cluster_size_map_local->Fill(particlePos.x(), particlePos.y(), static_cast<double>(clus.getSize()));
             cluster_size_x_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.first);
             cluster_size_y_map->Fill(inPixel_um_x, inPixel_um_y, clusSizesXY.second);
 
@@ -610,13 +610,13 @@ void DetectorHistogrammerModule::finalize() {
 
     // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
-    auto hit_map_global_histogram = hit_global_map->Merge();
+    auto hit_map_global_histogram = hit_map_local->Merge();
     auto hit_map_local_histogram = hit_map_local->Merge();
     auto hit_map_local_mc_histogram = hit_map_local_mc->Merge();
     auto charge_map_histogram = charge_map->Merge();
     auto cluster_map_histogram = cluster_map->Merge();
     auto cluster_size_map_histogram = cluster_size_map->Merge();
-    auto cluster_size_mc_map_histogram = cluster_size_mc_map->Merge();
+    auto cluster_size_map_local_histogram = cluster_size_map_local->Merge();
     auto cluster_size_x_map_histogram = cluster_size_x_map->Merge();
     auto cluster_size_y_map_histogram = cluster_size_y_map->Merge();
     auto cluster_size_histogram = cluster_size->Merge();
@@ -722,7 +722,7 @@ void DetectorHistogrammerModule::finalize() {
 
     cluster_map_histogram->SetOption("colz");
     cluster_size_map_histogram->SetOption("colz");
-    cluster_size_mc_map_histogram->SetOption("colz");
+    cluster_size_map_local_histogram->SetOption("colz");
     cluster_size_x_map_histogram->SetOption("colz");
     cluster_size_y_map_histogram->SetOption("colz");
     // Set cluster_map axis spacing
@@ -750,7 +750,7 @@ void DetectorHistogrammerModule::finalize() {
     cluster_size_y_histogram->Write();
     cluster_map_histogram->Write();
     cluster_size_map_histogram->Write();
-    cluster_size_mc_map_histogram->Write();
+    cluster_size_map_local_histogram->Write();
     cluster_size_x_map_histogram->Write();
     cluster_size_y_map_histogram->Write();
 
