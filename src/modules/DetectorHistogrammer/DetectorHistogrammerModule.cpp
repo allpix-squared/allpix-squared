@@ -785,9 +785,8 @@ void DetectorHistogrammerModule::finalize() {
     efficiency_vs_y_histogram->Write();
 
     // Write additional histograms if radial_strip model is used
-    getROOTDirectory()->mkdir("polar")->cd();
-    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(detector_->getModel());
-    if(radial_model != nullptr) {
+    if(detector_->getModel()->is<RadialStripDetectorModel>()) {
+        getROOTDirectory()->mkdir("polar")->cd();
         auto polar_hit_map_histogram = polar_hit_map->Merge();
         auto residual_r_histogram = residual_r->Merge();
         auto residual_phi_histogram = residual_phi->Merge();
