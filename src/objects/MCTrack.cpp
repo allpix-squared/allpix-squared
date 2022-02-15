@@ -20,14 +20,16 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  std::string g4_prod_process_name,
                  int g4_prod_process_type,
                  int particle_id,
+                 double start_time,
+                 double end_time,
                  double initial_kin_E,
                  double final_kin_E,
                  double initial_tot_E,
                  double final_tot_E)
     : start_point_(std::move(start_point)), end_point_(std::move(end_point)), origin_g4_vol_name_(std::move(g4_volume)),
       origin_g4_process_name_(std::move(g4_prod_process_name)), origin_g4_process_type_(g4_prod_process_type),
-      particle_id_(particle_id), initial_kin_E_(initial_kin_E), final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E),
-      final_tot_E_(final_tot_E) {
+      particle_id_(particle_id), global_start_time_(start_time), global_end_time_(end_time), initial_kin_E_(initial_kin_E),
+      final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E), final_tot_E_(final_tot_E) {
     setParent(nullptr);
 }
 
@@ -41,6 +43,14 @@ ROOT::Math::XYZPoint MCTrack::getEndPoint() const {
 
 int MCTrack::getParticleID() const {
     return particle_id_;
+}
+
+double MCTrack::getGlobalStartTime() const {
+    return global_start_time_;
+}
+
+double MCTrack::getGlobalEndTime() const {
+    return global_end_time_;
 }
 
 int MCTrack::getCreationProcessType() const {
@@ -106,6 +116,10 @@ void MCTrack::print(std::ostream& out) const {
         << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
         << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
         << " mm |" << std::setw(med_gap) << end_point_.Y() << " mm |" << std::setw(med_gap) << end_point_.Z() << " mm\n"
+        << std::left << std::setw(big_gap) << "Initial time:" << std::right << std::setw(med_gap) << global_start_time_
+        << " ns\n"
+        << std::left << std::setw(big_gap) << "Final time:" << std::right << std::setw(med_gap) << global_end_time_
+        << " ns\n"
         << std::left << std::setw(big_gap) << "Initial kinetic energy: " << std::right << std::setw(med_gap)
         << initial_kin_E_ << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap)
         << "Final kinetic energy: " << std::right << std::setw(med_gap) << final_kin_E_ << std::setw(small_gap)

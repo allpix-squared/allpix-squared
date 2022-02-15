@@ -31,6 +31,8 @@ namespace allpix {
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
          * @param particle_id PDG particle id
+         * @param start_time Time of first appearance
+         * @param end_time Time of last appearance
          * @param initial_kin_E Initial kinetic energy (in MeV)
          * @param final_kin_E Final kinetic energy (in MeV)
          * @param initial_tot_E Initial total energy (in MeV)
@@ -42,6 +44,8 @@ namespace allpix {
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
                 int particle_id,
+                double start_time,
+                double end_time,
                 double initial_kin_E,
                 double final_kin_E,
                 double initial_tot_E,
@@ -58,6 +62,18 @@ namespace allpix {
          * @return Track end point
          */
         ROOT::Math::XYZPoint getEndPoint() const;
+
+        /**
+         * @brief Get the time of first appearance of this track
+         * @return Time of appearance of this track in the global reference system
+         */
+        double getGlobalStartTime() const;
+
+        /**
+         * @brief Get the time of last appearance of this track
+         * @return Time of disappearance of this track in the global reference system
+         */
+        double getGlobalEndTime() const;
 
         /**
          * @brief Get PDG particle id for the particle
@@ -131,7 +147,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 4); // NOLINT
+        ClassDefOverride(MCTrack, 5); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -149,6 +165,9 @@ namespace allpix {
 
         int origin_g4_process_type_{};
         int particle_id_{};
+
+        double global_start_time_{};
+        double global_end_time_{};
 
         double initial_kin_E_{};
         double final_kin_E_{};

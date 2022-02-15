@@ -31,7 +31,7 @@ namespace allpix {
         /**
          * @brief Default constructor
          */
-        TrackInfoManager();
+        explicit TrackInfoManager(bool record_all);
 
         /**
          * @brief Factory method for TrackInfoG4 instances
@@ -101,6 +101,10 @@ namespace allpix {
 
         // Counter to store highest assigned track id
         int counter_{};
+
+        // Store configuration whether all tracks or only those connected to sensor should be stored
+        bool record_all_{};
+
         // Geant4 id to custom id translation
         std::map<int, int> g4_to_custom_id_{};
         // Custom id to custom parent id tracking

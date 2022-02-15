@@ -20,6 +20,7 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
     origin_g4_process_type_ = (G4Process != nullptr) ? G4Process->GetProcessType() : -1;
     particle_id_ = aTrack->GetDynamicParticle()->GetPDGcode();
     start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
+    start_time_ = aTrack->GetGlobalTime();
     origin_g4_vol_name_ = aTrack->GetVolume()->GetName();
     origin_g4_process_name_ = (G4Process != nullptr) ? static_cast<std::string>(G4Process->GetProcessName()) : "none";
     initial_kin_E_ = aTrack->GetKineticEnergy();
@@ -30,6 +31,7 @@ void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_kin_E_ = aTrack->GetKineticEnergy();
     final_tot_E_ = aTrack->GetTotalEnergy();
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
+    end_time_ = aTrack->GetGlobalTime();
 }
 
 int TrackInfoG4::getID() const {
@@ -46,6 +48,14 @@ ROOT::Math::XYZPoint TrackInfoG4::getStartPoint() const {
 
 ROOT::Math::XYZPoint TrackInfoG4::getEndPoint() const {
     return end_point_;
+}
+
+double TrackInfoG4::getStartTime() const {
+    return start_time_;
+}
+
+double TrackInfoG4::getEndTime() const {
+    return end_time_;
 }
 
 int TrackInfoG4::getParticleID() const {
