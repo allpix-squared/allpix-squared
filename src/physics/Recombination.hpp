@@ -14,6 +14,7 @@
 
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
@@ -65,12 +66,15 @@ namespace allpix {
      * Reference lifetime and doping concentrations, taken from:
      *  - https://doi.org/10.1016/0038-1101(82)90203-9
      *  - https://doi.org/10.1016/0038-1101(76)90022-8
+     *
+     * Lifetime temperature scaling taken from https://doi.org/10.1016/0038-1101(92)90184-E, Eq. 56 on page 1594
      */
     class ShockleyReadHall : virtual public RecombinationModel {
     public:
-        ShockleyReadHall(bool doping)
+        ShockleyReadHall(double temperature, bool doping)
             : electron_lifetime_reference_(Units::get(1e-5, "s")), electron_doping_reference_(Units::get(1e16, "/cm/cm/cm")),
-              hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")) {
+              hole_lifetime_reference_(Units::get(4.0e-4, "s")), hole_doping_reference_(Units::get(7.1e15, "/cm/cm/cm")),
+              temperature_scaling_(std::pow(300 / temperature, 1.5)) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
@@ -84,7 +88,8 @@ namespace allpix {
         double lifetime(const CarrierType& type, double doping) const {
             return (type == CarrierType::ELECTRON ? electron_lifetime_reference_ : hole_lifetime_reference_) /
                    (1 + std::fabs(doping) /
-                            (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_));
+                            (type == CarrierType::ELECTRON ? electron_doping_reference_ : hole_doping_reference_)) *
+                   temperature_scaling_;
         }
 
     private:
@@ -92,6 +97,7 @@ namespace allpix {
         double electron_doping_reference_;
         double hole_lifetime_reference_;
         double hole_doping_reference_;
+        double temperature_scaling_;
     };
 
     /**
@@ -130,7 +136,7 @@ namespace allpix {
      */
     class ShockleyReadHallAuger : public ShockleyReadHall, public Auger {
     public:
-        ShockleyReadHallAuger(bool doping) : ShockleyReadHall(doping), Auger(doping) {}
+        ShockleyReadHallAuger(double temperature, bool doping) : ShockleyReadHall(temperature, doping), Auger(doping) {}
 
         bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
             auto minorityType = (doping > 0 ? CarrierType::HOLE : CarrierType::ELECTRON);
@@ -162,23 +168,29 @@ namespace allpix {
 
         /**
          * Recombination constructor
-         * @param model       Name of the recombination model
+         * @param config      Configuration of the calling module
          * @param doping      Boolean to indicate presence of doping profile information
          */
-        Recombination(const std::string& model, bool doping = false) {
-            if(model == "srh") {
-                model_ = std::make_unique<ShockleyReadHall>(doping);
-            } else if(model == "auger") {
-                model_ = std::make_unique<Auger>(doping);
-            } else if(model == "combined" || model == "srh_auger") {
-                model_ = std::make_unique<ShockleyReadHallAuger>(doping);
-            } else if(model == "none") {
-                LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
-                model_ = std::make_unique<None>();
-            } else {
-                throw InvalidModelError(model);
+        explicit Recombination(const Configuration& config, bool doping = false) {
+            try {
+                auto model = config.get<std::string>("recombination_model");
+                auto temperature = config.get<double>("temperature");
+                if(model == "srh") {
+                    model_ = std::make_unique<ShockleyReadHall>(temperature, doping);
+                } else if(model == "auger") {
+                    model_ = std::make_unique<Auger>(doping);
+                } else if(model == "combined" || model == "srh_auger") {
+                    model_ = std::make_unique<ShockleyReadHallAuger>(temperature, doping);
+                } else if(model == "none") {
+                    LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
+                    model_ = std::make_unique<None>();
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(DEBUG) << "Selected recombination model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "recombination_model", e.what());
             }
-            LOG(DEBUG) << "Selected recombination model \"" << model << "\"";
         }
 
         /**
