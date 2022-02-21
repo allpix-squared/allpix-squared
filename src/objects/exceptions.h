@@ -15,7 +15,6 @@
 #include <string>
 
 #include "core/utils/exceptions.h"
-#include "core/utils/text.h"
 #include "core/utils/type.h"
 
 namespace allpix {
@@ -79,9 +78,9 @@ namespace allpix {
          */
         explicit PulseBadAllocException(const size_t bins, const double time, const std::string& reason) {
             error_message_ = "Unable to allocate memory for pulse with ";
-            error_message_ += allpix::to_string(bins);
+            error_message_ += std::to_string(bins);
             error_message_ += " bins and total duration of ";
-            error_message_ += allpix::to_string(time);
+            error_message_ += std::to_string(time);
             error_message_ += "ns";
 
             if(!reason.empty()) {
