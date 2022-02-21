@@ -843,20 +843,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     // Find proper final position in the sensor
     auto time = runge_kutta.getTime();
     if(state == CarrierState::HALTED) {
-        auto check_position = position;
-        check_position.z() = last_position.z();
-        if(position.z() > 0 && detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(check_position))) {
-            // Carrier left sensor on the side of the pixel grid, interpolate end point on surface
-            auto z_cur_border = std::fabs(position.z() - model_->getSensorSize().z() / 2.0);
-            auto z_last_border = std::fabs(model_->getSensorSize().z() / 2.0 - last_position.z());
-            auto z_total = z_cur_border + z_last_border;
-            position = (z_last_border / z_total) * position + (z_cur_border / z_total) * last_position;
-            time = (z_last_border / z_total) * time + (z_cur_border / z_total) * last_time;
-        } else {
-            // Carrier left sensor on any order border, use last position inside instead
-            position = last_position;
-            time = last_time;
-        }
+        auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
+                                                    static_cast<ROOT::Math::XYZPoint>(position));
+        position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
     }
 
     // Set final state of charge carrier for plotting:

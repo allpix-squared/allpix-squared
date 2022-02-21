@@ -249,3 +249,20 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
     return (static_cast<size_t>(std::abs(row_seed_x - entrant.x())) <= distance) &&
            (static_cast<size_t>(std::abs(dist_y)) <= distance);
 }
+
+ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Math::XYZPoint& inside,
+                                                                  const ROOT::Math::XYZPoint& outside) const {
+
+    auto check_position = outside;
+    check_position.SetZ(inside.z());
+    if(std::fabs(outside.z()) > getSensorSize().z() / 2.0 && isWithinSensor(check_position)) {
+        // Carrier left sensor on the top or bottom surface of the sensor, interpolate end point on surface
+        auto z_cur_border = std::fabs(outside.z() - getSensorSize().z() / 2.0);
+        auto z_last_border = std::fabs(getSensorSize().z() / 2.0 - inside.z());
+        auto z_total = z_cur_border + z_last_border;
+        return (z_last_border / z_total) * static_cast<ROOT::Math::XYZVector>(outside) + (z_cur_border / z_total) * inside;
+    } else {
+        // Carrier left sensor on any other border, use last position inside instead
+        return inside;
+    }
+}
