@@ -67,6 +67,12 @@ std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math:
     return round_to_nearest_hex(q, r);
 }
 
+/*
+ * In an axial-coordinates hexagon grid, simply checking for x and y to be between 0 and number_of_pixels will create
+ * a rhombus which does lack the upper-left pixels and which has surplus pixels at the upper-right corner. We
+ * therefore need to check the allowed range along x as a function of the y coordinate. The integer division by two
+ * ensures we allow for one more x coordinate every other row in y.
+ */
 bool HexagonalPixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
     // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:

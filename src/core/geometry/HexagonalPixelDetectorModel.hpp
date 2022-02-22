@@ -69,11 +69,6 @@ namespace allpix {
          * @param x X- (or column-) coordinate to be checked
          * @param y Y- (or row-) coordinate to be checked
          * @return True if pixel coordinates are within the pixel grid, false otherwise
-         *
-         * In an axial-coordinates hexagon grid, simply checking for x and y to be between 0 and number_of_pixels will create
-         * a rhombus which does lack the upper-left pixels and which has surplus pixels at the upper-right corner. We
-         * therefore need to check the allowed range along x as a function of the y coordinate. The integer division by two
-         * ensures we allow for one more x coordinate every other row in y.
          */
         bool isWithinMatrix(const int x, const int y) const override;
 
