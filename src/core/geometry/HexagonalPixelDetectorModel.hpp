@@ -85,8 +85,8 @@ namespace allpix {
         bool isWithinMatrix(const Pixel::Index& pixel_index) const override;
 
         /**
-         * @brief Return gridsize along X,Y of a hexagonal sensor grid.
-         * @return X and Y gridlength length in mm
+         * @brief Return grid size along X,Y of a hexagonal sensor grid.
+         * @return X and Y grid length in mm
          */
         ROOT::Math::XYZVector getMatrixSize() const override;
 
@@ -119,10 +119,10 @@ namespace allpix {
         const std::array<double, 4> inv_transform_flat_{2.0 / 3.0, 0.0, -1.0 / 3.0, std::sqrt(3.0) / 3.0};
 
         /**
-         * @brief Helper to calculate the center along y of a hexagon in cartesian coordinates
+         * @brief Helper to calculate the center along x of a hexagon in cartesian coordinates
          * @param  x Axial column index
          * @param  y Axial row index
-         * @return Position of the pixel center along y in cartesian coordinates
+         * @return Position of the pixel center along x in cartesian coordinates
          */
         double get_pixel_center_x(const int x, const int y) const;
 
