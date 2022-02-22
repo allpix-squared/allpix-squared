@@ -103,9 +103,7 @@ std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::In
 
     for(int x = idx.x() - static_cast<int>(distance); x <= idx.x() + static_cast<int>(distance); x++) {
         for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
-            // "cut off" the corners of the rectangle around the index in question to make it a hexagon, remove
-            // indices outside the pixel grid
-            if(std::abs(x - idx.x() + y - idx.y()) <= static_cast<int>(distance) && isWithinMatrix(x, y)) {
+            if(hex_distance(idx.x(), idx.y(), x, y) <= distance && isWithinMatrix(x, y)) {
                 neighbors.insert({x, y});
             }
         }
