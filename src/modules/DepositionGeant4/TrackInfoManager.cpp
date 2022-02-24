@@ -85,6 +85,7 @@ void TrackInfoManager::createMCTracks() {
         stored_tracks_.emplace_back(track_info->getStartPoint(),
                                     track_info->getEndPoint(),
                                     track_info->getOriginatingVolumeName(),
+                                    track_info->getTerminatingVolumeName(),
                                     track_info->getCreationProcessName(),
                                     track_info->getCreationProcessType(),
                                     track_info->getParticleID(),

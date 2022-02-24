@@ -27,7 +27,8 @@ namespace allpix {
          * @brief Construct a Monte-Carlo track
          * @param start_point Global point where track came into existence
          * @param end_point Global point where track went out of existence
-         * @param g4_volume Geant4 volume where track originated in
+         * @param g4_volume_start Geant4 volume where track originated in
+         * @param g4_volume_end Geant4 volume where track terminated in
          * @param g4_prod_process_name Geant4 creation process name
          * @param g4_prod_process_type Geant4 creation process id
          * @param particle_id PDG particle id
@@ -40,7 +41,8 @@ namespace allpix {
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 ROOT::Math::XYZPoint end_point,
-                std::string g4_volume,
+                std::string g4_volume_start,
+                std::string g4_volume_end,
                 std::string g4_prod_process_name,
                 int g4_prod_process_type,
                 int particle_id,
@@ -119,6 +121,12 @@ namespace allpix {
         std::string getOriginatingVolumeName() const;
 
         /**
+         * @brief Getter for the Geant4 name of the physical volume in which the track terminated
+         * @return The name of the phyical volume
+         */
+        std::string getTerminatingVolumeName() const;
+
+        /**
          * @brief Getter for the name of the process which created this particle
          * @return The process name or "none" if no such process exists
          */
@@ -147,7 +155,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 5); // NOLINT
+        ClassDefOverride(MCTrack, 6); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -160,7 +168,8 @@ namespace allpix {
         ROOT::Math::XYZPoint start_point_{};
         ROOT::Math::XYZPoint end_point_{};
 
-        std::string origin_g4_vol_name_{};
+        std::string start_g4_vol_name_{};
+        std::string end_g4_vol_name_{};
         std::string origin_g4_process_name_{};
 
         int origin_g4_process_type_{};
