@@ -339,7 +339,7 @@ namespace allpix {
     public:
         Quay(SensorMaterial material, double temperature) {
             if(material == SensorMaterial::SILICON) {
-                electron_Vsat_ = vsat(Units::get(1.02e7, "cm/s"), 0.26, temperature);
+                electron_Vsat_ = vsat(Units::get(1.02e7, "cm/s"), 0.74, temperature);
                 hole_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.37, temperature);
 
                 // parameters for mobility at zero field defined in Jacoboni et al
