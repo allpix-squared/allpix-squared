@@ -318,7 +318,7 @@ namespace allpix {
      * @brief Quay mobility model for charge carriers in different semiconductor materials
      *
      * Quay (https://doi.org/10.1016/0038-1101(87)90063-3) uses a parametrization of the saturation velocity VSat taken from
-     * https://doi.org/10.1016/S1369-8001_00)00015-9. This parametrisation has the advantage that it can be applied to most
+     * https://doi.org/10.1016/S1369-8001(00)00015-9. This parametrisation has the advantage that it can be applied to most
      * common semiconductor materials. The mobility is a function of VSat and the critical field Ec, which is defined as Vsat
      * divided by the mobility at zero field:
      *
@@ -351,7 +351,7 @@ namespace allpix {
                 hole_Vsat_ = vsat(Units::get(0.63e7, "cm/s"), 0.39, temperature);
 
                 // Parameters for mobility at zero field defined in Omar et al for electrons
-                // https://doi.org/10.1016/0038-1101(87)90063-3 and in Landolt-B�rnstein - Group III Condensed Matter
+                // https://doi.org/10.1016/0038-1101(87)90063-3 and in Landolt-Bornstein - Group III Condensed Matter
                 // https://doi.org/10.1007/b80447 for holes
                 electron_Ec_ = electron_Vsat_ / (Units::get(5.66e7, "cm*cm*K/V/s") / std::pow(temperature, 1.68));
                 hole_Ec_ = hole_Vsat_ / (Units::get(1.05e9, "cm*cm*K/V/s") / std::pow(temperature, 2.33));
@@ -360,12 +360,8 @@ namespace allpix {
                 electron_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.44, temperature);
                 hole_Vsat_ = vsat(Units::get(0.9e7, "cm/s"), 0.59, temperature);
 
-                // Parameters for mobility at zero field defined in Omar et. al. for electrons
-                // https://doi.org/10.1016/0038-1101(87)90063-3 and in Landolt-Bornstein - Group III Condensed Matter
-                // https://doi.org/10.1007/b80447 for holes
                 electron_Ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
                 hole_Ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
-
             } else {
                 throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
             }
