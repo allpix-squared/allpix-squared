@@ -16,7 +16,8 @@ using namespace allpix;
 
 MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  ROOT::Math::XYZPoint end_point,
-                 std::string g4_volume,
+                 std::string g4_volume_start,
+                 std::string g4_volume_end,
                  std::string g4_prod_process_name,
                  int g4_prod_process_type,
                  int particle_id,
@@ -26,10 +27,11 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  double final_kin_E,
                  double initial_tot_E,
                  double final_tot_E)
-    : start_point_(std::move(start_point)), end_point_(std::move(end_point)), origin_g4_vol_name_(std::move(g4_volume)),
-      origin_g4_process_name_(std::move(g4_prod_process_name)), origin_g4_process_type_(g4_prod_process_type),
-      particle_id_(particle_id), global_start_time_(start_time), global_end_time_(end_time), initial_kin_E_(initial_kin_E),
-      final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E), final_tot_E_(final_tot_E) {
+    : start_point_(std::move(start_point)), end_point_(std::move(end_point)), start_g4_vol_name_(std::move(g4_volume_start)),
+      end_g4_vol_name_(std::move(g4_volume_end)), origin_g4_process_name_(std::move(g4_prod_process_name)),
+      origin_g4_process_type_(g4_prod_process_type), particle_id_(particle_id), global_start_time_(start_time),
+      global_end_time_(end_time), initial_kin_E_(initial_kin_E), final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E),
+      final_tot_E_(final_tot_E) {
     setParent(nullptr);
 }
 
@@ -75,7 +77,11 @@ double MCTrack::getTotalEnergyFinal() const {
 }
 
 std::string MCTrack::getOriginatingVolumeName() const {
-    return origin_g4_vol_name_;
+    return start_g4_vol_name_;
+}
+
+std::string MCTrack::getTerminatingVolumeName() const {
+    return end_g4_vol_name_;
 }
 
 std::string MCTrack::getCreationProcessName() const {
@@ -111,7 +117,9 @@ void MCTrack::print(std::ostream& out) const {
         << std::left << std::setw(big_gap) << "Production process: " << std::right << std::setw(small_gap)
         << origin_g4_process_name_ << " (G4 process type: " << origin_g4_process_type_ << ")\n"
         << std::left << std::setw(big_gap) << "Production in G4Volume: " << std::right << std::setw(small_gap)
-        << origin_g4_vol_name_ << '\n'
+        << start_g4_vol_name_ << '\n'
+        << std::left << std::setw(big_gap) << "Termination in G4Volume: " << std::right << std::setw(small_gap)
+        << end_g4_vol_name_ << '\n'
         << std::left << std::setw(big_gap) << "Initial position:" << std::right << std::setw(med_gap) << start_point_.X()
         << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
         << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
