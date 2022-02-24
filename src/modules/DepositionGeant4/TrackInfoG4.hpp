@@ -121,6 +121,12 @@ namespace allpix {
         std::string getOriginatingVolumeName() const;
 
         /**
+         * @brief Getter for the Geant4 name of the physical volume in which the track ends
+         * @return The name of the phyical volume
+         */
+        std::string getTerminatingVolumeName() const;
+
+        /**
          * @brief Getter for the name of the process which created this particle
          * @return The process name, or "none" if no such process exists
          */
@@ -144,7 +150,9 @@ namespace allpix {
         // Ending time (in ns)
         double end_time_{};
         // Geant4 volume in which the track was created
-        std::string origin_g4_vol_name_{};
+        std::string initial_g4_vol_name_{};
+        // Geant4 volume in which the track was terminated
+        std::string final_g4_vol_name_{};
         // Name of Geant4 process which created this track
         std::string origin_g4_process_name_{};
         // Initial kinetic energy (MeV)
