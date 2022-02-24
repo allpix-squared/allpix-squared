@@ -108,6 +108,15 @@ gSystem.Load(lib_file_name)
 rootfile = ROOT.TFile(root_file_name)
 gDirectory.ls()
 
+# Check on detector existence
+if not rootfile.GetDirectory("detectors/" + detector_name):
+    print("\nDetector does not exist. Please choose one of the following detectors:")
+    gDirectory.cd("detectors")
+    list_of_keys = gDirectory.GetListOfKeys()
+    for key in list_of_keys:
+        print(key.GetName())
+    exit(1)
+
 McParticle = rootfile.Get('MCParticle')
 PixelCharge = rootfile.Get('PixelCharge')
 PropCharge = rootfile.Get('PropagatedCharge')
