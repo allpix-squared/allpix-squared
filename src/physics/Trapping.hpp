@@ -253,6 +253,10 @@ namespace allpix {
                     model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
                 } else if(model == "dortmund" || model == "krasel") {
                     model_trap_ = std::make_unique<Dortmund>(fluence);
+                } else if(model == "cmstracker") {
+                    model_trap_ = std::make_unique<CMSTracker>(fluence);
+                } else if(model == "mandic") {
+                    model_trap_ = std::make_unique<Mandic>(fluence);
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
                     model_trap_ = std::make_unique<NoTrapping>();
