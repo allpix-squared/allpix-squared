@@ -365,6 +365,7 @@ Please refer to the corresponding reference publications for further details.
 The following models for trapping of charge carriers can be selected.
 
 \subsection{Ljubljana}
+\label{sec:trap:ljubljana}
 
 In the Ljubljana (sometimes reffered to as \textit{Kramberger}) model~\cite{kramberger}, the trapping time follows the relation
 
@@ -491,4 +492,18 @@ Parameters of the functions can either be placed directly in the formulas in fra
 Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example \parameter{[0]} for the first parameter provided.
 Parameters specified separately from the formula can contain units which will be interpreted automatically.
 
+\begin{warning}
 Note that both fluence and temperature are not inherently available in the custom trapping model, but need to be provided as additional parameters as described above.
+\end{warning}
+
+The following configuration parameters replicate the Ljubljana model described in Section~\ref{sec:trap:ljubljana} using a custom trapping model.
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Replicating the Ljubljana trapping model at a temperature of 293 K and a neutron equivalent fluence of 1e14 neq/cm^2
+trapping_model = "custom"
+
+trapping_function_electrons = "1/([0]*pow([1]/263,[2]))/[3]"
+trapping_parameters_electrons = 5.6e-16cm*cm/ns, 293K, -0.86, 1e14/cm/cm
+
+trapping_function_holes = "1/([0]*pow([1]/263,[2]))/[3]"
+trapping_parameters_holes = 7.7e-16cm*cm/ns, 293K, -1.52, 1e14/cm/cm
+\end{minted}
