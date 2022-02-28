@@ -102,8 +102,7 @@ void TransientPropagationModule::initialize() {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
 
-    trapping_ = Trapping(config_);
-
+    // Prepare trapping model
     trapping_ = Trapping(config_);
 
     // Check for magnetic field
