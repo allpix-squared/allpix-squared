@@ -350,11 +350,11 @@ This model can be selected in the configuration file via the parameter \paramete
 
 \apsq provides the possibility to simulate the trapping of charge carriers as a consequence of radiation induced lattice defects.
 Several models exist, that quantify the effective lifetime of electrons and holes, respectively, as a function of the fluence and, partially, the temperature.
-The fluence needs to be provided to the corresponding propagation module, and is always interpreted as neutron equivalent fluence~\cite{niel}.
+The fluence needs to be provided to the corresponding propagation module, and is always interpreted as 1-MeVneutron equivalent fluence~\cite{niel}.
 
-The decision on whether a charge carrier has been trapped during a step during the propagation process, is calculated as for recombination precesses, described in \ref{sec:recombination}.
+The decision on whether a charge carrier has been trapped during a step during the propagation process is calculated similarly to the recombination precesses, described in \ref{sec:recombination}.
 
-Note, that the trapping of charge carriers is one of several effects induced by radiation damage.
+It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage.
 In \apsq, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any other process than trapping.
 
 Until now, no models for de-trapping of charge carriers have been implemented.
@@ -421,7 +421,7 @@ with the parameters
 \end{equation*}
 
 The values have been extracted evaluating current signals of irradiated sensors via light injection at fluences up to $\Phi_{eq} = \SI{8.9e14}{n_{eq} \per \cm^2}$, at a temperature of $\SI{0}{\celsius}$.
-There's no temperature scaling provided.
+No temperature scaling is provided.
 Values for neutron and proton irradiation have been evaluated in~\cite{dortmundTrapping}, \apsq makes use of the values for proton irradiation.
 
 \subsection{CMS Tracker}
@@ -471,7 +471,7 @@ with the parameters
 \end{equation*}
 
 The parameters for electrons are taken from~\cite{Mandic}, for measurements at a temperature of $\SI{-20}{\celsius}$, and the results extrapolated to $\SI{-30}{\celsius}$.
-A scaling from electrons to holes was performed based on the default values in Weightfield2\cite{Weightfield2}.
+A scaling from electrons to holes was performed based on the default values in Weightfield2~\cite{Weightfield2}.
 
 \cite{Mandic}
 
