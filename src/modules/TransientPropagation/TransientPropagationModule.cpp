@@ -110,8 +110,8 @@ void TransientPropagationModule::initialize() {
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_ > 0.001) {
-        LOG(WARNING)
-            << "Charge multiplication enabled with timestep larger than 1ps - this might lead to unphysical gain values.";
+        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << std::endl
+                     << "This might lead to unphysical gain values.";
     }
 
     // Check for magnetic field
