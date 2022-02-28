@@ -92,8 +92,7 @@ void TransientPropagationModule::initialize() {
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());
 
-    trapping_ = Trapping(config_);
-
+    // Prepare trapping model
     trapping_ = Trapping(config_);
 
     // Check for magnetic field
