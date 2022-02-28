@@ -181,10 +181,9 @@ namespace allpix {
         };
 
         bool operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const override {
-            return probability <
-                   (1 - std::exp(-1. * timestep /
-                                 (type == CarrierType::ELECTRON ? tf_tau_eff_electron_->Eval(efield_mag)
-                                                                : tf_tau_eff_hole_->Eval(efield_mag))));
+            return probability < (1 - std::exp(-1. * timestep /
+                                               (type == CarrierType::ELECTRON ? tf_tau_eff_electron_->Eval(efield_mag)
+                                                                              : tf_tau_eff_hole_->Eval(efield_mag))));
         };
 
     private:
