@@ -97,8 +97,8 @@ namespace allpix {
         std::shared_ptr<TTreeReaderValue<int>> pdg_code_;
         std::shared_ptr<TTreeReaderValue<int>> track_id_;
         std::shared_ptr<TTreeReaderValue<int>> parent_id_;
-        double charge_creation_energy_;
-        double fano_factor_;
+        std::map<std::shared_ptr<Detector>, double> charge_creation_energy_;
+        std::map<std::shared_ptr<Detector>, double> fano_factor_;
 
         FileModel file_model_;
         size_t volume_chars_{};

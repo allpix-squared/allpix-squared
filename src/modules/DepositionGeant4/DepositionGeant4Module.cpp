@@ -398,7 +398,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                                                    : get_charge_creation_energy(model->getSensorMaterial()));
         auto fano_factor =
             (config_.has("fano_factor") ? config_.get<double>("fano_factor") : get_fano_factor(model->getSensorMaterial()));
-        LOG(ERROR) << "Detector " << detector->getName() << " uses charge creation energy "
+        LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
                    << Units::display(charge_creation_energy, "eV") << " and Fano factor " << fano_factor;
 
         // Cut-off time for particle generation:
