@@ -181,7 +181,7 @@ void DepositionReaderModule::initialize() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + detector->getName();
-            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+            charge_per_event_[detector] = CreateHistogram<TH1D>(
                 plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
     }
@@ -392,7 +392,7 @@ void DepositionReaderModule::run(Event* event) {
             // Fill output plots if requested:
             if(output_plots_) {
                 double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
-                charge_per_event_[detector->getName()]->Fill(charge);
+                charge_per_event_[detector]->Fill(charge);
             }
         }
     }
