@@ -36,6 +36,7 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
+#include "physics/Properties.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
@@ -65,10 +66,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
     config_.setDefault("pai_model", "pai");
-
-    // Set defaults for charge carrier creation
-    config_.setDefault("fano_factor", 0.115);
-    config_.setDefault("charge_creation_energy", Units::get(3.64, "eV"));
 
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
@@ -394,9 +391,17 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         }
         useful_deposition = true;
 
-        // Get the creation energy for charge (default is silicon electron hole pair energy)
-        auto charge_creation_energy = config_.get<double>("charge_creation_energy");
-        auto fano_factor = config_.get<double>("fano_factor");
+        // Get ionization energy and Fano factor
+        auto model = detector->getModel();
+        auto charge_creation_energy =
+            (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
+                                                   : get_charge_creation_energy(model->getSensorMaterial()));
+        auto fano_factor =
+            (config_.has("fano_factor") ? config_.get<double>("fano_factor") : get_fano_factor(model->getSensorMaterial()));
+        LOG(ERROR) << "Detector " << detector->getName() << " uses charge creation energy "
+                   << Units::display(charge_creation_energy, "eV") << " and Fano factor " << fano_factor;
+
+        // Cut-off time for particle generation:
         auto cutoff_time = config_.get<double>("cutoff_time");
 
         // Get model of the sensitive device
