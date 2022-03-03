@@ -137,6 +137,8 @@ namespace allpix {
         Histogram<TH1D> group_size_histo_;
         Histogram<TH1D> recombine_histo_;
         Histogram<TH1D> trapped_histo_;
+        Histogram<TH1D> recombination_time_histo_;
+        Histogram<TH1D> trapping_time_histo_;
     };
 
 } // namespace allpix

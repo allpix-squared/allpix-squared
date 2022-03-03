@@ -562,6 +562,18 @@ void GenericPropagationModule::initialize() {
 
         trapped_histo_ = CreateHistogram<TH1D>(
             "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
+
+        recombination_time_histo_ =
+            CreateHistogram<TH1D>("recombination_time_histo",
+                                  "Time until recombination of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        trapping_time_histo_ = CreateHistogram<TH1D>("trapping_time_histo",
+                                                     "Time until trapping of charge carriers;time [ns];charge carriers",
+                                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                     0,
+                                                     static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 
     // Prepare mobility model
@@ -639,11 +651,17 @@ void GenericPropagationModule::run(Event* event) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 recombined_charges_count += charge_per_step;
+                if(output_plots_) {
+                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
                 continue;
             } else if(state == CarrierState::TRAPPED) {
                 LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 trapped_charges_count += charge_per_step;
+                if(output_plots_) {
+                    trapping_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
                 continue;
             }
 
@@ -910,6 +928,8 @@ void GenericPropagationModule::finalize() {
         group_size_histo_->Write();
         recombine_histo_->Write();
         trapped_histo_->Write();
+        recombination_time_histo_->Write();
+        trapping_time_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
