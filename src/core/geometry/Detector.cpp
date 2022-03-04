@@ -164,9 +164,8 @@ Pixel Detector::getPixel(const Pixel::Index& index) const {
     // WARNING This relies on the origin of the local coordinate system
     auto local_x = size.x() * index.x();
     auto local_y = size.y() * index.y();
-    auto local_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
 
-    auto local_center = ROOT::Math::XYZPoint(local_x, local_y, local_z);
+    auto local_center = ROOT::Math::XYZPoint(local_x, local_y, 0.);
     auto global_center = getGlobalPosition(local_center);
 
     return {index, local_center, global_center, size};
