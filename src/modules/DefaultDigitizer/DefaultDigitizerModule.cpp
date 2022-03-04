@@ -74,7 +74,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
     if(config_.has("gain_function")) {
         gain_function_ =
-            std::make_unique<TF1>("gain_function", (config_.get<std::string>("gain_function")).c_str(), 0., 100e3);
+            std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
 
         if(!gain_function_->IsValid()) {
             throw InvalidValueError(
