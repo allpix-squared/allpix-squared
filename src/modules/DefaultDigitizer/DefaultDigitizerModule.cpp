@@ -32,8 +32,9 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
-    if (config_.has("gain") && config_.has("gain_function")) {
-        throw InvalidCombinationError(config_, { "gain", "gain_function" }, "Gain and Gain Function cannot be simultaneously configured.");
+    if(config_.has("gain") && config_.has("gain_function")) {
+        throw InvalidCombinationError(
+            config_, {"gain", "gain_function"}, "Gain and Gain Function cannot be simultaneously configured.");
     }
 
     // Set defaults for config variables
@@ -77,8 +78,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     gain_smearing_ = config_.get<double>("gain_smearing");
 
     if(config_.has("gain_function")) {
-        gain_function_ =
-            std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
+        gain_function_ = std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
 
         if(!gain_function_->IsValid()) {
             throw InvalidValueError(
