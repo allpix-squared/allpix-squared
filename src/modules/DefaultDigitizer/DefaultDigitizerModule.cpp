@@ -32,6 +32,10 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
+    if (config_.has("gain") && config_.has("gain_function")) {
+        throw InvalidCombinationError(config_, { "gain", "gain_function" }, "Gain and Gain Function cannot be simultaneously configured.");
+    }
+
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<double>("gain", 1.0);
@@ -84,7 +88,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
         auto parameters = config_.getArray<double>("gain_parameters");
 
         // check if number of parameters match up
-        if(static_cast<size_t>(gain_function_->GetNumberFreeParameters()) != parameters.size()) {
+        if(static_cast<size_t>(gain_function_->GetNpar()) != parameters.size()) {
             throw InvalidValueError(
                 config_,
                 "gain_parameters",
@@ -97,7 +101,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
         LOG(DEBUG) << "Gain response function successfully initialized with " << parameters.size() << " parameters";
     } else {
-        gain_function_ = std::make_unique<TFormula>("gain_function", "[0]*x", 0., 100e3);
+        gain_function_ = std::make_unique<TFormula>("gain_function", "[0]*x");
         gain_function_->SetParameter(0, gain_);
     }
 
