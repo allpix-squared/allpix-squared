@@ -97,7 +97,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
         LOG(DEBUG) << "Gain response function successfully initialized with " << parameters.size() << " parameters";
     } else {
-        gain_function_ = std::make_unique<TF1>("gain_function", "[0]*x", 0., 100e3);
+        gain_function_ = std::make_unique<TFormula>("gain_function", "[0]*x", 0., 100e3);
         gain_function_->SetParameter(0, gain_);
     }
 
