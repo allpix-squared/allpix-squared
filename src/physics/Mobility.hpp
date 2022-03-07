@@ -283,6 +283,24 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Constant mobility of electrons and holes
+     */
+    class ConstantMobility : public MobilityModel {
+    public:
+        ConstantMobility(double electron_mobility, double hole_mobility)
+            : electron_mobility_(electron_mobility), hole_mobility_(hole_mobility) {}
+
+        double operator()(const CarrierType& type, double, double) const override {
+            return (type == CarrierType::ELECTRON ? electron_mobility_ : hole_mobility_);
+        };
+
+    private:
+        double electron_mobility_;
+        double hole_mobility_;
+    };
+
+    /**
+     * @ingroup Models
      * @brief Custom mobility model for charge carriers
      */
     class Custom : public MobilityModel {
@@ -374,6 +392,9 @@ namespace allpix {
                     model_ = std::make_unique<MasettiCanali>(temperature, doping);
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(temperature, doping);
+                } else if(model == "constant") {
+                    model_ = std::make_unique<ConstantMobility>(config.get<double>("mobility_electron"),
+                                                                config.get<double>("mobility_hole"));
                 } else if(model == "custom") {
                     model_ = std::make_unique<Custom>(config, doping);
                 } else {
