@@ -40,7 +40,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
     config_.setDefault<double>("gain", 1.0);
-    config_.setDefault<double>("gain_smearing", 0.0);
 
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
@@ -75,7 +74,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
     electronics_noise_ = config_.get<unsigned int>("electronics_noise");
     gain_ = config_.get<double>("gain");
-    gain_smearing_ = config_.get<double>("gain_smearing");
 
     if(config_.has("gain_function")) {
         gain_function_ = std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
@@ -153,7 +151,6 @@ void DefaultDigitizerModule::initialize() {
         h_pxq = CreateHistogram<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_noise = CreateHistogram<TH1D>(
             "pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_gain = CreateHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
         h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
         h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
@@ -236,13 +233,6 @@ void DefaultDigitizerModule::run(Event* event) {
         LOG(DEBUG) << "Charge with noise: " << Units::display(charge, "e");
         if(output_plots_) {
             h_pxq_noise->Fill(charge / 1e3);
-        }
-
-        // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
-        allpix::normal_distribution<double> gain_smearing(gain_, gain_smearing_);
-        double gain = gain_smearing(event->getRandomEngine());
-        if(output_plots_) {
-            h_gain->Fill(gain);
         }
 
         // Apply the gain to the charge:
@@ -388,7 +378,6 @@ void DefaultDigitizerModule::finalize() {
         // Charge plots
         h_pxq->Write();
         h_pxq_noise->Write();
-        h_gain->Write();
         h_pxq_gain->Write();
         h_thr->Write();
         h_pxq_sat->Write();

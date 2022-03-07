@@ -79,7 +79,7 @@ namespace allpix {
         bool output_plots_{};
 
         unsigned int electronics_noise_{};
-        double gain_{}, gain_smearing_{};
+        double gain_{};
         std::unique_ptr<TFormula> gain_function_{};
 
         bool saturation_{};
@@ -103,7 +103,7 @@ namespace allpix {
         std::atomic<unsigned long long> total_hits_{};
 
         // Output histograms
-        Histogram<TH1D> h_pxq, h_pxq_noise, h_gain, h_pxq_gain, h_thr, h_pxq_thr, h_pxq_sat, h_pxq_adc_smear, h_pxq_adc,
+        Histogram<TH1D> h_pxq, h_pxq_noise, h_pxq_gain, h_thr, h_pxq_thr, h_pxq_sat, h_pxq_adc_smear, h_pxq_adc,
             h_px_toa, h_px_tdc_smear, h_px_tdc;
         Histogram<TH2D> h_calibration, h_toa_calibration;
     };
