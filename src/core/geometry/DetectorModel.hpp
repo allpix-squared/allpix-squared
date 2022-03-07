@@ -40,6 +40,7 @@ namespace allpix {
         SILICON = 1,            ///< Silicon
         GALLIUM_ARSENIDE,       ///< Gallium Arsenide
         GERMANIUM,              ///< Germanium
+        CADMIUM_TELLURIDE,      ///< Cadmium Telluride
         CADMIUM_ZINC_TELLURIDE, ///< Cadmium Zinc Telluride
     };
 
