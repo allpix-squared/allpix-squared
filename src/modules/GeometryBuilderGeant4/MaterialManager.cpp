@@ -99,6 +99,7 @@ void Materials::init_materials() {
     materials_["germanium"] = nistman->FindOrBuildMaterial("G4_Ge");
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
     materials_["gallium_arsenide"] = nistman->FindOrBuildMaterial("G4_GALLIUM_ARSENIDE");
+    materials_["cadmium_telluride"] = nistman->FindOrBuildMaterial("G4_CADMIUM_TELLURIDE");
     materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
     materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
 

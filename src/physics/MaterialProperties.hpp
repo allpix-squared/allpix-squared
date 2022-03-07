@@ -21,16 +21,20 @@ namespace allpix {
      *
      * @warning All values in framework-internal units, here: MeV
      */
-    static std::map<SensorMaterial, double> ionization_energies = {{SensorMaterial::SILICON, 3.64e-6},
-                                                                   {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6},
-                                                                   {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 4.6e-6}};
+    static std::map<SensorMaterial, double> ionization_energies = {
+        {SensorMaterial::SILICON, 3.64e-6},
+        {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6},
+        {SensorMaterial::CADMIUM_TELLURIDE, 4.43e-6}, // https://doi.org/10.1016/0029-554X(74)90662-4
+        {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 4.6e-6}};
 
     /**
      * @brief Fano factors for different materials
      */
-    static std::map<SensorMaterial, double> fano_factors = {{SensorMaterial::SILICON, 0.115},
-                                                            {SensorMaterial::GALLIUM_ARSENIDE, 0.14},
-                                                            {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 0.14}};
+    static std::map<SensorMaterial, double> fano_factors = {
+        {SensorMaterial::SILICON, 0.115},
+        {SensorMaterial::GALLIUM_ARSENIDE, 0.14},
+        {SensorMaterial::CADMIUM_TELLURIDE, 0.24},       // https://doi.org/10.1016/j.nima.2018.09.02
+        {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 0.14}}; // https://doi.org/10.1109/23.322857
 
 } // namespace allpix
 
