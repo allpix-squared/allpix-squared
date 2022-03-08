@@ -79,7 +79,6 @@ namespace allpix {
         bool output_plots_{};
 
         unsigned int electronics_noise_{};
-        double gain_{};
         std::unique_ptr<TFormula> gain_function_{};
 
         bool saturation_{};

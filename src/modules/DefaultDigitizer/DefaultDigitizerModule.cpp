@@ -39,7 +39,10 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
-    config_.setDefault<double>("gain", 1.0);
+
+    if(!config_.has("gain_function")) {
+        config_.setDefault<double>("gain", 1.0);
+    }
 
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
@@ -73,7 +76,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
 
     electronics_noise_ = config_.get<unsigned int>("electronics_noise");
-    gain_ = config_.get<double>("gain");
 
     if(config_.has("gain_function")) {
         gain_function_ = std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
@@ -100,7 +102,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
         LOG(DEBUG) << "Gain response function successfully initialized with " << parameters.size() << " parameters";
     } else {
         gain_function_ = std::make_unique<TFormula>("gain_function", "[0]*x");
-        gain_function_->SetParameter(0, gain_);
+        gain_function_->SetParameter(0, config_.get<double>("gain"));
     }
 
     saturation_ = config_.get<bool>("saturation");
