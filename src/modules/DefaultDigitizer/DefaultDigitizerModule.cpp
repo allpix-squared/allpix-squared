@@ -153,6 +153,7 @@ void DefaultDigitizerModule::initialize() {
         h_pxq = CreateHistogram<TH1D>("pixelcharge", "raw pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_noise = CreateHistogram<TH1D>(
             "pixelcharge_noise", "pixel charge w/ el. noise;pixel charge [ke];pixels", nbins, 0, maximum);
+        h_gain = CreateHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
         h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
         h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
@@ -238,9 +239,12 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Apply the gain to the charge:
+        auto charge_pregain = charge;
         charge = gain_function_->Eval(charge);
         LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
         if(output_plots_) {
+            // Calculate gain from pre- and post-charge, offset to avoid zero-division:
+            h_gain->Fill(charge / (charge_pregain + std::numeric_limits<double>::epsilon()));
             h_pxq_gain->Fill(charge / 1e3);
         }
 
@@ -380,6 +384,7 @@ void DefaultDigitizerModule::finalize() {
         // Charge plots
         h_pxq->Write();
         h_pxq_noise->Write();
+        h_gain->Write();
         h_pxq_gain->Write();
         h_thr->Write();
         h_pxq_sat->Write();
