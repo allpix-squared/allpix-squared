@@ -243,10 +243,20 @@ The different subcategories of tests described below can be executed or ignored 
 $ ctest -R test_performance
 \end{verbatim}
 
-The configuration of the tests can be found in the \dir{etc/unittests/test_*} directories of the repository and are automatically discovered by CMake.
-CMake automatically searches for \apsq configuration files in the different directories and passes them to the \apsq executable~(cf.\ Section~\ref{sec:allpix_executable}).
+\paragraph{Test Configurations}
 
-Adding a new test is as simple as adding a new configuration file to one of the different subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraphs.
+Test configuration files consist of regular \apsq configuration files for a simulation, invoking the desired behavior to be tested.
+In addition, test files can contain tags and pass conditions as described in the subsequent section.
+
+Three different types of tests are distinguished:
+\begin{description}
+  \item[Core tests:] These tests validate the core framework components such as seed distribution, multithreading capabilities, configuration parsing and coordinate transformations. The configuration of the tests can be found in the \dir{etc/unittests/test_core} directory of the repository and are automatically discovered by CMake.
+  \item[Module tests:] These tests are meant to ensure proper functioning of an individual module given a defined input. Module tests are located within the individual module source folders and are only enabled if the respective module will be built. For new modules, the directory in which the test files are located needs to be registered in the main CMake file of the module as described in Section~\ref{sec:module_files}. Module test files have to start with a two-digit number and end with the file extension \parameter{.conf}, e.g. \parameter{01-mytest.conf}, to be detected.
+  \item[Performance tests:] These tests run a set of simulations on a dedicated machine to catch any unexpected prolongation of the simulation time, e.g. by an accidentally introduced heavy operation in a hot loop. The configuration of the tests can be found in the \dir{etc/unittests/test_performance} directory of the repository and are automatically discovered by CMake.
+\end{description}
+
+CMake automatically searches for \apsq configuration files in the different directories and passes them to the \apsq executable~(cf.\ Section~\ref{sec:allpix_executable}).
+Adding a new test is as simple as adding a new configuration file to the respective subdirectories and specifying the pass or fail conditions based on the tags described in the following paragraphs.
 
 \paragraph{Test Tags, Pass and Fail Conditions}
 
