@@ -32,10 +32,18 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Require PixelCharge message for single detector
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
+    if(config_.has("gain") && config_.has("gain_function")) {
+        throw InvalidCombinationError(
+            config_, {"gain", "gain_function"}, "Gain and Gain Function cannot be simultaneously configured.");
+    }
+
     // Set defaults for config variables
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
-    config_.setDefault<double>("gain", 1.0);
-    config_.setDefault<double>("gain_smearing", 0.0);
+
+    if(!config_.has("gain_function")) {
+        config_.setDefault<double>("gain", 1.0);
+    }
+
     config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
 
@@ -68,8 +76,34 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
 
     electronics_noise_ = config_.get<unsigned int>("electronics_noise");
-    gain_ = config_.get<double>("gain");
-    gain_smearing_ = config_.get<double>("gain_smearing");
+
+    if(config_.has("gain_function")) {
+        gain_function_ = std::make_unique<TFormula>("gain_function", (config_.get<std::string>("gain_function")).c_str());
+
+        if(!gain_function_->IsValid()) {
+            throw InvalidValueError(
+                config_, "gain_function", "The response function is not a valid ROOT::TFormula expression.");
+        }
+
+        auto parameters = config_.getArray<double>("gain_parameters");
+
+        // check if number of parameters match up
+        if(static_cast<size_t>(gain_function_->GetNpar()) != parameters.size()) {
+            throw InvalidValueError(
+                config_,
+                "gain_parameters",
+                "The number of function parameters does not line up with the number of parameters in the function.");
+        }
+
+        for(size_t n = 0; n < parameters.size(); ++n) {
+            gain_function_->SetParameter(static_cast<int>(n), parameters[n]);
+        }
+
+        LOG(DEBUG) << "Gain response function successfully initialized with " << parameters.size() << " parameters";
+    } else {
+        gain_function_ = std::make_unique<TFormula>("gain_function", "[0]*x");
+        gain_function_->SetParameter(0, config_.get<double>("gain"));
+    }
 
     saturation_ = config_.get<bool>("saturation");
     saturation_mean_ = config_.get<unsigned int>("saturation_mean");
@@ -204,17 +238,13 @@ void DefaultDigitizerModule::run(Event* event) {
             h_pxq_noise->Fill(charge / 1e3);
         }
 
-        // Smear the gain factor, Gaussian distribution around "gain" with width "gain_smearing"
-        allpix::normal_distribution<double> gain_smearing(gain_, gain_smearing_);
-        double gain = gain_smearing(event->getRandomEngine());
-        if(output_plots_) {
-            h_gain->Fill(gain);
-        }
-
         // Apply the gain to the charge:
-        charge *= gain;
+        auto charge_pregain = charge;
+        charge = gain_function_->Eval(charge);
         LOG(DEBUG) << "Charge after amplifier (gain): " << Units::display(charge, "e");
         if(output_plots_) {
+            // Calculate gain from pre- and post-charge, offset to avoid zero-division:
+            h_gain->Fill(charge / (charge_pregain + std::numeric_limits<double>::epsilon()));
             h_pxq_gain->Fill(charge / 1e3);
         }
 

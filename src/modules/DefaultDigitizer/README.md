@@ -16,7 +16,7 @@ For maximum simplicity only the absolute of the charge is used and compared to a
 In detail, the following steps are performed for every pixel charge:
 
 * A Gaussian noise is added to the input charge value in order to simulate input noise to the preamplifier circuit.
-* The preamplifier is simulated by multiplying the input charge with a defined gain factor. The actually applied gain is smeared with a Gaussian distribution on an event-by-event basis.
+* The preamplifier is simulated by applying a gain function to the input charge, or by multiplying the input charge with a defined gain factor.
 * An optional, very simplistic, front-end saturation can be simulated which replaces the measured pixel charge with a value drawn from a Gaussian distribution with the configured saturation mean and width if the charge measured is larger than the calculated saturation value. This follows the approach taken in [@holmestad]. The pixel charge is compared to the smeared saturation value in order to generate a smooth transition rather than an edge in the spectrum.
 * A charge threshold is applied. Only if the threshold is surpassed, the pixel is accounted for - for all values below the threshold, the pixel charge is discarded. The actually applied threshold is smeared with a Gaussian distribution on an event-by-event basis allowing for simulating fluctuations of the threshold level.
 * A charge-to-digital converter (QDC) with configurable resolution, given in bit, can be simulated. For this, first an inaccuracy of the QDC is simulated using an additional Gaussian smearing which allows to take QDC noise into account. Then, the charge is converted into QDC units using the `qdc_slope` and `qdc_offset` parameters provided. Finally, the calculated value is clamped to be contained within the QDC resolution, over- and underflows are treated as saturation.
@@ -25,6 +25,29 @@ The QDC implementation also allows to simulate ToT (time-over-threshold) devices
 First, the time from the start of the event until the first crossing of the charge threshold is calculated. It should be noted that this calculation does not take into account charge noise simulated in the QDC. The resulting ToA is smeared with a Gaussian distribution which allows to take TDC fluctuations into account. Then, the ToA is converted into TDC units using the `tdc_slope` and `tdc_offset` parameters provided. Finally, the calculated value is clamped to be contained within the TDC resolution, over- and underflows are treated as saturation.
 If no time information is available from the input data, a time stamp of 0 is stored.
 
+#### Gain Function
+
+Apart from a linear gain configured via the `gain` parameter, this module also supports arbitrary gain/response functions, defined via the `gain_function` parameter, which depends on the input charge.
+In order to use the input charge in the formula, an `x` has to be placed at the respective position.
+
+Parameters of the function can either be placed directly in the formula in framework-internal units, or provided separately as arrays via the `gain_parameters` parameter.
+Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example `[0]` for the first parameter provided.
+Parameters specified separately from the formula can contain units which will be interpreted automatically - parameters directly placed in the mobility formula have to be supplied in framework-internal units since the function will be evaluated in internal units.
+It is recommended to use the possibility of separately configuring the parameters and to make use of units to avoid conversion mistakes.
+
+As an example, the following configuration implements a surrogate response function, i.e.
+
+```math
+f(q) = a \cdot q + b - \frac{c}{q - t}
+```
+
+```ini
+gain_function = "[0]*x + [1] - [2] / (x - [3])"
+gain_parameters = 1.09, 5.8e, 130.5e*e, 20.2e
+```
+
+#### Output Plots
+
 With the `output_plots` parameter activated, the module produces histograms of the charge distribution at the different stages of the simulation, i.e. before processing, with electronics noise, after threshold selection, and with ADC smearing applied.
 A 2D-histogram of the actual pixel charge in electrons and the converted charge in QDC units is provided if QDC simulation is enabled by setting `qdc_resolution` to a value different from zero.
 In addition, the distribution of the actually applied threshold is provided as histogram.
@@ -32,8 +55,9 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 ### Parameters
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.
-* `gain` : Gain factor the input charge is multiplied with, defaults to 1.0 (no gain).
-* `gain_smearing` : Standard deviation of the Gaussian uncertainty in the gain factor. Defaults to 0.
+* `gain` : Gain factor the input charge is multiplied with, defaults to 1.0 (no gain) if no gain function is supplied. `gain` and `gain_function` are mutually exclusive.
+* `gain_function` : Formula describing the gain as a function of the input charge. `gain` and `gain_function` are mutually exclusive.
+* `gain_parameters` : Parameters of the gain formula. This parameter needs to be provided as array of values, physical units are supported for each parameter individually.
 * `saturation`: Enable front-end saturation simulation. Defaults to `false`.
 * `saturation_mean`: Mean of the simulated front-end saturation charge, defaults to `190ke`. Only used if `saturation` is `true.`
 * `saturation_width`: Width of the Gaussian distribution used to calculate the new charge value of the simulated front-end saturation, defaults to `20ke`. Only used if `saturation` is `true.`
