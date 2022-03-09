@@ -343,3 +343,184 @@ where $\tau_{srh}(N)$ is the Shockley-Read-Hall and $\tau_{a}(N)$ the Auger life
 The latter is only taken into account for minority charge carriers.
 
 This model can be selected in the configuration file via the parameter \parameter{recombination_model = "srh_auger"}.
+
+
+\section{Trapping of Charge Carriers}
+\label{sec:trapping}
+
+\apsq provides the possibility to simulate the trapping of charge carriers as a consequence of radiation induced lattice defects.
+Several models exist, that quantify the effective lifetime of electrons and holes, respectively, as a function of the fluence and, partially, the temperature.
+The fluence needs to be provided to the corresponding propagation module, and is always interpreted as 1-MeVneutron equivalent fluence~\cite{niel}.
+
+The decision on whether a charge carrier has been trapped during a step during the propagation process is calculated similarly to the recombination precesses, described in \ref{sec:recombination}.
+
+It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage.
+In \apsq, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any other process than trapping.
+
+Until now, no models for de-trapping of charge carriers have been implemented.
+In addition, for most modules, the parameters have been extracted under certain annealing conditions.
+A dependency on annealing conditions has not been implemented here.
+Please refer to the corresponding reference publications for further details.
+
+The following models for trapping of charge carriers can be selected.
+
+\subsection{Ljubljana}
+\label{sec:trap:ljubljana}
+
+In the Ljubljana (sometimes referred to as \textit{Kramberger}) model~\cite{kramberger}, the trapping time follows the relation
+
+\begin{equation*}
+    \tau^{-1}(T) = \beta(T)\Phi_{eq} ,
+\end{equation*}
+
+where the temperature scaling of $\beta$ is given as
+
+\begin{equation*}
+  \beta(T) = \beta(T_0)\left(\frac{T}{T_0}\right)^{\kappa},
+\end{equation*}
+
+extracted at the reference temperature of $T_0 = \SI{-10}{\celsius}$.
+
+The parameters used in \apsq are
+
+\begin{equation*}
+    \begin{split}
+        \beta_{e}(T_0) &= \SI{5.6e-16}{\cm^2 \per \ns} \\
+        \kappa_{e}   &= -0.86 \\
+    \end{split}
+    \qquad
+    \begin{split}
+        \beta_{h}(T_0) &= \SI{7.7e-16}{\cm^2 \per \ns} \\
+        \kappa_{h}   &= -1.52 \\
+    \end{split}.
+\end{equation*}
+
+While~\cite{kramberger} quotes different values for $\beta$ for irradiation with neutrons, pions and protons, the values for protons have been applied here.
+
+The parameters arise from measurements of the were obtained evaluating current signals of irradiated sensors via light injection at fluences up to $\Phi_{eq} = \SI{2e14}{n_{eq} \per \cm^2}$.
+
+This model can be selected in the configuration file via the parameter \parameter{trapping_model = "ljubljana"}.
+
+\subsection{Dortmund}
+
+The Dortmund (sometimes referred to as \textit{Krasel}) model~\cite{dortmundTrapping}, describes the effective trapping times as
+
+\begin{equation*}
+    \tau^{-1} = \gamma\Phi_{eq} ,
+\end{equation*}
+
+with the parameters
+
+\begin{equation*}
+    \begin{split}
+        \gamma_{e} &= \SI{5.13e-16}{\cm^2 \per \ns} \\
+    \end{split}
+    \qquad
+    \begin{split}
+        \gamma_{h} &= \SI{5.04e-16}{\cm^2 \per \ns} \\
+    \end{split}.
+\end{equation*}
+
+The values have been extracted evaluating current signals of irradiated sensors via light injection at fluences up to $\Phi_{eq} = \SI{8.9e14}{n_{eq} \per \cm^2}$, at a temperature of $\SI{0}{\celsius}$.
+No temperature scaling is provided.
+Values for neutron and proton irradiation have been evaluated in~\cite{dortmundTrapping}, \apsq makes use of the values for proton irradiation.
+
+This model can be selected in the configuration file via the parameter \parameter{trapping_model = "dortmund"}.
+
+\subsection{CMS Tracker}
+
+This effective trapping model has been developed by the CMS Tracker Group.
+It follows the results of~\cite{CMSTrackerTrapping}, with measurements at fluences of up to $\Phi_{eq} = \SI{3e15}{n_{eq} \per \cm^2}$, at a temperature of $\SI{-20}{\celsius}$ and an irradiation with protons.
+
+The interpolation of the results follows the relation
+\begin{equation*}
+    \tau^{-1} = {\beta\Phi_{eq}} + \tau_0^{-1} ,
+\end{equation*}
+
+\begin{equation*}
+    \begin{split}
+        \beta_{e}(T_0) &= \SI{1.71e-16}{\cm^2 \per \ns} \\
+        \tau_{0,e}^{-1}   &= \SI{-0.114}{\per \ns} \\
+    \end{split}
+    \qquad
+    \begin{split}
+        \beta_{h}(T_0) &= \SI{2.79e-16}{\cm^2 \per \ns} \\
+        \tau_{0,h}^{-1}   &= \SI{-0.093}{\per \ns} \\
+    \end{split}.
+\end{equation*}
+
+No temperature scaling is provided.
+
+This model can be selected in the configuration file via the parameter \parameter{trapping_model = "cmstracker"}.
+
+\subsection{Mandic}
+
+The Mandi\'{c} model~\cite{Mandic} is an empirical model developed from measurements with high fluences ranging from  $\Phi_{eq} = \SI{5e15}{n_{eq} \per \cm^2}$ to  $\Phi_{eq} = \SI{1e17}{n_{eq} \per \cm^2}$ and describes the lifetime via
+
+\begin{equation*}
+    \tau = c\Phi_{eq}^{\kappa}
+\end{equation*}
+
+with the parameters
+
+\begin{equation*}
+    \begin{split}
+        c_e &= \SI{0.054}{\ns \per \cm^2} \\
+        \kappa_e   &= -0.62 \\
+    \end{split}
+    \qquad
+    \begin{split}
+        c_h &= \SI{0.0427}{\ns \per \cm^2} \\
+        \kappa_h   &= -0.62 \\
+    \end{split}.
+\end{equation*}
+
+The parameters for electrons are taken from~\cite{Mandic}, for measurements at a temperature of $\SI{-20}{\celsius}$, and the results extrapolated to $\SI{-30}{\celsius}$.
+A scaling from electrons to holes was performed based on the default values in Weightfield2~\cite{Weightfield2}.
+
+This model can be selected in the configuration file via the parameter \parameter{trapping_model = "mandic"}.
+
+\subsection{Custom Trapping Model}
+
+Similarly to the mobility models described above, \apsq provides the possibility to use fully custom trapping models.
+In order to use a custom model, the parameter \parameter{trapping_model = "custom"} needs to be set in the configuration file.
+Additionally, the following configuration keys have to be provided:
+\begin{description}
+    \item[\parameter{trapping_function_electrons}] the formula describing the effective electron trapping time
+    \item[\parameter{trapping_function_holes}] the formula describing the effective hole trapping time.
+\end{description}
+
+The functions defined via these parameters can depend on the local electric field.
+In order to use the electric field magnitude in the formula, an \parameter{x} has to be placed at the respective position.
+
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{trapping_parameters_electrons} and \parameter{trapping_parameters_electrons}.
+Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example \parameter{[0]} for the first parameter provided.
+Parameters specified separately from the formula can contain units which will be interpreted automatically.
+
+\begin{warning}
+Note that both fluence and temperature are not inherently available in the custom trapping model, but need to be provided as additional parameters as described above.
+\end{warning}
+
+The following configuration parameters replicate the Ljubljana model described in Section~\ref{sec:trap:ljubljana} using a custom trapping model.
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Replicating the Ljubljana trapping model at a temperature of 293 K and a neutron equivalent fluence of 1e14 neq/cm^2
+trapping_model = "custom"
+
+trapping_function_electrons = "1/([0]*pow([1]/263,[2]))/[3]"
+trapping_parameters_electrons = 5.6e-16cm*cm/ns, 293K, -0.86, 1e14/cm/cm
+
+trapping_function_holes = "1/([0]*pow([1]/263,[2]))/[3]"
+trapping_parameters_holes = 7.7e-16cm*cm/ns, 293K, -1.52, 1e14/cm/cm
+\end{minted}
+
+Fixed, effective trapping times can be defined using this model similar to the following configuration example.
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Defining a fixed trapping time
+trapping_model = "custom"
+
+trapping_function_electrons = "[0]"
+trapping_parameters_electrons = 5ns
+
+trapping_function_holes = "[0]"
+trapping_parameters_holes = 7ns
+\end{minted}

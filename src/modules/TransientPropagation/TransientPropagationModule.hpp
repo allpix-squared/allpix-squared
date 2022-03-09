@@ -27,6 +27,7 @@
 
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
+#include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
 
@@ -101,6 +102,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
@@ -118,5 +120,6 @@ namespace allpix {
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
+        Histogram<TH1D> trapped_histo_;
     };
 } // namespace allpix
