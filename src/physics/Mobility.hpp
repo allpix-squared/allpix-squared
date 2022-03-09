@@ -379,7 +379,7 @@ namespace allpix {
                 } else {
                     throw InvalidModelError(model);
                 }
-                LOG(DEBUG) << "Selected mobility model \"" << model << "\"";
+                LOG(INFO) << "Selected mobility model \"" << model << "\"";
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "mobility_model", e.what());
             }

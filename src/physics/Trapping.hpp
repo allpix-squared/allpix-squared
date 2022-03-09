@@ -265,7 +265,7 @@ namespace allpix {
                 } else {
                     throw InvalidModelError(model);
                 }
-                LOG(DEBUG) << "Selected trapping model \"" << model << "\"";
+                LOG(INFO) << "Selected trapping model \"" << model << "\"";
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "trapping_model", e.what());
             }
