@@ -395,9 +395,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
         auto model = detector->getModel();
         auto charge_creation_energy =
             (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
-                                                   : get_charge_creation_energy(model->getSensorMaterial()));
-        auto fano_factor =
-            (config_.has("fano_factor") ? config_.get<double>("fano_factor") : get_fano_factor(model->getSensorMaterial()));
+                                                   : allpix::ionization_energies[model->getSensorMaterial()]);
+        auto fano_factor = (config_.has("fano_factor") ? config_.get<double>("fano_factor")
+                                                       : allpix::fano_factors[model->getSensorMaterial()]);
         LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
                    << Units::display(charge_creation_energy, "eV") << " and Fano factor " << fano_factor;
 
