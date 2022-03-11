@@ -14,16 +14,17 @@
 
 #include "core/geometry/DetectorModel.hpp"
 #include "core/utils/log.h"
-#include "core/utils/unit.h"
-#include "exceptions.h"
+#include "tools/units.h"
 
 namespace allpix {
 
     /**
      * @brief Ionization / charge creation energy for different materials
+     *
+     * @warning All values in framework-internal units, here: MeV
      */
-    static std::map<SensorMaterial, double> ionization_energies = {
-        {SensorMaterial::SILICON, Units::get(3.64, "eV")}, {SensorMaterial::GALLIUM_ARSENIDE, Units::get(4.2, "eV")}};
+    static std::map<SensorMaterial, double> ionization_energies = {{SensorMaterial::SILICON, 3.64e-6},
+                                                                   {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6}};
 
     /**
      * @brief Fano factors for different materials
