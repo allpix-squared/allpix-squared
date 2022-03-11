@@ -13,8 +13,6 @@
 #define ALLPIX_PROPERTIES_H
 
 #include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
-#include "tools/units.h"
 
 namespace allpix {
 
