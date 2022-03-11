@@ -18,15 +18,58 @@ namespace allpix {
     template <typename T, size_t N>
     T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos, const bool extrapolate_z) const {
 
-        // Calculate current pixel index its center as reference point:
-        auto [px, py] = model_->getPixelIndex(pos);
-        if(!model_->isWithinMatrix(px, py)) {
-            return {};
-        }
-        auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(px, py));
+        // For per-pixel fields, resort to getRelativeTo with current pixel as reference:
+        if(mapping_ != FieldMapping::SENSOR) {
+            // Calculate current pixel index its center as reference point:
+            auto [px, py] = model_->getPixelIndex(pos);
+            if(!model_->isWithinMatrix(px, py)) {
+                return {};
+            }
+            auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(px, py));
 
-        // Get field relative to pixel center:
-        return getRelativeTo(pos, ref, extrapolate_z);
+            // Get field relative to pixel center:
+            return getRelativeTo(pos, ref, extrapolate_z);
+        }
+
+        // Shift the coordinates by the offset configured for the field:
+        auto x = pos.x();
+        auto y = pos.y();
+        auto z = pos.z();
+
+        auto pitch = model_->getPixelSize();
+
+        // Compute corresponding field replica coordinates:
+        // WARNING This relies on the origin of the local coordinate system
+        auto replica_x = static_cast<int>(std::floor((x + 0.5 * pitch.x()) * normalization_[0]));
+        auto replica_y = static_cast<int>(std::floor((y + 0.5 * pitch.y()) * normalization_[1]));
+
+        // Convert to the replica frame:
+        x -= (replica_x + 0.5) / normalization_[0] - 0.5 * pitch.x();
+        y -= (replica_y + 0.5) / normalization_[1] - 0.5 * pitch.y();
+
+        // Do flipping if necessary
+        x *= ((replica_x % 2) == 1 ? -1 : 1);
+        y *= ((replica_y % 2) == 1 ? -1 : 1);
+
+        // Compute using the grid or a function depending on the setting
+        T ret_val;
+        if(type_ == FieldType::GRID) {
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, pos.z()), extrapolate_z);
+        } else {
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            if(extrapolate_z) {
+                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
+            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                return {};
+            }
+
+            // Calculate the field from the configured function:
+            ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
+        }
+
+        // Flip vector if necessary
+        flip_vector_components(ret_val, replica_x % 2, replica_y % 2);
+        return ret_val;
     }
 
     /**

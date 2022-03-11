@@ -52,6 +52,8 @@ namespace allpix {
         QUADRANT_II,  ///< The field map spans the top left quadrant of the volume and is mirrored to the other quadrants
         QUADRANT_III, ///< The field map spans the lower left quadrant of the volume and is mirrored to the other quadrants
         QUADRANT_IV,  ///< The field map spans the lower right quadrant of the volume and is mirrored to the other quadrants
+        SENSOR,       ///< The field is mapped to the full sensor, starting at the local coordinate origin. The field is
+                      ///< mirrored at its edges.
     };
 
     /**
