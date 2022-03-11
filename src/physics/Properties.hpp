@@ -20,30 +20,16 @@
 namespace allpix {
 
     /**
-     * @brief Obtain ionization / charge creation energy for different materials
+     * @brief Ionization / charge creation energy for different materials
      */
-    static double get_charge_creation_energy(SensorMaterial material) {
-        if(material == SensorMaterial::SILICON) {
-            return Units::get(3.64, "eV");
-        } else if(material == SensorMaterial::GALLIUM_ARSENIDE) {
-            return Units::get(4.2, "eV");
-        }
-        throw ModelError();
-        // "Key charge_creation_energy not set and no default value found for sensor material " + allpix::to_string(material)
-    }
+    static std::map<SensorMaterial, double> ionization_energies = {
+        {SensorMaterial::SILICON, Units::get(3.64, "eV")}, {SensorMaterial::GALLIUM_ARSENIDE, Units::get(4.2, "eV")}};
 
     /**
-     * @brief Obtain Fano factor for different materials
+     * @brief Fano factors for different materials
      */
-    static double get_fano_factor(SensorMaterial material) {
-        if(material == SensorMaterial::SILICON) {
-            return 0.115;
-        } else if(material == SensorMaterial::GALLIUM_ARSENIDE) {
-            return 0.14;
-        }
-        throw ModelError();
-        // "Key fano_factor not set and no default value found for sensor material " + allpix::to_string(material)
-    }
+    static std::map<SensorMaterial, double> fano_factors = {{SensorMaterial::SILICON, 0.115},
+                                                            {SensorMaterial::GALLIUM_ARSENIDE, 0.14}};
 
 } // namespace allpix
 
