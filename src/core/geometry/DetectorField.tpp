@@ -49,7 +49,44 @@ namespace allpix {
 
         T ret_val;
         if(type_ == FieldType::GRID) {
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(x, y, z), extrapolate_z);
+
+            // Do we need to flip the position vector components?
+            auto flip_x = (x > 0 && (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
+                                     mapping_ == FieldMapping::HALF_LEFT)) ||
+                          (x < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_IV ||
+                                     mapping_ == FieldMapping::HALF_RIGHT));
+            auto flip_y = (y > 0 && (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
+                                     mapping_ == FieldMapping::HALF_BOTTOM)) ||
+                          (y < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
+                                     mapping_ == FieldMapping::HALF_TOP));
+
+            // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
+            auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
+            auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
+
+            if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
+               mapping_ == FieldMapping::HALF_LEFT) {
+                px += 1.0;
+            } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_TOP ||
+                      mapping_ == FieldMapping::HALF_BOTTOM) {
+                px += 0.5;
+            }
+
+            if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
+               mapping_ == FieldMapping::HALF_BOTTOM) {
+                py += 1.0;
+            } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_LEFT ||
+                      mapping_ == FieldMapping::HALF_RIGHT) {
+                py += 0.5;
+            }
+
+            // Shuffle quadrants for inverted maps
+            if(mapping_ == FieldMapping::FULL_INVERSE) {
+                px += (x >= 0 ? 0. : 1.0);
+                py += (y >= 0 ? 0. : 1.0);
+            }
+
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(px, py, z), extrapolate_z, flip_x, flip_y);
         } else {
             // Check if we need to extrapolate along the z axis or if is inside thickness domain:
             if(extrapolate_z) {
@@ -68,53 +105,20 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z) const {
-
-        // Do we need to flip the position vector components?
-        auto flip_x = (dist.x() > 0 && (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
-                                        mapping_ == FieldMapping::HALF_LEFT)) ||
-                      (dist.x() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_IV ||
-                                        mapping_ == FieldMapping::HALF_RIGHT));
-        auto flip_y = (dist.y() > 0 && (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
-                                        mapping_ == FieldMapping::HALF_BOTTOM)) ||
-                      (dist.y() < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
-                                        mapping_ == FieldMapping::HALF_TOP));
-
-        // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
-        auto x = (flip_x ? -1.0 : 1.0) * dist.x() * normalization_[0];
-        auto y = (flip_y ? -1.0 : 1.0) * dist.y() * normalization_[1];
-
-        if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
-           mapping_ == FieldMapping::HALF_LEFT) {
-            x += 1.0;
-        } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_TOP ||
-                  mapping_ == FieldMapping::HALF_BOTTOM) {
-            x += 0.5;
-        }
-
-        if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
-           mapping_ == FieldMapping::HALF_BOTTOM) {
-            y += 1.0;
-        } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_LEFT ||
-                  mapping_ == FieldMapping::HALF_RIGHT) {
-            y += 0.5;
-        }
-
-        // Shuffle quadrants for inverted maps
-        if(mapping_ == FieldMapping::FULL_INVERSE) {
-            x += (dist.x() >= 0 ? 0. : 1.0);
-            y += (dist.y() >= 0 ? 0. : 1.0);
-        }
+    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist,
+                                               const bool extrapolate_z,
+                                               const bool flip_x,
+                                               const bool flip_y) const {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(bins_[0]))));
+        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(dist.x() * static_cast<double>(bins_[0]))));
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
             return {};
         }
 
-        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(bins_[1]))));
+        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(dist.y() * static_cast<double>(bins_[1]))));
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
