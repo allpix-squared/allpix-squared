@@ -19,6 +19,7 @@
 
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
+#include <G4NavigationHistory.hh>
 #include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
@@ -122,10 +123,13 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     // Check for overlaps:
     check_overlaps();
 
+    // Verify transformations:
+    verify_transforms();
+
     return world_phys_.get();
 }
 
-void GeometryConstructionG4::check_overlaps() {
+void GeometryConstructionG4::check_overlaps() const {
     G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
@@ -141,5 +145,61 @@ void GeometryConstructionG4::check_overlaps() {
         LOG(ERROR) << "Overlapping volumes detected.";
     } else {
         LOG(INFO) << "No overlapping volumes detected.";
+    }
+}
+
+// Verify that coordinate transformations are performed properly
+void GeometryConstructionG4::verify_transforms() const {
+
+    // Navigation history to traverse the geometry
+    auto tree = std::make_unique<G4NavigationHistory>();
+    tree->SetFirstEntry(world_phys_.get());
+
+    // Lambda to locate physical volume in the world geometry and to retrieve its transformation with respect to the world
+    std::function<G4AffineTransform(const G4VPhysicalVolume*)> get_world_transform;
+    get_world_transform = [&tree, &get_world_transform](const G4VPhysicalVolume* volume) {
+        if(tree->GetTopVolume() == volume) {
+            auto transform = tree->GetTopTransform();
+            tree->Reset();
+            return transform;
+        }
+
+        // Loop through children and check where we belong
+        auto* current = tree->GetTopVolume()->GetLogicalVolume();
+        for(size_t i = 0; i < current->GetNoDaughters(); ++i) {
+            auto* daughter = current->GetDaughter(static_cast<int>(i));
+            if(daughter == volume || daughter->GetLogicalVolume()->IsAncestor(volume)) {
+                tree->NewLevel(daughter);
+                return get_world_transform(volume);
+            }
+        }
+        throw ModuleError("Could not find physical volume \"" + volume->GetName() + "\"");
+    };
+
+    // A test vector
+    const G4ThreeVector global = {1., 1., 1.};
+
+    // Calculate transformations for all detectors:
+    for(auto& detector : geo_manager_->getDetectors()) {
+        auto local = detector->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(global));
+
+        // Obtain physical sensor volume, its transformation to the world volume and apply to global test vector:
+        auto sensor = geo_manager_->getExternalObject<G4PVPlacement>(detector->getName(), "sensor_phys");
+        auto coord_g4 = get_world_transform(sensor.get()).TransformPoint(global);
+
+        // Obtain and apply additional correction for difference in local coordinate orientation for some models:
+        coord_g4 *= *geo_manager_->getExternalObject<G4RotationMatrix>(detector->getName(), "model_rotation");
+
+        // Calculate local coordinates by correcting for sensor offsets etc
+        auto local_g4 = static_cast<ROOT::Math::XYZVector>(coord_g4) + detector->getModel()->getSensorCenter();
+
+        if((local_g4 - local).mag2() > 0.001) {
+            LOG(ERROR) << "Coordinate transformation test for detector " << detector->getName() << std::endl
+                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << std::endl
+                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << std::endl
+                       << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
+            throw ModuleError("Issue with model " + detector->getModel()->getType() +
+                              ",\nfound invalid Geant4 coordinate transformation");
+        }
     }
 }
