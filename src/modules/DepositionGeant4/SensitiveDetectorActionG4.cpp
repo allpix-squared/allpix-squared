@@ -38,7 +38,6 @@ using namespace allpix;
 
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      TrackInfoManager* track_info_manager,
-                                                     const G4RotationMatrix* hit_transform,
                                                      double charge_creation_energy,
                                                      double fano_factor,
                                                      double cutoff_time)
@@ -49,8 +48,6 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
-
-    hit_transform_ = hit_transform;
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {

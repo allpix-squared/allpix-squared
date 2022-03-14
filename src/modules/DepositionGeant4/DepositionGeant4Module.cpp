@@ -396,12 +396,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
         }
         useful_deposition = true;
 
-        // Get the hit transformation matrix
-        auto* hit_transform = calculate_hit_transform(detector->getModel());
-
         // Get model of the sensitive device
         auto* sensitive_detector_action = new SensitiveDetectorActionG4(
-            detector, track_info_manager_.get(), hit_transform, charge_creation_energy, fano_factor, cutoff_time);
+            detector, track_info_manager_.get(), charge_creation_energy, fano_factor, cutoff_time);
         auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
         if(logical_volume == nullptr) {
             throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
@@ -451,15 +448,4 @@ void DepositionGeant4Module::record_module_statistics() {
     for(auto& sensor : sensors_) {
         total_charges_ += sensor->getTotalDepositedCharge();
     }
-}
-
-G4RotationMatrix* DepositionGeant4Module::calculate_hit_transform(const std::shared_ptr<DetectorModel>& model) {
-    // For radial_strip models a rotation around X-axis is necessary to align G4 and APSQ coordinate systems
-    if(std::dynamic_pointer_cast<RadialStripDetectorModel>(model) != nullptr) {
-        auto* radialRot = new G4RotationMatrix();
-        radialRot->rotateX(-90.0 * CLHEP::degree);
-        return radialRot;
-    }
-
-    return new G4RotationMatrix();
 }
