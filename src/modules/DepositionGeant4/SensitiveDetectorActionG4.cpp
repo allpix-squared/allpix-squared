@@ -62,9 +62,10 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // Get Transportaion Matrix
     G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+    auto* track = step->GetTrack();
 
     // Put the charge deposit in the middle of the step unless it is a photon:
-    auto is_photon = (step->GetTrack()->GetDynamicParticle()->GetPDGcode() == 22);
+    auto is_photon = (track->GetDynamicParticle()->GetPDGcode() == 22);
     LOG(DEBUG) << "Placing energy deposit "
                << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
     G4ThreeVector step_pos = is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
@@ -93,12 +94,18 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
                              deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
                              deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
-    const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(step->GetTrack()->GetUserInformation());
+    const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(track->GetUserInformation());
     if(userTrackInfo == nullptr) {
         throw ModuleError("No track information attached to track.");
     }
     auto trackID = userTrackInfo->getID();
-    auto parentTrackID = userTrackInfo->getParentID();
+
+    // If this track originates in the sensor add parent ID. Otherwise set the ID to zero (primary particle) since it might
+    // have a parent connected from a previous crossing of the sensor, i.e. backscattering from an interaction in non-sensor
+    // material. While these particles are connected via MCTracks, we treat them as primaries to the sensor since they
+    // entered from the outside and were not created in the sensor volume.
+    auto parentTrackID =
+        (track->GetVolume()->GetLogicalVolume() == track->GetLogicalVolumeAtVertex() ? userTrackInfo->getParentID() : 0);
 
     // Save begin point when track is seen for the first time
     if(track_begin_.find(trackID) == track_begin_.end()) {
@@ -107,7 +114,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         track_begin_.emplace(trackID, start_position);
         track_parents_.emplace(trackID, parentTrackID);
         track_time_.emplace(trackID, step_time);
-        track_pdg_.emplace(trackID, step->GetTrack()->GetDynamicParticle()->GetPDGcode());
+        track_pdg_.emplace(trackID, track->GetDynamicParticle()->GetPDGcode());
     }
 
     // Update current end point with the current last step
