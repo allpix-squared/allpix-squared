@@ -38,7 +38,6 @@ namespace allpix {
          * @brief Constructs the action handling for every sensitive detector
          * @param detector Detector this sensitive device is bound to
          * @param track_info_manager Pointer to the track information manager
-         * @param hit_transform Pointer to the hit transformation matrix
          * @param charge_creation_energy Energy needed per deposited charge
          * @param fano_factor Fano factor for fluctuations in the energy fraction going into e/h pair creation
          * @param cutoff_time Cut-off time for the creation of secondary particles
