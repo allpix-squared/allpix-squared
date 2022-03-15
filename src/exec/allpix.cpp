@@ -126,22 +126,22 @@ int main(int argc, const char* argv[]) {
                       << G4VERSION_NUMBER % 10 << std::endl;
 #endif
 
-            char cpu_string[0x40];
-            unsigned int cpu_info[4] = {0, 0, 0, 0};
+            std::array<char, 0x40> cpu_string;
+            std::array<unsigned int, 4> cpu_info = {0, 0, 0, 0};
             __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
             unsigned int n_ex_ids = cpu_info[0];
-            memset(cpu_string, 0, sizeof(cpu_string));
+            memset(cpu_string.data(), 0, sizeof(cpu_string));
             for(unsigned int j = 0x80000000; j <= n_ex_ids; ++j) {
                 __cpuid(j, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
                 if(j == 0x80000002) {
-                    memcpy(cpu_string, cpu_info, sizeof(cpu_info));
+                    memcpy(cpu_string.data(), cpu_info.data(), sizeof(cpu_info));
                 } else if(j == 0x80000003) {
-                    memcpy(cpu_string + 16, cpu_info, sizeof(cpu_info));
+                    memcpy(cpu_string.data() + 16, cpu_info.data(), sizeof(cpu_info));
                 } else if(j == 0x80000004) {
-                    memcpy(cpu_string + 32, cpu_info, sizeof(cpu_info));
+                    memcpy(cpu_string.data() + 32, cpu_info.data(), sizeof(cpu_info));
                 }
             }
-            std::cout << "               running on " << std::thread::hardware_concurrency() << "x " << cpu_string
+            std::cout << "               running on " << std::thread::hardware_concurrency() << "x " << cpu_string.data()
                       << std::endl;
 
             std::cout << std::endl;
