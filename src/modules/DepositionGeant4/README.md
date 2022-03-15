@@ -8,7 +8,7 @@ Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
 It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
-Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors.
+Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
 #### Source Shapes
@@ -71,8 +71,8 @@ This module requires an installation Geant4.
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]).
-* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano].
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]). A full list of supported materials can be found elsewhere in the manual.
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano]. A full list of supported materials can be found elsewhere in the manual.
 * `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
