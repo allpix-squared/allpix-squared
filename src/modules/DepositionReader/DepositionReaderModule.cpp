@@ -16,7 +16,7 @@
 
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
-#include "physics/Properties.hpp"
+#include "physics/MaterialProperties.hpp"
 
 using namespace allpix;
 
