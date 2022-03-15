@@ -9,6 +9,7 @@
  */
 
 #include <atomic>
+#include <cpuid.h>
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
@@ -123,6 +124,25 @@ int main(int argc, const char* argv[]) {
 #ifdef ALLPIX_GEANT4_AVAILABLE
             std::cout << "                     Geant4 " << G4VERSION_NUMBER << std::endl;
 #endif
+
+            char cpu_string[0x40];
+            unsigned int cpu_info[4] = {0, 0, 0, 0};
+            __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
+            unsigned int n_ex_ids = cpu_info[0];
+            memset(cpu_string, 0, sizeof(cpu_string));
+            for(unsigned int j = 0x80000000; j <= n_ex_ids; ++j) {
+                __cpuid(j, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
+                if(j == 0x80000002) {
+                    memcpy(cpu_string, cpu_info, sizeof(cpu_info));
+                } else if(j == 0x80000003) {
+                    memcpy(cpu_string + 16, cpu_info, sizeof(cpu_info));
+                } else if(j == 0x80000004) {
+                    memcpy(cpu_string + 32, cpu_info, sizeof(cpu_info));
+                }
+            }
+            std::cout << "               running on " << std::thread::hardware_concurrency() << "x " << cpu_string
+                      << std::endl;
+
             std::cout << std::endl;
             std::cout << "Copyright (c) 2017-2021 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
