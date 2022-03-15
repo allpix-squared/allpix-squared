@@ -17,7 +17,9 @@ More detailed information about CRY can be found in its physics description [@cr
 This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there.
 A detailed description of these configuration parameters can be found in the respective module documentation.
 The parameter `number_of_particles` here refers to full shower developments instead of individual particles, there can be multiple particles per shower.
-The deposited energy is converted into electron-hole pairs, the number of pairs created is calculated using the mean pair creation energy `charge_creation_energy`, fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics.
+The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
+Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors.
+These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
 The coordinate system for this module defines the `z` axis orthogonal to the earth surface, pointing upwards.
 This means shower particles travel along the negative `z` axis and all detectors should be placed below the incidence plane at `z = 0`.
@@ -45,8 +47,8 @@ This module inherits from and therefore requires the *DepositionGeant4* module a
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
-* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]).
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano].
 * `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
