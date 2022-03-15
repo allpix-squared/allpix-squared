@@ -123,7 +123,8 @@ int main(int argc, const char* argv[]) {
                       << std::endl;
             std::cout << "                     ROOT " << ROOT_RELEASE << std::endl;
 #ifdef ALLPIX_GEANT4_AVAILABLE
-            std::cout << "                     Geant4 " << G4VERSION_NUMBER << std::endl;
+            std::cout << "                     Geant4 " << G4VERSION_NUMBER / 100 << "." << G4VERSION_NUMBER / 10 % 10 << "."
+                      << G4VERSION_NUMBER % 10 << std::endl;
 #endif
 
             char cpu_string[0x40];
