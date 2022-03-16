@@ -107,7 +107,7 @@ IF(BUILD_DOCS_ONLY)
         GLOB_RECURSE module_tests
         LIST_DIRECTORIES false
         RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src/modules"
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/*/*/[00-99]*.conf)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/*/*/[00-99]*.conf)
     FOREACH(test ${module_tests})
         GET_FILENAME_COMPONENT(title ${test} NAME_WE)
         GET_FILENAME_COMPONENT(dir "${test}/../.." ABSOLUTE)

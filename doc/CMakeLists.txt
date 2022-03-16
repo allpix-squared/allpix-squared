@@ -158,6 +158,7 @@ IF(LATEX_COMPILER)
                    usermanual/chapters/modules.tex
                    usermanual/chapters/examples.tex
                    usermanual/chapters/development.tex
+                   usermanual/chapters/devtools.tex
                    usermanual/chapters/faq.tex
                    usermanual/chapters/additional.tex
                    usermanual/chapters/acknowledgements.tex

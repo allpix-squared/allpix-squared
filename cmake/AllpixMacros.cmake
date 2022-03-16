@@ -275,7 +275,6 @@ FUNCTION(add_allpix_test)
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${DEPENDENCY}")
     ENDIF()
     FOREACH(depend ${TEST_DEPENDS})
-        MESSAGE(STATUS "DEP ${depend}")
         SET_PROPERTY(TEST ${TEST_NAME} PROPERTY DEPENDS "${depend}")
     ENDFOREACH()
 
@@ -322,7 +321,7 @@ MACRO(ALLPIX_MODULE_TESTS name directory)
         FILE(
             GLOB TEST_LIST_MODULES
             RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-            ${directory}/[00-99]*)
+            ${directory}/[00-99]*.conf)
 
         # Copy and configure tests
         FOREACH(test ${TEST_LIST_MODULES})
