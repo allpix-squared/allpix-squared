@@ -5,7 +5,7 @@
 # Put one word per line and sort alphabetically.
 asai
 hist
-yse
 skelton
 synopsys
-Te
+te
+yse
