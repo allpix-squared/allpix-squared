@@ -157,7 +157,7 @@ void GeometryConstructionG4::verify_transforms() const {
 
     // Lambda to locate physical volume in the world geometry and to retrieve its transformation with respect to the world
     std::function<G4AffineTransform(const G4VPhysicalVolume*)> get_world_transform;
-    get_world_transform = [&tree, &get_world_transform](const G4VPhysicalVolume* volume) {
+    get_world_transform = [&tree, &get_world_transform](const G4VPhysicalVolume* volume) -> G4AffineTransform {
         if(tree->GetTopVolume() == volume) {
             auto transform = tree->GetTopTransform();
             tree->Reset();
@@ -173,7 +173,8 @@ void GeometryConstructionG4::verify_transforms() const {
                 return get_world_transform(volume);
             }
         }
-        throw ModuleError("Could not find physical volume \"" + volume->GetName() + "\"");
+        assert("Missing physical volume" && false);
+        return {};
     };
 
     // A test vector
@@ -194,12 +195,17 @@ void GeometryConstructionG4::verify_transforms() const {
         auto local_g4 = static_cast<ROOT::Math::XYZVector>(coord_g4) + detector->getModel()->getSensorCenter();
 
         if((local_g4 - local).mag2() > 0.001) {
-            LOG(ERROR) << "Coordinate transformation test for detector " << detector->getName() << std::endl
+            LOG(FATAL) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
+            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << std::endl
                        << "Global test vector:      " << Units::display(global, {"mm", "um"}) << std::endl
                        << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << std::endl
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
-            throw ModuleError("Issue with model " + detector->getModel()->getType() +
-                              ",\nfound invalid Geant4 coordinate transformation");
+            assert("Invalid coordinate transformation" && false);
+        } else {
+            LOG(TRACE) << "Completed coordinate transformation test for detector " << detector->getName() << std::endl
+                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << std::endl
+                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << std::endl
+                       << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
         }
     }
 }
