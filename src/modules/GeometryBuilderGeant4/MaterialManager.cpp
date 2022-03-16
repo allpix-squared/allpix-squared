@@ -72,6 +72,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - gallium_arsenide
  *   - nickel
  *   - gold
+ *   - cadmium_telluride
  * - Composite or custom materials:
  *   - carbon fiber
  *   - epoxy
