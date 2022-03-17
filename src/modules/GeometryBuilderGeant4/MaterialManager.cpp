@@ -177,7 +177,7 @@ void Materials::init_materials() {
     CdZnTe->AddElement(Cd, 8);
     CdZnTe->AddElement(Zn, 2);
     CdZnTe->AddElement(Te, 10);
-    materials_["cdznte"] = CdZnTe;
+    materials_["cadmium_zinc_telluride"] = CdZnTe;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
