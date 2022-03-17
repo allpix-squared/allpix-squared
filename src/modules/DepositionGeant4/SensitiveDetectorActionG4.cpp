@@ -129,6 +129,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Store relevant quantities to create charge deposits:
     deposit_position_.push_back(deposit_position);
     deposit_charge_.push_back(charge);
+    deposit_energy_.push_back(edep);
     deposit_time_.push_back(step_time);
     deposit_to_id_.push_back(trackID);
 
@@ -150,6 +151,14 @@ unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() const {
 
 unsigned int SensitiveDetectorActionG4::getDepositedCharge() const {
     return deposited_charge_;
+}
+
+double SensitiveDetectorActionG4::getTotalDepositedEnergy() const {
+    return total_deposited_energy_;
+}
+
+double SensitiveDetectorActionG4::getDepositedEnergy() const {
+    return deposited_energy_;
 }
 
 void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* messenger, Event* event) {
@@ -210,6 +219,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
 
     // Send a deposit message if we have any deposits
     unsigned int charges = 0;
+    double energies = 0.;
     if(!deposit_position_.empty()) {
         // Prepare charge deposits for this event
         std::vector<DepositedCharge> deposits;
@@ -223,6 +233,10 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
             auto charge = deposit_charge_.at(i);
             charges += 2 * charge;
             total_deposited_charge_ += 2 * charge;
+
+            auto edep = deposit_energy_.at(i);
+            total_deposited_energy_ += edep;
+            energies += edep;
 
             // Match deposit with mc particle if possible
             auto track_id = deposit_to_id_.at(i);
@@ -251,10 +265,12 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     }
     // Store the number of charge carriers:
     deposited_charge_ = charges;
+    deposited_energy_ = energies;
 
     // Clear deposit information for next event
     deposit_position_.clear();
     deposit_charge_.clear();
+    deposit_energy_.clear();
     deposit_time_.clear();
 
     // Clear link tables for next event

@@ -330,6 +330,9 @@ void DepositionGeant4Module::run(Event* event) {
         if(output_plots_) {
             double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
             charge_per_event_[sensor->getName()]->Fill(charge);
+
+            double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
+            energy_per_event_[sensor->getName()]->Fill(deposited_energy);
         }
     }
 
@@ -341,6 +344,9 @@ void DepositionGeant4Module::finalize() {
         // Write histograms
         LOG(TRACE) << "Writing output plots to file";
         for(auto& histogram : charge_per_event_) {
+            histogram.second->Write();
+        }
+        for(auto& histogram : energy_per_event_) {
             histogram.second->Write();
         }
     }
@@ -419,17 +425,34 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
-            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            int nbins = 5 * maximum;
+            int maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            double maximum_energy =
+                (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
+            int nbins = 5 * maximum_charge;
 
             // Create histograms if needed
-            std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
-
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
+                std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
+
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
-                        plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+                    charge_per_event_[sensitive_detector_action->getName()] =
+                        CreateHistogram<TH1D>(plot_name.c_str(),
+                                              "deposited charge per event;deposited charge [ke];events",
+                                              nbins,
+                                              0,
+                                              maximum_charge);
+                }
+
+                plot_name = "deposited_energy_" + sensitive_detector_action->getName();
+
+                if(energy_per_event_.find(sensitive_detector_action->getName()) == energy_per_event_.end()) {
+                    energy_per_event_[sensitive_detector_action->getName()] =
+                        CreateHistogram<TH1D>(plot_name.c_str(),
+                                              "deposited energy per event;deposited energy [keV];events",
+                                              nbins,
+                                              0,
+                                              maximum_energy);
                 }
             }
         }
