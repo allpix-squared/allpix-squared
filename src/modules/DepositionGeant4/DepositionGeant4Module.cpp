@@ -423,8 +423,10 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
-            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            int nbins = 5 * maximum;
+            int maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            double maximum_energy =
+                (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
+            int nbins = 5 * maximum_charge;
 
             // Create histograms if needed
             {
@@ -432,8 +434,12 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
                 std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
 
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
-                    charge_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
-                        plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
+                    charge_per_event_[sensitive_detector_action->getName()] =
+                        CreateHistogram<TH1D>(plot_name.c_str(),
+                                              "deposited charge per event;deposited charge [ke];events",
+                                              nbins,
+                                              0,
+                                              maximum_charge);
                 }
 
                 plot_name = "deposited_energy_" + sensitive_detector_action->getName();
@@ -444,7 +450,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
                                               "deposited energy per event;deposited energy [keV];events",
                                               nbins,
                                               0,
-                                              maximum / 2. * Units::convert(charge_creation_energy, "eV"));
+                                              maximum_energy);
                 }
             }
         }
