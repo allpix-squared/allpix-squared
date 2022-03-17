@@ -38,7 +38,7 @@ namespace allpix {
         {SensorMaterial::CADMIUM_TELLURIDE, 0.24},      // https://doi.org/10.1016/j.nima.2018.09.02
         {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 0.14}, // https://doi.org/10.1109/23.322857
         {SensorMaterial::DIAMOND, 0.382},               // https://doi.org/10.1002/pssa.201600195
-+        {SensorMaterial::SILICON_CARBIDE, 0.1}}; // https://doi.org/10.1016/j.nima.2010.08.046
+        +{SensorMaterial::SILICON_CARBIDE, 0.1}};       // https://doi.org/10.1016/j.nima.2010.08.046
 
 } // namespace allpix
 
