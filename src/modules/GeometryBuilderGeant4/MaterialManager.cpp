@@ -83,6 +83,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - polystyrene
  *   - ppo foam
  *   - cadmium zinc telluride
+ *   - diamond
  *   - vacuum
  */
 void Materials::init_materials() {
@@ -178,6 +179,9 @@ void Materials::init_materials() {
     CdZnTe->AddElement(Zn, 2);
     CdZnTe->AddElement(Te, 10);
     materials_["cadmium_zinc_telluride"] = CdZnTe;
+
+    auto* Diamond = new G4Material("Diamond", 6, 12.01 * CLHEP::g / CLHEP::mole, 3.52 * CLHEP::g / CLHEP::cm3);
+    materials_["diamond"] = Diamond;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
