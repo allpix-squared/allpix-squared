@@ -441,8 +441,12 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
                 plot_name = "deposited_energy_" + sensitive_detector_action->getName();
 
                 if(energy_per_event_.find(sensitive_detector_action->getName()) == energy_per_event_.end()) {
-                    energy_per_event_[sensitive_detector_action->getName()] = CreateHistogram<TH1D>(
-                        plot_name.c_str(), "deposited energy per event;deposited energy [keV];events", 200, 0, 1000);
+                    energy_per_event_[sensitive_detector_action->getName()] =
+                        CreateHistogram<TH1D>(plot_name.c_str(),
+                                              "deposited energy per event;deposited energy [keV];events",
+                                              nbins,
+                                              0,
+                                              maximum / 2. * Units::convert(charge_creation_energy, "eV"));
                 }
             }
         }
