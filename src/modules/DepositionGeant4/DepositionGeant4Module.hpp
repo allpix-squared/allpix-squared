@@ -122,6 +122,7 @@ namespace allpix {
 
         // Vector of histogram pointers for debugging plots
         std::map<std::string, Histogram<TH1D>> charge_per_event_;
+        std::map<std::string, Histogram<TH1D>> energy_per_event_;
 
         // Total deposited charges
         std::atomic_uint total_charges_{0};
