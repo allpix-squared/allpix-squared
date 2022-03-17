@@ -56,11 +56,10 @@ namespace allpix {
             /**
              * @brief Get the top value from the appropriate queue
              * @param out Reference where the value at the top of the queue will be written to
-             * @param func Optional function to execute before releasing the queue mutex if pop was successful
              * @param buffer_left Optional number of jobs that should be left in priority buffer without stall on push
              * @return True if a task was acquired or false if pop was exited for another reason
              */
-            bool pop(T& out, const std::function<void()>& func = nullptr, size_t buffer_left = 0);
+            bool pop(T& out, size_t buffer_left = 0);
 
             /**
              * @brief Push a new value onto the standard queue, will block if queue is full
