@@ -85,6 +85,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - ppo foam
  *   - cadmium zinc telluride
  *   - diamond
+ *   - silicon carbide
  *   - vacuum
  */
 void Materials::init_materials() {
@@ -183,6 +184,11 @@ void Materials::init_materials() {
 
     auto* Diamond = new G4Material("Diamond", 6, 12.01 * CLHEP::g / CLHEP::mole, 3.52 * CLHEP::g / CLHEP::cm3);
     materials_["diamond"] = Diamond;
+
+    auto* SiliconCarbide = new G4Material("SiliconCarbide", 3.21 * CLHEP::g / CLHEP::cm3, 2);
+    SiliconCarbide->AddElement(Si, 1);
+    SiliconCarbide->AddElement(C, 1);
+    materials_["silicon_carbide"] = SiliconCarbide;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
