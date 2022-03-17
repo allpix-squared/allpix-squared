@@ -59,6 +59,18 @@ namespace allpix {
         unsigned int getDepositedCharge() const;
 
         /**
+         * @brief Get total energy deposited in the sensitive device bound to this action
+         */
+        double getTotalDepositedEnergy() const;
+
+        /**
+         * @brief Get the energy deposited in the sensitive device for this event only.
+         * @warning The correct number is only available after dispatching the message, before it refers to the previous
+         * event.
+         */
+        double getDepositedEnergy() const;
+
+        /**
          * @brief Get the name of the sensitive device bound to this action
          */
         std::string getName() const;
@@ -102,10 +114,13 @@ namespace allpix {
         // Statistics of total and per-event deposited charge
         unsigned int total_deposited_charge_{};
         unsigned int deposited_charge_{};
+        double total_deposited_energy_{};
+        double deposited_energy_{};
 
         // List of positions for deposits
         std::vector<ROOT::Math::XYZPoint> deposit_position_;
         std::vector<unsigned int> deposit_charge_;
+        std::vector<double> deposit_energy_;
         std::vector<double> deposit_time_;
 
         // List of begin points for tracks
