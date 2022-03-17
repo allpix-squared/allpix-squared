@@ -106,6 +106,7 @@ This module can create support layers and passive volumes of the following mater
     * polystyrene
     * ppo foam
     * cadmium zinc telluride
+    * diamond
     * vacuum
 
 Furthermore, this module can automatically load any material defined in the Geant4 material database [@g4materials]. This comprises both simple materials and pre-defined NIST compounds.
