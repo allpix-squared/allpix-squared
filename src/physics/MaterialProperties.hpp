@@ -26,7 +26,8 @@ namespace allpix {
         {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6},
         {SensorMaterial::CADMIUM_TELLURIDE, 4.43e-6}, // https://doi.org/10.1016/0029-554X(74)90662-4
         {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 4.6e-6},
-        {SensorMaterial::DIAMOND, 13.1e-6}}; // https://doi.org/10.1002/pssa.201600195
+        {SensorMaterial::DIAMOND, 13.1e-6},         // https://doi.org/10.1002/pssa.201600195
+        {SensorMaterial::SILICON_CARBIDE, 7.6e-6}}; // https://doi.org/10.1109/NSSMIC.2005.1596542
 
     /**
      * @brief Fano factors for different materials
@@ -36,7 +37,8 @@ namespace allpix {
         {SensorMaterial::GALLIUM_ARSENIDE, 0.14},
         {SensorMaterial::CADMIUM_TELLURIDE, 0.24},      // https://doi.org/10.1016/j.nima.2018.09.02
         {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 0.14}, // https://doi.org/10.1109/23.322857
-        {SensorMaterial::DIAMOND, 0.382}};              // https://doi.org/10.1002/pssa.201600195
+        {SensorMaterial::DIAMOND, 0.382},               // https://doi.org/10.1002/pssa.201600195
+        {SensorMaterial::SILICON_CARBIDE, 0.1}}; // https://www.sciencedirect.com/science/article/abs/pii/S0168900210018206
 
 } // namespace allpix
 
