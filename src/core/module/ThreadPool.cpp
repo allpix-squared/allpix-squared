@@ -95,7 +95,7 @@ void ThreadPool::checkException() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (queue_.empty() && run_cnt_ == 0); });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0); });
 }
 
 /**
@@ -115,18 +115,16 @@ void ThreadPool::worker(size_t min_thread_buffer,
             initialize_function();
         }
 
-        // Increase the atomic run count and notify the master thread that we popped an event
-        auto increase_run_cnt_func = [this]() noexcept { ++run_cnt_; };
-
         while(!done_) {
             Task task{nullptr};
 
-            if(queue_.pop(task, increase_run_cnt_func, min_thread_buffer)) {
+            if(queue_.pop(task, min_thread_buffer)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
+                std::unique_lock<std::mutex> lock{run_mutex_};
                 --run_cnt_;
                 run_condition_.notify_all();
             }
