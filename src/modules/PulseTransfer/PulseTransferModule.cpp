@@ -204,11 +204,11 @@ void PulseTransferModule::run(Event* event) {
         if(output_pulsegraphs_) {
             create_pulsegraphs(event->number, index, pulse);
         }
-        LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
         // Store the pulse:
         std::vector<const PropagatedCharge*> pixel_charge_vec(pixel_charge_map[index].begin(),
                                                               pixel_charge_map[index].end());
+        LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_vec.size() << " ancestors";
         pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), std::move(pixel_charge_vec));
     }
 
