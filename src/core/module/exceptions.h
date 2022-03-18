@@ -141,6 +141,24 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
+     * @brief Exception for modules to request the abortion of the current event
+     * @note Non-fatal error used to interrupt the processing of the current event.
+     *
+     * This error can be raised by modules if they would like to request an interruption of the current event processing
+     * because an issue was detected.
+     */
+    class AbortEventException : public RuntimeError {
+    public:
+        /**
+         * @brief Constructs request to abort the current event processing with a description
+         * @param reason Text explaining the reason of the requested abortion of the event
+         */
+        // TODO [doc] the module itself is missing
+        explicit AbortEventException(std::string reason) { error_message_ = std::move(reason); }
+    };
+
+    /**
+     * @ingroup Exceptions
      * @brief Exception for modules to request an interrupt because dependencies are missing
      * @note Non-fatal error used to request the module to be rescheduled later.
      *
