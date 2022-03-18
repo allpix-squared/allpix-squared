@@ -61,15 +61,15 @@ Allpix::Allpix(std::string config_file_name,
     // Set the log level from config if not specified earlier
     std::string log_level_string;
     if(Log::getReportingLevel() == LogLevel::NONE) {
-        log_level_string = global_config.get<std::string>("log_level", "INFO");
+        log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
             LogLevel log_level = Log::getLevelFromString(log_level_string);
             Log::setReportingLevel(log_level);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
-                       << "\" specified in the configuration is invalid, defaulting to INFO instead";
-            Log::setReportingLevel(LogLevel::INFO);
+                       << "\" specified in the configuration is invalid, defaulting to WARNING instead";
+            Log::setReportingLevel(LogLevel::WARNING);
         }
     } else {
         log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
