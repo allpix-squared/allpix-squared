@@ -783,6 +783,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 // Run module
                 bool stop = false;
+                bool abort = false;
                 try {
                     if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
                         stop = true;
@@ -791,6 +792,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     }
                 } catch(const MissingDependenciesException& e) {
                     stop = true;
+                } catch(const AbortEventException& e) {
+                    LOG(WARNING) << "Event aborted:" << std::endl << e.what();
+                    abort = true;
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
                     LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -810,6 +814,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 if(plot) {
                     this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                }
+
+                if(abort) {
+                    // Break module execution loop:
+                    break;
                 }
 
                 if(stop) {
