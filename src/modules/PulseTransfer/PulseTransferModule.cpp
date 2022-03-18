@@ -14,6 +14,7 @@
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
 
+#include <set>
 #include <string>
 #include <utility>
 
@@ -96,7 +97,7 @@ void PulseTransferModule::run(Event* event) {
 
     // Create map for all pixels: pulse and propagated charges
     std::map<Pixel::Index, Pulse> pixel_pulse_map;
-    std::map<Pixel::Index, std::vector<const PropagatedCharge*>> pixel_charge_map;
+    std::map<Pixel::Index, std::set<const PropagatedCharge*>> pixel_charge_map;
 
     LOG(DEBUG) << "Received " << propagated_message->getData().size() << " propagated charge objects.";
     for(const auto& propagated_charge : propagated_message->getData()) {
@@ -156,11 +157,8 @@ void PulseTransferModule::run(Event* event) {
             }
             pixel_pulse_map[pixel_index] += pulse;
 
-            auto px = pixel_charge_map[pixel_index];
             // For each pulse, store the corresponding propagated charges to preserve history:
-            if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
-                pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
-            }
+            pixel_charge_map[pixel_index].emplace(&propagated_charge);
         } else {
             LOG(TRACE) << "Found pulse information";
             LOG_ONCE(INFO) << "Pulses available - settings \"timestep\", \"max_depth_distance\" and "
@@ -170,17 +168,15 @@ void PulseTransferModule::run(Event* event) {
                 // Accumulate all pulses from input message data:
                 pixel_pulse_map[pixel_index] += pulse;
 
-                auto px = pixel_charge_map[pixel_index];
                 // For each pulse, store the corresponding propagated charges to preserve history:
-                if(std::find(px.begin(), px.end(), &propagated_charge) == px.end()) {
-                    pixel_charge_map[pixel_index].emplace_back(&propagated_charge);
-                }
+                pixel_charge_map[pixel_index].emplace(&propagated_charge);
             }
         }
     }
 
     // Create vector of pixel pulses to return for this detector
     std::vector<PixelCharge> pixel_charges;
+    pixel_charges.reserve(pixel_pulse_map.size());
     Pulse total_pulse;
     for(auto& [index, pulse] : pixel_pulse_map) {
         // Sum all pulses for informational output:
@@ -208,10 +204,12 @@ void PulseTransferModule::run(Event* event) {
         if(output_pulsegraphs_) {
             create_pulsegraphs(event->number, index, pulse);
         }
-        LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_map[index].size() << " ancestors";
 
         // Store the pulse:
-        pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), pixel_charge_map[index]);
+        std::vector<const PropagatedCharge*> pixel_charge_vec(pixel_charge_map[index].begin(),
+                                                              pixel_charge_map[index].end());
+        LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_vec.size() << " ancestors";
+        pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), std::move(pixel_charge_vec));
     }
 
     if(output_pulsegraphs_) {
