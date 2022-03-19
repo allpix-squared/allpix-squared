@@ -327,9 +327,9 @@ void DepositionGeant4Module::run(Event* event) {
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
             }
         }
-    } catch(const AbortEventException& e) {
+    } catch(AbortEventException& e) {
         track_info_manager_->resetTrackInfoManager();
-        throw e;
+        throw;
     }
 
     track_info_manager_->resetTrackInfoManager();
