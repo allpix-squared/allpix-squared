@@ -41,8 +41,8 @@ The sources for the chosen default values are provided in the table.
   Diamond & 13.1~\cite{Diamond_Creation_Fano} & 0.382~\cite{Diamond_Creation_Fano} \\
   \midrule
   Silicon Carbide (4H-SiC) & 7.6~\cite{SiC_Creation} & 0.1~\cite{SiC_Fano} \\
-  
-  
+
+
 \bottomrule
 \end{tabular}
 \end{table}
@@ -266,6 +266,31 @@ The mobility is then parametrized using the two models as:
 where $\mu_{m}(N)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and $v_{m}$, $\beta$ are the respective parameters from the Jacoboni/Canali model presented in Sections~\ref{sec:mob:jac}~and~\ref{sec:mob:can}.
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.
+
+\subsection{Ruch-Kino Model}
+
+The Ruch-Kino mobility model~\cite{ruchkino} parametrizes electron and hole mobility in GaAs sensor material.
+The model parameters implemented in \apsq is taken from measurements~\cite{Bergmann_2020}.
+
+The mobility is parametrized as
+\begin{align}
+    \label{eq:mob:rkgaas}
+    \mu_e(E) &= \mu_{0,e} &\quad \textrm{for} \quad E < E_0 \nonumber \\
+             &= \mu_{0,e} / \sqrt{1 + \left(E - E_0\right)^2 / E_c^2} &\quad \textrm{for} \quad E \geq E_0 \nonumber \\
+    \mu_h(E) &= \mu_{0,h}.
+\end{align}
+
+The values implemented in \apsq are:
+\begin{align*}
+      E_0   &= \SI{3.1e3}{V \per cm} \\
+      E_c   &= \SI{1.36e3}{V \per cm} \\
+      \mu_{0,e}   &= \SI{7.6e3}{cm^2 \per V \per s} \\
+      \mu_{0,h}   &= \SI{3.2e2}{cm^2 \per V \per s} \\
+\end{align*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "ruch_kino"}.
+
 
 \subsection{Constant Mobility}
 
