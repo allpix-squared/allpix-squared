@@ -285,11 +285,12 @@ namespace allpix {
      * @ingroup Models
      * @brief Ruch-Kino mobility model for charge carriers in GaAs:Cr
      *
-     * Parameterization variables from B. Bergmann et al 2020 JINST 15 C03013
+     * Model from https://doi.org/10.1103/PhysRev.174.921
+     * Parameterization variables from https://10.1088/1748-0221/15/03/c03013
      */
-    class RuchKinoGaAs : virtual public MobilityModel {
+    class RuchKino : virtual public MobilityModel {
     public:
-        RuchKinoGaAs()
+        RuchKino()
             : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
               Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {}
 
@@ -498,8 +499,8 @@ namespace allpix {
                     model_ = std::make_unique<MasettiCanali>(temperature, doping);
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(temperature, doping);
-                } else if(model == "ruch_kino_gaas") {
-                    model_ = std::make_unique<RuchKinoGaAs>();
+                } else if(model == "ruch_kino") {
+                    model_ = std::make_unique<RuchKino>();
                 } else if(model == "quay") {
                     model_ = std::make_unique<Quay>(material, temperature);
                 } else if(model == "constant") {
