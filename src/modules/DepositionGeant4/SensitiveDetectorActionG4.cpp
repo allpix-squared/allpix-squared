@@ -38,7 +38,6 @@ using namespace allpix;
 
 SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detector>& detector,
                                                      TrackInfoManager* track_info_manager,
-                                                     const G4RotationMatrix* hit_transform,
                                                      double charge_creation_energy,
                                                      double fano_factor,
                                                      double cutoff_time)
@@ -49,8 +48,6 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     // Add the sensor to the internal sensitive detector manager
     G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
     sd_man_g4->AddNewDetector(this);
-
-    hit_transform_ = hit_transform;
 }
 
 G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
@@ -78,21 +75,12 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
 
     // Calculate the charge deposit at a local position
     auto deposit_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(step_pos));
-    auto deposit_position_g4 = theTouchable->GetHistory()->GetTopTransform().TransformPoint(step_pos);
-
-    // Transform the hit position using the rotation matrix
-    deposit_position_g4 *= *hit_transform_;
 
     // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
     // excitations via the Fano factor. We assume Gaussian statistics here.
     auto mean_charge = edep / charge_creation_energy_;
     allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
     auto charge = static_cast<unsigned int>(charge_fluctuation(random_generator_));
-
-    auto deposit_position_g4loc =
-        ROOT::Math::XYZPoint(deposit_position_g4.x() + detector_->getModel()->getSensorCenter().x(),
-                             deposit_position_g4.y() + detector_->getModel()->getSensorCenter().y(),
-                             deposit_position_g4.z() + detector_->getModel()->getSensorCenter().z());
 
     const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(track->GetUserInformation());
     if(userTrackInfo == nullptr) {
@@ -133,11 +121,6 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     deposit_time_.push_back(step_time);
     deposit_to_id_.push_back(trackID);
 
-    LOG(DEBUG) << "Geant4 transformation to local: " << Units::display(deposit_position_g4loc, {"mm", "um"});
-    if((deposit_position_g4loc - deposit_position).mag2() > 0.001) {
-        LOG(ERROR) << "Difference G4 to internal: "
-                   << Units::display((deposit_position_g4loc - deposit_position), {"mm", "um"});
-    }
     return true;
 }
 

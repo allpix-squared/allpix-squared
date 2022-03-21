@@ -108,23 +108,23 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         ROOT::Math::XYZPoint vx, vy, vz;
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
+
+        // Additional rotation for models that require alignment of their G4 local coordinates with the framework coordinates
+        auto model_rotation = std::make_shared<G4RotationMatrix>();
+        if(radial_model != nullptr) {
+            model_rotation->rotateX(-90.0 * CLHEP::degree);
+        }
+
+        // Apply additional rotation on top of the rotation in the global frame
+        geo_manager_->setExternalObject(name, "model_rotation", model_rotation);
+        *rotWrapper *= *model_rotation;
+
+        // Build full transformation
         auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
         wrapperGeoTranslation *= *rotWrapper;
-        // Additional rotation for radial_strip models
-        if(radial_model != nullptr) {
-            auto rotRad = std::make_shared<G4RotationMatrix>();
-            rotRad->rotateX(-90.0 * CLHEP::degree);
-            wrapperGeoTranslation *= *rotRad;
-        }
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
-        // Additional rotation for radial_strip models
-        if(radial_model != nullptr) {
-            auto rotRad = std::make_shared<G4RotationMatrix>();
-            rotRad->rotateX(-90.0 * CLHEP::degree);
-            transform_phys = G4Transform3D(*rotWrapper * *rotRad, posWrapper);
-        }
 
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
         G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("World_log");

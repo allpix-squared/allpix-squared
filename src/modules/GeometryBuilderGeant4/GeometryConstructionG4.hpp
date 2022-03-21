@@ -50,7 +50,12 @@ namespace allpix {
         /**
          * @brief Check all placed volumes for overlaps
          */
-        void check_overlaps();
+        void check_overlaps() const;
+
+        /**
+         * @brief Verify that framework coordinate transformations match with the transformations built from Geant4 volumes
+         */
+        void verify_transforms() const;
 
         std::unique_ptr<DetectorConstructionG4> detector_builder_;
         std::unique_ptr<PassiveMaterialConstructionG4> passive_builder_;
