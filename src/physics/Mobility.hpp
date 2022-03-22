@@ -15,6 +15,7 @@
 
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
