@@ -125,8 +125,9 @@ void ThreadPool::worker(size_t min_thread_buffer,
                 task->get_future().get();
                 // Update the run count and propagate update
                 std::unique_lock<std::mutex> lock{run_mutex_};
-                --run_cnt_;
-                run_condition_.notify_all();
+                if(--run_cnt_ == 0) {
+                    run_condition_.notify_all();
+                }
             }
         }
 
