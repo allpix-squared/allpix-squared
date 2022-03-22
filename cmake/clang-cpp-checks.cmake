@@ -138,7 +138,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
         # Set target branch to perform the diff against
         IF(NOT TARGET_BRANCH)
-            SET(TARGET_BRANCH "master")
+            SET(TARGET_BRANCH "v2.3-stable")
         ENDIF()
 
         ADD_CUSTOM_TARGET(
