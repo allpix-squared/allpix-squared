@@ -136,6 +136,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
         }
     } catch(...) {
         // Check if the first exception thrown
+        std::unique_lock<std::mutex> lock{run_mutex_};
         if(!has_exception_.test_and_set()) {
             // Save the first exception
             exception_ptr_ = std::current_exception();
