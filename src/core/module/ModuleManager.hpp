@@ -170,6 +170,9 @@ namespace allpix {
 
         Messenger* messenger_{};
 
+        // The thread pool used in the run method
+        std::unique_ptr<ThreadPool> thread_pool_{nullptr};
+
         // User defined multithreading flag in configuration
         bool multithreading_flag_{false};
 
