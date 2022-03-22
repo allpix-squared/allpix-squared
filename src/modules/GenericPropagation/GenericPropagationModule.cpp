@@ -661,7 +661,8 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time, final state: " << allpix::to_string(state);
+                       << " in " << Units::display(time, "ns") << " time" << (alive ? "" : ", recombined")
+                       << (trapped ? ", trapped" : "");
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(final_position);
@@ -835,7 +836,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                 runge_kutta.advanceTime(traptime);
             } else {
                 // Mark as trapped otherwise
-                is_trapped = true
+                is_trapped = true;
             }
         }
 
