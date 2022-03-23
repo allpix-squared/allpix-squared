@@ -292,6 +292,58 @@ for electrons and holes, respectively.
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "ruch_kino"}.
 
 
+\subsection{Quay Model}
+
+The Quay mobility model describes the mobility of electron and holes in a large range of semiconductor materials.
+In the original publication~\cite{quay}, the saturation velocity is modeled via the relation
+\begin{align}
+  \label{eq:mob:quay_vs}
+  v_{sat}\left(T\right) &= \frac{v_{sat,300}}{(1-A) + A\cdot\left( T/300 \right)} ,
+\end{align}
+with the saturation velocity at $T=\SI{300}{K}$ and the free parameter $A$.
+
+In \apsq  the mobility is determined according to a model published in~\cite{omar} as a function of the saturation velocity $v_{sat}$, the electrical field $E$ and the critical field $E_C$:
+\begin{align}
+  \label{eq:mob:quay_mob}
+  \mu_e\left(E\right) &= \frac{v_{sat}}{E_C \cdot \sqrt{ 1 + \left( E/E_C \right)^2 }} .
+\end{align}
+
+The critical temperature in turn is defined as the saturation velocity divided by the mobility at zero field, where the zero-field mobility scales with temperature according to~\cite{omar}:
+\begin{align}
+  \label{eq:mob:ec}
+  E_C(T) = \frac{v_{sat}}{M T^{-\gamma}} .
+\end{align}
+
+To date, the model has been implemented for silicon, germanium and gallium arsenide.
+Parameters for several other compound semiconductors are given in~\cite{quay} and~\cite{LandoltBornstein}.
+The parameters implemented in \apsq are listed in Table~\ref{tab:mob:quay}
+\begin{table}[tbp]
+\caption{List of parameters for the Quay mobility model.}
+\label{tab:mob:quay}
+\centering
+\begin{tabular}{lllll}
+  \toprule
+\textbf{Material} & \textbf{Parameter} & \textbf{Electrons} & \textbf{Holes} & \textbf{Sources} \\
+  \midrule
+  \multirow{4}{*}{Silicon} & $v_{sat,300}$ [\SI{}{cm \per s}] & \SI{1.02e7}{} & \SI{0.72e7}{} & \cite{quay} \\
+                  & $A$            & 0.74 & 0.37 & \cite{quay} \\
+                  & $M$ [\SI{}{\cm^2K^{\gamma}\per V \per s}] & \SI{1.43e9}{} & \SI{1.35e8}{} & \cite{jacoboni} \\
+                  & $\gamma$     & 2.42 & 2.2 & \cite{jacoboni} \\
+  \midrule
+  \multirow{4}{*}{Germanium} & $v_{sat,300}$ [\SI{}{cm \per s}] & \SI{0.7e7}{} & \SI{0.63e7}{} & \cite{quay} \\
+                  & $A$            & 0.45 & 0.39 & \cite{quay} \\
+                  & $M$ [\SI{}{\cm^2K^{\gamma}\per V \per s}] & \SI{5.66e7}{} & \SI{1.05e9}{} & \cite{omar}, \cite{LandoltBornstein} \\
+                  & $\gamma$     & 1.68 & 2.33 & \cite{omar}, \cite{LandoltBornstein}  \\
+  \midrule
+  \multirow{4}{*}{\shortstack[l]{Gallium\\Arsenide}} & $v_{sat,300}$ [\SI{}{cm \per s}] & \SI{0.72e7}{} & \SI{0.9e7}{} & \cite{quay} \\
+                  & $A$            & 0.44 & 0.59 & \cite{quay} \\
+                  & $M$ [\SI{}{\cm^2K^{\gamma}\per V \per s}] & \SI{2.5e6}{} & \SI{6.3e7}{} & \cite{LandoltBornstein} \\
+                  & $\gamma$     & 1.0 & 2.1 & \cite{LandoltBornstein} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
 \subsection{Constant Mobility}
 
 Some simulations require constant charge carrier mobility values $\mu = \textrm{const}$.
