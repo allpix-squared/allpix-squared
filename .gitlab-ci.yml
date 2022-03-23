@@ -217,7 +217,8 @@ fmt:coverity:
 .test:
     stage: testing
     after_script:
-        - ./.gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+        - source .ci/init_x86_64.sh
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
     artifacts:
         when: always
         expire_in: 1 week
@@ -266,7 +267,7 @@ core:lxplus-gcc:
         - job: cmp:lxplus-gcc
           artifacts: true
 
-# Ubuntu Docker image
+# Ubuntu Docker image - overriding after_script to not load CVMFS
 mod:docker:
     extends:
         - .docker
@@ -274,6 +275,8 @@ mod:docker:
     needs:
         - job: cmp:docker
           artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
 core:docker:
     extends:
@@ -282,6 +285,8 @@ core:docker:
     needs:
         - job: cmp:docker
           artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
 # CentOS 7
 mod:cc7-gcc:
