@@ -17,10 +17,13 @@
 
 #include <G4Color.hh>
 #include <G4GDMLParser.hh>
+#include <G4LogicalVolumeStore.hh>
 #include <G4SubtractionSolid.hh>
 #include <G4VSolid.hh>
+#include <G4VisAttributes.hh>
 
 #include "PassiveMaterialModel.hpp"
+#include "tools/geant4/geant4.h"
 
 namespace allpix {
 
@@ -56,7 +59,7 @@ namespace allpix {
             LOG(TRACE) << "Building passive material: " << getName();
             G4LogicalVolume* mother_log_volume = nullptr;
             if(!getMotherVolume().empty()) {
-                G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
+                auto* log_volume_store = G4LogicalVolumeStore::GetInstance();
                 mother_log_volume = log_volume_store->GetVolume(getMotherVolume().append("_log"));
             } else {
                 mother_log_volume = world_log.get();
@@ -93,7 +96,7 @@ namespace allpix {
 
                 // Add offset and rotation to current daughter location
                 G4ThreeVector position_vector = toG4Vector(position_);
-                auto rotation_matrix = new G4RotationMatrix(*gdml_daughter->GetRotation() * *rotation_.get());
+                auto* rotation_matrix = new G4RotationMatrix(*gdml_daughter->GetRotation() * *rotation_);
                 gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
                 gdml_daughter->SetRotation(rotation_matrix);
 
@@ -124,8 +127,8 @@ namespace allpix {
 
         // Provide maximum extend of this model by looking at the GDML world volume
         double getMaxSize() const override {
-            auto world = parser_.GetWorldVolume();
-            auto box = dynamic_cast<G4Box*>(world->GetLogicalVolume()->GetSolid());
+            auto* world = parser_.GetWorldVolume();
+            auto* box = dynamic_cast<G4Box*>(world->GetLogicalVolume()->GetSolid());
             if(box == nullptr) {
                 throw InvalidValueError(config_, "file_name", "Could not deduce world size from GDML file");
             }
