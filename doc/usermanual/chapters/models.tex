@@ -302,21 +302,21 @@ In the original publication~\cite{quay}, the saturation velocity is modeled via 
 \end{align}
 with the saturation velocity at $T=\SI{300}{K}$ and the free parameter $A$.
 
-In \apsq  the mobility is determined according to a model published in~\cite{omar} as a function of the saturation velocity $v_{sat}$, the electrical field $E$ and the critical field $E_C$:
+In \apsq  the mobility is determined according to a model published in~\cite{omar}, as a function of the saturation velocity $v_{sat}$, the electrical field $E$ and the critical field $E_C$:
 \begin{align}
   \label{eq:mob:quay_mob}
   \mu_e\left(E\right) &= \frac{v_{sat}}{E_C \cdot \sqrt{ 1 + \left( E/E_C \right)^2 }} .
 \end{align}
 
-The critical temperature in turn is defined as the saturation velocity divided by the mobility at zero field, where the zero-field mobility scales with temperature according to~\cite{omar}:
+The critical field in turn is defined as the saturation velocity divided by the mobility at zero field, where the zero-field mobility scales with temperature according to~\cite{omar}:
 \begin{align}
   \label{eq:mob:ec}
   E_C(T) = \frac{v_{sat}}{M T^{-\gamma}} .
 \end{align}
 
-To date, the model has been implemented for silicon, germanium and gallium arsenide.
+The model has been implemented for silicon, germanium and gallium arsenide.
 Parameters for several other compound semiconductors are given in~\cite{quay} and~\cite{LandoltBornstein}.
-The parameters implemented in \apsq are listed in Table~\ref{tab:mob:quay}
+The parameters implemented in \apsq and their references are listed in Table~\ref{tab:mob:quay}
 \begin{table}[tbp]
 \caption{List of parameters for the Quay mobility model.}
 \label{tab:mob:quay}
