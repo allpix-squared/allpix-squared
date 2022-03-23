@@ -71,6 +71,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<std::string>("recombination_model", "none");
+    config_.setDefault<std::string>("trapping_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_animations", false);
@@ -543,6 +544,21 @@ void GenericPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+
+        trapped_histo_ = CreateHistogram<TH1D>(
+            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
+
+        recombination_time_histo_ =
+            CreateHistogram<TH1D>("recombination_time_histo",
+                                  "Time until recombination of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        trapping_time_histo_ = CreateHistogram<TH1D>("trapping_time_histo",
+                                                     "Time until trapping of charge carriers;time [ns];charge carriers",
+                                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                     0,
+                                                     static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 
     // Prepare mobility model
@@ -554,6 +570,9 @@ void GenericPropagationModule::initialize() {
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
+
+    // Prepare trapping model
+    trapping_ = Trapping(config_);
 }
 
 void GenericPropagationModule::run(Event* event) {
@@ -569,6 +588,7 @@ void GenericPropagationModule::run(Event* event) {
     LOG(TRACE) << "Propagating charges in sensor";
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
     unsigned int step_count = 0;
     long double total_time = 0;
     for(const auto& deposit : deposits_message->getData()) {
@@ -619,18 +639,30 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, alive] = propagate(
+            auto [final_position, time, alive, trapped] = propagate(
                 initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
 
             if(!alive) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 recombined_charges_count += charge_per_step;
+                if(output_plots_) {
+                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
+                continue;
+            } else if(trapped) {
+                LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
+                           << " in " << Units::display(time, "ns") << " time, removing";
+                trapped_charges_count += charge_per_step;
+                if(output_plots_) {
+                    trapping_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
                 continue;
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time";
+                       << " in " << Units::display(time, "ns") << " time" << (alive ? "" : ", recombined")
+                       << (trapped ? ", trapped" : "");
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(final_position);
@@ -664,14 +696,16 @@ void GenericPropagationModule::run(Event* event) {
     long double average_time = total_time / std::max(1u, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
               << Units::display(average_time, "ns") << std::endl
-              << "Recombined " << recombined_charges_count << " charges during transport";
+              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+              << "Trapped " << trapped_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) /
-                               (propagated_charges_count + recombined_charges_count));
+        auto total_charges = propagated_charges_count + recombined_charges_count + trapped_charges_count;
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charges);
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / total_charges);
     }
 
     // Create a new message with propagated charges
@@ -686,7 +720,7 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, bool>
+std::tuple<ROOT::Math::XYZPoint, double, bool, bool>
 GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
@@ -755,8 +789,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     double last_time = 0;
     size_t next_idx = 0;
     bool is_alive = true;
+    bool is_trapped = false;
     while(detector_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position)) &&
-          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
+          (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive && !is_trapped) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -792,10 +827,23 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                    survival(random_generator),
                                    timestep);
 
+        // Check if the charge carrier has been trapped:
+        auto [trapped, traptime] = trapping_(type, survival(random_generator), timestep, std::sqrt(efield.Mag2()));
+        if(trapped) {
+            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+                // De-trap and advance in time if still below integration time
+                LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
+                runge_kutta.advanceTime(traptime);
+            } else {
+                // Mark as trapped otherwise
+                is_trapped = true;
+            }
+        }
+
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
-                   << (is_alive ? "" : ", recombined");
+                   << (is_alive ? "" : ", recombined") << (trapped ? ", trapped" : "");
         // Adapt step size to match target precision
         double uncertainty = step.error.norm();
 
@@ -853,10 +901,12 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     if(!is_alive) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
+    } else if(is_trapped) {
+        LOG(DEBUG) << "Charge carrier trapped after " << Units::display(last_time, {"ns"}) << " at "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
-
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive, is_trapped);
 }
 
 void GenericPropagationModule::finalize() {
@@ -866,6 +916,9 @@ void GenericPropagationModule::finalize() {
         uncertainty_histo_->Write();
         group_size_histo_->Write();
         recombine_histo_->Write();
+        trapped_histo_->Write();
+        recombination_time_histo_->Write();
+        trapping_time_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /

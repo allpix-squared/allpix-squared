@@ -28,6 +28,7 @@
 
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
+#include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
 
@@ -89,13 +90,13 @@ namespace allpix {
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
          * @return Tuple with the point where the deposit ended after propagation, the time the propagation took and a flag
-         * whether it has recombined
+         * whether it has recombined or was trapped
          */
-        std::tuple<ROOT::Math::XYZPoint, double, bool> propagate(const ROOT::Math::XYZPoint& pos,
-                                                                 const CarrierType& type,
-                                                                 const double initial_time,
-                                                                 RandomNumberGenerator& random_generator,
-                                                                 OutputPlotPoints& output_plot_points) const;
+        std::tuple<ROOT::Math::XYZPoint, double, bool, bool> propagate(const ROOT::Math::XYZPoint& pos,
+                                                                       const CarrierType& type,
+                                                                       const double initial_time,
+                                                                       RandomNumberGenerator& random_generator,
+                                                                       OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
@@ -107,6 +108,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
@@ -128,6 +130,9 @@ namespace allpix {
         Histogram<TH1D> uncertainty_histo_;
         Histogram<TH1D> group_size_histo_;
         Histogram<TH1D> recombine_histo_;
+        Histogram<TH1D> trapped_histo_;
+        Histogram<TH1D> recombination_time_histo_;
+        Histogram<TH1D> trapping_time_histo_;
         std::mutex stats_mutex_;
     };
 

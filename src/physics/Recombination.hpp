@@ -178,7 +178,7 @@ namespace allpix {
             } else {
                 throw InvalidModelError(model);
             }
-            LOG(DEBUG) << "Selected recombination model \"" << model << "\"";
+            LOG(INFO) << "Selected recombination model \"" << model << "\"";
         }
 
         /**

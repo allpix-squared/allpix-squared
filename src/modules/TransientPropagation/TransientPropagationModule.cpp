@@ -48,6 +48,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<std::string>("recombination_model", "none");
+    config_.setDefault<std::string>("trapping_model", "none");
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
@@ -100,6 +101,9 @@ void TransientPropagationModule::initialize() {
     } catch(ModelError& e) {
         throw InvalidValueError(config_, "recombination_model", e.what());
     }
+
+    // Prepare trapping model
+    trapping_ = Trapping(config_);
 
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
@@ -156,6 +160,8 @@ void TransientPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+        trapped_histo_ = CreateHistogram<TH1D>(
+            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
     }
 }
 
@@ -166,6 +172,7 @@ void TransientPropagationModule::run(Event* event) {
     std::vector<PropagatedCharge> propagated_charges;
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -195,7 +202,7 @@ void TransientPropagationModule::run(Event* event) {
             std::map<Pixel::Index, Pulse> px_map;
 
             // Get position and propagate through sensor
-            auto [local_position, time, alive] = propagate(
+            auto [local_position, time, alive, trapped] = propagate(
                 event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
 
             // Create a new propagated charge and add it to the list
@@ -216,6 +223,8 @@ void TransientPropagationModule::run(Event* event) {
 
             if(alive) {
                 propagated_charges_count += charge_per_step;
+            } else if(trapped) {
+                trapped_charges_count += charge_per_step;
             } else {
                 recombined_charges_count += charge_per_step;
             }
@@ -227,8 +236,9 @@ void TransientPropagationModule::run(Event* event) {
     }
 
     if(output_plots_) {
-        auto total = (propagated_charges_count + recombined_charges_count);
+        auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / (total == 0 ? 1 : total));
     }
 
     // Create a new message with propagated charges
@@ -243,7 +253,7 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, bool>
+std::tuple<ROOT::Math::XYZPoint, double, bool, bool>
 TransientPropagationModule::propagate(Event* event,
                                       const ROOT::Math::XYZPoint& pos,
                                       const CarrierType& type,
@@ -311,7 +321,8 @@ TransientPropagationModule::propagate(Event* event,
     Eigen::Vector3d last_position = position;
     bool within_sensor = true;
     bool is_alive = true;
-    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive) {
+    bool is_trapped = false;
+    while(within_sensor && (initial_time + runge_kutta.getTime()) < integration_time_ && is_alive && !is_trapped) {
         // Save previous position and time
         last_position = position;
 
@@ -335,6 +346,19 @@ TransientPropagationModule::propagate(Event* event,
                                    detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
                                    survival(event->getRandomEngine()),
                                    timestep_);
+
+        // Check if the charge carrier has been trapped:
+        auto [trapped, traptime] = trapping_(type, survival(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
+        if(trapped) {
+            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+                // De-trap and advance in time if still below integration time
+                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
+                runge_kutta.advanceTime(traptime);
+            } else {
+                // Mark as trapped otherwise
+                is_trapped = true;
+            }
+        }
 
         // Update step length histogram
         if(output_plots_) {
@@ -433,7 +457,8 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive);
+    return std::make_tuple(
+        static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), is_alive, is_trapped);
 }
 
 void TransientPropagationModule::finalize() {
@@ -442,6 +467,7 @@ void TransientPropagationModule::finalize() {
         step_length_histo_->Write();
         drift_time_histo_->Write();
         recombine_histo_->Write();
+        trapped_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
