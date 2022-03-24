@@ -26,21 +26,21 @@ The sources for the chosen default values are provided in the table.
 \caption{List of default sensor material properties implemented in \apsq}
 \label{tab:material_properties}
 \centering
-\begin{tabular}{lll}
+\begin{tabular}{llll}
   \toprule
-\textbf{Material} & \textbf{Charge Creation Energy [eV]} & \textbf{Fano factor} \\
+\textbf{Material} & \shortstack[l]{\textbf{Charge Creation}\\\textbf{Energy [eV]}} & \textbf{Fano factor} & \textbf{Sources} \\
   \midrule
-  Silicon & 3.64~\cite{chargecreation} & 0.115~\cite{fano} \\
+  Silicon & 3.64 & 0.115 & \cite{chargecreation}, \cite{fano} \\
   \midrule
-  Gallium Arsenide & 4.2 & 0.14~\cite{GaAs_Fano} \\
+  Gallium Arsenide & 4.2 & 0.14 & \cite{GaAs_Fano} \\
   \midrule
-  Cadmium Telluride & 4.43~\cite{DABROWSKI1974531} & 0.24~\cite{SAMMARTINI2018168} \\
+  Cadmium Telluride & 4.43 & 0.24 & \cite{DABROWSKI1974531}, \cite{SAMMARTINI2018168} \\
   \midrule
-  Cadmium Zinc Telluride \ce{Cd_{0.8}Zn_{0.2}Te} & 4.6~\cite{CdZnTe_Creation} & 0.14~\cite{cdznte} \\
+  Cadmium Zinc Telluride \ce{Cd_{0.8}Zn_{0.2}Te} & 4.6 & 0.14 & \cite{CdZnTe_Creation}, \cite{cdznte} \\
   \midrule
-  Diamond & 13.1~\cite{Diamond_Creation_Fano} & 0.382~\cite{Diamond_Creation_Fano} \\
+  Diamond & 13.1 & 0.382 & \cite{Diamond_Creation_Fano}, \cite{Diamond_Creation_Fano} \\
   \midrule
-  Silicon Carbide (4H-SiC) & 7.6~\cite{SiC_Creation} & 0.1~\cite{SiC_Fano} \\
+  Silicon Carbide (4H-SiC) & 7.6 & 0.1 & \cite{SiC_Creation}, \cite{SiC_Fano} \\
 
 
 \bottomrule
@@ -290,6 +290,58 @@ The values implemented in \apsq are:
 for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "ruch_kino"}.
+
+
+\subsection{Quay Model}
+
+The Quay mobility model describes the mobility of electron and holes in a large range of semiconductor materials.
+In the original publication~\cite{quay}, the saturation velocity is modeled via the relation
+\begin{align}
+  \label{eq:mob:quay_vs}
+  v_{sat}\left(T\right) &= \frac{v_{sat,300}}{(1-A) + A\cdot\left( T/300 \right)} ,
+\end{align}
+with the saturation velocity at $T=\SI{300}{K}$ and the free parameter $A$.
+
+In \apsq  the mobility is determined according to a model published in~\cite{omar}, as a function of the saturation velocity $v_{sat}$, the electrical field $E$ and the critical field $E_C$:
+\begin{align}
+  \label{eq:mob:quay_mob}
+  \mu_e\left(E\right) &= \frac{v_{sat}}{E_C \cdot \sqrt{ 1 + \left( E/E_C \right)^2 }} .
+\end{align}
+
+The critical field in turn is defined as the saturation velocity divided by the mobility at zero field, where the zero-field mobility scales with temperature according to~\cite{omar}:
+\begin{align}
+  \label{eq:mob:ec}
+  E_C(T) = \frac{v_{sat}}{M T^{-\gamma}} .
+\end{align}
+
+The model has been implemented for silicon, germanium and gallium arsenide.
+Parameters for several other compound semiconductors are given in~\cite{quay} and~\cite{LandoltBornstein}.
+The parameters implemented in \apsq and their references are listed in Table~\ref{tab:mob:quay}
+\begin{table}[tbp]
+\caption{List of parameters for the Quay mobility model.}
+\label{tab:mob:quay}
+\centering
+\begin{tabular}{lllll}
+  \toprule
+\textbf{Material} & \textbf{Parameter} & \textbf{Electrons} & \textbf{Holes} & \textbf{Sources} \\
+  \midrule
+  \multirow{4}{*}{Silicon} & $v_{sat,300} [\si{cm \per s}]$            & \num{1.02e7} & \num{0.72e7} & \cite{quay} \\
+                           & $A$                                         & 0.74 & 0.37 & \cite{quay} \\
+                           & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{1.43e9} & \num{1.35e8} & \cite{jacoboni} \\
+                           & $\gamma$     & 2.42 & 2.2 & \cite{jacoboni} \\
+  \midrule
+  \multirow{4}{*}{Germanium} & $v_{sat,300} [\si{cm \per s}]$              & \num{0.7e7} & \num{0.63e7} & \cite{quay} \\
+                             & $A$                                         & 0.45 & 0.39 & \cite{quay} \\
+                             & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{5.66e7} & \num{1.05e9} & \cite{omar}, \cite{LandoltBornstein} \\
+                             & $\gamma$                                    & 1.68 & 2.33 & \cite{omar}, \cite{LandoltBornstein}  \\
+  \midrule
+  \multirow{4}{*}{\shortstack[l]{Gallium\\Arsenide}} & $v_{sat,300} [\si{cm \per s}]$              & \num{0.72e7} & \num{0.9e7} & \cite{quay} \\
+                                                     & $A$                                         & 0.44 & 0.59 & \cite{quay} \\
+                                                     & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{2.5e6} & \num{6.3e7}& \cite{LandoltBornstein} \\
+                                                     & $\gamma$                                    & 1.0 & 2.1 & \cite{LandoltBornstein} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 \subsection{Constant Mobility}
