@@ -126,6 +126,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Sebastian Schmidt, FAU Erlangen, @schmidtseb
 * Sanchit Sharma, Kansas State University, @SanchitKratos
 * Xin Shi, Institute of High Energy Physics Beijing, @xshi
+* Petr Smolyanskiy, Czech Technical Univbersity Prague, @psmolyan
 * Viktor Sonesten, GSOC2018 Student, @tmplt
 * Reem Taibah, Université de Paris, @retaibah
 * Ondrej Theiner, Charles University, @otheiner

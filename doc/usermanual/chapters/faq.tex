@@ -69,6 +69,18 @@ This can be done by adding the \parameter{log_level} and/or \parameter{log_forma
 \item[Can I import an electric field from TCAD and use it for simulating propagation?]
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which \apsq can parse.
 More information about this tool can be found in Section~\ref{sec:tcad_electric_field_converter}, instructions to import the generated field are provided in Section~\ref{sec:module_electric_field}.
+
+\item[What parameters should I consider when writig a simulation for a non-silicon sensor?]
+While \apsq implements several material-dependent default parameters, other parameters and models default to values suitable for silicon sensors.
+It is in any case advisable to check the following configuration parameters to ensure consistent results.
+\begin{itemize}
+\item Sensor material: The parameter \parameter{sensor_material}, to be adjusted in the corresponding detector model file, is crucial for the particle interaction simulated via Geant4 and defines further default parameters.
+\item Charge creation energy: The parameter \parameter{charge_creation_energy} is available in several modules for energy deposition and provides a material dependent default. For default values see Section~\ref{sec:material_properties}.
+\item Fano factor: The parameter \parameter{fano_factor} is available in several modules for energy deposition and provides a material dependent default. For default values see Section~\ref{sec:material_properties}.
+\item Mobility Model: The \parameter{mobility_model} needs to be adapted to the sensor material by the user. Section~\ref{sec:mobility} lists the available models.
+\item Recombination Model: Accessible via the parameter \parameter{recombination_model}, available models are listed in Section~\ref{sec:mobility}.
+\end{itemize}
+  
 \end{description}
 
 \section{Detector Models}
@@ -235,6 +247,15 @@ MyModule::MyModule(Configuration& config, Messenger* messenger, std::shared_ptr<
     messenger->bindSingle<MCParticleMessage>(this, MsgFlags::REQUIRED);
 }
 \end{minted}
+\item[How do I add a new sensor material?]
+When adding a new sensor material, additions at several positions in the code are necessary:
+\begin{itemize}
+\item Add material to list of available sensor materials in \command{src/core/geometry/DetectorModel.hpp}
+\item If not available yet, add material to the Geant4 material manager (\command{src/modules/GeometryBuilderGeant4/MaterialManager.cpp}). See examples of either using a material known to Geant4 or defining compositions in the code. It should be noted that the key of the \parameter{materials_} map needs to match the name of the sensor material defined in the previous step, transformed to lower case letters.
+\item Define default values for the material properties listed in \command{src/physics/MaterialProperties.hpp}.
+\item Add the list of material properties to the corresponding section of the user manual: \command{doc/usermanual/chapters/models.tex}.
+\end{itemize}
+Any contribution to the framework in terms of new sensor material definitions is welcome and can be added via a dedicated merge request.
 \end{description}
 
 \section{Miscellaneous}

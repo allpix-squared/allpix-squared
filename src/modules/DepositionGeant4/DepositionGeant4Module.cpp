@@ -36,6 +36,7 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
+#include "physics/MaterialProperties.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
@@ -65,10 +66,6 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
     config_.setDefault("pai_model", "pai");
-
-    // Set defaults for charge carrier creation
-    config_.setDefault("fano_factor", 0.115);
-    config_.setDefault("charge_creation_energy", Units::get(3.64, "eV"));
 
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
@@ -250,20 +247,14 @@ void DepositionGeant4Module::initialize() {
     LOG(TRACE) << "Constructing particle source";
     initialize_g4_action();
 
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    auto charge_creation_energy = config_.get<double>("charge_creation_energy");
-    auto fano_factor = config_.get<double>("fano_factor");
-    auto cutoff_time = config_.get<double>("cutoff_time");
-
     // Construct the sensitive detectors and fields.
     if(run_manager_mt == nullptr) {
         // Create the info track manager for the main thread before creating the Sensitive detectors.
         track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
-        construct_sensitive_detectors_and_fields(fano_factor, charge_creation_energy, cutoff_time);
+        construct_sensitive_detectors_and_fields();
     } else {
         // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
-        auto detector_construction =
-            std::make_unique<SDAndFieldConstruction>(this, fano_factor, charge_creation_energy, cutoff_time);
+        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this);
         run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
     }
 
@@ -371,9 +362,7 @@ void DepositionGeant4Module::finalizeThread() {
     }
 }
 
-void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fano_factor,
-                                                                      double charge_creation_energy,
-                                                                      double cutoff_time) {
+void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     if(geo_manager_->hasMagneticField()) {
         MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
 
@@ -401,6 +390,19 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields(double fan
             continue;
         }
         useful_deposition = true;
+
+        // Get ionization energy and Fano factor
+        auto model = detector->getModel();
+        auto charge_creation_energy =
+            (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
+                                                   : allpix::ionization_energies[model->getSensorMaterial()]);
+        auto fano_factor = (config_.has("fano_factor") ? config_.get<double>("fano_factor")
+                                                       : allpix::fano_factors[model->getSensorMaterial()]);
+        LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
+                   << Units::display(charge_creation_energy, "eV") << " and Fano factor " << fano_factor;
+
+        // Cut-off time for particle generation:
+        auto cutoff_time = config_.get<double>("cutoff_time");
 
         // Get model of the sensitive device
         auto* sensitive_detector_action = new SensitiveDetectorActionG4(

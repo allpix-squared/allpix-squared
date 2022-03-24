@@ -70,6 +70,10 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - plexiglass
  *   - silicon
  *   - tungsten
+ *   - gallium_arsenide
+ *   - nickel
+ *   - gold
+ *   - cadmium_telluride
  * - Composite or custom materials:
  *   - carbon fiber
  *   - epoxy
@@ -79,6 +83,9 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - paper
  *   - polystyrene
  *   - ppo foam
+ *   - cadmium zinc telluride
+ *   - diamond
+ *   - silicon carbide
  *   - vacuum
  */
 void Materials::init_materials() {
@@ -94,7 +101,12 @@ void Materials::init_materials() {
     materials_["lithium"] = nistman->FindOrBuildMaterial("G4_Li");
     materials_["plexiglass"] = nistman->FindOrBuildMaterial("G4_PLEXIGLASS");
     materials_["silicon"] = nistman->FindOrBuildMaterial("G4_Si");
+    materials_["germanium"] = nistman->FindOrBuildMaterial("G4_Ge");
     materials_["tungsten"] = nistman->FindOrBuildMaterial("G4_W");
+    materials_["gallium_arsenide"] = nistman->FindOrBuildMaterial("G4_GALLIUM_ARSENIDE");
+    materials_["cadmium_telluride"] = nistman->FindOrBuildMaterial("G4_CADMIUM_TELLURIDE");
+    materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
+    materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
 
     // Create required elements:
     auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
@@ -104,6 +116,9 @@ void Materials::init_materials() {
     auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
     auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
     auto* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
+    auto* Cd = new G4Element("Cadmium", "Cd", 48., 112.41 * CLHEP::g / CLHEP::mole);
+    auto* Zn = new G4Element("Zinc", "Zn", 30., 65.38 * CLHEP::g / CLHEP::mole);
+    auto* Te = new G4Element("Tellurium", "Te", 52., 127.60 * CLHEP::g / CLHEP::mole);
 
     // Create Epoxy material
     auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
@@ -159,6 +174,21 @@ void Materials::init_materials() {
     PPOFoam->AddElement(H, 8);
     PPOFoam->AddElement(O, 1);
     materials_["ppofoam"] = PPOFoam;
+
+    // Create Cadmium Zinc Telluride
+    auto* CdZnTe = new G4Material("CdZnTe", 5.95 * CLHEP::g / CLHEP::cm3, 3);
+    CdZnTe->AddElement(Cd, 8);
+    CdZnTe->AddElement(Zn, 2);
+    CdZnTe->AddElement(Te, 10);
+    materials_["cadmium_zinc_telluride"] = CdZnTe;
+
+    auto* Diamond = new G4Material("Diamond", 6, 12.01 * CLHEP::g / CLHEP::mole, 3.52 * CLHEP::g / CLHEP::cm3);
+    materials_["diamond"] = Diamond;
+
+    auto* SiliconCarbide = new G4Material("SiliconCarbide", 3.21 * CLHEP::g / CLHEP::cm3, 2);
+    SiliconCarbide->AddElement(Si, 1);
+    SiliconCarbide->AddElement(C, 1);
+    materials_["silicon_carbide"] = SiliconCarbide;
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);

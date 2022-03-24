@@ -1,9 +1,53 @@
-\chapter{Physics Models}
+\chapter{Physics Models \& Material Properties }
 \label{ch:models}
 
-\apsq implements a variety of models to describe the physics of semiconductor detectors.
-These models are implemented module-independently and can be selected via configuration parameters in the respective models.
-This chapter serves as central reference for the different models.
+\apsq implements a variety of properties and models to describe the physics of semiconductor detectors.
+Models are implemented module-independently and can be selected via configuration parameters in the respective models, while sensor material properties serve as a default to module parameters and can be overwritten in the respective configuration section.
+This chapter serves as central reference for the different properties and models.
+
+\section{Sensor Material Properties}
+\label{sec:material_properties}
+
+\apsq supports the definition of a variety of semiconductor sensor materials.
+To simplify the setup of simulations with certain materials and to avoid inconsistent results, a set of default material properties is defined for each available material.
+These stored values serve as defaults to modules depending on one of these properties and may thus be overwritten using the corresponding configuration key in the respective section of the main configuration file.
+
+The following parameters are currently provided by the framework:
+\begin{itemize}
+\item Charge creation energy
+\item Fano factor
+\end{itemize}
+
+The values for various materials are listed in Table~\ref{tab:material_properties}.
+It should be noted that for many of the following values a significant variation on measurements exist throughout literature, among others owed to a variation of material quality and composition and of vendors.
+The sources for the chosen default values are provided in the table.
+
+\begin{table}[tbp]
+\caption{List of default sensor material properties implemented in \apsq}
+\label{tab:material_properties}
+\centering
+\begin{tabular}{llll}
+  \toprule
+\textbf{Material} & \shortstack[l]{\textbf{Charge Creation}\\\textbf{Energy [eV]}} & \textbf{Fano factor} & \textbf{Sources} \\
+  \midrule
+  Silicon & 3.64 & 0.115 & \cite{chargecreation}, \cite{fano} \\
+  \midrule
+  Gallium Arsenide & 4.2 & 0.14 & \cite{GaAs_Fano} \\
+  \midrule
+  Cadmium Telluride & 4.43 & 0.24 & \cite{DABROWSKI1974531}, \cite{SAMMARTINI2018168} \\
+  \midrule
+  Cadmium Zinc Telluride \ce{Cd_{0.8}Zn_{0.2}Te} & 4.6 & 0.14 & \cite{CdZnTe_Creation}, \cite{cdznte} \\
+  \midrule
+  Diamond & 13.1 & 0.382 & \cite{Diamond_Creation_Fano}, \cite{Diamond_Creation_Fano} \\
+  \midrule
+  Silicon Carbide (4H-SiC) & 7.6 & 0.1 & \cite{SiC_Creation}, \cite{SiC_Fano} \\
+
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+It should be noted that material properties such as the density and composition of materials are defined only in case of constructing a Geant4 geometry via the module GeometryConstructionGeant4, therefore these values are implemented within the respective module.
 
 \section{Charge Carrier Mobility}
 \label{sec:mobility}
@@ -223,6 +267,83 @@ where $\mu_{m}(N)$ is the Masetti mobility from Equation~\eqref{eq:mob:mas}, and
 
 This model can be selected in the configuration file via the parameter \parameter{mobility_model = "masetti_canali"}.
 
+\subsection{Ruch-Kino Model}
+
+The Ruch-Kino mobility model~\cite{ruchkino} parametrizes electron and hole mobility in GaAs sensor material.
+The model parameters implemented in \apsq is taken from measurements~\cite{Bergmann_2020}.
+
+The mobility is parametrized as
+\begin{align}
+    \label{eq:mob:rkgaas}
+    \mu_e(E) &= \mu_{0,e} &\quad \textrm{for} \quad E < E_0 \nonumber \\
+             &= \mu_{0,e} / \sqrt{1 + \left(E - E_0\right)^2 / E_c^2} &\quad \textrm{for} \quad E \geq E_0 \nonumber \\
+    \mu_h(E) &= \mu_{0,h}.
+\end{align}
+
+The values implemented in \apsq are:
+\begin{align*}
+      E_0   &= \SI{3.1e3}{V \per cm} \\
+      E_c   &= \SI{1.36e3}{V \per cm} \\
+      \mu_{0,e}   &= \SI{7.6e3}{cm^2 \per V \per s} \\
+      \mu_{0,h}   &= \SI{3.2e2}{cm^2 \per V \per s} \\
+\end{align*}
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter \parameter{mobility_model = "ruch_kino"}.
+
+
+\subsection{Quay Model}
+
+The Quay mobility model describes the mobility of electron and holes in a large range of semiconductor materials.
+In the original publication~\cite{quay}, the saturation velocity is modeled via the relation
+\begin{align}
+  \label{eq:mob:quay_vs}
+  v_{sat}\left(T\right) &= \frac{v_{sat,300}}{(1-A) + A\cdot\left( T/300 \right)} ,
+\end{align}
+with the saturation velocity at $T=\SI{300}{K}$ and the free parameter $A$.
+
+In \apsq  the mobility is determined according to a model published in~\cite{omar}, as a function of the saturation velocity $v_{sat}$, the electrical field $E$ and the critical field $E_C$:
+\begin{align}
+  \label{eq:mob:quay_mob}
+  \mu_e\left(E\right) &= \frac{v_{sat}}{E_C \cdot \sqrt{ 1 + \left( E/E_C \right)^2 }} .
+\end{align}
+
+The critical field in turn is defined as the saturation velocity divided by the mobility at zero field, where the zero-field mobility scales with temperature according to~\cite{omar}:
+\begin{align}
+  \label{eq:mob:ec}
+  E_C(T) = \frac{v_{sat}}{M T^{-\gamma}} .
+\end{align}
+
+The model has been implemented for silicon, germanium and gallium arsenide.
+Parameters for several other compound semiconductors are given in~\cite{quay} and~\cite{LandoltBornstein}.
+The parameters implemented in \apsq and their references are listed in Table~\ref{tab:mob:quay}
+\begin{table}[tbp]
+\caption{List of parameters for the Quay mobility model.}
+\label{tab:mob:quay}
+\centering
+\begin{tabular}{lllll}
+  \toprule
+\textbf{Material} & \textbf{Parameter} & \textbf{Electrons} & \textbf{Holes} & \textbf{Sources} \\
+  \midrule
+  \multirow{4}{*}{Silicon} & $v_{sat,300} [\si{cm \per s}]$            & \num{1.02e7} & \num{0.72e7} & \cite{quay} \\
+                           & $A$                                         & 0.74 & 0.37 & \cite{quay} \\
+                           & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{1.43e9} & \num{1.35e8} & \cite{jacoboni} \\
+                           & $\gamma$     & 2.42 & 2.2 & \cite{jacoboni} \\
+  \midrule
+  \multirow{4}{*}{Germanium} & $v_{sat,300} [\si{cm \per s}]$              & \num{0.7e7} & \num{0.63e7} & \cite{quay} \\
+                             & $A$                                         & 0.45 & 0.39 & \cite{quay} \\
+                             & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{5.66e7} & \num{1.05e9} & \cite{omar}, \cite{LandoltBornstein} \\
+                             & $\gamma$                                    & 1.68 & 2.33 & \cite{omar}, \cite{LandoltBornstein}  \\
+  \midrule
+  \multirow{4}{*}{\shortstack[l]{Gallium\\Arsenide}} & $v_{sat,300} [\si{cm \per s}]$              & \num{0.72e7} & \num{0.9e7} & \cite{quay} \\
+                                                     & $A$                                         & 0.44 & 0.59 & \cite{quay} \\
+                                                     & $M [\si{\cm^2K}^\gamma \si{\per V \per s}]$ & \num{2.5e6} & \num{6.3e7}& \cite{LandoltBornstein} \\
+                                                     & $\gamma$                                    & 1.0 & 2.1 & \cite{LandoltBornstein} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
 \subsection{Constant Mobility}
 
 Some simulations require constant charge carrier mobility values $\mu = \textrm{const}$.
@@ -326,7 +447,7 @@ This model can be selected in the configuration file via the parameter \paramete
 
 \subsection{Auger Recombination}
 
-At high doping levels exceeding $\SI{5e18}{\centi\metre^{-3}}$~\cite{FOSSUM1983569}, the Auger recombination model becomes increasingly important.
+At high doping levels exceeding $\SI{5e18}{\centi\metre^{-3}}$~\cite{fossum-lee}, the Auger recombination model becomes increasingly important.
 It assumes that the excess energy created by electron-hole recombinations is transferred to another electron (\textit{e-e-h process}) or another hole (\textit{e-h-h process}).
 The total recombination rate is then given by~\cite{kerr}:
 
@@ -357,6 +478,19 @@ where $\tau_{srh}(N)$ is the Shockley-Read-Hall and $\tau_{a}(N)$ the Auger life
 The latter is only taken into account for minority charge carriers.
 
 This model can be selected in the configuration file via the parameter \parameter{recombination_model = "srh_auger"}.
+
+\subsection{Recombination with Constant Lifetimes}
+
+Some materials require constant lifetimes for charge carriers $\tau (N) = \tau$.
+This can be simulated with this model, which can be selected in the configuration file via the parameter \parameter{recombination_model = "constant"}.
+It requires the additional configuration keys \parameter{lifetime_electron} and \parameter{lifetime_hole} to be present in the module configuration section, for example:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Constant lifetimes for electrons and holes in GaAs with Cr compensation:
+recombination_model = "constant"
+lifetime_electron = 30ns
+lifetime_hole = 4.5ns
+\end{minted}
 
 
 \section{Trapping of Charge Carriers}

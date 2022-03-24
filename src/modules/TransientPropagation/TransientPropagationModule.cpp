@@ -72,6 +72,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 void TransientPropagationModule::initialize() {
 
     auto detector = getDetector();
+    auto model = detector_->getModel();
 
     // Check for electric field
     if(!detector->hasElectricField()) {
@@ -87,7 +88,7 @@ void TransientPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, detector->hasDopingProfile());
+    mobility_ = Mobility(config_, model->getSensorMaterial(), detector->hasDopingProfile());
 
     // Prepare recombination model
     recombination_ = Recombination(config_, detector->hasDopingProfile());

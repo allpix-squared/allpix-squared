@@ -17,6 +17,7 @@
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
@@ -283,6 +284,112 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Ruch-Kino mobility model for charge carriers in GaAs:Cr
+     *
+     * Model from https://doi.org/10.1103/PhysRev.174.921
+     * Parameterization variables from https://10.1088/1748-0221/15/03/c03013
+     */
+    class RuchKino : virtual public MobilityModel {
+    public:
+        RuchKino()
+            : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
+              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {}
+
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
+            // Compute carrier mobility from constants and electric field magnitude
+            if(type == CarrierType::ELECTRON) {
+                if(efield_mag < E0_gaas_) {
+                    return mu_e_gaas_;
+                } else {
+                    return mu_e_gaas_ / sqrt(1 + std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2));
+                }
+            } else {
+                return mu_h_gaas_;
+            }
+        };
+
+    private:
+        double E0_gaas_;
+        double mu_e_gaas_;
+        double Ec_gaas_;
+        double mu_h_gaas_;
+    };
+
+    /*
+     * @ingroup Models
+     * @brief Quay mobility model for charge carriers in different semiconductor materials
+     *
+     * Quay (https://doi.org/10.1016/0038-1101(87)90063-3) uses a parametrization of the saturation velocity VSat taken from
+     * https://doi.org/10.1016/S1369-8001(00)00015-9. This parametrisation has the advantage that it can be applied to most
+     * common semiconductor materials. The mobility is a function of VSat and the critical field Ec, which is defined as Vsat
+     * divided by the mobility at zero field:
+     *
+     *     Ec = Vsat / mu_zero
+     *
+     * The mobility at zero field is parametrised as
+     *
+     *     mu_zero = alpha * temperature^-p.
+     *
+     * The parameters alpha (mobility at 0K) and p have to be taken from parametrizations to data. Landolt-Bornstein - Group
+     * III Condensed Matter (https://doi.org/10.1007/b80447) provides a good general summary of the parameters.
+     *
+     * N.B: the parameter p is generally between 1.5 and 2.3, translating theoretical predictions that mobility at low
+     * temperatures (below ~100K) generally goes as T^-1.5 dominated by acoustic phonon scattering, while the mobility at
+     * higher temperatures (which goes as T^-2.3) has a contribution from both acoustical and optical phonon scattering.
+     */
+    class Quay : public MobilityModel {
+    public:
+        Quay(SensorMaterial material, double temperature) {
+            if(material == SensorMaterial::SILICON) {
+                electron_Vsat_ = vsat(Units::get(1.02e7, "cm/s"), 0.74, temperature);
+                hole_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.37, temperature);
+
+                // parameters for mobility at zero field defined in Jacoboni et al
+                // https://doi.org/10.1016/0038-1101(77)90054-5
+                electron_Ec_ = electron_Vsat_ / (Units::get(1.43e9, "cm*cm*K/V/s") / std::pow(temperature, 2.42));
+                hole_Ec_ = hole_Vsat_ / (Units::get(1.35e8, "cm*cm*K/V/s") / std::pow(temperature, 2.20));
+            } else if(material == SensorMaterial::GERMANIUM) {
+                electron_Vsat_ = vsat(Units::get(0.7e7, "cm/s"), 0.45, temperature);
+                hole_Vsat_ = vsat(Units::get(0.63e7, "cm/s"), 0.39, temperature);
+
+                // Parameters for mobility at zero field defined in Omar et al for electrons
+                // https://doi.org/10.1016/0038-1101(87)90063-3 and in Landolt-Bornstein - Group III Condensed Matter
+                // https://doi.org/10.1007/b80447 for holes
+                electron_Ec_ = electron_Vsat_ / (Units::get(5.66e7, "cm*cm*K/V/s") / std::pow(temperature, 1.68));
+                hole_Ec_ = hole_Vsat_ / (Units::get(1.05e9, "cm*cm*K/V/s") / std::pow(temperature, 2.33));
+
+            } else if(material == SensorMaterial::GALLIUM_ARSENIDE) {
+                electron_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.44, temperature);
+                hole_Vsat_ = vsat(Units::get(0.9e7, "cm/s"), 0.59, temperature);
+
+                electron_Ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
+                hole_Ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
+            } else {
+                throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
+            }
+        };
+
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_Vsat_ / electron_Ec_ / std::sqrt(1. + efield_mag * efield_mag / electron_Ec_ / electron_Ec_);
+            } else {
+                return hole_Vsat_ / hole_Ec_ / std::sqrt(1. + efield_mag * efield_mag / hole_Ec_ / hole_Ec_);
+            }
+        };
+
+    private:
+        double vsat(double vsat300, double a, double temperature) const {
+            return vsat300 / ((1 - a) + a * (temperature / 300));
+        };
+
+        double electron_Vsat_;
+        double hole_Vsat_;
+        double electron_Ec_;
+        double hole_Ec_;
+    };
+
+    /**
+     * @ingroup Models
      * @brief Constant mobility of electrons and holes
      */
     class ConstantMobility : public MobilityModel {
@@ -371,10 +478,11 @@ namespace allpix {
 
         /**
          * Mobility constructor
-         * @param config      Configuration of the calling module
-         * @param doping      Boolean to indicate presence of doping profile information
+         * @param config    Configuration of the calling module
+         * @param material  Material of the sensor in question
+         * @param doping    Boolean to indicate presence of doping profile information
          */
-        explicit Mobility(const Configuration& config, bool doping = false) {
+        explicit Mobility(const Configuration& config, SensorMaterial material, bool doping = false) {
             try {
                 auto model = config.get<std::string>("mobility_model");
                 auto temperature = config.get<double>("temperature");
@@ -392,6 +500,10 @@ namespace allpix {
                     model_ = std::make_unique<MasettiCanali>(temperature, doping);
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(temperature, doping);
+                } else if(model == "ruch_kino") {
+                    model_ = std::make_unique<RuchKino>();
+                } else if(model == "quay") {
+                    model_ = std::make_unique<Quay>(material, temperature);
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantMobility>(config.get<double>("mobility_electron"),
                                                                 config.get<double>("mobility_hole"));

@@ -149,7 +149,8 @@ void PulseTransferModule::run(Event* event) {
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
             try {
-                pulse.addCharge(propagated_charge.getCharge(), propagated_charge.getLocalTime());
+                pulse.addCharge(static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()),
+                                propagated_charge.getLocalTime());
             } catch(const PulseBadAllocException& e) {
                 LOG(ERROR) << e.what() << std::endl
                            << "Ignoring pulse contribution at time "

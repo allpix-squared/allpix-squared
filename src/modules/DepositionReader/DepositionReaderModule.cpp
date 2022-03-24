@@ -16,6 +16,7 @@
 
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "physics/MaterialProperties.hpp"
 
 using namespace allpix;
 
@@ -24,8 +25,6 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    config_.setDefault<double>("charge_creation_energy", Units::get(3.64, "eV"));
-    config_.setDefault<double>("fano_factor", 0.115);
     config_.setDefault<size_t>("detector_name_chars", 0);
     config_.setDefault<std::string>("unit_length", "mm");
     config_.setDefault<std::string>("unit_time", "ns");
@@ -50,10 +49,6 @@ DepositionReaderModule::DepositionReaderModule(Configuration& config, Messenger*
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
 
     file_model_ = config_.get<FileModel>("model");
-
-    // Get the creation energy for charge (default is silicon electron hole pair energy)
-    charge_creation_energy_ = config_.get<double>("charge_creation_energy");
-    fano_factor_ = config_.get<double>("fano_factor");
     volume_chars_ = config_.get<size_t>("detector_name_chars");
 
     unit_length_ = config_.get<std::string>("unit_length");
@@ -181,9 +176,22 @@ void DepositionReaderModule::initialize() {
 
             // Create histograms if needed
             std::string plot_name = "deposited_charge_" + detector->getName();
-            charge_per_event_[detector->getName()] = CreateHistogram<TH1D>(
+            charge_per_event_[detector] = CreateHistogram<TH1D>(
                 plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
+    }
+
+    // Calculate ionization energies and Fano factors:
+    for(auto& detector : geo_manager_->getDetectors()) {
+        auto model = detector->getModel();
+        charge_creation_energy_[detector] =
+            (config_.has("charge_creation_energy") ? config_.get<double>("charge_creation_energy")
+                                                   : allpix::ionization_energies[model->getSensorMaterial()]);
+        fano_factor_[detector] = (config_.has("fano_factor") ? config_.get<double>("fano_factor")
+                                                             : allpix::fano_factors[model->getSensorMaterial()]);
+        LOG(DEBUG) << "Detector " << detector->getName() << " uses charge creation energy "
+                   << Units::display(charge_creation_energy_[detector], "eV") << " and Fano factor "
+                   << fano_factor_[detector];
     }
 }
 
@@ -265,8 +273,8 @@ void DepositionReaderModule::run(Event* event) {
 
         // Calculate number of electron hole pairs produced, taking into account fluctuations between ionization and lattice
         // excitations via the Fano factor. We assume Gaussian statistics here.
-        auto mean_charge = energy / charge_creation_energy_;
-        allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
+        auto mean_charge = energy / charge_creation_energy_[detector];
+        allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_[detector]));
         auto charge = static_cast<unsigned int>(charge_fluctuation(event->getRandomEngine()));
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
@@ -392,7 +400,7 @@ void DepositionReaderModule::run(Event* event) {
             // Fill output plots if requested:
             if(output_plots_) {
                 double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
-                charge_per_event_[detector->getName()]->Fill(charge);
+                charge_per_event_[detector]->Fill(charge);
             }
         }
     }
