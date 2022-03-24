@@ -289,7 +289,7 @@ The lifetime is calculated using the Shockley-Read-Hall relation as given by~\ci
     \tau(N) = \frac{\tau_0}{1 + \frac{N}{N_{d0}}}
 \end{equation}
 where $\tau_0$ and $N_{d0}$ are reference lifetime and doping concentration, for electrons and holes respectively.
-The parameter values implemented in \apsq are taken from~\cite{fossum} as:
+The parameter values implemented in \apsq are taken from~\cite{fossum-lee} and the Synopsys Sentaurus TCAD software manual as:
 \begin{equation*}
     \begin{split}
         \tau_{0,e} &= \SI{1e-5}{s} \\
@@ -297,10 +297,16 @@ The parameter values implemented in \apsq are taken from~\cite{fossum} as:
     \end{split}
     \qquad
     \begin{split}
-        \tau_{0,e} &= \SI{4.0e-4}{s} \\
-        N_{d0,e}   &= \SI{7.1e15}{\per \cubic \cm} \\
+        \tau_{0,h} &= \SI{4.0e-4}{s} \\
+        N_{d0,h}   &= \SI{7.1e15}{\per \cubic \cm} \\
     \end{split}
 \end{equation*}
+
+The temperature dependence of the Shockley-Read-Hall lifetime is scaled following the low-temperature approximation model presented in~\cite{schenk} as:
+
+\begin{equation}
+    \tau(N, T) = \tau(N) \left( \frac{\SI{300}{K}}{T} \right)^{3/2}
+\end{equation}
 
 This model can be selected in the configuration file via the parameter \parameter{recombination_model = "srh"}.
 
