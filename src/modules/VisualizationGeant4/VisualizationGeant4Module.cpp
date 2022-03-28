@@ -38,6 +38,7 @@
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "tools/geant4/G4LoggingDestination.hpp"
 
 using namespace allpix;
 
@@ -62,7 +63,7 @@ VisualizationGeant4Module::~VisualizationGeant4Module() {
     std::string driver;
     try {
         driver = config_.get<std::string>("driver", "");
-    } catch(InvalidKeyError& e) {
+    } catch(ConfigurationError& e) {
         driver = "";
     }
 
@@ -158,6 +159,9 @@ void VisualizationGeant4Module::initialize() {
     if(config_.has("macro_init")) {
         UI->ApplyCommand("/control/execute " + config_.getPath("macro_init", true).string());
     }
+
+    // Force logging through our framework again since it seems to be reset during initialization:
+    UI->SetCoutDestination(G4LoggingDestination::getInstance());
 }
 
 /**
