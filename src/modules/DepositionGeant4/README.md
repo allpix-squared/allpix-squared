@@ -1,41 +1,41 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DepositionGeant4"
+description: "Deposition with Geant4"
+module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)"
+module_status: "Functional"
+module_output: "DepositedCharge, MCParticle, MCTrack"
+---
 
-# DepositionGeant4
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)  
-**Status**: Functional  
-**Output**: DepositedCharge, MCParticle, MCTrack
-
-### Description
+## Description
 Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
 It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
-The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
+The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy \[[@chargecreation]\], fluctuations are modeled using a Fano factor assuming Gaussian statistics \[[@fano]\].
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
-#### Source Shapes
+### Source Shapes
 
 The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
 Pre-defined shapes are point, beam, square or sphere.
 For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
 By default, the particle directions for the square are random, as would be for a squared radioactive source.
-For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 [@g4gps] and the field inside the sphere is hence isotropic.
+For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 \[[@g4gps]\] and the field inside the sphere is hence isotropic.
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
-These commands are those defined for the GPS source and are explained in the Geant4 website [@g4gps].
+These commands are those defined for the GPS source and are explained in the Geant4 website \[[@g4gps]\].
 In order to avoid collisions with internal configurations, the command `/gps/number` should be replaced by the configuration parameter `number_of_particles` in this module in order to correctly execute the Geant4 event loop.
 
 All source positions defined in the macro via the commands `/gps/position` and `/gps/pos/centre` are used to automatically extend the Geant4 world volume to always include the sources.
 
-#### Particles, Ions and Radioactive Decays
+### Particles, Ions and Radioactive Decays
 
-The particle type can be set via a string (`particle_type`) or by the respective PDG code (`particle_code`). Refer to the Geant4 webpage [@g4particles] for information about the available types of particles and the PDG particle code definition [@pdg] for a list of the available particles and PDG codes.
+The particle type can be set via a string (`particle_type`) or by the respective PDG code (`particle_code`). Refer to the Geant4 webpage \[[@g4particles]\] for information about the available types of particles and the PDG particle code definition \[[@pdg]\] for a list of the available particles and PDG codes.
 
 Radioactive sources can be simulated simply by setting their isotope name in the `particle_type` parameter, and optionally by setting the source energy to zero for a decay in rest.
-The `G4RadioactiveDecay` package [@g4radioactive] is used to simulate the decay of the radioactive nuclei.
+The `G4RadioactiveDecay` package \[[@g4radioactive]\] is used to simulate the decay of the radioactive nuclei.
 Secondary ions from the decay are not further treated and the decay chain is interrupted, e.g. Am241 only undergoes its alpha decay without the decay of its daughter nucleus of Np237 being simulated. The full decay chain can be simulated if the `cutoff_time` is set to the appropriate value for this chain.
 Radioactive isotopes are forced to decay immediately in order to allow sensible measurements of arrival and deposition times.
 Currently, the following radioactive isotopes are supported: `Fe55`, `Am241`, `Sr90`, `Co60`, `Cs137`.
@@ -49,10 +49,10 @@ particle_type = "ion/Z/A/Q/E/D"
 
 where `Z` and `A` are unsigned integers, `Q` is a signed integer, `E` a floating point value with units, e.g. `13eV`, and `D` is `true` for instant decay or `false` else.
 
-#### Energy Deposition and Charge Carrier creation
+### Energy Deposition and Charge Carrier creation
 
 For all particles passing the sensitive device of the detectors, the energy loss is converted into deposited charge carriers in every step of the Geant4 simulation.
-Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of very thin sensors [@pai].
+Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of very thin sensors \[[@pai]\].
 The information about the truth particle passage is also fully available, with every deposit linked to a MCParticle.
 Each trajectory which passes through at least one detector is also registered and stored as a global MCTrack.
 MCParticles are linked to their respective tracks and each track is linked to its parent track, if available.
@@ -68,19 +68,19 @@ The module supports the propagation of charged particles in a magnetic field if 
 With the `output_plots` parameter activated, the module produces histograms of the total deposited charge per event for every sensor in units of kilo-electrons.
 The scale of the plot axis can be adjusted using the `output_plots_scale` parameter and defaults to a maximum of 100ke.
 
-### Dependencies
+## Dependencies
 
 This module requires an installation Geant4.
 
-### Parameters
-* `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
+## Parameters
+* `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website \[[@g4physicslists]\].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]). A full list of supported materials can be found elsewhere in the manual.
-* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano]. A full list of supported materials can be found elsewhere in the manual.
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, \[[@chargecreation]\]). A full list of supported materials can be found elsewhere in the manual.
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon \[[@fano]\]. A full list of supported materials can be found elsewhere in the manual.
 * `max_step_length` : Maximum length of a simulation step in every sensitive device. Defaults to 1um.
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
-* `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation [@g4particles] for information about the available types of particles.
+* `particle_type` : Type of the Geant4 particle to use in the source (string). Refer to the Geant4 documentation \[[@g4particles]\] for information about the available types of particles.
 * `particle_code` : PDG code of the Geant4 particle to use in the source.
 * `source_energy` : Mean kinetic energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
@@ -93,24 +93,24 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
-#### Parameters for source `beam`
+### Parameters for source `beam`
 * `beam_size` : Width of the Gaussian beam profile.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the beam as a unit vector.
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
-#### Parameters for source `square`
+### Parameters for source `square`
 * `square_side` : Length of the square side.
 * `square_angle` : Cone opening angle defining the maximum submission angle. Defaults to `180deg`, i.e. emission into one full hemisphere.
 
-#### Parameters for source `sphere`
+### Parameters for source `sphere`
 * `sphere_radius` : Radius of the sphere source (particles start only from the surface).
 * `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
 
-#### Parameters for source `macro`
+### Parameters for source `macro`
 * `file_name` : Path to the Geant4 source macro file.
 
-### Usage
+## Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
 
 ```ini

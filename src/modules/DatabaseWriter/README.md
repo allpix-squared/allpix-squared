@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DatabaseWriter"
+description: "Writes simulation out to a postgreSQL database"
+module_maintainer: "Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_input: "all objects in simulation"
+---
 
-# DatabaseWriter
-**Maintainer**: Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional  
-**Input**: *all objects in simulation*
-
-### Description
+## Description
 This module enables writing the simulation output into a postgreSQL database.
 This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).
 By default, all object types (MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit) are written.
@@ -17,7 +17,7 @@ Unless really required for the analysis of the simulation, it is recommended to 
 This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
 In order to use this module, one is required to install PostgreSQL and generate a database using the `create-db.sql` script in `/etc/scripts`. On Linux, this can be done as
 
-```bash
+```sh
 sudo -u postgres psql
 postgres: CREATE DATABASE mydb;
 postgres: \q
@@ -52,7 +52,7 @@ This generates a database with the following structure:
 Host, username and password are required to write into the database.
 A new user/password pair can be created and relevant privileges to edit the database can be created via
 
-```
+```sh
 sudo -u postgres createuser myuser
 sudo -u postgres psql mydb
 postgres: CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
@@ -63,7 +63,7 @@ postgres: GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO myuser;
 
 In case of an authentication failure error being issues, the password of the user can be changed using
 
-```
+```sh
 sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
 ```
 
@@ -85,7 +85,7 @@ mydb: SELECT * FROM pixelhit;
            4 |      1 |        2 |             4 |              4 | detector2 | 2 | 2 | 38011.6 |       0
 ```
 
-### Parameters
+## Parameters
 * `host`: Host address on which the database server runs, can be an IP address or host name. Mandatory parameter.
 * `port`: Port the database server listens on. Mandatory parameter.
 * `database_name`: Name of the database to store data in. The database needs to exist and has to be created before starting the simulation. Mandatory parameter.
@@ -97,7 +97,7 @@ mydb: SELECT * FROM pixelhit;
 * `global_timing`: Flag to select global timing information to be written to the database. By default, local information is written, i.e. only the local time information from the pixel hit in question. If enabled, the timestamp is set as the global time information of the object with respect to the event begin. Defaults to `false`.
 * `require_sequence`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. Defaults to `false`, writing events immediately. If strict adherence to the order of events is required, finished events are buffered until they can be written to the database. Since in this case database access happens single-threaded, this might impact the performance of the simulation.
 
-### Usage
+## Usage
 To write objects excluding `PropagatedCharge` and `DepositedCharge` to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
 
 ```ini

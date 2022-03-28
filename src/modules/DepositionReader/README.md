@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DepositionReader"
+description: "Deposition from a file"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_output: "DepositedCharge, MCParticle"
+---
 
-# DepositionReader
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Functional  
-**Output**: DepositedCharge, MCParticle
-
-### Description
+## Description
 This module allows to read in energy depositions in a sensor volume produced with a different program, e.g. with Geant4 in a standalone simulation of the respective experiment.
 The detector geometry for Allpix Squared should resemble the global positions of the detectors of interest in the original simulation.
 
@@ -20,7 +20,7 @@ It allows matching of the detector name to be performed on a sub-string of the o
 Only energy deposits within a valid volume are considered, i.e. where a matching detector with the same name can be found in the geometry setup.
 The global coordinates are then translated to local coordinates of the given detector.
 If these are outside the sensor, the energy deposit is discarded and a warning is printed.
-The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
+The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy \[[@chargecreation]\], fluctuations are modeled using a Fano factor assuming Gaussian statistics \[[@fano]\].
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
@@ -34,7 +34,7 @@ The scale of the plot axis can be adjusted using the `output_plots_scale` parame
 Currently two data sources are supported, ROOT trees and CSV text files.
 Their expected formats are explained in detail in the following.
 
-#### ROOT Trees
+### ROOT Trees
 
 Data in ROOT trees are interpreted as follows.
 The tree with name `tree_name` is opened from the provided ROOT file, and information of energy deposits is read from its individual branches.
@@ -63,7 +63,7 @@ If `assign_timestamps` or `create_mcparticles` are set to `false`, their branch 
 Individual leafs of branches can be assigned using the dot notation, e.g. `energy.Edep` to access a leaf of the branch `energy` to retrieve the energy deposit information.
 
 
-#### CSV Files
+### CSV Files
 
 Data in CSV-formatted text files are interpreted as follows.
 Empty lines as well as lines starting with a hash (`#`) are ignored, all other lines are interpreted either as event header if they start with `E`, or as energy deposition:
@@ -82,7 +82,7 @@ Event: <N+1>
 # ...
 ```
 
-where `<N>` is the current event number, `<PID>` is the PDG particle ID [@pdg], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy, `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the detector name (volume) the energy deposit should be assigned to.
+where `<N>` is the current event number, `<PID>` is the PDG particle ID \[[@pdg]\], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy, `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the detector name (volume) the energy deposit should be assigned to.
 The values are interpreted in the default framework units unless specified otherwise via the configuration parameters of this module.
 `<TRK>` represents the track id of the particle track which has caused this energy deposition, and `<PRT>` the id of the parent particle which created this particle.
 
@@ -90,14 +90,14 @@ If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`
 
 The file should have its end-of-file marker (EOF) in a new line, otherwise the last entry will be ignored.
 
-### Parameters
+## Parameters
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
 * `file_name`: Location of the input data file. The appropriate file extension will be appended if not present, depending on the `model` chosen either `.csv` or `.root`.
 * `tree_name`: Name of the input tree to be read from the ROOT file. Only used for the `root` model.
 * `branch_names`: List of names of the ten branches to be read from the input ROOT file. Only used for the `root` model. The default names and their content are listed above in the _ROOT Trees_ section.
 * `detector_name_chars`: Parameter which allows selecting only a sub-string of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parameterized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]). A full list of supported materials can be found elsewhere in the manual.
-* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano]. A full list of supported materials can be found elsewhere in the manual.
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, \[[@chargecreation]\]). A full list of supported materials can be found elsewhere in the manual.
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon \[[@fano]\]. A full list of supported materials can be found elsewhere in the manual.
 * `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
 * `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.
@@ -106,7 +106,7 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
-### Usage
+## Usage
 An example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
 
 ```toml

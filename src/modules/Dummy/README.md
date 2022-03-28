@@ -1,19 +1,19 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "Dummy"
+description: "A dummy module"
+module_maintainer: "*NAME* (*EMAIL*)"
+module_status: "Functional"
+module_input: "*INPUT_MESSAGE if applicable*"
+module_output: "*OUTPUT_MESSAGE if applicable*"
+---
 
-# Dummy
-**Maintainer**: *NAME* (*EMAIL*)  
-**Status**: Functional  
-[**Input**: *INPUT_MESSAGE*]  
-[**Output**: *OUTPUT_MESSAGE*]  
-
-### Description
+## Description
 *Short description of this module*
 
-### Parameters
+## Parameters
 * `param`: *explanation with optional default*
 
-### Usage
+## Usage
 *Example how to use this module*

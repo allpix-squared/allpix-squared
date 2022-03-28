@@ -1,22 +1,22 @@
-<!--
-SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "MagneticFieldReader"
+description: "Reads the magnetic field for a detector"
+module_maintainer: "Paul Schuetze (<paul.schuetze@desy.de>)"
+module_status: "Functional"
+---
 
-# MagneticFieldReader
-**Maintainer**: Paul Schuetze (<paul.schuetze@desy.de>)  
-**Status**: Functional
-
-### Description
+## Description
 Unique module, adds a magnetic field to the full volume, including the active sensors. By default, the magnetic field is turned off.
 
 The magnetic field reader only provides constant magnetic fields, read in as a three-dimensional vector. The magnetic field is forwarded to the GeometryManager, enabling the magnetic field for the particle propagation via Geant4, as well as to all detectors for enabling a Lorentz drift during the charge propagation.
 
-### Parameters
+## Parameters
 * `model` : Type of the magnetic field model, currently only **constant** possible.
 * `magnetic_field` : Vector describing the magnetic field.
 
-### Usage
+## Usage
 An example is given below
 
 ```ini

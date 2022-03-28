@@ -1,27 +1,27 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "TransientPropagation"
+description: "Propagation with transient behavior simulation"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_input: "DepositedCharge"
+module_ouput: "PropagatedCharge"
+---
 
-# TransientPropagation
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Functional  
-**Input**: DepositedCharge  
-**Output**: PropagatedCharge
-
-### Description
+## Description
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
 
-A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
+A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
 $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
 using the carrier mobility $`\mu`$, the temperature $`T`$ and the time step $`t`$. The propagation stops when the set of charges reaches any surface of the sensor.
 
 The charge transport is parameterized in time and the time step each simulation step takes can be configured.
-For each step, the induced charge on the neighboring pixel implants is calculated via the Shockley-Ramo theorem [@shockley] [@ramo] by taking the difference in weighting potential between the current position $`x_1`$ and the previous position $`x_0`$ of the charge carrier
+For each step, the induced charge on the neighboring pixel implants is calculated via the Shockley-Ramo theorem \[[@shockley], [@ramo]\] by taking the difference in weighting potential between the current position $`x_1`$ and the previous position $`x_0`$ of the charge carrier
 
 $` Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} = q \left( \phi (x_1) - \phi(x_0) \right)`$
 
@@ -40,7 +40,7 @@ A list of available models can be found in the user manual.
 
 The module can produces a variety of plots such as total integrated charge plots as well as histograms on the step length and observed potential differences.
 
-### Parameters
+## Parameters
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
@@ -54,7 +54,7 @@ The module can produces a variety of plots such as total integrated charge plots
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 
 
-### Usage
+## Usage
 ```toml
 [TransientPropagation]
 temperature = 293K
@@ -64,8 +64,5 @@ timestep = 0.02ns
 ```
 
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
-[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
-[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
-[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757
