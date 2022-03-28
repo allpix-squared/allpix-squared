@@ -3,20 +3,20 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 ARG ALLPIX_BUILD_ENV="Docker"
 
 # Copy currently checked out git revision:
-COPY . /opt/allpix-squared
+COPY . /tmp/allpix-squared
 
-ENV PATH="/opt/allpix-squared/bin:${PATH}"
+ENV ROOT_INCLUDE_PATH=/usr/local/include/objects
 WORKDIR "/data"
 
-# Compile Allpix Squared
-RUN mkdir -p /opt/allpix-squared/build && \
-    cd /opt/allpix-squared/build && \
-    cmake -DCMAKE_INSTALL_PREFIX=../ \
+# Compile Allpix Squared, install to /usr/local
+RUN mkdir -p /tmp/allpix-squared/build && \
+    cd /tmp/allpix-squared/build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
           -DBUILD_ALL_MODULES=ON \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
-    rm -rf /opt/allpix-squared/build
+    rm -rf /tmp/allpix-squared
 
 # Default command for starting the container, executed after the ENTRYPOINT
 CMD ["bash"]
