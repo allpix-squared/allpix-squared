@@ -227,6 +227,12 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                     auto offset = implant.getOffset();
                     auto* material = materials.get(implant.getMaterial());
 
+                    // Do not remove silicon from silicon
+                    if(implant.getMaterial() == "silicon") {
+                        LOG(DEBUG) << "Silicon implant, not excising";
+                        continue;
+                    }
+
                     LOG(DEBUG) << "  - Implant " << cnt << "\t\t:\t" << Units::display(offset, {"mm", "um"});
 
                     // FIXME: We should extend the implant and shift it to avoid fake surfaces
