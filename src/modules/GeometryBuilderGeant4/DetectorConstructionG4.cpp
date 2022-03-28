@@ -214,7 +214,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
              * excise implants from sensor volume and fill them with the implant material
              */
             auto implants = model->getImplants();
-            if(!implants.empty()) {
+            // FIXME activate after solving open issues with this implementation!
+            if(0) { // if(!implants.empty()) {
                 size_t cnt = 0;
 
                 // Collect all implants in a G4MultiUnion solid to subtract from sensor solid:
