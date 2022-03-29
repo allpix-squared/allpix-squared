@@ -11,6 +11,8 @@
 
 #include "Pulse.hpp"
 
+#include "objects/exceptions.h"
+
 #include <cmath>
 #include <numeric>
 

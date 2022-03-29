@@ -13,6 +13,7 @@
 #include "core/module/Event.hpp"
 #include "core/utils/log.h"
 #include "objects/PixelCharge.hpp"
+#include "objects/exceptions.h"
 
 #include <set>
 #include <string>
