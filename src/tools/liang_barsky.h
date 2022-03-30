@@ -81,7 +81,7 @@ namespace allpix {
 
         // Otherwise: The line does not intersect the box.
         throw std::invalid_argument("no intersection with volume boundaries found");
-    };
+    }
 } // namespace allpix
 
 #endif /* ALLPIX_LIANG_BARSKY_H */
