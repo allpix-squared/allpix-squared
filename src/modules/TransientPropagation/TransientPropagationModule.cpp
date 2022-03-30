@@ -20,6 +20,7 @@
 
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "objects/exceptions.h"
 #include "tools/runge_kutta.h"
 
 using namespace allpix;

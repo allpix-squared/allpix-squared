@@ -18,34 +18,6 @@ ELSE()
     INCLUDE(${ROOT_MACROS_FILE})
 ENDIF()
 
-# Generate the ROOT dictionary
-ROOT_GENERATE_DICTIONARY(
-    AllpixObjectsDictionary
-    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/MCTrack.hpp
-    LINKDEF
-    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
-    OPTIONS
-    -inlineInputHeader
-    -I${CMAKE_CURRENT_SOURCE_DIR}
-    MODULE
-    AllpixObjects)
-
-SET_SOURCE_FILES_PROPERTIES(
-    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
-    PROPERTIES GENERATED TRUE
-               COMPILE_FLAGS
-               "-Wno-unused-function -Wno-overlength-strings -Wno-zero-as-null-pointer-constant -w" # or whatever ?
-)
-
 # Define the library adding the object file created above
 ADD_LIBRARY(
     AllpixObjects SHARED
@@ -58,12 +30,41 @@ ADD_LIBRARY(
     PropagatedCharge.cpp
     PixelHit.cpp
     MCParticle.cpp
-    MCTrack.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx)
+    MCTrack.cpp)
 
 # Link the standard dependencies
 TARGET_LINK_LIBRARIES(AllpixObjects PUBLIC ${ALLPIX_DEPS_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(AllpixObjects PUBLIC $<INSTALL_INTERFACE:include>)
+
+# Generate the ROOT dictionary
+# NOTE these headers will be inlined in the generated dictionary. Therefore their order needs to reflect dependencies
+# between them such that at the time of reference, all classes are defined already.
+ROOT_GENERATE_DICTIONARY(
+    AllpixObjectsDictionary
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCTrack.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
+    MODULE
+    AllpixObjects
+    LINKDEF
+    ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
+    OPTIONS
+    -inlineInputHeader
+    -I${CMAKE_CURRENT_SOURCE_DIR})
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
+    PROPERTIES GENERATED TRUE
+               COMPILE_FLAGS
+               "-Wno-unused-function -Wno-overlength-strings -Wno-zero-as-null-pointer-constant -w" # or whatever ?
+)
 
 # Specify install for the messages
 INSTALL(
