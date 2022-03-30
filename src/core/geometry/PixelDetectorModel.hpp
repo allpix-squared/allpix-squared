@@ -40,7 +40,7 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit PixelDetectorModel(std::string type, ConfigReader reader);
+        explicit PixelDetectorModel(std::string type, const ConfigReader& reader);
 
         /**
          * @brief Returns if a local position is within the sensitive device

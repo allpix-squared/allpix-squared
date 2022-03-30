@@ -109,7 +109,7 @@ namespace allpix {
      */
     class Auger : virtual public RecombinationModel {
     public:
-        Auger(bool doping) : auger_coefficient_(Units::get(3.8e-31, "cm*cm*cm*cm*cm*cm*/s")) {
+        explicit Auger(bool doping) : auger_coefficient_(Units::get(3.8e-31, "cm*cm*cm*cm*cm*cm*/s")) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }

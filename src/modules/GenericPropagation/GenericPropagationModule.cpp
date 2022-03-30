@@ -152,15 +152,15 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
     double start_time = std::numeric_limits<double>::max();
     unsigned int total_charge = 0;
     unsigned int max_charge = 0;
-    for(auto& [deposit, points] : output_plot_points) {
-        for(auto& point : points) {
+    for(const auto& [deposit, points] : output_plot_points) {
+        for(const auto& point : points) {
             minX = std::min(minX, point.x() / scale_x);
             maxX = std::max(maxX, point.x() / scale_x);
 
             minY = std::min(minY, point.y() / scale_y);
             maxY = std::max(maxY, point.y() / scale_y);
         }
-        auto& [time, charge, type, state] = deposit;
+        const auto& [time, charge, type, state] = deposit;
         start_time = std::min(start_time, time);
         total_charge += charge;
         max_charge = std::max(max_charge, charge);
@@ -241,14 +241,14 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
     // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
     std::vector<std::unique_ptr<TPolyLine3D>> lines;
     short current_color = 1;
-    for(auto& [deposit, points] : output_plot_points) {
+    for(const auto& [deposit, points] : output_plot_points) {
         // Check if we should plot this point:
         if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
             continue;
         }
 
         auto line = std::make_unique<TPolyLine3D>();
-        for(auto& point : points) {
+        for(const auto& point : points) {
             line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
         }
         // Plot all lines with at least three points with different color
@@ -384,8 +384,8 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
             text->Draw();
 
             // Plot all the required points
-            for(auto& [deposit, points] : output_plot_points) {
-                auto& [time, charge, type, state] = deposit;
+            for(const auto& [deposit, points] : output_plot_points) {
+                const auto& [time, charge, type, state] = deposit;
 
                 // Check if we should plot this point:
                 if(plotting_state != CarrierState::UNKNOWN && plotting_state != state) {

@@ -59,7 +59,7 @@ namespace allpix {
      */
     class JacoboniCanali : virtual public MobilityModel {
     public:
-        JacoboniCanali(double temperature)
+        explicit JacoboniCanali(double temperature)
             : electron_Vm_(Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s")),
               electron_Beta_(2.57e-2 * std::pow(temperature, 0.66)),
               hole_Vm_(Units::get(1.62e8 * std::pow(temperature, -0.52), "cm/s")),
@@ -97,7 +97,7 @@ namespace allpix {
      */
     class Canali : virtual public JacoboniCanali {
     public:
-        Canali(double temperature) : JacoboniCanali(temperature) {
+        explicit Canali(double temperature) : JacoboniCanali(temperature) {
             electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
         }
     };
@@ -112,7 +112,7 @@ namespace allpix {
      */
     class Hamburg : public MobilityModel {
     public:
-        Hamburg(double temperature)
+        explicit Hamburg(double temperature)
             : electron_mu0_(Units::get(1530 * std::pow(temperature / 300, -2.42), "cm*cm/V/s")),
               electron_vsat_(Units::get(1.03e7 * std::pow(temperature / 300, -0.226), "cm/s")),
               hole_mu0_(Units::get(464 * std::pow(temperature / 300, -2.20), "cm*cm/V/s")),
@@ -155,7 +155,7 @@ namespace allpix {
      */
     class HamburgHighField : public Hamburg {
     public:
-        HamburgHighField(double temperature) : Hamburg(temperature) {
+        explicit HamburgHighField(double temperature) : Hamburg(temperature) {
             electron_mu0_ = Units::get(1430 * std::pow(temperature / 300, -1.99), "cm*cm/V/s");
             electron_vsat_ = Units::get(1.05e7 * std::pow(temperature / 300, -0.302), "cm/s");
             hole_mu0_ = Units::get(457 * std::pow(temperature / 300, -2.80), "cm*cm/V/s");
