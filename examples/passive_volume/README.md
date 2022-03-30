@@ -1,9 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# Simulation example with passive volumes
+---
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Passive Volume"
+description: "Simulation example with passive volumes in the geometry file"
+---
 
 This example showcases the definition of passive volumes in the geometry file.
 

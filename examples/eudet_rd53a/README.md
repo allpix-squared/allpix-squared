@@ -1,9 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# EUDET RD53a Simulation Example
+---
+# SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "EUDET with RD53a DUT"
+description: "Simulation of the DESY testbeam setup with a EUDET telescope and RD53a modules"
+---
 
 This example is similar to the EUDET-type telescope example but with extra DUTs added to match the DESY testbeam setup with RD53a modules.
 The setup consists of six telescope planes of MIMOSA26-type (EUDET beam telescope) and two RD53a modules centered in between the telescope arms:

@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# Telescope Simulation with Corryvreckan Writer
+---
+# SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Corryvreckan Output"
+description: "Example for the CorryvreckanWriter module"
+---
 
 This example demonstrates how to simulate a full telescope setup and how to store the simulation in a format readable by the Corryvreckan reconstruction framework.
 
-The setup used in this example is the reference simulation published in the Allpix Squared paper [@apsq].
-It consists of six Timepix3 telescope planes [@timepix] featuring planar silicon sensors with a thickness of 300um.
+The setup used in this example is the reference simulation published in the Allpix Squared paper \[[@apsq]\].
+It consists of six Timepix3 telescope planes \[[@timepix]\] featuring planar silicon sensors with a thickness of 300um.
 In addition, another Timepix3 detector is placed as device under test (DUT) between the upstream arm (three planes) and downstream arm (three planes) of the telescope, with a sensor thickness of 50um.
 Here, the thickness is directly defined in the geometry file, overwriting the default value from the `timepix` model.
 All planes are randomly mis-aligned at the beginning of the simulation using the alignment precision keywords:

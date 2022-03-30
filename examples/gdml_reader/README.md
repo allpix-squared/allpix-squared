@@ -1,4 +1,9 @@
-# GDML Passive Material Example
+---
+# SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "GDML Reader"
+description: "Example loading passive materials from GDML files"
+---
 
 This example demonstrates how to load passive material structures defined in GDML files into the simulation.
 Two separate GDML files are placed via the detector setup description file and loaded at startup.

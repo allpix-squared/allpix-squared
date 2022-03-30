@@ -1,4 +1,9 @@
-# ATLAS ITk Petal
+---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "ATLAS ITk Petal"
+description: "Double-sided petal arrangement of radial strip detectors for the ATLAS ITk upgrade"
+---
 
 This example simulates a double-sided arrangement of radial strip detectors called a "petal". 
 It features a total of 18 detectors (9 on each side) of various types designated as R0 to R5.

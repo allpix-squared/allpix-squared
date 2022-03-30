@@ -1,11 +1,11 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Precise DUT"
+description: "Fast simulation with high precision on the DUT"
+---
 
-# Precise DUT Simulation Example
-
-This example combines features from the "fast simulation" and the "TCAD field simulation" examples. The setup consists of six telescope planes of Timepix-type detectors for reference tracks and a device under test (DUT), in this case a CLICpix2 detector, in the center of the telescope between the two arms. The goal of this setup is to demonstrate how to perform a fast simulation on the telescope planes while maintaining a high precision on the DUT.
+This example combines features from the "Fast Simulation" and the "TCAD Field Simulation" examples. The setup consists of six telescope planes of Timepix-type detectors for reference tracks and a device under test (DUT), in this case a CLICpix2 detector, in the center of the telescope between the two arms. The goal of this setup is to demonstrate how to perform a fast simulation on the telescope planes while maintaining a high precision on the DUT.
 
 For this propose, the telescope follows the example of the "fast simulation" and employs a linear electric field and the `ProjectionPropagation` module for charge carrier transport. To assign this module only to the telescope planes, the `type` keyword is used to restrict the module to instances of Timepix detectors.
 
