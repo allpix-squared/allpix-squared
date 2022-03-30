@@ -37,18 +37,20 @@ TARGET_LINK_LIBRARIES(AllpixObjects PUBLIC ${ALLPIX_DEPS_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(AllpixObjects PUBLIC $<INSTALL_INTERFACE:include>)
 
 # Generate the ROOT dictionary
+# NOTE these headers will be inlined in the generated dictionary. Therefore their order needs to reflect dependencies
+# between them such that at the time of reference, all classes are defined already.
 ROOT_GENERATE_DICTIONARY(
     AllpixObjectsDictionary
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCTrack.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DepositedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pixel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
     MODULE
     AllpixObjects
     LINKDEF

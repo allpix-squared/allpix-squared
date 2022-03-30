@@ -28,6 +28,7 @@
 // NOTE: The order here is important - classes that are used or included in other classes need to be placed first such that
 // all dependencies can be resolved also when inlining these headers for dictionary generation.
 #pragma link C++ class allpix::Object + ;
+
 #pragma link C++ class allpix::MCTrack + ;
 #pragma link C++ class allpix::Object::PointerWrapper < allpix::MCTrack> + ;
 #pragma link C++ class allpix::Object::BaseWrapper < allpix::MCTrack> + ;
