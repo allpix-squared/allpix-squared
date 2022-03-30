@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GenericPropagation"
-description: "Propagates deposited charges"
+description: "Propagates deposited charges via piecewise integration of motion"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_input: "DepositedCharge"

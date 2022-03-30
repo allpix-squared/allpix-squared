@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "TextWriter"
-description: "Writes any object to a text file"
+description: "Writes simulation objects to a text file"
 module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_input: "all objects in simulation"

@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CSADigitizer"
-description: "Digitizer using a Charge Sensivite Amplifier"
+description: "Digitizer emulating a Charge Sensitive Amplifier"
 module_maintainer: "Annika Vauth (<annika.vauth@desy.de>), Simon Spannagel (<simon.spannagel@desy.de>)"
 module_status: "Functional"
 module_input: "PixelCharge"
@@ -14,7 +14,7 @@ module_output: "PixelHit"
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
 For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from \[[@kleczek]\]:
 ```math
-H(s) = \frac{R_f}{(1+ \tau_f s) * (1 + \tau_r s)}
+H(s) = \frac{R_f}{(1+ \tau_f s) * (1 + \tau_r s)},
 ```
 with fall time constant
 ```math

@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "PulseTransfer"
-description: "Propagation with charge pulse information"
+description: "Transfer of pulse information to the electronics"
 module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_input: "PropagatedCharge"

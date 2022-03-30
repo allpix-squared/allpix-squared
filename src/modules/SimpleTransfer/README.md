@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "SimpleTransfer"
-description: "Transfers propagated charges to the sensor pixels"
+description: "Transfers propagated charges to the pixel front-end"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
 module_input: "PropagatedCharge"

@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "InducedTransfer"
-description: "Transfer with induction from neighboring pixels"
+description: "Transfer with induction from nearby charge carriers"
 module_maintainer: "Simon Spannagel (simon.spannagel@cern.ch)"
 module_status: "Functional"
 module_input: "PropagatedCharge"

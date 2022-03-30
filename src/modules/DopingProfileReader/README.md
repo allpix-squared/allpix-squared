@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DopingProfileReader"
-description: "Reads the doping profile for a detector"
+description: "Doping profile loading for a detector"
 module_maintainer: "Simon Spannagel (simon.spannagel@cern.ch)"
 module_status: "Functional"
 ---

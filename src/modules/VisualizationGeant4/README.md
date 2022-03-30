@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "VisualizationGeant4"
-description: "Constructs a viewer to display the geometry"
+description: "Constructs a Geant4 viewer to display the geometry"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
 ---

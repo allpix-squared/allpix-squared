@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionPointCharge"
-description: "Deposition with Geant4"
+description: "Energy deposition at deterministic positions"
 module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_output: "DepositedCharge, MCParticle"

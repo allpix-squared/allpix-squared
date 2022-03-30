@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionGeant4"
-description: "Deposition with Geant4"
+description: "Energy deposition with Geant4"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)"
 module_status: "Functional"
 module_output: "DepositedCharge, MCParticle, MCTrack"

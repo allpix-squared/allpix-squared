@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DetectorHistogrammer"
-description: "Write histograms for a detector"
+description: "Provisional simulation analysis for a detector"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>), Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_output: "PixelHit, MCParticle"

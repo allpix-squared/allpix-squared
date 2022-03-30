@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionReader"
-description: "Deposition from a file"
+description: "Energy deposition with information read from a file"
 module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_output: "DepositedCharge, MCParticle"

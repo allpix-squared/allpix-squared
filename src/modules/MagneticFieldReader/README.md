@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "MagneticFieldReader"
-description: "Reads the magnetic field for a detector"
+description: "Magnetic field loading for a detector"
 module_maintainer: "Paul Schuetze (<paul.schuetze@desy.de>)"
 module_status: "Functional"
 ---

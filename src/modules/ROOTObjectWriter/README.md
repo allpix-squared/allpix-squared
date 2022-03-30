@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ROOTObjectWriter"
-description: "Writes all simulation data to a ROOT file"
+description: "Writes simulation objects to a ROOT file"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
 module_input: "all objects in simulation"

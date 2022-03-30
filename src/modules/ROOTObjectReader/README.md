@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ROOTObjectReader"
-description: "Reads all data stored in a ROOT file"
+description: "Reads stored data from an Allpix Squared ROOT file"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
 module_output: "all objects in input file"

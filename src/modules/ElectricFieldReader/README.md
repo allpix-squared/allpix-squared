@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ElectricFieldReader"
-description: "Reads the electric field for a detector"
+description: "Electric field loading for a detector"
 module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 ---

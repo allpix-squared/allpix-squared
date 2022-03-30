@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "WeightingPotentialReader"
-description: "Reads the weighting potential for a detector"
+description: "Weighting potential loading for a detector"
 module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 ---
