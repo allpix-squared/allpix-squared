@@ -71,10 +71,10 @@ namespace allpix {
             auto* gdml_world_log = gdml_world_phys->GetLogicalVolume();
 
             bool color_from_gdml = false;
-            auto daughters = gdml_world_log->GetNoDaughters();
-            LOG(DEBUG) << "Number of daughter volumes " << daughters;
-            for(size_t i = 0; i < daughters; i++) {
-                G4VPhysicalVolume* gdml_daughter = gdml_world_log->GetDaughter(static_cast<int>(i));
+            LOG(DEBUG) << "Total number of daughter volumes: " << gdml_world_log->GetNoDaughters();
+            while(gdml_world_log->GetNoDaughters() > 0) {
+                LOG(TRACE) << "Current number of daughter volumes left: " << gdml_world_log->GetNoDaughters();
+                G4VPhysicalVolume* gdml_daughter = gdml_world_log->GetDaughter(0);
                 G4LogicalVolume* gdml_daughter_log = gdml_daughter->GetLogicalVolume();
 
                 // Remove the daughter from its world volume in order to add it to the global one
@@ -88,7 +88,7 @@ namespace allpix {
                     gdml_daughter_log->SetName(gdml_daughter_name);
                 }
 
-                LOG(DEBUG) << "Volume " << i << ": " << gdml_daughter_name;
+                LOG(DEBUG) << "Volume " << name_list.size() << ": " << gdml_daughter_name;
                 name_list.push_back(gdml_daughter_name);
 
                 // Add offset and rotation to current daughter location
