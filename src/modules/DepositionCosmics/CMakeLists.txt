@@ -30,28 +30,30 @@ IF(ABSOLUTE_INSTALL_PREFIX STREQUAL PROJECT_SOURCE_DIR)
     # Use local data directory (unless other is given)
     SET(CRY_DATA_DIRECTORY
         "${CMAKE_CURRENT_BINARY_DIR}/data"
-    CACHE PATH "CRY data directory" FORCE)
+        CACHE PATH "CRY data directory" FORCE)
 ELSE()
     # Set the install path to share
     SET(CRY_DATA_DIRECTORY
         "share/${CMAKE_PROJECT_NAME}/data"
-    CACHE PATH "CRY data directory" FORCE)
+        CACHE PATH "CRY data directory" FORCE)
 ENDIF()
 
 SET(DATA_INSTALL_DIRECTORY "${CRY_DATA_DIRECTORY}")
 IF(NOT IS_ABSOLUTE ${CRY_DATA_DIRECTORY})
     SET(CRY_DATA_DIRECTORY
         "${CMAKE_INSTALL_PREFIX}/${CRY_DATA_DIRECTORY}"
-    CACHE PATH "CRY data directory" FORCE)
+        CACHE PATH "CRY data directory" FORCE)
 ENDIF()
 
 # Install the files to the data directory
 # NOTE: With default install path this does not change anything
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/ DESTINATION ${CRY_DATA_DIRECTORY}
-        FILES_MATCHING PATTERN "*.data")
+INSTALL(
+    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data/
+    DESTINATION ${CRY_DATA_DIRECTORY}
+    FILES_MATCHING
+    PATTERN "*.data")
 
 ADD_DEFINITIONS(-DALLPIX_CRY_DATA_DIRECTORY="${CRY_DATA_DIRECTORY}")
-
 
 # Required for CMake when Geant4 has HDF5 enabled
 ENABLE_LANGUAGE(C)
@@ -76,7 +78,8 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 ENDIF()
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME}
+ALLPIX_MODULE_SOURCES(
+    ${MODULE_NAME}
     DepositionCosmicsModule.cpp
     CosmicsGeneratorActionG4.cpp
     RNGWrapper.cpp
