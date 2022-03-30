@@ -18,6 +18,24 @@ ELSE()
     INCLUDE(${ROOT_MACROS_FILE})
 ENDIF()
 
+# Define the library adding the object file created above
+ADD_LIBRARY(
+    AllpixObjects SHARED
+    Object.cpp
+    Pixel.cpp
+    SensorCharge.cpp
+    Pulse.cpp
+    PixelCharge.cpp
+    DepositedCharge.cpp
+    PropagatedCharge.cpp
+    PixelHit.cpp
+    MCParticle.cpp
+    MCTrack.cpp)
+
+# Link the standard dependencies
+TARGET_LINK_LIBRARIES(AllpixObjects PUBLIC ${ALLPIX_DEPS_LIBRARIES})
+TARGET_INCLUDE_DIRECTORIES(AllpixObjects PUBLIC $<INSTALL_INTERFACE:include>)
+
 # Generate the ROOT dictionary
 ROOT_GENERATE_DICTIONARY(
     AllpixObjectsDictionary
@@ -31,13 +49,13 @@ ROOT_GENERATE_DICTIONARY(
     ${CMAKE_CURRENT_SOURCE_DIR}/Pulse.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCParticle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MCTrack.hpp
+    MODULE
+    AllpixObjects
     LINKDEF
     ${CMAKE_CURRENT_SOURCE_DIR}/Linkdef.h
     OPTIONS
     -inlineInputHeader
-    -I${CMAKE_CURRENT_SOURCE_DIR}
-    MODULE
-    AllpixObjects)
+    -I${CMAKE_CURRENT_SOURCE_DIR})
 
 SET_SOURCE_FILES_PROPERTIES(
     ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx
@@ -45,25 +63,6 @@ SET_SOURCE_FILES_PROPERTIES(
                COMPILE_FLAGS
                "-Wno-unused-function -Wno-overlength-strings -Wno-zero-as-null-pointer-constant -w" # or whatever ?
 )
-
-# Define the library adding the object file created above
-ADD_LIBRARY(
-    AllpixObjects SHARED
-    Object.cpp
-    Pixel.cpp
-    SensorCharge.cpp
-    Pulse.cpp
-    PixelCharge.cpp
-    DepositedCharge.cpp
-    PropagatedCharge.cpp
-    PixelHit.cpp
-    MCParticle.cpp
-    MCTrack.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/AllpixObjectsDictionary.cxx)
-
-# Link the standard dependencies
-TARGET_LINK_LIBRARIES(AllpixObjects PUBLIC ${ALLPIX_DEPS_LIBRARIES})
-TARGET_INCLUDE_DIRECTORIES(AllpixObjects PUBLIC $<INSTALL_INTERFACE:include>)
 
 # Specify install for the messages
 INSTALL(
