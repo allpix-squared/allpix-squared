@@ -734,7 +734,6 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         if(terminate_) {
             LOG(INFO) << "Interrupting event loop after " << finished_events << " events because of request to terminate";
             thread_pool_->destroy();
-            global_config.set<uint64_t>("number_of_events", finished_events);
             break;
         }
 
@@ -815,7 +814,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 if(stop) {
-                    LOG(TRACE) << "Event " << event->number
+                    LOG(DEBUG) << "Event " << event->number
                                << " was interrupted because of missing dependencies, rescheduling...";
                     // Store state of PRNG engine:
                     event->store_random_engine_state();
@@ -835,6 +834,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
             // All modules finished, mark as complete
             thread_pool_->markComplete(event->number);
+            LOG(INFO) << "Finished event " << event_num << " with seed " << event_seed;
 
             auto buffered_events = thread_pool_->bufferedQueueSize();
             if(plot) {
