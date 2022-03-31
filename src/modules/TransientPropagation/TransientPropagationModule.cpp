@@ -72,11 +72,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
 void TransientPropagationModule::initialize() {
 
-    auto detector = getDetector();
-    auto model = detector_->getModel();
-
     // Check for electric field
-    if(!detector->hasElectricField()) {
+    if(!detector_->hasElectricField()) {
         LOG(WARNING) << "This detector does not have an electric field.";
     }
 
@@ -89,16 +86,16 @@ void TransientPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, model->getSensorMaterial(), detector->hasDopingProfile());
+    mobility_ = Mobility(config_, model_->getSensorMaterial(), detector_->hasDopingProfile());
 
     // Prepare recombination model
-    recombination_ = Recombination(config_, detector->hasDopingProfile());
+    recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     // Prepare trapping model
     trapping_ = Trapping(config_);
 
     // Check for magnetic field
-    has_magnetic_field_ = detector->hasMagneticField();
+    has_magnetic_field_ = detector_->hasMagneticField();
     if(has_magnetic_field_) {
         if(config_.get<bool>("ignore_magnetic_field")) {
             has_magnetic_field_ = false;
@@ -360,7 +357,7 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Check for overshooting outside the sensor and correct for it:
-        if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
             LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
             state = CarrierState::HALTED;
 
