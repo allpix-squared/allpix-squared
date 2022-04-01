@@ -15,7 +15,9 @@ It allows matching of the detector name to be performed on a sub-string of the o
 Only energy deposits within a valid volume are considered, i.e. where a matching detector with the same name can be found in the geometry setup.
 The global coordinates are then translated to local coordinates of the given detector.
 If these are outside the sensor, the energy deposit is discarded and a warning is printed.
-The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy `charge_creation_energy` [@chargecreation], fluctuations are modeled using a Fano factor `fano_factor` assuming Gaussian statistics [@fano].
+The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
+Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
+These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
 Track and parent ids of the individual particles which created the energy depositions allow to carry on some of the Monte Carlo particle information from the original simulation.
 Monte Carlo particle objects are created for each unique track id, the start and end positions are set to the first and last appearance of the particle, respectively.
@@ -89,8 +91,8 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `tree_name`: Name of the input tree to be read from the ROOT file. Only used for the `root` model.
 * `branch_names`: List of names of the ten branches to be read from the input ROOT file. Only used for the `root` model. The default names and their content are listed above in the _ROOT Trees_ section.
 * `detector_name_chars`: Parameter which allows selecting only a sub-string of the stored volume name as detector name. Could be set to the number of characters from the beginning of the volume name string which should be taken as detector name. E.g. `detector_name_chars = 7` would select `sensor0` from the full volume name `sensor0_px3_14` read from the input file. This is especially useful if the initial simulation in Geant4 has been performed using parameterized volume placements e.g. for individual pixels of a detector. Defaults to `0` which takes the full volume name.
-* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in silicon (3.64 eV, [@chargecreation]).
-* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults to 0.115 [@fano].
+* `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, [@chargecreation]). A full list of supported materials can be found elsewhere in the manual.
+* `fano_factor`: Fano factor to calculate fluctuations in the number of electron/hole pairs produced by a given energy deposition. Defaults are provided for different sensor materials, e.g. a value of 0.115 for silicon [@fano]. A full list of supported materials can be found elsewhere in the manual.
 * `unit_length`: The units length measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `mm`.
 * `unit_time`: The units time measurements read from the input data source should be interpreted in. Defaults to the framework standard unit `ns`.
 * `unit_energy`: The units energy depositions read from the input data source should be interpreted in. Defaults to the framework standard unit `MeV`.

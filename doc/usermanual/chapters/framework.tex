@@ -321,6 +321,7 @@ This parameter is required for all models.
 \item \parameter{implant_size}: The size of the collection diode implant in each pixel of the matrix.
 Provided as 2D parameter in the x-y-plane.
 This parameter is optional, the implant size defaults to the pixel pitch if not specified otherwise.
+\item \parameter{sensor_material}: Semiconductor material of the sensor. This can be any of the sensor materials supported by \apsq, currently \parameter{SILICON}, \parameter{GALLIUM_ARSENIDE}, \parameter{GERMANIUM}, \parameter{CADMIUM_TELLURIDE}, \parameter{CADMIUM_ZINC_TELLURIDE}, \parameter{DIAMOND} and \parameter{SILICON_CARBIDE}. Defaults to \parameter{SILICON} of not specified.
 \item \parameter{sensor_thickness}: Thickness of the active area of the detector model containing the individual pixels.
 This parameter is required for all models.
 \item \texttt{\textbf{sensor\_excess\_\textit{direction}}}: With direction either \parameter{top}, \parameter{bottom}, \parameter{right} or \parameter{left}, where the top, bottom, right and left direction are the positive y-axis, the negative y-axis, the positive x-axis and the negative x-axis, respectively.

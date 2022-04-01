@@ -96,8 +96,8 @@ namespace allpix {
         std::shared_ptr<TTreeReaderValue<int>> pdg_code_;
         std::shared_ptr<TTreeReaderValue<int>> track_id_;
         std::shared_ptr<TTreeReaderValue<int>> parent_id_;
-        double charge_creation_energy_;
-        double fano_factor_;
+        std::map<std::shared_ptr<Detector>, double> charge_creation_energy_;
+        std::map<std::shared_ptr<Detector>, double> fano_factor_;
 
         FileModel file_model_;
         size_t volume_chars_{};
@@ -125,6 +125,6 @@ namespace allpix {
                        int& parent_id);
 
         // Vector of histogram pointers for debugging plots
-        std::map<std::string, Histogram<TH1D>> charge_per_event_;
+        std::map<std::shared_ptr<Detector>, Histogram<TH1D>> charge_per_event_;
     };
 } // namespace allpix

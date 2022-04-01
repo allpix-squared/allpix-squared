@@ -41,8 +41,8 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
 # Include Eigen dependency
-FIND_PACKAGE(Eigen3 REQUIRED NO_MODULE)
-ALLPIX_SETUP_EIGEN_TARGETS()
+FIND_PACKAGE(PkgConfig REQUIRED)
+PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
 
 # Link the dependency libraries
 TARGET_LINK_LIBRARIES(
@@ -52,7 +52,7 @@ TARGET_LINK_LIBRARIES(
     ROOT::RIO
     ROOT::Tree
     Threads::Threads
-    Eigen3::Eigen)
+    PkgConfig::Eigen3)
 
 # Create install target
 INSTALL(
@@ -65,7 +65,7 @@ ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${A
                             ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Link libraries
-TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld Eigen3::Eigen)
+TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld PkgConfig::Eigen3 )
 
 INSTALL(
     TARGETS mesh_plotter

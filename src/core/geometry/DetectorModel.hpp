@@ -32,6 +32,19 @@
 
 namespace allpix {
     /**
+     * @brief Sensor materials
+     */
+    enum class SensorMaterial {
+        SILICON = 1,            ///< Silicon
+        GALLIUM_ARSENIDE,       ///< Gallium Arsenide
+        GERMANIUM,              ///< Germanium
+        CADMIUM_TELLURIDE,      ///< Cadmium Telluride
+        CADMIUM_ZINC_TELLURIDE, ///< Cadmium Zinc Telluride
+        DIAMOND,                ///< Diamond
+        SILICON_CARBIDE,        ///< Silicon Carbide
+    };
+
+    /**
      * @ingroup DetectorModels
      * @brief Base of all detector models
      *
@@ -274,6 +287,11 @@ namespace allpix {
             return getCenter() + offset;
         }
         /**
+         * @brief Get the material of the sensor
+         * @return Material of the sensor
+         */
+        SensorMaterial getSensorMaterial() { return sensor_material_; }
+        /**
          * @brief Set the thickness of the sensor
          * @param val Thickness of the sensor
          */
@@ -380,6 +398,7 @@ namespace allpix {
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};
+        SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         double chip_thickness_{};
 

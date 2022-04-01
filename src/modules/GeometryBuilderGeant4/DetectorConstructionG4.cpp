@@ -114,6 +114,11 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
          * the sensitive detector is the part that collects the deposits
          */
 
+        // Get sensor material
+        auto sensor_material_name = allpix::to_string(model->getSensorMaterial());
+        auto* sensor_material = materials.get(sensor_material_name);
+        LOG(DEBUG) << " - Sensor material\t\t:\t" << sensor_material_name;
+
         // Create the sensor box and logical volume
         auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
                                                        model->getSensorSize().x() / 2.0,
@@ -121,7 +126,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                        model->getSensorSize().z() / 2.0);
         solids_.push_back(sensor_box);
         auto sensor_log =
-            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), materials.get("silicon"), "sensor_" + name + "_log");
+            make_shared_no_delete<G4LogicalVolume>(sensor_box.get(), sensor_material, "sensor_" + name + "_log");
         geo_manager_->setExternalObject(name, "sensor_log", sensor_log);
 
         // Add sensor material to total material budget:
@@ -140,8 +145,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                       model->getPixelSize().y() / 2.0,
                                                       model->getSensorSize().z() / 2.0);
         solids_.push_back(pixel_box);
-        auto pixel_log =
-            make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), materials.get("silicon"), "pixel_" + name + "_log");
+        auto pixel_log = make_shared_no_delete<G4LogicalVolume>(pixel_box.get(), sensor_material, "pixel_" + name + "_log");
         geo_manager_->setExternalObject(name, "pixel_log", pixel_log);
 
         // Create the parameterization for the pixel grid
@@ -349,8 +353,6 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                   false);
             geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);
         }
-
-        // ALERT: NO COVER LAYER YET
 
         // Store the total material budget:
         LOG(DEBUG) << "Storing total material budget of " << total_material_budget << " x/X0 for detector " << name;
