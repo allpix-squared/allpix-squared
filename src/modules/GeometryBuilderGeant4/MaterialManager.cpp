@@ -68,6 +68,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - lithium
  *   - plexiglass
  *   - silicon
+ *   - germanium
  *   - tungsten
  *   - gallium_arsenide
  *   - nickel
