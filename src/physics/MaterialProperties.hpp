@@ -24,7 +24,7 @@ namespace allpix {
     static std::map<SensorMaterial, double> ionization_energies = {
         {SensorMaterial::SILICON, 3.64e-6},
         {SensorMaterial::GALLIUM_ARSENIDE, 4.2e-6},
-        {SensorMaterial::GERMANIUM, 2.96e-6},         // https://doi.org/10.1016/0883-2889(91)90002-I
+        {SensorMaterial::GERMANIUM, 2.97e-6},         // https://doi.org/10.1016/0883-2889(91)90002-I
         {SensorMaterial::CADMIUM_TELLURIDE, 4.43e-6}, // https://doi.org/10.1016/0029-554X(74)90662-4
         {SensorMaterial::CADMIUM_ZINC_TELLURIDE, 4.6e-6},
         {SensorMaterial::DIAMOND, 13.1e-6},         // https://doi.org/10.1002/pssa.201600195
