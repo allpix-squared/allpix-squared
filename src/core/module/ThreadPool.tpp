@@ -22,7 +22,7 @@ namespace allpix {
      */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-    template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, const std::function<void()>& func, size_t buffer_left) {
+    template <typename T> bool ThreadPool::SafeQueue<T>::pop(T& out, size_t buffer_left) {
         assert(buffer_left <= max_priority_size_);
         // Lock the mutex
         std::unique_lock<std::mutex> lock{mutex_};
@@ -51,11 +51,6 @@ namespace allpix {
         } else { // pop_standard
             out = std::move(queue_.front());
             queue_.pop();
-        }
-
-        // Optionally execute the mutex protected function
-        if(func != nullptr) {
-            func();
         }
 
         // Notify possible pusher waiting to fill the queue
@@ -205,6 +200,9 @@ namespace allpix {
             } else {
                 success = queue_.push(n, std::make_unique<std::packaged_task<void()>>(std::move(task_function)), false);
             }
+            // Increment run count:
+            std::unique_lock<std::mutex> lock{run_mutex_};
+            ++run_cnt_;
         }
         if(success) {
             return future;

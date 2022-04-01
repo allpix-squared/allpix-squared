@@ -95,7 +95,7 @@ void ThreadPool::checkException() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (queue_.empty() && run_cnt_ == 0); });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0 || done_ == true); });
 }
 
 /**
@@ -115,20 +115,19 @@ void ThreadPool::worker(size_t min_thread_buffer,
             initialize_function();
         }
 
-        // Increase the atomic run count and notify the master thread that we popped an event
-        auto increase_run_cnt_func = [this]() noexcept { ++run_cnt_; };
-
         while(!done_) {
             Task task{nullptr};
 
-            if(queue_.pop(task, increase_run_cnt_func, min_thread_buffer)) {
+            if(queue_.pop(task, min_thread_buffer)) {
                 // Execute task
                 (*task)();
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
-                --run_cnt_;
-                run_condition_.notify_all();
+                std::unique_lock<std::mutex> lock{run_mutex_};
+                if(--run_cnt_ == 0) {
+                    run_condition_.notify_all();
+                }
             }
         }
 
@@ -138,6 +137,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
         }
     } catch(...) {
         // Check if the first exception thrown
+        std::unique_lock<std::mutex> lock{run_mutex_};
         if(!has_exception_.test_and_set()) {
             // Save the first exception
             exception_ptr_ = std::current_exception();
@@ -150,8 +150,12 @@ void ThreadPool::worker(size_t min_thread_buffer,
 }
 
 void ThreadPool::destroy() {
+    // Lock run mutex to synchronize with queue
+    std::unique_lock<std::mutex> lock{run_mutex_};
     done_ = true;
     queue_.invalidate();
+    run_condition_.notify_all();
+    lock.unlock();
 
     for(auto& thread : threads_) {
         if(thread.joinable()) {
