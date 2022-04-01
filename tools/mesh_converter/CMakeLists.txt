@@ -68,7 +68,7 @@ ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${A
                             ${ALLPIX_SRC}/core/utils/unit.cpp)
 
 # Link libraries
-TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld PkgConfig::Eigen3 )
+TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld PkgConfig::Eigen3)
 
 INSTALL(
     TARGETS mesh_plotter
