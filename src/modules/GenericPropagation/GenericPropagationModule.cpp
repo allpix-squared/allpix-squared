@@ -488,22 +488,19 @@ void GenericPropagationModule::create_output_plots(uint64_t event_num,
 
 void GenericPropagationModule::initialize() {
 
-    auto detector = getDetector();
-    auto model = detector_->getModel();
-
     // Check for electric field and output warning for slow propagation if not defined
-    if(!detector->hasElectricField()) {
+    if(!detector_->hasElectricField()) {
         LOG(WARNING) << "This detector does not have an electric field.";
     }
 
     // For linear fields we can in addition check if the correct carriers are propagated
-    if(detector->getElectricFieldType() == FieldType::LINEAR) {
-        auto probe_point = ROOT::Math::XYZPoint(model->getSensorCenter().x(),
-                                                model->getSensorCenter().y(),
-                                                model->getSensorCenter().z() + model->getSensorSize().z() / 2.01);
+    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+        auto probe_point = ROOT::Math::XYZPoint(model_->getSensorCenter().x(),
+                                                model_->getSensorCenter().y(),
+                                                model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.01);
 
         // Get the field close to the implants and check its sign:
-        auto efield = detector->getElectricField(probe_point);
+        auto efield = detector_->getElectricField(probe_point);
         auto direction = std::signbit(efield.z());
         // Compare with propagated carrier type:
         if(direction && !propagate_electrons_) {
@@ -515,7 +512,7 @@ void GenericPropagationModule::initialize() {
     }
 
     // Check for magnetic field
-    has_magnetic_field_ = detector->hasMagneticField();
+    has_magnetic_field_ = detector_->hasMagneticField();
     if(has_magnetic_field_) {
         if(config_.get<bool>("ignore_magnetic_field")) {
             has_magnetic_field_ = false;
@@ -577,10 +574,10 @@ void GenericPropagationModule::initialize() {
     }
 
     // Prepare mobility model
-    mobility_ = Mobility(config_, model->getSensorMaterial(), detector->hasDopingProfile());
+    mobility_ = Mobility(config_, model_->getSensorMaterial(), detector_->hasDopingProfile());
 
     // Prepare recombination model
-    recombination_ = Recombination(config_, detector->hasDopingProfile());
+    recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     // Prepare trapping model
     trapping_ = Trapping(config_);
@@ -834,7 +831,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         runge_kutta.setValue(position);
 
         // Check if we are still in the sensor:
-        if(!detector_->getModel()->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
             state = CarrierState::HALTED;
         }
 
