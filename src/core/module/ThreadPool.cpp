@@ -150,8 +150,12 @@ void ThreadPool::worker(size_t min_thread_buffer,
 }
 
 void ThreadPool::destroy() {
+    // Lock run mutex to synchronize with queue
+    std::unique_lock<std::mutex> lock{run_mutex_};
     done_ = true;
     queue_.invalidate();
+    run_condition_.notify_all();
+    lock.unlock();
 
     for(auto& thread : threads_) {
         if(thread.joinable()) {
