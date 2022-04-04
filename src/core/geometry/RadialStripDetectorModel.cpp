@@ -25,6 +25,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     setStripLength(config.getArray<double>("strip_length"));
     setAngularPitch(config.getArray<double>("angular_pitch"));
     setInnerPitch(config.getArray<double>("inner_pitch"));
+    setStereoAngle(config.get<double>("stereo_angle"));
 
     // Get the number of strip rows
     auto strip_rows = static_cast<unsigned int>(number_of_strips_.size());
@@ -91,7 +92,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     setImplantSize(pixel_size_);
 
     // Set the geometrical focus point of the sensor (local coordinate center)
-    setStripFocus({0, getSize().y() / 2 + radius_extension, 0});
+    setStripFocus({0, getCenterRadius(), 0});
 }
 
 bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {

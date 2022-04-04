@@ -105,6 +105,14 @@ namespace allpix {
          */
         double getRowRadius(unsigned int row) const { return row_radius_.at(row); }
 
+        double getCenterRadius() const { return (row_radius_.at(0) + row_radius_.at(number_of_pixels_.y())) / 2; }
+
+        /**
+         * @brief Get the sensor stereo angle
+         * @return Sensor stereo angle
+         */
+        double getStereoAngle() const { return stereo_angle_; }
+
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
          * @return Local coordinate of the position and rotation center in global frame
@@ -199,6 +207,12 @@ namespace allpix {
          * @param val Vector describing outer radius of each strip row
          */
         void setRowRadius(std::vector<double> val) { row_radius_ = std::move(val); }
+
+        /**
+         * @brief Set the sensor stereo angle
+         * @param val Sensor stereo angle
+         */
+        void setStereoAngle(double val) { stereo_angle_ = val; }
 
         /**
          * @brief Returns if a local position is within the sensitive device
@@ -309,6 +323,7 @@ namespace allpix {
         std::vector<double> strip_length_{};
         std::vector<double> angular_pitch_{};
         std::vector<double> inner_pitch_{};
+        double stereo_angle_{};
 
         std::array<double, 2> sensor_base_{};
         double sensor_length_{};
