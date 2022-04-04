@@ -1,7 +1,7 @@
 ---
 # SPDX-FileCopyrightText: 2021-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "GDML Reader"
+title: "GDML Passive Material"
 description: "Example loading passive materials from GDML files"
 ---
 
