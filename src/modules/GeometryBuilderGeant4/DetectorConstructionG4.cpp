@@ -81,7 +81,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
         if(radial_model != nullptr) {
             // Create the base cylindrical section; wider than the requested dimensions to account for the stereo angle
-            auto wrapper_base_tub = new G4Tubs("wrapper_base" + name,
+            auto* wrapper_base_tub = new G4Tubs("wrapper_base" + name,
                                                             radial_model->getRowRadius(0),
                                                             radial_model->getRowRadius(radial_model->getNPixels().y()),
                                                             radial_model->getSize().z() / 2,
@@ -89,7 +89,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                             radial_model->getRowAngleMax()*1.5);
 
             // Create the angled cylindrical section coming from the focal point; longer than the requested dimensions to account for the stereo angle
-            auto wrapper_angled_tub = new G4Tubs("wrapper_angled" + name,
+            auto* wrapper_angled_tub = new G4Tubs("wrapper_angled" + name,
                                                             radial_model->getRowRadius(0)*0.95,
                                                             radial_model->getRowRadius(radial_model->getNPixels().y())*1.05,
                                                             radial_model->getSize().z() / 2,
@@ -101,11 +101,11 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             LOG(TRACE) << "Applying stereo angle of " << Units::display(stereo_angle, "mrad");
 
             // Transformation for the angled cylindrical section
-            auto angled_tub_rot = new G4RotationMatrix();
+            auto* angled_tub_rot = new G4RotationMatrix();
             angled_tub_rot->rotateZ(-stereo_angle);
             auto center_radius = radial_model->getCenterRadius();
-            auto angled_tub_pos = new G4ThreeVector(-center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
-            auto angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto* angled_tub_pos = new G4ThreeVector(-center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
             auto wrapper_final_tub = make_shared_no_delete<G4IntersectionSolid>("wrapper_" + name,
                                                                         wrapper_base_tub,
                                                                         wrapper_angled_tub,
@@ -192,7 +192,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         // Build a radial sensor box if radial_strip model is used, otherwise build a rectangular box
         if(radial_model != nullptr) {
             // Create the base cylindrical section wider than the requested dimensions to account for the stereo angle
-            auto sensor_base_tub = new G4Tubs("sensor_base" + name,
+            auto* sensor_base_tub = new G4Tubs("sensor_base" + name,
                                                             radial_model->getRowRadius(0),
                                                             radial_model->getRowRadius(radial_model->getNPixels().y()),
                                                             radial_model->getSize().z() / 2,
@@ -200,7 +200,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                             radial_model->getRowAngleMax()*1.5);
 
             // Create the angled cylindrical section coming from the focal point
-            auto sensor_angled_tub = new G4Tubs("sensor_angled" + name,
+            auto* sensor_angled_tub = new G4Tubs("sensor_angled" + name,
                                                             radial_model->getRowRadius(0)*0.95,
                                                             radial_model->getRowRadius(radial_model->getNPixels().y())*1.05,
                                                             radial_model->getSize().z() / 2,
@@ -211,11 +211,11 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             auto stereo_angle = radial_model->getStereoAngle();
 
             // Transformation for the angled cylindrical section
-            auto angled_tub_rot = new G4RotationMatrix();
+            auto* angled_tub_rot = new G4RotationMatrix();
             angled_tub_rot->rotateZ(-stereo_angle);
             auto center_radius = radial_model->getCenterRadius();
-            auto angled_tub_pos = new G4ThreeVector(-center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
-            auto angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto* angled_tub_pos = new G4ThreeVector(-center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
             auto sensor_final_tub = make_shared_no_delete<G4IntersectionSolid>("wrapper_" + name,
                                                                         sensor_base_tub,
                                                                         sensor_angled_tub,
