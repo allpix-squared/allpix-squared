@@ -130,7 +130,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, @mjing
 * Moritz Kiehn, Université de Genève, @msmk
 * Rafaella Eleni Kotitsa, CERN, @rkotitsa
-* Stephan Lachnit, Heidelberg University, @stephanlachnit
+* Stephan Lachnit, DESY, @slachnit
 * Salman Maqbool, CERN Summer Student, @smaqbool
 * Stefano Mersi, CERN, @mersi
 * Ryuji Moriya, CERN Summer Student, University of Glasgow, @rmoriya
