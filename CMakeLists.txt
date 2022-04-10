@@ -130,6 +130,9 @@ ENDIF()
 # Enable CXX as project language to perform compiler checks:
 ENABLE_LANGUAGE(CXX)
 
+# Fix for CMake when Geant4 has HDF5 / VTK enabled
+ENABLE_LANGUAGE(C)
+
 # Additional packages to be searched for by cmake
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
