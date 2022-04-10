@@ -79,8 +79,8 @@ if [ -z "$MYMAIL" ]; then
 fi
 sed -e "s/Dummy/$MODNAME/g" \
     -e "s/A dummy module/$MODDESC/g" \
-    -e "s/\*NAME\*/$MYNAME/g" \
-    -e "s/\*EMAIL\*/$MYMAIL/g" \
+    -e "s/John Doe/$MYNAME/g" \
+    -e "s/john\.doe@example\.com/$MYMAIL/g" \
     -e "s/Functional/Immature/g" \
     "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 

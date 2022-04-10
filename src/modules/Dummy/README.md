@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "Dummy"
 description: "A dummy module"
-module_maintainer: "*NAME* (*EMAIL*)"
+module_maintainer: "John Doe (<john.doe@example.com>)"
 module_status: "Functional"
-module_input: "*INPUT_MESSAGE if applicable*"
-module_output: "*OUTPUT_MESSAGE if applicable*"
+# module_input: "Input message types (if applicable)"
+# module_output: "Output message types (if applicable)"
 ---
 
 ## Description
-*Short description of this module*
+*Description of this module*
 
 ## Parameters
 * `param`: *explanation with optional default*
