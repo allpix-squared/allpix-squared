@@ -4,9 +4,6 @@
 # Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
-# Required for CMake when Geant4 has HDF5 enabled
-ENABLE_LANGUAGE(C)
-
 # Geant4 is required for geometry description and charge deposition.
 FIND_PACKAGE(Geant4)
 IF(NOT Geant4_FOUND)
