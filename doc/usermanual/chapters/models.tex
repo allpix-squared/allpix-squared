@@ -40,7 +40,7 @@ The sources for the chosen default values are provided in the table.
   \midrule
   Cadmium Zinc Telluride \ce{Cd_{0.8}Zn_{0.2}Te} & 4.6 & 0.14 & \cite{CdZnTe_Creation}, \cite{cdznte} \\
   \midrule
-  Diamond & 13.1 & 0.382 & \cite{Diamond_Creation_Fano}, \cite{Diamond_Creation_Fano} \\
+  Diamond & 13.1 & 0.382 & \cite{Diamond_Creation_Fano} \\
   \midrule
   Silicon Carbide (4H-SiC) & 7.6 & 0.1 & \cite{SiC_Creation}, \cite{SiC_Fano} \\
 
@@ -372,7 +372,7 @@ Additionally, the following configuration keys have to be provided:
 The functions defined via these parameters can depend on the local electric field and the local doping concentration.
 In order to use the electric field magnitude in the formula, an \parameter{x} has to be placed at the respective position, for the doping concentration a \parameter{y} is used as placeholder.
 
-Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{mobility_parameters_electrons} and \parameter{mobility_parameters_electrons}.
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{mobility_parameters_electrons} and \parameter{mobility_parameters_holes}.
 Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example \parameter{[0]} for the first parameter provided.
 Parameters specified separately from the formula can contain units which will be interpreted automatically.
 
@@ -643,7 +643,7 @@ Additionally, the following configuration keys have to be provided:
 The functions defined via these parameters can depend on the local electric field.
 In order to use the electric field magnitude in the formula, an \parameter{x} has to be placed at the respective position.
 
-Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{trapping_parameters_electrons} and \parameter{trapping_parameters_electrons}.
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately as arrays via the \parameter{trapping_parameters_electrons} and \parameter{trapping_parameters_holes}.
 Placeholders for parameters in the formula are denoted with squared brackets and a parameter number, for example \parameter{[0]} for the first parameter provided.
 Parameters specified separately from the formula can contain units which will be interpreted automatically.
 
