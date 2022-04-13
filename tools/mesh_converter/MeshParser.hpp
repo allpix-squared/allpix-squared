@@ -59,5 +59,6 @@ namespace mesh_converter {
 } // namespace mesh_converter
 
 #include "parsers/DFISEParser.hpp"
+#include "parsers/SilvacoParser.hpp"
 
 #endif // ALLPIX_MESHPARSER_H
