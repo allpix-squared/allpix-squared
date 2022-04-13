@@ -96,6 +96,7 @@ This module can create support layers and passive volumes of the following mater
     * cadmium telluride
     * nickel
     * gold
+    * titanium
 * Composite or custom materials:
     * carbon fiber
     * epoxy

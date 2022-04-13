@@ -75,6 +75,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - nickel
  *   - gold
  *   - cadmium_telluride
+ *   - titanium
  * - Composite or custom materials:
  *   - carbon fiber
  *   - epoxy
@@ -108,6 +109,7 @@ void Materials::init_materials() {
     materials_["cadmium_telluride"] = nistman->FindOrBuildMaterial("G4_CADMIUM_TELLURIDE");
     materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
     materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
+    materials_["titanium"] = nistman->FindOrBuildMaterial("G4_Ti");
 
     // Create required elements:
     auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
@@ -120,6 +122,7 @@ void Materials::init_materials() {
     auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
     auto* Te = new G4Element("Tellurium", "Te", 52., 127.60 * CLHEP::g / CLHEP::mole);
     auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
+    auto* Ti = new G4Element("Titanium", "Ti", 22., 47.87 * CLHEP::g / CLHEP::mole);
 
     // Create Epoxy material
     auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
