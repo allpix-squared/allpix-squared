@@ -113,13 +113,13 @@ void Materials::init_materials() {
     auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
     auto* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
     auto* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
-    auto* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
-    auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
-    auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
     auto* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
-    auto* Cd = new G4Element("Cadmium", "Cd", 48., 112.41 * CLHEP::g / CLHEP::mole);
+    auto* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
     auto* Zn = new G4Element("Zinc", "Zn", 30., 65.38 * CLHEP::g / CLHEP::mole);
+    auto* Cd = new G4Element("Cadmium", "Cd", 48., 112.41 * CLHEP::g / CLHEP::mole);
+    auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
     auto* Te = new G4Element("Tellurium", "Te", 52., 127.60 * CLHEP::g / CLHEP::mole);
+    auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
 
     // Create Epoxy material
     auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
