@@ -35,6 +35,7 @@ ADD_EXECUTABLE(
     MeshConverter.cpp
     MeshParser.cpp
     parsers/DFISEParser.cpp
+    parsers/SilvacoParser.cpp
     ${ALLPIX_SRC}/core/utils/log.cpp
     ${ALLPIX_SRC}/core/utils/text.cpp
     ${ALLPIX_SRC}/core/utils/unit.cpp

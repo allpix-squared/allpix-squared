@@ -17,9 +17,11 @@ using namespace mesh_converter;
 std::shared_ptr<MeshParser> MeshParser::factory(const allpix::Configuration& config) {
     auto parser = config.get<std::string>("parser", "df-ise");
     std::transform(parser.begin(), parser.end(), parser.begin(), ::tolower);
-
+    LOG(DEBUG) << "Parser \"" << parser  << "\"\n";
     if(parser == "df-ise" || parser == "dfise") {
         return std::make_shared<DFISEParser>();
+    } else if(parser == "silvaco" || parser == "Silvaco") {
+        return std::make_shared<SilvacoParser>();
     } else {
         throw allpix::InvalidValueError(config, "parser", "Unknown parser type");
     }
@@ -80,6 +82,7 @@ MeshParser::getField(const std::string& file, const std::string& observable, con
     for(const auto& region : regions) {
         if(field_map_[file].find(region) != field_map_[file].end() &&
            field_map_[file][region].find(observable) != field_map_[file][region].end()) {
+            LOG(DEBUG) << "Region \"" << region  << "\"\n";
             field.insert(
                 field.end(), field_map_[file][region][observable].begin(), field_map_[file][region][observable].end());
         } else {
