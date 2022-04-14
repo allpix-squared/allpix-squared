@@ -20,26 +20,6 @@
 namespace mesh_converter {
 
     class SilvacoParser : public MeshParser {
-        // Sections to read in extracted files
-        enum class DFSection {
-            NONE = 0,
-            IGNORED,
-            HEADER,
-            INFO,
-            REGION,
-            COORDINATES,
-            VERTICES,
-            EDGES,
-            FACES,
-            ELEMENTS,
-
-            DONOR_CONCENTRATION,
-            DOPING_CONCENTRATION,
-            ACCEPTOR_CONCENTRATION,
-            ELECTRIC_FIELD,
-            ELECTROSTATIC_POTENTIAL,
-            VALUES
-        };
 
     private:
         // Read the grid

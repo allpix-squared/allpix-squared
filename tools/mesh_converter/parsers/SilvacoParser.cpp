@@ -79,9 +79,9 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
             while ( iss >> val ) {
                 columns_count++;
             }
+            dimension = columns_count;
             iss.clear();
         }
-        dimension = columns_count;
  
 
         // Handle data
