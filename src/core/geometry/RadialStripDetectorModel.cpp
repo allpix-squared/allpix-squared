@@ -25,7 +25,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     setStripLength(config.getArray<double>("strip_length"));
     setAngularPitch(config.getArray<double>("angular_pitch"));
     setInnerPitch(config.getArray<double>("inner_pitch"));
-    setStereoAngle(config.get<double>("stereo_angle"));
+    setStereoAngle(config.get<double>("stereo_angle", 0));
 
     // Get the number of strip rows
     auto strip_rows = static_cast<unsigned int>(number_of_strips_.size());
