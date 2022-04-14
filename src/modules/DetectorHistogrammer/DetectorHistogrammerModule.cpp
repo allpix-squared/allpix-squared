@@ -368,16 +368,18 @@ void DetectorHistogrammerModule::initialize() {
     if(radial_model != nullptr) {
         auto max_angle = radial_model->getRowAngleMax();
         auto max_pitch = static_cast<double>(Units::convert(radial_model->getAngularPitchMax(), "mrad"));
+        auto stereo_angle = radial_model->getStereoAngle();
+        // Use the row radii to define bin widths of the polar hitmap
+        auto row_radii = radial_model->getRowRadii();
 
         std::string polar_hit_map_title = "Polar hitmap (" + detector_->getName() + ");#varphi (rad);r [mm];hits";
         polar_hit_map = CreateHistogram<TH2D>("polar_hit_map",
                                               polar_hit_map_title.c_str(),
                                               xpixels,
-                                              -max_angle / 2,
-                                              max_angle / 2,
+                                              -max_angle / 2 - stereo_angle,
+                                              max_angle / 2 - stereo_angle,
                                               ypixels,
-                                              radial_model->getRowRadius(0),
-                                              radial_model->getRowRadius(radial_model->getNPixels().y()));
+                                              row_radii.data());
 
         std::string residual_r_title = "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [um];events";
         residual_r = CreateHistogram<TH1D>("residual_r", residual_r_title.c_str(), 1000, -2 * pitch_y, 2 * pitch_y);
