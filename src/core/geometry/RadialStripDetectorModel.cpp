@@ -95,9 +95,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     setSensorOrigin({0, getCenterRadius(), 0});
 
     // Translation vector from local coordinate center to sensor focal point
-    focus_translation_ = {getCenterRadius()*sin(-stereo_angle_),
-                          getCenterRadius()*(1-cos(stereo_angle_)),
-                          0};
+    focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};
 }
 
 bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
@@ -141,20 +139,20 @@ ROOT::Math::Polar2DPoint RadialStripDetectorModel::getPositionPolar(const ROOT::
     // Shift the coordinate origin to the strip focal point
     auto focus_pos = local_pos - focus_translation_;
     // Calculate the angular component obtained from the corrected position
-    auto phi = atan2(-focus_pos.x(), focus_pos.y());
+    auto phi = atan2(focus_pos.x(), focus_pos.y());
 
     return {r, phi};
 }
 
 ROOT::Math::XYPoint RadialStripDetectorModel::getPositionCartesian(const ROOT::Math::Polar2DPoint& polar_pos) const {
-    // Transform the angular component of the polar coordinates to be measured from the local coordinate center instead of the strip focal point
-    // Length of the translation vector from the local center to the focal point
+    // Transform the angular component of the polar coordinates to be measured from the local coordinate center instead of
+    // the strip focal point Length of the translation vector from the local center to the focal point
     auto len_foc = std::sqrt(focus_translation_.mag2());
     // Calculate two relevant angles needed for the transformation
-    auto alpha = std::acos(len_foc / (2*getCenterRadius()));
+    auto alpha = std::acos(len_foc / (2 * getCenterRadius()));
     auto gamma = asin(len_foc * sin(alpha + polar_pos.phi() + stereo_angle_) / polar_pos.r());
     // Transform the angle
-    auto phi =  ROOT::Math::Pi() - 2*alpha - gamma - polar_pos.phi() - stereo_angle_;
+    auto phi = -(ROOT::Math::Pi() - 2 * alpha - gamma - polar_pos.phi() - stereo_angle_);
 
     return {polar_pos.r() * sin(phi), polar_pos.r() * cos(phi)};
 }
@@ -192,8 +190,8 @@ std::pair<int, int> RadialStripDetectorModel::getPixelIndex(const ROOT::Math::XY
     // Get the strip pitch in the correct strip row
     auto pitch = angular_pitch_.at(static_cast<unsigned int>(strip_y));
     // Calculate the strip x-index
-    auto strip_x = static_cast<int>(
-        std::floor((polar_pos.phi() + stereo_angle_ + pitch * number_of_strips_.at(static_cast<unsigned int>(strip_y)) / 2) / pitch));
+    auto strip_x = static_cast<int>(std::floor(
+        (polar_pos.phi() + stereo_angle_ + pitch * number_of_strips_.at(static_cast<unsigned int>(strip_y)) / 2) / pitch));
 
     return {strip_x, strip_y};
 }
