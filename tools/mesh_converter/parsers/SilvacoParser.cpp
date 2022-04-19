@@ -75,7 +75,7 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
         if ( num_lines_parsed == 1 ) {
             std::istringstream iss;
             iss.str(line);
-            double val;
+            double val = NAN;
             while ( iss >> val ) {
                 columns_count++;
             }
@@ -155,7 +155,7 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name) {
         if ( num_lines_parsed == 1 ) {
             std::istringstream iss;
             iss.str(line);
-            double val;
+            double val = NAN;
             while ( iss >> val ) {
                 columns_count++;
             }
