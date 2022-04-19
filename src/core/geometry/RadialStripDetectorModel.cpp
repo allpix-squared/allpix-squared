@@ -145,14 +145,14 @@ ROOT::Math::Polar2DPoint RadialStripDetectorModel::getPositionPolar(const ROOT::
 }
 
 ROOT::Math::XYPoint RadialStripDetectorModel::getPositionCartesian(const ROOT::Math::Polar2DPoint& polar_pos) const {
-    // Transform the angular component of the polar coordinates to be measured from the local coordinate center instead of
-    // the strip focal point Length of the translation vector from the local center to the focal point
+    // Length of the translation vector from the local center to the focal point
     auto len_foc = std::sqrt(focus_translation_.mag2());
-    // Calculate two relevant angles needed for the transformation
+    // Calculate two relevant angles needed for the transformation of the angular component to be measured from the local
+    // coordinate center instead of the strip focal point
     auto alpha = std::acos(len_foc / (2 * getCenterRadius()));
     auto gamma = asin(len_foc * sin(alpha + polar_pos.phi() + stereo_angle_) / polar_pos.r());
     // Transform the angle
-    auto phi = -(ROOT::Math::Pi() - 2 * alpha - gamma - polar_pos.phi() - stereo_angle_);
+    auto phi = 2 * alpha + gamma + polar_pos.phi() + stereo_angle_ - ROOT::Math::Pi();
 
     return {polar_pos.r() * sin(phi), polar_pos.r() * cos(phi)};
 }
