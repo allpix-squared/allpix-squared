@@ -133,12 +133,6 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
-        // Additional rotation for models that require alignment of their G4 local coordinates with the framework coordinates
-        auto model_rotation = std::make_shared<G4RotationMatrix>();
-        // if(radial_model != nullptr) {
-        //     model_rotation->rotateX(-90.0 * CLHEP::degree);
-        // }
-
         // Build full transformation
         auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
 
@@ -148,12 +142,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         if(radial_model != nullptr) {
             auto radial_translate = G4ThreeVector(0, radial_model->getCenterRadius(), 0);
             wrapperGeoTranslation += radial_translate;
-            *model_translation -= radial_translate;
+            *model_translation += radial_translate;
         }
-
-        // Apply additional rotation on top of the rotation in the global frame
-        geo_manager_->setExternalObject(name, "model_rotation", model_rotation);
-        *rotWrapper *= *model_rotation;
 
         // Apply additional translation on top of the translation in the global frame
         geo_manager_->setExternalObject(name, "model_translation", model_translation);
