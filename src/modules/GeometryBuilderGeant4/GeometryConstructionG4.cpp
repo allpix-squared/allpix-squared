@@ -188,9 +188,6 @@ void GeometryConstructionG4::verify_transforms() const {
         auto sensor = geo_manager_->getExternalObject<G4PVPlacement>(detector->getName(), "sensor_phys");
         auto coord_g4 = get_world_transform(sensor.get()).TransformPoint(global);
 
-        // Obtain and apply additional correction for difference in local coordinate orientation for some models:
-        coord_g4 *= *geo_manager_->getExternalObject<G4RotationMatrix>(detector->getName(), "model_rotation");
-
         // Apply translation to correct for volume origin not corresponding to volume center
         coord_g4 -= *geo_manager_->getExternalObject<G4ThreeVector>(detector->getName(), "model_translation");
 
