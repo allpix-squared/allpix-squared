@@ -489,7 +489,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
             auto residual_um_y = static_cast<double>(Units::convert(particlePos.y() - clusterPos.y(), "um"));
 
-            // If model is radial_strip, (re)calculate residuals and inPixelPos
+            // If model is radial_strip, calculate polar residuals and in-pixel positions
             if(radial_model != nullptr) {
                 // Transform coordinates to polar representation
                 auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
@@ -499,9 +499,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 auto cluster_r = cluster_polar.r();
                 auto cluster_phi = cluster_polar.phi();
 
-                // Recalculate x,y residuals and calculate r,phi residuals
-                residual_um_x = static_cast<double>(Units::convert(particlePos.x() - cluster_r * sin(cluster_phi), "um"));
-                residual_um_y = static_cast<double>(Units::convert(particlePos.y() - cluster_r * cos(cluster_phi), "um"));
+                // Calculate r and phi residuals
                 auto residual_um_r = static_cast<double>(Units::convert(particle_polar.r() - cluster_r, "um"));
                 residual_r->Fill(residual_um_r);
                 auto residual_mrad_phi = static_cast<double>(Units::convert(particle_polar.phi() - cluster_phi, "mrad"));
@@ -510,9 +508,7 @@ void DetectorHistogrammerModule::run(Event* event) {
                 // Recalculate inPixelPos
                 auto delta_phi = particle_polar.phi() - strip_polar.phi();
                 auto strip_size = radial_model->getStripSize(static_cast<unsigned int>(ypixel));
-                inPixelPos = {particle_polar.r() * sin(delta_phi) + strip_size.x() / 2,
-                              particle_polar.r() * cos(delta_phi) + strip_size.y() / 2 - strip_polar.r(),
-                              0};
+                inPixelPos = {particle_polar.r() * sin(delta_phi), particle_polar.r() * cos(delta_phi) - strip_polar.r(), 0};
             }
 
             auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
@@ -572,9 +568,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             // Overwrite inPixelPos with correct values
             auto delta_phi = particle_polar.phi() - strip_polar.phi();
             auto strip_size = radial_model->getStripSize(static_cast<unsigned int>(ypixel));
-            inPixelPos = {particle_polar.r() * sin(delta_phi) + strip_size.x() / 2,
-                          particle_polar.r() * cos(delta_phi) + strip_size.y() / 2 - strip_polar.r(),
-                          0};
+            inPixelPos = {particle_polar.r() * sin(delta_phi), particle_polar.r() * cos(delta_phi) - strip_polar.r(), 0};
         }
 
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
