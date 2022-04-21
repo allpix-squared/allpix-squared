@@ -135,20 +135,14 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
         // Additional translation for models whose coordinate center is not the volume center
         auto model_translation = std::make_shared<G4ThreeVector>();
-
-        auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
-
-        // Apply the corrections for radial strip detector models
         if(radial_model != nullptr) {
-            auto radial_translate = G4ThreeVector(0, radial_model->getCenterRadius(), 0);
-            wrapperGeoTranslation += radial_translate;
-            *model_translation += radial_translate;
+            *model_translation += G4ThreeVector(0, radial_model->getCenterRadius(), 0);
         }
-
-        // Apply additional translation on top of the translation in the global frame
         geo_manager_->setExternalObject(name, "model_translation", model_translation);
 
         // Build full transformation
+        auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
+        wrapperGeoTranslation += *model_translation;
         wrapperGeoTranslation *= *rotWrapper;
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
