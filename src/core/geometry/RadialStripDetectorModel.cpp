@@ -91,9 +91,6 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     }
     setImplantSize(pixel_size_);
 
-    // Set the local coordinate center for the detector
-    setSensorOrigin({0, getCenterRadius(), 0});
-
     // Translation vector from local coordinate center to sensor focal point
     focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};
 }

@@ -131,10 +131,9 @@ namespace allpix {
          * @brief Get local coordinate of the position and rotation center in global frame
          * @return Local coordinate of the position and rotation center in global frame
          *
-         * @note For a radial sensor the matrix center is located outside of the sensor, in the center
-         *       of arcs that form the sensor edges
+         * @note For a radial sensor the matrix center is located in the center of the sensor, defined by the center radius
          */
-        ROOT::Math::XYZPoint getMatrixCenter() const override { return sensor_origin_; }
+        ROOT::Math::XYZPoint getMatrixCenter() const override { return {0, getCenterRadius(), 0}; }
 
         /**
          * @brief Get size of the rectangular wrapper box around the model that contains all elements
@@ -185,12 +184,6 @@ namespace allpix {
          * @param val Vector describing inner strip pitch in each strip row
          */
         void setInnerPitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
-
-        /**
-         * @brief Set the sensor origin (local coordinate center)
-         * @param val Sensor origin (local coordinate center)
-         */
-        void setSensorOrigin(ROOT::Math::XYZPoint val) { sensor_origin_ = std::move(val); }
 
         /**
          * @brief Set the length of the trapezoidal sensor wrapper
@@ -343,7 +336,6 @@ namespace allpix {
         std::vector<double> row_radius_{};
         std::vector<double> row_angle_{};
 
-        ROOT::Math::XYZPoint sensor_origin_;
         ROOT::Math::XYZVector focus_translation_;
     };
 } // namespace allpix
