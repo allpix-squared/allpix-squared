@@ -106,13 +106,34 @@ namespace allpix {
         double getRowRadius(unsigned int row) const { return row_radius_.at(row); }
 
         /**
+         * @brief Get the vector of strip rows inner radii
+         * @return Vector of strip rows inner radii
+         *
+         * @note For N rows the row_radius_ vector has N+1 values. The first element is the inner
+         *  radius of the first row, the last element is the outer radius of the last row (virtually
+         *  the inner radius of the nonexistent (N+1)-th row).
+         */
+        std::vector<double> getRowRadii() { return row_radius_; }
+
+        /**
+         * @brief Get the radius of the sensor center
+         * @return Radius of the sensor center
+         */
+        double getCenterRadius() const { return (row_radius_.at(0) + row_radius_.at(number_of_pixels_.y())) / 2; }
+
+        /**
+         * @brief Get the sensor stereo angle
+         * @return Sensor stereo angle
+         */
+        double getStereoAngle() const { return stereo_angle_; }
+
+        /**
          * @brief Get local coordinate of the position and rotation center in global frame
          * @return Local coordinate of the position and rotation center in global frame
          *
-         * @note For a radial sensor the center is located outside of the sensor, in the center
-         *       of arcs that form the sensor edges
+         * @note For a radial sensor the matrix center is located in the center of the sensor, defined by the center radius
          */
-        ROOT::Math::XYZPoint getMatrixCenter() const override { return strip_focus_; }
+        ROOT::Math::XYZPoint getMatrixCenter() const override { return {0, getCenterRadius(), 0}; }
 
         /**
          * @brief Get size of the rectangular wrapper box around the model that contains all elements
@@ -165,12 +186,6 @@ namespace allpix {
         void setInnerPitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
 
         /**
-         * @brief Set the strip focus point
-         * @param val Strip focus point
-         */
-        void setStripFocus(ROOT::Math::XYZPoint val) { strip_focus_ = std::move(val); }
-
-        /**
          * @brief Set the length of the trapezoidal sensor wrapper
          * @param val Length of the trapezoidal sensor wrapper
          */
@@ -199,6 +214,12 @@ namespace allpix {
          * @param val Vector describing outer radius of each strip row
          */
         void setRowRadius(std::vector<double> val) { row_radius_ = std::move(val); }
+
+        /**
+         * @brief Set the sensor stereo angle
+         * @param val Sensor stereo angle
+         */
+        void setStereoAngle(double val) { stereo_angle_ = val; }
 
         /**
          * @brief Returns if a local position is within the sensitive device
@@ -253,20 +274,19 @@ namespace allpix {
          * @brief Converts the local position in cartesian coordinates to polar coordinates
          * @param local_pos Position in local cartesian coordinates of the detector model
          * @return Local position in polar coordinates
+         *
+         * @note The polar coordinates are defined in a system where:
+         *  - R is measured from the local coordinate center
+         *  - Phi is measured from the strip focal point
          */
-        ROOT::Math::Polar2DPoint getPositionPolar(const ROOT::Math::XYZPoint& local_pos) const {
-            return {sqrt(local_pos.x() * local_pos.x() + local_pos.y() * local_pos.y()),
-                    atan2(local_pos.x(), local_pos.y())};
-        }
+        ROOT::Math::Polar2DPoint getPositionPolar(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Converts the position in polar coordinates to cartesian coordinates in the local frame.
          * @param polar_pos Position in local polar coordinates of the detector model
          * @return Local position in cartesian coordinates
          */
-        ROOT::Math::XYPoint getPositionCartesian(const ROOT::Math::Polar2DPoint& polar_pos) const {
-            return {polar_pos.r() * sin(polar_pos.phi()), polar_pos.r() * cos(polar_pos.phi())};
-        }
+        ROOT::Math::XYPoint getPositionCartesian(const ROOT::Math::Polar2DPoint& polar_pos) const;
 
         /**
          * @brief Returns a pixel center in local coordinates
@@ -309,13 +329,14 @@ namespace allpix {
         std::vector<double> strip_length_{};
         std::vector<double> angular_pitch_{};
         std::vector<double> inner_pitch_{};
+        double stereo_angle_{};
 
         std::array<double, 2> sensor_base_{};
         double sensor_length_{};
         std::vector<double> row_radius_{};
         std::vector<double> row_angle_{};
 
-        ROOT::Math::XYZPoint strip_focus_;
+        ROOT::Math::XYZVector focus_translation_;
     };
 } // namespace allpix
 

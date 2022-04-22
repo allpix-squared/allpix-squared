@@ -25,6 +25,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     setStripLength(config.getArray<double>("strip_length"));
     setAngularPitch(config.getArray<double>("angular_pitch"));
     setInnerPitch(config.getArray<double>("inner_pitch"));
+    setStereoAngle(config.get<double>("stereo_angle", 0));
 
     // Get the number of strip rows
     auto strip_rows = static_cast<unsigned int>(number_of_strips_.size());
@@ -90,8 +91,8 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     }
     setImplantSize(pixel_size_);
 
-    // Set the geometrical focus point of the sensor (local coordinate center)
-    setStripFocus({0, getSize().y() / 2 + radius_extension, 0});
+    // Translation vector from local coordinate center to sensor focal point
+    focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};
 }
 
 bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const {
@@ -106,7 +107,7 @@ bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_
     for(unsigned int row = 0; row < getNPixels().y(); row++) {
         if(polar_pos.r() > row_radius_.at(row) && polar_pos.r() <= row_radius_.at(row + 1)) {
             // Check if the angular coordinate is within that strip row
-            return (std::fabs(polar_pos.phi()) <= angular_pitch_.at(row) * number_of_strips_.at(row) / 2);
+            return (std::fabs(polar_pos.phi() + stereo_angle_) <= angular_pitch_.at(row) * number_of_strips_.at(row) / 2);
         }
     }
     return false;
@@ -129,13 +130,37 @@ bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) c
              strip_index.x() >= static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y()))));
 }
 
+ROOT::Math::Polar2DPoint RadialStripDetectorModel::getPositionPolar(const ROOT::Math::XYZPoint& local_pos) const {
+    // Calculate the radial component
+    auto r = sqrt(local_pos.x() * local_pos.x() + local_pos.y() * local_pos.y());
+    // Shift the coordinate origin to the strip focal point
+    auto focus_pos = local_pos - focus_translation_;
+    // Calculate the angular component obtained from the corrected position
+    auto phi = atan2(focus_pos.x(), focus_pos.y());
+
+    return {r, phi};
+}
+
+ROOT::Math::XYPoint RadialStripDetectorModel::getPositionCartesian(const ROOT::Math::Polar2DPoint& polar_pos) const {
+    // Length of the translation vector from the local center to the focal point
+    auto len_foc = std::sqrt(focus_translation_.mag2());
+    // Calculate two relevant angles needed for the transformation of the angular component to be measured from the local
+    // coordinate center instead of the strip focal point
+    auto alpha = std::acos(len_foc / (2 * getCenterRadius()));
+    auto gamma = asin(len_foc * sin(alpha + polar_pos.phi() + stereo_angle_) / polar_pos.r());
+    // Transform the angle
+    auto phi = 2 * alpha + gamma + polar_pos.phi() + stereo_angle_ - ROOT::Math::Pi();
+
+    return {polar_pos.r() * sin(phi), polar_pos.r() * cos(phi)};
+}
+
 ROOT::Math::XYZPoint RadialStripDetectorModel::getPixelCenter(int x, int y) const {
     // Calculate the radial coordinate of the strip center
     auto local_r = (row_radius_.at(static_cast<unsigned int>(y)) + row_radius_.at(static_cast<unsigned int>(y + 1))) / 2;
     // Calculate the angular coordinate of the strip center
     auto local_phi =
         -angular_pitch_.at(static_cast<unsigned int>(y)) * number_of_strips_.at(static_cast<unsigned int>(y)) / 2 +
-        (x + 0.5) * angular_pitch_.at(static_cast<unsigned int>(y));
+        (x + 0.5) * angular_pitch_.at(static_cast<unsigned int>(y)) - stereo_angle_;
 
     // Convert strip center position to cartesian coordinates
     auto center = getPositionCartesian(ROOT::Math::Polar2DPoint(local_r, local_phi));
@@ -162,8 +187,8 @@ std::pair<int, int> RadialStripDetectorModel::getPixelIndex(const ROOT::Math::XY
     // Get the strip pitch in the correct strip row
     auto pitch = angular_pitch_.at(static_cast<unsigned int>(strip_y));
     // Calculate the strip x-index
-    auto strip_x = static_cast<int>(
-        std::floor((polar_pos.phi() + pitch * number_of_strips_.at(static_cast<unsigned int>(strip_y)) / 2) / pitch));
+    auto strip_x = static_cast<int>(std::floor(
+        (polar_pos.phi() + stereo_angle_ + pitch * number_of_strips_.at(static_cast<unsigned int>(strip_y)) / 2) / pitch));
 
     return {strip_x, strip_y};
 }

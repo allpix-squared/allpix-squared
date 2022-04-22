@@ -18,6 +18,7 @@
 
 #include <G4Box.hh>
 #include <G4EllipticalTube.hh>
+#include <G4IntersectionSolid.hh>
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
 #include <G4NistManager.hh>
@@ -76,17 +77,40 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         LOG(TRACE) << " Chip dimensions: " << Units::display(model->getChipSize(), {"mm", "um"});
         LOG(DEBUG) << " Global position and orientation of the detector:";
 
-        // Build a trapezoidal wrapper if radial strip model is used, otherwise build a box wrapper
+        // Build a radial wrapper if radial_strip model is used, otherwise build a box wrapper
         auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
         if(radial_model != nullptr) {
-            // Create the wrapper trapezoid
-            auto wrapper_trd = make_shared_no_delete<G4Trd>("wrapper_" + name,
-                                                            radial_model->getSensorBaseInner() / 2,
-                                                            radial_model->getSensorBaseOuter() / 2,
-                                                            radial_model->getSize().z() / 2,
-                                                            radial_model->getSize().z() / 2,
-                                                            radial_model->getSize().y() / 2);
-            solids_.push_back(wrapper_trd);
+            // Create the base cylindrical section; wider than the requested dimensions to account for the stereo angle
+            auto* wrapper_base_tub = new G4Tubs("wrapper_base" + name,
+                                                radial_model->getRowRadius(0),
+                                                radial_model->getRowRadius(radial_model->getNPixels().y()),
+                                                radial_model->getSize().z() / 2,
+                                                90 * CLHEP::deg - radial_model->getRowAngleMax() / 2 * 1.5,
+                                                radial_model->getRowAngleMax() * 1.5);
+
+            // Create the angled cylindrical section coming from the focal point; longer than the requested dimensions to
+            // account for the stereo angle
+            auto* wrapper_angled_tub = new G4Tubs("wrapper_angled" + name,
+                                                  radial_model->getRowRadius(0) * 0.95,
+                                                  radial_model->getRowRadius(radial_model->getNPixels().y()) * 1.05,
+                                                  radial_model->getSize().z() / 2,
+                                                  90.0 * CLHEP::deg - radial_model->getRowAngleMax() / 2,
+                                                  radial_model->getRowAngleMax());
+
+            // Get the requested stereo angle
+            auto stereo_angle = radial_model->getStereoAngle();
+            LOG(TRACE) << "Applying stereo angle of " << Units::display(stereo_angle, "mrad");
+
+            // Transformation for the angled cylindrical section
+            auto* angled_tub_rot = new G4RotationMatrix();
+            angled_tub_rot->rotateZ(stereo_angle);
+            auto center_radius = radial_model->getCenterRadius();
+            auto* angled_tub_pos =
+                new G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto wrapper_final_tub = make_shared_no_delete<G4IntersectionSolid>(
+                "wrapper_" + name, wrapper_base_tub, wrapper_angled_tub, *angled_tub_trf);
+            solids_.push_back(wrapper_final_tub);
         } else {
             // Create the wrapper box
             auto wrapper_box = make_shared_no_delete<G4Box>(
@@ -109,18 +133,16 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         orientation.GetComponents(vx, vy, vz);
         auto rotWrapper = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
-        // Additional rotation for models that require alignment of their G4 local coordinates with the framework coordinates
-        auto model_rotation = std::make_shared<G4RotationMatrix>();
+        // Additional translation for models whose coordinate center is not the volume center
+        auto model_translation = std::make_shared<G4ThreeVector>();
         if(radial_model != nullptr) {
-            model_rotation->rotateX(-90.0 * CLHEP::degree);
+            *model_translation += G4ThreeVector(0, radial_model->getCenterRadius(), 0);
         }
-
-        // Apply additional rotation on top of the rotation in the global frame
-        geo_manager_->setExternalObject(name, "model_rotation", model_rotation);
-        *rotWrapper *= *model_rotation;
+        geo_manager_->setExternalObject(name, "model_translation", model_translation);
 
         // Build full transformation
         auto wrapperGeoTranslation = toG4Vector(model->getMatrixCenter() - model->getModelCenter());
+        wrapperGeoTranslation += *model_translation;
         wrapperGeoTranslation *= *rotWrapper;
         G4ThreeVector posWrapper = toG4Vector(position) - wrapperGeoTranslation;
         geo_manager_->setExternalObject(name, "rotation_matrix", rotWrapper);
@@ -150,15 +172,37 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         auto* sensor_material = materials.get(sensor_material_name);
         LOG(DEBUG) << " - Sensor material\t\t:\t" << sensor_material_name;
 
-        // Build a trapezoidal sensor box if radial strip model is used, otherwise build a rectangular box
+        // Build a radial sensor box if radial_strip model is used, otherwise build a rectangular box
         if(radial_model != nullptr) {
-            auto sensor_trd = make_shared_no_delete<G4Trd>("sensor_" + name,
-                                                           radial_model->getSensorBaseInner() / 2,
-                                                           radial_model->getSensorBaseOuter() / 2,
-                                                           radial_model->getSensorSize().z() / 2,
-                                                           radial_model->getSensorSize().z() / 2,
-                                                           radial_model->getSensorSize().y() / 2);
-            solids_.push_back(sensor_trd);
+            // Create the base cylindrical section wider than the requested dimensions to account for the stereo angle
+            auto* sensor_base_tub = new G4Tubs("sensor_base" + name,
+                                               radial_model->getRowRadius(0),
+                                               radial_model->getRowRadius(radial_model->getNPixels().y()),
+                                               radial_model->getSize().z() / 2,
+                                               90 * CLHEP::deg - radial_model->getRowAngleMax() / 2 * 1.5,
+                                               radial_model->getRowAngleMax() * 1.5);
+
+            // Create the angled cylindrical section coming from the focal point
+            auto* sensor_angled_tub = new G4Tubs("sensor_angled" + name,
+                                                 radial_model->getRowRadius(0) * 0.95,
+                                                 radial_model->getRowRadius(radial_model->getNPixels().y()) * 1.05,
+                                                 radial_model->getSize().z() / 2,
+                                                 90.0 * CLHEP::deg - radial_model->getRowAngleMax() / 2,
+                                                 radial_model->getRowAngleMax());
+
+            // Get requested stereo angle
+            auto stereo_angle = radial_model->getStereoAngle();
+
+            // Transformation for the angled cylindrical section
+            auto* angled_tub_rot = new G4RotationMatrix();
+            angled_tub_rot->rotateZ(stereo_angle);
+            auto center_radius = radial_model->getCenterRadius();
+            auto* angled_tub_pos =
+                new G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto sensor_final_tub = make_shared_no_delete<G4IntersectionSolid>(
+                "wrapper_" + name, sensor_base_tub, sensor_angled_tub, *angled_tub_trf);
+            solids_.push_back(sensor_final_tub);
         } else {
             auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,
                                                            model->getSensorSize().x() / 2.0,
