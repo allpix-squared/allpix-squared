@@ -447,8 +447,9 @@ cmp:doxygen:
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Allpix-reference 1> /dev/null
-        - mv reference/html ../public/reference
+        # FIXME: temporarily disable doc dir until new usermanual is done
+        # - make Allpix-reference 1> /dev/null
+        # - mv reference/html ../public/reference
 
 # Compile LaTeX user manual:
 cmp:usermanual:
@@ -456,17 +457,18 @@ cmp:usermanual:
     image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
     script:
         - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make pdf
-        - make html
-        - mv usermanual/*.html ../public/usermanual
-        - mv usermanual/*.css ../public/usermanual
-        - mv usermanual/logo.png ../public/usermanual
-        - mv usermanual/allpix-manual.pdf ../public/usermanual
-        - mkdir -p ../public/usermanual/usermanual/
-        - mkdir -p ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/html/css ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
+        # FIXME: temporarily disable doc dir until new usermanual is done
+        # - make pdf
+        # - make html
+        # - mv usermanual/*.html ../public/usermanual
+        # - mv usermanual/*.css ../public/usermanual
+        # - mv usermanual/logo.png ../public/usermanual
+        # - mv usermanual/allpix-manual.pdf ../public/usermanual
+        # - mkdir -p ../public/usermanual/usermanual/
+        # - mkdir -p ../public/usermanual/usermanual/html/
+        # - mv usermanual/usermanual/html/css ../public/usermanual/usermanual/html/
+        # - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
+        # - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
 
 
 ################################
