@@ -66,6 +66,35 @@ ALLPIX_ENABLE_DEFAULT(OFF)
 Contains the build description of the module with the following
 components:
 
+1.  On the first line either `ALLPIX_DETECTOR_MODULE(MODULE_NAME)` or
+    `ALLPIX_UNIQUE_MODULE(MODULE_NAME)` depending on the type of module
+    defined. The internal name of the module is automatically saved in
+    the variable `${MODULE_NAME}` which should be used as an argument to
+    other functions. Another name can be used by overwriting the
+    variable content, but in the examples below, `${MODULE_NAME}` is
+    used exclusively and is the preferred method of implementation.
+
+2.  The following lines should contain the logic to load possible
+    dependencies of the module (below is an example to load Geant4).
+    Only ROOT is automatically included and linked to the module.
+
+3.  A line with `ALLPIX_MODULE_SOURCES(${MODULE_NAME} <sources>)`
+    defines the module source files. Here, `<sources>` should be replaced
+    by a list of all source files relevant to this module.
+
+4.  Possible lines to include additional directories and to link
+    libraries for dependencies loaded earlier.
+
+5.  A line with `ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})`
+    adds the Geant4 interface library as explained in Section
+    geant4_interface.
+
+6.  A line to register the directory with module tests, for example
+    `tests` as in `{ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")`.
+
+7.  A line containing `ALLPIX_MODULE_INSTALL(${MODULE_NAME})` to set up
+    the required target for the module to be installed to.
+
 A simple `CMakeLists.txt` for a module named `Test` which requires Geant4
 is provided below as an example.
 
@@ -75,10 +104,7 @@ is provided below as an example.
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
 # Load Geant4
-FIND_PACKAGE(Geant4)
-IF(NOT Geant4_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n$ source YOUR_GEANT4_DIR/bin/geant4.sh")
-ENDIF()
+FIND_PACKAGE(Geant4 REQUIRED)
 
 # Add the sources for this module
 ALLPIX_MODULE_SOURCES(${MODULE_NAME}
@@ -93,6 +119,9 @@ ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})
 
 # Link the Geant4 libraries to the module library
 TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
+
+# Register module tests
+ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
 
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})

@@ -16,7 +16,8 @@ The following coding and naming conventions should be adhered to when
 writing code which eventually should be merged into the main repository.
 
 
-  - Namespace: The `allpix` namespace is to be used for all classes which
+  - **Namespace**:
+    The `allpix` namespace is to be used for all classes which
     are part of the framework, nested namespaces may be defined. It is
     encouraged to make use of `using namespace allpix;` in implementation
     files only for this namespace. Especially the namespace `std` should
@@ -24,12 +25,14 @@ writing code which eventually should be merged into the main repository.
     e.g. `std::string test`. In a few other cases, such as `ROOT::Math`,
     the `using` directive may be used to improve readability of the code.
 
-  - Class names: Class names are typeset in CamelCase, starting with a
+  - **Class names**:
+    Class names are typeset in CamelCase, starting with a
     capital letter, e.g. `class ModuleManager`. Every class should provide
     sensible Doxygen documentation for the class itself as well as for
     all member functions.
 
-  - Member functions: Naming conventions are different for public and
+  - **Member functions**:
+    Naming conventions are different for public and
     private class members. Public member function names are typeset as
     camelCase names without underscores, e.g. `getElectricFieldType()`.
     Private member functions use lower-case names, separating individual
@@ -43,7 +46,8 @@ writing code which eventually should be merged into the main repository.
     be made `const` where possible to allow usage of constant objects of the
     respective class.
 
-  - Member variables: Member variables of classes should always be private
+  - **Member variables**:
+    Member variables of classes should always be private
     and accessed only via respective public member functions. This allows to
     change the class implementation and its internal members without requiring
     to rewrite code which accesses them. Member names should be typeset
@@ -90,7 +94,7 @@ can be summarized as follows:
 
   - Namespaces are indented just as other code is.
 
-  - No spaces should be introduced before parentheses ().
+  - No spaces should be introduced before parentheses `()`.
 
   - Included header files should be sorted alphabetically.
 
