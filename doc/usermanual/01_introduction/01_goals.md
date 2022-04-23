@@ -4,7 +4,7 @@ weight: 1
 ---
 
 Allpix Squared is a generic simulation framework for semiconductor tracker
-and vertex detectors written in modern C++, following the C++17 standards.
+and vertex detectors written in modern C++, following the C++17 standard.
 The goal of the framework is to provide an easy-to-use package for simulating
 the performance of semiconductor detectors, starting with the passage of
 ionizing radiation through the sensor and finishing with the digitization of

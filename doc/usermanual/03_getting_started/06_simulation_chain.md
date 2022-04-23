@@ -5,11 +5,11 @@ weight: 6
 
 In the following, the framework parameters are used to set up a fully
 functional simulation. Module parameters are shortly introduced when
-they are first used. For more details about these parameters, the
-respective module documentation should be consulted. A typical simulation
+they are first used. For more details about the module parameters, the
+respective module documentation in [Chapter 7](../07_modules/_index.md) should be consulted. A typical simulation
 in Allpix Squared will contain the following components:
 
-  - The **geometry builder**, responsible for creating the external
+-   The **geometry builder**, responsible for creating the external
     Geant4 geometry from the internal geometry. In this document,
     *internal geometry* refers to the detector parameters used by Allpix
     Squared for coordinate transformations and conversions throughout the
@@ -17,30 +17,31 @@ in Allpix Squared will contain the following components:
     Geant4 geometry used for charge carrier deposition (and possibly
     visualization).
 
-  - The **deposition** module that simulates the particle beam creating
+-   The **deposition** module that simulates the particle beam creating
     charge carriers in the detectors using the provided physics list
     (containing a description of the simulated interactions) and the
     geometry created above.
 
-  - A **propagation** module that propagates the charges through the
+-   A **propagation** module that propagates the charges through the
     sensor.
 
-  - A **transfer** module that transfers the charges from the sensor
+-   A **transfer** module that transfers the charges from the sensor
     electrodes and assigns them to a pixel of the readout electronics.
 
-  - A **digitizer** module which converts the charges in the pixel to a
+-   A **digitizer** module which converts the charges in the pixel to a
     detector hit, simulating the front-end electronics response.
 
-  - An **output** module, saving the data of the simulation. The
-    standard file format is a ROOT `TTree`.
+-   An **output** module, saving the data of the simulation. The
+    Allpix Squared standard file format is a ROOT `TTree`, which is described in detail in
+    [Section 4.7](./09_storing_output_data.md).
 
 In this example, charge carriers will be deposited in the three sensors
-defined in the detector configuration file from before. All charge carriers
+defined in the detector configuration file from [Section 3.3](./03_detector_configuration.md). All charge carriers
 deposited in the different sensors will be propagated and digitized. Finally,
 monitoring histograms for the device under test (DUT) will be recorded
 in the framework's main ROOT file and all simulated objects, including
 the entry and exit positions of the simulated particles (Monte Carlo
-truth), will be stored in a ROOT file using the format. An example
+truth), will be stored in a ROOT file using the Allpix Squared format. An example
 configuration file implementing this would look like:
 
 ```ini
@@ -110,7 +111,7 @@ This configuration is available in the repository at `etc/manual.conf`.
 The detector configuration file can be found at `etc/manual_detector.conf`.
 
 The simulation is started by passing the path of the main configuration
-file to the executable as follows:
+file to the `allpix` executable as follows:
 
 ```sh
 allpix -c etc/manual.conf
@@ -120,6 +121,8 @@ The detector histograms such as the hit map are stored in the ROOT file
 `output/modules.root` in the TDirectory `DetectorHistogrammer/`.
 
 If problems occur when exercising this example, it should be made sure
-that an up-to-date and properly installed version of Allpix Squared is used.
+that an up-to-date and properly installed version of Allpix Squared is used
+(see the installation instructions in [Chapter 2](../02_installation/_index.md)).
 If modules or models fail to load, more information about potential issues
-with the library loading can be found in the detailed framework description.
+with the library loading can be found in the detailed framework description in
+[Section 4.4](../04_framework/04_modules.md#module-instantiation).

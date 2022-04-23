@@ -3,7 +3,7 @@ title: "Downloading the Source Code"
 weight: 4
 ---
 
-The latest version of can be downloaded from the CERN Gitlab
+The latest version of Allpix Squared can be downloaded from the CERN Gitlab
 repository \[[@ap2-repo]\]. For production environments it is recommended
 to only download and use tagged software versions, as many of the available
 git branches are considered development versions and might exhibit

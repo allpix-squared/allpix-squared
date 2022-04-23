@@ -26,7 +26,7 @@ Within the scope of this document, only an overview of the framework can
 be provided and more detailed information on the code itself can be
 found in the Doxygen reference manual \[[@ap2-doxygen]\] available online.
 No programming experience is required from novice users, but knowledge
-of (modern) will be useful in the later chapters and might contribute to
+of (modern) C++ will be useful in the later chapters and might contribute to
 the overall understanding of the mechanisms.
 
 

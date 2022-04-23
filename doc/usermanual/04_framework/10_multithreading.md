@@ -3,7 +3,7 @@ title: "Multithreading"
 weight: 10
 ---
 
-supports multithreading by running events in parallel. The module
+Allpix Squared supports multithreading by running events in parallel. The module
 manager creates a thread pool with the configured number of workers or
 determines them from system parameters if not specified. Each event is
 represented by an instance of the `Event` class which encapsulates the

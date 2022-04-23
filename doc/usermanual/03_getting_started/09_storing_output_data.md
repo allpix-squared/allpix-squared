@@ -10,15 +10,16 @@ High-Energy Physics and allows objects to be written directly to disk. The
 `ROOTObjectWriter` automatically saves all objects created in a `TTree`
 \[[@roottree]\]. It stores separate trees for all object types and creates
 branches for every unique message name: a combination of the detector, the
-module and the message output name. For each event, values are added to the
-leaves of the branches containing the data of the objects. This allows for
+module and the message output name as described in [Section 4.7](../04_framework/07_module_io.md). For each event, values
+are added to the leaves of the branches containing the data of the objects. This allows for
 easy histogramming of the acquired data over the total run using standard
 ROOT utilities.
 
 Relations between objects within a single event are internally stored as
 ROOT TRefs \[[@roottref]\], allowing retrieval of related objects as long as
 these are loaded in memory. An exception will be thrown when trying to access
-an object which is not in memory.
+an object which is not in memory. Refer to [Section 6.2](../06_objects/02_object_history.md) for more information about
+object history.
 
 In order to save all objects of the simulation, a `ROOTObjectWriter` module
 has to be added with a `file_name` parameter to specify the file location of
@@ -36,7 +37,7 @@ file_name = "data"
 
 The generated output file can be analyzed using ROOT macros. A simple
 macro for converting the results to a tree with standard branches for
-comparison is given later.
+comparison is described in [Section 13.3](../13_additional/root_analysis_macros.md#display-monte-carlo-hits-python).
 
 It is also possible to read object data back in, in order to dispatch
 them as messages to further modules. This feature is intended to allow
@@ -53,11 +54,11 @@ module is:
 file_name = "../output/data.root"
 ```
 
-The framework comes with a few more output modules which allow data
-storage in different formats, such as the LCIO persistency event data
-model \[[@lcio]\], the native RCE file format \[[@rce]\], or the Corryvreckan
-reconstruction framework data format. Detailed descriptions of these modules
-can be found in the modules chapter.
+The Allpix Squared framework comes with a few more output modules which allow data storage in different formats, such as the
+[`LCIOWriter`](../07_modules/lciowriter.md) for the LCIO persistency event data model \[[@lcio]\], the
+[`RCEWriter`](../07_modules/rcewriter.md) for the native RCE file format \[[@rce]\], or the
+[`CorryvreckanWriter`](../07_modules/corryvreckanwriter.md) for the Corryvreckan reconstruction framework data format.
+Consult [Chapter 7](../07_modules/_index.md) for all output modules.
 
 
 [@roottree]: https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html

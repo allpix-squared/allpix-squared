@@ -4,8 +4,8 @@ weight: 1
 ---
 
 The framework is configured with simple human-readable configuration
-files. The configuration format is later described in detail, it consists
-of several section headers within `[` and `]` brackets, and a section
+files. The configuration format is described in detail in [Section 4.3](../04_framework/03_configuration.md#file-format).
+It consists of several section headers within `[` and `]` brackets, and a section
 without header at the start. Each of these sections contains a set of
 key/value pairs separated by the `=` character. Comments are indicated
 using the hash symbol (`#`).
@@ -13,53 +13,55 @@ using the hash symbol (`#`).
 The framework has the following three required layers of configuration
 files:
 
-  - The **main** configuration: The most important configuration file
-    and the file that is passed directly to the binary. Contains both
+-   The **main** configuration:
+    The most important configuration file and the file that is passed directly to the binary. Contains both
     the global framework configuration and the list of modules to
     instantiate together with their configuration. An example can be
     found in the repository at `examples/example.conf`. More details and
-    a more thorough examples are given later.
+    a more thorough example are found in [Section 3.2](./02_main_configuration.md), several advanced simulation chain
+    configurations are presented in [Chapter 8](../08_examples/_index.md).
 
-  - The **geometry** configuration passed to the framework to determine
-    the detector setup and passive materials. Describes the detector
+-   The **geometry** configuration:
+    It is passed to the framework to determine the detector setup and passive materials. Describes the detector
     setup, containing the position, orientation and model type of all
     detectors. Optionally, passive materials can be added to this
     configuration. Examples are available in the repository at
     `examples/ example_detector.conf` or
-    `examples/example_detector_passive.conf`.
+    `examples/example_detector_passive.conf`. Introduced in [Section 3.3](./03_detector_configuration.md).
 
-  - The detector **model** configuration. Contains the parameters
-    describing a particular type of detector. Several models are already
+-   The detector **model** configuration:
+    Contains the parameters describing a particular type of detector. Several models are already
     provided by the framework, but new types of detectors can easily be
-    added. See `models/test.conf` in the repository for an example.
+    added. See `models/test.conf` in the repository for an example. Please refer to
+    [Section 9.5](../09_development/05_new_detector_model.md) for more details about adding new models.
 
 
 ## Parsing Types and Units
 
-The framework supports the use of a variety of types for all
+The Allpix Squared framework supports the use of a variety of types for all
 configuration values. The module specifies how the value type should be
 interpreted. An error will be raised if either the key is not specified
 in the configuration file, the conversion to the desired type is not
 possible, or if the given value is outside the domain of possible
-options. Please refer to the module documentation for the list of module
-parameters and their types. Parsing the value roughly follows common-sense,
-a few special rules do apply:
+options. Please refer to the [module documentation](../07_modules/_index.md) for the list of module
+parameters and their types. Parsing the value roughly follows common-sense (more details can be found in
+[Section 4.3](../04_framework/03_configuration.md#accessing-parameters)). A few special rules do apply:
 
-  - If the value is a **string**, it may be enclosed by a single pair of
+-   If the value is a **string**, it may be enclosed by a single pair of
     double quotation marks (`"`), which are stripped before passing the
     value to the modules. If the string is not enclosed by quotation
     marks, all whitespace before and after the value is erased. If the
     value is an array of strings, the value is split at every whitespace
     or comma (`,`) that is not enclosed in quotation marks.
 
-  - If the value is a **boolean**, either numerical (`0`, `1`) or
+-   If the value is a **boolean**, either numerical (`0`, `1`) or
     textual (`false`, `true`) representations are accepted.
 
-  - If the value is a **relative path**, that path will be made absolute
+-   If the value is a **relative path**, that path will be made absolute
     by adding the absolute path of the directory that contains the
     configuration file where the key is defined.
 
-  - If the value is an **arithmetic** type, it may have a suffix
+-   If the value is an **arithmetic** type, it may have a suffix
     indicating the unit. The list of base units is given in the
     table below.
 

@@ -41,16 +41,16 @@ however it is recommended to reinstall Geant4 with the Qt viewer
 included as it offers the best visualization capabilities. The following
 steps are necessary in order to use a VRML viewer:
 
-  - A VRML viewer should be installed on the operating system. Good
+-   A VRML viewer should be installed on the operating system. Good
     options are FreeWRL or OpenVRML.
 
-  - Subsequently, two environmental parameters have to be exported to
+-   Subsequently, two environmental parameters have to be exported to
     the shell environment to inform Geant4 about the configuration:
     `G4VRMLFILE_VIEWER` should point to the location of the viewer executable
     and should `G4VRMLFILE_MAX_FILE_NUM` typically be set to 1 to prevent too
     many files from being created.
 
-  - Finally, the configuration section of the visualization module
+-   Finally, the configuration section of the visualization module
     should be altered as follows:
     ```ini
     [VisualizationGeant4]
@@ -61,7 +61,7 @@ steps are necessary in order to use a VRML viewer:
     ```
 
 More information about all possible configuration parameters can be
-found in the module documentation.
+found in the [module documentation](../07_modules/visualizationgeant4.md).
 
 ## Electric Fields
 
@@ -73,7 +73,7 @@ The section below calculates a linear electric field for every point in
 active sensor volume based on the depletion voltage of the sensor and
 the applied bias voltage. The sensor is always depleted from the implant
 side. The direction of the electric field depends on the sign of the
-bias voltage as described in the module description.
+bias voltage as described in the [module documentation](../07_modules/electricfieldreader.md).
 
 ```ini
 # Add an electric field
@@ -93,8 +93,8 @@ sensor, the adaptive TCAD mesh has to be interpolated and transformed
 into a regular grid with configurable feature size before use. Allpix Squared
 comes with a converter tool which reads TCAD DF-ISE files from the sensor
 simulation, interpolates the field, and writes this out in an appropriate
-format. An example electric field can be found in the repository at
-`etc/example_electric_field.init`.
+format. A more detailed description of the tool can be found in [Section 13.2](../13_additional/mesh_converter.md).
+An example electric field can be found in the repository \[[@ap2-repo]\] at `etc/example_electric_field.init`.
 
 Electric fields can be attached to a specific detector using the
 standard syntax for detector binding. A possible configuration would be:
@@ -130,10 +130,12 @@ The global magnetic field is used by the interface to Geant4 and
 therefore exposes charged primary particles to the Lorentz force, and as
 a property of each detector present, enabling a Lorentz drift of the
 charge carriers in the active sensors, if supported by the used
-propagation modules. See the modules chapter for more information on the
+propagation modules. See the [Chapter 7](../07_modules/_index.md) for more information on the
 available propagation modules.
 
-Currently, only constant magnetic fields can be applied.
+Currently, only constant magnetic fields can be applied. For all parameters, refer to the
+[module documentation](../07_modules/magneticfieldreader.md).
 
 
 [@geant4vis]: https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html
+[@ap2-repo]: https://gitlab.cern.ch/allpix-squared/allpix-squared

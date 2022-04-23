@@ -11,7 +11,7 @@ make -j<number_of_cores>
 ```
 
 The compiled (non-installed) version of the executable can be found at
-`src/exec/allpix` in the folder. Running directly without installing can
+`src/exec/allpix` in the folder. Running Allpix Squared directly without installing can
 be useful for developers. It is not recommended for normal users,
 because the correct library and model paths are only fully configured
 during installation.

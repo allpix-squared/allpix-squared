@@ -14,7 +14,7 @@ Allpix Squared has therefore only two required external dependencies:
     libraries. The latest stable release of ROOT 6 is recommended and
     older versions, such as ROOT 5.x, are not supported. Please refer
     to \[[@rootinstallation]\] for instructions on how to install ROOT. ROOT
-    has several components of which the package is required to run .
+    has several components of which the `GenVector` package is required to run Allpix Squared.
     This package is included in the default build. ROOT needs to be
     built using C++17, which is accomplished by supplying the CMake flag
     `-DCMAKE_CXX_STANDARD=17`.
@@ -31,7 +31,7 @@ Allpix Squared has therefore only two required external dependencies:
     a recent version is required.
 
 For some modules, additional dependencies exist. For details about the
-dependencies and their installation see the module documentation. The
+dependencies and their installation see [Chapter 7](../07_modules/_index.md). The
 following dependencies are needed to compile the standard installation:
 
 -   Geant4 \[[@geant4]\]: Simulates the desired particles and their
@@ -39,12 +39,12 @@ following dependencies are needed to compile the standard installation:
     the help of the constructed geometry. See the instructions
     in \[[@geant4installation]\] for details on how to install the software.
     All Geant4 data sets are required to run the modules successfully,
-    and Geant4 must be built using 17. For multithreading to be
+    and Geant4 must be built using C++17. For multithreading to be
     possible, this must also be enabled in the Geant4 installation. It
     is recommended to enable the Geant4 Qt extensions to allow
     visualization of the detector setup and the simulated particle
     tracks. A recommended set of CMake flags to build a Geant4 package
-    suitable for usage with are:
+    suitable for usage with Allpix Squared are:
     ```
     -DGEANT4_INSTALL_DATA=ON
     -DGEANT4_USE_GDML=ON
@@ -62,8 +62,9 @@ following dependencies are needed to compile the standard installation:
     package manager. Otherwise it can be easily installed, comprising a
     header-only library.
 
-Extra flags need to be set for building an installation without these
-dependencies. Details about these configuration options are given later.
+Extra flags need to be set for building an Allpix Squared installation without these
+dependencies. Details about these configuration options are given in the
+[CMake configuration section](./06_cmake_configuration.md).
 
 
 [@root]: http://root.cern.ch/
