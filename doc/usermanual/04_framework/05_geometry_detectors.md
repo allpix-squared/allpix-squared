@@ -100,7 +100,10 @@ used for tracking of particles through detetector setup is shown on the left
 side, while the local coordinate system used to describe the individual
 sensors is located at the right.
 
-![](./transformations.png)
+![](./transformations.png)\
+*Coordinate transformations from global to local and revers. The first row shows
+the detector positions in the respective coordinate systems in top view, the second
+row in side view.*
 
 The global reference for time measurements is the beginning of the
 event, i.e. the start of the particle tracking through the setup. The

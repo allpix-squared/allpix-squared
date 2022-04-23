@@ -48,7 +48,7 @@ the sensor and its applied electric field. The number of charge
 carriers per group can be used to vary the density of lines drawn.
 Larger groups result in fewer lines.
 
-![](./linegraph_hrcmos_collected.png)
+![](./linegraph_hrcmos_collected.png)\
 *Drift and diffusion visualization of charge carrier groups being
 transported through a high-resistivity CMOS silicon sensor. The plot
 shows the situation after an integration time of 20 nanoseconds,

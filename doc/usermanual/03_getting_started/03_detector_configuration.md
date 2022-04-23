@@ -45,7 +45,7 @@ explained in more detail later. This allows to quickly adapt e.g. the
 sensor thickness of a certain detector without altering the actual
 detector model file.
 
-![](./telescope.png)
+![](./telescope.png)\
 *Visualization of a Pion passing through the telescope setup defined in
 the detector configuration file. A secondary particle is produced in the
 material of the detector in the center.*
@@ -116,6 +116,7 @@ Every passive material has to contain all of the following parameters:
 In addition, an optional string referring to the `mother_volume`, which
 defines another passive material the volume will be placed in, can be
 specified.
+
 {{% alert title="Note" color="info" %}}
 If a mother volume is chosen, the position defined in the
 configuration file will be relative to the center of the mother volume.
@@ -123,6 +124,7 @@ An error will be given if the specified mother volume is too small for the
 specified size or position of this volume. Per default, the mother volume
 is the world frame.
 {{% /alert %}}
+
 {{% alert title="Note" color="info" %}}
 If the `mother_volume` is a hollow material, only the non-hollow part
 of the material is considered part of the material. Placing a passive volume
@@ -263,8 +265,8 @@ material = "lead"
 role = "passive"
 ```
 
-![](./passive_materials.png)
-*Visualization of the setup described in the file.*
+![](./passive_materials.png)\
+*Visualization of the setup described in the geometry file.*
 
 
 [@timepix]: https://doi.org/10.1016/j.nima.2007.08.079
