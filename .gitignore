@@ -18,6 +18,9 @@
 *.wrl
 *.png
 
+# pictures in the doc folder are fine though
+!/doc/**/*.png
+
 # ignore backup files of any sort of editor:
 ~*
 *~
@@ -39,4 +42,4 @@
 /cmake/AllpixConfig*.cmake
 
 # Ignore files created from unit tests
-/etc/unittests/output/ 
+/etc/unittests/output/
