@@ -3,41 +3,35 @@ title: "Sensor Material Properties"
 weight: 1
 ---
 
-Allpix Squared supports the definition of a variety of semiconductor
-sensor materials. To simplify the setup of simulations with certain
-materials and to avoid inconsistent results, a set of default material
-properties is defined for each available material. These stored values
-serve as defaults to modules depending on one of these properties and
-may thus be overwritten using the corresponding configuration key in the
-respective section of the main configuration file.
+Allpix Squared supports the definition of a variety of semiconductor sensor materials. To simplify the setup of simulations
+with certain materials and to avoid inconsistent results, a set of default material properties is defined for each available
+material. These stored values serve as defaults to modules depending on one of these properties and may thus be overwritten
+using the corresponding configuration key in the respective section of the main configuration file.
 
 The following parameters are currently provided by the framework:
 
-  - Charge creation energy
+-   Charge creation energy
 
-  - Fano factor
+-   Fano factor
 
-The values for various materials are listed in the table below. It
-should be noted that for many of the following values a significant
-variation on measurements exist throughout literature, among others
-owed to a variation of material quality and composition and of vendors.
-The sources for the chosen default values are provided in the table.
+The values for various materials are listed in the table below. It should be noted that for many of the following values a
+significant variation on measurements exist throughout literature, among others owed to a variation of material quality and
+composition and of vendors. The sources for the chosen default values are provided in the table.
 
-| Material                                           | Energy $`[eV]`$ | Fano factor | References                             |
-|:---------------------------------------------------|:----------------|:------------|:---------------------------------------|
-| Silicon                                            | 3.64            | 0.115       | \[[@chargecreation], [@fano]\]         |
-| Germanium                                          | 2.97            | 0.112       | \[[@Germanium_Creation_Fano]\]         |
-| Gallium Arsenide                                   | 4.2             | 0.14        | \[[@GaAs_Fano]\]                       |
-| Cadmium Telluride                                  | 4.43            | 0.24        | \[[@CdTe_Creation], [@CdTe_Fano]\]     |
-| Cadmium Zinc Telluride $`\ce{Cd_{0.8}Zn_{0.2}Te}`$ | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
-| Diamond                                            | 13.1            | 0.382       | \[[@Diamond_Creation_Fano]\]           |
-| Silicon Carbide (4H-SiC)                           | 7.6             | 0.1         | \[[@SiC_Creation], [@SiC_Fano]\]       |
+| Material                                             | Energy $`[eV]`$ | Fano factor | References                             |
+|:-----------------------------------------------------|:----------------|:------------|:---------------------------------------|
+| Silicon                                              | 3.64            | 0.115       | \[[@chargecreation], [@fano]\]         |
+| Germanium                                            | 2.97            | 0.112       | \[[@Germanium_Creation_Fano]\]         |
+| Gallium Arsenide                                     | 4.2             | 0.14        | \[[@GaAs_Fano]\]                       |
+| Cadmium Telluride                                    | 4.43            | 0.24        | \[[@CdTe_Creation], [@CdTe_Fano]\]     |
+| Cadmium Zinc Telluride ($`\ce{Cd_{0.8}Zn_{0.2}Te}`$) | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
+| Diamond                                              | 13.1            | 0.382       | \[[@Diamond_Creation_Fano]\]           |
+| Silicon Carbide ($`\ce{{4H-}SiC}`$)                  | 7.6             | 0.1         | \[[@SiC_Creation], [@SiC_Fano]\]       |
 
 
-It should be noted that material properties such as the density and
-composition of materials are defined only in case of constructing a
-Geant4 geometry via the module GeometryConstructionGeant4, therefore
-these values are implemented within the respective module.
+It should be noted that material properties such as the density and composition of materials are defined only in case of
+constructing a Geant4 geometry via the `GeometryBuilderGeant4` module, therefore these values are implemented within the
+respective module.
 
 
 [@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945

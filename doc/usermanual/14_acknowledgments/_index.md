@@ -5,96 +5,94 @@ weight: 14
 
 Allpix Squared is developed and maintained by
 
-  - Paul Schütze, DESY
+-   Paul Schütze, DESY
 
-  - Simon Spannagel, DESY
+-   Simon Spannagel, DESY
 
-  - Koen Wolters
+-   Koen Wolters
 
-The following authors, in alphabetical order, have developed or
-contributed to Allpix Squared:
+The following authors, in alphabetical order, have developed or contributed to Allpix Squared:
 
-  - Mohamed Moanis Ali, GSOC2019 Student
+-   Mohamed Moanis Ali, GSOC2019 Student
 
-  - Mathieu Benoit, BNL
+-   Mathieu Benoit, BNL
 
-  - Thomas Billoud, Université de Montréal
+-   Thomas Billoud, Université de Montréal
 
-  - Tobias Bisanz, CERN
+-   Tobias Bisanz, CERN
 
-  - Marco Bomben, Université de Paris
+-   Marco Bomben, Université de Paris
 
-  - Koen van den Brandt, Nikhef
+-   Koen van den Brandt, Nikhef
 
-  - Carsten Daniel Burgard, DESY
+-   Carsten Daniel Burgard, DESY
 
-  - Maximilian Felix Caspar, DESY
+-   Maximilian Felix Caspar, DESY
 
-  - Liejian Chen, Institute of High Energy Physics Beijing
+-   Liejian Chen, Institute of High Energy Physics Beijing
 
-  - Katharina Dort, University of Gießen
+-   Katharina Dort, University of Gießen
 
-  - Neal Gauvin, Université de Genève
+-   Neal Gauvin, Université de Genève
 
-  - Lennart Huth, DESY
+-   Lennart Huth, DESY
 
-  - Daniel Hynds, University of Oxford
+-   Daniel Hynds, University of Oxford
 
-  - Maoqiang Jing, University of South China, Institute of High Energy
+-   Maoqiang Jing, University of South China, Institute of High Energy
     Physics Beijing
 
-  - Moritz Kiehn, Université de Genève
+-   Moritz Kiehn, Université de Genève
 
-  - Stephan Lachnit, DESY
+-   Stephan Lachnit, DESY
 
-  - Salman Maqbool, CERN Summer Student
+-   Salman Maqbool, CERN Summer Student
 
-  - Stefano Mersi, CERN
+-   Stefano Mersi, CERN
 
-  - Ryuji Moriya, CERN Summer Student, University of Glasgow
+-   Ryuji Moriya, CERN Summer Student, University of Glasgow
 
-  - Sebastien Murphy, ETHZ
+-   Sebastien Murphy, ETHZ
 
-  - Andreas Matthias Nürnberg, KIT
+-   Andreas Matthias Nürnberg, KIT
 
-  - Sebastian Pape, TU Dortmund University
+-   Sebastian Pape, TU Dortmund University
 
-  - Marko Petric, CERN
+-   Marko Petric, CERN
 
-  - Radek Privara, Palacky University Olomouc
+-   Radek Privara, Palacky University Olomouc
 
-  - Nashad Rahman, The Ohio State University
+-   Nashad Rahman, The Ohio State University
 
-  - Edoardo Rossi, DESY
+-   Edoardo Rossi, DESY
 
-  - Andre Sailer, CERN
+-   Andre Sailer, CERN
 
-  - Enrico Jr. Schioppa, Unisalento and INFN Lecce
+-   Enrico Jr. Schioppa, Unisalento and INFN Lecce
 
-  - Sebastian Schmidt, FAU Erlangen
+-   Sebastian Schmidt, FAU Erlangen
 
-  - Sanchit Sharma, Kansas State University
+-   Sanchit Sharma, Kansas State University
 
-  - Xin Shi, Institute of High Energy Physics Beijing
+-   Xin Shi, Institute of High Energy Physics Beijing
 
-  - Viktor Sonesten, GSOC2018 Student
+-   Viktor Sonesten, GSOC2018 Student
 
-  - Reem Taibah, Université de Paris
+-   Reem Taibah, Université de Paris
 
-  - Ondrej Theiner, Charles University
+-   Ondrej Theiner, Charles University
 
-  - Annika Vauth, University of Hamburg
+-   Annika Vauth, University of Hamburg
 
-  - Mateus Vicente Barreto Pinto, CERN
+-   Mateus Vicente Barreto Pinto, CERN
 
-  - Håkan Wennlöf, DESY
+-   Håkan Wennlöf, DESY
 
-  - Andy Wharton, Lancaster University
+-   Andy Wharton, Lancaster University
 
-  - Morag Williams, University of Glasgow
+-   Morag Williams, University of Glasgow
 
-The authors would also like to express their thanks to the developers of
-AllPix \[[@ap1wiki], [@ap1git]\].
+The authors would also like to express their thanks to the developers of AllPix \[[@ap1wiki], [@ap1git]\].
 
 
 [@ap1wiki]: https://twiki.cern.ch/twiki/bin/view/Main/AllPix

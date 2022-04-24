@@ -18,14 +18,15 @@
 *.wrl
 *.png
 
-# pictures in the doc folder are fine though
-!/doc/**/*.png
-
 # ignore backup files of any sort of editor:
 ~*
 *~
 .*
 \#*
+
+# Some exceptions for the doc folder
+!/doc/**/*.png
+!/doc/**/.gitignore
 
 # ignore python byte code
 *.pyc
