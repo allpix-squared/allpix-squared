@@ -42,11 +42,11 @@ manual as
 
 ```math
 \begin{align*}
-\tau_{0,e} &= 1 \times 10^{-5}\ \text{s} \newline
-N_{d0,e}   &= 1 \times 10^{16}\ \text{cm}^{-3} \newline
+\tau_{0,e} &=  1\times 10^{-5} \,\text{s} \newline
+N_{d0,e}   &=  1\times 10^{16} \,\text{cm}^{-3} \newline
 \newline
-\tau_{0,h} &= 4.0 \times 10^{-4}\ \text{s} \newline
-N_{d0,h}   &= 7.1 \times 10^{15}\ \text{cm}^{-3}
+\tau_{0,h} &= 4.0\times 10^{-4} \,\text{s} \newline
+N_{d0,h}   &= 7.1\times 10^{15} \,\text{cm}^{-3}
 \end{align*}
 ```
 
@@ -56,14 +56,14 @@ The temperature dependence of the Shockley-Read-Hall lifetime is scaled followin
 presented \[[@schenk]\] as:
 
 ```math
-\tau(N, T) = \tau(N) \cdot \left( \frac{300\ \text{K}}{T} \right)^{3/2}
+\tau(N, T) = \tau(N) \cdot \left( \frac{300 \,\text{K}}{T} \right)^{3/2}
 ```
 
 This model can be selected in the configuration file via the parameter `recombination_model = "srh"`.
 
 ## Auger Recombination
 
-At high doping levels exceeding $`5 \times 10^{18}\ \text{cm}^{-3}`$ \[[@fossum-lee]\], the Auger recombination model becomes
+At high doping levels exceeding $`5\times 10^{18} \ \text{cm}^{-3}`$ \[[@fossum-lee]\], the Auger recombination model becomes
 increasingly important. It assumes that the excess energy created by electron-hole recombinations is transferred to another
 electron (*e-e-h process*) or another hole (*e-h-h process*). The total recombination rate is then given by \[[@kerr]\]:
 
@@ -79,7 +79,7 @@ the e-h-h process. In highly-doped silicon, the Auger lifetime for minority char
 ```
 
 where $`C_{a} = C_{n} + C_{p}`$ is the ambipolar Auger coefficient, taken as
-$`C_{a} = 3.8 \times 10^{-31}\ \text{cm}^6\ \text{s}^{-1}`$ from \[[@dziewior]\].
+$`C_{a} = 3.8\times 10^{-31} \ \text{cm}^6\ \text{s}^{-1}`$ from \[[@dziewior]\].
 
 This recombination mode applies to minority charge carriers only, majority charge carriers have an infinite life time under
 this model and the recombination equation will always evaluate to *true*.

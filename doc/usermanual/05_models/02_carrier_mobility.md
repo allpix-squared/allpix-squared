@@ -114,8 +114,8 @@ This model can be selected in the configuration file via the parameter `mobility
 
 The Hamburg high-field model \[[@hamburg]\] takes the same form as the [Hamburg model](#hamburg-model), but uses a different
 set of parameter values. The values are taken from Table 3 of \[[@hamburg]\] and are suitable for electric field strengths
-above $`2.5\ \text{kV}\ \text{cm}^{-1}`$. Again, no temperature dependence is assumed on hole mobility parameter $`c`$, while
-all other parameters are scaled to temperatures different than 300 Kelvin using the equation from the
+above $`2.5 \ \text{kV}\ \text{cm}^{-1}`$. Again, no temperature dependence is assumed on hole mobility parameter $`c`$,
+while all other parameters are scaled to temperatures different than 300 Kelvin using the equation from the
 [Hamburg model](#hamburg-model).
 
 The parameter values implemented in Allpix Squared are

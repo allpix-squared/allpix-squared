@@ -36,16 +36,16 @@ where the temperature scaling of $`\beta`$ is given as
 \beta(T) = \beta(T_0)\left(\frac{T}{T_0}\right)^{\kappa} ,
 ```
 
-extracted at the reference temperature of $`T_0 = -10\ \text{°C}`$.
+extracted at the reference temperature of $`T_0 = -10 \ \text{°C}`$.
 
 The parameters used in Allpix Squared are
 
 ```math
 \begin{align*}
-\beta_{e}(T_0) &= 5.6 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
+\beta_{e}(T_0) &= 5.6\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
 \kappa_{e}     &= -0.86 \newline
 \newline
-\beta_{h}(T_0) &= 7.7 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
+\beta_{h}(T_0) &= 7.7\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
 \kappa_{h}     &= -1.52
 \end{align*}
 ```
@@ -56,7 +56,7 @@ While \[[@kramberger]\] quotes different values for $`\beta`$ for irradiation wi
 for protons have been applied here.
 
 The parameters arise from measurements of the were obtained evaluating current signals of irradiated sensors via light
-injection at fluences up to $`\Phi_{eq} = 2 \times 10^{14}\ n_{eq}\ \text{cm}^2`$.
+injection at fluences up to $`\Phi_{eq} = 2\times 10^{14} \ n_{eq}\ \text{cm}^2`$.
 
 This model can be selected in the configuration file via the parameter `trapping_model = "ljubljana"`.
 
@@ -72,8 +72,8 @@ with the parameters
 
 ```math
 \begin{align*}
-\gamma_{e} &= 5.13 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
-\gamma_{h} &= 5.04 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1}
+\gamma_{e} &= 5.13\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\gamma_{h} &= 5.04\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1}
 \end{align*}
 ```
 
@@ -89,8 +89,8 @@ This model can be selected in the configuration file via the parameter `trapping
 ## CMS Tracker
 
 This effective trapping model has been developed by the CMS Tracker Group. It follows the results of
-\[[@CMSTrackerTrapping]\], with measurements at fluences of up to $`\Phi_{eq} = 3 \times 10^{15}\ n_{eq}\ \text{cm}^2`$, at a
-temperature of $`T = -20\ \text{°C}`$ and an irradiation with protons.
+\[[@CMSTrackerTrapping]\], with measurements at fluences of up to $`\Phi_{eq} = 3 times 10^{15} \ n_{eq}\ \text{cm}^2`$, at a
+temperature of $`T = -20 \ \text{°C}`$ and an irradiation with protons.
 
 The interpolation of the results follows the relation
 
@@ -102,11 +102,11 @@ with the parameters
 
 ```math
 \begin{align*}
-\beta_{e}(T_0)  &= 1.71 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
-\tau_{0,e}^{-1} &= -0.114\ \text{ns}^{-1} \newline
+\beta_{e}(T_0)  &= 1.71\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\tau_{0,e}^{-1} &= -0.114 \,\text{ns}^{-1} \newline
 \newline
-\beta_{h}(T_0)  &= 2.79 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
-\tau_{0,h}^{-1} &= -0.093\ \text{ns}^{-1}
+\beta_{h}(T_0)  &= 2.79\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\tau_{0,h}^{-1} &= -0.093 \,\text{ns}^{-1}
 \end{align*}
 ```
 
@@ -119,7 +119,7 @@ This model can be selected in the configuration file via the parameter `trapping
 ## Mandic
 
 The Mandić model \[[@Mandic]\] is an empirical model developed from measurements with high fluences ranging from
-$`\Phi_{eq} = 5 \times 10^{15}\ n_{eq}\ \text{cm}^2`$ to $`\Phi_{eq} = 1 \times 10^{17}\ n_{eq}\ \text{cm}^2`$ and describes
+$`\Phi_{eq} = 5\times 10^{15} \ n_{eq}\ \text{cm}^2`$ to $`\Phi_{eq} = 1\times 10^{17} \ n_{eq}\ \text{cm}^2`$ and describes
 the lifetime via
 
 ```math
@@ -130,18 +130,18 @@ with the parameters
 
 ```math
 \begin{align*}
-c_e      &= 0.054\ \text{ns}\ \text{cm}^{-2} \newline
+c_e      &= 0.054 \,\text{ns}\,\text{cm}^{-2} \newline
 \kappa_e &= -0.62 \newline
 \newline
-c_h      &= 0.0427\ \text{ns}\ \text{cm}^{-2} \newline
+c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \newline
 \kappa_h &= -0.62
 \end{align*}
 ```
 
 for electrons and holes, respectively.
 
-The parameters for electrons are taken from \[[@Mandic]\], for measurements at a temperature of $`T = -20\ \text{°C}`$, and
-the results extrapolated to $`T = -30\ \text{°C}`$. A scaling from electrons to holes was performed based on the default
+The parameters for electrons are taken from \[[@Mandic]\], for measurements at a temperature of $`T = -20 \ \text{°C}`$, and
+the results extrapolated to $`T = -30 \ \text{°C}`$. A scaling from electrons to holes was performed based on the default
 values in Weightfield2 \[[@Weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
