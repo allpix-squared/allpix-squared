@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
 title: "Error Reporting and Exceptions"
 weight: 9
 ---

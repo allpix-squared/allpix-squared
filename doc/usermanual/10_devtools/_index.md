@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
 title: "Development Tools & Continuous Integration"
 description: "A few tools to ease development and help to maintain a high code quality."
 weight: 10

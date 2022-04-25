@@ -1,4 +1,6 @@
 ---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
 title: "Goals of the project"
 weight: 1
 ---
