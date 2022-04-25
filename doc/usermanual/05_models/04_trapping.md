@@ -30,7 +30,7 @@ In the Ljubljana (sometimes referred to as *Kramberger*) model \[[@kramberger]\]
 \tau^{-1}(T) = \beta(T)\Phi_{eq} ,
 ```
 
-where the temperature scaling of $`β`$ is given as
+where the temperature scaling of $`\beta`$ is given as
 
 ```math
 \beta(T) = \beta(T_0)\left(\frac{T}{T_0}\right)^{\kappa} ,
@@ -38,7 +38,7 @@ where the temperature scaling of $`β`$ is given as
 
 extracted at the reference temperature of $`T_0 = -10\ \text{°C}`$.
 
-The parameters used in Allpix Squared are:
+The parameters used in Allpix Squared are
 
 ```math
 \begin{align*}
@@ -49,6 +49,8 @@ The parameters used in Allpix Squared are:
 \kappa_{h}     &= -1.52
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 While \[[@kramberger]\] quotes different values for $`\beta`$ for irradiation with neutrons, pions and protons, the values
 for protons have been applied here.
@@ -71,9 +73,11 @@ with the parameters
 ```math
 \begin{align*}
 \gamma_{e} &= 5.13 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} \newline
-\gamma_{h} &= 5.04 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1} .
+\gamma_{h} &= 5.04 \times 10^{-16}\ \text{cm}^2\ \text{ns}^{-1}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 The values have been extracted evaluating current signals of irradiated sensors via light injection at fluences up to
 $`\Phi_{eq} = 8.9 \times 10^{14}\ n_{eq}\ \text{cm}^2`$, at a temperature of $`T = 0\ \text{°C}`$. No temperature scaling is
@@ -94,7 +98,7 @@ The interpolation of the results follows the relation
 \tau^{-1} = {\beta\Phi_{eq}} + \tau_0^{-1}
 ```
 
-with the parameters:
+with the parameters
 
 ```math
 \begin{align*}
@@ -105,6 +109,8 @@ with the parameters:
 \tau_{0,h}^{-1} &= -0.093\ \text{ns}^{-1}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 No temperature scaling is provided.
 
@@ -120,7 +126,7 @@ the lifetime via
 \tau = c\Phi_{eq}^{\kappa}
 ```
 
-with the parameters:
+with the parameters
 
 ```math
 \begin{align*}
@@ -131,6 +137,8 @@ c_h      &= 0.0427\ \text{ns}\ \text{cm}^{-2} \newline
 \kappa_h &= -0.62
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 The parameters for electrons are taken from \[[@Mandic]\], for measurements at a temperature of $`T = -20\ \text{°C}`$, and
 the results extrapolated to $`T = -30\ \text{°C}`$. A scaling from electrons to holes was performed based on the default

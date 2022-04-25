@@ -30,19 +30,21 @@ A = A_{ref} \cdot T^{\gamma}
 where $`A_{ref}`$ is the reference parameter value, $`T`$ the temperature in units of Kelvin, and $`\gamma`$ the temperature
 scaling factor.
 
-The parameter values implemented in Allpix Squared are taken from Table 5 of \[[@jacoboni]\] as:
+The parameter values implemented in Allpix Squared are taken from Table 5 of \[[@jacoboni]\] as
 
 ```math
 \begin{align*}
-v_{m,e} &= 1.53 \times 10^9\ \text{cm}\ \text{s}^{-1} \cdot T^{-0.87} \newline
-E_{c,e} &= 1.01\ \text{V}\ \text{cm}^{-1} \cdot T^{1.55} \newline
-\beta_e &= 2.57 \times 10^{-2} \cdot T^{0.66} \newline
+v_{m,e} &= 1.53\times 10^9 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.87} \newline
+E_{c,e} &= 1.01 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.55} \newline
+\beta_e &= 2.57\times 10^{-2} \cdot T^{0.66} \newline
 \newline
-v_{m,h} &= 1.62 \times 10^8\ \text{cm}\ \text{s}^{-1} \cdot T^{-0.52} \newline
-E_{c,h} &= 1.24\ \text{V}\ \text{cm}^{-1} \cdot T^{1.68} \newline
+v_{m,h} &= 1.62\times 10^8 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.52} \newline
+E_{c,h} &= 1.24 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.68} \newline
 \beta_h &= 0.46 \cdot T^{0.17}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "jacoboni"`.
 
@@ -51,7 +53,11 @@ This model can be selected in the configuration file via the parameter `mobility
 The Canali model \[[@canali]\] differs from the [Jacoboni-Canali model](#jacoboni-canali-model) in the equation only by the
 value of $`v_m`$ for electrons. The difference is most likely a typo in the Jacoboni reproduction of the parametrization, so
 this one can be considered the original parametrization derived from data. The altered value is taken from equation 2a in
-\[[@canali]\] and amounts to $`v_{m,e} = 1.43 \times 10^9\ \text{cm}\ \text{s}^{-1} \cdot T^{-0.87}`$.
+\[[@canali]\] and amounts to
+
+```math
+v_{m,e} = 1.43\times 10^9 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.87} .
+```
 
 A comparison with other models exhibits a better accordance of the electron mobility compared to the Jacoboni-Canali
 parameter value, especially at very high values of the electric field.
@@ -63,11 +69,12 @@ This model can be selected in the configuration file via the parameter `mobility
 
 The Hamburg model \[[@hamburg]\] presents an empirical parametrization of electron and hole mobility as a function of the
 electric field $`E`$ based on measurements of drift velocities in high-ohmic silicon with $`\left<100\right>`$ lattice
-orientation. The mobility is parametrized as:
+orientation. The mobility is parametrized as
 
 ```math
 \begin{align*}
 \mu_e^{-1}(E) &= 1 / \mu_{0,e} + E / v_{sat} \newline
+\newline
 \mu_h^{-1}(E) &= 1 / \mu_{0,h}                                           &\quad \text{for} \quad E < E_0 \newline
               &= 1 / \mu_{0,h} + b \cdot (E - E_0) + c \cdot (E - E_0)^2 &\quad \text{for} \quad E \geq E_0
 \end{align*}
@@ -80,24 +87,26 @@ The temperature dependence of the model parameters are calculated with respect t
 
 
 ```math
-A_i = A_i(T = 300\ \text{K}) \cdot \left(\frac{T}{300\ \text{K}}\right)^{\gamma_i}
+A_i = A_i(T = 300 \,\text{K}) \cdot \left(\frac{T}{300 \,\text{K}}\right)^{\gamma_i}
 ```
 
 The hole mobility parameter $`c`$ is assumed to have no temperature dependence.
 
-The parameter values implemented in Allpix Squared are taken from Table 4 of \[[@hamburg]\] as:
+The parameter values implemented in Allpix Squared are taken from Table 4 of \[[@hamburg]\] as
 
 ```math
 \begin{align*}
-\mu_{0,e} &= 1530\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-2.42} \newline
-v_{sat}   &= 1.03 \times 10^7\ \text{cm}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.226} \newline
+\mu_{0,e} &= 1530 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.42} \newline
+v_{sat}   &= 1.03\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.226} \newline
 \newline
-\mu_{0,h} &= 464\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-2.20} \newline
-b         &= 9.57 \times 10^{-8}\ \text{cm}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.101} \newline
-c         &= -3.31 \times 10^{-13}\ \text{s}\ \text{V}^{-1} \newline
-E_0       &= 2640\ \text{V}\ \text{cm}^{-1} \cdot \left(T / 300\ \text{K}\right)^{0.526}
+\mu_{0,h} &= 464 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.20} \newline
+b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.101} \newline
+c         &= -3.31\times 10^{-13} \,\text{s}\,\text{V}^{-1} \newline
+E_0       &= 2640 \,\text{V}\,\text{cm}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{0.526}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "hamburg"`.
 
@@ -109,19 +118,21 @@ above $`2.5\ \text{kV}\ \text{cm}^{-1}`$. Again, no temperature dependence is as
 all other parameters are scaled to temperatures different than 300 Kelvin using the equation from the
 [Hamburg model](#hamburg-model).
 
-The parameter values implemented in Allpix Squared are:
+The parameter values implemented in Allpix Squared are
 
 ```math
 \begin{align*}
-\mu_{0,e} &= 1430\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-1.99} \newline
-v_{sat}   &= 1.05 \times 10^7\ \text{cm}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.302} \newline
+\mu_{0,e} &= 1430 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-1.99} \newline
+v_{sat}   &= 1.05\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.302} \newline
 \newline
-\mu_{0,h} &= 457\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-2.80} \newline
-b         &= 9.57 \times 10^{-8}\ \text{cm}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.155} \newline
-c         &= -3.24 \times 10^{-13}\ \text{s}\ \text{V}^{-1} \newline
-E_0       &= 2970\ \text{V}\ \text{cm}^{-1} \cdot \left(T / 300\ \text{K}\right)^{0.563}
+\mu_{0,h} &= 457 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.80} \newline
+b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.155} \newline
+c         &= -3.24\times 10^{-13} \,\text{s}\,\text{V}^{-1} \newline
+E_0       &= 2970 \,\text{V}\,\text{cm}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{0.563}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "hamburg_highfield"`.
 
@@ -152,28 +163,30 @@ Only the parameters $`\mu_{max}`$ for both electrons and holes are temperature d
 equation from the [Hamburg model](#hamburg-model) with parameters $`\gamma_e = -2.5`$ for electrons and $`\gamma_e = -2.2`$
 for holes.
 
-The parameter values implemented in Allpix Squared are taken from Table I of \[[@masetti]\] for phosphorus and boron as:
+The parameter values implemented in Allpix Squared are taken from Table I of \[[@masetti]\] for phosphorus and boron as
 
 ```math
 \begin{align*}
-\mu_{0,e}   &= 68.5\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \newline
-\mu_{max,e} &= 1414\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-2.5} \newline
-C_{r,e}     &= 9.20 \times 10^{16}\ \text{cm}^{-3} \newline
+\mu_{0,e}   &= 68.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+\mu_{max,e} &= 1414 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.5} \newline
+C_{r,e}     &= 9.20\times 10^{16} \,\text{cm}^{-3} \newline
 \alpha_{e}  &= 0.711 \newline
-\mu_{1,e}   &= 56.1\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \newline
-C_{s,e}     &= 3.41 \times 10^{20}\ \text{cm}^{-3} \newline
+\mu_{1,e}   &= 56.1 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+C_{s,e}     &= 3.41\times 10^{20} \,\text{cm}^{-3} \newline
 \beta_{e}   &= 1.98 \newline
 \newline
-\mu_{0,h}   &= 44.9\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \newline
-\mu_{max,h} &= 470.5\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-2.2} \newline
-C_{r,h}     &= 2.23 \times 10^{17}\ \text{cm}^{-3} \newline
+\mu_{0,h}   &= 44.9 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+\mu_{max,h} &= 470.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.2} \newline
+C_{r,h}     &= 2.23\times 10^{17} \,\text{cm}^{-3} \newline
 \alpha_{h}  &= 0.719 \newline
-\mu_{1,h}   &= 29.0\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \newline
-C_{s,h}     &= 6.1 \times 10^{20}\ \text{cm}^{-3} \newline
+\mu_{1,h}   &= 29.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+C_{s,h}     &= 6.1\times 10^{20} \,\text{cm}^{-3} \newline
 \beta_{h}   &= 2.0 \newline
-P_{c}       &= 9.23 \times 10^{16}\ \text{cm}^{-3}
+P_{c}       &= 9.23\times 10^{16} \,\text{cm}^{-3}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`.
 
@@ -197,20 +210,22 @@ as taken from equations 8 (for electrons) and 13 (for holes) of \[[@arora]\].
 
 The parameter values are provided at the reference temperature of 300 Kelvin and scaled to different temperatures according
 to the equation from the [Hamburg model](#hamburg-model). The values implemented in Allpix Squared are taken from Table 1 and
-the formulas of \[[@arora]\] as:
+the formulas of \[[@arora]\] as
 
 ```math
 \begin{align*}
-\mu_{min,e} &= 88.0\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.57} \newline
-\mu_{0,e}   &= 7.40 \times 10^8\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot T^{-2.33} \newline
-N_{ref,e}   &= 1.26 \times 10^{17}\ \text{cm}^{-3} \cdot \left(T / 300\ \text{K}\right)^{2.4} \newline
+\mu_{min,e} &= 88.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \newline
+\mu_{0,e}   &= 7.40\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.33} \newline
+N_{ref,e}   &= 1.26\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \newline
 \newline
-\mu_{min,h} &= 54.3\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot \left(T / 300\ \text{K}\right)^{-0.57} \newline
-\mu_{0,h}   &= 1.36 \times 10^8\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \cdot T^{-2.23} \newline
-N_{ref,h}   &= 2.35 \times 10^{17}\ \text{cm}^{-3} \cdot \left(T / 300\ \text{K}\right)^{2.4} \newline
-\alpha      &= 0.88 \cdot \left(T / 300\ \text{K}\right)^{-0.146}
+\mu_{min,h} &= 54.3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \newline
+\mu_{0,h}   &= 1.36\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.23} \newline
+N_{ref,h}   &= 2.35\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \newline
+\alpha      &= 0.88 \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.146}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "arora"`.
 
@@ -220,10 +235,10 @@ This model extends the [Jacoboni-Canali model](#jacoboni-canali-model) described
 low-field models such as the [Masetti model](#masetti-model). This technique is for example used in the Synopsys Sentaurus
 TCAD software.
 
-The mobility is then parametrized using the two models as:
+The mobility is then parametrized using the two models as
 
 ```math
-\mu (E, N) = \frac{\mu_{m}(N)}{\left(1 + \left(\mu_{m}(N) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}}
+\mu(E, N) = \frac{\mu_{m}(N)}{\left(1 + \left(\mu_{m}(N) \cdot E / v_{m} \right)^{\beta} \right)^{1 / \beta}} ,
 ```
 
 where $`\mu_{m}(N)`$ is the mobility from the [Masetti model](#masetti-model) and $`v_m`$, $`\beta`$ are the respective
@@ -242,6 +257,7 @@ The mobility is parametrized as
 \begin{align*}
 \mu_e(E) &= \mu_{0,e}                                             &\quad \text{for} \quad E < E_0 \newline
          &= \mu_{0,e} / \sqrt{1 + \left(E - E_0\right)^2 / E_c^2} &\quad \text{for} \quad E \geq E_0 \newline
+\newline
 \mu_h(E) &= \mu_{0,h} .
 \end{align*}
 ```
@@ -250,10 +266,10 @@ The values implemented in Allpix Squared are:
 
 ```math
 \begin{align*}
-E_0        &= 3.1 \times 10^3\ \text{V}\ \text{cm}^{-1} \newline
-E_c        &= 1.36 \times 10^3\ \text{V}\ \text{cm}^{-1} \newline
-\mu\_{0,e} &= 7.6 \times 10^3\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1} \newline
-\mu\_{0,h} &= 3.2 \times 10^2\ \text{cm}^2\ \text{V}^{-1}\ \text{s}^{-1}
+E_0        &= 3.1\times 10^3 \,\text{V}\,\text{cm}^{-1} \newline
+E_c        &= 1.36\times 10^3 \,\text{V}\,\text{cm}^{-1} \newline
+\mu\_{0,e} &= 7.6\times 10^3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+\mu\_{0,h} &= 3.2\times 10^2 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1}
 \end{align*}
 ```
 
@@ -265,7 +281,7 @@ The Quay mobility model describes the mobility of electron and holes in a large 
 original publication \[[@quay]\], the saturation velocity is modeled via the relation
 
 ```math
-v_{sat}\left(T\right) = \frac{v_{sat,300}}{(1-A) + A \cdot \left(T / 300\ K\right)} ,
+v_{sat}\left(T\right) = \frac{v_{sat,300}}{(1-A) + A \cdot \left(T / 300 \,K\right)} ,
 ```
 
 with the saturation velocity at 300 Kelvin and the free parameter $`A`$.
@@ -288,20 +304,20 @@ The model has been implemented for silicon, germanium and gallium arsenide. Para
 semiconductors are given in \[[@quay]\] and \[[@LandoltBornstein]\]. The parameters implemented in Allpix Squared and their
 references are listed in the table below.
 
-| Material         | Parameter                                                           | Electrons            | Holes                | References                       |
-|:-----------------|:--------------------------------------------------------------------|:---------------------|:---------------------|----------------------------------|
-| Silicon          | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`1.02 \times 10^7`$ | $`0.72 \times 10^7`$ | \[[@quay]\]                      |
-|                  | $`A`$                                                               | $`0.74`$             | $`0.37`$             | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`1.43 \times 10^9`$ | $`1.35 \times 10^8`$ | \[[@jacoboni]\]                  |
-|                  | $`\gamma`$                                                          | $`2.42`$             | $`2.2`$              | \[[@jacoboni]\]                  |
-| Germanium        | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`0.7  \times 10^7`$ | $`0.63 \times 10^7`$ | \[[@quay]\]                      |
-|                  | $`A`$                                                               | $`0.45`$             | $`0.39`$             | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`5.66 \times 10^7`$ | $`1.05 \times 10^9`$ | \[[@omar], [@LandoltBornstein]\] |
-|                  | $`\gamma`$                                                          | $`1.68`$             | $`2.33`$             | \[[@omar], [@LandoltBornstein]\] |
-| Gallium Arsenide | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`0.72 \times 10^7`$ | $`0.9  \times 10^7`$ | \[[@quay]\]                      |
-|                  | $`A`$                                                               | $`0.44`$             | $`0.59`$             | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`2.5  \times 10^6`$ | $`6.3  \times 10^7`$ | \[[@LandoltBornstein]\]          |
-|                  | $`\gamma`$                                                          | $`1.0`$              | $`2.1`$              | \[[@LandoltBornstein]\]          |
+| Material         | Parameter                                                           | Electrons           | Holes               | References                       |
+|:-----------------|:--------------------------------------------------------------------|:--------------------|:--------------------|----------------------------------|
+| Silicon          | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`1.02\times 10^7`$ | $`0.72\times 10^7`$ | \[[@quay]\]                      |
+|                  | $`A`$                                                               | $`0.74`$            | $`0.37`$            | \[[@quay]\]                      |
+|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`1.43\times 10^9`$ | $`1.35\times 10^8`$ | \[[@jacoboni]\]                  |
+|                  | $`\gamma`$                                                          | $`2.42`$            | $`2.2`$             | \[[@jacoboni]\]                  |
+| Germanium        | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $` 0.7\times 10^7`$ | $`0.63\times 10^7`$ | \[[@quay]\]                      |
+|                  | $`A`$                                                               | $`0.45`$            | $`0.39`$            | \[[@quay]\]                      |
+|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`5.66\times 10^7`$ | $`1.05\times 10^9`$ | \[[@omar], [@LandoltBornstein]\] |
+|                  | $`\gamma`$                                                          | $`1.68`$            | $`2.33`$            | \[[@omar], [@LandoltBornstein]\] |
+| Gallium Arsenide | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`0.72\times 10^7`$ | $` 0.9\times 10^7`$ | \[[@quay]\]                      |
+|                  | $`A`$                                                               | $`0.44`$            | $`0.59`$            | \[[@quay]\]                      |
+|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
+|                  | $`\gamma`$                                                          | $` 1.0`$            | $` 2.1`$            | \[[@LandoltBornstein]\]          |
 
 ## Constant Mobility
 

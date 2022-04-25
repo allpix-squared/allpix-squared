@@ -38,7 +38,7 @@ the lattice \[[@shockley-read], [@hall]\]. The lifetime is calculated using the 
 
 where $`\tau_0`$ and $`N_{d0}`$ are reference lifetime and doping concentration, for electrons and holes respectively. The
 parameter values implemented in Allpix Squared are taken from \[[@fossum-lee]\] and the Synopsys Sentaurus TCAD software
-manual as:
+manual as
 
 ```math
 \begin{align*}
@@ -49,6 +49,8 @@ N_{d0,e}   &= 1 \times 10^{16}\ \text{cm}^{-3} \newline
 N_{d0,h}   &= 7.1 \times 10^{15}\ \text{cm}^{-3}
 \end{align*}
 ```
+
+for electrons and holes, respectively.
 
 The temperature dependence of the Shockley-Read-Hall lifetime is scaled following the low-temperature approximation model
 presented \[[@schenk]\] as:
