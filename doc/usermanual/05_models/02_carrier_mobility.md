@@ -114,7 +114,7 @@ This model can be selected in the configuration file via the parameter `mobility
 
 The Hamburg high-field model \[[@hamburg]\] takes the same form as the [Hamburg model](#hamburg-model), but uses a different
 set of parameter values. The values are taken from Table 3 of \[[@hamburg]\] and are suitable for electric field strengths
-above $`2.5 \ \text{kV}\ \text{cm}^{-1}`$. Again, no temperature dependence is assumed on hole mobility parameter $`c`$,
+above $`2.5 \,\text{kV}\,\text{cm}^{-1}`$. Again, no temperature dependence is assumed on hole mobility parameter $`c`$,
 while all other parameters are scaled to temperatures different than 300 Kelvin using the equation from the
 [Hamburg model](#hamburg-model).
 
@@ -306,17 +306,17 @@ references are listed in the table below.
 
 | Material         | Parameter                                                           | Electrons           | Holes               | References                       |
 |:-----------------|:--------------------------------------------------------------------|:--------------------|:--------------------|----------------------------------|
-| Silicon          | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`1.02\times 10^7`$ | $`0.72\times 10^7`$ | \[[@quay]\]                      |
+| Silicon          | $`v_{sat,300}\ [\text{cm}\,\text{s}^{-1}]`$                         | $`1.02\times 10^7`$ | $`0.72\times 10^7`$ | \[[@quay]\]                      |
 |                  | $`A`$                                                               | $`0.74`$            | $`0.37`$            | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`1.43\times 10^9`$ | $`1.35\times 10^8`$ | \[[@jacoboni]\]                  |
+|                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $`1.43\times 10^9`$ | $`1.35\times 10^8`$ | \[[@jacoboni]\]                  |
 |                  | $`\gamma`$                                                          | $`2.42`$            | $`2.2`$             | \[[@jacoboni]\]                  |
-| Germanium        | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $` 0.7\times 10^7`$ | $`0.63\times 10^7`$ | \[[@quay]\]                      |
+| Germanium        | $`v_{sat,300}\ [\text{cm}\,\text{s}^{-1}]`$                         | $` 0.7\times 10^7`$ | $`0.63\times 10^7`$ | \[[@quay]\]                      |
 |                  | $`A`$                                                               | $`0.45`$            | $`0.39`$            | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $`5.66\times 10^7`$ | $`1.05\times 10^9`$ | \[[@omar], [@LandoltBornstein]\] |
+|                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $`5.66\times 10^7`$ | $`1.05\times 10^9`$ | \[[@omar], [@LandoltBornstein]\] |
 |                  | $`\gamma`$                                                          | $`1.68`$            | $`2.33`$            | \[[@omar], [@LandoltBornstein]\] |
-| Gallium Arsenide | $`v_{sat,300}\ [\text{cm}\ \text{s}^{-1}]`$                         | $`0.72\times 10^7`$ | $` 0.9\times 10^7`$ | \[[@quay]\]                      |
+| Gallium Arsenide | $`v_{sat,300}\ [\text{cm}\,\text{s}^{-1}]`$                         | $`0.72\times 10^7`$ | $` 0.9\times 10^7`$ | \[[@quay]\]                      |
 |                  | $`A`$                                                               | $`0.44`$            | $`0.59`$            | \[[@quay]\]                      |
-|                  | $`M\ [\text{cm}^2\ \text{K}^\gamma\ \text{V}^{-1}\ \text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
+|                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
 |                  | $`\gamma`$                                                          | $` 1.0`$            | $` 2.1`$            | \[[@LandoltBornstein]\]          |
 
 ## Constant Mobility
