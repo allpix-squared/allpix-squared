@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Interpretation of Pass and Fail Conditions"
-weight: 4
+weight: 3
 ---
 
 Multiple pass or fail conditions can be separated by a semicolon or by adding multiple `#PASS` or `#FAIL` expressions. It

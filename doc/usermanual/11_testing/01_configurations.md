@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Test Configurations"
-weight: 2
+weight: 1
 ---
 
 Test configuration files consist of regular Allpix Squared configuration files for a simulation, invoking the desired

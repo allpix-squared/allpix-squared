@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Directory Variables in Tests"
-weight: 6
+weight: 5
 ---
 
 Sometimes it is necessary to pass directories or file names as test input. To facilitate this, the test files can contain

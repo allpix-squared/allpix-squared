@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Warning and Error Messages During Testing"
-weight: 5
+weight: 4
 ---
 
 If no explicit fail conditions are specified, the test will fail if any `WARNING`, `ERROR` or `FATAL` appears in the output

@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Test Tags, Pass and Fail Conditions"
-weight: 3
+weight: 2
 ---
 
 Test tags allow to influence the execution condition of the given test configuration, or to define a required condition for
