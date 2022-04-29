@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Contributing Code"
-weight: 4
+weight: 3
 ---
 
 Since Allpix Squared is a community project that benefits from active participation in the development and code contributions

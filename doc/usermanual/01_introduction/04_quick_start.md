@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Quick Start"
-weight: 5
+weight: 4
 ---
 
 This section serves as a swift introduction to Allpix Squared for users who prefer to start quickly and learn the details

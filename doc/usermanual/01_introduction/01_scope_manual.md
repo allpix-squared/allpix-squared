@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Scope of this Manual"
-weight: 2
+weight: 1
 ---
 
 This document is meant to be the primary User's Guide for Allpix Squared. It contains both an extensive description of the
