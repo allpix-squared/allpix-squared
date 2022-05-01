@@ -24,13 +24,13 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
 ENDIF()
 
 # Add source files to library
-ALLPIX_MODULE_SOURCES(${MODULE_NAME} DepositionGeneratorModule.cpp PrimariesGeneratorAction.cpp)
+ALLPIX_MODULE_SOURCES(${MODULE_NAME} DepositionGeneratorModule.cpp PrimariesGeneratorAction.cpp PrimariesReaderGenie.cpp)
 
 # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
 TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
 # Add Geant4 libraries
-TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES} AllpixModuleDepositionGeant4)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES} AllpixModuleDepositionGeant4 ROOT::Tree ROOT::TreePlayer)
 
 # Allpix Geant4 interface is required for this module
 ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})
