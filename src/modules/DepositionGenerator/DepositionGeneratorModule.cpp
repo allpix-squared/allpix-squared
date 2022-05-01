@@ -19,6 +19,9 @@
 
 #include "core/utils/log.h"
 
+// Reader modules:
+#include "PrimariesReaderGenie.hpp"
+
 using namespace allpix;
 
 DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
@@ -43,7 +46,12 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
 }
 
 void DepositionGeneratorModule::initialize() {
-    reader_ = std::make_shared<PrimariesReader>(config_);
+
+    if(file_model_ == FileModel::GENIE) {
+        reader_ = std::make_shared<PrimariesReaderGenie>(config_);
+    } else {
+        throw InvalidValueError(config_, "model", "Unsupported data file model");
+    }
 
     DepositionGeant4Module::initialize();
 }
