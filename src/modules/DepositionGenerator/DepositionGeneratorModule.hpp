@@ -25,7 +25,14 @@ namespace allpix {
      * More detailed explanation of module
      */
     class DepositionGeneratorModule : public DepositionGeant4Module {
-        friend class CosmicsGeneratorActionG4;
+
+        /**
+         * @brief Different implemented file models
+         */
+        enum class FileModel {
+            GENIE, ///< Genie generator ROOT files
+            HEPMC, ///< HepMC data files from generators such as Pythia
+        };
 
     public:
         /**
@@ -44,6 +51,7 @@ namespace allpix {
     private:
         void initialize_g4_action() override;
         std::shared_ptr<PrimariesReader> reader_;
+        FileModel file_model_;
     };
 
 } // namespace allpix
