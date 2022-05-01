@@ -32,6 +32,8 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     // Do *not* waive sequence requirement - we're reading from file and this should happen sequentially
     waive_sequence_requirement(false);
 
+    file_model_ = config_.get<FileModel>("model");
+
     // Force source type and position:
     config_.set("source_type", "cosmics"); // FIXME
     config_.set("source_position", ROOT::Math::XYZPoint());
