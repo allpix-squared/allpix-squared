@@ -194,6 +194,6 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
     });
 }
 
-void SequentialModule::waive_sequence_requirement() {
-    sequence_required_ = false;
+void SequentialModule::waive_sequence_requirement(bool waive) {
+    sequence_required_ = !waive;
 }
