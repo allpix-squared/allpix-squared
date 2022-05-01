@@ -43,9 +43,10 @@ namespace allpix {
             double time_;
         };
 
-        PrimariesReader() = delete;
+        PrimariesReader() = default;
+        virtual ~PrimariesReader() = default;
         PrimariesReader(const Configuration&){};
-        std::vector<Particle> getParticles() { return {}; };
+        virtual std::vector<Particle> getParticles() = 0;
     };
 } // namespace allpix
 
