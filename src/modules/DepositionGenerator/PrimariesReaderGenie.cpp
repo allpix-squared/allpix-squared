@@ -11,6 +11,7 @@
 
 #include "PrimariesReaderGenie.hpp"
 
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -63,5 +64,27 @@ void PrimariesReaderGenie::check_tree_reader(const Configuration& config, std::s
 }
 
 std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
-    return {};
+
+    // Read tree status:
+    auto status = tree_reader_->GetEntryStatus();
+    if(status == TTreeReader::kEntryNotFound || status == TTreeReader::kEntryBeyondEnd) {
+        throw EndOfRunException("Requesting end of run: end of tree reached");
+    } else if(status != TTreeReader::kEntryValid) {
+        throw EndOfRunException("Problem reading from tree, error: " + std::to_string(static_cast<int>(status)));
+    }
+
+    // Check if this is the requested event, otherwise return an empty vector
+    if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
+        return {};
+    }
+
+    // FIXME Ensure all arrays have the same size:
+
+    // Generate particles:
+    std::vector<Particle> particles;
+    for(size_t i = 0; i < px_.GetSize(); i++) {
+        paeticles.emplace_back();
+    }
+
+    return particles;
 }
