@@ -93,7 +93,7 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
     return {{"Silicon", vertices}};
 }
 
-FieldMap SilvacoParser::read_fields(const std::string& file_name) {
+FieldMap SilvacoParser::read_fields(const std::string& file_name, const std::string& observable) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -110,7 +110,6 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name) {
     std::vector<double> region_electric_field_num;
 
     std::string region = "Silicon";
-    std::string observable;
     long unsigned int dimension = 1;
     long long num_lines_parsed = 0;
     long unsigned int columns_count = 0;
@@ -139,20 +138,6 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name) {
             }
             dimension = columns_count;
 
-            // Determining data type from dimensions
-            // dimension == 1 -> Scalar potential
-            // dimension == 2 -> 2D electric field
-            // dimension == 3 -> 3D electric field
-            if(dimension == 1) {
-                observable = "ElectrostaticPotential";
-            } else if(dimension == 2) {
-                observable = "ElectricField";
-            } else if(dimension == 3) {
-                observable = "ElectricField";
-            } else {
-                throw std::runtime_error("incorrect dimension of observable");
-            }
-
             iss.clear();
         }
 
@@ -163,6 +148,10 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name) {
             region_electric_field_num.push_back(num);
         }
 
+        // Determining data type from dimensions
+        // dimension == 1 -> Scalar potential
+        // dimension == 2 -> 2D electric field
+        // dimension == 3 -> 3D electric field
         if(dimension == 1) {
             for(size_t i = 0; i < region_electric_field_num.size(); i += 1) {
                 auto x = region_electric_field_num[i];
@@ -170,23 +159,21 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name) {
             }
 
             region_electric_field_num.clear();
-        }
-
-        if(dimension == 3) {
+        } else if(dimension == 3) {
             for(size_t i = 0; i < region_electric_field_num.size(); i += 3) {
                 auto x = region_electric_field_num[i];
                 auto y = region_electric_field_num[i + 1];
                 auto z = region_electric_field_num[i + 2];
                 region_electric_field_map[region][observable].emplace_back(x, y, z);
             }
-        }
-
-        if(dimension == 2) {
+        } else if(dimension == 2) {
             for(size_t i = 0; i < region_electric_field_num.size(); i += 2) {
                 auto x = region_electric_field_num[i];
                 auto y = region_electric_field_num[i + 1];
                 region_electric_field_map[region][observable].emplace_back(0, x, y);
             }
+        } else {
+            throw std::runtime_error("incorrect dimension of observable");
         }
 
         region_electric_field_num.clear();
