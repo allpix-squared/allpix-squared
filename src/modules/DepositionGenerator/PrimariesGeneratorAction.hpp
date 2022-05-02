@@ -39,7 +39,6 @@ namespace allpix {
 
     private:
         std::unique_ptr<G4ParticleGun> particle_gun_;
-        const Configuration& config_;
         std::shared_ptr<PrimariesReader> reader_;
     };
 } // namespace allpix
