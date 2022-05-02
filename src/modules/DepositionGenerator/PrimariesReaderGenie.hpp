@@ -28,7 +28,7 @@ namespace allpix {
          * Default constructor which opens the file and checks that all expected trees and branches are available
          * @param config  Module configuration object
          */
-        PrimariesReaderGenie(const Configuration& config);
+        explicit PrimariesReaderGenie(const Configuration& config);
 
         /**
          * Overwritten method to obtain the primary particles for the current event. This method needs to be called
