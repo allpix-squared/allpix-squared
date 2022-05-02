@@ -10,6 +10,7 @@
  */
 
 #include "PrimariesGeneratorAction.hpp"
+#include "PrimariesReader.hpp"
 
 #include <limits>
 #include <memory>
