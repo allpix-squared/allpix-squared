@@ -56,6 +56,12 @@ void DepositionGeneratorModule::initialize() {
     DepositionGeant4Module::initialize();
 }
 
+void DepositionGeneratorModule::run(Event* event) {
+    reader_->set_event_num(event->number);
+
+    DepositionGeant4Module::run(event);
+}
+
 void DepositionGeneratorModule::initialize_g4_action() {
 
     auto* action_initialization = new ActionInitializationPrimaries<PrimariesGeneratorAction>(config_, reader_);

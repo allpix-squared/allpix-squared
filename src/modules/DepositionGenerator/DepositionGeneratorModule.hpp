@@ -48,6 +48,8 @@ namespace allpix {
          */
         void initialize() override;
 
+        void run(Event* event) override;
+
     private:
         void initialize_g4_action() override;
         std::shared_ptr<PrimariesReader> reader_;

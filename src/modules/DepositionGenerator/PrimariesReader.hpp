@@ -9,8 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_PRIMARIES_DEPOSITION_MODULE_READER_H
-#define ALLPIX_PRIMARIES_DEPOSITION_MODULE_READER_H
+#ifndef ALLPIX_GENERATOR_DEPOSITION_MODULE_READER_H
+#define ALLPIX_GENERATOR_DEPOSITION_MODULE_READER_H
 
 #include <memory>
 
@@ -23,6 +23,8 @@ namespace allpix {
      * @brief Generates the particles in every event
      */
     class PrimariesReader {
+        friend class DepositionGeneratorModule;
+
     public:
         class Particle {
         public:
@@ -44,10 +46,19 @@ namespace allpix {
         };
 
         PrimariesReader() = default;
+
         virtual ~PrimariesReader() = default;
+
         PrimariesReader(const Configuration&){};
+
         virtual std::vector<Particle> getParticles() = 0;
+
+        uint64_t event_num() const { return event_num_; }
+
+    private:
+        void set_event_num(uint64_t event_num) { event_num_ = event_num; }
+        uint64_t event_num_;
     };
 } // namespace allpix
 
-#endif /* ALLPIX_PRIMARIES_DEPOSITION_MODULE_READER_H */
+#endif /* ALLPIX_GENERATOR_DEPOSITION_MODULE_READER_H */
