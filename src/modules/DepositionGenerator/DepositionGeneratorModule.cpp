@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Implementation of [DepositionPrimaries] module
+ * @brief Implementation of the DepositionGenerator module
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -38,7 +38,8 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     file_model_ = config_.get<FileModel>("model");
 
     // Force source type and position:
-    config_.set("source_type", "cosmics"); // FIXME
+    config_.set("source_type", "generator");
+    // FIXME allow to shift gun position by setting this parameter?
     config_.set("source_position", ROOT::Math::XYZPoint());
 
     // Add the particle source position to the geometry
@@ -47,23 +48,26 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
 
 void DepositionGeneratorModule::initialize() {
 
+    // Generate file reader instance of appropriate type
     if(file_model_ == FileModel::GENIE) {
         reader_ = std::make_shared<PrimariesReaderGenie>(config_);
     } else {
         throw InvalidValueError(config_, "model", "Unsupported data file model");
     }
 
+    // Call upstream initialization method
     DepositionGeant4Module::initialize();
 }
 
 void DepositionGeneratorModule::run(Event* event) {
+    // Pass current event number to the reader instance
     reader_->set_event_num(event->number);
 
+    // Call upstream run method
     DepositionGeant4Module::run(event);
 }
 
 void DepositionGeneratorModule::initialize_g4_action() {
-
     auto* action_initialization = new ActionInitializationPrimaries<PrimariesGeneratorAction>(config_, reader_);
     run_manager_g4_->SetUserInitialization(action_initialization);
 }

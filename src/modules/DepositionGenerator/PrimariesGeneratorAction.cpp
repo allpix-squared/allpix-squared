@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Implements the interface of the Geant4 ParticleGun to CRY
+ * @brief Implements the interface to the Geant4 ParticleGun
  *
- * @copyright Copyright (c) 2021-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -34,9 +34,11 @@ PrimariesGeneratorAction::PrimariesGeneratorAction(const Configuration& config, 
  */
 void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
 
+    // Read next set of primary particles from the data file
     using PrimaryParticle = PrimariesReader::Particle;
     std::vector<PrimaryParticle> particles = reader_->getParticles();
 
+    // Dispatch them to the Geant4 particle gun
     for(const auto& particle : particles) {
         auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_gun_->SetParticleDefinition(pdg_table->FindParticle(particle.pdg()));
@@ -47,7 +49,7 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
         particle_gun_->SetParticleTime(particle.time());
         particle_gun_->GeneratePrimaryVertex(event);
 
-        LOG(DEBUG) << "  " << particle.pdg() << ": " << std::setprecision(4)
+        LOG(DEBUG) << " " << particle.pdg() << ":\t" << std::setprecision(4)
                    << " energy=" << Units::display(particle.energy(), {"MeV", "GeV"})
                    << " pos=" << Units::display(particle.position(), {"um", "mm", "cm"}) << " dir=" << particle.direction()
                    << " t=" << Units::display(particle.time(), {"ns", "us", "ms"});
