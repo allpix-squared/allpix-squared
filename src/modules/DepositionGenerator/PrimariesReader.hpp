@@ -39,8 +39,8 @@ namespace allpix {
              * @param pos  Position vector
              * @param t    Creation time
              */
-            Particle(int id, double e, const G4ThreeVector& dir, const G4ThreeVector& pos, double t)
-                : id_(id), energy_(e), direction_(dir), position_(pos), time_(t) {}
+            Particle(int id, double e, G4ThreeVector dir, G4ThreeVector pos, double t)
+                : id_(id), energy_(e), direction_(std::move(dir)), position_(std::move(pos)), time_(t) {}
 
             /**
              * Provides the PDG ID of the particle
