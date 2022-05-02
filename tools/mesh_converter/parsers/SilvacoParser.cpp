@@ -42,7 +42,6 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
 
     std::vector<Point> vertices;
 
-    std::string region = "Silicon";
     long unsigned int dimension = 1;
     long unsigned int columns_count = 0;
     long long num_lines_parsed = 0;
@@ -91,12 +90,7 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
     }
     LOG_PROGRESS(STATUS, "gridlines") << "Parsing grid file: done.";
 
-    std::map<std::string, std::vector<Point>> ret_map;
-    // std::vector<Point> ret_vector; // same thing as vertices for Silvaco
-
-    ret_map[region] = vertices;
-
-    return ret_map;
+    return {{"Silicon", vertices}};
 }
 
 FieldMap SilvacoParser::read_fields(const std::string& file_name) {
