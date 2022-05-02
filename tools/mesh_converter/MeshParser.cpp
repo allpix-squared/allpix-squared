@@ -55,7 +55,7 @@ MeshParser::getField(const std::string& file, const std::string& observable, con
     // Populate field map once:
     if(field_map_[file].empty()) {
         LOG(STATUS) << "Reading field from file \"" << file << "\"";
-        field_map_[file] = read_fields(file);
+        field_map_[file] = read_fields(file, observable);
         LOG(INFO) << "Field sizes for all regions and observables:";
         for(auto& reg : field_map_[file]) {
             LOG(INFO) << " " << reg.first << ":";

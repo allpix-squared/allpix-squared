@@ -368,7 +368,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
     return ret_map;
 }
 
-FieldMap DFISEParser::read_fields(const std::string& file_name) {
+FieldMap DFISEParser::read_fields(const std::string& file_name, const std::string&) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");

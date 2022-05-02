@@ -36,7 +36,7 @@ namespace mesh_converter {
         MeshMap read_meshes(const std::string& file_name) override;
 
         // Read the electric field
-        FieldMap read_fields(const std::string& file_name) override;
+        FieldMap read_fields(const std::string& file_name, const std::string& observable) override;
     };
 } // namespace mesh_converter
 
