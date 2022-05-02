@@ -24,7 +24,7 @@
 using namespace allpix;
 
 PrimariesGeneratorAction::PrimariesGeneratorAction(const Configuration&, std::shared_ptr<PrimariesReader> reader)
-    : particle_gun_(std::make_unique<G4ParticleGun>()), reader_(reader) {
+    : particle_gun_(std::make_unique<G4ParticleGun>()), reader_(std::move(reader)) {
 
     LOG(DEBUG) << "Setting up Geant4 generator action";
 }

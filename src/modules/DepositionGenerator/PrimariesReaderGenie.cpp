@@ -74,13 +74,13 @@ std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
     }
 
     // Check if this is the requested event, otherwise return an empty vector
-    if(static_cast<uint64_t>(*event_->Get()) > event_num() - 1) {
-        LOG(INFO) << "Expecting event " << (event_num() - 1) << ", found " << static_cast<uint64_t>(*event_->Get())
+    if(static_cast<uint64_t>(*event_->Get()) > eventNum() - 1) {
+        LOG(INFO) << "Expecting event " << (eventNum() - 1) << ", found " << static_cast<uint64_t>(*event_->Get())
                   << ", returning empty event";
         tree_reader_->Next();
         return {};
     }
-    LOG(INFO) << "Event " << event_num() << " has " << px_->GetSize() << " primary particles";
+    LOG(INFO) << "Found " << px_->GetSize() << " primary particles";
 
     // Ensure all arrays have the same size:
     if(pdg_code_->GetSize() != energy_->GetSize() || pdg_code_->GetSize() != px_->GetSize() ||

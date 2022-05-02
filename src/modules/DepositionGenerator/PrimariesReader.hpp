@@ -20,7 +20,7 @@
 
 namespace allpix {
     /**
-     * @brief Interface class to read primary particles from inout data in different file formats
+     * @brief Interface class to read primary particles from input data in different file formats
      */
     class PrimariesReader {
         friend class DepositionGeneratorModule;
@@ -39,7 +39,7 @@ namespace allpix {
              * @param pos  Position vector
              * @param t    Creation time
              */
-            Particle(int id, double e, G4ThreeVector dir, G4ThreeVector pos, double t)
+            Particle(int id, double e, const G4ThreeVector& dir, const G4ThreeVector& pos, double t)
                 : id_(id), energy_(e), direction_(dir), position_(pos), time_(t) {}
 
             /**
@@ -99,7 +99,7 @@ namespace allpix {
          * ID information from the input data file.
          * @return Event number
          */
-        uint64_t event_num() const { return event_num_; }
+        uint64_t eventNum() const { return event_num_; }
 
     private:
         /**

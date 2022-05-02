@@ -25,7 +25,7 @@ namespace allpix {
     template <class GEN> class ActionInitializationPrimaries : public G4VUserActionInitialization {
     public:
         explicit ActionInitializationPrimaries(const Configuration& config, std::shared_ptr<PrimariesReader> reader)
-            : config_(config), reader_(reader){};
+            : config_(config), reader_(std::move(reader)){};
 
         /**
          * @brief Build the user action to be executed by the worker
