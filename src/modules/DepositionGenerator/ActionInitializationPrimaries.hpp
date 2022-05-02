@@ -24,7 +24,8 @@ namespace allpix {
      */
     template <class GEN> class ActionInitializationPrimaries : public G4VUserActionInitialization {
     public:
-        explicit ActionInitializationPrimaries(const Configuration& config, std::shared_ptr<PrimariesReader> reader)
+        explicit ActionInitializationPrimaries(const Configuration& config,
+                                               std::shared_ptr<PrimariesReader> reader) // NOLINT
             : config_(config), reader_(std::move(reader)){};
 
         /**
