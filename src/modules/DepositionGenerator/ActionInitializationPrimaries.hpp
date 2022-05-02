@@ -19,13 +19,14 @@
 #include "../DepositionGeant4/SetTrackInfoUserHookG4.hpp"
 
 namespace allpix {
+    class PrimariesReader;
+
     /**
      * @brief Initializer for the generator actions, required for \ref RunManager
      */
     template <class GEN> class ActionInitializationPrimaries : public G4VUserActionInitialization {
     public:
-        explicit ActionInitializationPrimaries(const Configuration& config,
-                                               std::shared_ptr<PrimariesReader> reader) // NOLINT
+        explicit ActionInitializationPrimaries(const Configuration& config, std::shared_ptr<PrimariesReader> reader)
             : config_(config), reader_(std::move(reader)){};
 
         /**

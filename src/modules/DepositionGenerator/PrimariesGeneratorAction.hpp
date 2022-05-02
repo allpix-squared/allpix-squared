@@ -9,8 +9,6 @@
 #ifndef ALLPIX_PRIMARIES_DEPOSITION_MODULE_GENERATOR_ACTION_H
 #define ALLPIX_PRIMARIES_DEPOSITION_MODULE_GENERATOR_ACTION_H
 
-#include "PrimariesReader.hpp"
-
 #include <memory>
 
 #include <G4DataVector.hh>
@@ -21,6 +19,8 @@
 #include "core/config/Configuration.hpp"
 
 namespace allpix {
+    class PrimariesReader;
+
     /**
      * @brief Generates the particles in every event
      */
