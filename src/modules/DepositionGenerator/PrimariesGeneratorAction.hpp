@@ -29,6 +29,7 @@ namespace allpix {
         /**
          * @brief Constructs the generator action
          * @param config Configuration of the \ref DepositionCosmicsModule module
+         * @param reader PrimariesReader instance to fetch particle lists from
          */
         explicit PrimariesGeneratorAction(const Configuration& config, std::shared_ptr<PrimariesReader> reader);
 
