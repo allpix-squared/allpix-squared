@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Defines the CRY interface to Geant4
+ * @brief Defines the GENIE MC generator file reader module for primary particles
  *
  * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -20,11 +20,21 @@
 
 namespace allpix {
     /**
-     * @brief Generates the particles in every event
+     * @brief Reads particles from an input data file
      */
     class PrimariesReaderGenie : public PrimariesReader {
     public:
-        PrimariesReaderGenie(const Configuration&);
+        /**
+         * Default constructor which opens the file and checks that all expected trees and branches are available
+         * @param config  Module configuration object
+         */
+        PrimariesReaderGenie(const Configuration& config);
+
+        /**
+         * Overwritten method to obtain the primary particles for the current event. This method needs to be called
+         * sequentially and is not thread-safe.
+         * @return Vector of primary particles
+         */
         std::vector<Particle> getParticles() override;
 
     private:
