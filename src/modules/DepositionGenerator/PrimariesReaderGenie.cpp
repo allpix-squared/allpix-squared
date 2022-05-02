@@ -74,17 +74,36 @@ std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
     }
 
     // Check if this is the requested event, otherwise return an empty vector
-    if(static_cast<uint64_t>(*event_->Get()) > event_num - 1) {
+    if(static_cast<uint64_t>(*event_->Get()) > event_num() - 1) {
+        LOG(INFO) << "Expecting event " << (event_num() - 1) << ", found " << static_cast<uint64_t>(*event_->Get())
+                  << ", returning empty event";
+        tree_reader_->Next();
+        return {};
+    }
+    LOG(INFO) << "Event " << event_num() << " has " << px_->GetSize() << " primary particles";
+
+    // Ensure all arrays have the same size:
+    if(pdg_code_->GetSize() != energy_->GetSize() || pdg_code_->GetSize() != px_->GetSize() ||
+       pdg_code_->GetSize() != py_->GetSize() || pdg_code_->GetSize() != pz_->GetSize()) {
+        LOG(WARNING) << "Found broken event in input data, array sizes do not match, skipping";
+        tree_reader_->Next();
         return {};
     }
 
-    // FIXME Ensure all arrays have the same size:
-
     // Generate particles:
     std::vector<Particle> particles;
-    for(size_t i = 0; i < px_.GetSize(); i++) {
-        paeticles.emplace_back();
+    for(size_t i = 0; i < px_->GetSize(); i++) {
+        // Filter out illegal PDG codes - they should be maximally 7-digit numbers:
+        if(std::abs(pdg_code_->At(i)) > 9999999) {
+            LOG(DEBUG) << "Skipping primary particle with PDG code " << pdg_code_->At(i);
+            continue;
+        }
+        particles.emplace_back(
+            pdg_code_->At(i), energy_->At(i), G4ThreeVector(px_->At(i), py_->At(i), pz_->At(i)), G4ThreeVector(0, 0, 0), 0);
+        LOG(DEBUG) << "Adding particle with ID " << particles.back().pdg() << " energy " << particles.back().energy();
     }
 
+    // Return and advance to next tree entry:
+    tree_reader_->Next();
     return particles;
 }
