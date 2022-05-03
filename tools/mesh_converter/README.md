@@ -76,6 +76,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.
 * `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
 * `max_radius`: Maximum search radius (default is `50um`).
+* `allow_failure`: Allow the interpolation of a single mesh point to fail, i.e. when no neighbors could be found. If set to `true`, the respective mesh element will be set to zero and the interpolation will continue, if `false` the interpolation will be aborted. Defaults to `false`.
 * `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
