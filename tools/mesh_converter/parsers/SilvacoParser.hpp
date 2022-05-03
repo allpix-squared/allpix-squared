@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_MESHPARSER_DFISE_H
-#define ALLPIX_MESHPARSER_DFISE_H
+#ifndef ALLPIX_MESHPARSER_SILVACO_H
+#define ALLPIX_MESHPARSER_SILVACO_H
 
 #include "../MeshParser.hpp"
 
@@ -19,27 +19,7 @@
 
 namespace mesh_converter {
 
-    class DFISEParser : public MeshParser {
-        // Sections to read in DF-ISE file
-        enum class DFSection {
-            NONE = 0,
-            IGNORED,
-            HEADER,
-            INFO,
-            REGION,
-            COORDINATES,
-            VERTICES,
-            EDGES,
-            FACES,
-            ELEMENTS,
-
-            DONOR_CONCENTRATION,
-            DOPING_CONCENTRATION,
-            ACCEPTOR_CONCENTRATION,
-            ELECTRIC_FIELD,
-            ELECTROSTATIC_POTENTIAL,
-            VALUES
-        };
+    class SilvacoParser : public MeshParser {
 
     private:
         // Read the grid
@@ -50,4 +30,4 @@ namespace mesh_converter {
     };
 } // namespace mesh_converter
 
-#endif // ALLPIX_MESHPARSER_DFISE_H
+#endif // ALLPIX_MESHPARSER_SILVACO_H
