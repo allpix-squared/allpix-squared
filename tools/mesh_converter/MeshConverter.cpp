@@ -303,6 +303,7 @@ int main(int argc, char** argv) {
         const auto max_radius = config.get<double>("max_radius", std::max(initial_radius, 50.));
         LOG(INFO) << "Using initial neighbor search radius of " << initial_radius << " and maximum search radius of "
                   << max_radius;
+        const auto allow_failed_interpolation = config.get<bool>("allow_failure", false);
 
         if(rot.at(0) != "x" || rot.at(1) != "y" || rot.at(2) != "z") {
             LOG(STATUS) << "TCAD mesh (x,y,z) coords. transformation into: (" << rot.at(0) << "," << rot.at(1) << ","
@@ -418,9 +419,15 @@ int main(int argc, char** argv) {
                 }
 
                 if(!valid) {
-                    throw std::runtime_error(
-                        "Could not find valid volume element. Consider to increase max_radius to include "
-                        "more mesh points in the search");
+                    if(!allow_failed_interpolation) {
+                        throw std::runtime_error(
+                            "Could not find valid volume element. Consider to increase max_radius to include "
+                            "more mesh points in the search or to allow failed interpolation with allow_failure "
+                            "to set the element to zero.");
+                    }
+
+                    LOG(DEBUG) << "Failed to interpolate, setting element to zero";
+                    e = {};
                 }
 
                 new_mesh.push_back(e);
