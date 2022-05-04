@@ -39,6 +39,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Marko Petric, CERN, @mpetric
 * Radek Privara, Palacky University Olomouc, @rprivara
 * Nashad Rahman, The Ohio State University, @nashadroid
+* Sabita Rao, GSDocs2020 Student, @srao
 * Edoardo Rossi, DESY, @edrossi
 * Andre Sailer, CERN, @sailer
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, @schioppa
