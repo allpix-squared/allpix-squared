@@ -31,6 +31,14 @@ Files: cmake/PANDOC.cmake
 Copyright: 2015 Jeet Sukumaran <jeetsukumaran@gmail.com>
 License: BSD-3-Clause
 
+Files: doc/convert/pandoc-gitlab-math.lua
+Copyright: 2018 Nikolay Yakimov
+License: MIT
+
+Files: doc/convert/pandoc-minted.lua
+Copyright: 2019 Stephen McDowell
+License: MIT
+
 Files: doc/*
 Copyright: 2016-2022 CERN and the Allpix Squared authors
 License: CC-BY-4.0
