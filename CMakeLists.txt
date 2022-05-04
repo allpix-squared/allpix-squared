@@ -98,8 +98,11 @@ ADD_SUBDIRECTORY(etc/unittests)
 
 OPTION(BUILD_DOCS_ONLY "Build documentation only" OFF)
 
-# Add targets for Doxygen code reference and LaTeX User manual
-# FIXME: temporarily disable doc dir until new usermanual is done
+# Variables to configure list of tests
+SET(DOCS_TESTS_UNCONF "${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/14_appendix/tests.md.in")
+SET(DOCS_TESTS_CONF "${CMAKE_CURRENT_BINARY_DIR}/doc/tests.md")
+
+# Add targets for Doxygen code reference and user manual
 ADD_SUBDIRECTORY(doc)
 
 # If only building docs, stop processing the rest of the CMake file:
@@ -119,9 +122,10 @@ IF(BUILD_DOCS_ONLY)
     SET(MODULES_TEST_DESCRIPTIONS "${TEST_DESCRIPTIONS}")
     GET_PROPERTY(CORE_TEST_DESCRIPTIONS GLOBAL PROPERTY CORE_TEST_DESCRIPTIONS)
     GET_PROPERTY(PERF_TEST_DESCRIPTIONS GLOBAL PROPERTY PERF_TEST_DESCRIPTIONS)
-    # FIXME: temporarily disable doc dir until new usermanual is done
-    #CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/chapters/tests.cmake.tex"
-    #               "${CMAKE_CURRENT_BINARY_DIR}/usermanual/usermanual/tests.tex" @ONLY)
+    STRING(REPLACE ";" " " CORE_TEST_DESCRIPTIONS "${CORE_TEST_DESCRIPTIONS}")
+    STRING(REPLACE ";" " " MODULES_TEST_DESCRIPTIONS "${MODULES_TEST_DESCRIPTIONS}")
+    STRING(REPLACE ";" " " PERF_TEST_DESCRIPTIONS "${PERF_TEST_DESCRIPTIONS}")
+    CONFIGURE_FILE("${DOCS_TESTS_UNCONF}" "${DOCS_TESTS_CONF}" @ONLY)
     RETURN()
 ENDIF()
 
@@ -443,9 +447,10 @@ ENDIF()
 GET_PROPERTY(CORE_TEST_DESCRIPTIONS GLOBAL PROPERTY CORE_TEST_DESCRIPTIONS)
 GET_PROPERTY(MODULES_TEST_DESCRIPTIONS GLOBAL PROPERTY MODULES_TEST_DESCRIPTIONS)
 GET_PROPERTY(PERF_TEST_DESCRIPTIONS GLOBAL PROPERTY PERF_TEST_DESCRIPTIONS)
-# FIXME: temporarily disable doc dir until new usermanual is done
-#CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/chapters/tests.cmake.tex"
-#               "${CMAKE_CURRENT_BINARY_DIR}/usermanual/usermanual/tests.tex" @ONLY)
+STRING(REPLACE ";" " " CORE_TEST_DESCRIPTIONS "${CORE_TEST_DESCRIPTIONS}")
+STRING(REPLACE ";" " " MODULES_TEST_DESCRIPTIONS "${MODULES_TEST_DESCRIPTIONS}")
+STRING(REPLACE ";" " " PERF_TEST_DESCRIPTIONS "${PERF_TEST_DESCRIPTIONS}")
+CONFIGURE_FILE("${DOCS_TESTS_UNCONF}" "${DOCS_TESTS_CONF}" @ONLY)
 
 ############################
 # Create local setup files #
