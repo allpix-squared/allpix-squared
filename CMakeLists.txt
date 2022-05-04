@@ -100,7 +100,7 @@ OPTION(BUILD_DOCS_ONLY "Build documentation only" OFF)
 
 # Add targets for Doxygen code reference and LaTeX User manual
 # FIXME: temporarily disable doc dir until new usermanual is done
-#ADD_SUBDIRECTORY(doc)
+ADD_SUBDIRECTORY(doc)
 
 # If only building docs, stop processing the rest of the CMake file:
 IF(BUILD_DOCS_ONLY)
