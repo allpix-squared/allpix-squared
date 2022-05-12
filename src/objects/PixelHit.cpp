@@ -19,9 +19,15 @@
 
 using namespace allpix;
 
-PixelHit::PixelHit(Pixel pixel, double local_time, double global_time, double signal, const PixelCharge* pixel_charge)
+PixelHit::PixelHit(Pixel pixel,
+                   double local_time,
+                   double global_time,
+                   double signal,
+                   const PixelCharge* pixel_charge,
+                   const PixelPulse* pixel_pulse)
     : pixel_(std::move(pixel)), local_time_(local_time), global_time_(global_time), signal_(signal) {
 
+    pixel_pulse_ = PointerWrapper<PixelPulse>(pixel_pulse);
     pixel_charge_ = PointerWrapper<PixelCharge>(pixel_charge);
     if(pixel_charge != nullptr) {
         // Get the unique set of MC particles
@@ -55,6 +61,19 @@ const PixelCharge* PixelHit::getPixelCharge() const {
         throw MissingReferenceException(typeid(*this), typeid(PixelCharge));
     }
     return pixel_charge;
+}
+
+/**
+ * @throws MissingReferenceException If the pointed object is not in scope
+ *
+ * Object is stored as TRef and can only be accessed if pointed object is in scope
+ */
+const PixelPulse* PixelHit::getPixelPulse() const {
+    auto* pixel_pulse = pixel_pulse_.get();
+    if(pixel_pulse == nullptr) {
+        throw MissingReferenceException(typeid(*this), typeid(PixelPulse));
+    }
+    return pixel_pulse;
 }
 
 /**

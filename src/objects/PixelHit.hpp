@@ -19,6 +19,7 @@
 #include "MCParticle.hpp"
 #include "Object.hpp"
 #include "PixelCharge.hpp"
+#include "PixelPulse.hpp"
 
 #include "Pixel.hpp"
 
@@ -36,9 +37,14 @@ namespace allpix {
          * @param global_time Timing of the occurrence of the hit in global reference frame
          * @param signal Signal data produced by the digitizer
          * @param pixel_charge Optional pointer to the related pixel charge
+         * @param pixel_pulse Optional pointer to the related pixel pulse this his might have been derived from
          */
-        PixelHit(
-            Pixel pixel, double local_time, double global_time, double signal, const PixelCharge* pixel_charge = nullptr);
+        PixelHit(Pixel pixel,
+                 double local_time,
+                 double global_time,
+                 double signal,
+                 const PixelCharge* pixel_charge = nullptr,
+                 const PixelPulse* pixel_pulse = nullptr);
 
         /**
          * @brief Get the pixel hit
@@ -77,6 +83,12 @@ namespace allpix {
         const PixelCharge* getPixelCharge() const;
 
         /**
+         * @brief Get related pixel pulse
+         * @return Possible related pixel pulse
+         */
+        const PixelPulse* getPixelPulse() const;
+
+        /**
          * @brief Get the Monte-Carlo particles resulting in this pixel hit
          * @return List of all related Monte-Carlo particles
          */
@@ -98,7 +110,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 6); // NOLINT
+        ClassDefOverride(PixelHit, 7); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -114,6 +126,7 @@ namespace allpix {
         double signal_{};
 
         PointerWrapper<PixelCharge> pixel_charge_;
+        PointerWrapper<PixelPulse> pixel_pulse_;
         std::vector<PointerWrapper<MCParticle>> mc_particles_;
     };
 
