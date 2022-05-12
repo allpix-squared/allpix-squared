@@ -310,6 +310,9 @@ void CSADigitizerModule::run(Event* event) {
                                       amplified_pulse);
         }
 
+        // Store amplified pulse fir dispatch
+        pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
+
         // Find threshold crossing - if any:
         auto arrival = get_toa(timestep, amplified_pulse);
         if(!std::get<0>(arrival)) {
@@ -339,23 +342,23 @@ void CSADigitizerModule::run(Event* event) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge);
-        pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
+        hits.emplace_back(
+            pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge, &pulses.back());
     }
 
     // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
 
-    if(!hits.empty()) {
-        // Create and dispatch hit message
-        auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
-        messenger_->dispatchMessage(this, hits_message, event);
-    }
-
     if(!pulses.empty()) {
         // Create and dispatch hit message
         auto pulses_message = std::make_shared<PixelPulseMessage>(std::move(pulses), getDetector());
         messenger_->dispatchMessage(this, pulses_message, event);
+    }
+
+    if(!hits.empty()) {
+        // Create and dispatch hit message
+        auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
+        messenger_->dispatchMessage(this, hits_message, event);
     }
 }
 
