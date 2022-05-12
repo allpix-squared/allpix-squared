@@ -22,6 +22,7 @@
 #include <TProfile.h>
 
 #include "objects/PixelHit.hpp"
+#include "objects/PixelPulse.hpp"
 
 using namespace allpix;
 
@@ -217,6 +218,7 @@ void CSADigitizerModule::run(Event* event) {
 
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
+    std::vector<PixelPulse> pulses;
     for(const auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
@@ -338,6 +340,7 @@ void CSADigitizerModule::run(Event* event) {
 
         // Add the hit to the hitmap
         hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge);
+        pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
     }
 
     // Output summary and update statistics
@@ -347,6 +350,12 @@ void CSADigitizerModule::run(Event* event) {
         // Create and dispatch hit message
         auto hits_message = std::make_shared<PixelHitMessage>(std::move(hits), getDetector());
         messenger_->dispatchMessage(this, hits_message, event);
+    }
+
+    if(!pulses.empty()) {
+        // Create and dispatch hit message
+        auto pulses_message = std::make_shared<PixelPulseMessage>(std::move(pulses), getDetector());
+        messenger_->dispatchMessage(this, pulses_message, event);
     }
 }
 
