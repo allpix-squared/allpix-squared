@@ -287,8 +287,8 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Number of line segments to approximate a circle with; used to visualize radial detectors with more precision
-    auto lineSegments = config_.get<std::string>("line_segments", "250");
-    UI->ApplyCommand("/vis/viewer/set/lineSegmentsPerCircle " + lineSegments);
+    auto line_segments = config_.get<std::string>("line_segments", "250");
+    UI->ApplyCommand("/vis/viewer/set/lineSegmentsPerCircle " + line_segments);
 }
 
 /**
