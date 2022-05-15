@@ -43,11 +43,11 @@ PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
 }
 
 bool PrimariesReaderHepMC::check_vertex_inside_world(const G4ThreeVector& pos) const {
-    auto solid = G4TransportationManager::GetTransportationManager()
-                     ->GetNavigatorForTracking()
-                     ->GetWorldVolume()
-                     ->GetLogicalVolume()
-                     ->GetSolid();
+    auto* solid = G4TransportationManager::GetTransportationManager()
+                      ->GetNavigatorForTracking()
+                      ->GetWorldVolume()
+                      ->GetLogicalVolume()
+                      ->GetSolid();
     return solid->Inside(pos) == kInside;
 }
 
