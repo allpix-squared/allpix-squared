@@ -234,7 +234,7 @@ void CSADigitizerModule::run(Event* event) {
 
         auto timestep = pulse.getBinning();
         LOG(DEBUG) << "Timestep: " << timestep << " integration_time: " << integration_time_;
-        auto ntimepoints = static_cast<size_t>(ceil(integration_time_ / timestep));
+        auto ntimepoints = static_cast<size_t>(std::lround(integration_time_ / timestep));
 
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
@@ -279,7 +279,7 @@ void CSADigitizerModule::run(Event* event) {
                     outsum += pulse.at(k - i) * impulse_response_function_.at(i);
                 }
             }
-            amplified_pulse.at(k) = outsum;
+            amplified_pulse.addCharge(outsum, timestep * static_cast<double>(k));
         }
 
         if(output_pulsegraphs_) {
