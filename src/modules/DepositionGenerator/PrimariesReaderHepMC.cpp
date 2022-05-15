@@ -18,12 +18,24 @@
 
 #include <HepMC3/Print.h>
 #include <HepMC3/ReaderAscii.h>
+#include <HepMC3/ReaderAsciiHepMC2.h>
+#include <HepMC3/ReaderRoot.h>
 
 using namespace allpix;
 
 PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
-    auto file_path = config.getPathWithExtension("file_name", "txt", true);
-    reader_ = std::make_unique<HepMC3::ReaderAscii>(file_path);
+
+    auto model = config.get<FileModel>("model");
+    if(model == FileModel::HEPMC) {
+        auto file_path = config.getPathWithExtension("file_name", "txt", true);
+        reader_ = std::make_unique<HepMC3::ReaderAscii>(file_path);
+    } else if(model == FileModel::HEPMC2) {
+        auto file_path = config.getPathWithExtension("file_name", "txt", true);
+        reader_ = std::make_unique<HepMC3::ReaderAsciiHepMC2>(file_path);
+    } else if(model == FileModel::HEPMCROOT) {
+        auto file_path = config.getPathWithExtension("file_name", "root", true);
+        reader_ = std::make_unique<HepMC3::ReaderRoot>(file_path);
+    }
 
     if(reader_->failed()) {
         throw InvalidValueError(config, "file_name", "could not open input file");
