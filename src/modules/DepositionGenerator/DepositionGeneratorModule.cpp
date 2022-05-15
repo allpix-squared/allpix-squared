@@ -22,6 +22,10 @@
 // Reader modules:
 #include "PrimariesReaderGenie.hpp"
 
+#if ALLPIX_GENERATOR_HEPMC
+#include "PrimariesReaderHepMC.hpp"
+#endif
+
 using namespace allpix;
 
 DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
@@ -51,6 +55,12 @@ void DepositionGeneratorModule::initialize() {
     // Generate file reader instance of appropriate type
     if(file_model_ == FileModel::GENIE) {
         reader_ = std::make_shared<PrimariesReaderGenie>(config_);
+    } else if(file_model_ == FileModel::HEPMC) {
+#if ALLPIX_GENERATOR_HEPMC
+        reader_ = std::make_shared<PrimariesReaderHepMC>(config_);
+#else
+        throw InvalidValueError(config_, "model", "Framework has been built without support for HepMC data file model");
+#endif
     } else {
         throw InvalidValueError(config_, "model", "Unsupported data file model");
     }
