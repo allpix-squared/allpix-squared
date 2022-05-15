@@ -39,7 +39,7 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     // Do *not* waive sequence requirement - we're reading from file and this should happen sequentially
     waive_sequence_requirement(false);
 
-    file_model_ = config_.get<FileModel>("model");
+    file_model_ = config_.get<PrimariesReader::FileModel>("model");
 
     // Force source type and position:
     config_.set("source_type", "generator");
@@ -53,9 +53,9 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
 void DepositionGeneratorModule::initialize() {
 
     // Generate file reader instance of appropriate type
-    if(file_model_ == FileModel::GENIE) {
+    if(file_model_ == PrimariesReader::FileModel::GENIE) {
         reader_ = std::make_shared<PrimariesReaderGenie>(config_);
-    } else if(file_model_ == FileModel::HEPMC) {
+    } else if(file_model_ == PrimariesReader::FileModel::HEPMC) {
 #if ALLPIX_GENERATOR_HEPMC
         reader_ = std::make_shared<PrimariesReaderHepMC>(config_);
 #else

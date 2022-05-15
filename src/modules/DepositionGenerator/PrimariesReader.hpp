@@ -27,6 +27,14 @@ namespace allpix {
 
     public:
         /**
+         * @brief Different implemented file models
+         */
+        enum class FileModel {
+            GENIE, ///< Genie generator ROOT files
+            HEPMC, ///< HepMC data files from generators such as Pythia
+        };
+
+        /**
          * @brief Particle class to hold information for primary particles before dispatching them to Geant4
          */
         class Particle {

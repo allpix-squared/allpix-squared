@@ -27,15 +27,6 @@ namespace allpix {
      * deposits electron/hole pairs.
      */
     class DepositionGeneratorModule : public DepositionGeant4Module {
-
-        /**
-         * @brief Different implemented file models
-         */
-        enum class FileModel {
-            GENIE, ///< Genie generator ROOT files
-            HEPMC, ///< HepMC data files from generators such as Pythia
-        };
-
     public:
         /**
          * @brief Constructor for the DepositionGenerator module
@@ -66,7 +57,7 @@ namespace allpix {
 
         // The file reader for primary particles
         std::shared_ptr<PrimariesReader> reader_;
-        FileModel file_model_;
+        PrimariesReader::FileModel file_model_;
     };
 
 } // namespace allpix
