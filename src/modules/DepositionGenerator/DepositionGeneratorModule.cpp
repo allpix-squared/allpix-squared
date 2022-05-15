@@ -55,7 +55,7 @@ void DepositionGeneratorModule::initialize() {
     // Generate file reader instance of appropriate type
     if(file_model_ == PrimariesReader::FileModel::GENIE) {
         reader_ = std::make_shared<PrimariesReaderGenie>(config_);
-    } else if(file_model_ == PrimariesReader::FileModel::HEPMC) {
+    } else if(file_model_ >= PrimariesReader::FileModel::HEPMC) {
 #if ALLPIX_GENERATOR_HEPMC
         reader_ = std::make_shared<PrimariesReaderHepMC>(config_);
 #else
