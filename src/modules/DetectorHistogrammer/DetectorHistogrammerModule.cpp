@@ -192,7 +192,7 @@ void DetectorHistogrammerModule::initialize() {
                                                   pitch_y / 2);
 
     // Create cluster size plots, preventing unphysically low bin numbers
-    int max_cluster_size = std::max(10, (xpixels * ypixels + 9) / 10);
+    int max_cluster_size = std::max(10, xpixels * ypixels / 10);
     std::string cluster_size_title = "Cluster size (" + detector_->getName() + ");cluster size [px];clusters";
     cluster_size =
         CreateHistogram<TH1D>("cluster_size", cluster_size_title.c_str(), max_cluster_size, 0.5, max_cluster_size + 0.5);
