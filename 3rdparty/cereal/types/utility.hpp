@@ -1,14 +1,8 @@
-/*! \file version.hpp
-    \brief Macros to detect cereal version
-
-    These macros can assist in determining the version of cereal. Be
-    warned that cereal is not guaranteed to be compatible across
-    different versions. For more information on releases of cereal,
-    see https://github.com/USCiLab/cereal/releases.
-
-    \ingroup utility */
+/*! \file utility.hpp
+    \brief Support for types found in \<utility\>
+    \ingroup STLSupport */
 /*
-  Copyright (c) 2018, Shane Grant
+  Copyright (c) 2014, Randolph Voorhies, Shane Grant
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -33,20 +27,21 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef CEREAL_TYPES_UTILITY_HPP_
+#define CEREAL_TYPES_UTILITY_HPP_
 
-#ifndef CEREAL_VERSION_HPP_
-#define CEREAL_VERSION_HPP_
+#include "cereal/cereal.hpp"
+#include <utility>
 
-//! The major version
-#define CEREAL_VERSION_MAJOR 1
-//! The minor version
-#define CEREAL_VERSION_MINOR 3
-//! The patch version
-#define CEREAL_VERSION_PATCH 2
+namespace cereal
+{
+  //! Serializing for std::pair
+  template <class Archive, class T1, class T2> inline
+  void CEREAL_SERIALIZE_FUNCTION_NAME( Archive & ar, std::pair<T1, T2> & pair )
+  {
+    ar( CEREAL_NVP_("first",  pair.first),
+        CEREAL_NVP_("second", pair.second) );
+  }
+} // namespace cereal
 
-//! The full version as a single number
-#define CEREAL_VERSION (CEREAL_VERSION_MAJOR * 10000 \
-                        + CEREAL_VERSION_MINOR * 100 \
-                        + CEREAL_VERSION_PATCH)
-
-#endif // CEREAL_VERSION_HPP_
+#endif // CEREAL_TYPES_UTILITY_HPP_
