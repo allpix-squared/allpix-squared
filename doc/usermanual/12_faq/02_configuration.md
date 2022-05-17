@@ -88,22 +88,22 @@ While Allpix Squared implements several material-dependent default parameters, o
 suitable for silicon sensors. It is in any case advisable to check the following configuration parameters to ensure
 consistent results.
 
--   Sensor material:
-    The parameter `sensor_material`, to be adjusted in the corresponding detector model file, is crucial for the particle
-    interaction simulated via Geant4 and defines further default parameters.
+- Sensor material:
+  The parameter `sensor_material`, to be adjusted in the corresponding detector model file, is crucial for the particle
+  interaction simulated via Geant4 and defines further default parameters.
 
--   Charge creation energy:
-    The parameter `charge_creation_energy` is available in several modules for energy deposition and provides a material
-    dependent default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
+- Charge creation energy:
+  The parameter `charge_creation_energy` is available in several modules for energy deposition and provides a material
+  dependent default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
 
--   Fano factor:
-    The parameter `fano_factor` is available in several modules for energy deposition and provides a material dependent
-    default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
+- Fano factor:
+  The parameter `fano_factor` is available in several modules for energy deposition and provides a material dependent
+  default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
 
--   Mobility Model:
-    The parameter `mobility_model` needs to be adapted to the sensor material by the user.
-    [Section 6.2](../05_models/02_carrier_mobility.md) lists the available models.
+- Mobility Model:
+  The parameter `mobility_model` needs to be adapted to the sensor material by the user.
+  [Section 6.2](../05_models/02_carrier_mobility.md) lists the available models.
 
--   Recombination Model:
-    The parameter `recombination_model` can be adapted by the user. [Section 6.3](../05_models/03_lifetime_recombination.md)
-    lists the available models.
+- Recombination Model:
+  The parameter `recombination_model` can be adapted by the user. [Section 6.3](../05_models/03_lifetime_recombination.md)
+  lists the available models.

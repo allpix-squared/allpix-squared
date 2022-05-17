@@ -23,28 +23,28 @@ designed with the following main design goals in mind:
 
 1.  Reflect the physics:
 
-    -   A run consists of several sequential events. A single event here refers to an independent passage of one or multiple
-        particles through the setup.
+    - A run consists of several sequential events. A single event here refers to an independent passage of one or multiple
+      particles through the setup.
 
-    -   Detectors are treated as separate objects for particles to pass through.
+    - Detectors are treated as separate objects for particles to pass through.
 
-    -   All relevant information must be contained at the end of processing every single event (sequential events).
+    - All relevant information must be contained at the end of processing every single event (sequential events).
 
 2.  Ease of use (user-friendly):
 
-    -   Simple, intuitive configuration and execution ("does what you expect").
+    - Simple, intuitive configuration and execution ("does what you expect").
 
-    -   Clear and extensive logging and error reporting capabilities.
+    - Clear and extensive logging and error reporting capabilities.
 
-    -   Implementing a new module should be feasible without knowing all details of the framework.
+    - Implementing a new module should be feasible without knowing all details of the framework.
 
 3.  Flexibility:
 
-    -   Event loop runs sequence of modules, allowing for both simple and complex user configurations.
+    - Event loop runs sequence of modules, allowing for both simple and complex user configurations.
 
-    -   Possibility to run multiple different modules on different detectors.
+    - Possibility to run multiple different modules on different detectors.
 
-    -   Limit flexibility for the sake of simplicity and ease of use.
+    - Limit flexibility for the sake of simplicity and ease of use.
 
 Allpix Squared has been designed following some ideas previously implemented in the AllPix \[[@ap1wiki], [@ap1git]\] project.
 Originally written as a Geant4 user application, AllPix has been successfully used for simulating a variety of different

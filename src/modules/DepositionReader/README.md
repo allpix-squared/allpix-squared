@@ -68,7 +68,7 @@ Individual leafs of branches can be assigned using the dot notation, e.g. `energ
 Data in CSV-formatted text files are interpreted as follows.
 Empty lines as well as lines starting with a hash (`#`) are ignored, all other lines are interpreted either as event header if they start with `E`, or as energy deposition:
 
-```csv
+```
 Event: <N>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>

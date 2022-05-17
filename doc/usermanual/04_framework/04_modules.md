@@ -10,11 +10,11 @@ can be inserted or removed as required. These modules are located in the subdire
 the name of the directory the unique name of the module. The suggested naming scheme is CamelCase, thus an example module
 name would be `GenericPropagation`. There are two different kind of modules which can be defined:
 
--   **Unique**:
-    Modules for which a single instance runs, irrespective of the number of detectors.
+- **Unique**:
+  Modules for which a single instance runs, irrespective of the number of detectors.
 
--   **Detector**:
-    Modules which are concerned with only a single detector at a time. These are then replicated for all required detectors.
+- **Detector**:
+  Modules which are concerned with only a single detector at a time. These are then replicated for all required detectors.
 
 The type of module determines the constructor used, the internal unique name and the supported configuration parameters. More
 details about the instantiation logic for the different types of modules are given in the
@@ -48,15 +48,15 @@ also of this type) the Module Manager must establish which instantiations to kee
 logic determines a unique name and priority, where a lower number indicates a higher priority, for every instantiation. The
 name and priority for the instantiation are determined differently for the two types of modules:
 
--   **Unique**:
-    Combination of the name of the module and the `input` and `output` parameter (both defaulting to an empty string). The
-    priority is always zero.
+- **Unique**:
+  Combination of the name of the module and the `input` and `output` parameter (both defaulting to an empty string). The
+  priority is always zero.
 
--   **Detector**:
-    Combination of the name of the module, the `input` and `output` parameter (both defaulting to an empty string) and the
-    name of detector this module is executed for. If the name of the detector is specified directly by the `name` parameter,
-    the priority is *high*. If the detector is only matched by the `type` parameter, the priority is *medium*. If the `name`
-    and `type` are both unspecified and the module is instantiated for all detectors, the priority is *low*.
+- **Detector**:
+  Combination of the name of the module, the `input` and `output` parameter (both defaulting to an empty string) and the
+  name of detector this module is executed for. If the name of the detector is specified directly by the `name` parameter,
+  the priority is *high*. If the detector is only matched by the `type` parameter, the priority is *medium*. If the `name`
+  and `type` are both unspecified and the module is instantiated for all detectors, the priority is *low*.
 
 In the end, only a single instance for every unique name is allowed. If there are multiple instantiations with the same
 unique name, the instantiation with the highest priority is kept. If multiple instantiations with the same unique name and

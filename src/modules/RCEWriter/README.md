@@ -13,8 +13,8 @@ Reads in the PixelHit messages and saves them in the RCE format, appropriate for
 
 ## Parameters
 * `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present. Defaults to `rce-data.root`.
-* `device_file` : Name of the output device file in the [Proteus][@proteus] toml format. The file extension `.toml` will be appended if not present. Defaults to `device.toml`.
-* `geometry_file` : Name of the output geometry file in the [Proteus][@proteus] toml format. The file extension `.toml` will be appended if not present. Defaults to `geometry.toml`.
+* `device_file` : Name of the output device file in the Proteus toml format. The file extension `.toml` will be appended if not present. Defaults to `device.toml`.
+* `geometry_file` : Name of the output geometry file in the Proteus toml format. The file extension `.toml` will be appended if not present. Defaults to `geometry.toml`.
 
 ## Usage
 To create the default file an instantiation without arguments can be placed at the end of the main configuration:

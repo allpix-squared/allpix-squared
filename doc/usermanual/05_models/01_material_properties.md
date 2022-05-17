@@ -12,9 +12,9 @@ using the corresponding configuration key in the respective section of the main 
 
 The following parameters are currently provided by the framework:
 
--   Charge creation energy
+- Charge creation energy
 
--   Fano factor
+- Fano factor
 
 The values for various materials are listed in the table below. It should be noted that for many of the following values a
 significant variation on measurements exist throughout literature, among others owed to a variation of material quality and

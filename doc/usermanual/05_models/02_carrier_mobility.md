@@ -33,15 +33,15 @@ scaling factor.
 The parameter values implemented in Allpix Squared are taken from Table 5 of \[[@jacoboni]\] as
 
 ```math
-\begin{align*}
-v_{m,e} &= 1.53\times 10^9 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.87} \newline
-E_{c,e} &= 1.01 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.55} \newline
-\beta_e &= 2.57\times 10^{-2} \cdot T^{0.66} \newline
-\newline
-v_{m,h} &= 1.62\times 10^8 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.52} \newline
-E_{c,h} &= 1.24 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.68} \newline
+\begin{aligned}
+v_{m,e} &= 1.53\times 10^9 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.87} \\
+E_{c,e} &= 1.01 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.55} \\
+\beta_e &= 2.57\times 10^{-2} \cdot T^{0.66} \\
+\\
+v_{m,h} &= 1.62\times 10^8 \,\text{cm}\,\text{s}^{-1} \cdot T^{-0.52} \\
+E_{c,h} &= 1.24 \,\text{V}\,\text{cm}^{-1} \cdot T^{1.68} \\
 \beta_h &= 0.46 \cdot T^{0.17}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -72,12 +72,12 @@ electric field $`E`$ based on measurements of drift velocities in high-ohmic sil
 orientation. The mobility is parametrized as
 
 ```math
-\begin{align*}
-\mu_e^{-1}(E) &= 1 / \mu_{0,e} + E / v_{sat} \newline
-\newline
-\mu_h^{-1}(E) &= 1 / \mu_{0,h}                                           &\quad \text{for} \quad E < E_0 \newline
+\begin{aligned}
+\mu_e^{-1}(E) &= 1 / \mu_{0,e} + E / v_{sat} \\
+\\
+\mu_h^{-1}(E) &= 1 / \mu_{0,h}                                           &\quad \text{for} \quad E < E_0 \\
               &= 1 / \mu_{0,h} + b \cdot (E - E_0) + c \cdot (E - E_0)^2 &\quad \text{for} \quad E \geq E_0
-\end{align*}
+\end{aligned}
 ```
 
 as taken from equations 3 and 5 of \[[@hamburg]\].
@@ -95,15 +95,15 @@ The hole mobility parameter $`c`$ is assumed to have no temperature dependence.
 The parameter values implemented in Allpix Squared are taken from Table 4 of \[[@hamburg]\] as
 
 ```math
-\begin{align*}
-\mu_{0,e} &= 1530 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.42} \newline
-v_{sat}   &= 1.03\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.226} \newline
-\newline
-\mu_{0,h} &= 464 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.20} \newline
-b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.101} \newline
-c         &= -3.31\times 10^{-13} \,\text{s}\,\text{V}^{-1} \newline
+\begin{aligned}
+\mu_{0,e} &= 1530 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.42} \\
+v_{sat}   &= 1.03\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.226} \\
+\\
+\mu_{0,h} &= 464 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.20} \\
+b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.101} \\
+c         &= -3.31\times 10^{-13} \,\text{s}\,\text{V}^{-1} \\
 E_0       &= 2640 \,\text{V}\,\text{cm}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{0.526}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -121,15 +121,15 @@ while all other parameters are scaled to temperatures different than 300 Kelvin
 The parameter values implemented in Allpix Squared are
 
 ```math
-\begin{align*}
-\mu_{0,e} &= 1430 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-1.99} \newline
-v_{sat}   &= 1.05\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.302} \newline
-\newline
-\mu_{0,h} &= 457 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.80} \newline
-b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.155} \newline
-c         &= -3.24\times 10^{-13} \,\text{s}\,\text{V}^{-1} \newline
+\begin{aligned}
+\mu_{0,e} &= 1430 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-1.99} \\
+v_{sat}   &= 1.05\times 10^7 \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.302} \\
+\\
+\mu_{0,h} &= 457 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.80} \\
+b         &= 9.57\times 10^{-8} \,\text{cm}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.155} \\
+c         &= -3.24\times 10^{-13} \,\text{s}\,\text{V}^{-1} \\
 E_0       &= 2970 \,\text{V}\,\text{cm}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{0.563}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -151,10 +151,10 @@ concentration in this model is taken as the absolute value $`N = \left|N_D -
 The mobility is parametrized as
 
 ```math
-\begin{align*}
-\mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{1 + (C_{s,e} / N)^{\beta_e}} \newline
+\begin{aligned}
+\mu_e(N) &= \mu_{0,e} + \frac{\mu_{max,e} - \mu_{0,e}}{1 + (N / C_{r,e})^{\alpha_e}} - \frac{\mu_{1,e}}{1 + (C_{s,e} / N)^{\beta_e}} \\
 \mu_h(N) &= \mu_{0,h} \cdot e^{-P_c / N} + \frac{\mu_{max,h}}{1 + (N / C_{r,h})^{\alpha_h}} - \frac{\mu_{1,h}}{1 + (C_{s,h} / N)^{\beta_h}}
-\end{align*}
+\end{aligned}
 ```
 
 as taken from equations 1 (for electrons) and 4 (for holes) of \[[@masetti]\].
@@ -166,24 +166,24 @@ for holes.
 The parameter values implemented in Allpix Squared are taken from Table I of \[[@masetti]\] for phosphorus and boron as
 
 ```math
-\begin{align*}
-\mu_{0,e}   &= 68.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
-\mu_{max,e} &= 1414 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.5} \newline
-C_{r,e}     &= 9.20\times 10^{16} \,\text{cm}^{-3} \newline
-\alpha_{e}  &= 0.711 \newline
-\mu_{1,e}   &= 56.1 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
-C_{s,e}     &= 3.41\times 10^{20} \,\text{cm}^{-3} \newline
-\beta_{e}   &= 1.98 \newline
-\newline
-\mu_{0,h}   &= 44.9 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
-\mu_{max,h} &= 470.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.2} \newline
-C_{r,h}     &= 2.23\times 10^{17} \,\text{cm}^{-3} \newline
-\alpha_{h}  &= 0.719 \newline
-\mu_{1,h}   &= 29.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
-C_{s,h}     &= 6.1\times 10^{20} \,\text{cm}^{-3} \newline
-\beta_{h}   &= 2.0 \newline
+\begin{aligned}
+\mu_{0,e}   &= 68.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+\mu_{max,e} &= 1414 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.5} \\
+C_{r,e}     &= 9.20\times 10^{16} \,\text{cm}^{-3} \\
+\alpha_{e}  &= 0.711 \\
+\mu_{1,e}   &= 56.1 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+C_{s,e}     &= 3.41\times 10^{20} \,\text{cm}^{-3} \\
+\beta_{e}   &= 1.98 \\
+\\
+\mu_{0,h}   &= 44.9 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+\mu_{max,h} &= 470.5 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.2} \\
+C_{r,h}     &= 2.23\times 10^{17} \,\text{cm}^{-3} \\
+\alpha_{h}  &= 0.719 \\
+\mu_{1,h}   &= 29.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+C_{s,h}     &= 6.1\times 10^{20} \,\text{cm}^{-3} \\
+\beta_{h}   &= 2.0 \\
 P_{c}       &= 9.23\times 10^{16} \,\text{cm}^{-3}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -200,10 +200,10 @@ described in the previous section.
 The mobility is parametrized as
 
 ```math
-\begin{align*}
-\mu_e(N) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (N / N_{ref,e})^{\alpha}\right) \newline
+\begin{aligned}
+\mu_e(N) &= \mu_{min,e} + \mu_{0,e} / \left(1 + (N / N_{ref,e})^{\alpha}\right) \\
 \mu_h(N) &= \mu_{min,h} + \mu_{0,h} / \left(1 + (N / N_{ref,h})^{\alpha}\right)
-\end{align*}
+\end{aligned}
 ```
 
 as taken from equations 8 (for electrons) and 13 (for holes) of \[[@arora]\].
@@ -213,16 +213,16 @@ to the equation from the [Hamburg model](#hamburg-model). The values implemente
 the formulas of \[[@arora]\] as
 
 ```math
-\begin{align*}
-\mu_{min,e} &= 88.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \newline
-\mu_{0,e}   &= 7.40\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.33} \newline
-N_{ref,e}   &= 1.26\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \newline
-\newline
-\mu_{min,h} &= 54.3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \newline
-\mu_{0,h}   &= 1.36\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.23} \newline
-N_{ref,h}   &= 2.35\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \newline
+\begin{aligned}
+\mu_{min,e} &= 88.0 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \\
+\mu_{0,e}   &= 7.40\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.33} \\
+N_{ref,e}   &= 1.26\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \\
+\\
+\mu_{min,h} &= 54.3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.57} \\
+\mu_{0,h}   &= 1.36\times 10^8 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot T^{-2.23} \\
+N_{ref,h}   &= 2.35\times 10^{17} \,\text{cm}^{-3} \cdot \left(T\ /\ 300 \,\text{K}\right)^{2.4} \\
 \alpha      &= 0.88 \cdot \left(T\ /\ 300 \,\text{K}\right)^{-0.146}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -254,23 +254,23 @@ parameters implemented in Allpix Squared is taken from measurements \[[@Bergmann
 The mobility is parametrized as
 
 ```math
-\begin{align*}
-\mu_e(E) &= \mu_{0,e}                                             &\quad \text{for} \quad E < E_0 \newline
-         &= \mu_{0,e} / \sqrt{1 + \left(E - E_0\right)^2 / E_c^2} &\quad \text{for} \quad E \geq E_0 \newline
-\newline
+\begin{aligned}
+\mu_e(E) &= \mu_{0,e}                                             &\quad \text{for} \quad E < E_0 \\
+         &= \mu_{0,e} / \sqrt{1 + \left(E - E_0\right)^2 / E_c^2} &\quad \text{for} \quad E \geq E_0 \\
+\\
 \mu_h(E) &= \mu_{0,h} .
-\end{align*}
+\end{aligned}
 ```
 
 The values implemented in Allpix Squared are:
 
 ```math
-\begin{align*}
-E_0        &= 3.1\times 10^3 \,\text{V}\,\text{cm}^{-1} \newline
-E_c        &= 1.36\times 10^3 \,\text{V}\,\text{cm}^{-1} \newline
-\mu\_{0,e} &= 7.6\times 10^3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \newline
+\begin{aligned}
+E_0        &= 3.1\times 10^3 \,\text{V}\,\text{cm}^{-1} \\
+E_c        &= 1.36\times 10^3 \,\text{V}\,\text{cm}^{-1} \\
+\mu\_{0,e} &= 7.6\times 10^3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
 \mu\_{0,h} &= 3.2\times 10^2 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1}
-\end{align*}
+\end{aligned}
 ```
 
 This model can be selected in the configuration file via the parameter `mobility_model = "ruch_kino"`.
@@ -341,11 +341,11 @@ Allpix Squared provides the possibility to use fully custom mobility models. In 
 `mobility_model = "custom"` needs to be set in the configuration file. Additionally, the following configuration keys have to
 be provided:
 
--   `mobility_function_electrons`:
-    The formula describing the electron mobility.
+- `mobility_function_electrons`:
+  The formula describing the electron mobility.
 
--   `mobility_function_holes`:
-    The formula describing the hole mobility.
+- `mobility_function_holes`:
+  The formula describing the hole mobility.
 
 The functions defined via these parameters can depend on the local electric field and the local doping concentration. In
 order to use the electric field magnitude in the formula, an `x` has to be placed at the respective position, for the doping

@@ -54,22 +54,22 @@ also be stored.
 The state of the charge carrier at the end of the propagation can be retrieved via the `getState()` method. The following
 values are available:
 
--   `CarrierState::UNKNOWN`:
-    The final state of the charge carrier is unknown, for example because it might not have been provided by the used
-    propagation algorithm.
+- `CarrierState::UNKNOWN`:
+  The final state of the charge carrier is unknown, for example because it might not have been provided by the used
+  propagation algorithm.
 
--   `CarrierState::MOTION`:
-    The charge carrier was still in motion when the propagation routine finished, for example when the configured integration
-    time was reached.
+- `CarrierState::MOTION`:
+  The charge carrier was still in motion when the propagation routine finished, for example when the configured integration
+  time was reached.
 
--   `CarrierState::RECOMBINED`:
-    The charge carrier has recombined with the silicon lattice at the given position.
+- `CarrierState::RECOMBINED`:
+  The charge carrier has recombined with the silicon lattice at the given position.
 
--   `CarrierState::TRAPPED`:
-    The charge carrier has been trapped by a lattice defect at the given position.
+- `CarrierState::TRAPPED`:
+  The charge carrier has been trapped by a lattice defect at the given position.
 
--   `CarrierState::HALTED`:
-    The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface.
+- `CarrierState::HALTED`:
+  The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface.
 
 ## PixelCharge
 

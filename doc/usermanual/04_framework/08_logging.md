@@ -17,44 +17,44 @@ The logging system is built to handle input/output in the same way as `std::cin`
 very flexible and easy to read. The system is globally configured, thus only one logger instance exists. The following
 commands are available for sending messages to the logging system at a level of `LEVEL`:
 
--   `LOG(LEVEL)`:
-    Sends a message with severity level `LOG(LEVEL)` to the logging system. Example:
+- `LOG(LEVEL)`:
+  Sends a message with severity level `LOG(LEVEL)` to the logging system. Example:
 
-    ```cpp
-        LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
-    ```
+  ```cpp
+      LOG(LEVEL) << "this is an example message with an integer and a double " << 1 << 2.0;
+  ```
 
-    A new line and carriage return is added at the end of every log message. Multi-line log messages can be used by adding
-    new line commands to the stream. The logging system will automatically align every new line under the previous message
-    and will leave the header space empty on new lines.
+  A new line and carriage return is added at the end of every log message. Multi-line log messages can be used by adding
+  new line commands to the stream. The logging system will automatically align every new line under the previous message
+  and will leave the header space empty on new lines.
 
--   `LOG_ONCE(LEVEL)`:
-    Same as `LOG()`, but will only log this message once over the full run, even if the logging function is called multiple
-    times. Example:
+- `LOG_ONCE(LEVEL)`:
+  Same as `LOG()`, but will only log this message once over the full run, even if the logging function is called multiple
+  times. Example:
 
-    ```cpp
-        LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
-    ```
-    This can be used to log warnings or messages e.g. from the `run()` function of a module without flooding the log output
-    with the same message for every event. The message is preceded by the information that further messages will be
-    suppressed.
+  ```cpp
+      LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
+  ```
+  This can be used to log warnings or messages e.g. from the `run()` function of a module without flooding the log output
+  with the same message for every event. The message is preceded by the information that further messages will be
+  suppressed.
 
--   `LOG_N(LEVEL, NUMBER)`:
-    Same as `LOG_ONCE()` but allows to specify the number of times the message will be logged via the additional parameter
-    `NUMBER`. Example:
+- `LOG_N(LEVEL, NUMBER)`:
+  Same as `LOG_ONCE()` but allows to specify the number of times the message will be logged via the additional parameter
+  `NUMBER`. Example:
 
-    ```cpp
-        LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
-    ```
-    The last message is preceded by the information that further messages will be suppressed.
+  ```cpp
+      LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
+  ```
+  The last message is preceded by the information that further messages will be suppressed.
 
--   `LOG_PROGRESS(LEVEL, IDENTIFIER)`:
-    This function allows to update the message to be updated on the same line for simple progressbar-like functionality.
-    Example:
+- `LOG_PROGRESS(LEVEL, IDENTIFIER)`:
+  This function allows to update the message to be updated on the same line for simple progressbar-like functionality.
+  Example:
 
-    ```cpp
-        LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << n << " of " << number_of_events;
-    ```
+  ```cpp
+      LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << n << " of " << number_of_events;
+  ```
 
     Here, the `IDENTIFIER` is a unique string identifying this output stream in order not to mix different progress reports.
 

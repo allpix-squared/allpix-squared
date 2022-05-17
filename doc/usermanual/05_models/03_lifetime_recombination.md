@@ -41,13 +41,13 @@ parameter values implemented in Allpix Squared are taken from \[[@fossum-lee]\] 
 manual as
 
 ```math
-\begin{align*}
-\tau_{0,e} &=  1\times 10^{-5} \,\text{s} \newline
-N_{d0,e}   &=  1\times 10^{16} \,\text{cm}^{-3} \newline
-\newline
-\tau_{0,h} &= 4.0\times 10^{-4} \,\text{s} \newline
+\begin{aligned}
+\tau_{0,e} &=  1\times 10^{-5} \,\text{s} \\
+N_{d0,e}   &=  1\times 10^{16} \,\text{cm}^{-3} \\
+\\
+\tau_{0,h} &= 4.0\times 10^{-4} \,\text{s} \\
 N_{d0,h}   &= 7.1\times 10^{15} \,\text{cm}^{-3}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -92,10 +92,10 @@ This model combines the charge carrier recombination from the Shockley-Read-Hall
 individual lifetimes calculated by the models via
 
 ```math
-\begin{align*}
-\tau^{-1}(N) &= \tau_{srh}^{-1}(N) + \tau_{a}^{-1}(N) &\quad \text{for minority charge carriers} \newline
+\begin{aligned}
+\tau^{-1}(N) &= \tau_{srh}^{-1}(N) + \tau_{a}^{-1}(N) &\quad \text{for minority charge carriers} \\
              &= \tau_{srh}^{-1}(N)                    &\quad \text{for majority charge carriers}
-\end{align*}
+\end{aligned}
 ```
 
 where $`\tau_{srh}(N)`$ is the Shockley-Read-Hall and $`\tau_{a}(N)`$ the Auger lifetime. The latter is only taken into

@@ -12,23 +12,23 @@ the `=` character. Comments are indicated using the hash symbol (`#`).
 
 The framework has the following three required layers of configuration files:
 
--   The **main** configuration:
-    The most important configuration file and the file that is passed directly to the binary. Contains both the global
-    framework configuration and the list of modules to instantiate together with their configuration. An example can be found
-    in the repository at `examples/example.conf`. More details and a more thorough example are found in
-    [Section 3.2](./02_main_configuration.md), several advanced simulation chain configurations are presented in
-    [Chapter 8](../08_examples/_index.md).
+- The **main** configuration:
+  The most important configuration file and the file that is passed directly to the binary. Contains both the global
+  framework configuration and the list of modules to instantiate together with their configuration. An example can be found
+  in the repository at `examples/example.conf`. More details and a more thorough example are found in
+  [Section 3.2](./02_main_configuration.md), several advanced simulation chain configurations are presented in
+  [Chapter 8](../08_examples/_index.md).
 
--   The **geometry** configuration:
-    It is passed to the framework to determine the detector setup and passive materials. Describes the detector setup,
-    containing the position, orientation and model type of all detectors. Optionally, passive materials can be added to this
-    configuration. Examples are available in the repository at `examples/ example_detector.conf` or
-    `examples/example_detector_passive.conf`. Introduced in [Section 3.3](./03_detector_configuration.md).
+- The **geometry** configuration:
+  It is passed to the framework to determine the detector setup and passive materials. Describes the detector setup,
+  containing the position, orientation and model type of all detectors. Optionally, passive materials can be added to this
+  configuration. Examples are available in the repository at `examples/ example_detector.conf` or
+  `examples/example_detector_passive.conf`. Introduced in [Section 3.3](./03_detector_configuration.md).
 
--   The detector **model** configuration:
-    Contains the parameters describing a particular type of detector. Several models are already provided by the framework,
-    but new types of detectors can easily be added. See `models/test.conf` in the repository for an example. Please refer to
-    [Section 9.5](../09_development/05_new_detector_model.md) for more details about adding new models.
+- The detector **model** configuration:
+  Contains the parameters describing a particular type of detector. Several models are already provided by the framework,
+  but new types of detectors can easily be added. See `models/test.conf` in the repository for an example. Please refer to
+  [Section 9.5](../09_development/05_new_detector_model.md) for more details about adding new models.
 
 ## Parsing Types and Units
 
@@ -39,31 +39,31 @@ refer to the [Chapter 7](../07_modules/_index.md) for the list of module paramet
 roughly follows common-sense (more details can be found in
 [Section 4.3](../04_framework/03_configuration.md#accessing-parameters)). A few special rules do apply:
 
--   If the value is a **string**, it may be enclosed by a single pair of double quotation marks (`"`), which are stripped
-    before passing the value to the modules. If the string is not enclosed by quotation marks, all whitespace before and
-    after the value is erased. If the value is an array of strings, the value is split at every whitespace or comma (`,`)
-    that is not enclosed in quotation marks.
+- If the value is a **string**, it may be enclosed by a single pair of double quotation marks (`"`), which are stripped
+  before passing the value to the modules. If the string is not enclosed by quotation marks, all whitespace before and
+  after the value is erased. If the value is an array of strings, the value is split at every whitespace or comma (`,`)
+  that is not enclosed in quotation marks.
 
--   If the value is a **boolean**, either numerical (`0`, `1`) or textual (`false`, `true`) representations are accepted.
+- If the value is a **boolean**, either numerical (`0`, `1`) or textual (`false`, `true`) representations are accepted.
 
--   If the value is a **relative path**, that path will be made absolute by adding the absolute path of the directory that
-    contains the configuration file where the key is defined.
+- If the value is a **relative path**, that path will be made absolute by adding the absolute path of the directory that
+  contains the configuration file where the key is defined.
 
--   If the value is an **arithmetic** type, it may have a suffix indicating the unit. The list of base units is given in the
-    table below.
+- If the value is an **arithmetic** type, it may have a suffix indicating the unit. The list of base units is given in the
+  table below.
 
-| Quantity                | Default unit                   | Auxiliary units                                                                                                 |
-|:------------------------|:-------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| Unity                   | 1                              | -                                                                                                               |
-| Length                  | mm (millimeter)                | nm (nanometer) <br> um (micrometer) <br> cm (centimeter) <br> dm (decimeter) <br> m (meter) <br> km (kilometer) |
-| Time                    | ns (nanosecond)                | ps (picosecond) <br> us (microsecond) <br> ms (millisecond) <br> s (second)                                     |
-| Energy                  | MeV (megaelectronvolt)         | eV (electronvolt) <br> keV (kiloelectronvolt) <br> GeV (gigaelectronvolt)                                       |
-| Temperature             | K (kelvin)                     | -                                                                                                               |
-| Charge                  | e (elementary charge)          | ke (kiloelectrons) <br> fC (femtocoulomb) <br> C (coulomb)                                                      |
-| Voltage                 | MV (megavolt)                  | V (volt) <br> kV (kilovolt)                                                                                     |
-| Magnetic field strength | T (tesla)                      | mT (millitesla)                                                                                                 |
-| Angle                   | rad (radian)                   | deg (degree) <br> mrad (milliradian)                                                                            |
-| Radiation fluence       | Neq (1-MeV neutron-equivalent) | -                                                                                                               |
+| Quantity                | Default unit                   | Auxiliary units                                                                                                      |
+|:------------------------|:-------------------------------|:---------------------------------------------------------------------------------------------------------------------|
+| Unity                   | 1                              | -                                                                                                                    |
+| Length                  | mm (millimeter)                | nm (nanometer), <br> um (micrometer), <br> cm (centimeter), <br> dm (decimeter), <br> m (meter), <br> km (kilometer) |
+| Time                    | ns (nanosecond)                | ps (picosecond), <br> us (microsecond), <br> ms (millisecond), <br> s (second)                                       |
+| Energy                  | MeV (megaelectronvolt)         | eV (electronvolt), <br> keV (kiloelectronvolt), <br> GeV (gigaelectronvolt)                                          |
+| Temperature             | K (kelvin)                     | -                                                                                                                    |
+| Charge                  | e (elementary charge)          | ke (kiloelectrons), <br> fC (femtocoulomb), <br> C (coulomb)                                                         |
+| Voltage                 | MV (megavolt)                  | V (volt), <br> kV (kilovolt)                                                                                         |
+| Magnetic field strength | T (tesla)                      | mT (millitesla)                                                                                                      |
+| Angle                   | rad (radian)                   | deg (degree), <br> mrad (milliradian)                                                                                |
+| Radiation fluence       | Neq (1-MeV neutron-equivalent) | -                                                                                                                    |
 
 {{% alert title="Warning" color="warning" %}}
 If no units are specified, values will always be interpreted in the base units of the framework. In some cases this can lead

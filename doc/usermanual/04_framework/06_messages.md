@@ -108,24 +108,24 @@ described in detail in the following section.
 
 Flags can be added to the bind and listening methods which enable a particular behavior of the framework.
 
--   `REQUIRED`:
-    Specifies that this message is required during the event processing. If this particular message is not received before it
-    is time to execute the module's run function, the execution of the method is automatically skipped by the framework for
-    the current event. This can be used to ignore modules which cannot perform any action without received messages, for
-    example charge carrier propagation without any deposited charge carriers.
+- `REQUIRED`:
+  Specifies that this message is required during the event processing. If this particular message is not received before it
+  is time to execute the module's run function, the execution of the method is automatically skipped by the framework for
+  the current event. This can be used to ignore modules which cannot perform any action without received messages, for
+  example charge carrier propagation without any deposited charge carriers.
 
--   `ALLOW_OVERWRITE`:
-    By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple
-    times instead of once). This flag prevents this behavior. It can only be used for variables bound to a single message.
+- `ALLOW_OVERWRITE`:
+  By default an exception is automatically raised if a single bound message is overwritten (thus receiving it multiple
+  times instead of once). This flag prevents this behavior. It can only be used for variables bound to a single message.
 
--   `IGNORE_NAME`:
-    If this flag is specified, the name of the dispatched message is not considered. Thus, the `input` parameter is ignored
-    and forced to the value `*`.
+- `IGNORE_NAME`:
+  If this flag is specified, the name of the dispatched message is not considered. Thus, the `input` parameter is ignored
+  and forced to the value `*`.
 
--   `UNNAMED_ONLY`:
-    If this flag is specified, the module will only receive messages without explicit name. The `input` parameter is ignored
-    and forced to the value `?` and all named messages are discarded. It should be noted that `IGNORE_NAME` takes precedence
-    over this parameter.
+- `UNNAMED_ONLY`:
+  If this flag is specified, the module will only receive messages without explicit name. The `input` parameter is ignored
+  and forced to the value `?` and all named messages are discarded. It should be noted that `IGNORE_NAME` takes precedence
+  over this parameter.
 
 ## Persistency
 

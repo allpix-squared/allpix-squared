@@ -10,24 +10,24 @@ introduced when they are first used. For more details about the module parameter
 [Chapter 7](../07_modules/_index.md) should be consulted. A typical simulation in Allpix Squared will contain the following
 components:
 
--   The **geometry builder**, responsible for creating the external Geant4 geometry from the internal geometry. In this
-    document, *internal geometry* refers to the detector parameters used by Allpix Squared for coordinate transformations and
-    conversions throughout the simulation, while *external geometry* refers to the constructed Geant4 geometry used for
-    charge carrier deposition (and possibly visualization).
+- The **geometry builder**, responsible for creating the external Geant4 geometry from the internal geometry. In this
+  document, *internal geometry* refers to the detector parameters used by Allpix Squared for coordinate transformations and
+  conversions throughout the simulation, while *external geometry* refers to the constructed Geant4 geometry used for
+  charge carrier deposition (and possibly visualization).
 
--   The **deposition** module that simulates the particle beam creating charge carriers in the detectors using the provided
-    physics list (containing a description of the simulated interactions) and the geometry created above.
+- The **deposition** module that simulates the particle beam creating charge carriers in the detectors using the provided
+  physics list (containing a description of the simulated interactions) and the geometry created above.
 
--   A **propagation** module that propagates the charges through the sensor.
+- A **propagation** module that propagates the charges through the sensor.
 
--   A **transfer** module that transfers the charges from the sensor electrodes and assigns them to a pixel of the readout
-    electronics.
+- A **transfer** module that transfers the charges from the sensor electrodes and assigns them to a pixel of the readout
+  electronics.
 
--   A **digitizer** module which converts the charges in the pixel to a detector hit, simulating the front-end electronics
-    response.
+- A **digitizer** module which converts the charges in the pixel to a detector hit, simulating the front-end electronics
+  response.
 
--   An **output** module, saving the data of the simulation. The Allpix Squared standard file format is a ROOT `TTree`, which
-    is described in detail in [Section 4.7](./09_storing_output_data.md).
+- An **output** module, saving the data of the simulation. The Allpix Squared standard file format is a ROOT `TTree`, which
+  is described in detail in [Section 4.7](./09_storing_output_data.md).
 
 In this example, charge carriers will be deposited in the three sensors defined in the detector configuration file from
 [Section 3.3](./03_detector_configuration.md). All charge carriers deposited in the different sensors will be propagated and

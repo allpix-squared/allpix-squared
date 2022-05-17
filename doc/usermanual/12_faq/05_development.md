@@ -54,17 +54,17 @@ MyModule::MyModule(Configuration& config, Messenger* messenger, std::shared_ptr<
 
 When adding a new sensor material, additions at several positions in the code are necessary:
 
--   Add material to list of available sensor materials in `src/core/geometry/DetectorModel.hpp`.
+- Add material to list of available sensor materials in `src/core/geometry/DetectorModel.hpp`.
 
--   If not available yet, add material to the Geant4 material manager
-    (`src/modules/GeometryBuilderGeant4/MaterialManager.cpp`). See examples of either using a material known to Geant4 or
-    defining compositions in the code. It should be noted that the key of the `materials_` map needs to match the name of the
-    sensor material defined in the previous step, transformed to lower case letters.
+- If not available yet, add material to the Geant4 material manager
+  (`src/modules/GeometryBuilderGeant4/MaterialManager.cpp`). See examples of either using a material known to Geant4 or
+  defining compositions in the code. It should be noted that the key of the `materials_` map needs to match the name of the
+  sensor material defined in the previous step, transformed to lower case letters.
 
--   Define default values for the material properties listed in `src/physics/MaterialProperties.hpp`.
+- Define default values for the material properties listed in `src/physics/MaterialProperties.hpp`.
 
--   Add the list of material properties to the corresponding section of the user manual
-    (`doc/usermanual/chapters/05_models/01_material_properties.md`).
+- Add the list of material properties to the corresponding section of the user manual
+  (`doc/usermanual/chapters/05_models/01_material_properties.md`).
 
 Any contribution to the framework in terms of new sensor material definitions is welcome and can be added via a dedicated
 merge request in the repository \[[@ap2-repo]\].

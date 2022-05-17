@@ -41,13 +41,13 @@ extracted at the reference temperature of $`T_0 = -10 \,\text{°C}`$.
 The parameters used in Allpix Squared are
 
 ```math
-\begin{align*}
-\beta_{e}(T_0) &= 5.6\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
-\kappa_{e}     &= -0.86 \newline
-\newline
-\beta_{h}(T_0) &= 7.7\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\begin{aligned}
+\beta_{e}(T_0) &= 5.6\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \\
+\kappa_{e}     &= -0.86 \\
+\\
+\beta_{h}(T_0) &= 7.7\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \\
 \kappa_{h}     &= -1.52
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -71,10 +71,10 @@ The Dortmund (sometimes referred to as *Krasel*) model \[[@dortmundTrapping]\], 
 with the parameters
 
 ```math
-\begin{align*}
-\gamma_{e} &= 5.13\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\begin{aligned}
+\gamma_{e} &= 5.13\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \\
 \gamma_{h} &= 5.04\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -101,13 +101,13 @@ The interpolation of the results follows the relation
 with the parameters
 
 ```math
-\begin{align*}
-\beta_{e}(T_0)  &= 1.71\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
-\tau_{0,e}^{-1} &= -0.114 \,\text{ns}^{-1} \newline
-\newline
-\beta_{h}(T_0)  &= 2.79\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \newline
+\begin{aligned}
+\beta_{e}(T_0)  &= 1.71\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \\
+\tau_{0,e}^{-1} &= -0.114 \,\text{ns}^{-1} \\
+\\
+\beta_{h}(T_0)  &= 2.79\times 10^{-16} \,\text{cm}^2\,\text{ns}^{-1} \\
 \tau_{0,h}^{-1} &= -0.093 \,\text{ns}^{-1}
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
@@ -129,20 +129,20 @@ the lifetime via
 with the parameters
 
 ```math
-\begin{align*}
-c_e      &= 0.054 \,\text{ns}\,\text{cm}^{-2} \newline
-\kappa_e &= -0.62 \newline
-\newline
-c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \newline
+\begin{aligned}
+c_e      &= 0.054 \,\text{ns}\,\text{cm}^{-2} \\
+\kappa_e &= -0.62 \\
+\\
+c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \\
 \kappa_h &= -0.62
-\end{align*}
+\end{aligned}
 ```
 
 for electrons and holes, respectively.
 
 The parameters for electrons are taken from \[[@Mandic]\], for measurements at a temperature of $`T = -20 \,\text{°C}`$, and
 the results extrapolated to $`T = -30 \,\text{°C}`$. A scaling from electrons to holes was performed based on the default
-values in Weightfield2 \[[@Weightfield2]\].
+values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
 
@@ -151,11 +151,11 @@ This model can be selected in the configuration file via the parameter `trapping
 Similarly to the mobility models described above, Allpix Squared provides the possibility to use fully custom trapping
 models. The model requires the following configuration keys:
 
--   `trapping_function_electrons`:
-    The formula describing the effective electron trapping time.
+- `trapping_function_electrons`:
+  The formula describing the effective electron trapping time.
 
--   `trapping_function_holes`:
-    The formula describing the effective hole trapping time.
+- `trapping_function_holes`:
+  The formula describing the effective hole trapping time.
 
 The functions defined via these parameters can depend on the local electric field. In order to use the electric field
 magnitude in the formula, an `x` has to be placed at the respective position.
@@ -204,4 +204,4 @@ This model can be selected in the configuration file via the parameter `trapping
 [@dortmundTrapping]: https://doi.org/10.1109/TNS.2004.839096
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
-[@Weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
+[@weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
