@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
 
 #include <Math/Rotation3D.h>
@@ -40,9 +41,9 @@ std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
             }
 
             // Recurse:
-            str << listkeys((TDirectoryFile*)entry->ReadObj(), named_module).str();
+            str << listkeys(reinterpret_cast<TDirectoryFile*>(entry->ReadObj()), named_module).str();
         } else if(cl->InheritsFrom("string")) {
-            std::string value = (*(string*)entry->ReadObj());
+            std::string value = (*reinterpret_cast<std::string*>(entry->ReadObj()));
             // Omit empty "input" and "output" keys:
             if((key == "input" || key == "output") && (value == "" || value == "\"\"")) {
                 continue;
@@ -62,7 +63,7 @@ std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
             str << key << " = " << value << std::endl;
         } else if(cl->InheritsFrom("ROOT::Math::Rotation3D")) {
             // Transform rotation back to the three ZYX angles
-            ROOT::Math::Rotation3D rot = (*(ROOT::Math::Rotation3D*)entry->ReadObj()).Inverse();
+            ROOT::Math::Rotation3D rot = (*reinterpret_cast<ROOT::Math::Rotation3D*>(entry->ReadObj())).Inverse();
             ROOT::Math::RotationZYX angles = ROOT::Math::RotationZYX(rot);
             str << "orientation_type = \"xyz\"" << std::endl;
             str << key << " = " << (-angles.Psi()) << "rad " << (-angles.Theta()) << "rad " << (-angles.Phi()) << "rad"
@@ -70,8 +71,9 @@ std::stringstream listkeys(TDirectoryFile* dir, bool name_set = false) {
         } else if(cl->InheritsFrom("ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,ROOT::Math::"
                                    "DefaultCoordinateSystemTag>")) {
             ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> position =
-                (*(ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag>*)
-                      entry->ReadObj());
+                (*reinterpret_cast<
+                    ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag>*>(
+                    entry->ReadObj()));
             str << key << " = " << position.x() << "mm " << position.y() << "mm " << position.z() << "mm" << std::endl;
         } else {
             std::cout << "Could not deduce parameter type of \"" << key << "\": " << entry->GetClassName() << std::endl;
@@ -94,14 +96,14 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
     f1->GetObject("config", config);
     if(config != nullptr) {
         std::cout << "Found TDirectory containing the configuration keys." << std::endl;
-        stringstream str = listkeys(config);
+        std::stringstream str = listkeys(config);
         std::ofstream config_file(config_file_name, std::ios_base::out | std::ios_base::trunc);
         if(config_file.good()) {
             config_file << str.str();
             std::cout << "Wrote configuration to: \"" << config_file_name << "\"" << std::endl;
         }
     } else {
-        cout << "Could not find TDirectory with configuration." << std::endl;
+        std::cout << "Could not find TDirectory with configuration." << std::endl;
     }
 
     // Use path of the configuration file:
@@ -111,20 +113,20 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
     TDirectoryFile* detectors = nullptr;
     f1->GetObject("detectors", detectors);
     if(detectors != nullptr) {
-        cout << "Found TDirectory containing the detector configuration." << std::endl;
-        stringstream str = listkeys(detectors);
+        std::cout << "Found TDirectory containing the detector configuration." << std::endl;
+        std::stringstream str = listkeys(detectors);
 
         if(detectors_file.empty()) {
             // Default to detectors file name:
             detectors_file = "detectors.conf";
-            cout << "Using default name for detectors file - you might need to adjust the parameter." << std::endl;
+            std::cout << "Using default name for detectors file - you might need to adjust the parameter." << std::endl;
         } else {
             // Clean string from quotation marks:
             if(detectors_file.front() == '"') {
                 detectors_file.erase(0, 1);                      // erase the first character
                 detectors_file.erase(detectors_file.size() - 1); // erase the last character
             }
-            cout << "Using stored detectors file name \"" << detectors_file << "\"" << std::endl;
+            std::cout << "Using stored detectors file name \"" << detectors_file << "\"" << std::endl;
         }
 
         detectors_file = path + "/" + detectors_file;
@@ -136,13 +138,13 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
             std::cout << "Problem writing detector file \"" << detectors_file << "\"" << std::endl;
         }
     } else {
-        cout << "Could not find TDirectory with detector configuration." << std::endl;
+        std::cout << "Could not find TDirectory with detector configuration." << std::endl;
     }
 
     TDirectoryFile* models = nullptr;
     f1->GetObject("models", models);
     if(models != nullptr) {
-        cout << "Found TDirectory containing the model configurations." << std::endl;
+        std::cout << "Found TDirectory containing the model configurations." << std::endl;
 
         TIter next(models->GetListOfKeys());
         TKey* entry;
@@ -151,7 +153,7 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
             std::string key = std::string(entry->GetName());
 
             if(cl->InheritsFrom("TDirectoryFile")) {
-                std::string model_parameters = listkeys((TDirectoryFile*)entry->ReadObj()).str();
+                std::string model_parameters = listkeys(reinterpret_cast<TDirectoryFile*>(entry->ReadObj())).str();
                 std::string model_file = path + "/" + key + ".conf";
                 std::ofstream mod_file(model_file, std::ios_base::out | std::ios_base::trunc);
                 if(mod_file.good()) {
@@ -167,7 +169,7 @@ void recoverConfiguration(std::string data_file, std::string config_file_name) {
             }
         }
     } else {
-        cout << "Could not find TDirectory with detector models." << std::endl;
+        std::cout << "Could not find TDirectory with detector models." << std::endl;
     }
 
     return;

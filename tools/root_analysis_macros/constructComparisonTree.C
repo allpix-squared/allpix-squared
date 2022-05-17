@@ -8,6 +8,7 @@
 #include <TTree.h>
 
 #include <memory>
+#include <set>
 
 // FIXME: these includes should be absolute and provided with installation?
 #include "../../src/objects/MCParticle.hpp"

@@ -151,16 +151,17 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
         ADD_CUSTOM_TARGET(
             lint-diff
-            COMMAND git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" | ${CLANG_TIDY_DIFF}
-                    -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -fix -j${NPROC}
+            COMMAND
+                git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" ":!tools/root_analysis_macros/*"
+                | ${CLANG_TIDY_DIFF} -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -fix -j${NPROC}
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "Auto fixing problems in differing source files")
 
         ADD_CUSTOM_TARGET(
             check-lint-diff
             COMMAND
-                git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" | ${CLANG_TIDY_DIFF}
-                -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -j${NPROC} | tee
+                git diff --unified=0 ${TARGET_REMOTE}/${TARGET_BRANCH}... -- ":!3rdparty/*" ":!tools/root_analysis_macros/*"
+                | ${CLANG_TIDY_DIFF} -clang-tidy-binary=${CLANG_TIDY} -path=${CMAKE_BINARY_DIR} -p1 -j${NPROC} | tee
                 ${CMAKE_BINARY_DIR}/check_lint_file.txt
                 # WARNING: fix to stop with error if there are problems
             COMMAND ! grep -c ": error: " ${CMAKE_BINARY_DIR}/check_lint_file.txt > /dev/null
