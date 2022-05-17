@@ -5,17 +5,19 @@
 # Doxygen target to generate API reference #
 ############################################
 
+SET(DOCS_DOXYGEN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/reference")
+
 FIND_PACKAGE(Doxygen)
 
-IF(DOXYGEN_FOUND)
-    CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/reference/Doxyfile.in ${CMAKE_BINARY_DIR}/reference/Doxyfile @ONLY)
-    ADD_CUSTOM_TARGET(
-        ${CMAKE_PROJECT_NAME}-reference
-        ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/reference/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/reference
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM)
-ENDIF(DOXYGEN_FOUND)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/reference/Doxyfile" "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile" @ONLY)
+
+ADD_CUSTOM_TARGET(
+    apsq_docs_reference
+    COMMAND Doxygen::doxygen "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile"
+    DEPENDS Doxygen::doxygen
+    WORKING_DIRECTORY "${DOCS_DOXYGEN_BINARY_DIR}"
+    COMMENT "Generating API reference with Doxygen"
+    VERBATIM)
 
 #######################################
 # Target to create Markdown file tree #
