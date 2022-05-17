@@ -23,14 +23,6 @@ Files: cmake/CodeCoverage.cmake
 Copyright: 2012 - 2017, Lars Bilke
 License: BSD-3-Clause
 
-Files: cmake/LATEX.cmake
-Copyright: 2004, 2015 Sandia Corporation
-License: BSD-3-Clause
-
-Files: cmake/PANDOC.cmake
-Copyright: 2015 Jeet Sukumaran <jeetsukumaran@gmail.com>
-License: BSD-3-Clause
-
 Files: doc/convert/pandoc-gitlab-math.lua
 Copyright: 2018 Nikolay Yakimov
 License: MIT

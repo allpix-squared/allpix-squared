@@ -73,41 +73,54 @@ ADD_CUSTOM_TARGET(
     COMMENT "Generating source tree of the hugo documentation"
     VERBATIM)
 
+############################################################
+# Target to create LaTex file tree for the PDF user manual #
+############################################################
+
+SET(DOCS_LATEX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/usermanual_latex")
+
+FIND_PACKAGE(Pandoc)
+
+ADD_CUSTOM_TARGET(
+    apsq_docs_latex
+    COMMAND
+        ${CMAKE_COMMAND} -E rm -rf ${DOCS_LATEX_BINARY_DIR}
+    COMMAND
+        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "convert_latex"
+        "${DOCS_MARKDOWN_BINARY_DIR}" "${DOCS_LATEX_BINARY_DIR}"
+    DEPENDS Python::Interpreter Pandoc::pandoc apsq_docs_markdown
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
+    COMMENT "Generating source tree of the LaTeX documentation"
+    VERBATIM)
+
 ###############################################
 # LaTeX target to compile the PDF user manual #
 ###############################################
 
-# Information and the manual on the UseLATEX.cmake package can be found here
-# http://www.cmake.org/Wiki/CMakeUserUseLATEX
+SET(DOCS_PDF_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/usermanual_pdf")
 
-FIND_PACKAGE(LATEX)
+# FIXME: Find Lualatex + Biber + Latexmk and add targets
 
-# Only add target if we have LaTeX
-IF(LATEX_COMPILER)
-    MESSAGE(STATUS "Found LaTeX compiler.")
-    SET(LATEX_COMPILER_FLAGS
-        "-shell-escape" "-interaction nonstopmode" "-halt-on-error" "-file-line-error"
-        CACHE STRING "Flags passed to latex.")
-    INCLUDE(${PROJECT_SOURCE_DIR}/cmake/LATEX.cmake)
+SET(LATEXMK_COMPILER_FLAGS "-pdflua" "-cd" "-shell-escape")
 
-    # FIXME: Markdown -> pandoc conversion
+SET(DOCS_REFERENCES_BIB "${CMAKE_CURRENT_SOURCE_DIR}/latex/references.bib")
+SET(DOCS_ALLPIX_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/latex/frontmatter.tex" "${CMAKE_CURRENT_BINARY_DIR}/frontmatter.tex" @ONLY)
 
-    # Check if we have biber and do not build if not
-    IF(BIBER_COMPILER)
-        SET(LATEX_OUTPUT_PATH ${CMAKE_BINARY_DIR}/usermanual)
-        MESSAGE(WARNING "FIXME: not implemented yet")
-        ADD_LATEX_DOCUMENT(
-            latex/allpix-manual.tex
-            BIBFILES latex/references.bib
-            USE_BIBLATEX
-            IMAGES ${DOCS_LATEX_IMAGES}
-            INPUTS ${DOCS_LATEX_INPUTS}
-            CONFIGURE latex/config.tex
-            EXCLUDE_FROM_ALL
-            DEPENDS ${DOCS_LATEX_INPUTS})
-    ELSE()
-        MESSAGE(WARNING "No biber command, cannot compile user manual.")
-    ENDIF()
-ELSE(LATEX_COMPILER)
-    MESSAGE(WARNING "No LaTeX found, cannot compile user manual.")
-ENDIF(LATEX_COMPILER)
+ADD_CUSTOM_TARGET(
+    apsq_docs_pdf
+    COMMAND
+        ${CMAKE_COMMAND} -E rm -rf ${DOCS_PDF_BINARY_DIR}
+    COMMAND
+        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "create_latex_input"
+        "${DOCS_LATEX_BINARY_DIR}" "${DOCS_PDF_BINARY_DIR}/input.tex"
+    COMMAND
+        ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/latex/allpix-manual.tex" "${DOCS_PDF_BINARY_DIR}"
+    COMMAND
+        ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/frontmatter.tex" "${DOCS_PDF_BINARY_DIR}"
+    COMMAND
+        latexmk ${LATEXMK_COMPILER_FLAGS} "${DOCS_PDF_BINARY_DIR}/allpix-manual.tex"
+    DEPENDS Python::Interpreter apsq_docs_latex
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
+    COMMENT "Generating the PDF documentation"
+    VERBATIM)

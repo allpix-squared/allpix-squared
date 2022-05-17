@@ -1,163 +1,71 @@
-%----------------------------------------------------------------------------------------
-%   PACKAGES AND DOCUMENT CONFIGURATIONS
-%----------------------------------------------------------------------------------------
+\documentclass[a4paper,11pt,numbers=noenddot,headsepline,titlepage,twoside,openright,DIV=14,BCOR=8mm,parskip=half]{scrbook}
 
-\documentclass[captions=tableheading,a4paper,11pt,numbers=noenddot,headsepline,titlepage,twoside,openright,DIV=14,BCOR=8mm,parskip=half]{scrbook}
-\PassOptionsToPackage{obeyspaces}{url}
-\usepackage[backend=biber,
-            autocite=plain,
-            sorting=none,
-            url=false
-            ]{biblatex}
-\usepackage[T1]{fontenc}
-\usepackage[shortlabels]{enumitem}
-\usepackage{siunitx}
-\usepackage{array}
-\usepackage{ccicons}
-\usepackage{booktabs}
-\usepackage{xspace}
-\usepackage{xcolor}
-\usepackage{minted}
-\usepackage{a4wide}
-\usepackage{listings}
-\usepackage{graphicx}
-\usepackage{seqsplit}
-\usepackage{multirow}
-\usepackage[unicode=true]{hyperref}
+% Font related
+\usepackage{fontspec}
 \usepackage{microtype}
-\usepackage{pgffor}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e}
-\usepackage[utf8]{inputenc}
-\usepackage{eurosym}
-\usepackage{fancyvrb}
-\usepackage{varwidth}
-\usepackage{tikz}
-\usepackage{relsize}
-\usepackage{mhchem}
+\usepackage{fvextra}
 
-\urlstyle{same}
-\usepackage{longtable,booktabs}
-\usepackage[normalem]{ulem}
+% Layout
+\usepackage[top=3cm,bottom=3cm]{geometry}
+\usepackage{array}
+\setcounter{tocdepth}{1}
 
+% Language
+\usepackage{csquotes}
+\usepackage[bidi=basic,english]{babel}
+\usepackage[useregional=false,style=iso]{datetime2}
 
+% References
+\usepackage[style=ext-numeric-verb,backend=biber,autocite=plain,sorting=none,url=false]{biblatex}
+\usepackage[unicode]{hyperref}
+\DeclareOuterCiteDelims{cite}{}{}
+
+% Math
+\usepackage{amsmath}
+\usepackage{unicode-math}
+\usepackage[version=4]{mhchem}
+
+% Code highlighting
+\usepackage{listings}
+\usepackage{minted}
+\lstset{basicstyle=\ttfamily,breaklines=true}
+\setminted{breaklines=true}
+
+% Images
+\usepackage{graphicx}
+\usepackage{ccicons}
+
+% pandoc
+\usepackage{booktabs}
+\usepackage{longtable}
+\newcommand{\passthrough}[1]{#1}
 \setlength{\emergencystretch}{3em}
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
+% Latin Modern fonts
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\setmathfont{Latin Modern Math}
 
-\providecommand{\subtitle}[1]{}
+% Front matter settings
+\input{frontmatter.tex}
 
-% Set paths
-\makeatletter
-\def\input@path{{usermanual/}}
-\makeatother
-
-% Load configuration
-\input{config}
-
-%----------------------------------------------------------------------------------------
-%   DOCUMENT INFORMATION
-%----------------------------------------------------------------------------------------
-\titlehead{\centering\includegraphics[width=7cm]{logo.png}}
-\title{\apsqbold User Manual} % Title
-
-\author{Paul Sch\"utze (\href{mailto:paul.schuetze@desy.de}{paul.schuetze@desy.de})\\
-  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})\\
-  Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch})
-} % Author names
-
-\date{\today\\ \vspace{10pt} Version \version} % Date for the report
-
-\graphicspath{{usermanual/figures/}}
-
+% Content
 \begin{document}
 \frontmatter
 \pagenumbering{Roman}
-
 \thispagestyle{empty}
-\maketitle % Insert the title, author and date
+\maketitle
 \cleardoublepage
 \thispagestyle{empty}
 \addlicense
 \cleardoublepage
-
-% Table Of Contents
 \tableofcontents
-
 \mainmatter
 \pagenumbering{arabic}
-
-% intro
-\input{chapters/introduction}
-
-% quick start
-\input{chapters/quick_start}
-
-% installation
-\input{chapters/installation}
-
-% configuration and usage
-\input{chapters/getting_started}
-
-% core framework
-\input{chapters/framework}
-
-\input{chapters/models}
-
-% core framework
-\input{chapters/objects}
-
-% modules
-\chapter{Modules}
-\label{ch:modules}
-\input{chapters/modules}
-\lstset{language=Ini}
-\includemodulesmd
-\lstset{language=}
-
-% modules
-\chapter{Examples}
-\label{ch:examples}
-\input{chapters/examples}
-\lstset{language=Ini}
-\includeexamplesmd
-\lstset{language=}
-
-% development of new modules and detectors models
-\input{chapters/development}
-\input{chapters/devtools}
-\input{chapters/testing}
-
-% frequently asked question
-\input{chapters/faq}
-
-% additional tools and resources
-\input{chapters/additional}
-
+\input{input.tex}
 \backmatter
-
-% acknowledgements to all contributors etc
-\input{chapters/acknowledgements}
-
-\cleardoublepage
-\phantomsection
-\addreferencesline
-\printbibliography
-
-\appendix
-\chapter{Appendix}
-
-\input{tests.tex}
-
+\printbibliography[heading=bibintoc]
 \end{document}

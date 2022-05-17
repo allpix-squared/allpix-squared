@@ -35,6 +35,7 @@ MESSAGE(STATUS "Building \"${CMAKE_BUILD_TYPE}\"")
 
 # Gather information about build time:
 STRING(TIMESTAMP BUILD_TIME "%Y-%m-%d, %H:%M:%S UTC" UTC)
+STRING(SUBSTRING "${BUILD_TIME}" 0 10 BUILD_DATE)
 
 # Define the project with the simple version
 STRING(REGEX MATCH "([0-9.]+)+" SIMPLE_VERSION "${ALLPIX_VERSION}")
@@ -69,6 +70,9 @@ INCLUDE(CPack)
 
 # Include allpix cmake functions
 INCLUDE("cmake/AllpixMacros.cmake")
+
+# Add cmake/Modules to CMake search path
+LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules")
 
 ###################################
 # Setup tests for allpix          #
@@ -363,7 +367,7 @@ FILE(
     LIST_DIRECTORIES false
     RELATIVE ${PROJECT_SOURCE_DIR}
     "cmake/*.cmake" "CMakeLists.txt")
-LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/LATEX.cmake" "cmake/PANDOC.cmake" "cmake/CodeCoverage.cmake")
+LIST(REMOVE_ITEM CHECK_CMAKE_FILES "cmake/CodeCoverage.cmake")
 
 INCLUDE("cmake/cmake-checks.cmake")
 
