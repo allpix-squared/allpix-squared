@@ -12,6 +12,7 @@ import glob
 import os
 import re
 import shutil
+from typing import Callable
 
 import convert_markdown
 
@@ -32,7 +33,7 @@ def parse_cmdline_args(args: list[str] = None) -> argparse.Namespace:
     parser.add_argument('function', choices=['copyonly',
                                              'copylower',
                                              'glob_readme',
-                                             'glob_md_png',
+                                             'glob_dir',
                                              'convert_hugo',
                                              'convert_latex',
                                              'create_latex_input',
@@ -96,65 +97,65 @@ def glob_readme(input_dir: str, output_dir: str) -> None:
         copyonly(input_file, output_file)
 
 
-def glob_md_png(input_dir: str, output_dir: str) -> None:
+def glob_dir(input_dir: str, output_dir: str) -> None:
     """
-    Copy files from a directory with a .md or .png file extension to another directory while keeping the folder structure.
+    Copy files from a directory (except with .in file extension) to another directory while keeping the folder structure.
 
     Args:
         input_dir: Path of the directory to search for the files.
         output_dir: Path of the directory to copy the files to.
     """
-    glob_str_md = os.path.join(input_dir, '**', '*.md')
-    glob_str_png = os.path.join(input_dir, '**', '*.png')
-    input_files_md = glob.glob(glob_str_md, recursive=True)
-    input_files_png = glob.glob(glob_str_png, recursive=True)
-    input_files = input_files_md + input_files_png
+    glob_str = os.path.join(input_dir, '**', '*.*[!.in]')
+    input_files = glob.glob(glob_str, recursive=True)
     for input_file in input_files:
         relpath = os.path.relpath(input_file, input_dir)
         output_file = os.path.join(output_dir, relpath)
         copyonly(input_file, output_file)
 
 
-def convert_hugo(input_dir: str, output_dir: str) -> None:
+def _convert_helper(input_dir: str, output_dir: str, md_converter: str, md_fname_converter: Callable[[str], str]) -> None:
     """
-    TODO
+    Helper function to copy plain GLFM file tree to converted file tree.
 
     Args:
         input_dir: Path of the directory containing the GLFM tree.
         output_dir: Path of the directory to copy the converted files to.
+        md_converter: CLI argument for the converter of convert_markdown.
+        md_fname_converter: String-modifying function to adjust output file name for .md files.
     """
     for root_path, _dir_names, file_names in os.walk(input_dir):
         for file_name in file_names:
             input_file = os.path.join(root_path, file_name)
             relpath = os.path.relpath(input_file, input_dir)
             output_file = os.path.join(output_dir, relpath)
-            if file_name.endswith('.png'):
-                copyonly(input_file, output_file)
-            elif file_name.endswith('.md'):
+            if file_name.endswith('.md'):
+                output_file = md_fname_converter(output_file)
                 _create_base_folder(output_file)
-                convert_markdown.main(args=['hugo', input_file, output_file])
+                convert_markdown.main(args=[md_converter, input_file, output_file])
+            else:
+                copyonly(input_file, output_file)
+
+
+def convert_hugo(input_dir: str, output_dir: str) -> None:
+    """
+    Copy plain GLFM file tree to hugo-adjusted file tree.
+
+    Args:
+        input_dir: Path of the directory containing the GLFM tree.
+        output_dir: Path of the directory to copy the converted files to.
+    """
+    _convert_helper(input_dir, output_dir, 'hugo', lambda fname: fname)
 
 
 def convert_latex(input_dir: str, output_dir: str) -> None:
     """
-    TODO
+    Copy plain GLFM file tree to LaTeX file tree.
 
     Args:
         input_dir: Path of the directory containing the GLFM tree.
         output_dir: Path of the directory to copy the converted files to.
     """
-    # FIXME: almost identical w/ convert_hugo, adjust function
-    for root_path, _dir_names, file_names in os.walk(input_dir):
-        for file_name in file_names:
-            input_file = os.path.join(root_path, file_name)
-            relpath = os.path.relpath(input_file, input_dir)
-            output_file = os.path.join(output_dir, relpath)
-            if file_name.endswith('.png'):
-                copyonly(input_file, output_file)
-            elif file_name.endswith('.md'):
-                output_file = output_file[:-3] + '.tex'
-                _create_base_folder(output_file)
-                convert_markdown.main(args=['latex', input_file, output_file])
+    _convert_helper(input_dir, output_dir, 'latex', lambda fname: fname[:-3]+'.tex')
 
 
 def create_latex_input(input_dir: str, output_file: str) -> None:
@@ -191,7 +192,7 @@ def main(args: list[str] = None) -> None:
         'copyonly': copyonly,
         'copylower': copylower,
         'glob_readme': glob_readme,
-        'glob_md_png': glob_md_png,
+        'glob_dir': glob_dir,
         'convert_hugo': convert_hugo,
         'convert_latex': convert_latex,
         'create_latex_input': create_latex_input,

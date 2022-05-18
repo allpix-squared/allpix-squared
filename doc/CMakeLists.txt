@@ -33,7 +33,7 @@ ADD_CUSTOM_TARGET(
     COMMAND
         ${CMAKE_COMMAND} -E rm -rf ${DOCS_MARKDOWN_BINARY_DIR}
     COMMAND
-        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_md_png"
+        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_dir"
         "${CMAKE_CURRENT_SOURCE_DIR}/usermanual" "${DOCS_MARKDOWN_BINARY_DIR}"
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_readme"
