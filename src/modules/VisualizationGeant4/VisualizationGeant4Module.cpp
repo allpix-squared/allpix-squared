@@ -46,6 +46,9 @@ using namespace allpix;
 
 VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), has_run_(false), session_param_ptr_(nullptr) {
+    // Interpret transparency parameter as opacity for backwards-compatibility
+    config_.setAlias("opacity", "transparency", 1);
+
     // Set default mode and driver for display
     config_.setDefault("mode", "gui");
     config_.setDefault("driver", "OGL");
@@ -300,11 +303,11 @@ void VisualizationGeant4Module::set_visualization_settings() {
  * - Sensor: Blackish
  */
 void VisualizationGeant4Module::set_visualization_attributes() {
-    // To add some transparency in the solids, set to 0.4. 0 means opaque.
-    // Transparency can be switched off in the visualisation.
-    auto alpha = 1 - config_.get<double>("transparency", 0.4);
+    // To add some opacity in the solids, set to 0.4. 1 means fully opaque.
+    // Opacity can be switched off in the visualisation.
+    auto alpha = config_.get<double>("opacity", 0.4);
     if(alpha <= 0 || alpha > 1) {
-        throw InvalidValueError(config_, "transparency", "transparency level should be between 0 and 1");
+        throw InvalidValueError(config_, "opacity", "opacity level should be between 0 and 1");
     }
 
     // Wrapper
