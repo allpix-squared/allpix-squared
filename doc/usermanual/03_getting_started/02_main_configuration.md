@@ -34,7 +34,7 @@ the module determines how the module is instantiated:
 
 - If the module is **detector**-specific, it is instantiated once for every detector it is configured to run on. By
   default, an instantiation is created for all detectors defined in the detector configuration file
-  ((see [Section 3.3](./03_detector_configuration.md), lowest priority) unless one or both of the following parameters are
+  (see [Section 3.3](./03_detector_configuration.md), lowest priority) unless one or both of the following parameters are
   specified:
 
   - `name`:
