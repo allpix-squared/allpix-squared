@@ -72,7 +72,6 @@ namespace allpix {
         // General module members
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
-        std::shared_ptr<DepositedChargeMessage> deposits_message_;
 
         /**
          * @brief Propagate a single set of charges through the sensor
