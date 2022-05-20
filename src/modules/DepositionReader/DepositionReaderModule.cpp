@@ -252,6 +252,12 @@ void DepositionReaderModule::run(Event* event) {
             break;
         }
 
+        // Trim detector name if requested:
+        if(volume_chars_ != 0) {
+            volume = volume.substr(0, std::min(volume_chars_, volume.size()));
+            LOG(TRACE) << "Truncated detector name: " << volume;
+        }
+
         auto detectors = geo_manager_->getDetectors();
         auto pos = std::find_if(detectors.begin(), detectors.end(), [volume](const std::shared_ptr<Detector>& d) {
             return d->getName() == volume;
@@ -458,11 +464,7 @@ bool DepositionReaderModule::read_root(uint64_t event_num,
     }
 
     // Read detector name
-    // NOTE volume_->GetSize() is the full length, we might want to cut only part of the name
-    // NOTE the string is a C string ending with \0, so we have to remove the last character
-    auto full_length = volume_->GetSize() - 1;
-    auto length = (volume_chars_ != 0 ? std::min(volume_chars_, full_length) : full_length);
-    volume = std::string(static_cast<char*>(volume_->GetAddress()), length);
+    volume = std::string(static_cast<char*>(volume_->GetAddress()));
 
     // Read other information, interpret in framework units:
     position = ROOT::Math::XYZPoint(
@@ -548,12 +550,6 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
         std::istringstream(tmp) >> track_id;
         std::getline(ls, tmp, ',');
         std::istringstream(tmp) >> parent_id;
-    }
-
-    // Select the detector name from this:
-    if(volume_chars_ != 0) {
-        volume = volume.substr(0, std::min(volume_chars_, volume.size()));
-        LOG(TRACE) << "Truncated detector name: " << volume;
     }
 
     // Calculate the charge deposit at a global position and convert the proper units
