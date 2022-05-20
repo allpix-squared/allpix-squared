@@ -50,8 +50,7 @@ double HexagonalPixelDetectorModel::get_pixel_center_y(const int x, const int y)
 }
 
 ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, const int y) const {
-    auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
-    return {get_pixel_center_x(x, y), get_pixel_center_y(x, y), local_z};
+    return {get_pixel_center_x(x, y), get_pixel_center_y(x, y), 0};
 }
 
 std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
