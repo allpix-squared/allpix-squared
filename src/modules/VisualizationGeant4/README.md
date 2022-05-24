@@ -59,5 +59,7 @@ accumulate = 0
 accumulate_time_step = 2s
 ```
 
+To view event number N of a simulation, use a fixed random seed and `number_of_events = 1` and `skip_events = N-1` under the `[Allpix]` header. Note that executing `/run/beamOn 1` in the Qt visualization window or Geant4 terminal does **not** show the next event of the Allpix Squared simulation, but rather a random event.
+
 [@g4drivers]: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/Visualization/visdrivers.html
 [@g4particles]: https://geant4-userdoc.web.cern.ch/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/particle.html
