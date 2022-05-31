@@ -138,8 +138,8 @@ bool Detector::hasElectricField() const {
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
-ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& pos) const {
-    return electric_field_.get(pos);
+ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& local_pos) const {
+    return electric_field_.get(local_pos);
 }
 
 /**
@@ -225,7 +225,7 @@ void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
 /**
  * The magnetic field is evaluated for any sensor position.
  */
-ROOT::Math::XYZVector Detector::getMagneticField() const {
+ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint&) const {
     return magnetic_field_;
 }
 

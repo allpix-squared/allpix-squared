@@ -125,7 +125,6 @@ namespace allpix {
 
         // Magnetic field
         bool has_magnetic_field_;
-        ROOT::Math::XYZVector magnetic_field_;
 
         // Statistical information
         std::atomic<unsigned int> total_propagated_charges_{};

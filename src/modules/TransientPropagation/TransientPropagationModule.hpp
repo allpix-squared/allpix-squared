@@ -113,7 +113,6 @@ namespace allpix {
 
         // Magnetic field
         bool has_magnetic_field_{};
-        ROOT::Math::XYZVector magnetic_field_;
 
         // Output plots
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;

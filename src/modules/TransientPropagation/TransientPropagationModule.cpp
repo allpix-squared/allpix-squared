@@ -102,7 +102,6 @@ void TransientPropagationModule::initialize() {
             LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
         } else {
             LOG(DEBUG) << "This detector sees a magnetic field.";
-            magnetic_field_ = detector_->getMagneticField();
         }
     }
 
@@ -287,7 +286,8 @@ TransientPropagationModule::propagate(Event* event,
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         Eigen::Vector3d velocity;
-        Eigen::Vector3d bfield(magnetic_field_.x(), magnetic_field_.y(), magnetic_field_.z());
+        auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
+        Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 

@@ -114,7 +114,7 @@ namespace allpix {
         FieldType getElectricFieldType() const;
         /**
          * @brief Get the electric field in the sensor at a local position
-         * @param pos Position in the local frame
+         * @param local_pos Position in the local frame
          * @return Vector of the field at the queried point
          */
         ROOT::Math::XYZVector getElectricField(const ROOT::Math::XYZPoint& local_pos) const;
@@ -240,10 +240,10 @@ namespace allpix {
         bool hasMagneticField() const;
         /**
          * @brief Get the magnetic field in the sensor at a local position
-         * @param pos Position in the local frame
+         * @param local_pos Position in the local frame
          * @return Vector of the field at the queried point
          */
-        ROOT::Math::XYZVector getMagneticField() const;
+        ROOT::Math::XYZVector getMagneticField(const ROOT::Math::XYZPoint& local_pos) const;
 
         /**
          * @brief Get the model of this detector
