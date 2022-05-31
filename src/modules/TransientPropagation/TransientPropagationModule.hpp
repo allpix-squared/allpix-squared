@@ -97,6 +97,7 @@ namespace allpix {
         bool output_plots_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
+        unsigned int max_charge_bunches_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
@@ -116,7 +117,7 @@ namespace allpix {
 
         // Output plots
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;
-        Histogram<TH1D> step_length_histo_;
+        Histogram<TH1D> step_length_histo_, charge_bunch_size_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
         Histogram<TH1D> trapped_histo_;
