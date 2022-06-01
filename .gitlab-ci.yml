@@ -433,7 +433,7 @@ perf:cc7-gcc:
     tags:
         - docker
     before_script:
-        - mkdir -p public/usermanual
+        - mkdir -p public
         - mkdir build && cd build
     artifacts:
         paths:
@@ -446,27 +446,30 @@ cmp:doxygen:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - source ../.ci/init_x86_64.sh
-        - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make Allpix-reference 1> /dev/null
-        - mv reference/html ../public/reference
+        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
+        - ninja apsq_docs_reference
+        - mv doc/reference/html ../public/reference
+
+# Create file tree for hugo
+cmp:usermanual-hugo:
+    extends: .doc
+    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    script:
+        - source ../.ci/init_x86_64.sh
+        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
+        - ninja apsq_docs_hugo
+        - mv doc/usermanual_hugo ../public/usermanual_hugo
 
 # Compile LaTeX user manual:
-cmp:usermanual:
+cmp:usermanual-pdf:
     extends: .doc
-    image: gitlab-registry.cern.ch/clicdp/publications/templates/custom_ci_worker:fedora-latex-latest
+    image: thomasweise/docker-texlive-full:latest
     script:
-        - cmake -DBUILD_DOCS_ONLY=ON ..
-        - make pdf
-        - make html
-        - mv usermanual/*.html ../public/usermanual
-        - mv usermanual/*.css ../public/usermanual
-        - mv usermanual/logo.png ../public/usermanual
-        - mv usermanual/allpix-manual.pdf ../public/usermanual
-        - mkdir -p ../public/usermanual/usermanual/
-        - mkdir -p ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/html/css ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/html/js ../public/usermanual/usermanual/html/
-        - mv usermanual/usermanual/figures ../public/usermanual/usermanual/
+        - apt update && apt install -y cmake ninja-build python3-yaml pandoc
+        - pandoc --version
+        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
+        - ninja apsq_docs_pdf
+        - mv doc/usermanual_pdf/allpix-manual.pdf ../public/usermanual_pdf
 
 
 ################################
@@ -543,7 +546,8 @@ deploy-documentation:
     only:
         - tags@allpix-squared/allpix-squared
     dependencies:
-        - cmp:usermanual
+        - cmp:usermanual-hugo
+        - cmp:usermanual-pdf
         - cmp:doxygen
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest

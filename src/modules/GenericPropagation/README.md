@@ -1,15 +1,15 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "GenericPropagation"
+description: "Propagates deposited charges via piecewise integration of motion"
+module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_input: "DepositedCharge"
+module_output: "PropagatedCharge"
+---
 
-# GenericPropagation
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional  
-**Input**: DepositedCharge  
-**Output**: PropagatedCharge
-
-### Description
+## Description
 Simulates the propagation of electrons and/or holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
@@ -17,7 +17,7 @@ The propagation consists of a combination of drift and diffusion simulation. The
 The two parameters `propagate_electrons` and `propagate_holes` allow to control which type of charge carrier is propagated to their respective electrodes. Either one of the carrier types can be selected, or both can be propagated. It should be noted that this will slow down the simulation considerably since twice as many carriers have to be handled and it should only be used where sensible.
 The direction of the propagation depends on the electric and magnetic fields field configured, and it should be ensured that the carrier types selected are actually transported to the implant side. For linear electric fields, a warning is issued if a possible misconfiguration is detected.
 
-A fourth-order Runge-Kutta-Fehlberg method [@fehlberg] with fifth-order error estimation is used to integrate the particle propagation in the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
+A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] with fifth-order error estimation is used to integrate the particle propagation in the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
 $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
@@ -38,11 +38,11 @@ The propagation module also produces a variety of output plots. These include a 
 In addition, a 3D GIF animation for the drift of all individual sets of charges (with the size of the point proportional to the number of charges in the set) can be produced. Finally, the module produces 2D contour animations in all the planes normal to the X, Y and Z axis, showing the concentration flow in the sensor.
 It should be noted that generating the animations is very time-consuming and should be switched off even when investigating drift behavior.
 
-### Dependencies
+## Dependencies
 
 This module requires an installation of Eigen3.
 
-### Parameters
+## Parameters
 * `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
@@ -58,7 +58,7 @@ This module requires an installation of Eigen3.
 * `propagate_holes` :  Select whether hole-type charge carriers should be propagated to the electrodes. Defaults to false.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 
-### Plotting parameters
+## Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_linegraphs` : Determines if line graphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_linegraphs_collected` : Determine whether to also generate line graphs *only* for charge carriers that have reached the implant side within the allotted integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
@@ -76,7 +76,7 @@ This module requires an installation of Eigen3.
 * `output_animations_contour_max_scaling` : Scaling to use for the contour color axis from the theoretical maximum charge at every single plot step. Default is 10, meaning that the maximum of the color scale axis is equal to the total amount of charges divided by ten (values above this are displayed in the same maximum color). Parameter can be used to improve the color scale of the contour plots.
 * `output_animations_color_markers`: Determines if colors should be for the markers in the animations, defaults to false.
 
-### Usage
+## Usage
 A example of generic propagation for all sensors of type _Timepix_ at room temperature using packets of 25 charges is the following:
 
 ```toml
@@ -87,6 +87,3 @@ charge_per_step = 25
 ```
 
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
-[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
-[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
-[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4

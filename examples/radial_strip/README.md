@@ -1,4 +1,9 @@
-# Radial Strip
+---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Radial Strip"
+description: "Simulation of a radial strip detector"
+---
 
 This example simulates a radial strip detector, which features a trapezoidal shape and strips fanning out radially from a common focal point. 
 Such detectors are planned to be deployed in the end-cap regions of the ATLAS Inner Tracker (ITk). 

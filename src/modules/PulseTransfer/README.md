@@ -1,15 +1,15 @@
-<!--
-SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "PulseTransfer"
+description: "Transfer of pulse information to the electronics"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_input: "PropagatedCharge"
+module_output: "PixelCharge"
+---
 
-# PulseTransfer
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Functional  
-**Input**: PropagatedCharge  
-**Output**: PixelCharge
-
-### Description
+## Description
 This module combines propagated charges into pulses at individual pixel implants.
 It works in two different modes.
 
@@ -26,7 +26,7 @@ Pulse graph for every pixel seeing a signal is generated if `output_pulsegraphs`
 A third graph provides the absolute induced charge per time, disregarding the polarity of the respective signal.
 It should be noted that generating per-pixel pulses will generate several pulse graphs per event and might result in a slow-down of the simulation process as well as a large module root file.
 
-### Parameters
+## Parameters
 * `output_plots` : Determines if simple output plots such as the total and per-pixel induced charge should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output histograms, defaults to 30ke.
 * `output_plots_bins` : Set the number of bins for the output histograms, defaults to 100.
@@ -35,7 +35,7 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 * `max_depth_distance` : Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Only used if no pulse information is available for the propagated charge object. Defaults to `5um`.
 * `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Only used if no pulse information is available for the propagated charge object. Should only be used with non-linear electric fields and defaults to `false`.
 
-### Usage
+## Usage
 The default configuration is equal to the following:
 
 ```toml

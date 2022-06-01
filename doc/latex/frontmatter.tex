@@ -1,0 +1,31 @@
+% License
+% FIXME: add this to usermanual (scope_manual ?)
+\newcommand{\addlicense}{
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}% Spread rows out...
+\begin{tabular}{>{\centering\arraybackslash}m{.10\textwidth}>{\raggedright\arraybackslash}m{.90\textwidth}}
+ \Large{\ccby} & \footnotesize{This manual is licensed under the Creative Commons Attribution 4.0 International License.
+ \newline To view a copy of this license, visit \url{http://creativecommons.org/licenses/by/4.0/}.} \\
+\end{tabular}
+\end{table}
+}
+
+% PDF options
+\hypersetup{
+  pdftitle={Allpix Squared User Manual}
+}
+
+% Bibliography
+\addbibresource{@DOCS_REFERENCES_BIB@}
+
+% Title page
+\titlehead{\centering\includegraphics[width=7cm]{@DOCS_ALLPIX_LOGO@}}
+\title{\textbf{Allpix Squared} User Manual}
+\author{
+  Paul Schütze (\href{mailto:paul.schuetze@desy.de}{paul.schuetze@desy.de})\\
+  Simon Spannagel (\href{mailto:simon.spannagel@cern.ch}{simon.spannagel@cern.ch})\\
+  Koen Wolters (\href{mailto:koen.wolters@cern.ch}{koen.wolters@cern.ch})\\
+  Stephan Lachnit (\href{mailto:stephan.lachnit@cern.ch}{stephan.lachnit@cern.ch})
+}
+\date{\DTMdate{@BUILD_DATE@}\\ \vspace{10pt} Version \lstinline!@ALLPIX_VERSION@!}

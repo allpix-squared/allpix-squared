@@ -215,7 +215,7 @@ FUNCTION(add_allpix_test)
     ELSEIF(listcount_desc GREATER 1)
         MESSAGE(FATAL_ERROR "More than one DESC expressions defined in test ${TEST_NAME}")
     ELSE()
-        STRING(REPLACE "#DESC " "\\item[\\file{${TEST_NAME}}] " DESC "${DESC}")
+        STRING(REPLACE "#DESC " "\n- `${TEST_NAME}`:\n  " DESC "${DESC}")
         LIST(APPEND TEST_DESCRIPTIONS ${DESC})
     ENDIF()
     SET(TEST_DESCRIPTIONS

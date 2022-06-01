@@ -1,15 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# Mesh Converter
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Mesh Converter"
+---
 
 This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster field value lookup as reuqired by Monte Carlo simulations tools such as Allpix Squared.
 The input consists of two files, one containing the vertex coordinates of each input mesh node, the other providing the relevant field values associated to each of these vertices.
 One output file containing the regular interpolated mesh is produced.
 
-A new regular mesh is created by scanning the model volume in regular X Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation [@octree].
+A new regular mesh is created by scanning the model volume in regular X, Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation \[[@octree]\].
 
 ## File Formats
 
@@ -28,7 +27,7 @@ The **APF** (Allpix Squared Field) data format contains the field data in binary
 The **INIT** file is an ASCII text file with a format used by other tools such as PixelAV.
 Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<...>` while other fields are not interpreted and can be left untouched:
 
-```bash
+```
 <first line: some descriptive text to identify the field or field source>
 ##SEED##  ##EVENTS##
 ##TURN## ##TILT## 1.0
@@ -39,13 +38,13 @@ Its header therefore contains several fields which are not used by Allpix Square
 
 After the header part, the data follows as list of individual nodes with three indices for `x`, `y`, and `z` coordinates at the beginning and the scalar or vector field components afterwards. For a vector field, this looks like:
 
-```bash
+```
 <node.x> <node.y> <node.z> <observable.x> <observable.y> <observable.z>
 ```
 
 whereas for a scalar field such as a weighting potential, only one field component is present:
 
-```bash
+```
 <node.x> <node.y> <node.z> <observable>
 ```
 
@@ -55,11 +54,11 @@ whereas for a scalar field such as a weighting potential, only one field compone
 When compiling the Allpix Squared framework, the Mesh Converter is automatically compiled and installed in the Allpix Squared installation directory.
 
 It is also possible to compile the converter separately as stand-alone tool within this directory:
-```bash
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
+```sh
+mkdir build
+cd build
+cmake ..
+make
 ```
 
 It should be noted that the Mesh Converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus, it is discouraged to move the converter code outside the repository as this directory would have to be copied and included in the code as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
@@ -91,7 +90,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
-```bash
+```sh
 mesh_converter -f <file_prefix> [<options>] [<arguments>]
 ```
 The converter will look for a configuration file with `<file_prefix>` and `.conf` extension. This default configuration file name can be replaced with the `-c` option.
@@ -115,10 +114,10 @@ The program can be used to convert 3D and 2D TCAD mesh files. Note that when con
 The keyword mesh_tree can be used as a switch to enable or disable the creation of a root file with the original TCAD mesh points stored as a `ROOT::TTree` for later, fast, inspection.
 
 
-# Mesh Plotter
+## Mesh Plotter
 
 In addition to the Mesh Converter, the `mesh_plotter` tool can be used to visualize the new mesh interpolation results, from the installation folder as follows:
-```bash
+```sh
 mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
 The following command-line options are supported:
@@ -140,10 +139,5 @@ Using the option `-s` enables the interpretation of a scalar field.
 The units for the field to interpreted in can be defined via the option `-u`.
 The number of mesh divisions in each dimension is automatically read from the `init`/`apf` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
 
-# Octree
-J. Behley, V. Steinhage, A.B. Cremers. *Efficient Radius Neighbor Search in Three-dimensional Point Clouds*, Proc. of the IEEE International Conference on Robotics and Automation (ICRA), 2015 [@octree].
-
-Copyright 2015 Jens Behley, University of Bonn.
-This project is free software made available under the MIT License. For details see the LICENSE.md file.
 
 [@octree]: http://jbehley.github.io/papers/behley2015icra.pdf

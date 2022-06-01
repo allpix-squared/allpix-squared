@@ -1,9 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# Am241 Source Measurement with a Paper Collimator over a Diode
+---
+# SPDX-FileCopyrightText: 2019-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Simple Diode"
+description: "Am241 source measurement with a paper collimator over a diode"
+---
 
 This example simulates an Am241 alpha source using a native Geant4 GPS macro. The source is defined as a disk from which mono-energetic 5.4 MeV alphas are emitted. This approximates the Am241 alpha spectrum. The source emits the alpha particles isotropically.
 

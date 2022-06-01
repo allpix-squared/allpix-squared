@@ -24,6 +24,10 @@
 .*
 \#*
 
+# Some exceptions for the doc folder
+!/doc/**/*.png
+!/doc/**/.gitignore
+
 # ignore python byte code
 *.pyc
 
@@ -39,4 +43,4 @@
 /cmake/AllpixConfig*.cmake
 
 # Ignore files created from unit tests
-/etc/unittests/output/ 
+/etc/unittests/output/
