@@ -43,7 +43,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
-    config_.setDefault<unsigned int>("max_charge_bunches", 10000);
+    config_.setDefault<unsigned int>("max_charge_groups", 0);
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
@@ -61,7 +61,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     integration_time_ = config_.get<double>("integration_time");
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
-    max_charge_bunches_ = config_.get<unsigned int>("max_charge_bunches");
+    max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
 
     output_plots_ = config_.get<bool>("output_plots");
     boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
@@ -138,11 +138,11 @@ void TransientPropagationModule::initialize() {
                                   100,
                                   0,
                                   static_cast<double>(Units::convert(0.25 * model_->getSensorSize().z(), "um")));
-        charge_bunch_size_histo_ = CreateHistogram<TH1D>("charge_bunch_size_histo",
-                                                         "Charge bunch size;size [charges];Number of charge bunches",
-                                                         static_cast<int>(100 * charge_per_step_),
-                                                         0,
-                                                         static_cast<int>(100 * charge_per_step_));
+        group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
+                                                  "Group size;size [charges];Number of groups",
+                                                  static_cast<int>(100 * charge_per_step_),
+                                                  0,
+                                                  static_cast<int>(100 * charge_per_step_));
 
         drift_time_histo_ = CreateHistogram<TH1D>("drift_time_histo",
                                                   "Drift time;Drift time [ns];charge carriers",
@@ -182,6 +182,8 @@ void TransientPropagationModule::run(Event* event) {
             continue;
         }
 
+        total_deposits_++;
+
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
@@ -189,10 +191,11 @@ void TransientPropagationModule::run(Event* event) {
                    << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = charge_per_step_;
-        if(deposit.getCharge() / charge_per_step > max_charge_bunches_) {
-            charge_per_step = deposit.getCharge() / max_charge_bunches_;
+        if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
+            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
+            deposits_exceeding_max_groups_++;
             LOG(INFO) << "Deposited charge: " << deposit.getCharge()
-                      << ", which exceeds the maximum number of charge bunches allowed. Increasing charge_per_step to "
+                      << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
                       << charge_per_step << " for this deposit.";
         }
         while(charges_remaining > 0) {
@@ -235,7 +238,7 @@ void TransientPropagationModule::run(Event* event) {
 
             if(output_plots_) {
                 drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
-                charge_bunch_size_histo_->Fill(charge_per_step);
+                group_size_histo_->Fill(charge_per_step);
             }
         }
     }
@@ -437,12 +440,14 @@ TransientPropagationModule::propagate(Event* event,
 }
 
 void TransientPropagationModule::finalize() {
+    LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
+              << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
     if(output_plots_) {
-        charge_bunch_size_histo_->Get()->GetXaxis()->SetRange(1, charge_bunch_size_histo_->Get()->GetNbinsX() + 1);
+        group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
 
         potential_difference_->Write();
         step_length_histo_->Write();
-        charge_bunch_size_histo_->Write();
+        group_size_histo_->Write();
         drift_time_histo_->Write();
         recombine_histo_->Write();
         trapped_histo_->Write();
