@@ -22,8 +22,8 @@ configuration with some useful parameters is given below:
 # Use the Qt gui
 mode = "gui"
 
-# Set transparency of the detector models (in percent)
-transparency = 0.4
+# Set opacity of the detector models (in percent)
+opacity = 0.4
 # Set viewing style (alternative is 'wireframe')
 view_style = "surface"
 
