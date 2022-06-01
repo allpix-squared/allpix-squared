@@ -216,6 +216,37 @@ the following:
   A 2D offset of the grid of bumps. The individual bumps are by default positioned at the center of each single pixel in
   the grid.
 
+
+### Hexagonal Pixels
+
+Hexagonal pixel grids in Allpix Squared use an axial coordinate system to describe the relative positions and indices of
+hexagons on the grid, following largely the definitions provided in \[[@hexagon]\]. Similar to the Cartesian coordinate
+system used for regular pixel layouts, the origin is the lower-left corner of the sensor, with the hexagon indices $`(0,0)`$.
+Owing to the orientation of the grid axes, negative can occur in the top-left region of the sensor.
+
+Two orientations of hexagons are supported, subsequently referred to as *pointy* with sides parallel to the $`y`$ axis of the
+Cartesian coordinate system and corners at the top and bottom, and *flat* with sides parallel to the Cartesian $`x`$ axis and
+corners to the left and right. The pitches $`p_x`$ and $`p_y`$ of the hexagon align with the axial coordinate system and are
+rotated differently with respect to the Cartesian system between the two variants. The orientation of the pitches as well as
+the resulting corner positions in Cartesian coordinates are shown in the figure below:
+
+![](./hexagon_orientations.png)\
+*Definition of the pitches $`p_x`$ and $`p_y`$, and corner positions for the pointy (left) and flat (right) hexagon
+orientation in Cartesian coordinates. The pitches align with the axes of the axial coordinate system of the hexagonal grid.*
+
+The additional parameters for the **hexagonal** model are as follows:
+
+- `pixel_type`:
+   The shape/orientation of the hexagonal pixels within the grid, either `hexagon_pointy` or `hexagon_flat`.
+
+The number of pixels in a hexagonal grid are counted along the Cartesian axes, taking the offset pixels into account.
+For example, an 8-by-4 grid comprises 32 pixels both for *pointy* and *flat* hexagon orientation, but results in different
+overall grid dimensions as demonstrated below:
+
+![]()\
+*Grid layouts for pointy (left) and flat (right) hexagons with a size of 8-by-4 pixels.*
+
+
 ### Support Layers
 
 In addition to the active layer, multiple layers of support material can be added to the detector description. It is possible
@@ -313,3 +344,4 @@ following order:
 
 
 [@eulerangles]: https://mathworld.wolfram.com/EulerAngles.html
+[@hexagons]: https://www.redblobgames.com/grids/hexagons/
