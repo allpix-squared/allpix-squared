@@ -220,7 +220,7 @@ the following:
 ### Hexagonal Pixels
 
 Hexagonal pixel grids in Allpix Squared use an axial coordinate system to describe the relative positions and indices of
-hexagons on the grid, following largely the definitions provided in \[[@hexagon]\]. Similar to the Cartesian coordinate
+hexagons on the grid, following largely the definitions provided in \[[@hexagons]\]. Similar to the Cartesian coordinate
 system used for regular pixel layouts, the origin is the lower-left corner of the sensor, with the hexagon indices $`(0,0)`$.
 Owing to the orientation of the grid axes, negative can occur in the top-left region of the sensor.
 
@@ -243,7 +243,7 @@ The number of pixels in a hexagonal grid are counted along the Cartesian axes, t
 For example, an 8-by-4 grid comprises 32 pixels both for *pointy* and *flat* hexagon orientation, but results in different
 overall grid dimensions as demonstrated below:
 
-![]()\
+![](./hexagon_grids.png)\
 *Grid layouts for pointy (left) and flat (right) hexagons with a size of 8-by-4 pixels.*
 
 
