@@ -441,7 +441,7 @@ perf:cc7-gcc:
         expire_in: 24 hour
 
 # Compile Doxygen reference
-cmp:doxygen:
+docs:doxygen:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
@@ -451,7 +451,7 @@ cmp:doxygen:
         - mv doc/reference/html ../public/reference
 
 # Create file tree for hugo
-cmp:usermanual-hugo:
+docs:usermanual-hugo:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
@@ -461,7 +461,7 @@ cmp:usermanual-hugo:
         - mv doc/usermanual_hugo ../public/usermanual_hugo
 
 # Compile LaTeX user manual:
-cmp:usermanual-pdf:
+docs:usermanual-pdf:
     extends: .doc
     image: thomasweise/docker-texlive-full:latest
     script:
@@ -536,7 +536,7 @@ pkg:macos-clang:
 
 # Automatically deploy documentation to the website
 # Deployment job only executed for new tag pushs, not for every commit.
-deploy-documentation:
+deploy:documentation:
     stage: deployment
     tags:
       - docker
@@ -557,7 +557,7 @@ deploy-documentation:
     before_script: []
     after_script: []
 
-deploy-eos:
+deploy:eos:
     stage: deployment
     tags:
       - docker
@@ -580,7 +580,7 @@ deploy-eos:
     before_script: []
     after_script: []
 
-deploy-cvmfs:
+deploy:cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
@@ -611,7 +611,7 @@ deploy-cvmfs:
         - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/$DOCKER_FILE --destination $IMAGE_DESTINATION --build-arg ALLPIX_BUILD_ENV="$ALLPIX_BUILD_ENV"
         - echo "Image pushed successfully to ${IMAGE_DESTINATION}"
 
-deploy-docker-latest:
+deploy:docker-latest:
     extends: .deploy-docker
     variables:
         IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:latest
@@ -619,7 +619,7 @@ deploy-docker-latest:
     only:
         - schedules@allpix-squared/allpix-squared
 
-deploy-docker-tag:
+deploy:docker-tag:
     extends: .deploy-docker
     variables:
         IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
