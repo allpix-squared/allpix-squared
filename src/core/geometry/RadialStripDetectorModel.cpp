@@ -16,11 +16,13 @@
 
 using namespace allpix;
 
-RadialStripDetectorModel::RadialStripDetectorModel(std::string type, std::shared_ptr<Chip> chip, const ConfigReader& reader)
-    : DetectorModel(std::move(type), chip, reader) {
+RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
+                                                   std::shared_ptr<DetectorAssembly> assembly,
+                                                   const ConfigReader& reader)
+    : DetectorModel(std::move(type), assembly, reader) {
     auto config = reader.getHeaderConfiguration();
 
-    if(std::dynamic_pointer_cast<MonolithicChip>(chip) == nullptr) {
+    if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {
         throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
     }
 

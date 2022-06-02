@@ -33,11 +33,11 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     }
     auto type = config.get<std::string>("type");
 
-    std::shared_ptr<Chip> chip;
+    std::shared_ptr<DetectorAssembly> assembly;
     if(type == "hybrid") {
-        chip = std::make_shared<HybridChip>(reader);
+        assembly = std::make_shared<HybridAssembly>(reader);
     } else if(type == "monolithic") {
-        chip = std::make_shared<MonolithicChip>(reader);
+        assembly = std::make_shared<MonolithicAssembly>(reader);
     } else {
         LOG(FATAL) << "Model file " << config.getFilePath() << " type parameter is not valid";
         throw InvalidValueError(config, "type", "model type is not supported");
@@ -45,9 +45,9 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
     // Instantiate the correct detector model
     if(geometry == "pixel") {
-        return std::make_shared<PixelDetectorModel>(name, chip, reader);
+        return std::make_shared<PixelDetectorModel>(name, assembly, reader);
     } else if(geometry == "radial_strip") {
-        return std::make_shared<RadialStripDetectorModel>(name, chip, reader);
+        return std::make_shared<RadialStripDetectorModel>(name, assembly, reader);
     }
 
     LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
@@ -55,8 +55,8 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     throw InvalidValueError(config, "geometry", "model geometry is not supported");
 }
 
-DetectorModel::DetectorModel(std::string type, std::shared_ptr<Chip> chip, ConfigReader reader)
-    : type_(std::move(type)), chip_(chip), reader_(std::move(reader)) {
+DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader)
+    : type_(std::move(type)), assembly_(assembly), reader_(std::move(reader)) {
     using namespace ROOT::Math;
     auto config = reader_.getHeaderConfiguration();
 
@@ -181,11 +181,11 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
               (getMatrixCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
 
     // FIXME need a better solution than this!
-    auto chip = std::dynamic_pointer_cast<HybridChip>(getChip());
-    if(chip != nullptr) {
-        auto bump_grid =
-            getSensorSize() +
-            2 * ROOT::Math::XYZVector(std::fabs(chip->getBumpsOffset().x()), std::fabs(chip->getBumpsOffset().y()), 0);
+    auto assembly = std::dynamic_pointer_cast<HybridAssembly>(getAssembly());
+    if(assembly != nullptr) {
+        auto bump_grid = getSensorSize() + 2 * ROOT::Math::XYZVector(std::fabs(assembly->getBumpsOffset().x()),
+                                                                     std::fabs(assembly->getBumpsOffset().y()),
+                                                                     0);
 
         // Extend size unless it's already large enough to cover shifted bump bond grid:
         return ROOT::Math::XYZVector(
@@ -198,7 +198,7 @@ std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const
     auto ret_layers = support_layers_;
 
     auto sensor_offset = -getSensorSize().z() / 2.0;
-    auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + chip_->getOffset().z();
+    auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + assembly_->getOffset().z();
     for(auto& layer : ret_layers) {
         ROOT::Math::XYZVector offset = layer.offset_;
         if(layer.location_ == "sensor") {

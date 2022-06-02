@@ -358,7 +358,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         geo_manager_->setExternalObject(name, "supports_phys", supports_phys);
 
         // Build the bump bonds only for hybrid pixel detectors
-        auto hybrid_chip = std::dynamic_pointer_cast<DetectorModel::HybridChip>(model->getChip());
+        auto hybrid_chip = std::dynamic_pointer_cast<DetectorModel::HybridAssembly>(model->getAssembly());
         if(hybrid_chip != nullptr) {
 
             /**

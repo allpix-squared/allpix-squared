@@ -73,16 +73,16 @@ namespace allpix {
          */
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
-        class Chip {
+        class DetectorAssembly {
         public:
-            Chip(const ConfigReader& reader) {
+            DetectorAssembly(const ConfigReader& reader) {
                 auto config = reader.getHeaderConfiguration();
 
                 // Chip thickness
-                thickness_ = config.get<double>("chip_thickness", 0);
+                thickness_ = config.get<double>("assembly_thickness", 0);
             }
-            Chip() = default;
-            virtual ~Chip() = default;
+            DetectorAssembly() = delete;
+            virtual ~DetectorAssembly() = default;
 
             /**
              * @brief Get the thickness of the chip
@@ -105,17 +105,17 @@ namespace allpix {
             double thickness_{};
         };
 
-        class HybridChip : public Chip {
+        class HybridAssembly : public DetectorAssembly {
         public:
-            HybridChip(const ConfigReader& reader) : Chip(reader) {
+            HybridAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
                 auto config = reader.getHeaderConfiguration();
 
                 // Excess around the chip from the pixel grid
-                auto default_chip_excess = config.get<double>("chip_excess", 0);
-                excess_.at(0) = config.get<double>("chip_excess_top", default_chip_excess);
-                excess_.at(1) = config.get<double>("chip_excess_right", default_chip_excess);
-                excess_.at(2) = config.get<double>("chip_excess_bottom", default_chip_excess);
-                excess_.at(3) = config.get<double>("chip_excess_left", default_chip_excess);
+                auto default_assembly_excess = config.get<double>("assembly_excess", 0);
+                excess_.at(0) = config.get<double>("assembly_excess_top", default_assembly_excess);
+                excess_.at(1) = config.get<double>("assembly_excess_right", default_assembly_excess);
+                excess_.at(2) = config.get<double>("assembly_excess_bottom", default_assembly_excess);
+                excess_.at(3) = config.get<double>("assembly_excess_left", default_assembly_excess);
 
                 // Set bump parameters
                 bump_cylinder_radius_ = config.get<double>("bump_cylinder_radius");
@@ -165,17 +165,17 @@ namespace allpix {
             double bump_cylinder_radius_{};
         };
 
-        class MonolithicChip : public Chip {
+        class MonolithicAssembly : public DetectorAssembly {
         public:
-            MonolithicChip(const ConfigReader& reader) : Chip(reader) {
+            MonolithicAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
                 auto config = reader.getHeaderConfiguration();
 
                 // Excess around the chip is copied from sensor size
-                auto default_chip_excess = config.get<double>("sensor_excess", 0);
-                excess_.at(0) = config.get<double>("sensor_excess_top", default_chip_excess);
-                excess_.at(1) = config.get<double>("sensor_excess_right", default_chip_excess);
-                excess_.at(2) = config.get<double>("sensor_excess_bottom", default_chip_excess);
-                excess_.at(3) = config.get<double>("sensor_excess_left", default_chip_excess);
+                auto default_assembly_excess = config.get<double>("sensor_excess", 0);
+                excess_.at(0) = config.get<double>("sensor_excess_top", default_assembly_excess);
+                excess_.at(1) = config.get<double>("sensor_excess_right", default_assembly_excess);
+                excess_.at(2) = config.get<double>("sensor_excess_bottom", default_assembly_excess);
+                excess_.at(3) = config.get<double>("sensor_excess_left", default_assembly_excess);
             }
 
         private:
@@ -272,7 +272,7 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit DetectorModel(std::string type, std::shared_ptr<Chip> chip, ConfigReader reader);
+        explicit DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader);
 
         /**
          * @brief Essential virtual destructor
@@ -302,7 +302,7 @@ namespace allpix {
          */
         std::string getType() const { return type_; }
 
-        const std::shared_ptr<Chip> getChip() const { return chip_; }
+        const std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
@@ -444,7 +444,8 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
-            ROOT::Math::XYZVector excess_thickness(chip_->getExcess().x(), chip_->getExcess().y(), chip_->getThickness());
+            ROOT::Math::XYZVector excess_thickness(
+                assembly_->getExcess().x(), assembly_->getExcess().y(), assembly_->getThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -454,9 +455,9 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset(chip_->getOffset().x() / 2.0,
-                                         chip_->getOffset().y() / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + chip_->getOffset().z());
+            ROOT::Math::XYZVector offset(assembly_->getOffset().x() / 2.0,
+                                         assembly_->getOffset().y() / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + assembly_->getOffset().z());
             return getMatrixCenter() + offset;
         }
 
@@ -605,7 +606,7 @@ namespace allpix {
         std::array<double, 4> sensor_excess_{};
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
-        std::shared_ptr<Chip> chip_;
+        std::shared_ptr<DetectorAssembly> assembly_;
         std::vector<SupportLayer> support_layers_;
 
     private:
