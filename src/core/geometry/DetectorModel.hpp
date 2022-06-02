@@ -67,8 +67,8 @@ namespace allpix {
 
         /**
          * @brief Helper method to determine if this detector model is of a given type
-         * The template parameter needs to be specified speicifcally, i.e.
-         *     if(model->is<HybridPixelDetectorModel>()) { }
+         * The template parameter needs to be specified specifcally, i.e.
+         *     if(model->is<PixelDetectorModel>()) { }
          * @return Boolean indication whether this model is of the given type or not
          */
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
@@ -141,11 +141,7 @@ namespace allpix {
              * The bump bonds are aligned with the grid with an optional XY-offset. The z-offset is calculated with the
              * sensor and chip offsets taken into account.
              */
-            virtual ROOT::Math::XYZPoint getBumpsCenter() const {
-                ROOT::Math::XYZVector offset(
-                    bump_offset_.x(), bump_offset_.y(), getSensorSize().z() / 2.0 + getBumpHeight() / 2.0);
-                return getMatrixCenter() + offset;
-            }
+            ROOT::Math::XYZVector getBumpsOffset() const { return {bump_offset_.x(), bump_offset_.y(), bump_height_ / 2.0}; }
             /**
              * @brief Get the radius of the sphere of every individual bump bond (union solid with cylinder)
              * @return Radius of bump bond sphere
@@ -190,8 +186,6 @@ namespace allpix {
          */
         class SupportLayer {
             friend class DetectorModel;
-            // FIXME Friending this class is broken
-            friend class HybridPixelDetectorModel;
 
         public:
             /**
@@ -307,6 +301,8 @@ namespace allpix {
          * @return Model type
          */
         std::string getType() const { return type_; }
+
+        const std::shared_ptr<Chip> getChip() const { return chip_; }
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame

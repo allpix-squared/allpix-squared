@@ -12,8 +12,7 @@
 #include "DetectorModel.hpp"
 #include "core/module/exceptions.h"
 
-#include "core/geometry/HybridPixelDetectorModel.hpp"
-#include "core/geometry/MonolithicPixelDetectorModel.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
 
 using namespace allpix;
@@ -180,6 +179,17 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     size.SetY(2 * std::max(max.y() - getMatrixCenter().y(), getMatrixCenter().y() - min.y()));
     size.SetZ((max.z() - getMatrixCenter().z()) +
               (getMatrixCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
+
+    auto chip = std::dynamic_pointer_cast<HybridChip>(getChip());
+    if(chip != nullptr) {
+        auto bump_grid =
+            getSensorSize() +
+            2 * ROOT::Math::XYZVector(std::fabs(chip->getBumpsOffset().x()), std::fabs(chip->getBumpsOffset().y()), 0);
+
+        // Extend size unless it's already large enough to cover shifted bump bond grid:
+        return ROOT::Math::XYZVector(
+            std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
+    }
     return size;
 }
 

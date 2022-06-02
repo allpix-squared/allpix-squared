@@ -22,7 +22,6 @@
 #include <TDirectory.h>
 #include <TMatrixD.h>
 
-#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
 #include "core/utils/unit.h"
@@ -51,13 +50,13 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
     add("chip", X0_SI, model.getChipSize().z());
 
     // compute contributions from bumps if available
-    const auto* hybrid = dynamic_cast<const HybridPixelDetectorModel*>(&model);
+    const auto* hybrid = dynamic_cast<const DetectorModel::HybridChip*>(model.getChip().get());
     if(hybrid != nullptr) {
         // average the bump material over the full pixel size.
         auto bump_radius = std::max(hybrid->getBumpSphereRadius(), hybrid->getBumpCylinderRadius());
         auto bump_height = hybrid->getBumpHeight();
         auto area_bump = M_PI * bump_radius * bump_radius;
-        auto area_pixel = hybrid->getPixelSize().x() * hybrid->getPixelSize().y();
+        auto area_pixel = model.getPixelSize().x() * model.getPixelSize().y();
         // volume_bump = area_bump * thickness = area_pixel * effective_thickness
         auto relative_area = area_bump / area_pixel;
         LOG(DEBUG) << "  bump_height = " << Units::display(bump_height, "um") << " relative_area = " << relative_area;
