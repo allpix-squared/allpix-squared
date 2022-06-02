@@ -433,11 +433,11 @@ perf:cc7-gcc:
     tags:
         - docker
     before_script:
-        - mkdir -p public
+        - mkdir -p result
         - mkdir build && cd build
     artifacts:
         paths:
-            - public
+            - result
         expire_in: 24 hour
 
 # Compile Doxygen reference
@@ -448,7 +448,7 @@ docs:doxygen:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_reference
-        - mv doc/reference/html ../public/reference
+        - mv doc/reference/html ../result/reference
 
 # Create file tree for hugo
 docs:usermanual-hugo:
@@ -458,7 +458,7 @@ docs:usermanual-hugo:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_hugo
-        - mv doc/usermanual_hugo ../public/usermanual_hugo
+        - mv doc/usermanual_hugo ../result/usermanual_hugo
 
 # Compile LaTeX user manual:
 docs:usermanual-pdf:
@@ -469,7 +469,7 @@ docs:usermanual-pdf:
         - pandoc --version
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_pdf
-        - mv doc/usermanual_pdf/allpix-manual.pdf ../public/usermanual_pdf
+        - mv doc/usermanual_pdf/allpix-manual.pdf ../result/allpix-manual.pdf
 
 
 ################################
@@ -538,24 +538,11 @@ pkg:macos-clang:
 # Deployment job only executed for new tag pushs, not for every commit.
 deploy:documentation:
     stage: deployment
-    tags:
-      - docker
-    variables:
-        GIT_STRATEGY: none
-    # Only run for new tags:
     only:
         - tags@allpix-squared/allpix-squared
-    dependencies:
-        - cmp:usermanual-hugo
-        - cmp:usermanual-pdf
-        - cmp:doxygen
-    # Docker image with tools to deploy to EOS
-    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
-    script:
-        - deploy-eos
-    # do not run any globally defined before_script or after_script for this step
-    before_script: []
-    after_script: []
+    trigger:
+        project: allpix-squared/allpix-squared-website
+        strategy: depend
 
 deploy:eos:
     stage: deployment
