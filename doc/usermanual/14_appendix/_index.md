@@ -4,3 +4,5 @@
 title: "Appendix"
 weight: 14
 ---
+
+The appendix contains supplementary information to the user manual.
