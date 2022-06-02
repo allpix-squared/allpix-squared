@@ -50,7 +50,7 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
     add("chip", X0_SI, model.getChipSize().z());
 
     // compute contributions from bumps if available
-    const auto* hybrid = dynamic_cast<const DetectorModel::HybridAssembly*>(model.getAssembly().get());
+    const auto* hybrid = dynamic_cast<const HybridAssembly*>(model.getAssembly().get());
     if(hybrid != nullptr) {
         // average the bump material over the full pixel size.
         auto bump_radius = std::max(hybrid->getBumpSphereRadius(), hybrid->getBumpCylinderRadius());
