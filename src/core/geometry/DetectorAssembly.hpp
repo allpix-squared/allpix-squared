@@ -17,6 +17,9 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "core/config/ConfigReader.hpp"
+#include "core/config/exceptions.h"
+
 namespace allpix {
     /**
      * @brief Helper class to hold information on the detector assembly
