@@ -194,7 +194,7 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     return size;
 }
 
-std::vector<DetectorModel::SupportLayer> DetectorModel::getSupportLayers() const {
+std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     auto ret_layers = support_layers_;
 
     auto sensor_offset = -getSensorSize().z() / 2.0;
