@@ -79,6 +79,7 @@ namespace allpix {
         /**
          * @brief Constructs the base detector model
          * @param type Name of the model type
+         * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
          */
         explicit DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader);
