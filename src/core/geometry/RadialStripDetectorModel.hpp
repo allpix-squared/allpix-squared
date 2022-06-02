@@ -42,7 +42,7 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          */
         explicit RadialStripDetectorModel(std::string type,
-                                          std::shared_ptr<DetectorAssembly> assembly,
+                                          const std::shared_ptr<DetectorAssembly>& assembly,
                                           const ConfigReader& reader);
 
         /**

@@ -56,7 +56,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 }
 
 DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader)
-    : type_(std::move(type)), assembly_(assembly), reader_(std::move(reader)) {
+    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
     using namespace ROOT::Math;
     auto config = reader_.getHeaderConfiguration();
 
