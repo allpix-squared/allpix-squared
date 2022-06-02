@@ -59,7 +59,7 @@ DetectorModel::DetectorModel(std::string type, ConfigReader reader) : type_(std:
     sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
     // Chip thickness
-    setChipThickness(config.get<double>("chip_thickness", 0));
+    chip_.setThickness(config.get<double>("chip_thickness", 0));
 
     // Read support layers
     for(auto& support_config : reader_.getConfigurations("support")) {

@@ -68,7 +68,7 @@ namespace allpix {
          */
         ROOT::Math::XYZVector getChipSize() const override {
             ROOT::Math::XYZVector excess_thickness(
-                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_thickness_);
+                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_.getThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**

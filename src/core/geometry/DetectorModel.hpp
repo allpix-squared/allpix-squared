@@ -73,6 +73,24 @@ namespace allpix {
          */
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
+        class Chip {
+        public:
+            /**
+             * @brief Set the thickness of the chip
+             * @param val Thickness of the chip
+             */
+            void setThickness(double val) { thickness_ = val; }
+
+            /**
+             * @brief Get the thickness of the chip
+             * @return Thickness of the chip
+             */
+            double getThickness() const { return thickness_; }
+
+        private:
+            double thickness_{};
+        };
+
         /**
          * @brief Helper class to hold support layers for a detector model
          */
@@ -338,7 +356,7 @@ namespace allpix {
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
                                                    (sensor_excess_.at(0) + sensor_excess_.at(2)),
-                                                   chip_thickness_);
+                                                   chip_.getThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -353,11 +371,6 @@ namespace allpix {
                                          getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
             return getMatrixCenter() + offset;
         }
-        /**
-         * @brief Set the thickness of the sensor
-         * @param val Thickness of the sensor
-         */
-        void setChipThickness(double val) { chip_thickness_ = val; }
 
         /* SUPPORT */
         /**
@@ -504,8 +517,7 @@ namespace allpix {
         std::array<double, 4> sensor_excess_{};
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
-        double chip_thickness_{};
-
+        Chip chip_;
         std::vector<SupportLayer> support_layers_;
 
     private:
