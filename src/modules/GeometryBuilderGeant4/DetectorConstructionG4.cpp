@@ -383,7 +383,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
 
             // Place the general bumps volume
             G4ThreeVector bumps_pos =
-                toG4Vector(hybrid_chip->getBumpsOffset() + ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / 2.0));
+                toG4Vector(hybrid_chip->getBumpsOffset() +
+                           ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / 2.0 - model->getModelCenter().z()));
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
