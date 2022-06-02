@@ -207,7 +207,7 @@ def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> s
     tmp.close()
 
     pandoc_args = [
-        'pandoc', '-f', 'markdown+escaped_line_breaks+shortcut_reference_links+autolink_bare_uris +raw_html', '-t', 'latex',
+        'pandoc', '-f', 'markdown+escaped_line_breaks+shortcut_reference_links+autolink_bare_uris+raw_html', '-t', 'latex',
         '--listings', '--biblatex',
         '--lua-filter', 'pandoc-gitlab-math.lua',
         '--lua-filter', 'pandoc-minted.lua',
