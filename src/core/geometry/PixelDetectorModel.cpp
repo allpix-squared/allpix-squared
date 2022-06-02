@@ -17,8 +17,8 @@
 
 using namespace allpix;
 
-PixelDetectorModel::PixelDetectorModel(std::string type, const ConfigReader& reader)
-    : DetectorModel(std::move(type), reader) {
+PixelDetectorModel::PixelDetectorModel(std::string type, std::shared_ptr<Chip> chip, const ConfigReader& reader)
+    : DetectorModel(std::move(type), chip, reader) {
     using namespace ROOT::Math;
     auto config = reader.getHeaderConfiguration();
 

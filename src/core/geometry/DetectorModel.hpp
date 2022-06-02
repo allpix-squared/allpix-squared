@@ -75,11 +75,14 @@ namespace allpix {
 
         class Chip {
         public:
-            /**
-             * @brief Set the thickness of the chip
-             * @param val Thickness of the chip
-             */
-            void setThickness(double val) { thickness_ = val; }
+            Chip(const ConfigReader& reader) {
+                auto config = reader.getHeaderConfiguration();
+
+                // Chip thickness
+                thickness_ = config.get<double>("chip_thickness", 0);
+            }
+            Chip() = default;
+            virtual ~Chip() = default;
 
             /**
              * @brief Get the thickness of the chip
@@ -87,8 +90,71 @@ namespace allpix {
              */
             double getThickness() const { return thickness_; }
 
+            ROOT::Math::XYVector getExcess() const {
+                return {(excess_.at(1) + excess_.at(3)), (excess_.at(0) + excess_.at(2))};
+            }
+
+            virtual ROOT::Math::XYZVector getOffset() const {
+                return {(excess_.at(1) - excess_.at(3)), (excess_.at(0) - excess_.at(2)), 0};
+            }
+
+        protected:
+            std::array<double, 4> excess_{};
+
         private:
             double thickness_{};
+        };
+
+        class HybridChip : public Chip {
+        public:
+            HybridChip(const ConfigReader& reader) : Chip(reader) {
+                auto config = reader.getHeaderConfiguration();
+
+                // Excess around the chip from the pixel grid
+                auto default_chip_excess = config.get<double>("chip_excess", 0);
+                excess_.at(0) = config.get<double>("chip_excess_top", default_chip_excess);
+                excess_.at(1) = config.get<double>("chip_excess_right", default_chip_excess);
+                excess_.at(2) = config.get<double>("chip_excess_bottom", default_chip_excess);
+                excess_.at(3) = config.get<double>("chip_excess_left", default_chip_excess);
+
+                // Set bump parameters
+                bump_cylinder_radius_ = config.get<double>("bump_cylinder_radius");
+                bump_height_ = config.get<double>("bump_height");
+                bump_sphere_radius_ = config.get<double>("bump_sphere_radius", 0);
+
+                auto pitch = config.get<ROOT::Math::XYVector>("pixel_size");
+                bump_offset_ = config.get<ROOT::Math::XYVector>("bump_offset", {0, 0});
+                if(std::fabs(bump_offset_.x()) > pitch.x() / 2.0 || std::fabs(bump_offset_.y()) > pitch.y() / 2.0) {
+                    throw InvalidValueError(
+                        config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
+                }
+            }
+
+            ROOT::Math::XYZVector getOffset() const override {
+                return {(excess_.at(1) - excess_.at(3)), (excess_.at(0) - excess_.at(2)), bump_height_};
+            }
+
+        private:
+            double bump_sphere_radius_{};
+            double bump_height_{};
+            ROOT::Math::XYVector bump_offset_;
+            double bump_cylinder_radius_{};
+        };
+
+        class MonolithicChip : public Chip {
+        public:
+            MonolithicChip(const ConfigReader& reader) : Chip(reader) {
+                auto config = reader.getHeaderConfiguration();
+
+                // Excess around the chip is copied from sensor size
+                auto default_chip_excess = config.get<double>("sensor_excess", 0);
+                excess_.at(0) = config.get<double>("sensor_excess_top", default_chip_excess);
+                excess_.at(1) = config.get<double>("sensor_excess_right", default_chip_excess);
+                excess_.at(2) = config.get<double>("sensor_excess_bottom", default_chip_excess);
+                excess_.at(3) = config.get<double>("sensor_excess_left", default_chip_excess);
+            }
+
+        private:
         };
 
         /**
@@ -184,7 +250,7 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit DetectorModel(std::string type, ConfigReader reader);
+        explicit DetectorModel(std::string type, std::shared_ptr<Chip> chip, ConfigReader reader);
 
         /**
          * @brief Essential virtual destructor
@@ -354,9 +420,7 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
-            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
-                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
-                                                   chip_.getThickness());
+            ROOT::Math::XYZVector excess_thickness(chip_->getExcess().x(), chip_->getExcess().y(), chip_->getThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -366,9 +430,9 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset((sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0,
-                                         (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
+            ROOT::Math::XYZVector offset(chip_->getOffset().x() / 2.0,
+                                         chip_->getOffset().y() / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + chip_->getOffset().z());
             return getMatrixCenter() + offset;
         }
 
@@ -517,7 +581,7 @@ namespace allpix {
         std::array<double, 4> sensor_excess_{};
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
-        Chip chip_;
+        std::shared_ptr<Chip> chip_;
         std::vector<SupportLayer> support_layers_;
 
     private:

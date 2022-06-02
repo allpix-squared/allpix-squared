@@ -40,7 +40,7 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit RadialStripDetectorModel(std::string type, const ConfigReader& reader);
+        explicit RadialStripDetectorModel(std::string type, std::shared_ptr<Chip> chip, const ConfigReader& reader);
 
         /**
          * @brief Get the number of strips in a given strip row

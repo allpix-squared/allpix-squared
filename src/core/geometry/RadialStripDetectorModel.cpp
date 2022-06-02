@@ -16,8 +16,8 @@
 
 using namespace allpix;
 
-RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const ConfigReader& reader)
-    : DetectorModel(std::move(type), reader) {
+RadialStripDetectorModel::RadialStripDetectorModel(std::string type, std::shared_ptr<Chip> chip, const ConfigReader& reader)
+    : DetectorModel(std::move(type), chip, reader) {
     auto config = reader.getHeaderConfiguration();
 
     // Set geometry parameters from config file
