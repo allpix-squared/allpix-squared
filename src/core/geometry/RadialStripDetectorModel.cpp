@@ -20,6 +20,10 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, std::shared
     : DetectorModel(std::move(type), chip, reader) {
     auto config = reader.getHeaderConfiguration();
 
+    if(std::dynamic_pointer_cast<MonolithicChip>(chip) == nullptr) {
+        throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
+    }
+
     // Set geometry parameters from config file
     setNumberOfStrips(config.getArray<unsigned int>("number_of_strips"));
     setStripLength(config.getArray<double>("strip_length"));
@@ -87,7 +91,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, std::shared
     auto implant_size = config.get<ROOT::Math::XYVector>("implant_size", pixel_size_);
     if(implant_size != pixel_size_) {
         throw InvalidCombinationError(
-            config, {"type", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
+            config, {"geometry", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
     }
     setImplantSize(pixel_size_);
 
