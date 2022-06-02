@@ -180,6 +180,7 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     size.SetZ((max.z() - getMatrixCenter().z()) +
               (getMatrixCenter().z() - min.z())); // max.z() is positive (chip side) and min.z() is negative (sensor side)
 
+    // FIXME need a better solution than this!
     auto chip = std::dynamic_pointer_cast<HybridChip>(getChip());
     if(chip != nullptr) {
         auto bump_grid =
