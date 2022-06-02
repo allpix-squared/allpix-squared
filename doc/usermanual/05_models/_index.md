@@ -1,8 +1,8 @@
 ---
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "Physics Models & Material Properties"
-description: "Description of the different physics models for semiconductor detectors."
+title: "Physics Models & Materials"
+description: "Description of the different physics models and material properties for semiconductor detectors."
 weight: 5
 ---
 
