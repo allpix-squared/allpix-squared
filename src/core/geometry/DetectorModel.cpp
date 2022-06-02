@@ -198,7 +198,7 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     auto ret_layers = support_layers_;
 
     auto sensor_offset = -getSensorSize().z() / 2.0;
-    auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + assembly_->getOffset().z();
+    auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + assembly_->getChipOffset().z();
     for(auto& layer : ret_layers) {
         ROOT::Math::XYZVector offset = layer.offset_;
         if(layer.location_ == "sensor") {

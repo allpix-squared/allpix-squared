@@ -254,7 +254,7 @@ namespace allpix {
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
             ROOT::Math::XYZVector excess_thickness(
-                assembly_->getExcess().x(), assembly_->getExcess().y(), assembly_->getThickness());
+                assembly_->getChipExcess().x(), assembly_->getChipExcess().y(), assembly_->getChipThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -264,9 +264,10 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset(assembly_->getOffset().x() / 2.0,
-                                         assembly_->getOffset().y() / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + assembly_->getOffset().z());
+            ROOT::Math::XYZVector offset(assembly_->getChipOffset().x() / 2.0,
+                                         assembly_->getChipOffset().y() / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 +
+                                             assembly_->getChipOffset().z());
             return getMatrixCenter() + offset;
         }
 

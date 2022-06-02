@@ -16,30 +16,50 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-/**
- * @brief Helper class to hold information on the detector assembly
- */
 namespace allpix {
+    /**
+     * @brief Helper class to hold information on the detector assembly
+     */
     class DetectorAssembly {
     public:
+        /**
+         * Detector assembly constructor
+         * @param reader  ConfigReader holding the full detector model configuration
+         */
         DetectorAssembly(const ConfigReader& reader) {
             auto config = reader.getHeaderConfiguration();
 
             // Chip thickness
             thickness_ = config.get<double>("assembly_thickness", 0);
         }
+
+        ///@{
+        /**
+         * @brief Deleted default constructor
+         */
         DetectorAssembly() = delete;
         virtual ~DetectorAssembly() = default;
+        ///@}
 
         /**
          * @brief Get the thickness of the chip
          * @return Thickness of the chip
          */
-        double getThickness() const { return thickness_; }
+        double getChipThickness() const { return thickness_; }
 
-        ROOT::Math::XYVector getExcess() const { return {(excess_.at(1) + excess_.at(3)), (excess_.at(0) + excess_.at(2))}; }
+        /**
+         * @brief Get excess of the chip beyond the active matrix
+         * @return Chip excess
+         */
+        ROOT::Math::XYVector getChipExcess() const {
+            return {(excess_.at(1) + excess_.at(3)), (excess_.at(0) + excess_.at(2))};
+        }
 
-        virtual ROOT::Math::XYZVector getOffset() const {
+        /**
+         * @brief Get the offset of the chip center with respect to the matrix center
+         * @return Chip offset
+         */
+        virtual ROOT::Math::XYZVector getChipOffset() const {
             return {(excess_.at(1) - excess_.at(3)), (excess_.at(0) - excess_.at(2)), 0};
         }
 
@@ -50,8 +70,15 @@ namespace allpix {
         double thickness_{};
     };
 
+    /**
+     * A hybrid detector assembly describing a setup with separate sensor and readout ASIC
+     */
     class HybridAssembly : public DetectorAssembly {
     public:
+        /**
+         * Constructor for hybrid assemblies
+         * @param reader  ConfigReader holding the full detector model configuration
+         */
         HybridAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
             auto config = reader.getHeaderConfiguration();
 
@@ -74,7 +101,12 @@ namespace allpix {
             }
         }
 
-        ROOT::Math::XYZVector getOffset() const override {
+        /**
+         * @brief Get the offset of the chip center with respect to the matrix center, taking into account the additional
+         * offset caused by the layer of bump bonds
+         * @return Chip offset
+         */
+        ROOT::Math::XYZVector getChipOffset() const override {
             return {(excess_.at(1) - excess_.at(3)), (excess_.at(0) - excess_.at(2)), bump_height_};
         }
 
@@ -109,8 +141,15 @@ namespace allpix {
         double bump_cylinder_radius_{};
     };
 
+    /**
+     * A monolithic detector assembly describing a setup where sensor and readout ASIC consist of a single slab of silicon
+     */
     class MonolithicAssembly : public DetectorAssembly {
     public:
+        /**
+         * Constructor for monolithic assemblies
+         * @param reader  ConfigReader holding the full detector model configuration
+         */
         MonolithicAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
             auto config = reader.getHeaderConfiguration();
 
@@ -121,8 +160,6 @@ namespace allpix {
             excess_.at(2) = config.get<double>("sensor_excess_bottom", default_assembly_excess);
             excess_.at(3) = config.get<double>("sensor_excess_left", default_assembly_excess);
         }
-
-    private:
     };
 } // namespace allpix
 
