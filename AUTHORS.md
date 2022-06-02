@@ -26,7 +26,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
 * Lennart Huth, DESY, [lhuth](https://gitlab.cern.ch/lhuth)
 * Daniel Hynds, University of Oxford, [dhynds](https://gitlab.cern.ch/dhynds)
-* Maoqiang Jing, University of South China, Institute of High Energy Physics Beijing, [mjing](https://gitlab.cern.ch/mjing)
+* Maoqiang Jing, Institute of High Energy Physics Beijing, [mjing](https://gitlab.cern.ch/mjing)
 * Moritz Kiehn, Université de Genève, [msmk](https://gitlab.cern.ch/msmk)
 * Rafaella Eleni Kotitsa, CERN, [rkotitsa](https://gitlab.cern.ch/rkotitsa)
 * Stephan Lachnit, DESY, [slachnit](https://gitlab.cern.ch/slachnit)
