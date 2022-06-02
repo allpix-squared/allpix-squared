@@ -134,6 +134,34 @@ namespace allpix {
                 return {(excess_.at(1) - excess_.at(3)), (excess_.at(0) - excess_.at(2)), bump_height_};
             }
 
+            /**
+             * @brief Get the center of the bump bonds in local coordinates
+             * @return Center of the bump bonds
+             *
+             * The bump bonds are aligned with the grid with an optional XY-offset. The z-offset is calculated with the
+             * sensor and chip offsets taken into account.
+             */
+            virtual ROOT::Math::XYZPoint getBumpsCenter() const {
+                ROOT::Math::XYZVector offset(
+                    bump_offset_.x(), bump_offset_.y(), getSensorSize().z() / 2.0 + getBumpHeight() / 2.0);
+                return getMatrixCenter() + offset;
+            }
+            /**
+             * @brief Get the radius of the sphere of every individual bump bond (union solid with cylinder)
+             * @return Radius of bump bond sphere
+             */
+            double getBumpSphereRadius() const { return bump_sphere_radius_; }
+            /**
+             * @brief Get the radius of the cylinder of every individual bump bond  (union solid with sphere)
+             * @return Radius of bump bond cylinder
+             */
+            double getBumpCylinderRadius() const { return bump_cylinder_radius_; }
+            /**
+             * @brief Get the height of the bump bond cylinder, determining the offset between sensor and chip
+             * @return Height of the bump bonds
+             */
+            double getBumpHeight() const { return bump_height_; }
+
         private:
             double bump_sphere_radius_{};
             double bump_height_{};

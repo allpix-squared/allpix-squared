@@ -36,8 +36,8 @@ namespace allpix {
          * @param type Name of the model type
          * @param reader Configuration reader with description of the model
          */
-        explicit HybridPixelDetectorModel(std::string type, const ConfigReader& reader)
-            : PixelDetectorModel(std::move(type), reader) {
+        explicit HybridPixelDetectorModel(std::string type, std::shared_ptr<Chip> chip, const ConfigReader& reader)
+            : PixelDetectorModel(std::move(type), chip, reader) {
             auto config = reader.getHeaderConfiguration();
 
             // Excess around the chip from the pixel grid
@@ -58,30 +58,6 @@ namespace allpix {
                 throw InvalidValueError(config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
             }
             setBumpOffset(bump_offset);
-        }
-
-        /**
-         * @brief Get size of the chip
-         * @return Size of the chip
-         *
-         * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", chip excess and chip thickness
-         */
-        ROOT::Math::XYZVector getChipSize() const override {
-            ROOT::Math::XYZVector excess_thickness(
-                (chip_excess_.at(1) + chip_excess_.at(3)), (chip_excess_.at(0) + chip_excess_.at(2)), chip_.getThickness());
-            return getMatrixSize() + excess_thickness;
-        }
-        /**
-         * @brief Get center of the chip in local coordinates
-         * @return Center of the chip
-         *
-         * The center of the chip as given by \ref DetectorModel::getChipCenter() with extra offset for bump bonds.
-         */
-        ROOT::Math::XYZPoint getChipCenter() const override {
-            ROOT::Math::XYZVector offset((chip_excess_.at(1) - chip_excess_.at(3)) / 2.0,
-                                         (chip_excess_.at(0) - chip_excess_.at(2)) / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 + getBumpHeight());
-            return getMatrixCenter() + offset;
         }
 
         /**
@@ -118,72 +94,6 @@ namespace allpix {
             return ROOT::Math::XYZVector(
                 std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
         }
-
-        /**
-         * @brief Return all layers of support
-         * @return List of all the support layers
-         *
-         * The center of the support is adjusted to take the bump bonds into account
-         */
-        std::vector<SupportLayer> getSupportLayers() const override {
-            auto ret_layers = DetectorModel::getSupportLayers();
-
-            for(auto& layer : ret_layers) {
-                if(layer.location_ == "chip") {
-                    layer.center_.SetZ(layer.center_.z() + getBumpHeight());
-                }
-            }
-
-            return ret_layers;
-        }
-
-        /**
-         * @brief Get the center of the bump bonds in local coordinates
-         * @return Center of the bump bonds
-         *
-         * The bump bonds are aligned with the grid with an optional XY-offset. The z-offset is calculated with the sensor
-         * and chip offsets taken into account.
-         */
-        virtual ROOT::Math::XYZPoint getBumpsCenter() const {
-            ROOT::Math::XYZVector offset(
-                bump_offset_.x(), bump_offset_.y(), getSensorSize().z() / 2.0 + getBumpHeight() / 2.0);
-            return getMatrixCenter() + offset;
-        }
-        /**
-         * @brief Get the radius of the sphere of every individual bump bond (union solid with cylinder)
-         * @return Radius of bump bond sphere
-         */
-        double getBumpSphereRadius() const { return bump_sphere_radius_; }
-        /**
-         * @brief Set the radius of the sphere of every individual bump bond  (union solid with cylinder)
-         * @param val Radius of bump bond sphere
-         */
-        void setBumpSphereRadius(double val) { bump_sphere_radius_ = val; }
-        /**
-         * @brief Get the radius of the cylinder of every individual bump bond  (union solid with sphere)
-         * @return Radius of bump bond cylinder
-         */
-        double getBumpCylinderRadius() const { return bump_cylinder_radius_; }
-        /**
-         * @brief Set the radius of the cylinder of every individual bump bond  (union solid with sphere)
-         * @param val Radius of bump bond cylinder
-         */
-        void setBumpCylinderRadius(double val) { bump_cylinder_radius_ = val; }
-        /**
-         * @brief Get the height of the bump bond cylinder, determining the offset between sensor and chip
-         * @return Height of the bump bonds
-         */
-        double getBumpHeight() const { return bump_height_; }
-        /**
-         * @brief Set the height of the bump bond cylinder, determining the offset between sensor and chip
-         * @param val Height of the bump bonds
-         */
-        void setBumpHeight(double val) { bump_height_ = val; }
-        /**
-         * @brief Set the XY-offset of the bumps from the center
-         * @param val Offset from the pixel grid center
-         */
-        void setBumpOffset(ROOT::Math::XYVector val) { bump_offset_ = std::move(val); }
 
     private:
         std::array<double, 4> chip_excess_{};
