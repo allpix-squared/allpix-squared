@@ -101,3 +101,15 @@ Refer to the [GLFM documentation](https://docs.gitlab.com/ee/user/markdown.html#
 Note: since hugo does not support GitLab's math extension, these needs to be converted to some other format that is not using
 backticks, i.e. [pandoc's tex_math_dollars format](https://pandoc.org/MANUAL.html#extension-tex_math_dollars). However, this
 also means that explicit backticks (like `` $` `` or `` ```math ``) can't be used (e.g. to explain the GitLab's math mode).
+
+## Testing the website
+
+You can easily test the website of the documentation with your changes yourself by running:
+```sh
+git clone --recurse-submodules https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
+APSQ_REPO=your_user_name/allpix-squared APSQ_REF=branch_name ./get_artifacts.sh
+hugo server
+```
+
+For more information refer to [the README](https://gitlab.cern.ch/allpix-squared/allpix-squared-website#commands) in the
+website repository.
