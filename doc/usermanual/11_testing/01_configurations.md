@@ -34,8 +34,8 @@ output has to be adapted after careful verification of the simulation result.
 
 Module tests are located within the individual module source folders and are only enabled if the respective module will be
 built. For new modules, the directory in which the test files are located needs to be registered in the main CMake file of
-the module as described in [Section 9.3](../09_development/03_new_module.md#cmakeliststxt). Module test files have to start
-with a two-digit number and end with the file extension `.conf`, e.g. `01-mytest.conf`, to be detected.
+the module as described in [Section 9.3](../09_development/03_new_module.md#files-of-a-module). Module test files have to
+start with a two-digit number and end with the file extension `.conf`, e.g. `01-mytest.conf`, to be detected.
 
 ## Performance Tests
 

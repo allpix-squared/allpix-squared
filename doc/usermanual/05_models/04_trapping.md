@@ -22,6 +22,7 @@ have been extracted under certain annealing conditions. A dependency on annealin
 Please refer to the corresponding reference publications for further details.
 
 The following models for trapping of charge carriers can be selected:
+
 ## Ljubljana
 
 In the Ljubljana (sometimes referred to as *Kramberger*) model \[[@kramberger]\], the trapping time follows the relation
