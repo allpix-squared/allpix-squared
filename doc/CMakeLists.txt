@@ -99,7 +99,10 @@ ADD_CUSTOM_TARGET(
 
 SET(DOCS_PDF_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/usermanual_pdf")
 
-# FIXME: Find Lualatex + Biber + Latexmk and add targets
+FIND_PACKAGE(Latexmk)
+FIND_PACKAGE(Lualatex)
+FIND_PACKAGE(Biber)
+FIND_PACKAGE(Pygmentize)
 
 SET(LATEXMK_COMPILER_FLAGS "-pdflua" "-cd" "-shell-escape")
 
@@ -119,8 +122,8 @@ ADD_CUSTOM_TARGET(
     COMMAND
         ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/frontmatter.tex" "${DOCS_PDF_BINARY_DIR}"
     COMMAND
-        latexmk ${LATEXMK_COMPILER_FLAGS} "${DOCS_PDF_BINARY_DIR}/allpix-manual.tex"
-    DEPENDS Python::Interpreter apsq_docs_latex
+        Latexmk::latexmk ${LATEXMK_COMPILER_FLAGS} "${DOCS_PDF_BINARY_DIR}/allpix-manual.tex"
+    DEPENDS Python::Interpreter Latexmk::latexmk Lualatex::lualatex Biber::biber Pygmentize::pygmentize apsq_docs_latex
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
     COMMENT "Generating the PDF documentation"
     VERBATIM)
