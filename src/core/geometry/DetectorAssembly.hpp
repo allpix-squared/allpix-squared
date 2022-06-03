@@ -35,7 +35,7 @@ namespace allpix {
             auto config = reader.getHeaderConfiguration();
 
             // Chip thickness
-            thickness_ = config.get<double>("assembly_thickness", 0);
+            thickness_ = config.get<double>("chip_thickness", 0);
         }
 
         ///@{
@@ -88,11 +88,11 @@ namespace allpix {
             auto config = reader.getHeaderConfiguration();
 
             // Excess around the chip from the pixel grid
-            auto default_assembly_excess = config.get<double>("assembly_excess", 0);
-            excess_.at(0) = config.get<double>("assembly_excess_top", default_assembly_excess);
-            excess_.at(1) = config.get<double>("assembly_excess_right", default_assembly_excess);
-            excess_.at(2) = config.get<double>("assembly_excess_bottom", default_assembly_excess);
-            excess_.at(3) = config.get<double>("assembly_excess_left", default_assembly_excess);
+            auto default_assembly_excess = config.get<double>("chip_excess", 0);
+            excess_.at(0) = config.get<double>("chip_excess_top", default_assembly_excess);
+            excess_.at(1) = config.get<double>("chip_excess_right", default_assembly_excess);
+            excess_.at(2) = config.get<double>("chip_excess_bottom", default_assembly_excess);
+            excess_.at(3) = config.get<double>("chip_excess_left", default_assembly_excess);
 
             // Set bump parameters
             bump_cylinder_radius_ = config.get<double>("bump_cylinder_radius");
