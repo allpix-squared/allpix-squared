@@ -11,6 +11,29 @@
 \end{table}
 }
 
+% hugo alter boxes
+\newsavebox{\hugowarningbox}
+\newenvironment{hugowarning}
+  {\newcommand\colboxcolor{LightPink}%
+   \begin{lrbox}{\hugowarningbox}%
+   \begin{minipage}{\dimexpr\linewidth-2em\relax}}
+  {\end{minipage}\end{lrbox}%
+   \begin{center}
+     \setlength\fboxsep{0pt}
+     \colorbox{\colboxcolor}{\setlength\fboxsep{1em}\fbox{\usebox{\hugowarningbox}}}
+  \end{center}}
+\newsavebox{\hugoinfobox}
+\newenvironment{hugoinfo}
+  {\newcommand\colboxcolor{LightBlue}%
+    \begin{lrbox}{\hugoinfobox}%
+    \begin{minipage}{\dimexpr\linewidth-2em\relax}}
+  {\end{minipage}\end{lrbox}%
+    \begin{center}
+      \setlength\fboxsep{0pt}
+      \colorbox{\colboxcolor}{\setlength\fboxsep{1em}\fbox{\usebox{\hugoinfobox}}}
+  \end{center}}
+
+
 % PDF options
 \hypersetup{
   pdftitle={Allpix Squared User Manual}

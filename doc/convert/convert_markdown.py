@@ -134,13 +134,19 @@ def latex_convert_hugo_alert(string: str) -> str:
     """
     Converts the pandoc-converted hugo alters to LaTeX warning boxes.
 
+    Looks more complicated than it actually is: \s+ is supposed to be a space in most cases, but edge cases happen when
+    pandoc does a linebreak where the space is.
+
     Args:
         string: String formatted in LaTeX.
 
     Returns:
         String formatted in LaTeX.
     """
-    return string  # TODO
+    match = r'\\{\\{\\%\s+alert\s+title=``(.+?)\'\'\s+color=``(.+?)\'\'\s+\\%\\}\\}\s+(.+?)\s+\\{\\{\\%\s+/alert\s+\\%\\}\\}'
+
+    string = re.sub(match, r'\\begin{hugo\2}\n\\textbf{\1}:\n\3\n\\end{hugo\2}', string, flags=re.DOTALL)
+    return string
 
 
 def latex_convert_href_references(string: str, file_path: str) -> str:
