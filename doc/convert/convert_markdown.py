@@ -106,15 +106,15 @@ def latex_fix_images(string: str, file_path: str) -> str:
 
     Args:
         string: String formatted in LaTeX.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
     """
     base_dir = os.path.dirname(file_path)
-    string = re.sub(r'\\includegraphics{\./(.+?)}',
-                    rf'\\includegraphics[width=\\textwidth,height=0.6\\textheight,keepaspectratio]{{{base_dir}/\1}}',
-                    string)
-    return string
+    return re.sub(r'\\includegraphics{\./(.+?)}',
+                  rf'\\includegraphics[width=\\textwidth,height=0.6\\textheight,keepaspectratio]{{{base_dir}/\1}}',
+                  string)
 
 
 def latex_fix_duplicate_autocites(string: str) -> str:
@@ -144,9 +144,7 @@ def latex_convert_hugo_alert(string: str) -> str:
         String formatted in LaTeX.
     """
     match = r'\\{\\{\\%\s+alert\s+title=``(.+?)\'\'\s+color=``(.+?)\'\'\s+\\%\\}\\}\s+(.+?)\s+\\{\\{\\%\s+/alert\s+\\%\\}\\}'
-
-    string = re.sub(match, r'\\begin{hugo\2}\n\\textbf{\1}:\n\3\n\\end{hugo\2}', string, flags=re.DOTALL)
-    return string
+    return re.sub(match, r'\\begin{hugo\2}\n\\textbf{\1}:\n\3\n\\end{hugo\2}', string, flags=re.DOTALL)
 
 
 def latex_convert_href_references(string: str, file_path: str) -> str:
@@ -157,6 +155,7 @@ def latex_convert_href_references(string: str, file_path: str) -> str:
 
     Args:
         string: String formatted in LaTeX.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
@@ -170,15 +169,14 @@ def gitlab2hugo(string: str, isindexmd: bool) -> str:
 
     Args:
         string: String formatted in GitLab Markdown.
+        isindexmd: If true the file where string is extracted from is an index page for hugo.
 
     Returns:
         String formatted in hugo Markdown.
     """
     if not isindexmd:
         string = hugo_convert_relative_paths(string)
-    string = hugo_reference_remove_md(string)
-
-    return string
+    return hugo_reference_remove_md(string)
 
 
 def gitlab2pandoc(string: str) -> str:
@@ -191,9 +189,7 @@ def gitlab2pandoc(string: str) -> str:
     Returns:
         String formatted in pandoc Markdown.
     """
-    string = hugo_front_matter_convert_pandoc(string)
-
-    return string
+    return hugo_front_matter_convert_pandoc(string)
 
 
 def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> str:
@@ -202,6 +198,7 @@ def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> s
 
     Args:
         string: String formatted in pandoc Markdown.
+        file_path: Path to the file where the string was extracted from.
         extra_args: List of additional arguments for pandoc.
 
     Returns:
@@ -242,6 +239,7 @@ def gitlab2latex(string: str, isindexmd: bool, file_path: str) -> str:
     Args:
         string: String formatted in GitLab Markdown.
         isindexmd: If true, the top level division will be set to chapter.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
