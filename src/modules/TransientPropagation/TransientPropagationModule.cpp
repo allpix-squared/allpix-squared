@@ -43,7 +43,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("timestep", Units::get(0.01, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
-    config_.setDefault<unsigned int>("max_charge_groups", 0);
+    config_.setDefault<unsigned int>("max_charge_groups", 10000);
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
