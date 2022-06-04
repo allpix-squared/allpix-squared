@@ -101,10 +101,9 @@ std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
 }
 
 void PixelHit::print(std::ostream& out) const {
-    out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getLocalTime() << ", "
-        << this->getGlobalTime() << ", " << this->getPixel().getGlobalCenter().X() << ", "
-        << this->getPixel().getGlobalCenter().Y() << ", " << this->getPixel().getGlobalCenter().Z() << ", "
-        << this->getSignal();
+    out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
+        << this->getLocalTime() << ", " << this->getGlobalTime() << ", " << this->getPixel().getGlobalCenter().X() << ", "
+        << this->getPixel().getGlobalCenter().Y() << ", " << this->getPixel().getGlobalCenter().Z();
 }
 
 void PixelHit::loadHistory() {
