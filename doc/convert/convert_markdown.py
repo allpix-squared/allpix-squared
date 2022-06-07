@@ -10,6 +10,7 @@ Convert GitLab Flavored Markdown to hugo or LaTeX using pandoc.
 import argparse
 import functools
 import os
+import pathlib
 import re
 import subprocess
 import sys
@@ -106,15 +107,15 @@ def latex_fix_images(string: str, file_path: str) -> str:
 
     Args:
         string: String formatted in LaTeX.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
     """
     base_dir = os.path.dirname(file_path)
-    string = re.sub(r'\\includegraphics{\./(.+?)}',
-                    rf'\\includegraphics[width=\\textwidth,height=0.6\\textheight,keepaspectratio]{{{base_dir}/\1}}',
-                    string)
-    return string
+    return re.sub(r'\\includegraphics{\./(.+?)}',
+                  rf'\\includegraphics[width=\\textwidth,height=0.6\\textheight,keepaspectratio]{{{base_dir}/\1}}',
+                  string)
 
 
 def latex_fix_duplicate_autocites(string: str) -> str:
@@ -144,9 +145,25 @@ def latex_convert_hugo_alert(string: str) -> str:
         String formatted in LaTeX.
     """
     match = r'\\{\\{\\%\s+alert\s+title=``(.+?)\'\'\s+color=``(.+?)\'\'\s+\\%\\}\\}\s+(.+?)\s+\\{\\{\\%\s+/alert\s+\\%\\}\\}'
+    return re.sub(match, r'\\begin{hugo\2}\n\\textbf{\1}:\n\3\n\\end{hugo\2}', string, flags=re.DOTALL)
 
-    string = re.sub(match, r'\\begin{hugo\2}\n\\textbf{\1}:\n\3\n\\end{hugo\2}', string, flags=re.DOTALL)
-    return string
+
+def _get_path_relative_to_markdown_tree(file_path: str) -> str:
+    """
+    Return the path relative to the markdown tree (assuming at most one directory depth).
+
+    For example, `/path/to/docs/01_introduction/_index.md` becomes `01_introduction/_index.md`.
+
+    Args:
+        file_path: Path to the file.
+
+    Returns:
+        String with the relative path.
+    """
+    file_path_pl = pathlib.Path(file_path).resolve()
+    docs_dir_pl = file_path_pl.parents[1]
+    file_path_rel_pl = file_path_pl.relative_to(docs_dir_pl)
+    return file_path_rel_pl.as_posix()
 
 
 def latex_convert_href_references(string: str, file_path: str) -> str:
@@ -157,11 +174,33 @@ def latex_convert_href_references(string: str, file_path: str) -> str:
 
     Args:
         string: String formatted in LaTeX.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
     """
-    return string  # TODO
+    # Replace hypertargets with something that include part of the file path to prevent duplicate targets
+    file_label_prefix = _get_path_relative_to_markdown_tree(file_path)
+    # For the first target we don't want to include the section name as we don't have that in GLFM
+    string = re.sub(r'^(\\hypertarget{)([^\n]+?)(}{%\n.+?\\label{)(.+?)(}})',
+                    rf'\g<1>{file_label_prefix}\g<3>{file_label_prefix}\g<5>',
+                    string, count=1, flags=re.DOTALL)
+    # For the following targets we do want the section name to be included
+    string = re.sub(r'(.+?\\hypertarget{)([^\n]+?)(}{%\n.+?\\label{)(.+?)(}})',
+                    rf'\g<1>{file_label_prefix}-\g<2>\g<3>{file_label_prefix}-\g<4>\g<5>',
+                    string, flags=re.DOTALL)
+    # We need to adjust references in the same file as well though
+    string = re.sub(r'(\\hyperlink{)(.+?)(}{)', rf'\g<1>{file_label_prefix}-\g<2>\g<3>', string)
+    # Find references to other files
+    refs = re.findall(r'(\\href{)(\.\.?/.+?)(})', string)
+    for ref in refs:
+        ref_rel_file_path = ref[1]
+        ref_full_match = ref[0] + ref[1] + ref[2]
+        ref_file_path = os.path.join(os.path.dirname(file_path), ref_rel_file_path)
+        ref_replace = _get_path_relative_to_markdown_tree(ref_file_path).replace('\#', '-')
+        string = re.sub(re.escape(ref_full_match), rf'\\protect\\hyperlink{{{ref_replace}}}', string)
+
+    return string
 
 
 def gitlab2hugo(string: str, isindexmd: bool) -> str:
@@ -170,15 +209,14 @@ def gitlab2hugo(string: str, isindexmd: bool) -> str:
 
     Args:
         string: String formatted in GitLab Markdown.
+        isindexmd: If true the file where string is extracted from is an index page for hugo.
 
     Returns:
         String formatted in hugo Markdown.
     """
     if not isindexmd:
         string = hugo_convert_relative_paths(string)
-    string = hugo_reference_remove_md(string)
-
-    return string
+    return hugo_reference_remove_md(string)
 
 
 def gitlab2pandoc(string: str) -> str:
@@ -191,9 +229,7 @@ def gitlab2pandoc(string: str) -> str:
     Returns:
         String formatted in pandoc Markdown.
     """
-    string = hugo_front_matter_convert_pandoc(string)
-
-    return string
+    return hugo_front_matter_convert_pandoc(string)
 
 
 def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> str:
@@ -202,6 +238,7 @@ def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> s
 
     Args:
         string: String formatted in pandoc Markdown.
+        file_path: Path to the file where the string was extracted from.
         extra_args: List of additional arguments for pandoc.
 
     Returns:
@@ -242,6 +279,7 @@ def gitlab2latex(string: str, isindexmd: bool, file_path: str) -> str:
     Args:
         string: String formatted in GitLab Markdown.
         isindexmd: If true, the top level division will be set to chapter.
+        file_path: Path to the file where the string was extracted from.
 
     Returns:
         String formatted in LaTeX.
