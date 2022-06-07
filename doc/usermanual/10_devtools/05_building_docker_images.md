@@ -28,7 +28,7 @@ This image is created manually and only updated when necessary, i.e. if major n
 available.
 
 {{% alert title="Important" color="warning" %}}
-The dependencies Docker image should not be flattened with commands like
+The Docker image containing the dependencies should not be flattened with commands like
 ```sh
 docker export <container id> | docker import - <tag name>
 ```
