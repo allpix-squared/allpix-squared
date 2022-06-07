@@ -41,6 +41,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Nashad Rahman, The Ohio State University, [nashadroid](https://github.com/nashadroid)
 * Sabita Rao, GSDocs2020 Student, [srao](https://gitlab.cern.ch/srao)
 * Edoardo Rossi, DESY, [edrossi](https://gitlab.cern.ch/edrossi)
+* Jihad Saidi, Université de Genève, [jisaidi](https://gitlab.cern.ch/jisaidi)
 * Andre Sailer, CERN, [sailer](https://gitlab.cern.ch/sailer)
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, [schioppa](https://gitlab.cern.ch/schioppa)
 * Sebastian Schmidt, FAU Erlangen, [schmidtseb](https://github.com/schmidtseb)
