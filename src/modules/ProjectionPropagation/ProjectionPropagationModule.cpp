@@ -41,7 +41,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);
-    config_.setDefault<unsigned int>("max_charge_groups", 10000);
+    config_.setDefault<unsigned int>("max_charge_groups", 1000);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("diffuse_deposit", false);
