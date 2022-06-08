@@ -231,9 +231,8 @@ namespace allpix {
         mapping_ = mapping;
 
         // Calculate normalization of field sizes from pitch and scales:
-        auto pitch = model_->getPixelSize();
-        normalization_[0] = 1.0 / scales[0] / pitch.x();
-        normalization_[1] = 1.0 / scales[1] / pitch.y();
+        normalization_[0] = 1.0 / scales[0];
+        normalization_[1] = 1.0 / scales[1];
 
         thickness_domain_ = std::move(thickness_domain);
         type_ = FieldType::GRID;
