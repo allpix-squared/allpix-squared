@@ -120,12 +120,14 @@ namespace allpix {
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
          * @param bins The bins of the flat field array
+         * @param size Physical extent of the field
          * @param mapping Specification of the mapping of the field onto the pixel plane
          * @param scales Scaling factors for the field size, given in fractions of a pixel unit cell in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
                      std::array<size_t, 3> bins,
+                     std::array<double, 3> size,
                      FieldMapping mapping,
                      std::array<double, 2> scales,
                      std::pair<double, double> thickness_domain);

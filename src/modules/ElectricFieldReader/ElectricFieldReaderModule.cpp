@@ -74,7 +74,7 @@ void ElectricFieldReaderModule::initialize() {
         auto field_data = read_field();
 
         // By default, set field scale from physical extent read from field file:
-        std::array<double, 2> field_scale{{field_data.getSize()[0], field_data.getSize()[1]}};
+        std::array<double, 2> field_scale{{1.0, 1.0}};
         // Read the field scales from the configuration if the key is set:
         if(config_.has("field_scale")) {
             auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});

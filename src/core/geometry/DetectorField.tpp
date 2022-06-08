@@ -209,6 +209,7 @@ namespace allpix {
     template <typename T, size_t N>
     void DetectorField<T, N>::setGrid(std::shared_ptr<std::vector<double>> field, // NOLINT
                                       std::array<size_t, 3> bins,
+                                      std::array<double, 3> size,
                                       FieldMapping mapping,
                                       std::array<double, 2> scales,
                                       std::pair<double, double> thickness_domain) {
@@ -230,9 +231,9 @@ namespace allpix {
         bins_ = bins;
         mapping_ = mapping;
 
-        // Calculate normalization of field sizes from pitch and scales:
-        normalization_[0] = 1.0 / scales[0];
-        normalization_[1] = 1.0 / scales[1];
+        // Calculate normalization of field from field size and scale factors:
+        normalization_[0] = 1.0 / scales[0] / size[0];
+        normalization_[1] = 1.0 / scales[1] / size[1];
 
         thickness_domain_ = std::move(thickness_domain);
         type_ = FieldType::GRID;
