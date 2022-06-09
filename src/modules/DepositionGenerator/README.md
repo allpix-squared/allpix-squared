@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DepositionGenerator"
+description: "Energy deposition with data read from MC Generator Data Files"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_output: "DepositedCharge, MCParticle, MCTrack"
+---
 
-# DepositionGenerator
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
-**Status**: Functional
-**Output**: DepositedCharge, MCParticle, MCTrack
-
-### Description
+## Description
 
 This module allows to read primary particles produced by Monte Carlo event generators from files in different data formats, and to emit them to a Geant4 `ParticleGun`.
 The particles are then tracked through the setup using Geant4, and the resulting energy deposits are converted to `DepositedCharge` objects and dispatched to the subsequent simulation chain.
@@ -22,17 +22,17 @@ The number of electron/hole pairs created by a given energy deposition is calcul
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
-### Dependencies
+## Dependencies
 
 This module inherits from and therefore requires the *DepositionGeant4* module as well as an installation of Geant4.
 In addition, an installation of the HepMC3 library is required for the module to support the formats `HepMC3`, `HepMC2` and `HepMC ROOTIO`.
 
-### Parameters
+## Parameters
 
 * `model`: Input data model. Currently supported is the data format of the [@genie] Monte Carl generator (`GENIE`) as well as the `HepMC3`, `HepMC2` and `HepMCROOT` data formats written by the HepMC3 library [@hepmc3].
 * `file_name`: Path to the input data file to be read.
 
-#### Relevant parameters inherited from *DepositionGeant4*
+### Relevant parameters inherited from *DepositionGeant4*
 
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website [@g4physicslists].
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
@@ -46,7 +46,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
-### Usage
+## Usage
 
 ```toml
 [DepositionGenerator]
