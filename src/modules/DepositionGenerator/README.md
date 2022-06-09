@@ -4,19 +4,20 @@ SPDX-License-Identifier: CC-BY-4.0
 -->
 
 # DepositionGenerator
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Functional  
+**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
+**Status**: Functional
 **Output**: DepositedCharge, MCParticle, MCTrack
 
 ### Description
 
 This module allows to read primary particles produced by Monte Carlo event generators from files in different data formats, and to emit them to a Geant4 `ParticleGun`.
-The particles are then tracked through the setup using Geant4, and the resulting energy deposits are convected to `DepositedCharge` objects and dispatched to the subsequent simulation chain.
+The particles are then tracked through the setup using Geant4, and the resulting energy deposits are converted to `DepositedCharge` objects and dispatched to the subsequent simulation chain.
 The different file formats can be selected via the `model` parameter, the path to the data file has to be provided via the `file_name` configuration parameter.
+
+Events are read consecutively from the generator event data and event number are matched. This means that the event with number 5 in Allpix Squared will contain the data from event number 5 of the generator data file. If events are missing in the generator data, no primary particles are generated in Allpix Squared and the event remains empty.
 
 This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there.
 A detailed description of these configuration parameters can be found in the respective module documentation.
-The parameter `number_of_particles` here refers to full shower developments instead of individual particles, there can be multiple particles per shower.
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
@@ -42,7 +43,6 @@ In addition, an installation of the HepMC3 library is required for the module to
 * `range_cut` : Geant4 range cut-off threshold for the production of gammas, electrons and positrons to avoid infrared divergence. Defaults to a fifth of the shortest pixel feature, i.e. either pitch or thickness.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
 Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
-* `number_of_particles` : Number of cosmic ray showers to generate in a single event. Defaults to one.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
@@ -58,3 +58,6 @@ file_name = "genie_input_data.root"
 
 [@genie]: https://doi.org/10.1016/j.nima.2009.12.009
 [@hepmc3]: https://doi.org/10.1016/j.cpc.2020.107310
+[@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
+[@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
+[@g4physicslists]: https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsListGuide/html/index.html
