@@ -97,6 +97,7 @@ namespace allpix {
         bool output_plots_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
+        unsigned int max_charge_groups_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
@@ -114,9 +115,12 @@ namespace allpix {
         bool has_magnetic_field_{};
         ROOT::Math::XYZVector magnetic_field_;
 
+        // Deposit statistics
+        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
+
         // Output plots
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;
-        Histogram<TH1D> step_length_histo_;
+        Histogram<TH1D> step_length_histo_, group_size_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
         Histogram<TH1D> trapped_histo_;
