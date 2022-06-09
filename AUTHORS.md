@@ -1,7 +1,7 @@
 ---
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "Acknowledgments"
+title: "Authors and Acknowledgments"
 ---
 
 Allpix Squared is developed and maintained by
@@ -56,9 +56,3 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Håkan Wennlöf, DESY, [hwennlof](https://gitlab.cern.ch/hwennlof)
 * Andy Wharton, Lancaster University, [awharton](https://gitlab.cern.ch/awharton)
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
-
-The authors would also like to express their thanks to the developers of AllPix \[[@ap1wiki], [@ap1git]\].
-
-
-[@ap1wiki]: https://twiki.cern.ch/twiki/bin/view/Main/AllPix
-[@ap1git]: https://github.com/ALLPix/allpix
