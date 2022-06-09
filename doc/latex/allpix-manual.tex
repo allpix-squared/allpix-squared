@@ -1,0 +1,72 @@
+\documentclass[a4paper,11pt,numbers=noenddot,headsepline,titlepage,twoside,openright,DIV=14,BCOR=8mm,parskip=half]{scrbook}
+
+% Font related
+\usepackage{fontspec}
+\usepackage{microtype}
+\usepackage{fvextra}
+\usepackage[svgnames]{xcolor}
+
+% Layout
+\usepackage[top=3cm,bottom=3cm]{geometry}
+\usepackage{array}
+\setcounter{tocdepth}{1}
+
+% Language
+\usepackage{csquotes}
+\usepackage[bidi=basic,english]{babel}
+\usepackage[useregional=false,style=iso]{datetime2}
+
+% References
+\usepackage[style=ext-numeric-verb,backend=biber,autocite=plain,sorting=none,url=false]{biblatex}
+\usepackage[unicode]{hyperref}
+\DeclareOuterCiteDelims{cite}{}{}
+
+% Math
+\usepackage{amsmath}
+\usepackage{unicode-math}
+\usepackage[version=4]{mhchem}
+
+% Code highlighting
+\usepackage{listings}
+\usepackage{minted}
+\lstset{basicstyle=\ttfamily,breaklines=true}
+\setminted{breaklines=true}
+
+% Images
+\usepackage{graphicx}
+\usepackage{ccicons}
+
+% pandoc
+\usepackage{booktabs}
+\usepackage{longtable}
+\newcommand{\passthrough}[1]{#1}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Latin Modern fonts
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\setmathfont{Latin Modern Math}
+
+% Front matter settings
+\input{frontmatter.tex}
+
+% Content
+\begin{document}
+\frontmatter
+\pagenumbering{Roman}
+\thispagestyle{empty}
+\maketitle
+\cleardoublepage
+\thispagestyle{empty}
+\addlicense
+\cleardoublepage
+\tableofcontents
+\mainmatter
+\pagenumbering{arabic}
+\input{input.tex}
+\backmatter
+\printbibliography[heading=bibintoc]
+\end{document}

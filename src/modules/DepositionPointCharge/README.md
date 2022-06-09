@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DepositionPointCharge"
+description: "Energy deposition at deterministic positions"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_output: "DepositedCharge, MCParticle"
+---
 
-# DepositionPointCharge
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional  
-**Output**: DepositedCharge, MCParticle
-
-### Description
+## Description
 Module which deposits a defined number of charge carriers at a specific point within the active volume the detector.
 The number of charge carriers to be deposited can be specified in the configuration.
 
@@ -26,7 +26,7 @@ This module supports three different deposition models:
 Monte Carlo particles are generated at the respective positions, bearing a particle ID of -1.
 All charge carriers are deposited at time zero, i.e. at the beginning of the event.
 
-### Parameters
+## Parameters
 * `model`: Model according to which charge carriers are deposited. For `fixed`, charge carriers are deposited at a specific point for every event. For `scan`, the point where charge carriers are deposited changes for every event. For `spot`, depositions are smeared around the configured position.
 * `number_of_charges`: Number of charges deposited. This refers to the total number of charge carriers for the source type `point` and defaults to 1. For the `mip` source type, this value is interpreted as charge carriers per length deposited in the sensor and defaults to `80/um`. It should be noted that without units specified, this value will be interpreted in the framework base units, in this case `/mm`.
 * `number_of_steps`: Number of steps over the full sensor thickness at which charge carriers are deposited. Only used for `mip` source type. Defaults to 100.
@@ -34,7 +34,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 * `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. Only used for the `fixed` and model. When using source type `mip`, providing a 2D position is sufficient since it only uses the x and y coordinates. If used in scan mode, it allows you to shift the origin of each deposited charge by adding this value.
 * `spot_size`: Width of the Gaussian distribution used to smear the position in the `spot` model. Only one value is taken and used for all three dimensions.
 
-### Usage
+## Usage
 
 Example configuration for a point source at a defined position around which charge carriers are deposited with a Gaussian distribution:
 

@@ -1,24 +1,37 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "ProjectionPropagation"
+description: "Propagates deposited charges via projection to the sensor surface"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)"
+module_status: "Functional"
+module_input: "DepositedCharge"
+module_output: "PropagatedCharge"
+---
 
-# ProjectionPropagation
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)  
-**Status**: Functional   
-**Input**: DepositedCharge   
-**Output**: PropagatedCharge   
-
-### Description
+## Description
 The module projects the deposited electrons (or holes) to the sensor surface and applies a randomized, simplified diffusion. It can be used to save computing time at the cost of precision.
 
-The diffusion of the charge carriers is realized by placing sets of a configurable number of electrons in positions drawn as a random number from a two-dimensional Gaussian distribution around the projected position at the sensor surface. The diffusion width is based on an approximation of the drift time, using an analytical approximation for the integral of the mobility in a linear electric field. Here, the charge carrier mobility parametrization of Jacoboni [@jacoboni] is used. The integral is calculated as follows, with $` \mu_0 = V_m/E_c `$:
+The diffusion of the charge carriers is realized by placing sets of a configurable number of electrons in positions drawn as a random number from a two-dimensional Gaussian distribution around the projected position at the sensor surface. The diffusion width is based on an approximation of the drift time, using an analytical approximation for the integral of the mobility in a linear electric field. Here, the charge carrier mobility parametrization of Jacoboni \[[@jacoboni]\] is used. The integral is calculated as follows, with $` \mu_0 = V_m/E_c `$:
 
-$` t = \int\frac 1v ds = \int \frac{1}{\mu(s)E(s)} ds = \int \frac{\left(1+\left(\frac{E(S)}{E_c}\right)^\beta\right)^{1/\beta}}{\mu_0E(s)} ds `$
+```math
+\begin{aligned}
+t &= \int\frac 1v ds \\
+  &= \int \frac{1}{\mu(s)E(s)} ds \\
+  &= \int \frac{\left(1+\left(\frac{E(S)}{E_c}\right)^\beta\right)^{1/\beta}}{\mu_0E(s)} ds
+\end{aligned}
+```
 
 Here, $` \beta `$ is set to 1, inducing systematic errors less than 10%, depending on the sensor temperature configured. With the linear approximation to the electric field as $`E(s) = ks+E_0`$ it is
 
-$` t = \frac {1}{\mu_0}\int\left( \frac{1}{E(s)} + \frac{1}{E_c} \right) ds = \frac {1}{\mu_0}\int\left( \frac{1}{ks+E_0} + \frac{1}{E_c} \right) ds = \frac {1}{\mu_0}\left[ \frac{\ln(ks+E_0)}{k} + \frac{s}{E_c} \right]^b _a = \frac{1}{\mu_0} \left[ \frac{\ln(E(s))}{k} + \frac{s}{E_c} \right]^b _a`$.
+```math
+\begin{aligned}
+t &= \frac {1}{\mu_0}\int\left( \frac{1}{E(s)} + \frac{1}{E_c} \right) ds \\
+  &= \frac {1}{\mu_0}\int\left( \frac{1}{ks+E_0} + \frac{1}{E_c} \right) ds \\
+  &= \frac {1}{\mu_0}\left[ \frac{\ln(ks+E_0)}{k} + \frac{s}{E_c} \right]^b _a \\
+  &= \frac{1}{\mu_0} \left[ \frac{\ln(E(s))}{k} + \frac{s}{E_c} \right]^b _a
+\end{aligned}
+```
 
 Since the approximation of the drift time assumes a linear electric field, this module cannot be used with any other electric field configuration.
 
@@ -31,7 +44,7 @@ Charge carriers which would recombine before reaching the surface are removed fr
 
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
-### Parameters
+## Parameters
 * `temperature`: Temperature in the sensitive device, used to estimate the diffusion constant and therefore the width of the diffusion distribution.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
 * `charge_per_step`: Maximum number of electrons placed for which the randomized diffusion is calculated together, i.e. they are placed at the same position. Defaults to 10.
@@ -43,7 +56,7 @@ Lorentz drift in a magnetic field is not supported. Hence, in order to use this 
 * `output_plots`: Determines if plots should be generated.
 
 
-### Usage
+## Usage
 ```
 [ProjectionPropagation]
 temperature = 293K
@@ -52,6 +65,3 @@ output_plots = 1
 ```
 
 [@jacoboni]: https://doi.org/10.1016/0038-1101(77)90054-5
-[@fossum]: https://doi.org/10.1016/0038-1101(76)90022-8
-[@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
-[@haug]: https://doi.org/10.1016/0038-1098(78)90646-4

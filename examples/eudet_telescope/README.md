@@ -1,9 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# EUDET Telescope Simulation Example
+---
+# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "EUDET Telescope"
+description: "Simulation of a EUDET-type beam telescope"
+---
 
 This example demonstrates the simulation of EUDET-type Beam Telescopes, making use of the `ProjectionPropagation` module and approximated simulation and sensor parameters tuned to measurements.
 

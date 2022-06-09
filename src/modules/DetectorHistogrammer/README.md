@@ -1,14 +1,14 @@
-<!--
-SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
+---
+# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "DetectorHistogrammer"
+description: "Provisional simulation analysis for a detector"
+module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>), Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_output: "PixelHit, MCParticle"
+---
 
-# DetectorHistogrammer
-**Maintainer**: Koen Wolters (<koen.wolters@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>), Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional  
-**Input**: PixelHit, MCParticle
-
-### Description
+## Description
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
@@ -37,7 +37,7 @@ For technical reasons, this offset is drawn randomly from a Gauss distribution i
 * Mean total cluster charge as function of the in-pixel impact position of the primary particle.
 * Mean seed pixel charge as a function  of the in-pixel impact position of the primary particle.
 
-### Parameters
+## Parameters
 
 * `granularity`: 2D integer vector defining the number of bins along the *x* and *y* axis for in-pixel maps. Defaults to the pixel pitch in micro meters, e.g. a detector with 100um x 100um pixels would be represented in a histogram with `100 * 100 = 10000` bins.
 * `granularity_local`: 2D integer vector defining the number of bins for each pixel along the *x* and *y* axis for maps in local coordinates where particle positions are used as reference. Defaults to `1 1` corresponding to a single bin per pixel.
@@ -45,7 +45,7 @@ For technical reasons, this offset is drawn randomly from a Gauss distribution i
 * `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `2um 2um`.
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
 
-### Usage
+## Usage
 This module is normally bound to a specific detector to plot, for example to the 'dut':
 
 ```ini

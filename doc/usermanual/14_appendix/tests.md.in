@@ -1,0 +1,23 @@
+---
+# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "List of Tests"
+---
+
+## Framework Functionality Tests
+
+Currently implemented framework functionality tests comprise:
+
+@CORE_TEST_DESCRIPTIONS@
+
+## Module Functionality Tests
+
+The following module functionality tests are currently performed:
+
+@MODULES_TEST_DESCRIPTIONS@
+
+## Performance Tests
+
+Current performance tests comprise:
+
+@PERF_TEST_DESCRIPTIONS@

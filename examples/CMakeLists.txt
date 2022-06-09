@@ -33,16 +33,13 @@ IF(TEST_EXAMPLES)
                 )
                 SET(DEPENDENCY "examples/fast_simulation")
             ENDIF()
-            IF(${test} MATCHES "replay" OR ${test} MATCHES "fast")
-                SET(ADDITIONAL_CLI_ARGS "${ADDITIONAL_CLI_ARGS} -o random_seed_core=1")
-            ENDIF()
 
             ADD_TEST(
                 NAME "${TEST_NAME}"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                 COMMAND
                     ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${test}"
-                    "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${test}/${test}.conf -o number_of_events=10 ${ADDITIONAL_CLI_ARGS}"
+                    "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${test}/${test}.conf -o number_of_events=10 -o random_seed=0 ${ADDITIONAL_CLI_ARGS}"
             )
             SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES DEPENDS "${DEPENDENCY}")
             ADD_DEFAULT_FAIL_CONDITIONS(${TEST_NAME})

@@ -8,6 +8,9 @@ echo -e "\nPreparing code basis for a new module:\n"
 # Ask for module name:
 read -p "Name of the module? " MODNAME
 
+# Ask for module description:
+read -p "Short description of the module? " MODDESC
+
 # Ask for module type:
 echo -e "Type of the module?\n"
 type=0
@@ -75,8 +78,9 @@ if [ -z "$MYMAIL" ]; then
     MYMAIL=$(hostname)
 fi
 sed -e "s/Dummy/$MODNAME/g" \
-    -e "s/\*NAME\*/$MYNAME/g" \
-    -e "s/\*EMAIL\*/$MYMAIL/g" \
+    -e "s/A dummy module/$MODDESC/g" \
+    -e "s/John Doe/$MYNAME/g" \
+    -e "s/john\.doe@example\.com/$MYMAIL/g" \
     -e "s/Functional/Immature/g" \
     "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 
@@ -143,9 +147,10 @@ eval $command
 
 # Print a summary of the module created:
 FINALPATH=`realpath $MODDIR/$MODNAME`
-echo "Name:   $MODNAME"
-echo "Author: $MYNAME ($MYMAIL)"
-echo "Path:   $FINALPATH"
+echo "Name:        $MODNAME"
+echo "Description: $MODDESC"
+echo "Author:      $MYNAME ($MYMAIL)"
+echo "Path:        $FINALPATH"
 echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
 if [ "$sequence" = 1 ]; then
   echo "This module requires sequential processing of events in multithreaded environments."

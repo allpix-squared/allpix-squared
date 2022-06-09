@@ -1,12 +1,12 @@
-<!--
-SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
-SPDX-License-Identifier: CC-BY-4.0
--->
-
-# TextWriter
-**Maintainer**: Simon Spannagel (<simon.spannagel@cern.ch>)  
-**Status**: Functional  
-**Input**: *all objects in simulation*
+---
+# SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0 OR MIT
+title: "TextWriter"
+description: "Writes simulation objects to a text file"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
+module_status: "Functional"
+module_input: "all objects in simulation"
+---
 
 ### Description
 This module allows to write any object from the simulation to a plain ASCII text file. It reads all messages dispatched by the framework containing Allpix objects. The data content of each message is printed into the text file, while events are separated by an event header:
