@@ -15,7 +15,7 @@ The following command creates a container from the latest Docker image in the pr
 session with the `allpix` executable already in the `$PATH`. Here, the current host system path is mounted to the `/data`
 directory of the container.
 
-```sh
+```shell
 docker run --interactive --tty                                   \
            --volume "$(pwd)":/data                               \
            --name=allpix-squared                                 \
@@ -26,7 +26,7 @@ docker run --interactive --tty                                   \
 Alternatively it is also possible to directly start the simulation instead of an interactive shell, e.g. using the following
 command:
 
-```sh
+```shell
 docker run --tty --rm                                            \
            --volume "$(pwd)":/data                               \
            --name=allpix-squared                                 \

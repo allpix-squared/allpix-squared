@@ -54,7 +54,7 @@ whereas for a scalar field such as a weighting potential, only one field compone
 When compiling the Allpix Squared framework, the Mesh Converter is automatically compiled and installed in the Allpix Squared installation directory.
 
 It is also possible to compile the converter separately as stand-alone tool within this directory:
-```sh
+```shell
 mkdir build
 cd build
 cmake ..
@@ -90,7 +90,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 
 ### Usage
 To run the program, the following command should be executed from the installation folder:
-```sh
+```shell
 mesh_converter -f <file_prefix> [<options>] [<arguments>]
 ```
 The converter will look for a configuration file with `<file_prefix>` and `.conf` extension. This default configuration file name can be replaced with the `-c` option.
@@ -117,7 +117,7 @@ The keyword mesh_tree can be used as a switch to enable or disable the creation 
 ## Mesh Plotter
 
 In addition to the Mesh Converter, the `mesh_plotter` tool can be used to visualize the new mesh interpolation results, from the installation folder as follows:
-```sh
+```shell
 mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
 The following command-line options are supported:

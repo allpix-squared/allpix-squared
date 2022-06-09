@@ -10,7 +10,7 @@ attempted) should be executed. In a Bash terminal on a private Linux machine thi
 from their respective installation directories (replacing `<root_install_dir>` with the local ROOT installation directory and
 likewise for Geant4):
 
-```sh
+```shell
 source <root_install_dir>/bin/thisroot.sh
 source <geant4_install_dir>/bin/geant4.sh
 ```
@@ -18,6 +18,6 @@ source <geant4_install_dir>/bin/geant4.sh
 On the CERN LXPLUS service, a standard initialization script is available to load all dependencies from the CVMFS
 infrastructure. This script should be executed as follows (from the main repository directory):
 
-```sh
+```shell
 source etc/scripts/setup_lxplus.sh
 ```

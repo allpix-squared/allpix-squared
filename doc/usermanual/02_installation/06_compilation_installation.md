@@ -8,7 +8,7 @@ weight: 6
 Compiling the framework is now a single command in the build folder created earlier (replacing `<number_of_cores>` with the
 number of cores to use for compilation):
 
-```sh
+```shell
 make -j<number_of_cores>
 ```
 
@@ -19,7 +19,7 @@ library and model paths are only fully configured during installation.
 To install the library to the selected installation location (defaulting to the source directory of the repository) requires
 the following command:
 
-```sh
+```shell
 make install
 ```
 

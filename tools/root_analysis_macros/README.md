@@ -43,7 +43,7 @@ This macro allows to recover the full configuration of a simulation from a data 
 
 The simulation configuration can be recreated using the following command:
 
-```sh
+```shell
 root -x 'recoverConfiguration.C("path/to/output/data.root",
                                 "configuration.conf")'
 ```
@@ -54,6 +54,6 @@ Here, the first argument is the input data file produced by the ROOTObjectWriter
 Simple macro that reads the required trees to plot Monte Carlo hits in pixel versus the pixel charge. Loops over all events of the root file.
 A few relevant histograms are displayed at the end of the event loop.
 Requires PyROOT, numpy, matplotlib. To execute the script, run:
-```sh
+```shell
 python3 display_mc_hits.py -l path/to/libAllpixObjects.so -f path/to/data.root -d <detector_name>
 ```

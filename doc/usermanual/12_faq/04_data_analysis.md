@@ -66,7 +66,7 @@ be loaded.
 In ROOT this can be done interactively by loading a data file, the necessary shared library objects and a macro for the
 analysis:
 
-```sh
+```shell
 root -l data_file.root
 root [1] .L ~/path/to/your/allpix-squared/lib/libAllpixObjects.so
 root [2] .L analysisMacro.C+

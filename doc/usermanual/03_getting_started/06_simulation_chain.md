@@ -103,7 +103,7 @@ be found at `etc/manual_detector.conf`.
 
 The simulation is started by passing the path of the main configuration file to the `allpix` executable as follows:
 
-```sh
+```shell
 allpix -c etc/manual.conf
 ```
 

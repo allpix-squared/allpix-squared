@@ -9,11 +9,11 @@ This example illustrates how the `DepositionCosmics` module is used to model the
 
 ## Usage
 First of all, change into the example directory. Run the simulation example from here:
-```sh
+```shell
 allpix -c cosmic_flux.conf
 ```
 To analyse the tracks of the MCParticles, issue
-```sh
+```shell
 python analysis/analysis.py -l PATH_TO_ALLPIX_INSTALL/lib/libAllpixObjects.so
 ```
 The library flag is only required when your `allpix-squared/lib` path is not in `LD_LIBRARY_PATH`.
