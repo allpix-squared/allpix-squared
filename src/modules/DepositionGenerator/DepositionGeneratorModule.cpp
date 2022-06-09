@@ -45,6 +45,8 @@ DepositionGeneratorModule::DepositionGeneratorModule(Configuration& config,
     config_.set("source_type", "generator");
     // FIXME allow to shift gun position by setting this parameter?
     config_.set("source_position", ROOT::Math::XYZPoint());
+    // Force number of particles to one, we are always reading a single generator event per event
+    config_.set("nuymber_of_particles", 1);
 
     // Add the particle source position to the geometry
     geo_manager_->addPoint(config_.get<ROOT::Math::XYZPoint>("source_position", ROOT::Math::XYZPoint()));
