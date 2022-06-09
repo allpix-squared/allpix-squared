@@ -216,7 +216,7 @@ void DepositionGeant4Module::initialize() {
         LOG(INFO) << "Setting G4 production cut to " << Units::display(production_cut, {"mm", "um"})
                   << ", derived from properties of detector \"" << min_detector << "\"";
     }
-    ui_g4->ApplyCommand("/run/setCut " + std::to_string(production_cut));
+    physicsList->SetDefaultCutValue(production_cut);
 
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
