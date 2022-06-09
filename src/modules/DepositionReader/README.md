@@ -109,7 +109,7 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 ## Usage
 An example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
 
-```toml
+```ini
 [DepositionReader]
 model = "root"
 file_name = "g4_energy_deposits.root"

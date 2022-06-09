@@ -74,7 +74,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 
 ## Usage
 
-```toml
+```ini
 [DepositionCosmics]
 physics_list = FTFP_BERT_LIV
 number_of_particles = 2

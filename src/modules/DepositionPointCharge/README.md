@@ -38,7 +38,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 
 Example configuration for a point source at a defined position around which charge carriers are deposited with a Gaussian distribution:
 
-```toml
+```ini
 [DepositionPointCharge]
 source_type = "point"
 model = "spot"
@@ -49,7 +49,7 @@ number_of_steps = 100
 
 Example configuration for a MIP-like energy deposition along a line at a fixed position, with 63 electron-hole pairs deposited per micrometer of sensor material:
 
-```toml
+```ini
 [DepositionPointCharge]
 source_type = "mip"
 model = "fixed"
