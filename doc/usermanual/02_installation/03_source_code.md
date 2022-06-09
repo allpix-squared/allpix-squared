@@ -12,7 +12,7 @@ considered development versions and might exhibit unexpected behavior.
 For developers, it is recommended to always use the latest available version from the git `master` branch. The software
 repository can be cloned as follows:
 
-```sh
+```shell
 git clone https://gitlab.cern.ch/allpix-squared/allpix-squared
 cd allpix-squared
 ```

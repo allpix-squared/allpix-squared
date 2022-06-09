@@ -57,7 +57,7 @@ code, just to adhere to the formatting. There are several options to integrate t
   script called by `git` before a certain action. In this case, it is a pre-commit hook which automatically runs
   `clang-format` in the background and offers to update the formatting of the code to be committed. It can be installed
   by calling
-  ```sh
+  ```shell
   ./etc/git-hooks/install-hooks.sh
   ```
   once.

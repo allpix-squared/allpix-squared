@@ -40,7 +40,7 @@ Only used if the *model* parameter has the value **mesh**.
 * `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
 
 ## Usage
-```toml
+```ini
 [DopingProfileReader]
 model = "mesh"
 file_name = "example_doping_profile.apf"

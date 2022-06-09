@@ -10,9 +10,9 @@ module_output: "PixelCharge"
 ---
 
 # InducedTransfer
-**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)  
-**Status**: Functional  
-**Input**: PropagatedCharge  
+**Maintainer**: Simon Spannagel (simon.spannagel@cern.ch)
+**Status**: Functional
+**Input**: PropagatedCharge
 **Output**: PixelCharge
 
 ## Description
@@ -30,7 +30,7 @@ The resulting induced charge is summed for all propagated charge carriers and re
 * `induction_matrix`: Size of the pixel sub-matrix for which the induced charge is calculated, provided as number of pixels in x and y. The numbers have to be odd and default to `3, 3`. Usually, a 3x3 grid (9 pixels) should suffice since the weighting potential at a distance of more than one pixel pitch normally is small enough to be neglected.
 
 ## Usage
-```toml
+```ini
 [InducedTransfer]
 induction_matrix = 3 3
 ```

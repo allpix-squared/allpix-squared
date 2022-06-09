@@ -25,14 +25,14 @@ For more details about the project please have a look at the website at https://
 Docker images are provided for all releases and the latest development version of the framework.
 To create a container from the latest Docker image and start an interactive shell session with the current host system path mounted to `/data`, run:
 
-```sh
+```shell
 $ docker run --interactive --tty --volume "$(pwd)":/data --name=allpix-squared \
              gitlab-registry.cern.ch/allpix-squared/allpix-squared bash
 ```
 
 Alternatively it is also possible to directly start the simulation instead of an interactive shell:
 
-```sh
+```shell
 $ docker run --tty --rm --volume "$(pwd)":/data --name=allpix-squared \
              gitlab-registry.cern.ch/allpix-squared/allpix-squared "allpix -c my_simulation.conf"
 ```
@@ -45,7 +45,7 @@ More detailed information on the Docker images can be found in the user manual.
 
 Machines with a supported OS and the [CERN Virtual Machine File System (CVMFS)](https://cernvm.cern.ch/portal/filesystem) can load Allpix<sup>2</sup> and its dependencies from there by sourcing the respective environment:
 
-```sh
+```shell
 $ source /cvmfs/clicdp.cern.ch/software/allpix-squared/<version>/x86_64-<system>-<compiler>-opt/setup.sh
 ```
 where `<version>` should be replaced with the desired Allpix<sup>2</sup> version, e.g. `2.2.1` and `<system>` with the operating system of the executing machine (`centos7`, `centos8` or `mac11`). The compiler versions available via the `<compiler>` tag depend on the selected operating system.
@@ -72,7 +72,7 @@ $ source etc/scripts/setup_lxplus.sh
 
 Compilation TL;DR:
 
-```sh
+```shell
 $ mkdir build && cd build/
 $ cmake ..
 $ make install

@@ -17,7 +17,7 @@ Unless really required for the analysis of the simulation, it is recommended to 
 This can be accomplished by using the `include` and `exclude` parameters in the configuration file.
 In order to use this module, one is required to install PostgreSQL and generate a database using the `create-db.sql` script in `/etc/scripts`. On Linux, this can be done as
 
-```sh
+```shell
 sudo -u postgres psql
 postgres: CREATE DATABASE mydb;
 postgres: \q
@@ -52,7 +52,7 @@ This generates a database with the following structure:
 Host, username and password are required to write into the database.
 A new user/password pair can be created and relevant privileges to edit the database can be created via
 
-```sh
+```shell
 sudo -u postgres createuser myuser
 sudo -u postgres psql mydb
 postgres: CREATE USER myuser WITH ENCRYPTED PASSWORD 'mypass';
@@ -63,7 +63,7 @@ postgres: GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO myuser;
 
 In case of an authentication failure error being issues, the password of the user can be changed using
 
-```sh
+```shell
 sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
 ```
 

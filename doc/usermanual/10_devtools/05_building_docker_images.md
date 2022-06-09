@@ -15,7 +15,7 @@ contains all build dependencies such as compilers, CMake, and git as well as the
 ROOT6 and Geant4. It derives from the latest Ubuntu LTS Docker image and can be build using the `etc/docker/Dockerfile.deps`
 file via the following commands:
 
-```sh
+```shell
 docker build --file etc/docker/Dockerfile.deps            \
              --tag gitlab-registry.cern.ch/allpix-squared/\
              allpix-squared/allpix-squared-deps           \
@@ -29,7 +29,7 @@ available.
 
 {{% alert title="Important" color="warning" %}}
 The Docker image containing the dependencies should not be flattened with commands like
-```sh
+```shell
 docker export <container id> | docker import - <tag name>
 ```
 because it strips any `ENV` variables set or used during the build process. They are used to set up the ROOT6 and Geant4
@@ -40,7 +40,7 @@ Finally, the latest revision of Allpix Squared is built using the file `etc/dock
 automatically by the continuous integration and the created containers are directly uploaded to the project's Docker
 registry:
 
-```sh
+```shell
 docker build --file etc/docker/Dockerfile                                \
              --tag gitlab-registry.cern.ch/allpix-squared/allpix-squared \
              .

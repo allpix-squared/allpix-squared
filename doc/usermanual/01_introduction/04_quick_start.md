@@ -15,7 +15,7 @@ libraries, which need to be installed and loaded before using Allpix Squared. Fo
 
 The minimal, default installation can be obtained by executing the commands listed below.
 
-```sh
+```shell
 git clone https://gitlab.cern.ch/allpix-squared/allpix-squared
 cd allpix-squared
 mkdir build && cd build/
@@ -26,7 +26,7 @@ cd ..
 
 The binary can then be executed with the provided example configuration file as follows:
 
-```sh
+```shell
 bin/allpix -c examples/example.conf
 ```
 

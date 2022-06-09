@@ -11,7 +11,7 @@ of the framework and its modules.
 
 The tests can also be manually invoked from the build directory of Allpix Squared with:
 
-```sh
+```shell
 ctest
 ```
 
@@ -22,6 +22,6 @@ search through the log of several CI jobs.
 The different subcategories of tests described below can be executed or ignored using the `-E` (exclude) and `-R` (run)
 switches of the `ctest` program:
 
-```sh
+```shell
 ctest -R test_performance
 ```

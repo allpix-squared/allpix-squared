@@ -56,7 +56,7 @@ The module can produces a variety of plots such as total integrated charge plots
 
 
 ## Usage
-```toml
+```ini
 [TransientPropagation]
 temperature = 293K
 charge_per_step = 10

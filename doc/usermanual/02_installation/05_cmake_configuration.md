@@ -10,7 +10,7 @@ out-of-source build is recommended: this means CMake should not be directly exec
 folder should be created, from which CMake should be run. For a standard build without any additional flags this implies
 executing:
 
-```sh
+```shell
 mkdir build
 cd build
 cmake ..
@@ -48,7 +48,7 @@ CMake can be run with several extra arguments to change the type of installation
 An example of a custom debug build, without the [`GeometryBuilderGeant4` module](../07_modules/geometrybuildergeant4.md) and
 with installation to a custom directory is shown below:
 
-```sh
+```shell
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=../install/ \

@@ -38,6 +38,6 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 ## Usage
 The default configuration is equal to the following:
 
-```toml
+```ini
 [PulseTransfer]
 ```

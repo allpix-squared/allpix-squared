@@ -10,7 +10,7 @@ order to generate a working tarball from the current Allpix Squared build, the `
 otherwise the `allpix` binary will not be able to locate the dynamic libraries. If not set, the global `LD_LIBRARY_PATH` is
 used to search for the required libraries:
 
-```sh
+```shell
 mkdir build
 cd build
 cmake -DCMAKE_SKIP_RPATH=ON ..
@@ -22,7 +22,7 @@ installation target created by CMake. This includes the detector models in the `
 tools provided in `tools/root_analysis_macros/` folder. In order to include them in a release tarball produced by CPack, the
 installation path should be set to a location different from the project source folder, for example:
 
-```sh
+```shell
 cmake -DCMAKE_INSTALL_PREFIX=/tmp ..
 ```
 
@@ -49,7 +49,7 @@ ADD_RUNTIME_DEP(geant4.sh)
 The command uses the `GET_FILENAME_COMPONENT` command of CMake with the `PROGRAM` option. Duplicates are removed from the
 list automatically. Each file found will be written to the setup file as
 
-```sh
+```shell
 source <absolute path to the file>
 ```
 
@@ -69,6 +69,6 @@ The command uses the `GET_FILENAME_COMPONENT` command of CMake with the `DIRECTO
 corresponding shared library. Duplicates are removed from the list automatically. Each directory found will be added to the
 global library search path by adding the following line to the setup file:
 
-```sh
+```shell
 export LD_LIBRARY_PATH="<library directory>:$LD_LIBRARY_PATH"
 ```

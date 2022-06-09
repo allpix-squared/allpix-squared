@@ -80,7 +80,7 @@ This module requires an installation of Eigen3.
 ## Usage
 A example of generic propagation for all sensors of type _Timepix_ at room temperature using packets of 25 charges is the following:
 
-```toml
+```ini
 [GenericPropagation]
 type = "timepix"
 temperature = 293K

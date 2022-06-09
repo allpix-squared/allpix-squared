@@ -13,7 +13,7 @@ In addition, another Timepix3 detector is placed as device under test (DUT) betw
 Here, the thickness is directly defined in the geometry file, overwriting the default value from the `timepix` model.
 All planes are randomly mis-aligned at the beginning of the simulation using the alignment precision keywords:
 
-```toml
+```ini
 alignment_precision_position = 1mm 1mm 100um
 alignment_precision_orientation = 0.2deg 0.2deg 0.2deg
 ```
