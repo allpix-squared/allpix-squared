@@ -104,6 +104,7 @@ namespace allpix {
         bool output_plots_{}, output_linegraphs_{}, output_animations_{}, output_plots_lines_at_implants_{};
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
+        unsigned int max_charge_groups_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
@@ -125,6 +126,7 @@ namespace allpix {
         std::atomic<unsigned int> total_propagated_charges_{};
         std::atomic<unsigned int> total_steps_{};
         std::atomic<long unsigned int> total_time_picoseconds_{};
+        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> uncertainty_histo_;
