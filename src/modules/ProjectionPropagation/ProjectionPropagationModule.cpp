@@ -302,7 +302,7 @@ void ProjectionPropagationModule::run(Event* event) {
             auto local_time = deposit.getLocalTime() + propagation_time;
 
             // Only add if within requested integration time:
-            if(propagation_time > integration_time_) {
+            if(local_time > integration_time_) {
                 LOG(DEBUG) << "Charge carriers propagation time not within integration time: "
                            << Units::display(global_time, "ns") << " global / " << Units::display(local_time, {"ns", "ps"})
                            << " local";
