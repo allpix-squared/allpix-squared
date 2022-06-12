@@ -338,11 +338,11 @@ void ProjectionPropagationModule::run(Event* event) {
                 boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
             double drift_time = calc_drift_time();
-            double propagation_time = deposit.getLocalTime() + drift_time + diffusion_time;
+            double propagation_time = drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
-                propagation_time_histo_->Fill(propagation_time, charge_per_step);
+                propagation_time_histo_->Fill(deposit.getLocalTime() + propagation_time, charge_per_step);
                 drift_time_histo_->Fill(drift_time, charge_per_step);
                 if(diffuse_deposit_) {
                     diffusion_time_histo_->Fill(diffusion_time, charge_per_step);
