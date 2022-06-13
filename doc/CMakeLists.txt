@@ -42,6 +42,9 @@ ADD_CUSTOM_TARGET(
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_readme"
         "${PROJECT_SOURCE_DIR}/examples" "${DOCS_MARKDOWN_BINARY_DIR}/08_examples"
     COMMAND
+        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "copylower"
+        "${PROJECT_SOURCE_DIR}/CONTRIBUTING.md" "${DOCS_MARKDOWN_BINARY_DIR}/09_development"
+    COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_readme"
         "${PROJECT_SOURCE_DIR}/tools" "${DOCS_MARKDOWN_BINARY_DIR}/13_additional"
     COMMAND
