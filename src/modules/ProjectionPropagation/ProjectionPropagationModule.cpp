@@ -36,6 +36,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     // Set default value for config variables
     config_.setDefault<int>("charge_per_step", 10);
+    config_.setDefault<unsigned int>("max_charge_groups", 0);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("diffuse_deposit", false);
@@ -45,6 +46,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     output_plots_ = config_.get<bool>("output_plots");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
+    max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);
@@ -129,6 +131,12 @@ void ProjectionPropagationModule::initialize() {
                                   0,
                                   1);
 
+        group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
+                                                  "Charge carrier group size;group size;number of groups transported",
+                                                  static_cast<int>(100 * charge_per_step_),
+                                                  0,
+                                                  static_cast<int>(100 * charge_per_step_));
+
         if(diffuse_deposit_) {
             diffusion_time_histo_ =
                 CreateHistogram<TH1D>("diffusion_time_histo",
@@ -162,6 +170,8 @@ void ProjectionPropagationModule::run(Event* event) {
             continue;
         }
 
+        total_deposits_++;
+
         LOG(DEBUG) << "Set of " << deposit.getCharge() << " charge carriers (" << type << ") on "
                    << Units::display(initial_position, {"mm", "um"});
 
@@ -171,6 +181,13 @@ void ProjectionPropagationModule::run(Event* event) {
         total_charge += charges_remaining;
 
         auto charge_per_step = charge_per_step_;
+        if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
+            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
+            deposits_exceeding_max_groups_++;
+            LOG(INFO) << "Deposited charge: " << deposit.getCharge()
+                      << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
+                      << charge_per_step << " for this deposit.";
+        }
         while(charges_remaining > 0) {
             if(charge_per_step > charges_remaining) {
                 charge_per_step = charges_remaining;
@@ -319,6 +336,7 @@ void ProjectionPropagationModule::run(Event* event) {
             if(output_plots_) {
                 initial_position_histo_->Fill(static_cast<double>(Units::convert(initial_position.z(), "um")),
                                               charge_per_step);
+                group_size_histo_->Fill(charge_per_step);
             }
 
             auto global_position = detector_->getGlobalPosition(local_position);
@@ -356,13 +374,18 @@ void ProjectionPropagationModule::run(Event* event) {
 
 void ProjectionPropagationModule::finalize() {
     if(output_plots_) {
+        group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
+
         // Write output plots
         drift_time_histo_->Write();
         propagation_time_histo_->Write();
         initial_position_histo_->Write();
         recombine_histo_->Write();
+        group_size_histo_->Write();
         if(diffuse_deposit_) {
             diffusion_time_histo_->Write();
         }
     }
+    LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
+              << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
 }

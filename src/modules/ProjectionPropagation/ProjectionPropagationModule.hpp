@@ -71,6 +71,7 @@ namespace allpix {
         double integration_time_{};
         bool diffuse_deposit_;
         unsigned int charge_per_step_{};
+        unsigned int max_charge_groups_{};
 
         // Carrier type to be propagated
         CarrierType propagate_type_;
@@ -88,11 +89,13 @@ namespace allpix {
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
 
-        // Output plot for drift time
+        // Statistical information
+        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> diffusion_time_histo_;
         Histogram<TH1D> propagation_time_histo_;
         Histogram<TH1D> initial_position_histo_;
         Histogram<TH1D> recombine_histo_;
+        Histogram<TH1D> group_size_histo_;
     };
 } // namespace allpix

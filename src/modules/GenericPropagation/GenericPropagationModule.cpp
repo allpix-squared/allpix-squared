@@ -66,6 +66,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("timestep_max", Units::get(0.5, "ns"));
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
+    config_.setDefault<unsigned int>("max_charge_groups", 0);
     config_.setDefault<double>("temperature", 293.15);
 
     // Models:
@@ -112,6 +113,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
+    max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
 
     // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -534,9 +536,9 @@ void GenericPropagationModule::initialize() {
 
         group_size_histo_ = CreateHistogram<TH1D>("group_size_histo",
                                                   "Charge carrier group size;group size;number of groups transported",
-                                                  static_cast<int>(charge_per_step_ - 1),
-                                                  1,
-                                                  static_cast<double>(charge_per_step_));
+                                                  static_cast<int>(100 * charge_per_step_),
+                                                  0,
+                                                  static_cast<int>(100 * charge_per_step_));
 
         recombine_histo_ =
             CreateHistogram<TH1D>("recombination_histo",
@@ -604,6 +606,8 @@ void GenericPropagationModule::run(Event* event) {
             continue;
         }
 
+        total_deposits_++;
+
         // Loop over all charges in the deposit
         unsigned int charges_remaining = deposit.getCharge();
 
@@ -611,6 +615,13 @@ void GenericPropagationModule::run(Event* event) {
                    << Units::display(deposit.getLocalPosition(), {"mm", "um"});
 
         auto charge_per_step = charge_per_step_;
+        if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
+            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
+            deposits_exceeding_max_groups_++;
+            LOG(INFO) << "Deposited charge: " << deposit.getCharge()
+                      << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
+                      << charge_per_step << " for this deposit.";
+        }
         while(charges_remaining > 0) {
             // Define number of charges to be propagated and remove charges of this step from the total
             if(charge_per_step > charges_remaining) {
@@ -907,6 +918,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
 void GenericPropagationModule::finalize() {
     if(output_plots_) {
+        group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
+
         step_length_histo_->Write();
         drift_time_histo_->Write();
         uncertainty_histo_->Write();
@@ -921,4 +934,6 @@ void GenericPropagationModule::finalize() {
                                std::max(1u, static_cast<unsigned int>(total_propagated_charges_));
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
+    LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
+              << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
 }
