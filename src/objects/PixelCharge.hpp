@@ -29,6 +29,7 @@ namespace allpix {
      */
     class PixelCharge : public Object {
         friend class PixelHit;
+        friend class PixelPulse;
 
     public:
         /**

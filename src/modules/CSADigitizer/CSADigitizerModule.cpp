@@ -22,6 +22,7 @@
 #include <TProfile.h>
 
 #include "objects/PixelHit.hpp"
+#include "objects/PixelPulse.hpp"
 
 using namespace allpix;
 
@@ -217,6 +218,7 @@ void CSADigitizerModule::run(Event* event) {
 
     // Loop through all pixels with charges
     std::vector<PixelHit> hits;
+    std::vector<PixelPulse> pulses;
     for(const auto& pixel_charge : pixel_message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
@@ -232,7 +234,7 @@ void CSADigitizerModule::run(Event* event) {
 
         auto timestep = pulse.getBinning();
         LOG(DEBUG) << "Timestep: " << timestep << " integration_time: " << integration_time_;
-        auto ntimepoints = static_cast<size_t>(ceil(integration_time_ / timestep));
+        auto ntimepoints = static_cast<size_t>(std::lround(integration_time_ / timestep));
 
         std::call_once(first_event_flag_, [&]() {
             // initialize impulse response function - assume all time bins are equal
@@ -262,7 +264,7 @@ void CSADigitizerModule::run(Event* event) {
                       << ", samples: " << ntimepoints;
         });
 
-        std::vector<double> amplified_pulse_vec(ntimepoints);
+        Pulse amplified_pulse(timestep, integration_time_);
         LOG(TRACE) << "Preparing pulse for pixel " << pixel_index << ", " << pulse.size() << " bins of "
                    << Units::display(timestep, {"ps", "ns"}) << ", total charge: " << Units::display(pulse.getCharge(), "e");
 
@@ -277,7 +279,7 @@ void CSADigitizerModule::run(Event* event) {
                     outsum += pulse.at(k - i) * impulse_response_function_.at(i);
                 }
             }
-            amplified_pulse_vec.at(k) = outsum;
+            amplified_pulse.addCharge(outsum, timestep * static_cast<double>(k));
         }
 
         if(output_pulsegraphs_) {
@@ -287,15 +289,15 @@ void CSADigitizerModule::run(Event* event) {
                                       "amp_pulse",
                                       "Amplifier signal without noise",
                                       timestep,
-                                      amplified_pulse_vec);
+                                      amplified_pulse);
         }
 
         // Apply noise to the amplified pulse
         allpix::normal_distribution<double> pulse_smearing(0, sigmaNoise_);
         LOG(TRACE) << "Adding electronics noise with sigma = " << Units::display(sigmaNoise_, {"mV", "V"});
-        std::transform(amplified_pulse_vec.begin(),
-                       amplified_pulse_vec.end(),
-                       amplified_pulse_vec.begin(),
+        std::transform(amplified_pulse.begin(),
+                       amplified_pulse.end(),
+                       amplified_pulse.begin(),
                        [&pulse_smearing, &event](auto& c) { return c + (pulse_smearing(event->getRandomEngine())); });
 
         // Fill a graphs with the individual pixel pulses:
@@ -305,11 +307,14 @@ void CSADigitizerModule::run(Event* event) {
                                       "amp_pulse_noise",
                                       "Amplifier signal with added noise",
                                       timestep,
-                                      amplified_pulse_vec);
+                                      amplified_pulse);
         }
 
+        // Store amplified pulse fir dispatch
+        pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
+
         // Find threshold crossing - if any:
-        auto arrival = get_toa(timestep, amplified_pulse_vec);
+        auto arrival = get_toa(timestep, amplified_pulse);
         if(!std::get<0>(arrival)) {
             LOG(DEBUG) << "Amplified signal never crossed threshold, continuing.";
             continue;
@@ -319,8 +324,8 @@ void CSADigitizerModule::run(Event* event) {
         auto time = (store_toa_ ? static_cast<double>(std::get<1>(arrival)) : std::get<2>(arrival));
 
         // Decide whether to store ToT or the pulse integral:
-        auto charge = (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse_vec))
-                                  : std::accumulate(amplified_pulse_vec.begin(), amplified_pulse_vec.end(), 0.0));
+        auto charge = (store_tot_ ? static_cast<double>(get_tot(timestep, std::get<2>(arrival), amplified_pulse))
+                                  : std::accumulate(amplified_pulse.begin(), amplified_pulse.end(), 0.0));
 
         LOG(DEBUG) << "Pixel " << pixel_index << ": time "
                    << (store_toa_ ? std::to_string(static_cast<int>(time)) + "clk"
@@ -337,11 +342,18 @@ void CSADigitizerModule::run(Event* event) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge);
+        hits.emplace_back(
+            pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge, &pulses.back());
     }
 
     // Output summary and update statistics
     LOG(INFO) << "Digitized " << hits.size() << " pixel hits";
+
+    if(!pulses.empty()) {
+        // Create and dispatch hit message
+        auto pulses_message = std::make_shared<PixelPulseMessage>(std::move(pulses), getDetector());
+        messenger_->dispatchMessage(this, pulses_message, event);
+    }
 
     if(!hits.empty()) {
         // Create and dispatch hit message

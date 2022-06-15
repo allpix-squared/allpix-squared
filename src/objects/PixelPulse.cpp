@@ -1,15 +1,15 @@
 /**
  * @file
- * @brief Implementation of object with digitized pixel hit
+ * @brief Implementation of object with pulse processed by pixel front-end
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#include "PixelHit.hpp"
+#include "PixelPulse.hpp"
 
 #include <set>
 
@@ -19,17 +19,15 @@
 
 using namespace allpix;
 
-PixelHit::PixelHit(Pixel pixel,
-                   double local_time,
-                   double global_time,
-                   double signal,
-                   const PixelCharge* pixel_charge,
-                   const PixelPulse* pixel_pulse)
-    : pixel_(std::move(pixel)), local_time_(local_time), global_time_(global_time), signal_(signal) {
+PixelPulse::PixelPulse(Pixel pixel, const Pulse& pulse, const PixelCharge* pixel_charge)
+    : Pulse(pulse), pixel_(std::move(pixel)) {
 
-    pixel_pulse_ = PointerWrapper<PixelPulse>(pixel_pulse);
     pixel_charge_ = PointerWrapper<PixelCharge>(pixel_charge);
     if(pixel_charge != nullptr) {
+        // Set time reference:
+        local_time_ = pixel_charge->getLocalTime();
+        global_time_ = pixel_charge->getGlobalTime();
+
         // Get the unique set of MC particles
         std::set<const MCParticle*> unique_particles;
         for(const auto& mc_particle : pixel_charge->mc_particles_) {
@@ -42,12 +40,20 @@ PixelHit::PixelHit(Pixel pixel,
     }
 }
 
-const Pixel& PixelHit::getPixel() const {
+const Pixel& PixelPulse::getPixel() const {
     return pixel_;
 }
 
-Pixel::Index PixelHit::getIndex() const {
+Pixel::Index PixelPulse::getIndex() const {
     return getPixel().getIndex();
+}
+
+double PixelPulse::getGlobalTime() const {
+    return global_time_;
+}
+
+double PixelPulse::getLocalTime() const {
+    return local_time_;
 }
 
 /**
@@ -55,7 +61,7 @@ Pixel::Index PixelHit::getIndex() const {
  *
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
-const PixelCharge* PixelHit::getPixelCharge() const {
+const PixelCharge* PixelPulse::getPixelCharge() const {
     auto* pixel_charge = pixel_charge_.get();
     if(pixel_charge == nullptr) {
         throw MissingReferenceException(typeid(*this), typeid(PixelCharge));
@@ -66,22 +72,9 @@ const PixelCharge* PixelHit::getPixelCharge() const {
 /**
  * @throws MissingReferenceException If the pointed object is not in scope
  *
- * Object is stored as TRef and can only be accessed if pointed object is in scope
- */
-const PixelPulse* PixelHit::getPixelPulse() const {
-    auto* pixel_pulse = pixel_pulse_.get();
-    if(pixel_pulse == nullptr) {
-        throw MissingReferenceException(typeid(*this), typeid(PixelPulse));
-    }
-    return pixel_pulse;
-}
-
-/**
- * @throws MissingReferenceException If the pointed object is not in scope
- *
  * MCParticles can only be fetched if the full history of objects are in scope and stored
  */
-std::vector<const MCParticle*> PixelHit::getMCParticles() const {
+std::vector<const MCParticle*> PixelPulse::getMCParticles() const {
 
     std::vector<const MCParticle*> mc_particles;
     for(const auto& mc_particle : mc_particles_) {
@@ -100,7 +93,7 @@ std::vector<const MCParticle*> PixelHit::getMCParticles() const {
  *
  * MCParticles can only be fetched if the full history of objects are in scope and stored
  */
-std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
+std::vector<const MCParticle*> PixelPulse::getPrimaryMCParticles() const {
     std::vector<const MCParticle*> primary_particles;
     for(const auto& mc_particle : mc_particles_) {
         auto* particle = mc_particle.get();
@@ -119,17 +112,16 @@ std::vector<const MCParticle*> PixelHit::getPrimaryMCParticles() const {
     return primary_particles;
 }
 
-void PixelHit::print(std::ostream& out) const {
-    out << "PixelHit " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->getSignal() << ", "
-        << this->getLocalTime() << ", " << this->getGlobalTime() << ", " << this->getPixel().getGlobalCenter().X() << ", "
-        << this->getPixel().getGlobalCenter().Y() << ", " << this->getPixel().getGlobalCenter().Z();
+void PixelPulse::print(std::ostream& out) const {
+    out << "PixelPulse " << this->getIndex().X() << ", " << this->getIndex().Y() << ", " << this->size() << " bins of "
+        << this->getBinning() << "ns";
 }
 
-void PixelHit::loadHistory() {
+void PixelPulse::loadHistory() {
     pixel_charge_.get();
     std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.get(); });
 }
-void PixelHit::petrifyHistory() {
+void PixelPulse::petrifyHistory() {
     pixel_charge_.store();
     std::for_each(mc_particles_.begin(), mc_particles_.end(), [](auto& n) { n.store(); });
 }

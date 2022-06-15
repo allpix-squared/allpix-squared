@@ -1,16 +1,16 @@
 /**
  * @file
- * @brief Definition of object with digitized pixel hit
+ * @brief Definition of object with pulse processed by pixel front-end
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_PIXEL_HIT_H
-#define ALLPIX_PIXEL_HIT_H
+#ifndef ALLPIX_PIXEL_PULSE_H
+#define ALLPIX_PIXEL_PULSE_H
 
 #include <Math/DisplacementVector2D.h>
 
@@ -19,7 +19,7 @@
 #include "MCParticle.hpp"
 #include "Object.hpp"
 #include "PixelCharge.hpp"
-#include "PixelPulse.hpp"
+#include "Pulse.hpp"
 
 #include "Pixel.hpp"
 
@@ -28,23 +28,15 @@ namespace allpix {
      * @ingroup Objects
      * @brief Pixel triggered in an event after digitization
      */
-    class PixelHit : public Object {
+    class PixelPulse : public Object, public Pulse {
     public:
         /**
-         * @brief Construct a digitized pixel hit
+         * @brief Construct a digitized pixel front-end pulse
          * @param pixel Object holding the information of the pixel
-         * @param local_time Timing of the occurrence of the hit in local reference frame
-         * @param global_time Timing of the occurrence of the hit in global reference frame
-         * @param signal Signal data produced by the digitizer
+         * @param pulse Output pulse produced by the digitizer
          * @param pixel_charge Optional pointer to the related pixel charge
-         * @param pixel_pulse Optional pointer to the related pixel pulse this his might have been derived from
          */
-        PixelHit(Pixel pixel,
-                 double local_time,
-                 double global_time,
-                 double signal,
-                 const PixelCharge* pixel_charge = nullptr,
-                 const PixelPulse* pixel_pulse = nullptr);
+        PixelPulse(Pixel pixel, const Pulse& pulse, const PixelCharge* pixel_charge = nullptr);
 
         /**
          * @brief Get the pixel hit
@@ -59,34 +51,10 @@ namespace allpix {
         Pixel::Index getIndex() const;
 
         /**
-         * @brief Get the timing data of the hit in the global reference frame
-         * @return Timestamp from event start
-         */
-        double getGlobalTime() const { return global_time_; }
-
-        /**
-         * @brief Get the timing data of the hit in the local reference frame
-         * @return Timestamp from primary particle arrival
-         */
-        double getLocalTime() const { return local_time_; }
-
-        /**
-         * @brief Get the signal data for the hit
-         * @return Digitized signal
-         */
-        double getSignal() const { return signal_; }
-
-        /**
          * @brief Get related pixel charge
          * @return Possible related pixel charge
          */
         const PixelCharge* getPixelCharge() const;
-
-        /**
-         * @brief Get related pixel pulse
-         * @return Possible related pixel pulse
-         */
-        const PixelPulse* getPixelPulse() const;
 
         /**
          * @brief Get the Monte-Carlo particles resulting in this pixel hit
@@ -102,6 +70,18 @@ namespace allpix {
         std::vector<const MCParticle*> getPrimaryMCParticles() const;
 
         /**
+         * @brief Get time after start of event in global reference frame
+         * @return Time from start event
+         */
+        double getGlobalTime() const;
+
+        /**
+         * @brief Get local time in the sensor
+         * @return Time with respect to local sensor
+         */
+        double getLocalTime() const;
+
+        /**
          * @brief Print an ASCII representation of PixelHit to the given stream
          * @param out Stream to print to
          */
@@ -110,30 +90,29 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(PixelHit, 7); // NOLINT
+        ClassDefOverride(PixelPulse, 1); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
-        PixelHit() = default;
+        PixelPulse() = default;
 
         void loadHistory() override;
         void petrifyHistory() override;
 
     private:
         Pixel pixel_;
+
         double local_time_{};
         double global_time_{};
-        double signal_{};
 
         PointerWrapper<PixelCharge> pixel_charge_;
-        PointerWrapper<PixelPulse> pixel_pulse_;
         std::vector<PointerWrapper<MCParticle>> mc_particles_;
     };
 
     /**
-     * @brief Typedef for message carrying pixel hits
+     * @brief Typedef for message carrying pixel pulses
      */
-    using PixelHitMessage = Message<PixelHit>;
+    using PixelPulseMessage = Message<PixelPulse>;
 } // namespace allpix
 
-#endif /* ALLPIX_PIXEL_HIT_H */
+#endif /* ALLPIX_PIXEL_PULSE_H */

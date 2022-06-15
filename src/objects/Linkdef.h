@@ -54,6 +54,10 @@
 #pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelCharge> + ;
 #pragma link C++ class allpix::Object::BaseWrapper < allpix::PixelCharge> + ;
 
+#pragma link C++ class allpix::PixelPulse + ;
+#pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelPulse> + ;
+#pragma link C++ class allpix::Object::BaseWrapper < allpix::PixelPulse> + ;
+
 #pragma link C++ class allpix::PixelHit + ;
 #pragma link C++ class allpix::Object::PointerWrapper < allpix::PixelHit> + ;
 #pragma link C++ class allpix::Object::BaseWrapper < allpix::PixelHit> + ;

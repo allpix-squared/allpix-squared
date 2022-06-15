@@ -29,6 +29,7 @@ ADD_LIBRARY(
     DepositedCharge.cpp
     PropagatedCharge.cpp
     PixelHit.cpp
+    PixelPulse.cpp
     MCParticle.cpp
     MCTrack.cpp)
 
@@ -51,6 +52,7 @@ ROOT_GENERATE_DICTIONARY(
     ${CMAKE_CURRENT_SOURCE_DIR}/PropagatedCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelCharge.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PixelHit.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PixelPulse.hpp
     MODULE
     AllpixObjects
     LINKDEF
