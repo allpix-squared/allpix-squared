@@ -630,6 +630,23 @@ A scaling from electrons to holes was performed based on the default values in W
 
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "mandic"}.
 
+
+\subsection{Constant Trapping Model}
+
+For some situations or materials, a constant trapping probability is necessary. This can be achieved with the constant
+trapping model. Here, the lifetimes are constant and set from the values provided in the configuration file with the
+parameters \parameter{trapping_time_electron} and \parameter{trapping_time_hole}:
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Constant trapping times for electrons and holes:
+trapping_model = "constant"
+trapping_time_electron = 5ns
+trapping_time_hole = 5ns
+\end{minted}
+
+This model can be selected in the configuration file via the parameter \parameter{trapping_model = "constant"}.
+
+
 \subsection{Custom Trapping Model}
 
 Similarly to the mobility models described above, \apsq provides the possibility to use fully custom trapping models.
