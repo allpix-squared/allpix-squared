@@ -147,6 +147,22 @@ values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
 
+## Constant Trapping Model
+
+For some situations or materials, a constant trapping probability is necessary. This can be achieved with the constant
+trapping model. Here, the lifetimes are constant and set from the values provided in the configuration file with the
+parameters `trapping_time_electron` and `trapping_time_hole`:
+
+```ini
+# Constant trapping times for electrons and holes:
+trapping_model = "constant"
+trapping_time_electron = 5ns
+trapping_time_hole = 5ns
+```
+
+This model can be selected in the configuration file via the parameter `trapping_model = "constant"`.
+
+
 ## Custom Trapping Model
 
 Similarly to the mobility models described above, Allpix Squared provides the possibility to use fully custom trapping

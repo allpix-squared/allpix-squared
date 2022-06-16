@@ -108,6 +108,18 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Constant trapping rate of charge carriers
+     */
+    class ConstantTrapping : virtual public TrappingModel {
+    public:
+        ConstantTrapping(double electron_lifetime, double hole_lifetime) {
+            tau_eff_electron_ = electron_lifetime;
+            tau_eff_hole_ = hole_lifetime;
+        }
+    };
+
+    /**
+     * @ingroup Models
      * @brief Ljubljana / Kramberger effective trapping model for charge carriers in silicon
      *
      * Parametrization taken from https://doi.org/10.1016/S0168-9002(01)01263-3, effective trapping time from Eq. 4 with beta
@@ -257,6 +269,9 @@ namespace allpix {
                     model_trap_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic") {
                     model_trap_ = std::make_unique<Mandic>(fluence);
+                } else if(model == "constant") {
+                    model_trap_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
+                                                                     config.get<double>("trapping_time_hole"));
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
                     model_trap_ = std::make_unique<NoTrapping>();
