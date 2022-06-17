@@ -31,6 +31,7 @@
 #include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 namespace allpix {
     /**
@@ -91,11 +92,13 @@ namespace allpix {
                                                                                  const CarrierType& type,
                                                                                  const unsigned int charge,
                                                                                  const double initial_time,
-                                                                                 std::map<Pixel::Index, Pulse>& pixel_map);
+                                                                                 std::map<Pixel::Index, Pulse>& pixel_map,
+                                                                                 OutputPlotPoints& output_plot_points);
 
         // Local copies of configuration parameters to avoid costly lookup:
-        double temperature_{}, timestep_{}, integration_time_{};
-        bool output_plots_{};
+        double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
+        bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
+            output_linegraphs_trapped_{}, output_animations_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};

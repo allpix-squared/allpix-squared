@@ -51,13 +51,26 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<std::string>("trapping_model", "none");
 
     config_.setDefault<double>("temperature", 293.15);
-    config_.setDefault<bool>("output_plots", false);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
     config_.setDefault<std::string>("multiplication_model", "none");
+
+    config_.setDefault<bool>("output_linegraphs", false);
+    config_.setDefault<bool>("output_linegraphs_collected", false);
+    config_.setDefault<bool>("output_linegraphs_recombined", false);
+    config_.setDefault<bool>("output_linegraphs_trapped", false);
+    config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_plots",
+                             config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
+    config_.setDefault<bool>("output_animations_color_markers", false);
+    config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
+    config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
+    config_.setDefault<double>("output_plots_theta", 0.0f);
+    config_.setDefault<double>("output_plots_phi", 0.0f);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -66,9 +79,15 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
+    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
 
     output_plots_ = config_.get<bool>("output_plots");
-    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+    output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
+    output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
+    output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
+    output_animations_ = config_.get<bool>("output_animations");
+    output_plots_step_ = config_.get<double>("output_plots_step");
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -182,6 +201,9 @@ void TransientPropagationModule::run(Event* event) {
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
 
+    // List of points to plot to plot for output plots
+    OutputPlotPoints output_plot_points;
+
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
     for(const auto& deposit : deposits_message->getData()) {
@@ -218,9 +240,21 @@ void TransientPropagationModule::run(Event* event) {
             charges_remaining -= charge_per_step;
             std::map<Pixel::Index, Pulse> px_map;
 
+            // Add point of deposition to the output plots if requested
+            if(output_linegraphs_) {
+                output_plot_points.emplace_back(
+                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
+                    std::vector<ROOT::Math::XYZPoint>());
+            }
+
             // Get position and propagate through sensor
-            auto [local_position, time, gain, state] = propagate(
-                event, deposit.getLocalPosition(), deposit.getType(), charge_per_step, deposit.getLocalTime(), px_map);
+            auto [local_position, time, gain, state] = propagate(event,
+                                                                 deposit.getLocalPosition(),
+                                                                 deposit.getType(),
+                                                                 charge_per_step,
+                                                                 deposit.getLocalTime(),
+                                                                 px_map,
+                                                                 output_plot_points);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(local_position);
@@ -256,6 +290,20 @@ void TransientPropagationModule::run(Event* event) {
         }
     }
 
+    // Output plots if required
+    if(output_linegraphs_) {
+        createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        if(output_linegraphs_collected_) {
+            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
+        }
+        if(output_linegraphs_recombined_) {
+            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
+        }
+        if(output_linegraphs_trapped_) {
+            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+        }
+    }
+
     if(output_plots_) {
         auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
@@ -280,7 +328,8 @@ TransientPropagationModule::propagate(Event* event,
                                       const CarrierType& type,
                                       const unsigned int charge,
                                       const double initial_time,
-                                      std::map<Pixel::Index, Pulse>& pixel_map) {
+                                      std::map<Pixel::Index, Pulse>& pixel_map,
+                                      OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Initialize gain
@@ -345,8 +394,18 @@ TransientPropagationModule::propagate(Event* event,
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     ROOT::Math::XYZVector efield{}, last_efield{};
+    size_t next_idx = 0;
     auto state = CarrierState::MOTION;
     while(state == CarrierState::MOTION && (initial_time + runge_kutta.getTime()) < integration_time_) {
+        // Update output plots if necessary (depending on the plot step)
+        if(output_linegraphs_) { // Set final state of charge carrier for plotting:
+            auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
+            while(next_idx <= time_idx) {
+                output_plot_points.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points.back().second.size();
+            }
+        }
+
         // Save previous position and time
         last_position = position;
         last_efield = efield;
@@ -462,6 +521,16 @@ TransientPropagationModule::propagate(Event* event,
                     induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
                 }
             }
+        }
+    }
+
+    // Set final state of charge carrier for plotting:
+    if(output_linegraphs_) {
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
+        if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
+            std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
+        } else {
+            std::get<3>(output_plot_points.back().first) = state;
         }
     }
 
