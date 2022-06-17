@@ -34,10 +34,9 @@
 #include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 namespace allpix {
-    using OutputPlotPoints = std::vector<
-        std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
 
     /**
      * @ingroup Modules
@@ -78,15 +77,6 @@ namespace allpix {
         Messenger* messenger_;
         std::shared_ptr<const Detector> detector_;
         std::shared_ptr<DetectorModel> model_;
-
-        /**
-         * @brief Create output plots in every event
-         * @param event_num Index for this event
-         * @param output_plot_points List of points cached for plotting
-         * @param plotting_state State of charge carriers to be plotted
-         */
-        void
-        create_output_plots(uint64_t event_num, const OutputPlotPoints& output_plot_points, CarrierState plotting_state);
 
         /**
          * @brief Propagate a single set of charges through the sensor
