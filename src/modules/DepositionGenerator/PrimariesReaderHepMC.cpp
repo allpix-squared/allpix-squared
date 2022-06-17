@@ -26,20 +26,22 @@ using namespace allpix;
 PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
 
     auto model = config.get<FileModel>("model");
+    std::filesystem::path file_path;
     if(model == FileModel::HEPMC) {
-        auto file_path = config.getPathWithExtension("file_name", "txt", true);
+        file_path = config.getPathWithExtension("file_name", "txt", true);
         reader_ = std::make_unique<HepMC3::ReaderAscii>(file_path);
     } else if(model == FileModel::HEPMC2) {
-        auto file_path = config.getPathWithExtension("file_name", "txt", true);
+        file_path = config.getPathWithExtension("file_name", "txt", true);
         reader_ = std::make_unique<HepMC3::ReaderAsciiHepMC2>(file_path);
     } else if(model == FileModel::HEPMCROOT) {
-        auto file_path = config.getPathWithExtension("file_name", "root", true);
+        file_path = config.getPathWithExtension("file_name", "root", true);
         reader_ = std::make_unique<HepMC3::ReaderRoot>(file_path);
     }
 
     if(reader_->failed()) {
         throw InvalidValueError(config, "file_name", "could not open input file");
     }
+    LOG(INFO) << "Successfully opened data file " << file_path;
 }
 
 bool PrimariesReaderHepMC::check_vertex_inside_world(const G4ThreeVector& pos) const {
