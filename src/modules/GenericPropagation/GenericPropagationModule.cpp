@@ -66,6 +66,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<std::string>("recombination_model", "none");
     config_.setDefault<std::string>("trapping_model", "none");
+    config_.setDefault<std::string>("detrapping_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_linegraphs_collected", false);
