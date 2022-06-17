@@ -77,17 +77,15 @@ namespace allpix {
          * Function call operator to obtain trapping time for the given carrier
          * @param type Type of charge carrier (electron or hole)
          * @param probability Current trapping probability for this charge carrier
-         * @param timestep Current time step performed for the charge carrier
          * @param efield_mag Magnitude of the electric field
          * @return Expected time of the charge carrier being trapped
          */
-        virtual double operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const = 0;
+        virtual double operator()(const CarrierType& type, double probability, double, double efield_mag) const = 0;
     };
 
     /**
      * @ingroup Models
      * @brief No trapping
-     *
      */
     class NoTrapping : virtual public TrappingModel {
     public:
@@ -97,7 +95,6 @@ namespace allpix {
     /**
      * @ingroup Models
      * @brief No detrapping
-     *
      */
     class NoDetrapping : virtual public DetrappingModel {
     public:
@@ -116,6 +113,24 @@ namespace allpix {
             tau_eff_electron_ = electron_lifetime;
             tau_eff_hole_ = hole_lifetime;
         }
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Constant trapping rate of charge carriers
+     */
+    class ConstantDetrapping : virtual public DetrappingModel {
+    public:
+        ConstantDetrapping(double electron_lifetime, double hole_lifetime)
+            : tau_eff_electron_(electron_lifetime), tau_eff_hole_(hole_lifetime){};
+
+        double operator()(const CarrierType& type, double probability, double, double) const override {
+            return -1 * log(1 - probability) * (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_);
+        }
+
+    protected:
+        double tau_eff_electron_{std::numeric_limits<double>::max()};
+        double tau_eff_hole_{std::numeric_limits<double>::max()};
     };
 
     /**
@@ -286,8 +301,17 @@ namespace allpix {
             }
 
             try {
-                LOG(INFO) << "No charge carrier detrapping simulated";
-                model_detrap_ = std::make_unique<NoDetrapping>();
+                auto model = config.get<std::string>("detrapping_model", "none");
+
+                if(model == "constant") {
+                    model_detrap_ = std::make_unique<ConstantDetrapping>(config.get<double>("detrapping_time_electron"),
+                                                                         config.get<double>("detrapping_time_hole"));
+                } else if(model == "none") {
+                    LOG(INFO) << "No charge carrier detrapping model chosen, no detrapping simulated";
+                    model_detrap_ = std::make_unique<NoDetrapping>();
+                } else {
+                    throw InvalidModelError(model);
+                }
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "detrapping_model", e.what());
             }
