@@ -50,6 +50,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<std::string>("recombination_model", "none");
     config_.setDefault<std::string>("trapping_model", "none");
+    config_.setDefault<std::string>("detrapping_model", "none");
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
