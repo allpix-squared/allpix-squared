@@ -65,6 +65,7 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
     }
 
     // Check if this is the requested event, otherwise return an empty vector
+    // FIXME the event has been read anyway and we will read the next one in the coming call, so this doesn't work
     if(static_cast<uint64_t>(evt.event_number()) > eventNum() - 1) {
         LOG(INFO) << "Expecting event " << (eventNum() - 1) << ", found " << static_cast<uint64_t>(evt.event_number())
                   << ", returning empty event";
