@@ -8,10 +8,10 @@ weight: 4
 Allpix Squared provides the possibility to simulate the trapping of charge carriers as a consequence of radiation induced
 lattice defects. Several models exist, that quantify the effective lifetime of electrons and holes, respectively, as a
 function of the fluence and, partially, the temperature. The fluence needs to be provided to the corresponding propagation
-module, and is always interpreted as 1-MeVneutron equivalent fluence \[[@niel]\].
+module, and is always interpreted as 1-MeV neutron equivalent fluence \[[@niel]\].
 
 The decision on whether a charge carrier has been trapped during a step during the propagation process is calculated
-similarly to the recombination precesses, described in [Section 5.3](./03_lifetime_recombination.md).
+similarly to the recombination processes, described in [Section 5.3](./03_lifetime_recombination.md).
 
 It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage. In Allpix
 Squared, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any
@@ -20,6 +20,25 @@ other process than trapping.
 Until now, no models for de-trapping of charge carriers have been implemented. In addition, for most modules, the parameters
 have been extracted under certain annealing conditions. A dependency on annealing conditions has not been implemented here.
 Please refer to the corresponding reference publications for further details.
+
+The trapping probability is calculated as an exponential decay as a function of the simulation timestep as
+
+```math
+p_{e, h} = \left(1 - \exp^{1 \frac{\delta t}{\tau_{e, h}}}\right)
+```
+
+where $`\delta t`$ is the simulation timestep and $`\tau{e,h}`$ the effective lifetime of electrons and holes, respectively.
+At the same time, a total time spent in the trap is calculated if a detrapping model is selected. Here, the time until the
+charge carrier is de-trapped is calculated as
+
+```math
+\delta t = - \tau_{e.h} \ln{1-p}
+```
+
+where $`p`$ is a probability random chosen from a uniform distribution between 0 and 1.
+The detrapping is configured via the `detrapping_model` parameter. Currently, only `detrapping_model = "none"` and
+`detrapping_model = "constant"` are supported. The latter requires the parameters `detrapping_time_electron` and
+`detrapping_time_hole` to be configured.
 
 The following models for trapping of charge carriers can be selected:
 
