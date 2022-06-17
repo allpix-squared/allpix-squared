@@ -84,6 +84,7 @@ namespace allpix {
          * @param initial_time Initial timestamp referring to the start of the event
          * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
          *                  result in
+         * @param output_plot_points Reference to vector to hold points for line graph output plots
          * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
