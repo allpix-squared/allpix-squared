@@ -12,6 +12,10 @@
 #ifndef ALLPIX_LINE_GRAPHS_H
 #define ALLPIX_LINE_GRAPHS_H
 
+#include "core/module/Module.hpp"
+#include "objects/PropagatedCharge.hpp"
+
+#include <Math/Point3D.h>
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH2F.h>
@@ -39,7 +43,7 @@ namespace allpix {
      */
     inline void createLineGraphs(uint64_t event_num,
                                  Module* module,
-                                 const std::shared_ptr<DetectorModel> model,
+                                 const std::shared_ptr<DetectorModel>& model,
                                  const Configuration& config,
                                  const OutputPlotPoints& output_plot_points,
                                  CarrierState plotting_state) {
@@ -196,8 +200,8 @@ namespace allpix {
 
         if(config.get<bool>("output_animations")) {
             // Create the contour histogram
-            std::vector<std::string> file_name_contour;
-            std::vector<TH2F*> histogram_contour;
+            std::vector<std::string> file_name_contour{};
+            std::vector<TH2F*> histogram_contour{};
             file_name_contour.push_back(
                 module->createOutputFile("contourX" + std::to_string(event_num) + "_" + title + ".gif"));
             histogram_contour.push_back(
@@ -267,7 +271,7 @@ namespace allpix {
             LOG_PROGRESS(INFO, module->getUniqueName() + "_OUTPUT_PLOTS")
                 << "Written 0 of " << tot_point_cnt << " points for animation";
             while(point_cnt < tot_point_cnt) {
-                std::vector<std::unique_ptr<TPolyMarker3D>> markers;
+                std::vector<std::unique_ptr<TPolyMarker3D>> markers{};
                 unsigned long min_idx_diff = std::numeric_limits<unsigned long>::max();
 
                 // Reset the canvas
