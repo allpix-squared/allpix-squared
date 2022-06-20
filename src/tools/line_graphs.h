@@ -44,7 +44,7 @@ namespace allpix {
          * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
          * carriers are plotted.
          */
-        static void Create(uint64_t event_num,
+        static void Create(uint64_t event_num, // NOLINT
                            Module* module,
                            const std::shared_ptr<DetectorModel>& model,
                            const Configuration& config,
@@ -126,24 +126,22 @@ namespace allpix {
          * @param model Detector model to generate graphs for, used for obtaining geometrical information
          * @param config Configuration object used for this module instance
          * @param output_plot_points List of points cached for plotting
-         * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
          * carriers are plotted.
          */
-        static void Animate(uint64_t event_num,
+        static void Animate(uint64_t event_num, // NOLINT
                             Module* module,
                             const std::shared_ptr<DetectorModel>& model,
                             const Configuration& config,
                             const OutputPlotPoints& output_plot_points) {
 
-            auto title = "all";
-            LOG(TRACE) << "Writing animation for " << title << " charge carriers";
+            LOG(TRACE) << "Writing animation for all charge carriers";
 
             auto [minX, maxX, minY, maxY, scale_x, scale_y, max_charge, total_charge, tot_point_cnt, start_time] =
                 get_plot_settings(model, config, output_plot_points);
 
             // Use a histogram to create the underlying frame
             auto* histogram_frame =
-                new TH3F(("frame_" + module->getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
+                new TH3F(("frame_" + module->getUniqueName() + "_" + std::to_string(event_num) + "_all").c_str(),
                          "",
                          10,
                          minX,
@@ -157,7 +155,7 @@ namespace allpix {
             histogram_frame->SetDirectory(module->getROOTDirectory());
 
             // Create canvas for GIF animition of process
-            auto canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_" + title).c_str(),
+            auto canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_all").c_str(),
                                                     ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
                                                     1280,
                                                     1024);
@@ -181,8 +179,7 @@ namespace allpix {
             // Create the contour histogram
             std::vector<std::string> file_name_contour{};
             std::vector<TH2F*> histogram_contour{};
-            file_name_contour.push_back(
-                module->createOutputFile("contourX" + std::to_string(event_num) + "_" + title + ".gif"));
+            file_name_contour.push_back(module->createOutputFile("contourX" + std::to_string(event_num) + "_all.gif"));
             histogram_contour.push_back(
                 new TH2F(("contourX_" + module->getUniqueName() + "_" + std::to_string(event_num)).c_str(),
                          "",
