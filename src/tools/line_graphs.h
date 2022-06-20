@@ -27,178 +27,157 @@
 
 namespace allpix {
 
-    using OutputPlotPoints = std::vector<
-        std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
+    class LineGraph {
 
-    /**
-     * @brief Generate line graphs of charge carrier drift paths
-     *
-     * @param event_num Index for this event
-     * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
-     * @param model Detector model to generate graphs for, used for obtaining geometrical information
-     * @param config Configuration object used for this module instance
-     * @param output_plot_points List of points cached for plotting
-     * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
-     * carriers are plotted.
-     */
-    inline void createLineGraphs(uint64_t event_num,
-                                 Module* module,
-                                 const std::shared_ptr<DetectorModel>& model,
-                                 const Configuration& config,
-                                 const OutputPlotPoints& output_plot_points,
-                                 CarrierState plotting_state) {
-        auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
-        LOG(TRACE) << "Writing output plots, for " << title << " charge carriers";
+    public:
+        using OutputPlotPoints = std::vector<
+            std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
 
-        // Convert to pixel units if necessary
-        double scale_x = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().x() : 1);
-        double scale_y = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().y() : 1);
+        /**
+         * @brief Generate line graphs of charge carrier drift paths
+         *
+         * @param event_num Index for this event
+         * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
+         * @param model Detector model to generate graphs for, used for obtaining geometrical information
+         * @param config Configuration object used for this module instance
+         * @param output_plot_points List of points cached for plotting
+         * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
+         * carriers are plotted.
+         */
+        static void Create(uint64_t event_num,
+                           Module* module,
+                           const std::shared_ptr<DetectorModel>& model,
+                           const Configuration& config,
+                           const OutputPlotPoints& output_plot_points,
+                           CarrierState plotting_state) {
 
-        // Calculate the axis limits
-        double minX = FLT_MAX, maxX = FLT_MIN;
-        double minY = FLT_MAX, maxY = FLT_MIN;
-        unsigned long tot_point_cnt = 0;
-        double start_time = std::numeric_limits<double>::max();
-        unsigned int total_charge = 0;
-        unsigned int max_charge = 0;
-        for(const auto& [deposit, points] : output_plot_points) {
-            for(const auto& point : points) {
-                minX = std::min(minX, point.x() / scale_x);
-                maxX = std::max(maxX, point.x() / scale_x);
+            auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
+            LOG(TRACE) << "Writing line graph for " << title << " charge carriers";
 
-                minY = std::min(minY, point.y() / scale_y);
-                maxY = std::max(maxY, point.y() / scale_y);
+            auto [minX, maxX, minY, maxY, scale_x, scale_y, max_charge, total_charge, tot_point_cnt, start_time] =
+                get_plot_settings(model, config, output_plot_points);
+
+            // Use a histogram to create the underlying frame
+            auto* histogram_frame =
+                new TH3F(("frame_" + module->getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
+                         "",
+                         10,
+                         minX,
+                         maxX,
+                         10,
+                         minY,
+                         maxY,
+                         10,
+                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
+                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0);
+            histogram_frame->SetDirectory(module->getROOTDirectory());
+
+            // Create the canvas for the line plot and set orientation
+            auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num) + "_" + title).c_str(),
+                                                    ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
+                                                    1280,
+                                                    1024);
+            canvas->cd();
+            canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
+            canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
+
+            // Draw the frame on the canvas
+            histogram_frame->GetXaxis()->SetTitle(
+                (std::string("x ") + (config.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            histogram_frame->GetYaxis()->SetTitle(
+                (std::string("y ") + (config.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
+            histogram_frame->GetZaxis()->SetTitle("z (mm)");
+            histogram_frame->Draw();
+
+            // Loop over all point sets created during propagation
+            // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
+            std::vector<std::unique_ptr<TPolyLine3D>> lines;
+            short current_color = 1;
+            for(const auto& [deposit, points] : output_plot_points) {
+                // Check if we should plot this point:
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+                    continue;
+                }
+
+                auto line = std::make_unique<TPolyLine3D>();
+                for(const auto& point : points) {
+                    line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
+                }
+                // Plot all lines with at least three points with different color
+                if(line->GetN() >= 2) {
+                    EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+                    line->SetLineColor(current_color);
+                    line->Draw("same");
+                }
+                lines.push_back(std::move(line));
             }
-            const auto& [time, charge, type, state] = deposit;
-            start_time = std::min(start_time, time);
-            total_charge += charge;
-            max_charge = std::max(max_charge, charge);
 
-            tot_point_cnt += points.size();
+            // Draw and write canvas to module output file, then clear the stored lines
+            canvas->Draw();
+            module->getROOTDirectory()->WriteTObject(canvas.get());
         }
 
-        // Compute frame axis sizes if equal scaling is requested
-        if(config.get<bool>("output_plots_use_equal_scaling", true)) {
-            double centerX = (minX + maxX) / 2.0;
-            double centerY = (minY + maxY) / 2.0;
-            if(config.get<bool>("output_plots_use_pixel_units")) {
-                minX = centerX - model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
-                maxX = centerX + model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
+        /**
+         * @brief Generate line graphs of charge carrier drift paths
+         *
+         * @param event_num Index for this event
+         * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
+         * @param model Detector model to generate graphs for, used for obtaining geometrical information
+         * @param config Configuration object used for this module instance
+         * @param output_plot_points List of points cached for plotting
+         * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
+         * carriers are plotted.
+         */
+        static void Animate(uint64_t event_num,
+                            Module* module,
+                            const std::shared_ptr<DetectorModel>& model,
+                            const Configuration& config,
+                            const OutputPlotPoints& output_plot_points) {
 
-                minY = centerY - model->getSensorSize().z() / model->getPixelSize().y() / 2.0;
-                maxY = centerY + model->getSensorSize().z() / model->getPixelSize().y() / 2.0;
+            auto title = "all";
+            LOG(TRACE) << "Writing animation for " << title << " charge carriers";
+
+            auto [minX, maxX, minY, maxY, scale_x, scale_y, max_charge, total_charge, tot_point_cnt, start_time] =
+                get_plot_settings(model, config, output_plot_points);
+
+            // Use a histogram to create the underlying frame
+            auto* histogram_frame =
+                new TH3F(("frame_" + module->getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
+                         "",
+                         10,
+                         minX,
+                         maxX,
+                         10,
+                         minY,
+                         maxY,
+                         10,
+                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
+                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0);
+            histogram_frame->SetDirectory(module->getROOTDirectory());
+
+            // Create canvas for GIF animition of process
+            auto canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_" + title).c_str(),
+                                                    ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
+                                                    1280,
+                                                    1024);
+            canvas->cd();
+
+            // Change axis labels if close to zero or PI as they behave different here
+            if(std::fabs(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0) -
+                         std::round(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
+               std::fabs(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0) -
+                         std::round(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
+                histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
+                histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
             } else {
-                minX = centerX - model->getSensorSize().z() / 2.0;
-                maxX = centerX + model->getSensorSize().z() / 2.0;
-
-                minY = centerY - model->getSensorSize().z() / 2.0;
-                maxY = centerY + model->getSensorSize().z() / 2.0;
-            }
-        }
-
-        // Align on pixels if requested
-        if(config.get<bool>("output_plots_align_pixels")) {
-            if(config.get<bool>("output_plots_use_pixel_units")) {
-                minX = std::floor(minX - 0.5) + 0.5;
-                minY = std::floor(minY + 0.5) - 0.5;
-                maxX = std::ceil(maxX - 0.5) + 0.5;
-                maxY = std::ceil(maxY + 0.5) - 0.5;
-            } else {
-                double div = minX / model->getPixelSize().x();
-                minX = (std::floor(div - 0.5) + 0.5) * model->getPixelSize().x();
-                div = minY / model->getPixelSize().y();
-                minY = (std::floor(div - 0.5) + 0.5) * model->getPixelSize().y();
-                div = maxX / model->getPixelSize().x();
-                maxX = (std::ceil(div + 0.5) - 0.5) * model->getPixelSize().x();
-                div = maxY / model->getPixelSize().y();
-                maxY = (std::ceil(div + 0.5) - 0.5) * model->getPixelSize().y();
-            }
-        }
-
-        // Use a histogram to create the underlying frame
-        auto* histogram_frame =
-            new TH3F(("frame_" + module->getUniqueName() + "_" + std::to_string(event_num) + "_" + title).c_str(),
-                     "",
-                     10,
-                     minX,
-                     maxX,
-                     10,
-                     minY,
-                     maxY,
-                     10,
-                     model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
-                     model->getSensorCenter().z() + model->getSensorSize().z() / 2.0);
-        histogram_frame->SetDirectory(module->getROOTDirectory());
-
-        // Create the canvas for the line plot and set orientation
-        auto canvas = std::make_unique<TCanvas>(("line_plot_" + std::to_string(event_num) + "_" + title).c_str(),
-                                                ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
-                                                1280,
-                                                1024);
-        canvas->cd();
-        canvas->SetTheta(config.get<float>("output_plots_theta") * 180.0f / ROOT::Math::Pi());
-        canvas->SetPhi(config.get<float>("output_plots_phi") * 180.0f / ROOT::Math::Pi());
-
-        // Draw the frame on the canvas
-        histogram_frame->GetXaxis()->SetTitle(
-            (std::string("x ") + (config.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
-        histogram_frame->GetYaxis()->SetTitle(
-            (std::string("y ") + (config.get<bool>("output_plots_use_pixel_units") ? "(pixels)" : "(mm)")).c_str());
-        histogram_frame->GetZaxis()->SetTitle("z (mm)");
-        histogram_frame->Draw();
-
-        // Loop over all point sets created during propagation
-        // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
-        std::vector<std::unique_ptr<TPolyLine3D>> lines;
-        short current_color = 1;
-        for(const auto& [deposit, points] : output_plot_points) {
-            // Check if we should plot this point:
-            if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
-                continue;
+                histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
+                histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
             }
 
-            auto line = std::make_unique<TPolyLine3D>();
-            for(const auto& point : points) {
-                line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
-            }
-            // Plot all lines with at least three points with different color
-            if(line->GetN() >= 2) {
-                EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
-                current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
-                line->SetLineColor(current_color);
-                line->Draw("same");
-            }
-            lines.push_back(std::move(line));
-        }
+            // Draw frame on canvas
+            histogram_frame->Draw();
 
-        // Draw and write canvas to module output file, then clear the stored lines
-        canvas->Draw();
-        module->getROOTDirectory()->WriteTObject(canvas.get());
-        lines.clear();
-
-        // Create canvas for GIF animition of process
-        canvas = std::make_unique<TCanvas>(("animation_" + std::to_string(event_num) + "_" + title).c_str(),
-                                           ("Propagation of charge for event " + std::to_string(event_num)).c_str(),
-                                           1280,
-                                           1024);
-        canvas->cd();
-
-        // Change axis labels if close to zero or PI as they behave different here
-        if(std::fabs(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0) -
-                     std::round(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
-           std::fabs(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0) -
-                     std::round(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
-            histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
-            histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
-        } else {
-            histogram_frame->GetXaxis()->SetTitleOffset(2.0f);
-            histogram_frame->GetYaxis()->SetTitleOffset(2.0f);
-        }
-
-        // Draw frame on canvas
-        histogram_frame->Draw();
-
-        if(config.get<bool>("output_animations")) {
             // Create the contour histogram
             std::vector<std::string> file_name_contour{};
             std::vector<TH2F*> histogram_contour{};
@@ -302,11 +281,6 @@ namespace allpix {
                 for(const auto& [deposit, points] : output_plot_points) {
                     const auto& [time, charge, type, state] = deposit;
 
-                    // Check if we should plot this point:
-                    if(plotting_state != CarrierState::UNKNOWN && plotting_state != state) {
-                        continue;
-                    }
-
                     auto diff = static_cast<unsigned long>(
                         std::round((time - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
@@ -404,7 +378,81 @@ namespace allpix {
                     << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
             }
         }
-    }
+
+    private:
+        static std::tuple<double, double, double, double, double, double, double, double, unsigned long, double>
+        get_plot_settings(const std::shared_ptr<DetectorModel>& model,
+                          const Configuration& config,
+                          const OutputPlotPoints& output_plot_points) {
+
+            // Convert to pixel units if necessary
+            double scale_x = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().x() : 1);
+            double scale_y = (config.get<bool>("output_plots_use_pixel_units") ? model->getPixelSize().y() : 1);
+
+            // Calculate the axis limits
+            double minX = FLT_MAX, maxX = FLT_MIN;
+            double minY = FLT_MAX, maxY = FLT_MIN;
+            unsigned long tot_point_cnt = 0;
+            double start_time = std::numeric_limits<double>::max();
+            unsigned int total_charge = 0;
+            unsigned int max_charge = 0;
+            for(const auto& [deposit, points] : output_plot_points) {
+                for(const auto& point : points) {
+                    minX = std::min(minX, point.x() / scale_x);
+                    maxX = std::max(maxX, point.x() / scale_x);
+
+                    minY = std::min(minY, point.y() / scale_y);
+                    maxY = std::max(maxY, point.y() / scale_y);
+                }
+                const auto& [time, charge, type, state] = deposit;
+                start_time = std::min(start_time, time);
+                total_charge += charge;
+                max_charge = std::max(max_charge, charge);
+
+                tot_point_cnt += points.size();
+            }
+
+            // Compute frame axis sizes if equal scaling is requested
+            if(config.get<bool>("output_plots_use_equal_scaling", true)) {
+                double centerX = (minX + maxX) / 2.0;
+                double centerY = (minY + maxY) / 2.0;
+                if(config.get<bool>("output_plots_use_pixel_units")) {
+                    minX = centerX - model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
+                    maxX = centerX + model->getSensorSize().z() / model->getPixelSize().x() / 2.0;
+
+                    minY = centerY - model->getSensorSize().z() / model->getPixelSize().y() / 2.0;
+                    maxY = centerY + model->getSensorSize().z() / model->getPixelSize().y() / 2.0;
+                } else {
+                    minX = centerX - model->getSensorSize().z() / 2.0;
+                    maxX = centerX + model->getSensorSize().z() / 2.0;
+
+                    minY = centerY - model->getSensorSize().z() / 2.0;
+                    maxY = centerY + model->getSensorSize().z() / 2.0;
+                }
+            }
+
+            // Align on pixels if requested
+            if(config.get<bool>("output_plots_align_pixels")) {
+                if(config.get<bool>("output_plots_use_pixel_units")) {
+                    minX = std::floor(minX - 0.5) + 0.5;
+                    minY = std::floor(minY + 0.5) - 0.5;
+                    maxX = std::ceil(maxX - 0.5) + 0.5;
+                    maxY = std::ceil(maxY + 0.5) - 0.5;
+                } else {
+                    double div = minX / model->getPixelSize().x();
+                    minX = (std::floor(div - 0.5) + 0.5) * model->getPixelSize().x();
+                    div = minY / model->getPixelSize().y();
+                    minY = (std::floor(div - 0.5) + 0.5) * model->getPixelSize().y();
+                    div = maxX / model->getPixelSize().x();
+                    maxX = (std::ceil(div + 0.5) - 0.5) * model->getPixelSize().x();
+                    div = maxY / model->getPixelSize().y();
+                    maxY = (std::ceil(div + 0.5) - 0.5) * model->getPixelSize().y();
+                }
+            }
+
+            return {minX, maxX, minY, maxY, scale_x, scale_y, max_charge, total_charge, tot_point_cnt, start_time};
+        };
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_LINE_GRAPHS_H */
