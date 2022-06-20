@@ -6,6 +6,10 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 
 SHELL ["/bin/bash", "-c"]
 
+# Fix issue with tzdata question hanging Docker build
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Install basic build requirements
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils
 
