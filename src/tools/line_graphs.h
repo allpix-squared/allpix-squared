@@ -162,7 +162,7 @@ namespace allpix {
                 line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
             }
             // Plot all lines with at least three points with different color
-            if(line->GetN() >= 3) {
+            if(line->GetN() >= 2) {
                 EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
                 current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
                 line->SetLineColor(current_color);
