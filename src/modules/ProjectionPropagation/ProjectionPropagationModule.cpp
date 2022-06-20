@@ -177,7 +177,7 @@ void ProjectionPropagationModule::run(Event* event) {
     unsigned int recombined_charges_count = 0;
 
     // List of points to plot to plot for output plots
-    OutputPlotPoints output_plot_points;
+    LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     for(const auto& deposit : deposits_message->getData()) {
@@ -423,7 +423,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
     }
 
     if(output_plots_) {

@@ -202,7 +202,7 @@ void TransientPropagationModule::run(Event* event) {
     unsigned int trapped_charges_count = 0;
 
     // List of points to plot to plot for output plots
-    OutputPlotPoints output_plot_points;
+    LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -292,15 +292,18 @@ void TransientPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
         if(output_linegraphs_collected_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
         }
         if(output_linegraphs_recombined_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
         }
         if(output_linegraphs_trapped_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+        }
+        if(config_.get<bool>("output_animations")) {
+            LineGraph::Animate(event->number, this, model_, config_, output_plot_points);
         }
     }
 
@@ -329,7 +332,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const unsigned int charge,
                                       const double initial_time,
                                       std::map<Pixel::Index, Pulse>& pixel_map,
-                                      OutputPlotPoints& output_plot_points) {
+                                      LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     // Initialize gain

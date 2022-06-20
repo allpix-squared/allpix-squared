@@ -247,7 +247,7 @@ void GenericPropagationModule::run(Event* event) {
     std::vector<PropagatedCharge> propagated_charges;
 
     // List of points to plot to plot for output plots
-    OutputPlotPoints output_plot_points;
+    LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
     LOG(TRACE) << "Propagating charges in sensor";
@@ -358,15 +358,18 @@ void GenericPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
         if(output_linegraphs_collected_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
         }
         if(output_linegraphs_recombined_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
         }
         if(output_linegraphs_trapped_) {
-            createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+        }
+        if(config_.get<bool>("output_animations")) {
+            LineGraph::Animate(event->number, this, model_, config_, output_plot_points);
         }
     }
 
@@ -403,7 +406,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
                                     RandomNumberGenerator& random_generator,
-                                    OutputPlotPoints& output_plot_points) const {
+                                    LineGraph::OutputPlotPoints& output_plot_points) const {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
