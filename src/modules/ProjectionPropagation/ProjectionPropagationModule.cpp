@@ -43,15 +43,27 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<int>("charge_per_step", 10);
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
-    config_.setDefault<bool>("output_plots", false);
     config_.setDefault<bool>("diffuse_deposit", false);
     config_.setDefault<std::string>("recombination_model", "none");
 
+    config_.setDefault<bool>("output_linegraphs", false);
+    config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_plots",
+                             config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
+    config_.setDefault<bool>("output_animations_color_markers", false);
+    config_.setDefault<bool>("output_plots_use_pixel_units", false);
+    config_.setDefault<bool>("output_plots_align_pixels", false);
+    config_.setDefault<double>("output_plots_theta", 0.0f);
+    config_.setDefault<double>("output_plots_phi", 0.0f);
+
     integration_time_ = config_.get<double>("integration_time");
-    output_plots_ = config_.get<bool>("output_plots");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
+
+    output_plots_ = config_.get<bool>("output_plots");
+    output_linegraphs_ = config_.get<bool>("output_linegraphs");
+    output_animations_ = config_.get<bool>("output_animations");
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);
@@ -164,6 +176,9 @@ void ProjectionPropagationModule::run(Event* event) {
     unsigned int total_projected_charge = 0;
     unsigned int recombined_charges_count = 0;
 
+    // List of points to plot to plot for output plots
+    OutputPlotPoints output_plot_points;
+
     // Loop over all deposits for propagation
     for(const auto& deposit : deposits_message->getData()) {
 
@@ -201,6 +216,15 @@ void ProjectionPropagationModule::run(Event* event) {
 
             auto position = initial_position;
 
+            // Add point of deposition to the output plots if requested
+            if(output_linegraphs_) {
+                output_plot_points.emplace_back(
+                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::HALTED),
+                    std::vector<ROOT::Math::XYZPoint>());
+
+                output_plot_points.back().second.push_back(initial_position);
+            }
+
             // Get the electric field at the position of the deposited charge and the top of the sensor:
             auto efield = detector_->getElectricField(position);
             double efield_mag = std::sqrt(efield.Mag2());
@@ -233,6 +257,12 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
                    (detector_->getModel()->isWithinSensor(position))) {
                     LOG(TRACE) << "Charge carrier remains within undepleted volume";
+
+                    // Add position after diffusion to line graphs:
+                    if(output_linegraphs_) {
+                        output_plot_points.back().second.push_back(local_position_diffusion);
+                    }
+
                     continue;
                 }
 
@@ -260,8 +290,21 @@ void ProjectionPropagationModule::run(Event* event) {
 
                 if(!detector_->getModel()->isWithinSensor(position)) {
                     LOG(TRACE) << "Charge carrier diffused outside the sensor volume";
+
+                    // Add position at sensor intercept:
+                    if(output_linegraphs_) {
+                        auto intercept = detector_->getModel()->getSensorIntercept(initial_position, position);
+                        output_plot_points.back().second.push_back(intercept);
+                    }
+
                     continue;
                 }
+
+                // Add potential position after diffusion to line graphs:
+                if(output_linegraphs_) {
+                    output_plot_points.back().second.push_back(position);
+                }
+
                 LOG(TRACE) << "Charge diffused to position: " << Units::display(position, {"mm", "um"});
                 LOG(TRACE) << " ... with an electric field of " << Units::display(efield_mag, "V/cm");
                 LOG(TRACE) << " ... and a diffusion time prior to the drift of " << Units::display(diffusion_time, "ns");
@@ -339,6 +382,11 @@ void ProjectionPropagationModule::run(Event* event) {
                 continue;
             }
 
+            // Finalize line graph by adding final position
+            if(output_linegraphs_) {
+                output_plot_points.back().second.push_back(local_position);
+            }
+
             if(output_plots_) {
                 initial_position_histo_->Fill(static_cast<double>(Units::convert(initial_position.z(), "um")),
                                               charge_per_step);
@@ -372,6 +420,11 @@ void ProjectionPropagationModule::run(Event* event) {
                   << (charge_lost / total_charge * 100.) << "%)";
     }
     LOG(DEBUG) << "Total count of propagated charge carriers: " << propagated_charges.size();
+
+    // Output plots if required
+    if(output_linegraphs_) {
+        createLineGraphs(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+    }
 
     if(output_plots_) {
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charge);
