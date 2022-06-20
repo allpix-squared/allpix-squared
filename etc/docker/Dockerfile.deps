@@ -122,6 +122,28 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     rm -rf ${GEANT4DIR}/{src,build} && \
     rm -rf ${GEANT4DIR}/share/Geant4-${GEANT4_VERSION_PATH}/examples
 
+# Add layer for HepMC3
+ENV HEPMC3_VERSION 3.2.5
+
+ENV HEPMC3DIR="/opt/hepmc3"
+ENV PATH="$HEPMC3DIR/bin:$PATH"
+ENV LD_LIBRARY_PATH="$HEPMC3DIR/lib:$LD_LIBRARY_PATH"
+ENV LIBPATH="$HEPMC3DIR/lib:$LIBPATH"
+ENV CMAKE_PREFIX_PATH="$HEPMC3DIR:$CMAKE_PREFIX_PATH"
+
+RUN mkdir -p ${HEPMC3DIR}/{src,build} && \
+    curl -o ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz \
+            https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC3_VERSION}/HepMC3-${HEPMC3_VERSION}.tar.gz && \
+    tar zxf ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz -C ${HEPMC3DIR}/src && \
+    rm -f ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz && \
+    cd ${HEPMC3DIR}/build && \
+    cmake -DCMAKE_INSTALL_PREFIX=../ \
+          -DHEPMC3_ENABLE_ROOTIO=ON \
+          -DHEPMC3_ENABLE_PYTHON=ON \
+           ../src/HepMC3-${HEPMC3_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${HEPMC3DIR}/{src,build}
 
 # Install Allpix Squared dependencies
 RUN apt-get install -y libpqxx-dev postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml git
