@@ -10,7 +10,10 @@
  */
 
 #include <atomic>
+#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
 #include <cpuid.h>
+#endif
+
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
@@ -127,6 +130,8 @@ int main(int argc, const char* argv[]) {
                       << G4VERSION_NUMBER % 10 << std::endl;
 #endif
 
+            // The new apple m silicon does not include cpuid
+#if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
             std::array<char, 0x40> cpu_string;
             std::array<unsigned int, 4> cpu_info = {0, 0, 0, 0};
             __cpuid(0x80000000, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
@@ -146,6 +151,8 @@ int main(int argc, const char* argv[]) {
                       << std::endl;
 
             std::cout << std::endl;
+#endif
+
             std::cout << "Copyright (c) 2016-2022 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
