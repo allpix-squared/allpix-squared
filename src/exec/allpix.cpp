@@ -11,7 +11,7 @@
 
 #include <atomic>
 #if defined(__linux__) || (defined(__APPLE__) && !defined(__arm64__))
-    #include <cpuid.h>
+#include <cpuid.h>
 #endif
 
 #include <csignal>
