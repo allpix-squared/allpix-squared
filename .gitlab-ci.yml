@@ -433,11 +433,11 @@ perf:cc7-gcc:
     tags:
         - docker
     before_script:
-        - mkdir -p result
+        - mkdir -p public/usermanual
         - mkdir build && cd build
     artifacts:
         paths:
-            - result
+            - public
         expire_in: 24 hour
 
 # Compile Doxygen reference
@@ -448,7 +448,7 @@ docs:doxygen:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_reference
-        - mv doc/reference/html ../result/reference
+        - mv doc/reference/html ../public/reference
 
 # Create file tree for hugo
 docs:usermanual-hugo:
@@ -458,7 +458,7 @@ docs:usermanual-hugo:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_hugo
-        - mv doc/usermanual_hugo ../result/usermanual_hugo
+        - mv doc/usermanual_hugo ../public/usermanual_hugo
 
 # Compile LaTeX user manual:
 docs:usermanual-pdf:
@@ -469,7 +469,7 @@ docs:usermanual-pdf:
         - pandoc --version
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_pdf
-        - mv doc/usermanual_pdf/allpix-manual.pdf ../result/allpix-manual.pdf
+        - cp doc/usermanual_pdf/allpix-manual-*.pdf ../public/usermanual/
 
 
 ################################
@@ -555,6 +555,7 @@ deploy:eos:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
     dependencies:
+        - docs:usermanual-pdf
         - pkg:cc7-gcc
         - pkg:cc7-llvm
         - pkg:cc8-gcc
