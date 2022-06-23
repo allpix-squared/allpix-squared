@@ -61,7 +61,7 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
 
     // Read event from input file
     HepMC3::GenEvent evt(HepMC3::Units::MEV, HepMC3::Units::MM);
-    LOG(DEBUG) << "Reading HepMC3 event " << eventNum();
+    LOG(DEBUG) << "Reading event " << eventNum() << " from HepMC3 file";
     reader_->read_event(evt);
 
     // If we have no more events, end this run
@@ -69,8 +69,12 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
         throw EndOfRunException("Requesting end of run: end of file reached");
     }
 
-    // Check if this is the requested event, otherwise return an empty vector
-    // FIXME the event has been read anyway and we will read the next one in the coming call, so this doesn't work
+    // Check if this is the requested event, otherwise act!
+    while(static_cast<uint64_t>(evt.event_number()) < eventNum() - 1) {
+        LOG(INFO) << "HepMC3 event " << evt.event_number() << " too early, dropping.";
+        reader_->read_event(evt);
+    }
+
     if(static_cast<uint64_t>(evt.event_number()) > eventNum() - 1) {
         LOG(INFO) << "Expecting event " << (eventNum() - 1) << ", found " << static_cast<uint64_t>(evt.event_number())
                   << ", returning empty event";
