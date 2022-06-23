@@ -126,6 +126,9 @@ ADD_CUSTOM_TARGET(
         ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/frontmatter.tex" "${DOCS_PDF_BINARY_DIR}"
     COMMAND
         Latexmk::latexmk ${LATEXMK_COMPILER_FLAGS} "${DOCS_PDF_BINARY_DIR}/allpix-manual.tex"
+    COMMAND
+        ${CMAKE_COMMAND} -E rename "${DOCS_PDF_BINARY_DIR}/allpix-manual.pdf"
+        "${DOCS_PDF_BINARY_DIR}/allpix-manual-${CPACK_PACKAGE_VERSION}.pdf"
     DEPENDS Python::Interpreter Latexmk::latexmk Lualatex::lualatex Biber::biber Pygmentize::pygmentize apsq_docs_latex
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
     COMMENT "Generating the PDF documentation"
