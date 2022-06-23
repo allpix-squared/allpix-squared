@@ -27,10 +27,13 @@ namespace allpix {
     public:
         /**
          * @brief constructor of a hexagonal pixel detector model
-         * @param  type   Name of the model type
-         * @param  reader Configuration reader with description of the model
+         * @param type   Name of the model type
+         * @param assembly Detector assembly object with information about ASIC and packaging
+         * @param reader Configuration reader with description of the model
          */
-        explicit HexagonalPixelDetectorModel(std::string type, const ConfigReader& reader);
+        explicit HexagonalPixelDetectorModel(std::string type,
+                                             const std::shared_ptr<DetectorAssembly>& assembly,
+                                             const ConfigReader& reader);
 
         /**
          * @brief Essential virtual destructor

@@ -12,6 +12,7 @@
 #include "DetectorModel.hpp"
 #include "core/module/exceptions.h"
 
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
 
