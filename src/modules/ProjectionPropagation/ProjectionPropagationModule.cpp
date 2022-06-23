@@ -423,7 +423,7 @@ void ProjectionPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::UNKNOWN);
     }
 
     if(output_plots_) {

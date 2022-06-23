@@ -358,18 +358,18 @@ void GenericPropagationModule::run(Event* event) {
 
     // Output plots if required
     if(output_linegraphs_) {
-        LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::UNKNOWN);
+        LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::UNKNOWN);
         if(output_linegraphs_collected_) {
-            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::HALTED);
+            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::HALTED);
         }
         if(output_linegraphs_recombined_) {
-            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::RECOMBINED);
+            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::RECOMBINED);
         }
         if(output_linegraphs_trapped_) {
-            LineGraph::Create(event->number, this, model_, config_, output_plot_points, CarrierState::TRAPPED);
+            LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::TRAPPED);
         }
         if(config_.get<bool>("output_animations")) {
-            LineGraph::Animate(event->number, this, model_, config_, output_plot_points);
+            LineGraph::Animate(event->number, this, config_, output_plot_points);
         }
     }
 

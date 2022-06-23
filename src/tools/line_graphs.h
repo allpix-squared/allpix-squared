@@ -38,7 +38,6 @@ namespace allpix {
          *
          * @param event_num Index for this event
          * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
-         * @param model Detector model to generate graphs for, used for obtaining geometrical information
          * @param config Configuration object used for this module instance
          * @param output_plot_points List of points cached for plotting
          * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
@@ -46,10 +45,11 @@ namespace allpix {
          */
         static void Create(uint64_t event_num, // NOLINT
                            Module* module,
-                           const std::shared_ptr<DetectorModel>& model,
                            const Configuration& config,
                            const OutputPlotPoints& output_plot_points,
                            CarrierState plotting_state) {
+
+            auto model = module->getDetector()->getModel();
 
             auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
             LOG(TRACE) << "Writing line graph for " << title << " charge carriers";
@@ -123,18 +123,17 @@ namespace allpix {
          *
          * @param event_num Index for this event
          * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
-         * @param model Detector model to generate graphs for, used for obtaining geometrical information
          * @param config Configuration object used for this module instance
          * @param output_plot_points List of points cached for plotting
          * carriers are plotted.
          */
         static void Animate(uint64_t event_num, // NOLINT
                             Module* module,
-                            const std::shared_ptr<DetectorModel>& model,
                             const Configuration& config,
                             const OutputPlotPoints& output_plot_points) {
 
             LOG(TRACE) << "Writing animation for all charge carriers";
+            auto model = module->getDetector()->getModel();
 
             auto [minX, maxX, minY, maxY, scale_x, scale_y, max_charge, total_charge, tot_point_cnt, start_time] =
                 get_plot_settings(model, config, output_plot_points);
