@@ -30,10 +30,11 @@ namespace allpix {
          * @brief Different implemented file models
          */
         enum class FileModel {
-            GENIE,     ///< Genie generator ROOT files
-            HEPMC,     ///< HepMC data files from generators such as Pythia
-            HEPMC2,    ///< HepMC2 data files, outdated format
-            HEPMCROOT, ///< HepMC ROOTIO file format
+            GENIE,      ///< Genie generator ROOT files
+            HEPMC,      ///< HepMC data files from generators such as Pythia
+            HEPMC2,     ///< HepMC2 data files, outdated format
+            HEPMCROOT,  ///< HepMC ROOTIO file format
+            HEPMCTTREE, ///< HepMC ROOTIO TTree file format
         };
 
         /**

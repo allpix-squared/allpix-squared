@@ -20,6 +20,7 @@
 #include <HepMC3/ReaderAscii.h>
 #include <HepMC3/ReaderAsciiHepMC2.h>
 #include <HepMC3/ReaderRoot.h>
+#include <HepMC3/ReaderRootTree.h>
 
 using namespace allpix;
 
@@ -36,6 +37,9 @@ PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
     } else if(model == FileModel::HEPMCROOT) {
         file_path = config.getPathWithExtension("file_name", "root", true);
         reader_ = std::make_unique<HepMC3::ReaderRoot>(file_path);
+    } else if(model == FileModel::HEPMCTTREE) {
+        file_path = config.getPathWithExtension("file_name", "root", true);
+        reader_ = std::make_unique<HepMC3::ReaderRootTree>(file_path);
     }
 
     if(reader_->failed()) {
@@ -57,6 +61,7 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
 
     // Read event from input file
     HepMC3::GenEvent evt(HepMC3::Units::MEV, HepMC3::Units::MM);
+    LOG(DEBUG) << "Reading HepMC3 event " << eventNum();
     reader_->read_event(evt);
 
     // If we have no more events, end this run

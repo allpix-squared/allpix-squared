@@ -25,11 +25,11 @@ These can be overwritten by specifying the parameters `charge_creation_energy` a
 ## Dependencies
 
 This module inherits from and therefore requires the *DepositionGeant4* module as well as an installation of Geant4.
-In addition, an installation of the HepMC3 library is required for the module to support the formats `HepMC3`, `HepMC2` and `HepMC ROOTIO`.
+In addition, an installation of the HepMC3 library is required for the module to support the formats `HepMC3`, `HepMC2`, `HepMC ROOTIO` as well as `HepMC ROOTIO TTree`.
 
 ## Parameters
 
-* `model`: Input data model. Currently supported is the data format of the [@genie] Monte Carl generator (`GENIE`) as well as the `HepMC3`, `HepMC2` and `HepMCROOT` data formats written by the HepMC3 library [@hepmc3].
+* `model`: Input data model. Currently supported is the data format of the [@genie] Monte Carl generator (`GENIE`) as well as the `HepMC3`, `HepMC2`, `HepMCROOT`, `HepMCTTree` data formats written by the HepMC3 library [@hepmc3].
 * `file_name`: Path to the input data file to be read.
 
 ### Relevant parameters inherited from *DepositionGeant4*
