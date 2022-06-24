@@ -231,3 +231,8 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "bologna"`.
+
+[@massey]: https://doi.org/10.1109/TED.2006.881010
+[@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
+[@okuto]: https://doi.org/10.1016/0038-1101(75)90099-4
+[@bologna]: https://doi.org/10.1109/SISPAD.1999.799251
