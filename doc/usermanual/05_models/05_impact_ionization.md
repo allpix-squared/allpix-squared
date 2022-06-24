@@ -8,16 +8,16 @@ weight: 5
 Allpix Squared implements charge multiplication via impact ionization models. These models are only used by propagation
 modules which perform a step-by-step simulation of the charge carrier motion.
 
-The gain $g$ is calculated for all models as exponential of the model-dependent impact ionization coefficient $`\alpha`$ and
-the length of the step $l$ performed in the respective electric field. If the electric field strength stays below a
-configurable threshold $`E_{\textrm{thr}}`$, unity gain is assumed:
+The gain $`g`$ is calculated for all models as exponential of the model-dependent impact ionization coefficient $`\alpha`$ and
+the length of the step $`l`$ performed in the respective electric field. If the electric field strength stays below a
+configurable threshold $`E_{\text{thr}}`$, unity gain is assumed:
 
 ```math
 \begin{equation}
     g (E, T) = \left\{
     \begin{array}{ll}
-        e^{l \cdot \alpha(E, T)} & E > E_{\textrm{thr}}\\
-        1.0 & E < E_{\textrm{thr}}
+        e^{l \cdot \alpha(E, T)} & E > E_{\text{thr}}\\
+        1.0 & E < E_{\text{thr}}
     \end{array}
     \right.
 \end{equation}
@@ -27,7 +27,7 @@ The the following impact ionization models are available:
 
 ## Massey Model
 
-The Massey model \[[@massey]\] describes impact ionization as a function of the electric field $E$.
+The Massey model \[[@massey]\] describes impact ionization as a function of the electric field $`E`$.
 The ionization coefficients are parametrized as
 
 ```math
@@ -84,8 +84,8 @@ For holes, two sets of impact ionization parameters $`p = \left\{ a_{\infty}, b 
 \begin{equation}
     p = \left\{
     \begin{array}{ll}
-        p_{\textrm{low}} & E < E_{0}\\
-        p_{\textrm{high}} & E > E_{0}
+        p_{\text{low}} & E < E_{0}\\
+        p_{\text{high}} & E > E_{0}
     \end{array}
     \right.
 \end{equation}
@@ -96,28 +96,27 @@ Sentaurus TCAD user manual as:
 
 ```math
 \begin{equation}
-    \label{eq:multi:man:gamma}
-    \gamma (T) = \tanh \left(\frac{0.063\times 10^{6} \,\textrm{eV}}{2 8.6173\times 10^{-5} \,\textrm{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063\times 10^{6} \,\textrm{eV}}{2 8.6173\times 10^{-5} \,\textrm{eV/K} \cdot T} \right)^{-1}
+    \gamma (T) = \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
 \end{equation}
 ```
 
-The value of the reference temperature $T_0$ is not entirely clear as it is never stated explicitly, a value of
+The value of the reference temperature $`T_0`$ is not entirely clear as it is never stated explicitly, a value of
 $`T_0 = 300 \,\text{K}`$ is assumed. The other parameter values implemented in Allpix Squared are taken from the abstract
 of \[[@overstraeten]\] as:
 
 ```math
 \begin{equation*}
     \begin{split}
-        E_0 &= 4.0\times 10^{5} \,\textrm{V/cm}\\
-        a_{\infty, e} &= 7.03\times 10^{5} \,\textrm{/cm}\\
-        b_{e} &= 1.231\times 10^{6} \,\textrm{V/cm}\\
+        E_0 &= 4.0\times 10^{5} \,\text{V/cm}\\
+        a_{\infty, e} &= 7.03\times 10^{5} \,\text{/cm}\\
+        b_{e} &= 1.231\times 10^{6} \,\text{V/cm}\\
     \end{split}
     \qquad
     \begin{split}
-        a_{\infty, h, \textrm{low}} &= 1.582\times 10^{6} \,\textrm{/cm}\\
-        a_{\infty, h, \textrm{high}} &= 6.71\times 10^{5} \,\textrm{/cm}\\
-        b_{h, \textrm{low}} &= 2.036\times 10^{6} \,\textrm{V/cm}\\
-        b_{h, \textrm{high}} &= 1.693\times 10^{6} \,\textrm{V/cm}\\
+        a_{\infty, h, \text{low}} &= 1.582\times 10^{6} \,\text{/cm}\\
+        a_{\infty, h, \text{high}} &= 6.71\times 10^{5} \,\text{/cm}\\
+        b_{h, \text{low}} &= 2.036\times 10^{6} \,\text{V/cm}\\
+        b_{h, \text{high}} &= 1.693\times 10^{6} \,\text{V/cm}\\
     \end{split}
 \end{equation*}
 ```
@@ -135,7 +134,7 @@ features a linear dependence on the electric field strength $`E`$. The coefficie
 \end{equation}
 ```
 
-The two parameters $a, b$ are temperature dependent and scale with respect to the reference temperature
+The two parameters $`a, b`$ are temperature dependent and scale with respect to the reference temperature
 $`T_0 = 300 \,\text{K}`$ as:
 
 ```math
@@ -152,16 +151,16 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 ```math
 \begin{equation*}
     \begin{split}
-        a_{300, e} &= 0.426}{/V}\\
+        a_{300, e} &= 0.426 \,\text{/V}\\
         c_{e} &= 3.05\times 10^{-4}\\
-        b_{300, e} &= 4.81\times 10^{5} \,\textrm{V/cm}\\
+        b_{300, e} &= 4.81\times 10^{5} \,\text{V/cm}\\
         d_{e} &= 6.86\times 10^{-4}\\
     \end{split}
     \qquad
     \begin{split}
-        a_{300, h} &= 0.243 \,\textrm{/cm}\\
+        a_{300, h} &= 0.243 \,\text{/cm}\\
         c_{h} &= 5.35\times 10^{-4}\\
-        b_{300, h} &= 6.53\times 10^{5} \,\textrm{V/cm}\\
+        b_{300, h} &= 6.53\times 10^{5} \,\text{V/cm}\\
         d_{h} &= 5.67\times 10^{-4}\\
     \end{split}
 \end{equation*}
@@ -172,7 +171,7 @@ This model can be selected in the configuration file via the parameter `multipli
 ## Bologna Model
 
 The Bologna model \[[@bologna]\] describes impact ionization for experimental data in an electric field range from
-$`130 \,\text{kV/cm}`$ to $`230 \,\text{kV/cm}`$ and temperatures up to $`400 \,\text{\celsius}`$. The impact ionization
+$`130 \,\text{kV/cm}`$ to $`230 \,\text{kV/cm}`$ and temperatures up to $`400 \,^{\circ}\text{C}`$. The impact ionization
 coefficient takes a different form than the previous models and is given by
 
 ```math
@@ -200,33 +199,33 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 ```math
 \begin{equation*}
     \begin{split}
-        a_{0, e} &= 4.3383}{V}\\
-        a_{1, e} &= -2.42e-12}{V}\\
+        a_{0, e} &= 4.3383 \,\text{V}\\
+        a_{1, e} &= -2.42\times 10^{-12} \,\text{V}\\
         a_{2, e} &= 4.1233\\
-        b_{0, e} &= 0.235 \,\textrm{V}\\
+        b_{0, e} &= 0.235 \,\text{V}\\
         b_{1, e} &= 0\\
-        c_{0, e} &= 1.6831e4}{V/cm}\\
-        c_{1, e} &= 4.3796}{V/cm}\\
+        c_{0, e} &= 1.6831\times 10^{4} \,\text{V/cm}\\
+        c_{1, e} &= 4.3796 \,\text{V/cm}\\
         c_{2, e} &= 1\\
-        c_{3, e} &= 0.13005}{V/cm}\\
-        d_{0, e} &= 1.2337e6}{V/cm}\\
-        d_{1, e} &= 1.2039e3}{V/cm}\\
-        d_{2, e} &= 0.56703}{V/cm}\\
+        c_{3, e} &= 0.13005 \,\text{V/cm}\\
+        d_{0, e} &= 1.2337\times 10^{6} \,\text{V/cm}\\
+        d_{1, e} &= 1.2039\times 10^{3} \,\text{V/cm}\\
+        d_{2, e} &= 0.56703 \,\text{V/cm}\\
     \end{split}
     \qquad
     \begin{split}
-        a_{0, h} &= 2.376 \,\textrm{V}\\
-        a_{1, h} &= 1.033\times 10^{-2} \,\textrm{V}\\
+        a_{0, h} &= 2.376 \,\text{V}\\
+        a_{1, h} &= 1.033\times 10^{-2} \,\text{V}\\
         a_{2, h} &= 1\\
-        b_{0, h} &= 0.17714 \,\textrm{V}\\
-        b_{1, h} &= -2.178\times 10^{-3} \,\textrm{/K}\\
+        b_{0, h} &= 0.17714 \,\text{V}\\
+        b_{1, h} &= -2.178\times 10^{-3} \,\text{/K}\\
         c_{1, h} &= 0\\
-        c_{1, h} &= 9.47\times 10^{-3} \,\textrm{V/cm}\\
+        c_{1, h} &= 9.47\times 10^{-3} \,\text{V/cm}\\
         c_{2, h} &= 2.4924\\
         c_{3, h} &= 0\\
-        d_{0, h} &= 1.4043\times 10^{6} \,\textrm{V/cm}\\
-        d_{1, h} &= 2.9744\times 10^{3} \,\textrm{V/cm}\\
-        d_{2, h} &= 1.4829 \,\textrm{V/cm}\\
+        d_{0, h} &= 1.4043\times 10^{6} \,\text{V/cm}\\
+        d_{1, h} &= 2.9744\times 10^{3} \,\text{V/cm}\\
+        d_{2, h} &= 1.4829 \,\text{V/cm}\\
     \end{split}
 \end{equation*}
 ```
