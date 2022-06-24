@@ -238,7 +238,6 @@ namespace allpix {
         /**
          * ImpactIonization constructor
          * @param config Configuration of the calling module
-         * @param temperature Temperature for which the mobility model should be initialized
          */
         ImpactIonization(const Configuration& config) {
             try {
