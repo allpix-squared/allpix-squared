@@ -17,6 +17,7 @@
 
 #include "exceptions.h"
 
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
@@ -239,7 +240,7 @@ namespace allpix {
          * ImpactIonization constructor
          * @param config Configuration of the calling module
          */
-        ImpactIonization(const Configuration& config) {
+        explicit ImpactIonization(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("multiplication_model", "none");
                 std::transform(model.begin(), model.end(), model.begin(), ::tolower);
