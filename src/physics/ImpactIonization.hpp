@@ -237,24 +237,33 @@ namespace allpix {
 
         /**
          * ImpactIonization constructor
-         * @param model       Name of the impact ionization model
+         * @param config Configuration of the calling module
          * @param temperature Temperature for which the mobility model should be initialized
-         * @param threshold   Threshold electric field from which on multiplication is calculated
          */
-        ImpactIonization(const std::string& model, double temperature, double threshold) {
-            if(model == "massey") {
-                model_ = std::make_unique<Massey>(temperature, threshold);
-            } else if(model == "overstraeten") {
-                model_ = std::make_unique<VanOverstraetenDeMan>(temperature, threshold);
-            } else if(model == "okuto") {
-                model_ = std::make_unique<OkutoCrowell>(temperature, threshold);
-            } else if(model == "bologna") {
-                model_ = std::make_unique<Bologna>(temperature, threshold);
-            } else if(model == "none") {
-                LOG(INFO) << "No impact ionization model chosen, charge multiplication not simulated";
-                model_ = std::make_unique<NoImpactIonization>();
-            } else {
-                throw InvalidModelError(model);
+        ImpactIonization(const Configuration& config) {
+            try {
+                auto model = config.get<std::string>("multiplication_model", "none");
+                std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+                auto temperature = config.get<double>("temperature");
+                auto threshold = config.get<double>("multiplication_threshold");
+
+                if(model == "massey") {
+                    model_ = std::make_unique<Massey>(temperature, threshold);
+                } else if(model == "overstraeten") {
+                    model_ = std::make_unique<VanOverstraetenDeMan>(temperature, threshold);
+                } else if(model == "okuto") {
+                    model_ = std::make_unique<OkutoCrowell>(temperature, threshold);
+                } else if(model == "bologna") {
+                    model_ = std::make_unique<Bologna>(temperature, threshold);
+                } else if(model == "none") {
+                    LOG(INFO) << "No impact ionization model chosen, charge multiplication not simulated";
+                    model_ = std::make_unique<NoImpactIonization>();
+                } else {
+                    throw InvalidModelError(model);
+                }
+                LOG(INFO) << "Selected impact ionization model \"" << model << "\"";
+            } catch(const ModelError& e) {
+                throw InvalidValueError(config, "multiplication_model", e.what());
             }
         }
 

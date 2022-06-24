@@ -587,12 +587,7 @@ void GenericPropagationModule::initialize() {
     recombination_ = Recombination(config_, detector_->hasDopingProfile());
 
     // Impact ionization model
-    try {
-        multiplication_ = ImpactIonization(
-            config_.get<std::string>("multiplication_model"), temperature_, config_.get<double>("multiplication_threshold"));
-    } catch(ModelError& e) {
-        throw InvalidValueError(config_, "multiplication_model", e.what());
-    }
+    multiplication_ = ImpactIonization(config_);
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_max_ > 0.001) {
