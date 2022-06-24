@@ -14,7 +14,6 @@ configurable threshold $`E_{\textrm{thr}}`$, unity gain is assumed:
 
 ```math
 \begin{equation}
-    \label{eq:multiplication}
     g (E, T) = \left\{
     \begin{array}{ll}
         e^{l \cdot \alpha(E, T)} & E > E_{\textrm{thr}}\\
@@ -33,7 +32,6 @@ The ionization coefficients are parametrized as
 
 ```math
 \begin{equation}
-    \label{eq:multi:massey}
     \alpha (E, T) = A e^{-\frac{B(T)}{E}},
 \end{equation}
 ```
@@ -76,7 +74,6 @@ The Van Overstraeten-De Man model \[[@overstraeten]\] describes impact ionizatio
 
 ```math
 \begin{equation}
-    \label{eq:multi:man}
     \alpha (E, T) = \gamma (T) \cdot a_{\infty} \cdot e^{-\frac{\gamma(T) \cdot b}{E}},
 \end{equation}
 ```
@@ -85,7 +82,6 @@ For holes, two sets of impact ionization parameters $`p = \left\{ a_{\infty}, b 
 
 ```math
 \begin{equation}
-    \label{eq:multi:man:h}
     p = \left\{
     \begin{array}{ll}
         p_{\textrm{low}} & E < E_{0}\\
@@ -135,7 +131,6 @@ features a linear dependence on the electric field strength $`E`$. The coefficie
 
 ```math
 \begin{equation}
-    \label{eq:multi:oku}
     \alpha (E, T) = a(T) \cdot E \cdot e^{-\left(\frac{b(T)}{E}\right)^2}.
 \end{equation}
 ```
@@ -182,7 +177,6 @@ coefficient takes a different form than the previous models and is given by
 
 ```math
 \begin{equation}
-    \label{eq:multi:bologna}
     \alpha (E, T) = \frac{E}{a(T) + b(T) e^{d(T) / \left(E + c(T) \right)}},
 \end{equation}
 ```
