@@ -465,7 +465,7 @@ docs:usermanual-pdf:
     extends: .doc
     image: thomasweise/docker-texlive-full:latest
     script:
-        - apt update && apt install -y cmake ninja-build python3-yaml pandoc
+        - apt update && apt install -y git cmake ninja-build python3-yaml pandoc
         - pandoc --version
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_pdf
