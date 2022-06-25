@@ -913,7 +913,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, is_alive, is_trapped);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), time, is_alive, is_trapped);
 }
 
 void GenericPropagationModule::finalize() {
