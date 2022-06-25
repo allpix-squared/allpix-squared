@@ -31,7 +31,7 @@ SET(DOCS_PYTHON_HELPER "${CMAKE_CURRENT_SOURCE_DIR}/convert/cmake_helper.py")
 ADD_CUSTOM_TARGET(
     apsq_docs_markdown
     COMMAND
-        ${CMAKE_COMMAND} -E rm -rf ${DOCS_MARKDOWN_BINARY_DIR}
+        ${CMAKE_COMMAND} -E remove_directory -f ${DOCS_MARKDOWN_BINARY_DIR}
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "glob_dir"
         "${CMAKE_CURRENT_SOURCE_DIR}/usermanual" "${DOCS_MARKDOWN_BINARY_DIR}"
@@ -67,7 +67,7 @@ SET(DOCS_HUGO_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/usermanual_hugo")
 ADD_CUSTOM_TARGET(
     apsq_docs_hugo
     COMMAND
-        ${CMAKE_COMMAND} -E rm -rf ${DOCS_HUGO_BINARY_DIR}
+        ${CMAKE_COMMAND} -E remove_directory -f ${DOCS_HUGO_BINARY_DIR}
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "convert_hugo"
         "${DOCS_MARKDOWN_BINARY_DIR}" "${DOCS_HUGO_BINARY_DIR}"
@@ -87,7 +87,7 @@ FIND_PACKAGE(Pandoc)
 ADD_CUSTOM_TARGET(
     apsq_docs_latex
     COMMAND
-        ${CMAKE_COMMAND} -E rm -rf ${DOCS_LATEX_BINARY_DIR}
+        ${CMAKE_COMMAND} -E remove_directory -f ${DOCS_LATEX_BINARY_DIR}
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "convert_latex"
         "${DOCS_MARKDOWN_BINARY_DIR}" "${DOCS_LATEX_BINARY_DIR}"
@@ -116,7 +116,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/latex/frontmatter.tex" "${CMAKE_CURR
 ADD_CUSTOM_TARGET(
     apsq_docs_pdf
     COMMAND
-        ${CMAKE_COMMAND} -E rm -rf ${DOCS_PDF_BINARY_DIR}
+        ${CMAKE_COMMAND} -E remove_directory -f ${DOCS_PDF_BINARY_DIR}
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "create_latex_input"
         "${DOCS_LATEX_BINARY_DIR}" "${DOCS_PDF_BINARY_DIR}/input.tex"
