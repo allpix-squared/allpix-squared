@@ -1,0 +1,4 @@
+---
+{% if exists("title") %}title: "{{title}}"{% else if exists("name") %}title: "{{name}}"{% endif %}
+{% include "meta" %}
+---
