@@ -246,13 +246,17 @@ int main(int argc, char** argv) {
         if(rot.at(0) == "-y" || rot.at(0) == "y") {
             for(size_t i = 0; i < points.size(); ++i) {
                 points_temp[i].x = points[i].y;
-                field_temp[i].x = field[i].y;
+                if(vector_field) {
+                    field_temp[i].x = field[i].y;
+                }
             }
         }
         if(rot.at(0) == "-z" || rot.at(0) == "z") {
             for(size_t i = 0; i < points.size(); ++i) {
                 points_temp[i].x = points[i].z;
-                field_temp[i].x = field[i].z;
+                if(vector_field) {
+                    field_temp[i].x = field[i].z;
+                }
             }
         }
         if(rot.at(1) == "-x" || rot.at(1) == "x") {
@@ -499,6 +503,7 @@ int main(int argc, char** argv) {
                     // We need to convert to framework-internal units:
                     data->push_back(Units::get(point.x, units));
                     // For a vector field, we push three values:
+                    LOG(DEBUG) << "Values of data point (" << i << ", " << j << ", " << k << "): " << point;
                     if(quantity == FieldQuantity::VECTOR) {
                         data->push_back(Units::get(point.y, units));
                         data->push_back(Units::get(point.z, units));
