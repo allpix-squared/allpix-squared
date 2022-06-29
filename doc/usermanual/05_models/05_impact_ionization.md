@@ -21,7 +21,7 @@ g (E, T) = \left\{
 \right.
 ```
 
-The the following impact ionization models are available:
+The following impact ionization models are available:
 
 ## Massey Model
 
@@ -77,7 +77,7 @@ p = \left\{
 \right.
 ```
 
-Temperature scaling of the ionization coefficient is performed  via the $`\gamma(T)`$ parameter following the Synposys
+Temperature scaling of the ionization coefficient is performed via the $`\gamma(T)`$ parameter following the Synposys
 Sentaurus TCAD user manual as:
 
 ```math
