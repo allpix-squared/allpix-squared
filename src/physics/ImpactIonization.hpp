@@ -15,6 +15,8 @@
 #include <limits>
 #include <typeindex>
 
+#include <TFormula.h>
+
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
@@ -223,6 +225,58 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Custom mobility model for charge carriers
+     */
+    class CustomGain : public ImpactIonizationModel {
+    public:
+        CustomGain(const Configuration& config, double threshold) : ImpactIonizationModel(threshold) {
+            electron_gain_ = configure_gain(config, CarrierType::ELECTRON);
+            hole_gain_ = configure_gain(config, CarrierType::HOLE);
+        };
+
+        double gain_factor(const CarrierType& type, double efield_mag) const override {
+            if(type == CarrierType::ELECTRON) {
+                return electron_gain_->Eval(efield_mag);
+            } else {
+                return hole_gain_->Eval(efield_mag);
+            }
+        };
+
+    private:
+        std::unique_ptr<TFormula> electron_gain_;
+        std::unique_ptr<TFormula> hole_gain_;
+
+        std::unique_ptr<TFormula> configure_gain(const Configuration& config, const CarrierType type) {
+            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            auto function = config.get<std::string>("multiplication_function_" + name);
+            auto parameters = config.getArray<double>("multiplication_parameters_" + name, {});
+
+            auto gain = std::make_unique<TFormula>(("multiplication_" + name).c_str(), function.c_str());
+
+            if(!gain->IsValid()) {
+                throw InvalidValueError(config,
+                                        "multiplication_function_" + name,
+                                        "The provided model is not a valid ROOT::TFormula expression");
+            }
+
+            // Check if number of parameters match up
+            if(static_cast<size_t>(gain->GetNpar()) != parameters.size()) {
+                throw InvalidValueError(config,
+                                        "multiplication_parameters_" + name,
+                                        "The number of provided parameters and parameters in the function do not match");
+            }
+
+            // Set the parameters
+            for(size_t n = 0; n < parameters.size(); ++n) {
+                gain->SetParameter(static_cast<int>(n), parameters[n]);
+            }
+
+            return gain;
+        };
+    };
+
+    /**
      * @brief Wrapper class and factory for impact ionization models.
      *
      * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
@@ -258,6 +312,8 @@ namespace allpix {
                 } else if(model == "none") {
                     LOG(INFO) << "No impact ionization model chosen, charge multiplication not simulated";
                     model_ = std::make_unique<NoImpactIonization>();
+                } else if(model == "custom") {
+                    model_ = std::make_unique<CustomGain>(config, threshold);
                 } else {
                     throw InvalidModelError(model);
                 }
