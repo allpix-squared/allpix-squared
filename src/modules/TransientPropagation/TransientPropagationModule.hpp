@@ -88,13 +88,14 @@ namespace allpix {
          * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(Event* event,
-                                                                         const ROOT::Math::XYZPoint& pos,
-                                                                         const CarrierType& type,
-                                                                         const unsigned int charge,
-                                                                         const double initial_time,
-                                                                         std::map<Pixel::Index, Pulse>& pixel_map,
-                                                                         LineGraph::OutputPlotPoints& output_plot_points);
+        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
+        propagate(Event* event,
+                  const ROOT::Math::XYZPoint& pos,
+                  const CarrierType& type,
+                  const unsigned int charge,
+                  const double initial_time,
+                  std::map<Pixel::Index, Pulse>& pixel_map,
+                  LineGraph::OutputPlotPoints& output_plot_points);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
