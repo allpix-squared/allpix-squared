@@ -10,5 +10,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME} ProjectionPropagationModule.cpp)
 # Register module tests
 ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
 
+TARGET_LINK_LIBRARIES(${MODULE_NAME} ROOT::Graf3d)
+
 # Provide standard install target
 ALLPIX_MODULE_INSTALL(${MODULE_NAME})

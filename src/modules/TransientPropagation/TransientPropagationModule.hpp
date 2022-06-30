@@ -31,6 +31,7 @@
 #include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 namespace allpix {
     /**
@@ -83,19 +84,23 @@ namespace allpix {
          * @param initial_time Initial timestamp referring to the start of the event
          * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
          *                  result in
+         * @param output_plot_points Reference to vector to hold points for line graph output plots
          * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(Event* event,
-                                                                                 const ROOT::Math::XYZPoint& pos,
-                                                                                 const CarrierType& type,
-                                                                                 const unsigned int charge,
-                                                                                 const double initial_time,
-                                                                                 std::map<Pixel::Index, Pulse>& pixel_map);
+        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
+        propagate(Event* event,
+                  const ROOT::Math::XYZPoint& pos,
+                  const CarrierType& type,
+                  const unsigned int charge,
+                  const double initial_time,
+                  std::map<Pixel::Index, Pulse>& pixel_map,
+                  LineGraph::OutputPlotPoints& output_plot_points);
 
         // Local copies of configuration parameters to avoid costly lookup:
-        double temperature_{}, timestep_{}, integration_time_{};
-        bool output_plots_{};
+        double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
+        bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
+            output_linegraphs_trapped_{}, output_animations_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};

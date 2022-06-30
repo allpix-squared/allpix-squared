@@ -34,10 +34,9 @@
 #include "physics/Trapping.hpp"
 
 #include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 namespace allpix {
-    using OutputPlotPoints = std::vector<
-        std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
 
     /**
      * @ingroup Modules
@@ -80,15 +79,6 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         /**
-         * @brief Create output plots in every event
-         * @param event_num Index for this event
-         * @param output_plot_points List of points cached for plotting
-         * @param plotting_state State of charge carriers to be plotted
-         */
-        void
-        create_output_plots(uint64_t event_num, const OutputPlotPoints& output_plot_points, CarrierState plotting_state);
-
-        /**
          * @brief Propagate a single set of charges through the sensor
          * @param pos Position of the deposit in the sensor
          * @param type Type of the carrier to propagate
@@ -98,11 +88,12 @@ namespace allpix {
          * @return Tuple with the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(const ROOT::Math::XYZPoint& pos,
-                                                                                 const CarrierType& type,
-                                                                                 const double initial_time,
-                                                                                 RandomNumberGenerator& random_generator,
-                                                                                 OutputPlotPoints& output_plot_points) const;
+        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
+        propagate(const ROOT::Math::XYZPoint& pos,
+                  const CarrierType& type,
+                  const double initial_time,
+                  RandomNumberGenerator& random_generator,
+                  LineGraph::OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},

@@ -31,6 +31,7 @@
 #include "physics/Recombination.hpp"
 
 #include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 namespace allpix {
     /**
@@ -72,7 +73,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // Config parameters
-        bool output_plots_;
+        bool output_plots_{}, output_linegraphs_{}, output_animations_{};
         double integration_time_{};
         bool diffuse_deposit_;
         unsigned int charge_per_step_{};
