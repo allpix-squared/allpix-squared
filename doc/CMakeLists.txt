@@ -26,6 +26,7 @@ ADD_CUSTOM_TARGET(
 SET(DOCS_MARKDOWN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/usermanual_markdown")
 
 FIND_PACKAGE(Python COMPONENTS Interpreter)
+FIND_PACKAGE(Doxybook2)
 SET(DOCS_PYTHON_HELPER "${CMAKE_CURRENT_SOURCE_DIR}/convert/cmake_helper.py")
 
 ADD_CUSTOM_TARGET(
@@ -53,7 +54,10 @@ ADD_CUSTOM_TARGET(
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "copylower"
         "${DOCS_TESTS_CONF}" "${DOCS_MARKDOWN_BINARY_DIR}/15_appendix"
-    DEPENDS Python::Interpreter
+    COMMAND
+        Doxybook2::doxybook2 -q -i "${DOCS_DOXYGEN_BINARY_DIR}/xml" -o "${DOCS_MARKDOWN_BINARY_DIR}/15_api_ref"
+        -t "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook" -c "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook/config.json"
+    DEPENDS Python::Interpreter Doxybook2::doxybook2 apsq_docs_reference
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
     COMMENT "Generating source tree of the Markdown documentation"
     VERBATIM)
@@ -118,7 +122,7 @@ ADD_CUSTOM_TARGET(
     COMMAND
         ${CMAKE_COMMAND} -E remove_directory -f ${DOCS_PDF_BINARY_DIR}
     COMMAND
-        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "create_latex_input"
+        Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "create_latex_input"  # FIXME: ignore API ref, takes too long + fails
         "${DOCS_LATEX_BINARY_DIR}" "${DOCS_PDF_BINARY_DIR}/input.tex"
     COMMAND
         ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/latex/allpix-manual.tex" "${DOCS_PDF_BINARY_DIR}"
