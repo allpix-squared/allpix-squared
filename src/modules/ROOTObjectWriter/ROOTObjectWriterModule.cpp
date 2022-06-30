@@ -116,6 +116,9 @@ void ROOTObjectWriterModule::run(Event* event) {
         }
     }
 
+    // Check if there were any missed events:
+    auto missing_events = event->number - last_event_ - 1;
+
     // Generate trees and index data
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -162,17 +165,17 @@ void ROOTObjectWriterModule::run(Event* event) {
                 branch_name.c_str(), (std::string("std::vector<") + class_name_with_namespace + "*>").c_str(), addr);
 
             // Prefill new tree or new branch with empty records for all events that were missed since the start
-            if(last_event_ > 0) {
+            if(missing_events > 0) {
                 if(new_tree) {
-                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
-                    for(uint64_t i = 0; i < last_event_; ++i) {
+                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << missing_events << " empty events";
+                    for(uint64_t i = 0; i < missing_events; ++i) {
                         trees_[class_name]->Fill();
                     }
                 } else {
-                    LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with " << last_event_
+                    LOG(DEBUG) << "Pre-filling branch " << branch_name << " of " << class_name << " with " << missing_events
                                << " empty events";
                     auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
-                    for(uint64_t i = 0; i < last_event_; ++i) {
+                    for(uint64_t i = 0; i < missing_events; ++i) {
                         branch->Fill();
                     }
                 }
