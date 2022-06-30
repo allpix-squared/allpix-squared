@@ -196,6 +196,42 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "bologna"`.
 
+## Custom Impact Ionization Models
+
+Allpix Squared provides the possibility to use fully custom impact ionization models. In order to use a custom model, the
+parameter `multiplication_model = "custom"` needs to be set in the configuration file. Additionally, the following
+configuration keys have to be provided:
+
+- `multiplication_function_electrons`:
+  The formula describing the electron impact ionization gain.
+
+- `multiplication_function_holes`:
+  The formula describing the hole impact ionization gain.
+
+The functions defined via these parameters can depend on the local electric field. In order to use the electric field
+magnitude in the formula, an `x` has to be placed at the respective position.
+
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately
+as arrays via the `multiplication_parameters_electrons` and `multiplication_parameters_electrons`. Placeholders for
+parameters in the formula are denoted with squared brackets and a parameter number, for example `[0]` for the first
+parameter provided. Parameters specified separately from the formula can contain units which will be interpreted
+automatically.
+
+{{% alert title="Warning" color="warning" %}}
+Parameters directly placed in the impact ionization formula have to be supplied in framework-internal units since the
+function will be evaluated with both electric field strength and doping concentration in internal units. It is recommended
+to use the possibility of separately configuring the parameters and to make use of units to avoid conversion mistakes.
+{{% /alert %}}
+
+{{% alert title="Warning" color="warning" %}}
+It should be noted that the temperature passed via the module configuration is not evaluated for the custom impact ionization
+model, but the model parameters need to be manually adjusted to the required temperature.
+{{% /alert %}}
+
+The interpretation of the custom impact ionization functions is based on the `ROOT::TFormula` class \[[@rootformula]\] and
+supports all corresponding features, mathematical expressions and constants.
+
+
 [@massey]: https://doi.org/10.1109/TED.2006.881010
 [@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
 [@okuto]: https://doi.org/10.1016/0038-1101(75)90099-4
