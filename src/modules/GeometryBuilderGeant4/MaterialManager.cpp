@@ -23,12 +23,12 @@ Materials& Materials::getInstance() {
 
 G4Material* Materials::get(const std::string& material) const {
 
-    LOG(DEBUG) << "Searching for material \"" << material << "\"";
+    LOG(TRACE) << "Searching for material \"" << material << "\"";
     // Look in our materials definitions
     // FIXME tolower for this comparison but not for the rest
     auto material_lower = allpix::transform(material, ::tolower);
     if(materials_.find(material_lower) != materials_.end()) {
-        LOG(DEBUG) << "Found material \"" << material << "\" in internal database";
+        LOG(TRACE) << "Found material \"" << material << "\" in internal database";
         return materials_.at(material_lower);
     }
 
@@ -46,7 +46,7 @@ G4Material* Materials::get(const std::string& material) const {
     }
 
     if(nist_material != nullptr) {
-        LOG(DEBUG) << "Found material \"" << material << "\" in Geant4 NIST Database";
+        LOG(TRACE) << "Found material \"" << material << "\" in Geant4 NIST Database";
         return nist_material;
     }
 

@@ -10,10 +10,11 @@ Such detectors are planned to be deployed in the end-cap regions of the ATLAS In
 This example uses the model of a specific ITk module, called the R0.
 You can see the radial detector used in this simulation by enabling the `VisualizationGeant4` module.
 
-Detector models for radial strip detectors are implemented in the `RadialStripDetectorModel` class. A radial strip detector model is defined using four parameters for each  strip row. In addition, its `type` has to be defined as `radial_strip`.
+Detector models for radial strip detectors are implemented in the `RadialStripDetectorModel` class. A radial strip detector model is defined using four parameters for each  strip row. In addition, its `geometry` has to be defined as `radial_strip`.
 
 ```ini
-type = "radial_strip"
+type = "monolithic"
+geometry = "radial_strip"
 number_of_strips = 1026, 1026, 1154, 1154
 angular_pitch = 0.19309mrad, 0.19309mrad, 0.17169mrad, 0.17169mrad
 inner_pitch = 74.4um, 78.1um, 73.6um, 78.5um

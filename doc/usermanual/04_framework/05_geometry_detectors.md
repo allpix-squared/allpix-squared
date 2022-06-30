@@ -127,10 +127,11 @@ determined. Outside the active matrix, the sensor can feature excess material in
 of base class type does not feature a separate readout chip, thus only the thickness of an additional, inactive silicon layer
 can be specified. Derived models allow for separate readout chips, optionally connected with bump bonds.
 
-The base detector model can be extended to provide more detailed geometries. Currently implemented derived models are the
-`MonolithicPixelDetectorModel`, which describes a monolithic detector with all electronics directly implemented in the same
-wafer as the sensor, and the `HybridPixelDetectorModel`, which in addition to the features described above also includes a
-separate readout chip with configurable size and bump bonds between the sensor and readout chip.
+The base detector model can be extended to provide different sensor geometries, and new assembly types can be added for more
+complex detector assembly setups. Currently, two assembly types are implemented, `MonolithicAssembly`, which describes a
+monolithic detector with all electronics directly implemented in the same wafer as the sensor, and the `HybridAssembly`,
+which in addition to the features described above also includes a separate readout chip with configurable size and bump bonds
+between the sensor and readout chip.
 
 ### Detector model parameters
 
@@ -142,9 +143,13 @@ should be consulted.
 The set of base parameters supported by every model is provided below. These parameters should be given at the top of the
 file before the start of any sub-sections.
 
+- `geometry`:
+  A required parameter describing the geometry of the model. At the moment either `pixel` or `radial_strip`. This value
+  determines some of the supported parameters as discussed later.
+
 - `type`:
-  A required parameter describing the type of the model. At the moment either `monolithic` or `hybrid`. This value
-  determines the supported parameters as discussed later.
+  A required parameter describing the type of the detector assembly. At the moment either `monolithic` or `hybrid`. This
+  value determines some of the supported parameters as discussed later.
 
 - `number_of_pixels`:
   The number of pixels in the 2D pixel matrix. Determines the base size of the sensor together with the `pixel_size`
@@ -180,13 +185,14 @@ file before the start of any sub-sections.
 - `chip_thickness`:
   Thickness of the readout chip, placed next to the sensor.
 
-The base parameters described above are the only set of parameters supported by the **monolithic** model. For this model, the
-`chip_thickness` parameter represents the first few micrometers of sensor material which contain the chip circuitry and are
-shielded from the bias voltage and thus do not contribute to the signal formation.
+The base parameters described above are the only set of parameters supported by the **monolithic** assembly. For this
+assembly, the `chip_thickness` parameter represents the first few micrometers of sensor material which contain the chip
+circuitry and are shielded from the bias voltage and thus do not contribute to the signal formation.
 
-The **hybrid** model adds bump bonds between the chip and sensor while automatically making sure the chip and support layers
-are shifted appropriately. Furthermore, it allows the user to specify the chip dimensions independently from the sensor size,
-as the readout chip is treated as a separate entity. The additional parameters for the **hybrid** model are as follows:
+The **hybrid** assembly adds bump bonds between the chip and sensor while automatically making sure the chip and support
+layers are shifted appropriately. Furthermore, it allows the user to specify the chip dimensions independently from the
+sensor size, as the readout chip is treated as a separate entity. The additional parameters for the **hybrid** assembly are
+the following:
 
 - `chip_excess_<direction>`:
   With direction either `top`, `bottom`, `right` or `left`. The chip excess in the specific direction, similar to the

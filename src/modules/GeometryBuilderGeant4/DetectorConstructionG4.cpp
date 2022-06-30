@@ -37,7 +37,6 @@
 #include <G4VisAttributes.hh>
 #include "G4Material.hh"
 
-#include "core/geometry/HybridPixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
@@ -359,8 +358,8 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         geo_manager_->setExternalObject(name, "supports_phys", supports_phys);
 
         // Build the bump bonds only for hybrid pixel detectors
-        auto hybrid_model = std::dynamic_pointer_cast<HybridPixelDetectorModel>(model);
-        if(hybrid_model != nullptr) {
+        auto hybrid_chip = std::dynamic_pointer_cast<HybridAssembly>(model->getAssembly());
+        if(hybrid_chip != nullptr) {
 
             /**
              * BUMPS
@@ -368,15 +367,13 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
              */
 
             // Get parameters from model
-            auto bump_height = hybrid_model->getBumpHeight();
-            auto bump_sphere_radius = hybrid_model->getBumpSphereRadius();
-            auto bump_cylinder_radius = hybrid_model->getBumpCylinderRadius();
+            auto bump_height = hybrid_chip->getBumpHeight();
+            auto bump_sphere_radius = hybrid_chip->getBumpSphereRadius();
+            auto bump_cylinder_radius = hybrid_chip->getBumpCylinderRadius();
 
             // Create the volume containing the bumps
-            auto bump_box = make_shared_no_delete<G4Box>("bump_box_" + name,
-                                                         hybrid_model->getSensorSize().x() / 2.0,
-                                                         hybrid_model->getSensorSize().y() / 2.0,
-                                                         bump_height / 2.);
+            auto bump_box = make_shared_no_delete<G4Box>(
+                "bump_box_" + name, model->getSensorSize().x() / 2.0, model->getSensorSize().y() / 2.0, bump_height / 2.);
             solids_.push_back(bump_box);
 
             // Create the logical wrapper volume
@@ -385,7 +382,9 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             geo_manager_->setExternalObject(name, "bumps_wrapper_log", bumps_wrapper_log);
 
             // Place the general bumps volume
-            G4ThreeVector bumps_pos = toG4Vector(hybrid_model->getBumpsCenter() - hybrid_model->getModelCenter());
+            G4ThreeVector bumps_pos =
+                toG4Vector(hybrid_chip->getBumpsOffset() +
+                           ROOT::Math::XYZVector(0, 0, model->getSensorSize().z() / 2.0 - model->getModelCenter().z()));
             LOG(DEBUG) << "  - Bumps\t\t:\t" << Units::display(bumps_pos, {"mm", "um"});
             auto bumps_wrapper_phys = make_shared_no_delete<G4PVPlacement>(nullptr,
                                                                            bumps_pos,
@@ -413,20 +412,18 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             geo_manager_->setExternalObject(name, "bumps_cell_log", bumps_cell_log);
 
             // Add bump material equivalent to uniform solder layer to total material budget:
-            auto radius = std::max(hybrid_model->getBumpSphereRadius(), hybrid_model->getBumpCylinderRadius());
+            auto radius = std::max(hybrid_chip->getBumpSphereRadius(), hybrid_chip->getBumpCylinderRadius());
             auto relativeArea = M_PI * radius * radius / model->getPixelSize().x() / model->getPixelSize().y();
             total_material_budget +=
-                (relativeArea * hybrid_model->getBumpHeight() / bumps_cell_log->GetMaterial()->GetRadlen());
+                (relativeArea * hybrid_chip->getBumpHeight() / bumps_cell_log->GetMaterial()->GetRadlen());
 
             // Place the bump bonds grid
             std::shared_ptr<G4VPVParameterisation> bumps_param = std::make_shared<Parameterization2DG4>(
-                hybrid_model->getNPixels().x(),
-                hybrid_model->getPixelSize().x(),
-                hybrid_model->getPixelSize().y(),
-                -(hybrid_model->getNPixels().x() * hybrid_model->getPixelSize().x()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().x() - hybrid_model->getMatrixCenter().x()),
-                -(hybrid_model->getNPixels().y() * hybrid_model->getPixelSize().y()) / 2.0 +
-                    (hybrid_model->getBumpsCenter().y() - hybrid_model->getMatrixCenter().y()),
+                model->getNPixels().x(),
+                model->getPixelSize().x(),
+                model->getPixelSize().y(),
+                -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 + (hybrid_chip->getBumpsOffset().x()),
+                -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 + (hybrid_chip->getBumpsOffset().y()),
                 0);
             geo_manager_->setExternalObject(name, "bumps_param", bumps_param);
 
@@ -435,7 +432,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                   bumps_cell_log.get(),
                                                   bumps_wrapper_log.get(),
                                                   kUndefined,
-                                                  hybrid_model->getNPixels().x() * hybrid_model->getNPixels().y(),
+                                                  model->getNPixels().x() * model->getNPixels().y(),
                                                   bumps_param.get(),
                                                   false);
             geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);

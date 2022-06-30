@@ -16,9 +16,15 @@
 
 using namespace allpix;
 
-RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const ConfigReader& reader)
-    : DetectorModel(std::move(type), reader) {
+RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
+                                                   const std::shared_ptr<DetectorAssembly>& assembly,
+                                                   const ConfigReader& reader)
+    : DetectorModel(std::move(type), assembly, reader) {
     auto config = reader.getHeaderConfiguration();
+
+    if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {
+        throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
+    }
 
     // Set geometry parameters from config file
     setNumberOfStrips(config.getArray<unsigned int>("number_of_strips"));
@@ -87,7 +93,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type, const Confi
     auto implant_size = config.get<ROOT::Math::XYVector>("implant_size", pixel_size_);
     if(implant_size != pixel_size_) {
         throw InvalidCombinationError(
-            config, {"type", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
+            config, {"geometry", "implant_size"}, "Implant size parameter is not supported for radial_strip models.");
     }
     setImplantSize(pixel_size_);
 

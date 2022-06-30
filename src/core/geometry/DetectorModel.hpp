@@ -32,6 +32,9 @@
 #include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 
+#include "DetectorAssembly.hpp"
+#include "SupportLayer.hpp"
+
 namespace allpix {
     /**
      * @brief Sensor materials
@@ -67,106 +70,19 @@ namespace allpix {
 
         /**
          * @brief Helper method to determine if this detector model is of a given type
-         * The template parameter needs to be specified speicifcally, i.e.
-         *     if(model->is<HybridPixelDetectorModel>()) { }
+         * The template parameter needs to be specified specifcally, i.e.
+         *     if(model->is<PixelDetectorModel>()) { }
          * @return Boolean indication whether this model is of the given type or not
          */
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
         /**
-         * @brief Helper class to hold support layers for a detector model
-         */
-        class SupportLayer {
-            friend class DetectorModel;
-            // FIXME Friending this class is broken
-            friend class HybridPixelDetectorModel;
-
-        public:
-            /**
-             * @brief Get the center of the support layer
-             * @return Center of the support layer
-             */
-            ROOT::Math::XYZPoint getCenter() const { return center_; }
-            /**
-             * @brief Get the size of the support layer
-             * @return Size of the support layer
-             */
-            ROOT::Math::XYZVector getSize() const { return size_; }
-            /**
-             * @brief Get the material of the support layer
-             * @return Support material
-             */
-            std::string getMaterial() const { return material_; }
-            /**
-             * @brief Return if the support layer contains a hole
-             * @return True if the support layer has a hole, false otherwise
-             */
-            bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
-
-            /**
-             * @brief Return the support layer hole type
-             * @return support layer hole type
-             */
-            std::string getHoleType() { return type_; }
-
-            /**
-             * @brief Get the center of the hole in the support layer
-             * @return Center of the hole
-             */
-            ROOT::Math::XYZPoint getHoleCenter() const {
-                return center_ + ROOT::Math::XYZVector(hole_offset_.x(), hole_offset_.y(), 0);
-            }
-            /**
-             * @brief Get the full size of the hole in the support layer
-             * @return Size of the hole
-             */
-            ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
-            /**
-             * @brief Get the location of the support layer
-             */
-            std::string getLocation() const { return location_; }
-
-        private:
-            /**
-             * @brief Constructs a support layer, used in \ref DetectorModel::addSupportLayer
-             * @param size Size of the support layer
-             * @param offset Offset of the support layer from the center
-             * @param material Material of the support layer
-             * @param type Type of the hole
-             * @param location Location of the support material
-             * @param hole_size Size of an optional hole (zero vector if no hole)
-             * @param hole_offset Offset of the optional hole from the center of the support layer
-             */
-            SupportLayer(ROOT::Math::XYZVector size,
-                         ROOT::Math::XYZVector offset,
-                         std::string material,
-                         std::string type,
-                         std::string location,
-                         ROOT::Math::XYZVector hole_size,
-                         ROOT::Math::XYVector hole_offset)
-                : size_(std::move(size)), material_(std::move(material)), type_(std::move(type)),
-                  hole_size_(std::move(hole_size)), offset_(std::move(offset)), hole_offset_(std::move(hole_offset)),
-                  location_(std::move(location)) {}
-
-            // Actual parameters returned
-            ROOT::Math::XYZPoint center_;
-            ROOT::Math::XYZVector size_;
-            std::string material_;
-            std::string type_;
-            ROOT::Math::XYZVector hole_size_;
-
-            // Internal parameters to calculate return parameters
-            ROOT::Math::XYZVector offset_;
-            ROOT::Math::XYVector hole_offset_;
-            std::string location_;
-        };
-
-        /**
          * @brief Constructs the base detector model
          * @param type Name of the model type
+         * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
          */
-        explicit DetectorModel(std::string type, ConfigReader reader);
+        explicit DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader);
 
         /**
          * @brief Essential virtual destructor
@@ -195,6 +111,8 @@ namespace allpix {
          * @return Model type
          */
         std::string getType() const { return type_; }
+
+        const std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
 
         /**
          * @brief Get local coordinate of the position and rotation center in global frame
@@ -336,9 +254,8 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
-            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
-                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
-                                                   chip_thickness_);
+            ROOT::Math::XYZVector excess_thickness(
+                assembly_->getChipExcess().x(), assembly_->getChipExcess().y(), assembly_->getChipThickness());
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -348,16 +265,12 @@ namespace allpix {
          * Center of the chip calculcated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset((sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0,
-                                         (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0);
+            ROOT::Math::XYZVector offset(assembly_->getChipOffset().x() / 2.0,
+                                         assembly_->getChipOffset().y() / 2.0,
+                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 +
+                                             assembly_->getChipOffset().z());
             return getMatrixCenter() + offset;
         }
-        /**
-         * @brief Set the thickness of the sensor
-         * @param val Thickness of the sensor
-         */
-        void setChipThickness(double val) { chip_thickness_ = val; }
 
         /* SUPPORT */
         /**
@@ -504,8 +417,7 @@ namespace allpix {
         std::array<double, 4> sensor_excess_{};
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
-        double chip_thickness_{};
-
+        std::shared_ptr<DetectorAssembly> assembly_;
         std::vector<SupportLayer> support_layers_;
 
     private:
