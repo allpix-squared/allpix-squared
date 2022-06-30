@@ -102,6 +102,10 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
 
     config_.setDefault<bool>("ignore_magnetic_field", false);
 
+    // Set defaults for charge carrier multiplication
+    config_.setDefault<std::string>("multiplication_model", "none");
+    config_.setDefault<double>("multiplication_threshold", 1e-2);
+
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
@@ -572,6 +576,8 @@ void GenericPropagationModule::initialize() {
                                                      static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                                      0,
                                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        gain_histo_ = CreateHistogram<TH1D>(
+            "gain_histo", "Gain per charge carrier group after propagation;gain;number of groups transported", 500, 1, 25);
     }
 
     // Prepare mobility model
@@ -579,6 +585,15 @@ void GenericPropagationModule::initialize() {
 
     // Prepare recombination model
     recombination_ = Recombination(config_, detector_->hasDopingProfile());
+
+    // Impact ionization model
+    multiplication_ = ImpactIonization(config_);
+
+    // Check multiplication and step size larger than a picosecond:
+    if(!multiplication_.is<NoImpactIonization>() && timestep_max_ > 0.001) {
+        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << std::endl
+                     << "This might lead to unphysical gain values.";
+    }
 
     // Prepare trapping model
     trapping_ = Trapping(config_);
@@ -651,7 +666,7 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, state] = propagate(
+            auto [final_position, time, gain, state] = propagate(
                 initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
 
             if(state == CarrierState::RECOMBINED) {
@@ -673,14 +688,15 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time, final state: " << allpix::to_string(state);
+                       << " in " << Units::display(time, "ns") << " time, gain " << gain
+                       << ", final state: " << allpix::to_string(state);
 
             // Create a new propagated charge and add it to the list
             auto global_position = detector_->getGlobalPosition(final_position);
             PropagatedCharge propagated_charge(final_position,
                                                global_position,
                                                deposit.getType(),
-                                               charge_per_step,
+                                               static_cast<unsigned int>(std::round(charge_per_step * gain)),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
                                                state,
@@ -741,7 +757,7 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, CarrierState>
+std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
 GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
@@ -749,6 +765,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     OutputPlotPoints& output_plot_points) const {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
+
+    // Initialize gain
+    double gain = 1.;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping_concentration, double timestep) -> Eigen::Vector3d {
@@ -808,6 +827,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
+    ROOT::Math::XYZVector efield{}, last_efield{};
     double last_time = 0;
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
@@ -824,6 +844,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Save previous position and time
         last_position = position;
         last_time = runge_kutta.getTime();
+        last_efield = efield;
 
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
@@ -831,9 +852,11 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Get the current result and timestep
         auto timestep = runge_kutta.getTimeStep();
         position = runge_kutta.getValue();
+        LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um"}) << " to "
+                   << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
 
         // Get electric field at current position and fall back to empty field if it does not exist
-        auto efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
@@ -871,14 +894,26 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
                    << ", state: " << allpix::to_string(state);
-        // Adapt step size to match target precision
-        double uncertainty = step.error.norm();
+
+        // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
+        gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
+        if(gain > 20.) {
+            LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                         << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+        } else if(gain > 1.) {
+            LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
+                       << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                       << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+        }
 
         // Update step length histogram
         if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
             uncertainty_histo_->Fill(static_cast<double>(Units::convert(step.error.norm(), "nm")));
         }
+
+        // Adapt step size to match target precision
+        double uncertainty = step.error.norm();
 
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
@@ -917,6 +952,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
     }
 
+    if(output_plots_) {
+        gain_histo_->Fill(gain);
+    }
+
     if(state == CarrierState::RECOMBINED) {
         LOG(DEBUG) << "Charge carrier recombined after " << Units::display(last_time, {"ns"});
     } else if(state == CarrierState::TRAPPED) {
@@ -925,7 +964,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     }
 
     // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, state);
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + time, gain, state);
 }
 
 void GenericPropagationModule::finalize() {
@@ -940,6 +979,7 @@ void GenericPropagationModule::finalize() {
         trapped_histo_->Write();
         recombination_time_histo_->Write();
         trapping_time_histo_->Write();
+        gain_histo_->Write();
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /

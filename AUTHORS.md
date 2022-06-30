@@ -37,6 +37,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Andreas Matthias Nürnberg, KIT, [nurnberg](https://gitlab.cern.ch/nurnberg)
 * Sebastian Pape, TU Dortmund University, [spape](https://gitlab.cern.ch/spape)
 * Marko Petric, CERN, [mpetric](https://gitlab.cern.ch/mpetric)
+* Florian Michael Pitters, HEPHY, [fpipper](https://gitlab.cern.ch/fpipper)
 * Radek Privara, Palacky University Olomouc, [rprivara](https://gitlab.cern.ch/rprivara)
 * Nashad Rahman, The Ohio State University, [nashadroid](https://github.com/nashadroid)
 * Sabita Rao, GSDocs2020 Student, [srao](https://gitlab.cern.ch/srao)

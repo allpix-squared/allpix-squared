@@ -28,6 +28,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
 #include "physics/Trapping.hpp"
@@ -94,14 +95,14 @@ namespace allpix {
          * @param initial_time Initial time passed before propagation starts in local time coordinates
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
-         * @return Tuple with the point where the deposit ended after propagation, the time the propagation took and the
-         * final state of the charge carrier at the end of processing
+         * @return Tuple with the point where the deposit ended after propagation, the time the propagation took, the
+         * cumulative gain and the final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, CarrierState> propagate(const ROOT::Math::XYZPoint& pos,
-                                                                         const CarrierType& type,
-                                                                         const double initial_time,
-                                                                         RandomNumberGenerator& random_generator,
-                                                                         OutputPlotPoints& output_plot_points) const;
+        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(const ROOT::Math::XYZPoint& pos,
+                                                                                 const CarrierType& type,
+                                                                                 const double initial_time,
+                                                                                 RandomNumberGenerator& random_generator,
+                                                                                 OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
@@ -115,6 +116,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        ImpactIonization multiplication_;
         Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
@@ -140,6 +142,7 @@ namespace allpix {
         Histogram<TH1D> trapped_histo_;
         Histogram<TH1D> recombination_time_histo_;
         Histogram<TH1D> trapping_time_histo_;
+        Histogram<TH1D> gain_histo_;
     };
 
 } // namespace allpix

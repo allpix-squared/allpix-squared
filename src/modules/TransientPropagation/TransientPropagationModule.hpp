@@ -25,6 +25,7 @@
 #include "objects/PropagatedCharge.hpp"
 #include "objects/Pulse.hpp"
 
+#include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
 #include "physics/Trapping.hpp"
@@ -82,15 +83,15 @@ namespace allpix {
          * @param initial_time Initial timestamp referring to the start of the event
          * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
          *                  result in
-         * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took and
-         * the final state of the charge carrier at the end of processing
+         * @return          Tuple of the point where the deposit ended after propagation, the time the propagation took, the
+         * cumulative gain and the final state of the charge carrier at the end of processing
          */
-        std::tuple<ROOT::Math::XYZPoint, double, CarrierState> propagate(Event* event,
-                                                                         const ROOT::Math::XYZPoint& pos,
-                                                                         const CarrierType& type,
-                                                                         const unsigned int charge,
-                                                                         const double initial_time,
-                                                                         std::map<Pixel::Index, Pulse>& pixel_map);
+        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState> propagate(Event* event,
+                                                                                 const ROOT::Math::XYZPoint& pos,
+                                                                                 const CarrierType& type,
+                                                                                 const unsigned int charge,
+                                                                                 const double initial_time,
+                                                                                 std::map<Pixel::Index, Pulse>& pixel_map);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{};
@@ -102,6 +103,7 @@ namespace allpix {
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
+        ImpactIonization multiplication_;
         Trapping trapping_;
 
         // Precalculated value for Boltzmann constant:
