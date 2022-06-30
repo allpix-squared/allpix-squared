@@ -73,7 +73,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // Config parameters
-        bool output_plots_{}, output_linegraphs_{}, output_animations_{};
+        bool output_plots_{}, output_linegraphs_{};
         double integration_time_{};
         bool diffuse_deposit_;
         unsigned int charge_per_step_{};

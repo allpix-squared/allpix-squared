@@ -30,8 +30,6 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
                                                          std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)),
       top_z_(detector_->getModel()->getSensorSize().z() / 2) {
-    // Enable multithreading of this module if multithreading is enabled
-    allow_multithreading();
 
     // Save detector model
     model_ = detector_->getModel();
@@ -63,7 +61,14 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
-    output_animations_ = config_.get<bool>("output_animations");
+
+    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!output_linegraphs_) {
+        allow_multithreading();
+    } else {
+        LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
+    }
 
     // Set default for charge carrier propagation:
     config_.setDefault<bool>("propagate_holes", false);

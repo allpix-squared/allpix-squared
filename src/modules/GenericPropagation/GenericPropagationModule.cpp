@@ -368,7 +368,7 @@ void GenericPropagationModule::run(Event* event) {
         if(output_linegraphs_trapped_) {
             LineGraph::Create(event->number, this, config_, output_plot_points, CarrierState::TRAPPED);
         }
-        if(config_.get<bool>("output_animations")) {
+        if(output_animations_) {
             LineGraph::Animate(event->number, this, config_, output_plot_points);
         }
     }
