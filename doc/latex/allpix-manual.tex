@@ -19,6 +19,7 @@
 % References
 \usepackage[style=ext-numeric-verb,backend=biber,autocite=plain,sorting=none,url=false]{biblatex}
 \usepackage[unicode]{hyperref}
+\usepackage{bookmark}
 \DeclareOuterCiteDelims{cite}{}{}
 
 % Math
@@ -44,10 +45,13 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
+% To fix warnings
+\usepackage{scrhack}
+
 % Latin Modern fonts
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
-\setmonofont{Latin Modern Mono}
+\setmonofont{Latin Modern Mono Light}
 \setmathfont{Latin Modern Math}
 
 % Front matter settings
