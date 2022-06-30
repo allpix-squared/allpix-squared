@@ -714,6 +714,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     // Push all events to the thread pool
     std::atomic<uint64_t> finished_events{0};
+    std::atomic<uint64_t> aborted_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
@@ -741,11 +742,12 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-        auto event_function_with_module = [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events](
-                                              std::shared_ptr<Event> event,
-                                              ModuleList::iterator module_iter,
-                                              long double event_time,
-                                              auto&& self_func) mutable -> void {
+        auto event_function_with_module =
+            [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &aborted_events](
+                std::shared_ptr<Event> event,
+                ModuleList::iterator module_iter,
+                long double event_time,
+                auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -818,6 +820,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 if(abort) {
                     // Break module execution loop:
+                    aborted_events++;
                     break;
                 }
 
@@ -873,6 +876,10 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     global_config.set<uint64_t>("number_of_events", finished_events);
+
+    if(aborted_events > 0) {
+        LOG(WARNING) << "Aborted " << aborted_events << " events in this run";
+    }
 
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
