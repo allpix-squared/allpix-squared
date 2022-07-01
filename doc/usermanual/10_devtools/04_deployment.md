@@ -20,7 +20,7 @@ The software is automatically deployed to CERN's VM file system (CVMFS) \[[@cvmf
 
 The deployed version currently comprises all modules as well as the detector models shipped with the framework. An additional
 `setup.sh` is placed in the root folder of the respective release, which allows to set up all runtime dependencies necessary
-for executing this version. Versions both for CentOS 7 and CentOS 8 are provided.
+for executing this version. Versions both for CentOS 7 and CentOS 8 are provided.
 
 The deployment CI job runs on a dedicated computer with a GitLab SSH runner. Job artifacts from the packaging stage of the CI
 are downloaded via their ID using the script found in `.gitlab/ci/download_artifacts.py`, and are made available to the

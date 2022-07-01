@@ -11,14 +11,14 @@ from the CVMFS ﬁle system.
 The core framework is compiled separately from the individual modules and Allpix Squared has therefore only two required
 external dependencies:
 
-- ROOT 6 \[[@root]\]:
+- ROOT 6 \[[@root]\]:
   ROOT is used for histogramming as well as coordinate transformations. In addition, some modules implement I/O using ROOT
-  libraries. The latest stable release of ROOT 6 is recommended and older versions, such as ROOT 5.x, are not supported.
+  libraries. The latest stable release of ROOT 6 is recommended and older versions, such as ROOT 5.x, are not supported.
   Please refer to \[[@rootinstallation]\] for instructions on how to install ROOT. ROOT has several components of which the
   `GenVector` package is required to run Allpix Squared. This package is included in the default build. ROOT needs to be
   built using C++17, which is accomplished by supplying the CMake flag `-DCMAKE_CXX_STANDARD=17`.
 
-- Boost.Random 1.64.0 or later \[[@boostrandom]\]:
+- Boost.Random 1.64.0 or later \[[@boostrandom]\]:
   Random number generator and distribution library of the Boost project, used in order to get cross-platform portable,
   STL-compatible random number distributions. While STL random number generators are portable and guarantee to deliver the
   same random number sequence given the same seed, random distributions are not, and their implementation is
