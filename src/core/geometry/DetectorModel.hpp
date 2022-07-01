@@ -166,6 +166,12 @@ namespace allpix {
          */
         ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
         /**
+         * @brief Get type of the pixels
+         * @return TYpe of the pixels indicating their shape
+         */
+        Pixel::Type getPixelType() const { return pixel_type_; }
+
+        /**
          * @brief Set the size of a pixel
          * @param val Size of a pixel
          */
@@ -412,6 +418,7 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
         ROOT::Math::XYVector implant_size_;
+        Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 
         double sensor_thickness_{};
         std::array<double, 4> sensor_excess_{};

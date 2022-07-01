@@ -1,0 +1,22 @@
+\tikzset{%
+  >=latex
+}
+\begin{tikzpicture}[y=7.5mm,x=4.34mm,thick]
+  \tikzset{
+    box/.style={
+      regular polygon,
+      regular polygon sides=6,
+      minimum size=10mm,
+      inner sep=0mm,
+      outer sep=0mm,
+      rotate=30,
+    draw
+    }
+  }
+
+\foreach \i in {0,...,7}
+    \foreach \j in {0,...,1} {
+            \node[box] at (2*\i-1,2*\j) {};
+            \node[box] at (2*\i,2*\j+1) {};
+        }
+\end{tikzpicture}

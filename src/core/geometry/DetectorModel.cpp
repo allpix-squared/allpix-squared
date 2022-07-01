@@ -12,6 +12,7 @@
 #include "DetectorModel.hpp"
 #include "core/module/exceptions.h"
 
+#include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
 
@@ -48,6 +49,8 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
         return std::make_shared<PixelDetectorModel>(name, assembly, reader);
     } else if(geometry == "radial_strip") {
         return std::make_shared<RadialStripDetectorModel>(name, assembly, reader);
+    } else if(geometry == "hexagonal") {
+        return std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader);
     }
 
     LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
