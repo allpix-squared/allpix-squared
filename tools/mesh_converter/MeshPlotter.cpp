@@ -261,13 +261,16 @@ int main(int argc, char** argv) {
                             plot_x,
                             plot_y,
                             sqrt(pow(data->at(base + 0), 2) + pow(data->at(base + 1), 2) + pow(data->at(base + 2), 2)));
-                        exfield_map->Fill(plot_x, plot_y, data->at(base + 0));
-                        eyfield_map->Fill(plot_x, plot_y, data->at(base + 1));
-                        ezfield_map->Fill(plot_x, plot_y, data->at(base + 2));
+                        exfield_map->Fill(plot_x, plot_y, static_cast<double>(Units::convert(data->at(base + 0), units)));
+                        eyfield_map->Fill(plot_x, plot_y, static_cast<double>(Units::convert(data->at(base + 1), units)));
+                        ezfield_map->Fill(plot_x, plot_y, static_cast<double>(Units::convert(data->at(base + 2), units)));
 
                     } else {
                         // Fill one map with the scalar quantity
-                        efield_map->Fill(plot_x, plot_y, data->at(x * ydiv * zdiv + y * zdiv + z));
+                        efield_map->Fill(
+                            plot_x,
+                            plot_y,
+                            static_cast<double>(Units::convert(data->at(x * ydiv * zdiv + y * zdiv + z), units)));
                     }
                 }
             }

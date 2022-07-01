@@ -240,7 +240,6 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Field and grid file do not match, found " + std::to_string(points.size()) + " and " +
                                      std::to_string(field.size()) + " data points, respectively.");
         }
-
         auto points_temp = points;
         auto field_temp = field;
         if(rot.at(0) == "-y" || rot.at(0) == "y") {
@@ -496,12 +495,23 @@ int main(int argc, char** argv) {
             for(unsigned int j = 0; j < divisions.y(); ++j) {
                 for(unsigned int k = 0; k < divisions.z(); ++k) {
                     auto& point = e_field_new_mesh[i * divisions.y() * divisions.z() + j * divisions.z() + k];
-                    // We need to convert to framework-internal units:
-                    data->push_back(Units::get(point.x, units));
+                    LOG(DEBUG) << "Values of data point (" << i << ", " << j << ", " << k << "): " << point;
                     // For a vector field, we push three values:
                     if(quantity == FieldQuantity::VECTOR) {
+                        // We need to convert to framework-internal units:
+                        data->push_back(Units::get(point.x, units));
                         data->push_back(Units::get(point.y, units));
                         data->push_back(Units::get(point.z, units));
+                    } else {
+                        // For a scalar field, we need to push only one value, but which one depends on the field rotation.
+                        // We need the original x-position, as that is the only filled one in the parsed field
+                        if(rot.at(1) == "-x" || rot.at(1) == "x") {
+                            data->push_back(Units::get(point.y, units));
+                        } else if(rot.at(2) == "-x" || rot.at(2) == "x") {
+                            data->push_back(Units::get(point.z, units));
+                        } else {
+                            data->push_back(Units::get(point.x, units));
+                        }
                     }
                 }
             }
