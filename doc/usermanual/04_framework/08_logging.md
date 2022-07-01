@@ -105,3 +105,12 @@ functions missing in the STL.
 
 Furthermore, the Allpix Squared tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as
 explained in [Section 13.1](../13_additional/01_tools.md#root-and-geant4-utilities).
+
+To be able to provide cross-platform reproducibility of simulations, Allpix Squared uses random number distributions from the
+Boost.Random library. Their implementation is fixed and therefore does not depend on the standard library of the respective
+platform. For ease of use, the most common ones are exported to the `allpix::` namespace.
+
+The pseudo-random number generator used for event seeds and random number generation within modules is the `std::mt19937_64`,
+a 64-bit Mersenne Twister algorithm. In order to allow for debugging of the random number distribution in a multithreaded
+environment, Allpix Squared provides the `allpix::RandomNumberGenerator` wrapper around the STL object, which allows to
+print every random number drawn from the generator to the logging facilities when setting the log level to `PRNG`.
