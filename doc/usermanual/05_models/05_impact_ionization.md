@@ -143,7 +143,7 @@ This model can be selected in the configuration file via the parameter `multipli
 ## Bologna Model
 
 The Bologna model \[[@bologna]\] describes impact ionization for experimental data in an electric field range from
-$`130 \,\text{kV/cm}`$ to $`230 \,\text{kV/cm}`$ and temperatures up to $`400 \,^{\circ}\text{C}`$. The impact ionization
+$`130 \,\text{kV/cm}`$ to $`230 \,\text{kV/cm}`$ and temperatures up to $`400 \,\text{°C}`$. The impact ionization
 coefficient takes a different form than the previous models and is given by
 
 ```math
@@ -236,3 +236,4 @@ supports all corresponding features, mathematical expressions and constants.
 [@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
 [@okuto]: https://doi.org/10.1016/0038-1101(75)90099-4
 [@bologna]: https://doi.org/10.1109/SISPAD.1999.799251
+[@rootformula]: https://root.cern.ch/doc/master/classTFormula.html
