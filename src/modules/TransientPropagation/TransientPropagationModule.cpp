@@ -86,8 +86,15 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
     output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
-    output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
+
+    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!(config_.get<bool>("output_animations") || output_linegraphs_)) {
+        allow_multithreading();
+    } else {
+        LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
+    }
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
