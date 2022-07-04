@@ -90,8 +90,8 @@ This model can be selected in the configuration file via the parameter `trapping
 ## CMS Tracker
 
 This effective trapping model has been developed by the CMS Tracker Group. It follows the results of
-\[[@CMSTrackerTrapping]\], with measurements at fluences of up to $`\Phi_{eq} = 3 times 10^{15} \ n_{eq}\,\text{cm}^2`$, at a
-temperature of $`T = -20 \,\text{°C}`$ and an irradiation with protons.
+\[[@CMSTrackerTrapping]\], with measurements at fluences of up to $`\Phi_{eq} = 3 \times 10^{15} \ n_{eq}\,\text{cm}^2`$, at
+a temperature of $`T = -20 \,\text{°C}`$ and an irradiation with protons.
 
 The interpolation of the results follows the relation
 
