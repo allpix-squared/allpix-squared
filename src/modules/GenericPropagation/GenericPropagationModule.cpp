@@ -672,9 +672,6 @@ void GenericPropagationModule::run(Event* event) {
                 LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 trapped_charges_count += charge_per_step;
-                if(output_plots_) {
-                    trapping_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
-                }
                 continue;
             }
 
@@ -849,7 +846,12 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         auto [trapped, traptime] =
             trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()));
         if(trapped) {
-            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+            if(output_plots_) {
+                trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
+            }
+
+            if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
+                LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 // De-trap and advance in time if still below integration time
                 LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
                 runge_kutta.advanceTime(traptime);
