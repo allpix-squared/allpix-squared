@@ -85,6 +85,7 @@ namespace allpix {
          * @param initial_time Initial time passed before propagation starts in local time coordinates
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
+         * @param charge Total charge of the observed charge carrier set
          * @return Tuple with the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
