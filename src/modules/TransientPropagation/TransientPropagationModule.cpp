@@ -127,6 +127,9 @@ void TransientPropagationModule::initialize() {
     // Prepare trapping model
     trapping_ = Trapping(config_);
 
+    // Prepare detrapping model
+    detrapping_ = Detrapping(config_);
+
     // Impact ionization model
     multiplication_ = ImpactIonization(config_);
 
@@ -466,10 +469,20 @@ TransientPropagationModule::propagate(Event* event,
         auto trapped =
             trapping_(type, probability_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
         if(trapped) {
-            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+            if(output_plots_) {
+                trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
+            }
+
+            auto detrap_time =
+                detrapping_(type, probability_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
+            if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 // De-trap and advance in time if still below integration time
-                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
-                runge_kutta.advanceTime(traptime);
+                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
+                runge_kutta.advanceTime(detrap_time);
+
+                if(output_plots_) {
+                    detrapping_time_histo_->Fill(static_cast<double>(Units::convert(detrap_time, "ns")), charge);
+                }
             } else {
                 // Mark as trapped otherwise
                 state = CarrierState::TRAPPED;

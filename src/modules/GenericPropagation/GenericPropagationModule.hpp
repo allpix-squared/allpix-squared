@@ -27,6 +27,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "physics/Detrapping.hpp"
 #include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
@@ -108,6 +109,7 @@ namespace allpix {
         Recombination recombination_;
         ImpactIonization multiplication_;
         Trapping trapping_;
+        Detrapping detrapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
