@@ -130,5 +130,8 @@ namespace allpix {
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
         Histogram<TH1D> trapped_histo_;
+        Histogram<TH1D> recombination_time_histo_;
+        Histogram<TH1D> trapping_time_histo_;
+        Histogram<TH1D> detrapping_time_histo_;
     };
 } // namespace allpix

@@ -204,7 +204,11 @@ void GenericPropagationModule::initialize() {
                                   1);
 
         trapped_histo_ = CreateHistogram<TH1D>(
-            "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
+            "trapping_histo",
+            "Fraction of trapped charge carriers at final state;trapping [N / N_{total}] ;number of events",
+            100,
+            0,
+            1);
 
         recombination_time_histo_ =
             CreateHistogram<TH1D>("recombination_time_histo",
@@ -212,11 +216,18 @@ void GenericPropagationModule::initialize() {
                                   static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                   0,
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
-        trapping_time_histo_ = CreateHistogram<TH1D>("trapping_time_histo",
-                                                     "Time until trapping of charge carriers;time [ns];charge carriers",
-                                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                                     0,
-                                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        trapping_time_histo_ =
+            CreateHistogram<TH1D>("trapping_time_histo",
+                                  "Absolute time until trapping of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        detrapping_time_histo_ =
+            CreateHistogram<TH1D>("detrapping_time_histo",
+                                  "Time from trapping until detrapping of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
         gain_histo_ = CreateHistogram<TH1D>(
             "gain_histo", "Gain per charge carrier group after propagation;gain;number of groups transported", 500, 1, 25);
     }
@@ -623,6 +634,7 @@ void GenericPropagationModule::finalize() {
         trapped_histo_->Write();
         recombination_time_histo_->Write();
         trapping_time_histo_->Write();
+        detrapping_time_histo_->Write();
         gain_histo_->Write();
     }
 
