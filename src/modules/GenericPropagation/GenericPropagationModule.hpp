@@ -89,6 +89,7 @@ namespace allpix {
          * @param initial_time Initial time passed before propagation starts in local time coordinates
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
+         * @param charge Total charge of the observed charge carrier set
          * @return Tuple with the point where the deposit ended after propagation, the time the propagation took and a flag
          * whether it has recombined or was trapped
          */
@@ -96,7 +97,8 @@ namespace allpix {
                                                                        const CarrierType& type,
                                                                        const double initial_time,
                                                                        RandomNumberGenerator& random_generator,
-                                                                       OutputPlotPoints& output_plot_points) const;
+                                                                       OutputPlotPoints& output_plot_points,
+                                                                       const unsigned int charge) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
