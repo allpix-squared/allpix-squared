@@ -32,6 +32,10 @@ namespace allpix {
             std::string message = "Caught Geant4 exception " + std::string(code) + ": " + std::string(description);
             if(severity == G4ExceptionSeverity::JustWarning) {
                 LOG(WARNING) << message;
+            } else if(severity == G4ExceptionSeverity::EventMustBeAborted) {
+                throw AbortEventException(message);
+            } else if(severity == G4ExceptionSeverity::RunMustBeAborted) {
+                throw EndOfRunException(message);
             } else {
                 throw ModuleError(message);
             }
