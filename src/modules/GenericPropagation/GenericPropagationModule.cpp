@@ -318,8 +318,12 @@ void GenericPropagationModule::run(Event* event) {
             }
 
             // Propagate a single charge deposit
-            auto [final_position, time, gain, state] = propagate(
-                initial_position, deposit.getType(), deposit.getLocalTime(), event->getRandomEngine(), output_plot_points);
+            auto [final_position, time, gain, state] = propagate(initial_position,
+                                                           deposit.getType(),
+                                                           deposit.getLocalTime(),
+                                                           event->getRandomEngine(),
+                                                           output_plot_points,
+                                                           charge_per_step);
 
             if(state == CarrierState::RECOMBINED) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
@@ -417,7 +421,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
                                     const double initial_time,
                                     RandomNumberGenerator& random_generator,
-                                    LineGraph::OutputPlotPoints& output_plot_points) const {
+                                    LineGraph::OutputPlotPoints& output_plot_points,
+                                    const unsigned int charge) const {
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
