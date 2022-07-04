@@ -34,7 +34,7 @@ charge carrier is de-trapped is calculated as
 \delta t = - \tau_{e.h} \ln{1-p}
 ```
 
-where $`p`$ is a probability random chosen from a uniform distribution between 0 and 1.
+where $`p`$ is a probability randomly chosen from a uniform distribution between 0 and 1.
 The detrapping is configured via the `detrapping_model` parameter. Currently, only `detrapping_model = "none"` and
 `detrapping_model = "constant"` are supported. The latter requires the parameters `detrapping_time_electron` and
 `detrapping_time_hole` to be configured.
