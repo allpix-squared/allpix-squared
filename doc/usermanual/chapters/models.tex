@@ -495,10 +495,10 @@ lifetime_hole = 4.5ns
 \end{minted}
 
 
-\section{Trapping of Charge Carriers}
+\section{Trapping and Detrapping of Charge Carriers}
 \label{sec:trapping}
 
-\apsq provides the possibility to simulate the trapping of charge carriers as a consequence of radiation induced lattice defects.
+\apsq provides the possibility to simulate the trapping and detrapping of charge carriers as a consequence of radiation induced lattice defects.
 Several models exist, that quantify the effective lifetime of electrons and holes, respectively, as a function of the fluence and, partially, the temperature.
 The fluence needs to be provided to the corresponding propagation module, and is always interpreted as 1-MeV neutron equivalent fluence~\cite{niel}.
 
@@ -507,8 +507,7 @@ The decision on whether a charge carrier has been trapped during a step during t
 It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage.
 In \apsq, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any other process than trapping.
 
-Until now, no models for de-trapping of charge carriers have been implemented.
-In addition, for most modules, the parameters have been extracted under certain annealing conditions.
+have been extracted under certain annealing conditions.
 A dependency on annealing conditions has not been implemented here.
 Please refer to the corresponding reference publications for further details.
 
@@ -531,9 +530,11 @@ The detrapping is configured via the \parameter{detrapping_model} parameter. Cur
 \parameter{detrapping_model = "constant"} are supported. The latter requires the parameters \parameter{detrapping_time_electron} and
 \parameter{detrapping_time_hole} to be configured.
 
+\subsection{Trapping Models}
+
 The following models for trapping of charge carriers can be selected.
 
-\subsection{Ljubljana}
+\paragraph{Ljubljana}
 \label{sec:trap:ljubljana}
 
 In the Ljubljana (sometimes referred to as \textit{Kramberger}) model~\cite{kramberger}, the trapping time follows the relation
@@ -570,7 +571,7 @@ The parameters arise from measurements of the were obtained evaluating current s
 
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "ljubljana"}.
 
-\subsection{Dortmund}
+\paragraph{Dortmund}
 
 The Dortmund (sometimes referred to as \textit{Krasel}) model~\cite{dortmundTrapping}, describes the effective trapping times as
 
@@ -596,7 +597,7 @@ Values for neutron and proton irradiation have been evaluated in~\cite{dortmundT
 
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "dortmund"}.
 
-\subsection{CMS Tracker}
+\paragraph{CMS Tracker}
 
 This effective trapping model has been developed by the CMS Tracker Group.
 It follows the results of~\cite{CMSTrackerTrapping}, with measurements at fluences of up to $\Phi_{eq} = \SI{3e15}{n_{eq} \per \cm^2}$, at a temperature of $\SI{-20}{\celsius}$ and an irradiation with protons.
@@ -622,7 +623,7 @@ No temperature scaling is provided.
 
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "cmstracker"}.
 
-\subsection{Mandic}
+\paragraph{Mandic}
 
 The Mandi\'{c} model~\cite{Mandic} is an empirical model developed from measurements with high fluences ranging from  $\Phi_{eq} = \SI{5e15}{n_{eq} \per \cm^2}$ to  $\Phi_{eq} = \SI{1e17}{n_{eq} \per \cm^2}$ and describes the lifetime via
 
@@ -650,7 +651,7 @@ A scaling from electrons to holes was performed based on the default values in W
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "mandic"}.
 
 
-\subsection{Constant Trapping Model}
+\paragraph{Constant Trapping Model}
 
 For some situations or materials, a constant trapping probability is necessary. This can be achieved with the constant
 trapping model. Here, the lifetimes are constant and set from the values provided in the configuration file with the
@@ -666,7 +667,7 @@ trapping_time_hole = 5ns
 This model can be selected in the configuration file via the parameter \parameter{trapping_model = "constant"}.
 
 
-\subsection{Custom Trapping Model}
+\paragraph{Custom Trapping Model}
 
 Similarly to the mobility models described above, \apsq provides the possibility to use fully custom trapping models.
 In order to use a custom model, the parameter \parameter{trapping_model = "custom"} needs to be set in the configuration file.
@@ -710,3 +711,23 @@ trapping_parameters_electrons = 5ns
 trapping_function_holes = "[0]"
 trapping_parameters_holes = 7ns
 \end{minted}
+
+\subsection{Detrapping Models}
+
+The detrapping is configured via the \parameter{detrapping_model} parameter. Currently, only \parameter{detrapping_model = "none"} and
+\parameter{detrapping_model = "constant"} are supported.
+
+\paragraph{Constant Detrapping Model}
+
+The latter requires the parameters \parameter{detrapping_time_electron} and \parameter{detrapping_time_hole} to be configured.
+
+\begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
+# Constant detrapping times for electrons and holes:
+detrapping_model = "constant"
+detrapping_time_electron = 10ns
+detrapping_time_hole = 10ns
+\end{minted}
+
+
+The following models for trapping of charge carriers can be selected:
+
