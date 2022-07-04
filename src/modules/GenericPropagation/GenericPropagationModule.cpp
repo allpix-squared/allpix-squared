@@ -427,8 +427,8 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         return diffusion;
     };
 
-    // Survival probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> survival(0, 1);
+    // Survival or detrap probability of this charge carrier package, evaluated at every step
+    allpix::uniform_real_distribution<double> probability_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
@@ -516,13 +516,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Check if charge carrier is still alive:
         if(recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          survival(random_generator),
+                          probability_distribution(random_generator),
                           timestep)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        auto [trapped, traptime] = trapping_(type, survival(random_generator), timestep, std::sqrt(efield.Mag2()));
+        auto trapped = trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()));
         if(trapped) {
             if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
                 // De-trap and advance in time if still below integration time

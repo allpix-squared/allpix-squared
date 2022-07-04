@@ -361,7 +361,7 @@ TransientPropagationModule::propagate(Event* event,
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> survival(0, 1);
+    allpix::uniform_real_distribution<double> probability_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
@@ -439,13 +439,14 @@ TransientPropagationModule::propagate(Event* event,
         // Check if charge carrier is still alive:
         if(recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          survival(event->getRandomEngine()),
+                          probability_distribution(event->getRandomEngine()),
                           timestep_)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        auto [trapped, traptime] = trapping_(type, survival(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
+        auto trapped =
+            trapping_(type, probability_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
         if(trapped) {
             if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
                 // De-trap and advance in time if still below integration time
