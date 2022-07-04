@@ -544,8 +544,8 @@ TransientPropagationModule::propagate(Event* event,
         }
     }
 
-    // Return the final position of the propagated charge
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), initial_time + runge_kutta.getTime(), gain, state);
+    // Return the final position of the propagated charge, the time it took to propagate and its final state
+    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime(), gain, state);
 }
 
 void TransientPropagationModule::finalize() {
