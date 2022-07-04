@@ -16,7 +16,6 @@
 #include <limits>
 #include <map>
 #include <memory>
-#include <random>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -428,7 +427,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
-    std::uniform_real_distribution<double> survival(0, 1);
+    allpix::uniform_real_distribution<double> survival(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
