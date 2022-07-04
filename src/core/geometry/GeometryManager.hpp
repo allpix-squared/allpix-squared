@@ -13,7 +13,6 @@
 #define ALLPIX_GEOMETRY_MANAGER_H
 
 #include <memory>
-#include <random>
 #include <set>
 #include <string>
 #include <vector>

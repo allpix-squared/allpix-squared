@@ -13,7 +13,6 @@
 #define ALLPIX_DEFAULT_DIGITIZER_MODULE_H
 
 #include <memory>
-#include <random>
 #include <string>
 
 #include "core/config/Configuration.hpp"
