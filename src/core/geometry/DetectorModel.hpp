@@ -166,7 +166,6 @@ namespace allpix {
             std::string material_;
         };
 
-
         /**
          * @brief Constructs the base detector model
          * @param type Name of the model type

@@ -47,10 +47,6 @@ file before the start of any sub-sections.
   The pitch of a single pixel in the pixel matrix. Provided as 2D parameter in the x-y-plane. This parameter is required
   for all models.
 
-- `implant_size`:
-  The size of the collection diode implant in each pixel of the matrix. Provided as 2D parameter in the x-y-plane. This
-  parameter is optional, the implant size defaults to the pixel pitch if not specified otherwise.
-
 - `sensor_material`:
   Semiconductor material of the sensor. This can be any of the sensor materials supported by Allpix Squared, currently
   `SILICON`, `GALLIUM_ARSENIDE`, `GERMANIUM`, `CADMIUM_TELLURIDE`, `CADMIUM_ZINC_TELLURIDE`, `DIAMOND` and
