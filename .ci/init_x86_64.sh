@@ -18,7 +18,9 @@ if [ "$(uname)" = "Linux" ]; then
 elif [ "$(uname)" = "Darwin" ]; then
     MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
     MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
-    if [ $MACOS_MAJOR = "11" ]; then
+    if [ $MACOS_MAJOR = "12" ]; then
+        OS=mac12
+    elif [ $MACOS_MAJOR = "11" ]; then
         OS=mac11
     elif [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
         OS=mac1015
@@ -33,7 +35,7 @@ fi
 
 # Determine is you have CVMFS installed
 CVMFS_MOUNT=""
-if [ "$OS" = mac1015 ] || [ "$OS" = mac11 ] ; then
+if [ "$OS" = mac1015 ] || [ "$OS" = mac11 ] || [ "$OS" = mac12] ; then
     CVMFS_MOUNT="/Users/Shared"
 fi
 
@@ -53,7 +55,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_101"
+DEFAULT_LCG="LCG_102"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
