@@ -35,9 +35,6 @@ charge carrier is de-trapped is calculated as
 ```
 
 where $`p`$ is a probability randomly chosen from a uniform distribution between 0 and 1.
-The detrapping is configured via the `detrapping_model` parameter. Currently, only `detrapping_model = "none"` and
-`detrapping_model = "constant"` are supported. The latter requires the parameters `detrapping_time_electron` and
-`detrapping_time_hole` to be configured.
 
 ## Trapping Models
 
@@ -242,7 +239,8 @@ The detrapping is configured via the `detrapping_model` parameter. Currently, on
 
 ### Constant Detrapping Model
 
-The latter requires the parameters `detrapping_time_electron` and `detrapping_time_hole` to be configured.
+A constant detrapping probability, with the detrapping time defined separately for electrons and holes, can be implemented via the constant detrapping model.
+This model requires the parameters `detrapping_time_electron` and `detrapping_time_hole` to be configured.
 
 ```ini
 # Constant detrapping times for electrons and holes:
