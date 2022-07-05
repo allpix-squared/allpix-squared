@@ -255,12 +255,15 @@ void TransientPropagationModule::run(Event* event) {
 
             propagated_charges.push_back(std::move(propagated_charge));
 
-            if(alive) {
-                propagated_charges_count += charge_per_step;
+            if(!alive) {
+                recombined_charges_count += charge_per_step;
+                if(output_plots_) {
+                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
             } else if(trapped) {
                 trapped_charges_count += charge_per_step;
             } else {
-                recombined_charges_count += charge_per_step;
+                propagated_charges_count += charge_per_step;
             }
 
             if(output_plots_) {
