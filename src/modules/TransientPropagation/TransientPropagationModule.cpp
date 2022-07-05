@@ -384,7 +384,7 @@ TransientPropagationModule::propagate(Event* event,
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> probability_distribution(0, 1);
+    allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
@@ -462,19 +462,18 @@ TransientPropagationModule::propagate(Event* event,
         // Check if charge carrier is still alive:
         if(recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          probability_distribution(event->getRandomEngine()),
+                          uniform_distribution(event->getRandomEngine()),
                           timestep_)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, probability_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
 
-            auto detrap_time =
-                detrapping_(type, probability_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
+            auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
             if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 // De-trap and advance in time if still below integration time
                 LOG(TRACE) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});

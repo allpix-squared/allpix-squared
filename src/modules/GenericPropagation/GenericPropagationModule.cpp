@@ -531,18 +531,18 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Check if charge carrier is still alive:
         if(recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          probability_distribution(random_generator),
+                          uniform_distribution(random_generator),
                           timestep)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()))) {
+        if(trapping_(type, uniform_distribution(random_generator), timestep, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
 
-            auto detrap_time = detrapping_(type, probability_distribution(random_generator), std::sqrt(efield.Mag2()));
+            auto detrap_time = detrapping_(type, uniform_distribution(random_generator), std::sqrt(efield.Mag2()));
             if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 // De-trap and advance in time if still below integration time
