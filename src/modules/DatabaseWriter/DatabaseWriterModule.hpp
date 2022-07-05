@@ -47,11 +47,6 @@ namespace allpix {
         bool filter(const std::shared_ptr<BaseMessage>& message, const std::string& name) const;
 
         /**
-         * @brief Parse configuration oarameters
-         */
-        void initialize() override;
-
-        /**
          * @brief Initialize per-thread database connections
          */
         void initializeThread() override;

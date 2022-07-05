@@ -462,7 +462,7 @@ void VisualizationGeant4Module::finalize() {
     prev_handler = std::signal(SIGINT, interrupt_handler);
 
     // Open GUI / terminal or start viewer depending on mode
-    if(mode_ == ViewingMode::GUI) {
+    if(mode_ == ViewingMode::GUI && has_gui) {
         LOG(INFO) << "Starting visualization session";
         gui_session_->SessionStart();
     } else if(mode_ == ViewingMode::TERMINAL) {
