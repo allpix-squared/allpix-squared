@@ -364,6 +364,12 @@ namespace allpix {
 
                 electron_Ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
                 hole_Ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
+            } else if(material == SensorMaterial::GALLIUM_NITRIDE) {  /// for now it is same as gallium arsenide, we will come back to this later
+                electron_Vsat_ = vsat(Units::get(0.72e7, "cm/s"), 0.44, temperature);
+                hole_Vsat_ = vsat(Units::get(0.9e7, "cm/s"), 0.59, temperature);
+
+                electron_Ec_ = electron_Vsat_ / (Units::get(2.5e6, "cm*cm*K/V/s") / std::pow(temperature, 1.));
+                hole_Ec_ = hole_Vsat_ / (Units::get(6.3e7, "cm*cm*K/V/s") / std::pow(temperature, 2.1));
             } else {
                 throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
             }
