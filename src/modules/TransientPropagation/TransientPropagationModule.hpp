@@ -25,6 +25,7 @@
 #include "objects/PropagatedCharge.hpp"
 #include "objects/Pulse.hpp"
 
+#include "physics/Detrapping.hpp"
 #include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
@@ -110,6 +111,7 @@ namespace allpix {
         Recombination recombination_;
         ImpactIonization multiplication_;
         Trapping trapping_;
+        Detrapping detrapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
@@ -130,5 +132,8 @@ namespace allpix {
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;
         Histogram<TH1D> trapped_histo_;
+        Histogram<TH1D> recombination_time_histo_;
+        Histogram<TH1D> trapping_time_histo_;
+        Histogram<TH1D> detrapping_time_histo_;
     };
 } // namespace allpix

@@ -27,6 +27,7 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "physics/Detrapping.hpp"
 #include "physics/ImpactIonization.hpp"
 #include "physics/Mobility.hpp"
 #include "physics/Recombination.hpp"
@@ -84,6 +85,7 @@ namespace allpix {
          * @param initial_time Initial time passed before propagation starts in local time coordinates
          * @param random_generator Reference to the random number engine to be used
          * @param output_plot_points Reference to vector to hold points for line graph output plots
+         * @param charge Total charge of the observed charge carrier set
          * @return Tuple with the point where the deposit ended after propagation, the time the propagation took, the
          * cumulative gain and the final state of the charge carrier at the end of processing
          */
@@ -92,7 +94,8 @@ namespace allpix {
                   const CarrierType& type,
                   const double initial_time,
                   RandomNumberGenerator& random_generator,
-                  LineGraph::OutputPlotPoints& output_plot_points) const;
+                  LineGraph::OutputPlotPoints& output_plot_points,
+                  const unsigned int charge) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
@@ -108,6 +111,7 @@ namespace allpix {
         Recombination recombination_;
         ImpactIonization multiplication_;
         Trapping trapping_;
+        Detrapping detrapping_;
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
@@ -132,6 +136,7 @@ namespace allpix {
         Histogram<TH1D> trapped_histo_;
         Histogram<TH1D> recombination_time_histo_;
         Histogram<TH1D> trapping_time_histo_;
+        Histogram<TH1D> detrapping_time_histo_;
         Histogram<TH1D> gain_histo_;
     };
 

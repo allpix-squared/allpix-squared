@@ -1,29 +1,46 @@
 ---
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "Trapping of Charge Carriers"
+title: "Trapping and Detrapping of Charge Carriers"
 weight: 4
 ---
 
-Allpix Squared provides the possibility to simulate the trapping of charge carriers as a consequence of radiation induced
+Allpix Squared provides the possibility to simulate the trapping and detrapping of charge carriers as a consequence of radiation induced
 lattice defects. Several models exist, that quantify the effective lifetime of electrons and holes, respectively, as a
 function of the fluence and, partially, the temperature. The fluence needs to be provided to the corresponding propagation
-module, and is always interpreted as 1-MeVneutron equivalent fluence \[[@niel]\].
+module, and is always interpreted as 1-MeV neutron equivalent fluence \[[@niel]\].
 
 The decision on whether a charge carrier has been trapped during a step during the propagation process is calculated
-similarly to the recombination precesses, described in [Section 5.3](./03_lifetime_recombination.md).
+similarly to the recombination processes, described in [Section 5.3](./03_lifetime_recombination.md).
 
 It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage. In Allpix
 Squared, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any
 other process than trapping.
 
-Until now, no models for de-trapping of charge carriers have been implemented. In addition, for most modules, the parameters
 have been extracted under certain annealing conditions. A dependency on annealing conditions has not been implemented here.
 Please refer to the corresponding reference publications for further details.
 
+The trapping probability is calculated as an exponential decay as a function of the simulation timestep as
+
+```math
+p_{e, h} = \left(1 - \exp^{1 \frac{\delta t}{\tau_{e, h}}}\right)
+```
+
+where $`\delta t`$ is the simulation timestep and $`\tau{e,h}`$ the effective lifetime of electrons and holes, respectively.
+At the same time, a total time spent in the trap is calculated if a detrapping model is selected. Here, the time until the
+charge carrier is de-trapped is calculated as
+
+```math
+\delta t = - \tau_{e.h} \ln{1-p}
+```
+
+where $`p`$ is a probability randomly chosen from a uniform distribution between 0 and 1.
+
+## Trapping Models
+
 The following models for trapping of charge carriers can be selected:
 
-## Ljubljana
+### Ljubljana
 
 In the Ljubljana (sometimes referred to as *Kramberger*) model \[[@kramberger]\], the trapping time follows the relation
 
@@ -61,7 +78,7 @@ injection at fluences up to $`\Phi_{eq} = 2\times 10^{14} \ n_{eq}\,\text{cm}^2`
 
 This model can be selected in the configuration file via the parameter `trapping_model = "ljubljana"`.
 
-## Dortmund
+### Dortmund
 
 The Dortmund (sometimes referred to as *Krasel*) model \[[@dortmundTrapping]\], describes the effective trapping times as
 
@@ -87,7 +104,7 @@ of the values for proton irradiation.
 
 This model can be selected in the configuration file via the parameter `trapping_model = "dortmund"`.
 
-## CMS Tracker
+### CMS Tracker
 
 This effective trapping model has been developed by the CMS Tracker Group. It follows the results of
 \[[@CMSTrackerTrapping]\], with measurements at fluences of up to $`\Phi_{eq} = 3 \times 10^{15} \ n_{eq}\,\text{cm}^2`$, at
@@ -117,7 +134,7 @@ No temperature scaling is provided.
 
 This model can be selected in the configuration file via the parameter `trapping_model = "cmstracker"`.
 
-## Mandic
+### Mandic
 
 The Mandić model \[[@Mandic]\] is an empirical model developed from measurements with high fluences ranging from
 $`\Phi_{eq} = 5\times 10^{15} \ n_{eq}\,\text{cm}^2`$ to $`\Phi_{eq} = 1\times 10^{17} \ n_{eq}\,\text{cm}^2`$ and describes
@@ -147,7 +164,23 @@ values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
 
-## Custom Trapping Model
+### Constant Trapping Model
+
+For some situations or materials, a constant trapping probability is necessary. This can be achieved with the constant
+trapping model. Here, the lifetimes are constant and set from the values provided in the configuration file with the
+parameters `trapping_time_electron` and `trapping_time_hole`:
+
+```ini
+# Constant trapping times for electrons and holes:
+trapping_model = "constant"
+trapping_time_electron = 5ns
+trapping_time_hole = 5ns
+```
+
+This model can be selected in the configuration file via the parameter `trapping_model = "constant"`.
+
+
+### Custom Trapping Model
 
 Similarly to the mobility models described above, Allpix Squared provides the possibility to use fully custom trapping
 models. The model requires the following configuration keys:
@@ -198,6 +231,27 @@ trapping_parameters_holes = 7ns
 ```
 
 This model can be selected in the configuration file via the parameter `trapping_model = "custom"`.
+
+## Detrapping Models
+
+The detrapping is configured via the `detrapping_model` parameter. Currently, only `detrapping_model = "none"` and
+`detrapping_model = "constant"` are supported.
+
+The following models for trapping of charge carriers can be selected:
+
+### Constant Detrapping Model
+
+A constant detrapping probability, with the detrapping time defined separately for electrons and holes, can be implemented via the constant detrapping model.
+This model requires the parameters `detrapping_time_electron` and `detrapping_time_hole` to be configured.
+
+```ini
+# Constant detrapping times for electrons and holes:
+detrapping_model = "constant"
+detrapping_time_electron = 10ns
+detrapping_time_hole = 10ns
+```
+
+
 
 
 [@niel]: https://rd48.web.cern.ch/technical-notes/rosetn972.ps

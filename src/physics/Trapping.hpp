@@ -59,35 +59,7 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief Charge carrier detrapping time models
-     */
-    class DetrappingModel {
-    public:
-        /**
-         * Default constructor
-         */
-        DetrappingModel() = default;
-
-        /**
-         * Default virtual destructor
-         */
-        virtual ~DetrappingModel() = default;
-
-        /**
-         * Function call operator to obtain trapping time for the given carrier
-         * @param type Type of charge carrier (electron or hole)
-         * @param probability Current trapping probability for this charge carrier
-         * @param timestep Current time step performed for the charge carrier
-         * @param efield_mag Magnitude of the electric field
-         * @return Expected time of the charge carrier being trapped
-         */
-        virtual double operator()(const CarrierType& type, double probability, double timestep, double efield_mag) const = 0;
-    };
-
-    /**
-     * @ingroup Models
      * @brief No trapping
-     *
      */
     class NoTrapping : virtual public TrappingModel {
     public:
@@ -96,14 +68,14 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief No detrapping
-     *
+     * @brief Constant trapping rate of charge carriers
      */
-    class NoDetrapping : virtual public DetrappingModel {
+    class ConstantTrapping : virtual public TrappingModel {
     public:
-        double operator()(const CarrierType&, double, double, double) const override {
-            return std::numeric_limits<double>::max();
-        };
+        ConstantTrapping(double electron_lifetime, double hole_lifetime) {
+            tau_eff_electron_ = electron_lifetime;
+            tau_eff_hole_ = hole_lifetime;
+        }
     };
 
     /**
@@ -250,18 +222,21 @@ namespace allpix {
                 }
 
                 if(model == "ljubljana" || model == "kramberger") {
-                    model_trap_ = std::make_unique<Ljubljana>(temperature, fluence);
+                    model_ = std::make_unique<Ljubljana>(temperature, fluence);
                 } else if(model == "dortmund" || model == "krasel") {
-                    model_trap_ = std::make_unique<Dortmund>(fluence);
+                    model_ = std::make_unique<Dortmund>(fluence);
                 } else if(model == "cmstracker") {
-                    model_trap_ = std::make_unique<CMSTracker>(fluence);
+                    model_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic") {
-                    model_trap_ = std::make_unique<Mandic>(fluence);
+                    model_ = std::make_unique<Mandic>(fluence);
+                } else if(model == "constant") {
+                    model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
+                                                                config.get<double>("trapping_time_hole"));
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier trapping model chosen, no trapping simulated";
-                    model_trap_ = std::make_unique<NoTrapping>();
+                    model_ = std::make_unique<NoTrapping>();
                 } else if(model == "custom") {
-                    model_trap_ = std::make_unique<CustomTrapping>(config);
+                    model_ = std::make_unique<CustomTrapping>(config);
                 } else {
                     throw InvalidModelError(model);
                 }
@@ -269,27 +244,18 @@ namespace allpix {
             } catch(const ModelError& e) {
                 throw InvalidValueError(config, "trapping_model", e.what());
             }
-
-            try {
-                LOG(INFO) << "No charge carrier detrapping simulated";
-                model_detrap_ = std::make_unique<NoDetrapping>();
-            } catch(const ModelError& e) {
-                throw InvalidValueError(config, "detrapping_model", e.what());
-            }
         }
 
         /**
-         * Function call operator forwarded to the trapping and detrapping model
-         * @return Trapping state and detrapping time
+         * Function call operator forwarded to the trapping model
+         * @return Trapping state
          */
-        template <class... ARGS> std::pair<bool, double> operator()(ARGS&&... args) const {
-            return {model_trap_->operator()(std::forward<ARGS>(args)...),
-                    model_detrap_->operator()(std::forward<ARGS>(args)...)};
+        template <class... ARGS> bool operator()(ARGS&&... args) const {
+            return model_->operator()(std::forward<ARGS>(args)...);
         }
 
     private:
-        std::unique_ptr<TrappingModel> model_trap_{};
-        std::unique_ptr<DetrappingModel> model_detrap_{};
+        std::unique_ptr<TrappingModel> model_{};
     };
 
 } // namespace allpix
