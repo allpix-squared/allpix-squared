@@ -206,12 +206,11 @@ void TransientPropagationModule::initialize() {
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
         trapped_histo_ = CreateHistogram<TH1D>(
             "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
-        trapping_time_histo_ =
-            CreateHistogram<TH1D>("trapping_time_histo",
-                                  "Absolute time until trapping of charge carriers;time [ns];charge carriers",
-                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
-                                  0,
-                                  static_cast<double>(Units::convert(integration_time_, "ns")));
+        trapping_time_histo_ = CreateHistogram<TH1D>("trapping_time_histo",
+                                                     "Local time of trapping of charge carriers;time [ns];charge carriers",
+                                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                     0,
+                                                     static_cast<double>(Units::convert(integration_time_, "ns")));
         detrapping_time_histo_ =
             CreateHistogram<TH1D>("detrapping_time_histo",
                                   "Time from trapping until detrapping of charge carriers;time [ns];charge carriers",
