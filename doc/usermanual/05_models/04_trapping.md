@@ -237,6 +237,8 @@ This model can be selected in the configuration file via the parameter `trapping
 The detrapping is configured via the `detrapping_model` parameter. Currently, only `detrapping_model = "none"` and
 `detrapping_model = "constant"` are supported.
 
+The following models for trapping of charge carriers can be selected:
+
 ### Constant Detrapping Model
 
 A constant detrapping probability, with the detrapping time defined separately for electrons and holes, can be implemented via the constant detrapping model.
@@ -250,7 +252,6 @@ detrapping_time_hole = 10ns
 ```
 
 
-The following models for trapping of charge carriers can be selected:
 
 
 [@niel]: https://rd48.web.cern.ch/technical-notes/rosetn972.ps
