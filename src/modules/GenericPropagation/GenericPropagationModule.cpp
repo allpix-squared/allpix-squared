@@ -766,7 +766,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> probability_distribution(0, 1);
+    allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
@@ -846,16 +846,17 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Check if charge carrier is still alive:
         is_alive = !recombination_(type,
                                    detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                   probability_distribution(random_generator),
+                                   uniform_distribution(random_generator),
                                    timestep);
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()))) {
+        auto trapped = trapping_(type, uniform_distribution(random_generator), timestep, std::sqrt(efield.Mag2()));
+        if(trapped) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
 
-            auto detrap_time = detrapping_(type, probability_distribution(random_generator), std::sqrt(efield.Mag2()));
+            auto detrap_time = detrapping_(type, uniform_distribution(random_generator), std::sqrt(efield.Mag2()));
             if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 // De-trap and advance in time if still below integration time
