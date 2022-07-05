@@ -321,11 +321,11 @@ void GenericPropagationModule::run(Event* event) {
 
             // Propagate a single charge deposit
             auto [final_position, time, gain, state] = propagate(initial_position,
-                                                           deposit.getType(),
-                                                           deposit.getLocalTime(),
-                                                           event->getRandomEngine(),
-                                                           output_plot_points,
-                                                           charge_per_step);
+                                                                 deposit.getType(),
+                                                                 deposit.getLocalTime(),
+                                                                 event->getRandomEngine(),
+                                                                 output_plot_points,
+                                                                 charge_per_step);
 
             if(state == CarrierState::RECOMBINED) {
                 LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
