@@ -202,7 +202,6 @@ fmt:codespell:
 fmt:coverity:
     extends: .format
     only:
-        - coverity
         - schedules
     variables:
         SCHEDULE_TAG: "coverity"
