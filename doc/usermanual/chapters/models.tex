@@ -526,9 +526,6 @@ charge carrier is de-trapped is calculated as
 \end{equation*}
 
 where $p$ is a probability randomly chosen from a uniform distribution between 0 and 1.
-The detrapping is configured via the \parameter{detrapping_model} parameter. Currently, only \parameter{detrapping_model = "none"} and
-\parameter{detrapping_model = "constant"} are supported. The latter requires the parameters \parameter{detrapping_time_electron} and
-\parameter{detrapping_time_hole} to be configured.
 
 \subsection{Trapping Models}
 
@@ -719,7 +716,8 @@ The detrapping is configured via the \parameter{detrapping_model} parameter. Cur
 
 \paragraph{Constant Detrapping Model}
 
-The latter requires the parameters \parameter{detrapping_time_electron} and \parameter{detrapping_time_hole} to be configured.
+A constant detrapping probability, with the detrapping time defined separately for electrons and holes, can be implemented via the constant detrapping model.
+This model requires the parameters \parameter{detrapping_time_electron} and \parameter{detrapping_time_hole} to be configured.
 
 \begin{minted}[frame=single,framesep=3pt,breaklines=true,tabsize=2,linenos]{ini}
 # Constant detrapping times for electrons and holes:
