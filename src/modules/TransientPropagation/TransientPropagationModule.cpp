@@ -304,6 +304,9 @@ void TransientPropagationModule::run(Event* event) {
 
             if(state == CarrierState::RECOMBINED) {
                 recombined_charges_count += charge_per_step;
+                if(output_plots_) {
+                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
             } else if(state == CarrierState::TRAPPED) {
                 trapped_charges_count += charge_per_step;
             } else {
@@ -591,6 +594,7 @@ void TransientPropagationModule::finalize() {
         group_size_histo_->Write();
         drift_time_histo_->Write();
         recombine_histo_->Write();
+        recombination_time_histo_->Write();
         trapped_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
