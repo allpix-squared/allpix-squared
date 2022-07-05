@@ -537,8 +537,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         }
 
         // Check if the charge carrier has been trapped:
-        auto trapped = trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()));
-        if(trapped) {
+        if(trapping_(type, probability_distribution(random_generator), timestep, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
