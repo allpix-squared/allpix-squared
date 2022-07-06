@@ -14,12 +14,18 @@
 
 #include <array>
 
+#include <G4StateManager.hh>
 #include <G4UImanager.hh>
+
+#include "tools/geant4/G4ExceptionHandler.hpp"
+
 using namespace allpix;
 
 RunManager::RunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+    // Set exception handler for Geant4 exceptions:
+    G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
 }
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
