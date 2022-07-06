@@ -15,7 +15,6 @@
 #include <utility>
 
 #include <G4GlobalConfig.hh>
-#include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -34,7 +33,6 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
-#include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
@@ -44,9 +42,6 @@ using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-
-    // Set exception handler for Geant4 exceptions:
-    G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
 
 // Enable multithreading for Geant4 if it has been built with support for it:
 #ifdef G4MULTITHREADED
@@ -124,19 +119,15 @@ void GeometryBuilderGeant4Module::initialize() {
     check_dataset_g4("G4NEUTRONXSDATA");
 #endif
 
-    // Suppress all stdout output due to a part in Geant4 where G4cout is not used
-    SUPPRESS_STREAM(std::cout);
-
     // Create the G4 run manager. If multithreading was requested we use the custom run manager
     // that support calling BeamOn operations in parallel. Otherwise we use default manager.
     if(multithreadingEnabled()) {
+        LOG(DEBUG) << "Making a multi-thread RunManager";
         run_manager_g4_ = std::make_unique<MTRunManager>();
     } else {
+        LOG(DEBUG) << "Making a single-thread RunManager";
         run_manager_g4_ = std::make_unique<RunManager>();
     }
-
-    // Release stdout again
-    RELEASE_STREAM(std::cout);
 
     // Set the geometry construction to use
     run_manager_g4_->SetUserInitialization(geometry_construction_);
