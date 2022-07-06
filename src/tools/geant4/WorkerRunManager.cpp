@@ -18,6 +18,7 @@
 #include <atomic>
 
 #include <G4MTRunManager.hh>
+#include <G4StateManager.hh>
 #include <G4Threading.hh>
 #include <G4TransportationManager.hh>
 #include <G4UImanager.hh>
@@ -29,6 +30,8 @@
 #include <G4WorkerRunManager.hh>
 #include <G4WorkerThread.hh>
 
+#include "tools/geant4/G4ExceptionHandler.hpp"
+
 using namespace allpix;
 
 namespace {
@@ -39,6 +42,8 @@ namespace {
 WorkerRunManager::WorkerRunManager() {
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     ui_g4->SetCoutDestination(G4LoggingDestination::getInstance());
+    // Set exception handler for Geant4 exceptions:
+    G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
 }
 
 WorkerRunManager::~WorkerRunManager() {
