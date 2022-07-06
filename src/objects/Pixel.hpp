@@ -91,7 +91,7 @@ namespace allpix {
 
     private:
         Pixel::Index index_;
-        Pixel::Type type_;
+        Pixel::Type type_{};
 
         ROOT::Math::XYZPoint local_center_;
         ROOT::Math::XYZPoint global_center_;

@@ -398,9 +398,9 @@ void GenericPropagationModule::run(Event* event) {
     total_time_picoseconds_ += static_cast<long unsigned int>(total_time * 1e3);
 
     if(output_plots_) {
-        auto total_charges = propagated_charges_count + recombined_charges_count + trapped_charges_count;
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charges);
-        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / total_charges);
+        auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
+        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
+        trapped_histo_->Fill(static_cast<double>(trapped_charges_count) / (total == 0 ? 1 : total));
     }
 
     // Create a new message with propagated charges
@@ -435,7 +435,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-        Eigen::Vector3d diffusion;
+        Eigen::Vector3d diffusion{};
         for(int i = 0; i < 3; ++i) {
             diffusion[i] = gauss_distribution(random_generator);
         }
