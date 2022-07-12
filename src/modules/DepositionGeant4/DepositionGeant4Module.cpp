@@ -328,6 +328,11 @@ void DepositionGeant4Module::run(Event* event) {
             }
         }
     } catch(AbortEventException& e) {
+        // Clear charge deposits of all sensors
+        for(auto& sensor : sensors_) {
+            sensor->clearDepositInfo();
+        }
+        run_manager_g4_->AbortRun();
         track_info_manager_->resetTrackInfoManager();
         throw;
     }

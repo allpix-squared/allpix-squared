@@ -144,6 +144,17 @@ double SensitiveDetectorActionG4::getDepositedEnergy() const {
     return deposited_energy_;
 }
 
+void SensitiveDetectorActionG4::clearDepositInfo() {
+    LOG(DEBUG) << "Clearing deposit vectors";
+    deposit_position_.clear();
+    deposit_charge_.clear();
+    deposit_energy_.clear();
+    deposit_time_.clear();
+
+    deposit_to_id_.clear();
+    id_to_particle_.clear();
+}
+
 void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* messenger, Event* event) {
 
     auto time_reference = std::min_element(track_time_.begin(), track_time_.end(), [](const auto& l, const auto& r) {
@@ -250,13 +261,6 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     deposited_charge_ = charges;
     deposited_energy_ = energies;
 
-    // Clear deposit information for next event
-    deposit_position_.clear();
-    deposit_charge_.clear();
-    deposit_energy_.clear();
-    deposit_time_.clear();
-
-    // Clear link tables for next event
-    deposit_to_id_.clear();
-    id_to_particle_.clear();
+    // Clear deposit information and link tables for next event
+    clearDepositInfo();
 }

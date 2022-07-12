@@ -108,7 +108,6 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
     eventLoopOnGoing = true;
     nevModulo = -1;
     currEvID = -1;
-
     while(eventLoopOnGoing) {
         ProcessOneEvent(-1);
         if(eventLoopOnGoing) {
@@ -221,4 +220,21 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     }
 
     return thread_run_manager;
+}
+
+void WorkerRunManager::AbortRun(bool softAbort) {
+    LOG(WARNING) << "AbortRun in the workers is entered!";
+    // This method is valid only for GeomClosed or EventProc state
+    G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {
+        runAborted = true;
+        if(currentState == G4State_EventProc && !softAbort) {
+            currentEvent->SetEventAborted();
+            eventManager->AbortCurrentEvent();
+        }
+        // Ready for new event, set the state back to G4State_Idle
+        G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
+    } else {
+        LOG(WARNING) << "Run is not in progress. AbortRun() ignored." << G4endl;
+    }
 }

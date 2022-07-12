@@ -93,6 +93,12 @@ namespace allpix {
             sd_field_construction_ = std::move(sd_field_construction);
         }
 
+        /**
+         * @brief Overriding G4RunManager::AbortRun so as to reset the state to G4State_Idle in order to allow the next event
+         * to run BeamOn
+         */
+        void AbortRun(G4bool softAbort = false) override;
+
     protected:
         /**
          * @brief Previously used by workers to wait for master commands.

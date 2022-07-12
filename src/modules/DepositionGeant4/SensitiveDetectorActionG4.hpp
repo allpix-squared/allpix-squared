@@ -73,6 +73,11 @@ namespace allpix {
         double getDepositedEnergy() const;
 
         /**
+         * @brief Clears depopsition information vectors in preparation for the next event.
+         */
+        void clearDepositInfo();
+
+        /**
          * @brief Get the name of the sensitive device bound to this action
          */
         std::string getName() const;
