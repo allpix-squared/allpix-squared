@@ -30,31 +30,8 @@ RunManager::RunManager() {
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
-    auto printMeNicely = []() {
-        G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    LOG(DEBUG) << "Current Geant4 state: " << g4StateStrings[G4StateManager::GetStateManager()->GetCurrentState()];
 
-        std::string stateText = "";
-        if(currentState == G4State_PreInit) {
-            stateText = "G4State_PreInit";
-        } else if(currentState == G4State_Init) {
-            stateText = "G4State_Init";
-        } else if(currentState == G4State_Idle) {
-            stateText = "G4State_Idle";
-        } else if(currentState == G4State_GeomClosed) {
-            stateText = "G4State_GeomClosed";
-        } else if(currentState == G4State_EventProc) {
-            stateText = "G4State_EventProc";
-        } else if(currentState == G4State_Quit) {
-            stateText = "G4State_Quit";
-        } else if(currentState == G4State_Abort) {
-            stateText = "G4State_Abort";
-        } else {
-            stateText = "Unknown";
-        }
-        return stateText;
-    };
-
-    LOG(WARNING) << "Current state: " << printMeNicely();
     // Set the event seeds - with a zero-terminated list:
     std::array<long, 3> seeds{static_cast<long>(seed1 % LONG_MAX), static_cast<long>(seed2 % LONG_MAX), 0};
     G4Random::setTheSeeds(&seeds[0], -1);

@@ -223,7 +223,6 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
 }
 
 void WorkerRunManager::AbortRun(bool softAbort) {
-    LOG(WARNING) << "AbortRun in the workers is entered!";
     // This method is valid only for GeomClosed or EventProc state
     G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
     if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {

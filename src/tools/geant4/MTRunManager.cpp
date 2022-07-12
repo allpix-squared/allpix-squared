@@ -31,26 +31,7 @@ MTRunManager::MTRunManager() {
 
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
-    G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
-    std::string stateText = "";
-    if(currentState == G4State_PreInit) {
-        stateText = "G4State_PreInit";
-    } else if(currentState == G4State_Init) {
-        stateText = "G4State_Init";
-    } else if(currentState == G4State_Idle) {
-        stateText = "G4State_Idle";
-    } else if(currentState == G4State_GeomClosed) {
-        stateText = "G4State_GeomClosed";
-    } else if(currentState == G4State_EventProc) {
-        stateText = "G4State_EventProc";
-    } else if(currentState == G4State_Quit) {
-        stateText = "G4State_Quit";
-    } else if(currentState == G4State_Abort) {
-        stateText = "G4State_Abort";
-    } else {
-        stateText = "Unknown";
-    }
-    LOG(WARNING) << "Current state: " << stateText;
+    LOG(DEBUG) << "Current Geant4 state: " << g4StateStrings[G4StateManager::GetStateManager()->GetCurrentState()];
 
     // Seed the worker run manager for this event:
     worker_run_manager_->seedsQueue.push(static_cast<long>(seed1 % LONG_MAX));
