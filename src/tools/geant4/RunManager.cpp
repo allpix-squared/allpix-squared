@@ -12,6 +12,8 @@
 #include "RunManager.hpp"
 #include "G4LoggingDestination.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <array>
 
 #include <G4StateManager.hh>
@@ -30,7 +32,7 @@ RunManager::RunManager() {
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
-    LOG(DEBUG) << "Current Geant4 state: " << g4StateStrings[G4StateManager::GetStateManager()->GetCurrentState()];
+    LOG(DEBUG) << "Current Geant4 state: " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
 
     // Set the event seeds - with a zero-terminated list:
     std::array<long, 3> seeds{static_cast<long>(seed1 % LONG_MAX), static_cast<long>(seed2 % LONG_MAX), 0};

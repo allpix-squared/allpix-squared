@@ -36,15 +36,6 @@ namespace allpix {
          * to run BeamOn
          */
         void AbortRun(G4bool softAbort) override;
-
-    private:
-        std::map<int, std::string> g4StateStrings{{G4State_PreInit, "G4State_PreInit"},
-                                                  {G4State_Init, "G4State_Init"},
-                                                  {G4State_Idle, "G4State_Idle"},
-                                                  {G4State_GeomClosed, "G4State_GeomClosed"},
-                                                  {G4State_EventProc, "G4State_EventProc"},
-                                                  {G4State_Quit, "G4State_Quit"},
-                                                  {G4State_Abort, "G4State_Abort"}};
     };
 } // namespace allpix
 

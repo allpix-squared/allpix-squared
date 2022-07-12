@@ -187,14 +187,6 @@ namespace allpix {
         static G4ThreadLocal WorkerRunManager* worker_run_manager_;
 
         std::unique_ptr<SensitiveDetectorAndFieldConstruction> sd_field_construction_{nullptr};
-
-        std::map<int, std::string> g4StateStrings{{G4State_PreInit, "G4State_PreInit"},
-                                                  {G4State_Init, "G4State_Init"},
-                                                  {G4State_Idle, "G4State_Idle"},
-                                                  {G4State_GeomClosed, "G4State_GeomClosed"},
-                                                  {G4State_EventProc, "G4State_EventProc"},
-                                                  {G4State_Quit, "G4State_Quit"},
-                                                  {G4State_Abort, "G4State_Abort"}};
     };
 } // namespace allpix
 
