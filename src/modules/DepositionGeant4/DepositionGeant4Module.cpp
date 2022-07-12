@@ -237,6 +237,9 @@ void DepositionGeant4Module::initialize() {
     physicsList->SetVerboseLevel(0);
     G4NuclearLevelData::GetInstance()->GetParameters()->SetVerbose(0);
 
+    // Set selected tracking verbosity, defaulting to zero. Higher levels can be useful for tracing individual Geant4 events
+    ui_g4->ApplyCommand("/tracking/verbose " + allpix::to_string(config_.get<size_t>("geant4_tracking_verbosity", 0)));
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
