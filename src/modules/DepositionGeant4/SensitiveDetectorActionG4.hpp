@@ -75,7 +75,7 @@ namespace allpix {
         /**
          * @brief Clears depopsition information vectors in preparation for the next event.
          */
-        void clearDepositInfo();
+        void clearEventInfo();
 
         /**
          * @brief Get the name of the sensitive device bound to this action

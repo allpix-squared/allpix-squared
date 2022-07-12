@@ -144,8 +144,15 @@ double SensitiveDetectorActionG4::getDepositedEnergy() const {
     return deposited_energy_;
 }
 
-void SensitiveDetectorActionG4::clearDepositInfo() {
-    LOG(DEBUG) << "Clearing deposit vectors";
+void SensitiveDetectorActionG4::clearEventInfo() {
+    LOG(DEBUG) << "Clearing track and deposit vectors";
+
+    track_parents_.clear();
+    track_begin_.clear();
+    track_end_.clear();
+    track_pdg_.clear();
+    track_time_.clear();
+
     deposit_position_.clear();
     deposit_charge_.clear();
     deposit_energy_.clear();
@@ -204,13 +211,6 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector_);
     messenger->dispatchMessage(module, mc_particle_message, event);
 
-    // Clear track data for the next event
-    track_parents_.clear();
-    track_begin_.clear();
-    track_end_.clear();
-    track_pdg_.clear();
-    track_time_.clear();
-
     // Send a deposit message if we have any deposits
     unsigned int charges = 0;
     double energies = 0.;
@@ -261,6 +261,6 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
     deposited_charge_ = charges;
     deposited_energy_ = energies;
 
-    // Clear deposit information and link tables for next event
-    clearDepositInfo();
+    // Clear track data, deposit information, and link tables for next event
+    clearEventInfo();
 }
