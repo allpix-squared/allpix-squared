@@ -115,7 +115,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Seed PRNG with provided seed
-    if args.type is not None:
+    if args.seed is not None:
+        print("Seeding PRNG with seed %i" % args.seed)
         random.seed(args.seed)
 
     # Check for availability of ROOT
