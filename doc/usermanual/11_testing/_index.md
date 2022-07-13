@@ -9,6 +9,11 @@ weight: 11
 The build system of the framework provides a set of automated tests which are executed by the CI to ensure proper functioning
 of the framework and its modules.
 
+{{% alert title="Note" color="info" %}}
+Since different Geant4 versions may result in different events, a specific Geant4 version needs to be chosen for the
+test suite. All tests in the repository are written for Geant4 11.0 / LCG102.
+{{% /alert %}}
+
 The tests can also be manually invoked from the build directory of Allpix Squared with:
 
 ```shell
