@@ -42,7 +42,7 @@ RUN pip3 install --upgrade pip && \
     pip3 install numpy matplotlib scipy pandas
 
 # Add layer for ROOT6
-ENV ROOT6_VERSION 6.24.06
+ENV ROOT6_VERSION 6.26.04
 
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
@@ -90,27 +90,26 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
 RUN apt-get install -y libxerces-c-dev
 
 # Add layer for Geant4
-ENV GEANT4_VERSION 10.07.p02
-ENV GEANT4_VERSION_PATH 10.7.2
+ENV GEANT4_VERSION 11.0.2
 
 ENV GEANT4DIR="/opt/geant4"
 ENV PATH="$GEANT4DIR/bin:$PATH"
 ENV LD_LIBRARY_PATH="$GEANT4DIR/lib:$LD_LIBRARY_PATH"
-ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4NDL4.6"
-ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4EMLOW7.13"
-ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/PhotonEvaporation5.7"
-ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/RadioactiveDecay5.6"
-ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PARTICLEXS3.1.1"
-ENV G4PIIDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4PII1.3"
-ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/RealSurface2.2"
-ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4SAIDDATA2.0"
-ENV G4ABLADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ABLA3.1"
-ENV G4INCLDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4INCL1.0"
-ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION_PATH}/data/G4ENSDFSTATE2.3"
+ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4NDL4.6"
+ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4EMLOW8.0"
+ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/PhotonEvaporation5.7"
+ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/RadioactiveDecay5.6"
+ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4PARTICLEXS4.0"
+ENV G4PIIDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4PII1.3"
+ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/RealSurface2.2"
+ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4SAIDDATA2.0"
+ENV G4ABLADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4ABLA3.1"
+ENV G4INCLDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4INCL1.0"
+ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4ENSDFSTATE2.3"
 
 RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     curl -o ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz \
-            https://geant4-data.web.cern.ch/geant4-data/releases/source/geant4.${GEANT4_VERSION}.tar.gz && \
+            https://geant4-data.web.cern.ch/geant4-data/releases/source/geant4-v${GEANT4_VERSION}.tar.gz && \
     tar zxf ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz -C ${GEANT4DIR}/src && \
     rm -f ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz && \
     cd ${GEANT4DIR}/build && \
@@ -120,7 +119,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
           -DGEANT4_BUILD_MULTITHREADED=ON \
           -DCMAKE_INSTALL_PREFIX=../ \
           -DGEANT4_BUILD_CXXSTD=17 \
-          ../src/geant4.${GEANT4_VERSION} && \
+          ../src/geant4-v${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${GEANT4DIR}/{src,build} && \
