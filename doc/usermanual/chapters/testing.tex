@@ -202,12 +202,13 @@ It derives from the latest Ubuntu LTS Docker image and can be build using the \f
 \begin{verbatim}
 $ docker build --file etc/docker/Dockerfile.deps            \
                --tag gitlab-registry.cern.ch/allpix-squared/\
-               allpix-squared/allpix-squared-deps           \
+               allpix-squared/allpix-squared-deps:vX        \
               .
 $ docker push gitlab-registry.cern.ch/allpix-squared/\
               allpix-squared/allpix-squared-deps
 \end{verbatim}
-This image is created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available.
+This image is created manually and only updated when necessary, i.e.\ if major new version of the underlying dependencies are available. The placeholder \parameter{vX} is a version number which should be incremented when applying changes or updating software versions in the \parameter{deps} Docker image. This version number should subsequently also be adjusted in the CI pipeline (\parameter{.gitlab-ci.yml}) and the Allpix Squared Docker file (\parameter{/etc/docker/Dockerfile}) so that the correct dependencies image is picked up.
+
 
 \begin{warning}
   The dependencies Docker image should not be flattened with commands like
