@@ -43,6 +43,7 @@ For some modules, additional dependencies exist. For details about the dependenc
   -DGEANT4_USE_OPENGL_X11=ON
   -DGEANT4_BUILD_CXXSTD=17
   -DGEANT4_BUILD_MULTITHREADED=ON
+  -DGEANT4_BUILD_BUILTIN_BACKTRACE=OFF
   ```
 
 - Eigen3 \[[@eigen3]\]:
