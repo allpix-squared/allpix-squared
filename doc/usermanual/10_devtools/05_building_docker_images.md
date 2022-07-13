@@ -18,14 +18,17 @@ file via the following commands:
 ```shell
 docker build --file etc/docker/Dockerfile.deps            \
              --tag gitlab-registry.cern.ch/allpix-squared/\
-             allpix-squared/allpix-squared-deps           \
+             allpix-squared/allpix-squared-deps:vX        \
              .
 docker push gitlab-registry.cern.ch/allpix-squared/\
             allpix-squared/allpix-squared-deps
 ```
 
 This image is created manually and only updated when necessary, i.e. if major new version of the underlying dependencies are
-available.
+available. The placeholder `vX` is a version number which should be incremented when applying changes or updating software
+versions in the `deps` Docker image. This version number should subsequently also be adjusted in the CI pipeline
+(`.gitlab-ci.yml`) and the Allpix Squared Docker file (`/etc/docker/Dockerfile`) so that the correct dependencies image is
+picked up.
 
 {{% alert title="Important" color="warning" %}}
 The Docker image containing the dependencies should not be flattened with commands like
