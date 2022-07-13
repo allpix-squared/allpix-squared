@@ -7,7 +7,7 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 SHELL ["/bin/bash", "-c"]
 
 # Install basic build requirements
-RUN apt-get update && apt-get install -y curl cmake g++ gcc binutils
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils
 
 # Install LCIO dependencies
 RUN apt-get install -y zlib1g-dev
