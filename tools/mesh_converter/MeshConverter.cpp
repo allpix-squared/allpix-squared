@@ -203,6 +203,7 @@ int main(int argc, char** argv) {
         const auto units = config.get<std::string>("observable_units");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
+        const auto interpolate = config.get<bool>("interpolate", true);
         const auto radius_step = config.get<double>("radius_step", 0.5);
         const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
@@ -358,9 +359,17 @@ int main(int argc, char** argv) {
                 // New mesh vertex and field
                 auto q = (dimension == 2 ? Point(y, z) : Point(x, y, z));
                 Point e;
+
+                // No interpolation requested, return nearest neighbor:
+                if(!interpolate) {
+                    auto idx = octree.findNeighbor<unibn::L2Distance<Point>>(q);
+                    new_mesh.push_back(field.at(idx));
+                    z += zstep;
+                    continue;
+                }
+
                 bool valid = false;
                 bool allow_zero_volume = false;
-
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
 
@@ -444,8 +453,9 @@ int main(int argc, char** argv) {
             }
 
             mesh_points_done += divisions.z();
-            LOG_PROGRESS(STATUS, "m") << "Interpolating new mesh: " << mesh_points_done << " of " << mesh_points_total
-                                      << ", " << (mesh_points_done / (mesh_points_total / 100)) << "%";
+            LOG_PROGRESS(STATUS, "m") << (interpolate ? "Interpolating" : "Generating") << " new mesh: " << mesh_points_done
+                                      << " of " << mesh_points_total << ", "
+                                      << (mesh_points_done / (mesh_points_total / 100)) << "%";
 
             return new_mesh;
         };
