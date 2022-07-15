@@ -15,10 +15,12 @@
 #include <utility>
 
 #include <G4EmParameters.hh>
+#include <G4HadronicParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NuclearLevelData.hh>
 #include <G4PhysListFactory.hh>
+#include <G4ProcessTable.hh>
 #include <G4RadioactiveDecayPhysics.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
@@ -125,9 +127,6 @@ void DepositionGeant4Module::initialize() {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
     }
 
-    // Get UI manager for sending commands
-    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
-
     // Apply optional PAI model
     if(config_.get<bool>("enable_pai", false)) {
         LOG(TRACE) << "Enabling PAI model on all detectors";
@@ -214,7 +213,7 @@ void DepositionGeant4Module::initialize() {
         LOG(INFO) << "Setting G4 production cut to " << Units::display(production_cut, {"mm", "um"})
                   << ", derived from properties of detector \"" << min_detector << "\"";
     }
-    ui_g4->ApplyCommand("/run/setCut " + std::to_string(production_cut));
+    physicsList->SetDefaultCutValue(production_cut);
 
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
@@ -230,11 +229,11 @@ void DepositionGeant4Module::initialize() {
     run_manager_g4_->InitializePhysics();
 
     // Disable verbose messages from processes
-    ui_g4->ApplyCommand("/process/verbose 0");
-    ui_g4->ApplyCommand("/process/eLoss/verbose 0");
+    physicsList->SetVerboseLevel(0);
+    G4ProcessTable::GetProcessTable()->SetVerboseLevel(0);
     G4EmParameters::Instance()->SetVerbose(0);
     G4HadronicProcessStore::Instance()->SetVerbose(0);
-    physicsList->SetVerboseLevel(0);
+    G4HadronicParameters::Instance()->SetVerboseLevel(0);
     G4NuclearLevelData::GetInstance()->GetParameters()->SetVerbose(0);
 
     // Initialize the full run manager to ensure correct state flags
@@ -282,6 +281,10 @@ void DepositionGeant4Module::initializeThread() {
 
         run_manager_mt->InitializeForThread();
     }
+
+    // Set selected tracking verbosity, defaulting to zero. Higher levels can be useful for tracing individual Geant4 events
+    G4RunManagerKernel::GetRunManagerKernel()->GetTrackingManager()->SetVerboseLevel(
+        config_.get<int>("geant4_tracking_verbosity", 0));
 }
 
 void DepositionGeant4Module::run(Event* event) {
