@@ -80,6 +80,12 @@ namespace allpix {
         std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
 
+        // Current event
+        uint64_t current_event_{0};
+
+        // Current random seed
+        uint64_t current_seed_{0};
+
         // Last event processed
         uint64_t last_event_{0};
 

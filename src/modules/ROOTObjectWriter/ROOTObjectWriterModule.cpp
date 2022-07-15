@@ -54,6 +54,11 @@ void ROOTObjectWriterModule::initialize() {
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
+    // Create tree to hold Event information
+    trees_.emplace("Event", std::make_unique<TTree>("Event", "Tree of event info"));
+    trees_["Event"]->Branch("ID", &current_event_);
+    trees_["Event"]->Branch("seed", &current_seed_);
+
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
@@ -116,8 +121,9 @@ void ROOTObjectWriterModule::run(Event* event) {
         }
     }
 
-    // Check if there were any missed events:
-    auto missing_events = event->number - last_event_ - 1;
+    // Add event data
+    current_event_ = event->number;
+    current_seed_ = event->getRandomSeed();
 
     // Generate trees and index data
     for(auto& pair : messages) {
@@ -165,17 +171,17 @@ void ROOTObjectWriterModule::run(Event* event) {
                 branch_name.c_str(), (std::string("std::vector<") + class_name_with_namespace + "*>").c_str(), addr);
 
             // Prefill new tree or new branch with empty records for all events that were missed since the start
-            if(missing_events > 0) {
+            if(last_event_ > 0) {
                 if(new_tree) {
-                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << missing_events << " empty events";
-                    for(uint64_t i = 0; i < missing_events; ++i) {
+                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
+                    for(uint64_t i = 0; i < last_event_; ++i) {
                         trees_[class_name]->Fill();
                     }
                 } else {
-                    LOG(DEBUG) << "Pre-filling branch " << branch_name << " of " << class_name << " with " << missing_events
+                    LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with " << last_event_
                                << " empty events";
                     auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
-                    for(uint64_t i = 0; i < missing_events; ++i) {
+                    for(uint64_t i = 0; i < last_event_; ++i) {
                         branch->Fill();
                     }
                 }
