@@ -78,7 +78,7 @@ namespace allpix {
          * @brief Returns the current seed for the ranom number generator
          * @return The random seed of the current event
          */
-        uint64_t getRandomSeed() const { return seed_; }
+        uint64_t getSeed() const { return seed_; }
 
     private:
         /**

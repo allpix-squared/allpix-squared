@@ -123,7 +123,7 @@ void ROOTObjectWriterModule::run(Event* event) {
 
     // Add event data
     current_event_ = event->number;
-    current_seed_ = event->getRandomSeed();
+    current_seed_ = event->getSeed();
 
     // Generate trees and index data
     for(auto& pair : messages) {
