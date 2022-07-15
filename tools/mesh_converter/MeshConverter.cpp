@@ -359,6 +359,7 @@ int main(int argc, char** argv) {
                 auto q = (dimension == 2 ? Point(y, z) : Point(x, y, z));
                 Point e;
                 bool valid = false;
+                bool allow_zero_volume = false;
 
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
@@ -394,6 +395,15 @@ int main(int argc, char** argv) {
                         continue;
                     }
 
+                    // If we have too many neighbors, we could dcay to using lower-dimension interpolation:
+                    if(radius > initial_radius && results.size() > 100) {
+                        LOG_ONCE(WARNING) << "Large number of neighbors found, this hints to a quasi-co"
+                                          << (dimension == 3 ? "planar" : "linear") << " situation" << std::endl
+                                          << "Decaying to interpolation in " << (dimension == 3 ? "planar" : "linear")
+                                          << " space for affected points";
+                        allow_zero_volume = true;
+                    }
+
                     // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
                     // valid mesh element and also ensures that this is the one with the smallest volume.
                     std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
@@ -406,7 +416,7 @@ int main(int argc, char** argv) {
                     auto res = for_each_combination(results.begin(),
                                                     results.begin() + (dimension == 3 ? 4 : 3),
                                                     results.end(),
-                                                    Combination(&points, &field, q, volume_cut));
+                                                    Combination(&points, &field, q, allow_zero_volume ? 0 : volume_cut));
                     valid = res.valid();
                     if(valid) {
                         e = res.result();
