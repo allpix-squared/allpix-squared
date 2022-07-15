@@ -11,7 +11,6 @@
 #define ALLPIX_MODULE_IDENTIFIER_H
 
 #include <memory>
-#include <random>
 #include <string>
 #include <vector>
 

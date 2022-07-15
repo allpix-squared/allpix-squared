@@ -299,7 +299,7 @@ void ProjectionPropagationModule::run(Event* event) {
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
-            std::uniform_real_distribution<double> survival(0, 1);
+            allpix::uniform_real_distribution<double> survival(0, 1);
             if(recombination_(
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
