@@ -62,7 +62,7 @@ namespace mesh_converter {
 
         /**
          * @brief Checks if the tetrahedron is valid for the interpolation
-         * @param volume_cut Threshold for the minimum tetrahedron volume
+         * @param volume_cut Threshold for the minimum tetrahedron volume. Values <= 0 disable coplanarity checks
          * @param qp Desired point for the interpolation
          */
         bool isValid(double volume_cut, Point& qp) const;
