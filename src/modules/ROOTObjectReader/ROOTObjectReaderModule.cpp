@@ -135,12 +135,19 @@ void ROOTObjectReaderModule::initialize() {
         if(std::string(key.GetClassName()) == "TTree") {
             auto* tree = static_cast<TTree*>(key.ReadObjectAny(nullptr));
 
+            // Exclude the Event tree
+            if(strcmp(tree->GetName(), "Event") == 0) {
+                LOG(TRACE) << "Skipping Event tree in reading";
+                continue;
+            }
+
             // Check if a version of this tree has already been read
             if(tree_names.find(tree->GetName()) != tree_names.end()) {
                 LOG(TRACE) << "Skipping copy of tree with name " << tree->GetName()
                            << " because one with identical name has already been processed";
                 continue;
             }
+
             tree_names.insert(tree->GetName());
 
             // Check if this tree should be used
