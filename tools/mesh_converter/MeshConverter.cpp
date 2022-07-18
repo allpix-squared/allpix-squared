@@ -204,6 +204,7 @@ int main(int argc, char** argv) {
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
         const auto interpolate = config.get<bool>("interpolate", true);
+        const auto allow_decay = config.get<bool>("allow_coplanar_interpolation", false);
         const auto radius_step = config.get<double>("radius_step", 0.5);
         const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
@@ -362,7 +363,7 @@ int main(int argc, char** argv) {
 
                 // No interpolation requested, return nearest neighbor:
                 if(!interpolate) {
-                    auto idx = octree.findNeighbor<unibn::L2Distance<Point>>(q);
+                    auto idx = static_cast<size_t>(octree.findNeighbor<unibn::L2Distance<Point>>(q));
                     new_mesh.push_back(field.at(idx));
                     z += zstep;
                     continue;
@@ -405,7 +406,7 @@ int main(int argc, char** argv) {
                     }
 
                     // If we have too many neighbors, we could dcay to using lower-dimension interpolation:
-                    if(radius > initial_radius && results.size() > 100) {
+                    if(allow_decay && radius > initial_radius && results.size() > 100) {
                         LOG_ONCE(WARNING) << "Large number of neighbors found, this hints to a quasi-co"
                                           << (dimension == 3 ? "planar" : "linear") << " situation" << std::endl
                                           << "Decaying to interpolation in " << (dimension == 3 ? "planar" : "linear")
