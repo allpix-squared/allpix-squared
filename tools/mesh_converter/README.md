@@ -4,11 +4,25 @@
 title: "Mesh Converter"
 ---
 
-This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster field value lookup as reuqired by Monte Carlo simulations tools such as Allpix Squared.
-The input consists of two files, one containing the vertex coordinates of each input mesh node, the other providing the relevant field values associated to each of these vertices.
-One output file containing the regular interpolated mesh is produced.
+This code takes adaptive meshes from finite-element simulations and transforms them into a regularly spaced grid for faster
+field value lookup as required by Monte Carlo simulations tools such as Allpix Squared. The input consists of two files, one
+containing the vertex coordinates of each input mesh node, the other providing the relevant field values associated to each
+of these vertices. One output file containing the regular mesh is produced. This tool can work in two different modes, the
+closest-neighbor mode and interpolation mode:
 
-A new regular mesh is created by scanning the model volume in regular X, Y and Z steps (not necessarily coinciding with original mesh nodes) and using a barycentric interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors search, the software uses the Octree implementation \[[@octree]\].
+### Simple Closest-Neighbor Search
+
+In this mode, selected by setting the parameter `interpolate = false`, no interpolation of field values is performed, but for
+every output mesh point, the values from the closest neighbor of the input mesh is taken. In most cases this approach should
+produce reasonably precise results with a granularity similar to the respective adaptive mesh granularity in the respective
+region. The tool uses the Octree `findNeighbor` algorithm \[[@octree]\] to find the closest neighbor to the query point.
+
+### Barycentric Interpolation Method
+
+In this mode, the regular mesh is created by scanning the model volume in regular X, Y and Z steps and using a barycentric
+interpolation method to calculate the respective electric field vector on the new point. The interpolation uses the four
+closest, no-coplanar, neighbor vertex nodes such, that the respective tetrahedron encloses the query point. For the neighbors
+search, the tool uses the Octree `radiusNeighbors` neighbor search algorithm \[[@octree]\].
 
 ## File Formats
 
@@ -77,11 +91,12 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `region`: Region name or list of region names to be meshed, such as for example `bulk` or `"bulk","epi"` (No default value; required parameter).
 * `observable`: Observable to be interpolated, such as for example `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
+* `interpolate`: Boolean switch to select either the barycentric interpolation method or the closest-neighbor method. Defaults to `true`, i.e. using the interpolation method.
 * `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.
-* `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`).
-* `max_radius`: Maximum search radius (default is `50um`).
-* `allow_failure`: Allow the interpolation of a single mesh point to fail, i.e. when no neighbors could be found. If set to `true`, the respective mesh element will be set to zero and the interpolation will continue, if `false` the interpolation will be aborted. Defaults to `false`.
-* `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value).
+* `radius_step`: Radius step if no neighbor is found (defaults to `0.5um`). Only used for barycentric interpolation.
+* `max_radius`: Maximum search radius (default is `50um`). Only used for barycentric interpolation.
+* `allow_failure`: Allow the interpolation of a single mesh point to fail, i.e. when no neighbors could be found. If set to `true`, the respective mesh element will be set to zero and the interpolation will continue, if `false` the interpolation will be aborted. Defaults to `false`. Only used for barycentric interpolation.
+* `volume_cut`: Minimum volume for tetrahedron for non-coplanar vertices (defaults to minimum double value). Only used for barycentric interpolation.
 * `divisions`: Number of divisions of the new regular mesh for each dimension, 2D or 3D vector depending on the `dimension` setting. Defaults to 100 bins in each dimension.
 * `xyz`: Array to replace the system coordinates of the mesh. A detailed description of how to use this parameter is given below.
 * `workers`: Number of worker threads to be used for the interpolation. Defaults to the available number of cores on the machine (hardware concurrency).
