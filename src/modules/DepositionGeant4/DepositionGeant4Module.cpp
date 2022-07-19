@@ -16,6 +16,7 @@
 #include <string>
 #include <utility>
 
+#include <G4Box.hh>
 #include <G4EmParameters.hh>
 #include <G4HadronicParameters.hh>
 #include <G4HadronicProcessStore.hh>
@@ -220,8 +221,15 @@ void DepositionGeant4Module::initialize() {
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
+        // Quickly estimate longest distance in world and limit max track length
+        auto* world_box = static_cast<G4Box*>(world_log_volume->GetSolid());
+        auto max_track_length =
+            2e2 * (world_box->GetXHalfLength() + world_box->GetYHalfLength() + world_box->GetZHalfLength());
+        user_limits_world_->SetUserMaxTrackLength(max_track_length);
+
         LOG(DEBUG) << "Setting world volume user limits to constrain event time to "
-                   << Units::display(config_.get<double>("cutoff_time"), {"ns", "us", "ms", "s"});
+                   << Units::display(config_.get<double>("cutoff_time"), {"ns", "us", "ms", "s"})
+                   << " and maximum track length to " << Units::display(max_track_length, {"mm", "cm", "m"});
         world_log_volume->GetRegion()->SetUserLimits(user_limits_world_.get());
     }
 
