@@ -97,37 +97,39 @@ namespace allpix {
         if(type_ == FieldType::GRID) {
 
             // Do we need to flip the position vector components?
-            auto flip_x = (x > 0 && (mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
-                                     mapping_ == FieldMapping::HALF_LEFT)) ||
-                          (x < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_IV ||
-                                     mapping_ == FieldMapping::HALF_RIGHT));
-            auto flip_y = (y > 0 && (mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
-                                     mapping_ == FieldMapping::HALF_BOTTOM)) ||
-                          (y < 0 && (mapping_ == FieldMapping::QUADRANT_I || mapping_ == FieldMapping::QUADRANT_II ||
-                                     mapping_ == FieldMapping::HALF_TOP));
+            auto flip_x =
+                (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+                           mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
+                (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                           mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
+            auto flip_y =
+                (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                           mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
+                (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+                           mapping_ == FieldMapping::PIXEL_HALF_TOP));
 
             // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
             auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
             auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
 
-            if(mapping_ == FieldMapping::QUADRANT_II || mapping_ == FieldMapping::QUADRANT_III ||
-               mapping_ == FieldMapping::HALF_LEFT) {
+            if(mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+               mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
                 px += 1.0;
-            } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_TOP ||
-                      mapping_ == FieldMapping::HALF_BOTTOM) {
+            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
+                      mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
                 px += 0.5;
             }
 
-            if(mapping_ == FieldMapping::QUADRANT_III || mapping_ == FieldMapping::QUADRANT_IV ||
-               mapping_ == FieldMapping::HALF_BOTTOM) {
+            if(mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+               mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
                 py += 1.0;
-            } else if(mapping_ == FieldMapping::FULL || mapping_ == FieldMapping::HALF_LEFT ||
-                      mapping_ == FieldMapping::HALF_RIGHT) {
+            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_LEFT ||
+                      mapping_ == FieldMapping::PIXEL_HALF_RIGHT) {
                 py += 0.5;
             }
 
             // Shuffle quadrants for inverted maps
-            if(mapping_ == FieldMapping::FULL_INVERSE) {
+            if(mapping_ == FieldMapping::PIXEL_FULL_INVERSE) {
                 px += (x >= 0 ? 0. : 1.0);
                 py += (y >= 0 ? 0. : 1.0);
             }

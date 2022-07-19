@@ -42,18 +42,22 @@ namespace allpix {
      * @brief Type of field maps
      */
     enum class FieldMapping {
-        FULL = 0,     ///< The field map spans the full pixel plane
-        FULL_INVERSE, ///< The field map spans the full pixel plane, but pixel centers are at field corners
-        HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
-        HALF_RIGHT,   ///< The field map spans the right half of the volume and is mirrored along x
-        HALF_TOP,     ///< The field map spans the top half of the volume and is mirrored along y
-        HALF_BOTTOM,  ///< The field map spans the bottom half of the volume and is mirrored along y
-        QUADRANT_I,   ///< The field map spans the top right quadrant of the volume and is mirrored to the other quadrants
-        QUADRANT_II,  ///< The field map spans the top left quadrant of the volume and is mirrored to the other quadrants
-        QUADRANT_III, ///< The field map spans the lower left quadrant of the volume and is mirrored to the other quadrants
-        QUADRANT_IV,  ///< The field map spans the lower right quadrant of the volume and is mirrored to the other quadrants
-        SENSOR,       ///< The field is mapped to the full sensor, starting at the local coordinate origin. The field is
-                      ///< mirrored at its edges.
+        PIXEL_FULL = 0,     ///< The field map spans the full pixel plane
+        PIXEL_FULL_INVERSE, ///< The field map spans the full pixel plane, but pixel centers are at field corners
+        PIXEL_HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
+        PIXEL_HALF_RIGHT,   ///< The field map spans the right half of the volume and is mirrored along x
+        PIXEL_HALF_TOP,     ///< The field map spans the top half of the volume and is mirrored along y
+        PIXEL_HALF_BOTTOM,  ///< The field map spans the bottom half of the volume and is mirrored along y
+        PIXEL_QUADRANT_I,   ///< The field map spans the top right quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_II,  ///< The field map spans the top left quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_III, ///< The field map spans the lower left quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_IV,  ///< The field map spans the lower right quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        SENSOR, ///< The field is mapped to the full sensor, starting at the local coordinate origin. The field is
+                ///< mirrored at its edges.
     };
 
     /**
@@ -177,7 +181,7 @@ namespace allpix {
          * * Scale of the field in x and y direction, defaults to one full pixel cell
          */
         std::array<size_t, 3> bins_{};
-        FieldMapping mapping_{FieldMapping::FULL};
+        FieldMapping mapping_{FieldMapping::PIXEL_FULL};
         std::array<double, 2> normalization_{{1., 1.}};
         std::array<double, 2> offset_{{0., 0.}};
 

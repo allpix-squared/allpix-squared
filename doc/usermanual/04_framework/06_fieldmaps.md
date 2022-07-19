@@ -44,40 +44,40 @@ applied to the cell, and the following possibilities are available:
   The map is interpreted as field spanning the full Euclidean angle and aligned on the center of the pixel unit cell. No
   transformation is performed, but field values are obtained from the map with respect to the pixel center.
 
-- `FULL_INVERSE`:
+- `PIXEL_FULL_INVERSE`:
   The map is interpreted as full field, but with inverse alignment on the pixel corners as shown above. Consequently, the
   field value lookup from the four quadrants take into account their offset.
 
-- `HALF_LEFT`:
+- `PIXEL_HALF_LEFT`:
   The map represents the left Euclidean half-plane, aligned at the $`y`$ axis through the center of the pixel unit cell.
   Field values in the other half-plane are obtained by mirroring at the $`y`$ axis as indicated in the figure above.
 
-- `HALF_RIGHT`:
+- `PIXEL_HALF_RIGHT`:
   The map represents the right Euclidean half-plane, aligned at the $`y`$ axis through the center of the pixel unit cell.
   Field values in the other half-plane are obtained by mirroring at the $`y`$ axis as indicated in the figure above.
 
-- `HALF_TOP`:
+- `PIXEL_HALF_TOP`:
   The map represents the top Euclidean half-plane, aligned at the $`x`$ axis through the center of the pixel unit cell. Field
   values in the other half-plane are obtained by mirroring at the $`x`$ axis as indicated in the figure above.
 
-- `HALF_BOTTOM`:
+- `PIXEL_HALF_BOTTOM`:
   The map represents the bottom Euclidean half-plane, aligned at the $`x`$ axis through the center of the pixel unit cell.
   Field values in the other half-plane are obtained by mirroring at the $`x`$ axis as indicated in the figure above.
 
-- `QUADRANT_I`:
+- `PIXEL_QUADRANT_I`:
   The map represents the quadrant of the plane where both vector components have a positive sign. Field values in the other
   three quadrants are obtained by mirroring at the axes of the coordinate system as show in the figure above.
 
-- `QUADRANT_II`:
+- `PIXEL_QUADRANT_II`:
   The map represents the quadrant of the plane where the vector component $`x`$ has a negative and $`y`$ a positive sign.
   Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as show in the
   figure above.
 
-- `QUADRANT_III`:
+- `PIXEL_QUADRANT_III`:
   The map represents the quadrant of the plane where both vector components have a negative sign. Field values in the other
   three quadrants are obtained by mirroring at the axes of the coordinate system as show in the figure above.
 
-- `QUADRANT_IV`:
+- `PIXEL_QUADRANT_IV`:
   The map represents the quadrant of the plane where the vector component $`x`$ has a positive and $`y`$ a negative sign.
   Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as show in the
   figure above.

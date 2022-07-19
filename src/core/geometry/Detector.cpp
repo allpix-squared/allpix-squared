@@ -293,14 +293,18 @@ void Detector::check_field_match(std::array<double, 3> size,
     }
 
     // Check that the total field size is n*pitch:
-    auto scale_x = field_scale[0] * (mapping == FieldMapping::FULL || mapping == FieldMapping::FULL_INVERSE ||
-                                             mapping == FieldMapping::HALF_TOP || mapping == FieldMapping::HALF_BOTTOM
-                                         ? 1.0
-                                         : 0.5);
-    auto scale_y = field_scale[1] * (mapping == FieldMapping::FULL || mapping == FieldMapping::FULL_INVERSE ||
-                                             mapping == FieldMapping::HALF_LEFT || mapping == FieldMapping::HALF_RIGHT
-                                         ? 1.0
-                                         : 0.5);
+    auto scale_x =
+        field_scale[0] * (mapping == FieldMapping::SENSOR || mapping == FieldMapping::PIXEL_FULL ||
+                                  mapping == FieldMapping::PIXEL_FULL_INVERSE || mapping == FieldMapping::PIXEL_HALF_TOP ||
+                                  mapping == FieldMapping::PIXEL_HALF_BOTTOM
+                              ? 1.0
+                              : 0.5);
+    auto scale_y =
+        field_scale[1] * (mapping == FieldMapping::SENSOR || mapping == FieldMapping::PIXEL_FULL ||
+                                  mapping == FieldMapping::PIXEL_FULL_INVERSE || mapping == FieldMapping::PIXEL_HALF_LEFT ||
+                                  mapping == FieldMapping::PIXEL_HALF_RIGHT
+                              ? 1.0
+                              : 0.5);
     if(std::fabs(std::remainder(size[0] / scale_x, model_->getPixelSize().x())) > std::numeric_limits<double>::epsilon() ||
        std::fabs(std::remainder(size[1] / scale_y, model_->getPixelSize().y())) > std::numeric_limits<double>::epsilon()) {
         LOG(WARNING) << "Field map size is (" << Units::display(size[0] / scale_x, {"um", "mm"}) << ","
