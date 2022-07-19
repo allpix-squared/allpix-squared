@@ -38,9 +38,15 @@ through mirroring.*
 
 
 The parameter `field_mapping` of the respective module defines how the map read from the mesh file should be interpreted and
-applied to the cell, and the following possibilities are available:
+applied to the sensor, and the following possibilities are available:
 
-- `FULL`:
+- `SENSOR`:
+  The map is read from the file and applied periodically to the full sensor, starting with the lower-left corner of the first
+  pixel, i.e. at index 0,0. The field is then flipped at its edges to the right and upwards and the procedure is repeated
+  until the other sensor edge is reached. This mode allows to apply fields that span several pixel to e.g. simulate even-odd
+  differences in double columns, but only works well for regular, Cartesian pixel grids.
+
+- `PIXEL_FULL`:
   The map is interpreted as field spanning the full Euclidean angle and aligned on the center of the pixel unit cell. No
   transformation is performed, but field values are obtained from the map with respect to the pixel center.
 
