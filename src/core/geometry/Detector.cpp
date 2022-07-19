@@ -158,9 +158,10 @@ void Detector::setElectricFieldGrid(const std::shared_ptr<std::vector<double>>& 
                                     std::array<double, 3> size,
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
+                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, mapping, scales, thickness_domain);
-    electric_field_.setGrid(field, bins, size, mapping, scales, thickness_domain);
+    electric_field_.setGrid(field, bins, size, mapping, scales, offset, thickness_domain);
 }
 
 void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> function,
@@ -201,9 +202,10 @@ void Detector::setWeightingPotentialGrid(const std::shared_ptr<std::vector<doubl
                                          std::array<double, 3> size,
                                          FieldMapping mapping,
                                          std::array<double, 2> scales,
+                                         std::array<double, 2> offset,
                                          std::pair<double, double> thickness_domain) {
     check_field_match(size, mapping, scales, thickness_domain);
-    weighting_potential_.setGrid(potential, bins, size, mapping, scales, thickness_domain);
+    weighting_potential_.setGrid(potential, bins, size, mapping, scales, offset, thickness_domain);
 }
 
 void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
@@ -265,9 +267,10 @@ void Detector::setDopingProfileGrid(std::shared_ptr<std::vector<double>> field,
                                     std::array<double, 3> size,
                                     FieldMapping mapping,
                                     std::array<double, 2> scales,
+                                    std::array<double, 2> offset,
                                     std::pair<double, double> thickness_domain) {
     check_field_match(size, mapping, scales, thickness_domain);
-    doping_profile_.setGrid(std::move(field), bins, size, mapping, scales, thickness_domain);
+    doping_profile_.setGrid(std::move(field), bins, size, mapping, scales, offset, thickness_domain);
 }
 
 void Detector::setDopingProfileFunction(FieldFunction<double> function, FieldType type) {

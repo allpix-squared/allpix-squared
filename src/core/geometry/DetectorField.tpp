@@ -34,8 +34,8 @@ namespace allpix {
         }
 
         // Shift the coordinates by the offset configured for the field:
-        auto x = pos.x();
-        auto y = pos.y();
+        auto x = pos.x() + offset_[0];
+        auto y = pos.y() + offset_[1];
         auto z = pos.z();
 
         auto pitch = model_->getPixelSize();
@@ -89,8 +89,8 @@ namespace allpix {
         }
 
         // Calculate the coordinates relative to the reference point:
-        auto x = pos.x() - ref.x();
-        auto y = pos.y() - ref.y();
+        auto x = pos.x() - ref.x() + offset_[0];
+        auto y = pos.y() - ref.y() + offset_[1];
         auto z = pos.z();
 
         T ret_val;
@@ -215,6 +215,7 @@ namespace allpix {
                                       std::array<double, 3> size,
                                       FieldMapping mapping,
                                       std::array<double, 2> scales,
+                                      std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
         if(model_ == nullptr) {
             throw std::invalid_argument("field not initialized with detector model parameters");
@@ -237,6 +238,8 @@ namespace allpix {
         // Calculate normalization of field from field size and scale factors:
         normalization_[0] = 1.0 / scales[0] / size[0];
         normalization_[1] = 1.0 / scales[1] / size[1];
+        offset_[0] = offset[0] * size[0];
+        offset_[1] = offset[1] * size[1];
 
         thickness_domain_ = std::move(thickness_domain);
         type_ = FieldType::GRID;
