@@ -93,3 +93,8 @@ All axes mentioned here are Cartesian axes aligning with the local coordinate sy
 [Section 4.5](./05_geometry_detectors.md#coordinate-systems), and passing through the center of the pixel unit cell regarded.
 It should be noted that some of these mappings are equivalent to rotating or mirroring the field before loading it in
 Allpix Squared, and are only provided for convenience.
+
+In addition to these mappings, the field maps can be shifted and stretched using the `field_offset` and `field_scale`
+parameters of the respective module. The values of these parameters are always interpreted as fractions of the field map
+size that has been loaded. This means for example, that an offset of `field_offset = 0.5, 0.5` applied to a field map with
+a size of `100um x 50um` will shift the respective field by `50um` along `x` and `25um` along `y`.
