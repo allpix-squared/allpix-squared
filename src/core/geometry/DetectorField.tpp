@@ -18,13 +18,15 @@ namespace allpix {
     template <typename T, size_t N>
     T DetectorField<T, N>::get(const ROOT::Math::XYZPoint& pos, const bool extrapolate_z) const {
 
+        // Return empty field if outside the matrix or no field is set
+        auto [px, py] = model_->getPixelIndex(pos);
+        if(!model_->isWithinMatrix(px, py) || type_ == FieldType::NONE) {
+            return {};
+        }
+
         // For per-pixel fields, resort to getRelativeTo with current pixel as reference:
         if(mapping_ != FieldMapping::SENSOR) {
             // Calculate current pixel index its center as reference point:
-            auto [px, py] = model_->getPixelIndex(pos);
-            if(!model_->isWithinMatrix(px, py)) {
-                return {};
-            }
             auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(px, py));
 
             // Get field relative to pixel center:
