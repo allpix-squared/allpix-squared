@@ -83,11 +83,23 @@ void ElectricFieldReaderModule::initialize() {
             field_scale = {{scales.x(), scales.y()}};
         }
 
+        // Get the field offset in fractions of the field size, default is 0.0x0.0, i.e. no offset
+        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
+        if(offset.x() > 1.0 || offset.y() > 1.0) {
+            throw InvalidValueError(
+                config_, "field_offset", "shifting electric field by more than one pixel (offset > 1.0) is not allowed");
+        }
+        if(offset.x() < 0.0 || offset.y() < 0.0) {
+            throw InvalidValueError(config_, "field_offset", "offsets for the electric field have to be positive");
+        }
+        LOG(DEBUG) << "Electric field has offset of " << offset << " fractions of the field size";
+
         detector_->setElectricFieldGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
                                         field_mapping,
                                         field_scale,
+                                        {{offset.x(), offset.y()}},
                                         thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";
