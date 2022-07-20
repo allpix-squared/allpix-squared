@@ -15,6 +15,8 @@
 #include "SensitiveDetectorAndFieldConstruction.hpp"
 #include "core/module/exceptions.h"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <atomic>
 
 #include <G4MTRunManager.hh>
@@ -234,7 +236,8 @@ void WorkerRunManager::AbortRun(bool softAbort) {
         }
         // Ready for new event, set the state back to G4State_Idle
         G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
-        LOG(DEBUG) << "Reset Geant4 state to " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());;
+        LOG(DEBUG) << "Reset Geant4 state to "
+                   << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
     } else {
 
         LOG(WARNING) << "Run is not in progress. AbortRun() ignored." << G4endl;
