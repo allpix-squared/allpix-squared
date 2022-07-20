@@ -147,14 +147,14 @@ namespace allpix {
      * This error can be raised by modules if they would like to request an interruption of the current event processing
      * because an issue was detected.
      */
-    class AbortEventException : public RuntimeError {
+    class AbortEventException : public EndOfRunException {
     public:
         /**
          * @brief Constructs request to abort the current event processing with a description
          * @param reason Text explaining the reason of the requested abortion of the event
          */
         // TODO [doc] the module itself is missing
-        explicit AbortEventException(std::string reason) { error_message_ = std::move(reason); }
+        explicit AbortEventException(std::string reason) : EndOfRunException(reason) { error_message_ = std::move(reason); }
     };
 
     /**
