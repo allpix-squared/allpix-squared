@@ -148,7 +148,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
         G4Transform3D transform_phys(*rotWrapper, posWrapper);
 
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-        G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("World_log");
+        G4LogicalVolume* world_log_volume = log_volume_store->GetVolume("world_log");
 
         if(world_log_volume == nullptr) {
             throw ModuleError("Cannot find world volume");
