@@ -405,7 +405,7 @@ int main(int argc, char** argv) {
                         continue;
                     }
 
-                    // If we have too many neighbors, we could dcay to using lower-dimension interpolation:
+                    // If we have too many neighbors, we could decay to using lower-dimension interpolation:
                     if(allow_decay && radius > initial_radius && results.size() > 100) {
                         LOG_ONCE(WARNING) << "Large number of neighbors found, this hints to a quasi-co"
                                           << (dimension == 3 ? "planar" : "linear") << " situation" << std::endl

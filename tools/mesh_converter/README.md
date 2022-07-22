@@ -13,8 +13,8 @@ closest-neighbor mode and interpolation mode:
 ### Simple Closest-Neighbor Search
 
 In this mode, selected by setting the parameter `interpolate = false`, no interpolation of field values is performed, but for
-every output mesh point, the values from the closest neighbor of the input mesh is taken. In most cases this approach should
-produce reasonably precise results with a granularity similar to the respective adaptive mesh granularity in the respective
+every output mesh point, the values from the closest neighbor of the input mesh are taken. In most cases this approach should
+produces reasonably precise results with a granularity similar to the respective adaptive mesh granularity in the respective
 region. The tool uses the Octree `findNeighbor` algorithm \[[@octree]\] to find the closest neighbor to the query point.
 
 ### Barycentric Interpolation Method
