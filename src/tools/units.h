@@ -59,6 +59,7 @@ namespace allpix {
         Units::add("kV", 1e-3);
 
         // MAGNETIC FIELD
+        Units::add("kT", 1);
         Units::add("T", 1e-3);
         Units::add("mT", 1e-6);
 
