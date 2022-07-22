@@ -61,7 +61,7 @@ roughly follows common-sense (more details can be found in
 | Temperature             | K (kelvin)                     | -                                                                                                                    |
 | Charge                  | e (elementary charge)          | ke (kiloelectrons), <br> fC (femtocoulomb), <br> C (coulomb)                                                         |
 | Voltage                 | MV (megavolt)                  | V (volt), <br> kV (kilovolt)                                                                                         |
-| Magnetic field strength | T (tesla)                      | mT (millitesla)                                                                                                      |
+| Magnetic field strength | kT (kilotesla)                 | T (tesla), <br> mT (millitesla)                                                                                      |
 | Angle                   | rad (radian)                   | deg (degree), <br> mrad (milliradian)                                                                                |
 | Radiation fluence       | Neq (1-MeV neutron-equivalent) | -                                                                                                                    |
 
