@@ -46,6 +46,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Jihad Saidi, Université de Genève, [jisaidi](https://gitlab.cern.ch/jisaidi)
 * Andre Sailer, CERN, [sailer](https://gitlab.cern.ch/sailer)
 * Tasneem Saleem, Synchrotron SOLEIL, [TasneemSaleem](https://github.com/TasneemSaleem)
+* Arka Santra, Weizman Institute, [asantra](https://gitlab.cern.ch/asantra)
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, [schioppa](https://gitlab.cern.ch/schioppa)
 * Sebastian Schmidt, FAU Erlangen, [schmidtseb](https://github.com/schmidtseb)
 * Sanchit Sharma, Kansas State University, [SanchitKratos](https://github.com/SanchitKratos)
