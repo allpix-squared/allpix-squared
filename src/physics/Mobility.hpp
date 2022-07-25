@@ -397,10 +397,10 @@ namespace allpix {
     class Levinshtein : public MobilityModel {
     public:
         Levinshtein(double temperature, bool doping)
-            : electron_mumin_(Units::get(1000, "cm*cm/V/s")), electron_mumax_(Units::get(55, "cm*cm/V/s")),
+            : electron_mumin_(Units::get(55, "cm*cm/V/s")), electron_mumax_(Units::get(1000, "cm*cm/V/s")),
               electron_nref_(Units::get(2e17, "/cm/cm/cm")), electron_t_alpha_(std::pow(temperature / 300, 2.)),
               electron_t_beta_(std::pow(temperature / 300, 0.7)), electron_gamma_(1.),
-              hole_mumin_(Units::get(170, "cm*cm/V/s")), hole_mumax_(Units::get(3, "cm*cm/V/s")),
+              hole_mumin_(Units::get(3, "cm*cm/V/s")), hole_mumax_(Units::get(170, "cm*cm/V/s")),
               hole_nref_(Units::get(3e17, "/cm/cm/cm")), hole_t_alpha_(std::pow(temperature / 300, 5.)), hole_gamma_(2.) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
