@@ -199,8 +199,9 @@ void Materials::init_materials() {
     SiliconCarbide->AddElement(Si, 1);
     SiliconCarbide->AddElement(C, 1);
     materials_["silicon_carbide"] = SiliconCarbide;
-    
-    auto* GalliumNitride = new G4Material("GalliumNitride", 6.15 * CLHEP::g / CLHEP::cm3, 2); // taken from https://en.wikipedia.org/wiki/Gallium_nitride
+
+    auto* GalliumNitride = new G4Material(
+        "GalliumNitride", 6.15 * CLHEP::g / CLHEP::cm3, 2); // taken from https://en.wikipedia.org/wiki/Gallium_nitride
     GalliumNitride->AddElement(Ga, 1);
     GalliumNitride->AddElement(N, 1);
     materials_["gallium_nitride"] = GalliumNitride;
