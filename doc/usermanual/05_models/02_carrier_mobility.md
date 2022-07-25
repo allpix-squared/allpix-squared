@@ -427,4 +427,5 @@ all corresponding features, mathematical expressions and constants.
 [@quay]: https://doi.org/10.1016/S1369-8001(00)00015-9
 [@omar]: https://doi.org/10.1016/0038-1101(87)90063-3
 [@LandoltBornstein]: https://doi.org/10.1007/b80447
+[@Levinshtein]: https://doi.org/10.1016/S0038-1101(02)00256-3
 [@rootformula]: https://root.cern.ch/doc/master/classTFormula.html
