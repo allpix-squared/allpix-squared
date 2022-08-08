@@ -13,6 +13,7 @@
 
 #include <Eigen/Eigen>
 #include <array>
+#include <cmath>
 #include <utility>
 
 #include "core/utils/log.h"
@@ -25,6 +26,8 @@ namespace mesh_converter {
         Point() noexcept = default;
         Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3){};
         Point(double py, double pz) noexcept : y(py), z(pz), dim(2){};
+
+        bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); };
 
         double x{0}, y{0}, z{0};
         unsigned int dim{0};
@@ -62,7 +65,7 @@ namespace mesh_converter {
 
         /**
          * @brief Checks if the tetrahedron is valid for the interpolation
-         * @param volume_cut Threshold for the minimum tetrahedron volume
+         * @param volume_cut Threshold for the minimum tetrahedron volume. Values <= 0 disable coplanarity checks
          * @param qp Desired point for the interpolation
          */
         bool isValid(double volume_cut, Point& qp) const;
@@ -154,6 +157,10 @@ namespace mesh_converter {
             if(valid_) {
                 LOG(DEBUG) << element.print(reference_);
                 result_ = element.getObservable(reference_);
+                if(!result_.isFinite()) {
+                    LOG(WARNING) << "Interpolated result not a finite number at " << reference_;
+                    return false;
+                }
             }
 
             return valid_;

@@ -203,6 +203,8 @@ int main(int argc, char** argv) {
         const auto units = config.get<std::string>("observable_units");
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
+        const auto interpolate = config.get<bool>("interpolate", true);
+        const auto allow_decay = config.get<bool>("allow_coplanar_interpolation", false);
         const auto radius_step = config.get<double>("radius_step", 0.5);
         const auto volume_cut = config.get<double>("volume_cut", 10e-9);
 
@@ -358,8 +360,17 @@ int main(int argc, char** argv) {
                 // New mesh vertex and field
                 auto q = (dimension == 2 ? Point(y, z) : Point(x, y, z));
                 Point e;
-                bool valid = false;
 
+                // No interpolation requested, return nearest neighbor:
+                if(!interpolate) {
+                    auto idx = static_cast<size_t>(octree.findNeighbor<unibn::L2Distance<Point>>(q));
+                    new_mesh.push_back(field.at(idx));
+                    z += zstep;
+                    continue;
+                }
+
+                bool valid = false;
+                bool allow_zero_volume = false;
                 size_t prev_neighbours = 0;
                 double radius = initial_radius;
 
@@ -394,6 +405,15 @@ int main(int argc, char** argv) {
                         continue;
                     }
 
+                    // If we have too many neighbors, we could decay to using lower-dimension interpolation:
+                    if(allow_decay && radius > initial_radius && results.size() > 100) {
+                        LOG_ONCE(WARNING) << "Large number of neighbors found, this hints to a quasi-co"
+                                          << (dimension == 3 ? "planar" : "linear") << " situation" << std::endl
+                                          << "Decaying to interpolation in " << (dimension == 3 ? "planar" : "linear")
+                                          << " space for affected points";
+                        allow_zero_volume = true;
+                    }
+
                     // Sort by lowest distance first, this drastically reduces the number of permutations required to find a
                     // valid mesh element and also ensures that this is the one with the smallest volume.
                     std::sort(results.begin(), results.end(), [&](unsigned int a, unsigned int b) {
@@ -406,7 +426,7 @@ int main(int argc, char** argv) {
                     auto res = for_each_combination(results.begin(),
                                                     results.begin() + (dimension == 3 ? 4 : 3),
                                                     results.end(),
-                                                    Combination(&points, &field, q, volume_cut));
+                                                    Combination(&points, &field, q, allow_zero_volume ? 0 : volume_cut));
                     valid = res.valid();
                     if(valid) {
                         e = res.result();
@@ -434,8 +454,9 @@ int main(int argc, char** argv) {
             }
 
             mesh_points_done += divisions.z();
-            LOG_PROGRESS(STATUS, "m") << "Interpolating new mesh: " << mesh_points_done << " of " << mesh_points_total
-                                      << ", " << (mesh_points_done / (mesh_points_total / 100)) << "%";
+            LOG_PROGRESS(STATUS, "m") << (interpolate ? "Interpolating" : "Generating") << " new mesh: " << mesh_points_done
+                                      << " of " << mesh_points_total << ", "
+                                      << (mesh_points_done / (mesh_points_total / 100)) << "%";
 
             return new_mesh;
         };

@@ -69,12 +69,16 @@ double MeshElement::get_distance(size_t index, Point& qp) const {
 }
 
 bool MeshElement::isValid(double volume_cut, Point& qp) const {
-    if(std::fabs(volume_) < MIN_VOLUME) {
-        LOG(TRACE) << "Invalid tetrahedron, all vertices are " << (dimension_ == 3 ? "coplanar" : "colinear");
-        return false;
-    } else if(std::fabs(volume_) <= volume_cut) {
-        LOG(TRACE) << "Invalid tetrahedron with volume " << std::fabs(volume_) << " smaller than volume cut " << volume_cut;
-        return false;
+    // Check if we should apply coplanar/colinear criterions:
+    if(volume_cut > 0) {
+        if(std::fabs(volume_) < MIN_VOLUME) {
+            LOG(TRACE) << "Invalid tetrahedron, all vertices are " << (dimension_ == 3 ? "coplanar" : "colinear");
+            return false;
+        } else if(std::fabs(volume_) <= volume_cut) {
+            LOG(TRACE) << "Invalid tetrahedron with volume " << std::fabs(volume_) << " smaller than volume cut "
+                       << volume_cut;
+            return false;
+        }
     }
 
     for(size_t i = 0; i < dimension_ + 1; i++) {
