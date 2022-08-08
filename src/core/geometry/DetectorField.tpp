@@ -26,7 +26,7 @@ namespace allpix {
 
         // For per-pixel fields, resort to getRelativeTo with current pixel as reference:
         if(mapping_ != FieldMapping::SENSOR) {
-            // Calculate current pixel index its center as reference point:
+            // Calculate center of current pixel from index as reference point:
             auto ref = static_cast<ROOT::Math::XYPoint>(model_->getPixelCenter(px, py));
 
             // Get field relative to pixel center:
