@@ -405,6 +405,9 @@ namespace allpix {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
+            if(material != SensorMaterial::GALLIUM_NITRIDE) {
+                throw ModelUnsuitable("Sensor material " + allpix::to_string(material) + " not valid for this model.");
+            }
         }
 
         double operator()(const CarrierType& type, double temperature, double doping) const override {
