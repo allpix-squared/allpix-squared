@@ -327,7 +327,7 @@ The Levinshtein mobility model describes the mobility of electron and holes in G
 \begin{aligned}
 \mu_e (T, N) &= \frac{\mu_{max,e}}{\frac{1}{B_e(N) \left(T/T_0\right)^{\beta_e}} + \left(\frac{T}{T_0}\right)^{\alpha_e}} \\
 \mu_h (T, N) &= \frac{\mu_{max,h}}{\frac{1}{B_h(N)} + \left(\frac{T}{T_0}\right)^{\alpha_h}} \\
-B_{i} (N)    &= \left[ \frac{\mu_{min,i}+\mu_{max,i}\left(\frac{N_{ref,i}}{N}\right)^{\gamma_i}}{\mu_{max,i}-\mu_{min,i}} \right]
+B_{i} (N)    &= \left[ \frac{\mu_{min,i}+\mu_{max,i}\left(\frac{N_{ref,i}}{N}\right)^{\gamma_i}}{\mu_{max,i}-\mu_{min,i}} \right]\bigg\rvert_{T=T_0}
 \end{aligned}
 ```
 
