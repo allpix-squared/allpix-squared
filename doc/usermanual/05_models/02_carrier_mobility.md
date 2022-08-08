@@ -331,7 +331,7 @@ B_{i} (N)    &= \left[ \frac{\mu_{min,i}+\mu_{max,i}\left(\frac{N_{ref,i}}{N}\ri
 \end{aligned}
 ```
 
-as taken from equations 6 and 7. The following parameters are used:
+as taken from equations 6 and 7. The following parameters in use are taken from tables 1 and 2 in the reference publication:
 
 ```math
 \begin{aligned}
