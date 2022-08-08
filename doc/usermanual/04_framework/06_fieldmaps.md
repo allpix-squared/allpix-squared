@@ -72,20 +72,20 @@ applied to the sensor, and the following possibilities are available:
 
 - `PIXEL_QUADRANT_I`:
   The map represents the quadrant of the plane where both vector components have a positive sign. Field values in the other
-  three quadrants are obtained by mirroring at the axes of the coordinate system as show in the figure above.
+  three quadrants are obtained by mirroring at the axes of the coordinate system as shown in the figure above.
 
 - `PIXEL_QUADRANT_II`:
   The map represents the quadrant of the plane where the vector component $`x`$ has a negative and $`y`$ a positive sign.
-  Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as show in the
+  Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as shown in the
   figure above.
 
 - `PIXEL_QUADRANT_III`:
   The map represents the quadrant of the plane where both vector components have a negative sign. Field values in the other
-  three quadrants are obtained by mirroring at the axes of the coordinate system as show in the figure above.
+  three quadrants are obtained by mirroring at the axes of the coordinate system as shown in the figure above.
 
 - `PIXEL_QUADRANT_IV`:
   The map represents the quadrant of the plane where the vector component $`x`$ has a positive and $`y`$ a negative sign.
-  Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as show in the
+  Field values in the other three quadrants are obtained by mirroring at the axes of the coordinate system as shown in the
   figure above.
 
 
