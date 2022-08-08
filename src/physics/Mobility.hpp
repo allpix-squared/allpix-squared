@@ -396,7 +396,7 @@ namespace allpix {
      */
     class Levinshtein : public MobilityModel {
     public:
-        Levinshtein(double temperature, bool doping)
+        Levinshtein(SensorMaterial material, double temperature, bool doping)
             : electron_mumin_(Units::get(55, "cm*cm/V/s")), electron_mumax_(Units::get(1000, "cm*cm/V/s")),
               electron_nref_(Units::get(2e17, "/cm/cm/cm")), electron_t_alpha_(std::pow(temperature / 300, 2.)),
               electron_t_beta_(std::pow(temperature / 300, 0.7)), electron_gamma_(1.),
@@ -554,7 +554,7 @@ namespace allpix {
                 } else if(model == "quay") {
                     model_ = std::make_unique<Quay>(material, temperature);
                 } else if(model == "levinshtein") {
-                    model_ = std::make_unique<Levinshtein>(temperature, doping);
+                    model_ = std::make_unique<Levinshtein>(material, temperature, doping);
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantMobility>(config.get<double>("mobility_electron"),
                                                                 config.get<double>("mobility_hole"));
