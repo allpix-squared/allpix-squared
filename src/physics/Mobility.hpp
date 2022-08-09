@@ -305,7 +305,7 @@ namespace allpix {
      */
     class RuchKino : virtual public MobilityModel {
     public:
-        RuchKino(SensorMaterial material)
+        explicit RuchKino(SensorMaterial material)
             : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
               Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {
             if(material != SensorMaterial::GALLIUM_ARSENIDE) {
