@@ -80,7 +80,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     distance_ = config_.get<unsigned int>("distance");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
-    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
