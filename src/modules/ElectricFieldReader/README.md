@@ -45,7 +45,7 @@ The reader provides the following models for electric fields:
   in this format can be found in *etc/example_electric_field.init* in the repository. An explanation of the format is
   available in the source code of this module, a converter tool for electric fields from adaptive TCAD meshes is provided
   with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale`
-  parameter. By default, the module reads the size of the field from the file. If the field size and pixel pitch do not match, 
+  parameter. By default, the module reads the size of the field from the file. If the field size and pixel pitch do not match,
   a warning is printed.
 
 - The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components
@@ -85,9 +85,19 @@ be enabled and controlled with the plotting parameter slisted below.
 - `maximum_field` : Value of the electric field at the electrode.
 
 ### Parameters for model `mesh`
-* `file_name` : Location of file containing the meshed electric field data.
-* `field_mapping`: Description of the mapping of the field onto the pixel cell. Possible values are `FULL`, indicating that the map spans the full 2D plane and the field is centered around the pixel center, `HALF_TOP` or `HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `QUADRANT_I`, `QUADRANT_II`, `QUADRANT_III`, `QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel plane. In addition, the `FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a pixel cell but the corner between pixels.
-* `field_scale` :  Scaling factor of the electric field in x- and y-direction. By default, the scaling factors are set to `{1, 1}` and the field is used with its physical extent stated in the field data file. Only used if the *model* parameter has the value **mesh**.
+- `file_name` : Location of file containing the meshed electric field data.
+- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `SENSOR` for
+  sensor-wide mapping, `PIXEL_FULL`, indicating that the map spans the full 2D plane and the field is centered around the
+  pixel center, `PIXEL_HALF_TOP` or `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`,
+  `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`,
+  `PIXEL_QUADRANT_II`, `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant
+  of the 2D pixel plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not
+  centered around a pixel cell but the corner between pixels.
+- `field_scale`:  Scaling factor of the electric field in x- and y-direction. By default, the scaling factors are set to
+  `{1, 1}` and the field is used with its physical extent stated in the field data file.
+- `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can
+  be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
+  The shift is applied in positive direction of the respective coordinate.
 
 ### Parameters for model `custom`
 - `field_functions` : Single equation (for a field vector along the `z` axis only) or array of three equations (for the three

@@ -21,14 +21,27 @@ The following models for the doping profile can be used:
 * For **mesh**, a file containing a doping profile map in APF or INIT format is parsed.
 
 ## Parameters
-* `model` : Type of the doping profile, either **constant**, **regions**  or **mesh**.
-* `file_name` : Location of file containing the doping profile in one of the supported field file formats.
-Only used if the *model* parameter has the value **mesh**.
-* `field_scale` :  Scaling factor of the doping profile in x- and y-direction. By default, the scaling factors are set to `{1, 1}` and the field is used with its physical extent stated in the field data file. Only used if the *model* parameter has the value **mesh**.
-* `field_mapping`: Description of the mapping of the field onto the pixel cell. Possible values are `FULL`, indicating that the map spans the full 2D plane and the field is centered around the pixel center, `HALF_TOP` or `HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `QUADRANT_I`, `QUADRANT_II`, `QUADRANT_III`, `QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel plane. In addition, the `FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
-* `doping_concentration` : Value for the doping concentration. If the *model* parameter has the value **constant** a single number should be provided. If the *model* parameter has the value **regions** a matrix is expected, which provides the sensor depth and doping concentration in each row.
-* `doping_depth` : Thickness of the doping profile region. The doping profile is extrapolated in the region below the `doping_depth`.
-Only used if the *model* parameter has the value **mesh**.
+- `model` : Type of the doping profile, either **constant**, **regions**  or **mesh**.
+- `file_name` : Location of file containing the doping profile in one of the supported field file formats.
+  Only used if the *model* parameter has the value **mesh**.
+- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `SENSOR` for
+  sensor-wide mapping, `PIXEL_FULL`, indicating that the map spans the full 2D plane and the field is centered around the
+  pixel center, `PIXEL_HALF_TOP` or `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`,
+  `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`,
+  `PIXEL_QUADRANT_II`, `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant
+  of the 2D pixel plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not
+  centered around a pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
+- `field_scale`:  Scaling factor of the electric field in x- and y-direction. By default, the scaling factors are set to
+  `{1, 1}` and the field is used with its physical extent stated in the field data file.
+- `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can
+  be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
+  The shift is applied in positive direction of the respective coordinate. Only used if the *model* parameter has the value
+  **mesh**.
+- `doping_concentration` : Value for the doping concentration. If the *model* parameter has the value **constant** a single
+  number should be provided. If the *model* parameter has the value **regions** a matrix is expected, which provides the
+  sensor depth and doping concentration in each row.
+- `doping_depth` : Thickness of the doping profile region. The doping profile is extrapolated in the region below the
+  `doping_depth`. Only used if the *model* parameter has the value **mesh**.
 
 ## Plotting parameters
 * `output_plots` : Determines if output plots should be generated. Disabled by default.
