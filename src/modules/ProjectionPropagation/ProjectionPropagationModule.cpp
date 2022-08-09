@@ -83,7 +83,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature;
 
     // Mobility fixed to Jacoboni:
-    mobility_ = std::make_unique<JacoboniCanali>(temperature);
+    mobility_ = std::make_unique<JacoboniCanali>(model_->getSensorMaterial(), temperature);
 
     // We need direct access to the critical field values of the model since we have a discrete integration of the formula
     // for the total drift time. Taken from https://doi.org/10.1016/0038-1101(77)90054-5 (section 5.2)
