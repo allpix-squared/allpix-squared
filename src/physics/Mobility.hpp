@@ -59,13 +59,17 @@ namespace allpix {
      */
     class JacoboniCanali : virtual public MobilityModel {
     public:
-        explicit JacoboniCanali(double temperature)
+        explicit JacoboniCanali(SensorMaterial material, double temperature)
             : electron_Vm_(Units::get(1.53e9 * std::pow(temperature, -0.87), "cm/s")),
               electron_Beta_(2.57e-2 * std::pow(temperature, 0.66)),
               hole_Vm_(Units::get(1.62e8 * std::pow(temperature, -0.52), "cm/s")),
               hole_Beta_(0.46 * std::pow(temperature, 0.17)),
               electron_Ec_(Units::get(1.01 * std::pow(temperature, 1.55), "V/cm")),
-              hole_Ec_(Units::get(1.24 * std::pow(temperature, 1.68), "V/cm")) {}
+              hole_Ec_(Units::get(1.24 * std::pow(temperature, 1.68), "V/cm")) {
+            if(material != SensorMaterial::SILICON) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
+            }
+        }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
@@ -97,7 +101,7 @@ namespace allpix {
      */
     class Canali : virtual public JacoboniCanali {
     public:
-        explicit Canali(double temperature) : JacoboniCanali(temperature) {
+        explicit Canali(SensorMaterial material, double temperature) : JacoboniCanali(material, temperature) {
             electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
         }
     };
@@ -112,13 +116,17 @@ namespace allpix {
      */
     class Hamburg : public MobilityModel {
     public:
-        explicit Hamburg(double temperature)
+        explicit Hamburg(SensorMaterial material, double temperature)
             : electron_mu0_(Units::get(1530 * std::pow(temperature / 300, -2.42), "cm*cm/V/s")),
               electron_vsat_(Units::get(1.03e7 * std::pow(temperature / 300, -0.226), "cm/s")),
               hole_mu0_(Units::get(464 * std::pow(temperature / 300, -2.20), "cm*cm/V/s")),
               hole_param_b_(Units::get(9.57e-8 * std::pow(temperature / 300, -0.101), "s/cm")),
               hole_param_c_(Units::get(-3.31e-13, "s/V")),
-              hole_E0_(Units::get(2640 * std::pow(temperature / 300, 0.526), "V/cm")) {}
+              hole_E0_(Units::get(2640 * std::pow(temperature / 300, 0.526), "V/cm")) {
+            if(material != SensorMaterial::SILICON) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
+            }
+        }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             if(type == CarrierType::ELECTRON) {
@@ -155,7 +163,7 @@ namespace allpix {
      */
     class HamburgHighField : public Hamburg {
     public:
-        explicit HamburgHighField(double temperature) : Hamburg(temperature) {
+        explicit HamburgHighField(SensorMaterial material, double temperature) : Hamburg(material, temperature) {
             electron_mu0_ = Units::get(1430 * std::pow(temperature / 300, -1.99), "cm*cm/V/s");
             electron_vsat_ = Units::get(1.05e7 * std::pow(temperature / 300, -0.302), "cm/s");
             hole_mu0_ = Units::get(457 * std::pow(temperature / 300, -2.80), "cm*cm/V/s");
@@ -174,7 +182,7 @@ namespace allpix {
      */
     class Masetti : virtual public MobilityModel {
     public:
-        Masetti(double temperature, bool doping)
+        Masetti(SensorMaterial material, double temperature, bool doping)
             : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
               electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
               electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_alpha_(0.711),
@@ -185,6 +193,9 @@ namespace allpix {
               hole_cs_(Units::get(6.1e20, "/cm/cm/cm")), hole_beta_(2.0) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
+            }
+            if(material != SensorMaterial::SILICON) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
             }
         }
 
@@ -227,8 +238,8 @@ namespace allpix {
      */
     class MasettiCanali : public Canali, public Masetti {
     public:
-        MasettiCanali(double temperature, bool doping)
-            : JacoboniCanali(temperature), Canali(temperature), Masetti(temperature, doping) {}
+        MasettiCanali(SensorMaterial material, double temperature, bool doping)
+            : JacoboniCanali(material, temperature), Canali(material, temperature), Masetti(material, temperature, doping) {}
 
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
             double masetti = Masetti::operator()(type, efield_mag, doping);
@@ -251,7 +262,7 @@ namespace allpix {
      */
     class Arora : public MobilityModel {
     public:
-        Arora(double temperature, bool doping)
+        Arora(SensorMaterial material, double temperature, bool doping)
             : electron_mumin_(Units::get(88 * std::pow(temperature / 300, -0.57), "cm*cm/V/s")),
               electron_mu0_(Units::get(7.4e8 * std::pow(temperature, -2.33), "cm*cm/V/s")),
               electron_nref_(Units::get(1.26e17 * std::pow(temperature / 300, 2.4), "/cm/cm/cm")),
@@ -261,6 +272,9 @@ namespace allpix {
               alpha_(0.88 * std::pow(temperature / 300, -0.146)) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
+            }
+            if(material != SensorMaterial::SILICON) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
             }
         }
 
@@ -291,9 +305,13 @@ namespace allpix {
      */
     class RuchKino : virtual public MobilityModel {
     public:
-        RuchKino()
+        RuchKino(SensorMaterial material)
             : E0_gaas_(Units::get(3100.0, "V/cm")), mu_e_gaas_(Units::get(7600.0, "cm*cm/V/s")),
-              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {}
+              Ec_gaas_(Units::get(1360.0, "V/cm")), mu_h_gaas_(Units::get(320.0, "cm*cm/V/s")) {
+            if(material != SensorMaterial::GALLIUM_ARSENIDE) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
+            }
+        }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
@@ -487,21 +505,21 @@ namespace allpix {
                 auto model = config.get<std::string>("mobility_model");
                 auto temperature = config.get<double>("temperature");
                 if(model == "jacoboni") {
-                    model_ = std::make_unique<JacoboniCanali>(temperature);
+                    model_ = std::make_unique<JacoboniCanali>(material, temperature);
                 } else if(model == "canali") {
-                    model_ = std::make_unique<Canali>(temperature);
+                    model_ = std::make_unique<Canali>(material, temperature);
                 } else if(model == "hamburg") {
-                    model_ = std::make_unique<Hamburg>(temperature);
+                    model_ = std::make_unique<Hamburg>(material, temperature);
                 } else if(model == "hamburg_highfield") {
-                    model_ = std::make_unique<HamburgHighField>(temperature);
+                    model_ = std::make_unique<HamburgHighField>(material, temperature);
                 } else if(model == "masetti") {
-                    model_ = std::make_unique<Masetti>(temperature, doping);
+                    model_ = std::make_unique<Masetti>(material, temperature, doping);
                 } else if(model == "masetti_canali") {
-                    model_ = std::make_unique<MasettiCanali>(temperature, doping);
+                    model_ = std::make_unique<MasettiCanali>(material, temperature, doping);
                 } else if(model == "arora") {
-                    model_ = std::make_unique<Arora>(temperature, doping);
+                    model_ = std::make_unique<Arora>(material, temperature, doping);
                 } else if(model == "ruch_kino") {
-                    model_ = std::make_unique<RuchKino>();
+                    model_ = std::make_unique<RuchKino>(material);
                 } else if(model == "quay") {
                     model_ = std::make_unique<Quay>(material, temperature);
                 } else if(model == "constant") {
