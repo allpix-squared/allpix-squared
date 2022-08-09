@@ -47,6 +47,7 @@ namespace allpix {
         CADMIUM_ZINC_TELLURIDE, ///< Cadmium Zinc Telluride
         DIAMOND,                ///< Diamond
         SILICON_CARBIDE,        ///< Silicon Carbide
+        GALLIUM_NITRIDE,        ///< Gallium Nitride
     };
 
     /**

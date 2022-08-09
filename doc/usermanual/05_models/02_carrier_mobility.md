@@ -319,6 +319,38 @@ references are listed in the table below.
 |                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
 |                  | $`\gamma`$                                                          | $` 1.0`$            | $` 2.1`$            | \[[@LandoltBornstein]\]          |
 
+## Levinshtein Mobility
+
+The Levinshtein mobility model describes the mobility of electron and holes in Gallium Nitride. The publication \[[@Levinshtein]\] models the electron and hole mobilities as a function of doping concentration and temperature. The temperature dependent model follows the relation
+
+```math
+\begin{aligned}
+\mu_e (T, N) &= \frac{\mu_{max,e}}{\frac{1}{B_e(N) \left(T/T_0\right)^{\beta_e}} + \left(\frac{T}{T_0}\right)^{\alpha_e}} \\
+\mu_h (T, N) &= \frac{\mu_{max,h}}{\frac{1}{B_h(N)} + \left(\frac{T}{T_0}\right)^{\alpha_h}} \\
+B_{i} (N)    &= \left[ \frac{\mu_{min,i}+\mu_{max,i}\left(\frac{N_{ref,i}}{N}\right)^{\gamma_i}}{\mu_{max,i}-\mu_{min,i}} \right]\bigg\rvert_{T=T_0}
+\end{aligned}
+```
+
+as taken from equations 6 and 7. The following parameters in use are taken from tables 1 and 2 in the reference publication:
+
+```math
+\begin{aligned}
+\mu\_{max,e} &= 1000 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+\mu\_{min,e} &= 55 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+N_{ref,e}    &= 2 \times 10^17 \\
+\alpha_e     &= 2.0 \\
+\beta_e      &= 0.7 \\
+\gamma_e     &= 1.0 \\
+\mu\_{max,h} &= 170 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+\mu\_{min,h} &= 3 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+N_{ref,h}    &= 3 \times 10^17 \\
+\alpha_h     &= 5.0 \\
+\gamma_h     &= 2.0
+\end{aligned}
+```
+
+This model can be selected in the configuration file via the parameter `mobility_model = "levinshtein"`.
+
 ## Constant Mobility
 
 Some simulations require constant charge carrier mobility values $`\mu = \text{const}`$. This can be simulated with this
@@ -395,4 +427,5 @@ all corresponding features, mathematical expressions and constants.
 [@quay]: https://doi.org/10.1016/S1369-8001(00)00015-9
 [@omar]: https://doi.org/10.1016/0038-1101(87)90063-3
 [@LandoltBornstein]: https://doi.org/10.1007/b80447
+[@Levinshtein]: https://doi.org/10.1016/S0038-1101(02)00256-3
 [@rootformula]: https://root.cern.ch/doc/master/classTFormula.html

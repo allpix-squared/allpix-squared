@@ -25,6 +25,7 @@ composition and of vendors. The sources for the chosen default values are provid
 | Silicon                                              | 3.64            | 0.115       | \[[@chargecreation], [@fano]\]         |
 | Germanium                                            | 2.97            | 0.112       | \[[@Germanium_Creation_Fano]\]         |
 | Gallium Arsenide                                     | 4.2             | 0.14        | \[[@GaAs_Fano]\]                       |
+| Gallium Nitride                                      | 8.33            | 0.07        | \[[@GaN_Creation_Fano]\]               |
 | Cadmium Telluride                                    | 4.43            | 0.24        | \[[@CdTe_Creation], [@CdTe_Fano]\]     |
 | Cadmium Zinc Telluride ($`\ce{Cd_{0.8}Zn_{0.2}Te}`$) | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
 | Diamond                                              | 13.1            | 0.382       | \[[@Diamond_Creation_Fano]\]           |
@@ -40,6 +41,7 @@ respective module.
 [@fano]: https://doi.org/10.1103/PhysRevB.22.5565
 [@Germanium_Creation_Fano]: https://doi.org/10.1016/0883-2889(91)90002-I
 [@GaAs_Fano]: https://doi.org/10.1063/1.1406546
+[@GaN_Creation_Fano]:https://etd.ohiolink.edu/apexprod/rws_etd/send_file/send?accession=osu1448405475
 [@CdTe_Creation]: https://doi.org/10.1016/0029-554X(74)90662-4
 [@CdTe_Fano]: https://doi.org/10.1016/j.nima.2018.09.025
 [@CdZnTe_Creation]: https://doi.org/10.1016/j.astropartphys.2021.102563

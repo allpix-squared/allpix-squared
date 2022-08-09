@@ -390,6 +390,55 @@ namespace allpix {
 
     /**
      * @ingroup Models
+     * @brief Levinshtein mobility models for charge carriers in gallium nitride
+     *
+     * Model and parameters are based on https://doi.org/10.1016/S0038-1101(02)00256-3
+     */
+    class Levinshtein : public MobilityModel {
+    public:
+        Levinshtein(SensorMaterial material, double temperature, bool doping)
+            : electron_mumin_(Units::get(55, "cm*cm/V/s")), electron_mumax_(Units::get(1000, "cm*cm/V/s")),
+              electron_nref_(Units::get(2e17, "/cm/cm/cm")), electron_t_alpha_(std::pow(temperature / 300, 2.)),
+              electron_t_beta_(std::pow(temperature / 300, 0.7)), electron_gamma_(1.),
+              hole_mumin_(Units::get(3, "cm*cm/V/s")), hole_mumax_(Units::get(170, "cm*cm/V/s")),
+              hole_nref_(Units::get(3e17, "/cm/cm/cm")), hole_t_alpha_(std::pow(temperature / 300, 5.)), hole_gamma_(2.) {
+            if(!doping) {
+                throw ModelUnsuitable("No doping profile available");
+            }
+            if(material != SensorMaterial::GALLIUM_NITRIDE) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
+            }
+        }
+
+        double operator()(const CarrierType& type, double temperature, double doping) const override {
+            if(type == CarrierType::ELECTRON) {
+                double B =
+                    (electron_mumin_ + electron_mumax_ * std::pow(electron_nref_ / std::fabs(doping), electron_gamma_)) /
+                    (electron_mumax_ - electron_mumin_);
+                return electron_mumax_ / (1 / (B * electron_t_beta_) + electron_t_alpha_);
+            } else {
+                double B = (hole_mumin_ + hole_mumax_ * std::pow(hole_nref_ / std::fabs(doping), hole_gamma_)) /
+                           (hole_mumax_ - hole_mumin_);
+                return hole_mumax_ / (1 / B + std::pow(temperature / 300, hole_t_alpha_));
+            }
+        };
+
+    private:
+        double electron_mumin_;
+        double electron_mumax_;
+        double electron_nref_;
+        double electron_t_alpha_;
+        double electron_t_beta_;
+        double electron_gamma_;
+        double hole_mumin_;
+        double hole_mumax_;
+        double hole_nref_;
+        double hole_t_alpha_;
+        double hole_gamma_;
+    };
+
+    /**
+     * @ingroup Models
      * @brief Constant mobility of electrons and holes
      */
     class ConstantMobility : public MobilityModel {
@@ -504,6 +553,8 @@ namespace allpix {
                     model_ = std::make_unique<RuchKino>();
                 } else if(model == "quay") {
                     model_ = std::make_unique<Quay>(material, temperature);
+                } else if(model == "levinshtein") {
+                    model_ = std::make_unique<Levinshtein>(material, temperature, doping);
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantMobility>(config.get<double>("mobility_electron"),
                                                                 config.get<double>("mobility_hole"));
