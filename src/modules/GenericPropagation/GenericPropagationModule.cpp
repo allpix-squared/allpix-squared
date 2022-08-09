@@ -122,7 +122,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
         LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
     }
 
-    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME

@@ -103,7 +103,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
-        auto boltzmann_kT = Units::get(8.6173e-5, "eV/K") * config_.get<double>("temperature");
+        auto boltzmann_kT = Units::get(8.6173333e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
