@@ -30,6 +30,12 @@ namespace allpix {
          * @param seed2 Second event seed
          */
         void Run(G4int n_event, uint64_t seed1, uint64_t seed2); // NOLINT
+
+        /**
+         * @brief Overriding G4RunManager::AbortRun so as to reset the state to G4State_Idle in order to allow the next event
+         * to run BeamOn
+         */
+        void AbortRun(G4bool softAbort) override;
     };
 } // namespace allpix
 

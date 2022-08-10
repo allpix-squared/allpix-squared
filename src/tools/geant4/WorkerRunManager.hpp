@@ -44,6 +44,12 @@ namespace allpix {
         void InitializeGeometry() override;
 
         /**
+         * @brief Overriding G4RunManager::AbortRun so as to reset the state to G4State_Idle in order to allow the next event
+         * to run BeamOn
+         */
+        void AbortRun(G4bool softAbort) override;
+
+        /**
          * @brief Factory method to create new worker for calling thread.
          *
          * Creates a new worker and initialize it to be used by the calling thread.

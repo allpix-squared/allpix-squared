@@ -310,32 +310,42 @@ void DepositionGeant4Module::run(Event* event) {
     auto seed2 = event->getRandomNumber();
     LOG(DEBUG) << "Seeding Geant4 event with seeds " << seed1 << " " << seed2;
 
-    if(multithreadingEnabled()) {
-        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
-        run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
-    } else {
-        auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
-        run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
-    }
-
-    uint64_t last_event_num = last_event_num_.load();
-    last_event_num_.compare_exchange_strong(last_event_num, event->number);
-
-    track_info_manager_->createMCTracks();
-    track_info_manager_->dispatchMessage(this, messenger_, event);
-
-    // Dispatch the necessary messages
-    for(auto& sensor : sensors_) {
-        sensor->dispatchMessages(this, messenger_, event);
-
-        // Fill output plots if requested:
-        if(output_plots_) {
-            double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
-            charge_per_event_[sensor->getName()]->Fill(charge);
-
-            double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
-            energy_per_event_[sensor->getName()]->Fill(deposited_energy);
+    try {
+        if(multithreadingEnabled()) {
+            auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+            run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
+        } else {
+            auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
+            run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
         }
+
+        uint64_t last_event_num = last_event_num_.load();
+        last_event_num_.compare_exchange_strong(last_event_num, event->number);
+
+        track_info_manager_->createMCTracks();
+        track_info_manager_->dispatchMessage(this, messenger_, event);
+
+        // Dispatch the necessary messages
+        for(auto& sensor : sensors_) {
+            sensor->dispatchMessages(this, messenger_, event);
+
+            // Fill output plots if requested:
+            if(output_plots_) {
+                double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
+                charge_per_event_[sensor->getName()]->Fill(charge);
+
+                double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
+                energy_per_event_[sensor->getName()]->Fill(deposited_energy);
+            }
+        }
+    } catch(AbortEventException& e) {
+        // Clear charge deposits of all sensors
+        for(auto& sensor : sensors_) {
+            sensor->clearEventInfo();
+        }
+        run_manager_g4_->AbortRun();
+        track_info_manager_->resetTrackInfoManager();
+        throw;
     }
 
     track_info_manager_->resetTrackInfoManager();

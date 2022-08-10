@@ -12,6 +12,8 @@
 #include "RunManager.hpp"
 #include "G4LoggingDestination.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <array>
 
 #include <G4StateManager.hh>
@@ -30,10 +32,31 @@ RunManager::RunManager() {
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
+    LOG(DEBUG) << "Current Geant4 state: " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
+
     // Set the event seeds - with a zero-terminated list:
     std::array<long, 3> seeds{static_cast<long>(seed1 % LONG_MAX), static_cast<long>(seed2 % LONG_MAX), 0};
     G4Random::setTheSeeds(&seeds[0], -1);
 
     // Call the RunManager's BeamOn
     G4RunManager::BeamOn(n_event);
+}
+
+void RunManager::AbortRun(bool softAbort) {
+    // This method is valid only for GeomClosed or EventProc state
+    G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {
+        runAborted = true;
+        if(currentState == G4State_EventProc && !softAbort) {
+            currentEvent->SetEventAborted();
+            eventManager->AbortCurrentEvent();
+            LOG(TRACE) << "Aborted Geant4 event";
+        }
+        // Ready for new event, set the state back to G4State_Idle
+        G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
+        LOG(DEBUG) << "Reset Geant4 state to "
+                   << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
+    } else {
+        LOG(WARNING) << "Run is not in progress. AbortRun() ignored." << G4endl;
+    }
 }

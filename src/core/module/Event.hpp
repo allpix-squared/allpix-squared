@@ -74,6 +74,12 @@ namespace allpix {
          */
         uint64_t getRandomNumber() { return getRandomEngine()(); }
 
+        /**
+         * @brief Returns the current seed for the ranom number generator
+         * @return The random seed of the current event
+         */
+        uint64_t getSeed() const { return seed_; }
+
     private:
         /**
          * @brief Sets the random engine and seed it to be used by this event

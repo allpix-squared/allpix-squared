@@ -714,6 +714,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     // Push all events to the thread pool
     std::atomic<uint64_t> finished_events{0};
+    std::atomic<uint64_t> aborted_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1u);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
@@ -741,11 +742,12 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-        auto event_function_with_module = [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events](
-                                              std::shared_ptr<Event> event,
-                                              ModuleList::iterator module_iter,
-                                              long double event_time,
-                                              auto&& self_func) mutable -> void {
+        auto event_function_with_module =
+            [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &aborted_events](
+                std::shared_ptr<Event> event,
+                ModuleList::iterator module_iter,
+                long double event_time,
+                auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -783,6 +785,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 // Run module
                 bool stop = false;
+                bool abort = false;
                 try {
                     if(module->require_sequence() && event_num != thread_pool_->minimumUncompleted()) {
                         stop = true;
@@ -791,6 +794,9 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     }
                 } catch(const MissingDependenciesException& e) {
                     stop = true;
+                } catch(const AbortEventException& e) {
+                    LOG(WARNING) << "Event aborted:" << std::endl << e.what();
+                    abort = true;
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
                     LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
@@ -810,6 +816,12 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 if(plot) {
                     this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
+                }
+
+                if(abort) {
+                    // Break module execution loop:
+                    aborted_events++;
+                    break;
                 }
 
                 if(stop) {
@@ -864,6 +876,10 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
     global_config.set<uint64_t>("number_of_events", finished_events);
+
+    if(aborted_events > 0) {
+        LOG(WARNING) << "Aborted " << aborted_events << " events in this run";
+    }
 
     auto end_time = std::chrono::steady_clock::now();
     total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();

@@ -80,8 +80,11 @@ namespace allpix {
         std::unique_ptr<TFile> output_file_;
         std::string output_file_name_{};
 
-        // Last event processed
-        uint64_t last_event_{0};
+        // Current event
+        uint64_t current_event_{0};
+
+        // Current random seed
+        uint64_t current_seed_{0};
 
         // List of trees that are stored in data file
         std::map<std::string, std::unique_ptr<TTree>> trees_;

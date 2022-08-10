@@ -54,6 +54,11 @@ void ROOTObjectWriterModule::initialize() {
     output_file_ = std::make_unique<TFile>(output_file_name_.c_str(), "RECREATE");
     output_file_->cd();
 
+    // Create tree to hold Event information
+    trees_.emplace("Event", std::make_unique<TTree>("Event", "Tree of event info"));
+    trees_["Event"]->Branch("ID", &current_event_);
+    trees_["Event"]->Branch("seed", &current_seed_);
+
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
@@ -116,6 +121,10 @@ void ROOTObjectWriterModule::run(Event* event) {
         }
     }
 
+    // Add event data
+    current_event_ = event->number;
+    current_seed_ = event->getSeed();
+
     // Generate trees and index data
     for(auto& pair : messages) {
         auto& message = pair.first;
@@ -162,17 +171,18 @@ void ROOTObjectWriterModule::run(Event* event) {
                 branch_name.c_str(), (std::string("std::vector<") + class_name_with_namespace + "*>").c_str(), addr);
 
             // Prefill new tree or new branch with empty records for all events that were missed since the start
-            if(last_event_ > 0) {
+            auto last_event = trees_["Event"]->GetEntries();
+            if(last_event > 0) {
                 if(new_tree) {
-                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event_ << " empty events";
-                    for(uint64_t i = 0; i < last_event_; ++i) {
+                    LOG(DEBUG) << "Pre-filling new tree of " << class_name << " with " << last_event << " empty events";
+                    for(Long64_t i = 0; i < last_event; ++i) {
                         trees_[class_name]->Fill();
                     }
                 } else {
-                    LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with " << last_event_
+                    LOG(DEBUG) << "Pre-filling new branch " << branch_name << " of " << class_name << " with " << last_event
                                << " empty events";
                     auto* branch = trees_[class_name]->GetBranch(branch_name.c_str());
-                    for(uint64_t i = 0; i < last_event_; ++i) {
+                    for(Long64_t i = 0; i < last_event; ++i) {
                         branch->Fill();
                     }
                 }
@@ -192,9 +202,6 @@ void ROOTObjectWriterModule::run(Event* event) {
 
     LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
-
-    // Save last event number for trees created later
-    last_event_ = event->number;
 
     // Fill the tree with the current received messages
     for(auto& tree : trees_) {

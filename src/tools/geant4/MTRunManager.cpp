@@ -13,6 +13,8 @@
 #include "G4LoggingDestination.hpp"
 #include "WorkerRunManager.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
 
@@ -30,6 +32,8 @@ MTRunManager::MTRunManager() {
 }
 
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
+
+    LOG(DEBUG) << "Current Geant4 state: " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
 
     // Seed the worker run manager for this event:
     worker_run_manager_->seedsQueue.push(static_cast<long>(seed1 % LONG_MAX));
@@ -66,4 +70,9 @@ void MTRunManager::TerminateForThread() { // NOLINT
         delete worker_run_manager_;
         worker_run_manager_ = nullptr;
     }
+}
+
+void MTRunManager::AbortRun(bool softAbort) {
+    // Call the AbortRun() method of the worker
+    worker_run_manager_->AbortRun(softAbort);
 }
