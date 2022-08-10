@@ -13,7 +13,7 @@ Reads all messages dispatched by the framework that contain Allpix objects. Ever
 
 If the same type of messages is dispatched multiple times, it is combined and written to the same tree. Thus, the information that they were separate messages is lost. It is also currently not possible to limit the data that is written to file. If only a subset of the objects is needed, the rest of the data should be discarded afterwards.
 
-The event number and the event seed for the random number generator is written to a tree named Event.
+The event number and the event seed for the random number generator are written to a tree named Event.
 
 In addition to the objects, both the configuration and the geometry setup are written to the ROOT file. The main configuration file is copied directly and all key/value pairs are written to a directory *config* in a subdirectory with the name of the corresponding module. All the detectors are written to a subdirectory with the name of the detector in the top directory *detectors*. Every detector contains the position, rotation matrix and the detector model (with all key/value pairs stored in a similar way as the main configuration).
 
