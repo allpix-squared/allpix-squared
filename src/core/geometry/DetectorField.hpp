@@ -21,6 +21,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "DetectorModel.hpp"
 #include "objects/Pixel.hpp"
 #include "tools/ROOT.h"
 
@@ -35,6 +36,28 @@ namespace allpix {
         LINEAR,   ///< Linear field (linearity determined by function)
         GRID,     ///< Field supplied through a regularized grid
         CUSTOM,   ///< Custom field function
+    };
+
+    /**
+     * @brief Type of field maps
+     */
+    enum class FieldMapping {
+        PIXEL_FULL = 0,     ///< The field map spans the full pixel plane
+        PIXEL_FULL_INVERSE, ///< The field map spans the full pixel plane, but pixel centers are at field corners
+        PIXEL_HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
+        PIXEL_HALF_RIGHT,   ///< The field map spans the right half of the volume and is mirrored along x
+        PIXEL_HALF_TOP,     ///< The field map spans the top half of the volume and is mirrored along y
+        PIXEL_HALF_BOTTOM,  ///< The field map spans the bottom half of the volume and is mirrored along y
+        PIXEL_QUADRANT_I,   ///< The field map spans the top right quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_II,  ///< The field map spans the top left quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_III, ///< The field map spans the lower left quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        PIXEL_QUADRANT_IV,  ///< The field map spans the lower right quadrant of the volume and is mirrored to the other
+                            ///< quadrants
+        SENSOR, ///< The field is mapped to the full sensor, starting at the local coordinate origin. The field is
+                ///< mirrored at its edges.
     };
 
     /**
@@ -70,7 +93,7 @@ namespace allpix {
          * @brief Check if the field is valid and either a field grid or a field function is configured
          * @return Boolean indicating field validity
          */
-        bool isValid() const { return function_ || (dimensions_[0] != 0 && dimensions_[1] != 0 && dimensions_[2] != 0); };
+        bool isValid() const { return function_ || (bins_[0] != 0 && bins_[1] != 0 && bins_[2] != 0); };
 
         /**
          * @brief Return the type of field
@@ -100,13 +123,17 @@ namespace allpix {
         /**
          * @brief Set the field in the detector using a grid
          * @param field Flat array of the field
-         * @param dimensions The dimensions of the flat field array
-         * @param scales The actual physical extent of the field in each direction in x and y
-         * @param offset Offset of the field in x and y, given in physical units
+         * @param bins The bins of the flat field array
+         * @param size Physical extent of the field
+         * @param mapping Specification of the mapping of the field onto the pixel plane
+         * @param scales Scaling factors for the field size, given in fractions of the field size in x and y
+         * @param offset Offset of the field from the pixel center, given in fractions of the field size in x and y
          * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
          */
         void setGrid(std::shared_ptr<std::vector<double>> field,
-                     std::array<size_t, 3> dimensions,
+                     std::array<size_t, 3> bins,
+                     std::array<double, 3> size,
+                     FieldMapping mapping,
                      std::array<double, 2> scales,
                      std::array<double, 2> offset,
                      std::pair<double, double> thickness_domain);
@@ -122,19 +149,10 @@ namespace allpix {
 
     private:
         /**
-         * @brief Set the relevant parameters from the detector model this field is used for
-         * @param sensor_center The center of the sensor in local coordinates
-         * @param sensor_size The extend of the sensor
-         * @param pixel_pitch the pitch in X and Y of a single pixel
+         * @brief Set the detector model this field is used for
+         * @param model The detector model
          */
-        void set_model_parameters(const ROOT::Math::XYZPoint& sensor_center,
-                                  const ROOT::Math::XYZVector& sensor_size,
-                                  const ROOT::Math::XYVector& pixel_pitch) {
-            sensor_center_ = sensor_center;
-            sensor_size_ = sensor_size;
-            pixel_size_ = pixel_pitch;
-            model_initialized_ = true;
-        }
+        void set_model(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
 
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
@@ -147,21 +165,25 @@ namespace allpix {
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
          * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
          * @param extrapolate_z Switch to either extrapolate the field along z when outside the grid or return zero
+         * @param flip_x Flip vector component x of resulting field vector
+         * @param flip_y Flip vector component y of resulting field vector
          * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const ROOT::Math::XYZPoint& dist, const bool extrapolate_z = false) const;
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist,
+                              const bool extrapolate_z = false,
+                              const bool flip_x = false,
+                              const bool flip_y = false) const;
 
         /**
          * Field properties
-         * * Dimensions of the field map (bins in x, y, z)
-         * * Scale of the field in x and y direction, defaults to 1, 1, i.e. to one full pixel cell, provided in fractions
-         *   of the pixel pitch.
-         * * Offset of the field from the pixel edge, e.g. when using fields centered at a pixel corner instead of the center
-         *   Values provided as absolute shifts in um.
+         * * bins of the field map (bins in x, y, z)
+         * * Mapping of the field onto the pixel cell
+         * * Scale of the field in x and y direction, defaults to one full pixel cell
          */
-        std::array<size_t, 3> dimensions_{};
-        std::array<double_t, 2> scales_{{1., 1.}};
-        std::array<double_t, 2> offset_{{0., 0.}};
+        std::array<size_t, 3> bins_{};
+        FieldMapping mapping_{FieldMapping::PIXEL_FULL};
+        std::array<double, 2> normalization_{{1., 1.}};
+        std::array<double, 2> offset_{{0., 0.}};
 
         /**
          * Field definition
@@ -183,10 +205,7 @@ namespace allpix {
         /*
          * Relevant parameters from the detector model for this field
          */
-        ROOT::Math::XYVector pixel_size_{};
-        ROOT::Math::XYZPoint sensor_center_{};
-        ROOT::Math::XYZVector sensor_size_{};
-        bool model_initialized_{};
+        std::shared_ptr<DetectorModel> model_;
     };
 } // namespace allpix
 

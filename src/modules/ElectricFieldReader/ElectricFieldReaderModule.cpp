@@ -68,13 +68,22 @@ void ElectricFieldReaderModule::initialize() {
 
     // Calculate the field depending on the configuration
     if(field_model == ElectricField::MESH) {
-        // Read the field scales from the configuration, defaulting to 1.0x1.0 pixel cell:
-        auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
-        // FIXME Add sanity checks for scales here
-        LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
-        std::array<double, 2> field_scale{{scales.x(), scales.y()}};
+        // Read field mapping from configuration
+        auto field_mapping = config_.get<FieldMapping>("field_mapping");
+        LOG(DEBUG) << "Electric field maps to " << magic_enum::enum_name(field_mapping);
+        auto field_data = read_field();
 
-        // Get the field offset in fractions of the pixel pitch, default is 0.0x0.0, i.e. starting at pixel boundary:
+        // By default, set field scale from physical extent read from field file:
+        std::array<double, 2> field_scale{{1.0, 1.0}};
+        // Read the field scales from the configuration if the key is set:
+        if(config_.has("field_scale")) {
+            auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+            // FIXME Add sanity checks for scales here
+            LOG(DEBUG) << "Electric field will be scaled with factors " << scales;
+            field_scale = {{scales.x(), scales.y()}};
+        }
+
+        // Get the field offset in fractions of the field size, default is 0.0x0.0, i.e. no offset
         auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
         if(offset.x() > 1.0 || offset.y() > 1.0) {
             throw InvalidValueError(
@@ -83,15 +92,14 @@ void ElectricFieldReaderModule::initialize() {
         if(offset.x() < 0.0 || offset.y() < 0.0) {
             throw InvalidValueError(config_, "field_offset", "offsets for the electric field have to be positive");
         }
-        LOG(DEBUG) << "Electric field starts with offset " << offset << " to pixel boundary";
-        std::array<double, 2> field_offset{{model->getPixelSize().x() * offset.x(), model->getPixelSize().y() * offset.y()}};
+        LOG(DEBUG) << "Electric field has offset of " << offset << " fractions of the field size";
 
-        auto field_data = read_field();
         detector_->setElectricFieldGrid(field_data.getData(),
                                         field_data.getDimensions(),
                                         field_data.getSize(),
+                                        field_mapping,
                                         field_scale,
-                                        field_offset,
+                                        {{offset.x(), offset.y()}},
                                         thickness_domain);
     } else if(field_model == ElectricField::CONSTANT) {
         LOG(TRACE) << "Adding constant electric field";

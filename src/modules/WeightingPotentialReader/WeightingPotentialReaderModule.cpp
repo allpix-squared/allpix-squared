@@ -48,15 +48,40 @@ void WeightingPotentialReaderModule::initialize() {
 
     // Calculate the potential depending on the configuration
     if(field_model == WeightingPotential::MESH) {
+        // Read field mapping from configuration
+        auto field_mapping = config_.get<FieldMapping>("field_mapping");
+        LOG(DEBUG) << "Weighting potential maps to " << magic_enum::enum_name(field_mapping);
         auto field_data = read_field();
+
+        // By default, set field scale from physical extent read from field file:
+        std::array<double, 2> field_scale{{1.0, 1.0}};
+        // Read the field scales from the configuration if the key is set:
+        if(config_.has("field_scale")) {
+            auto scales = config_.get<ROOT::Math::XYVector>("field_scale", {1.0, 1.0});
+            // FIXME Add sanity checks for scales here
+            LOG(DEBUG) << "Weighting potential will be scaled with factors " << scales;
+            field_scale = {{scales.x(), scales.y()}};
+        }
+
+        // Get the field offset in fractions of the field size, default is 0.0x0.0, i.e. no offset
+        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
+        if(offset.x() > 1.0 || offset.y() > 1.0) {
+            throw InvalidValueError(config_,
+                                    "field_offset",
+                                    "shifting weighting potential by more than one pixel (offset > 1.0) is not allowed");
+        }
+        if(offset.x() < 0.0 || offset.y() < 0.0) {
+            throw InvalidValueError(config_, "field_offset", "offsets for the weighting potential have to be positive");
+        }
+        LOG(DEBUG) << "Weighting potential has offset of " << offset << " fractions of the field size";
 
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
                                              field_data.getSize(),
-                                             std::array<double, 2>{{field_data.getSize()[0] / model->getPixelSize().x(),
-                                                                    field_data.getSize()[1] / model->getPixelSize().y()}},
-                                             std::array<double, 2>{{0, 0}},
+                                             field_mapping,
+                                             field_scale,
+                                             {{offset.x(), offset.y()}},
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
@@ -117,87 +142,95 @@ WeightingPotentialReaderModule::get_pad_potential_function(const ROOT::Math::XYV
 void WeightingPotentialReaderModule::create_output_plots() {
     LOG(TRACE) << "Creating output plots";
 
-    auto steps = config_.get<size_t>("output_plots_steps", 500);
-    auto position = config_.get<ROOT::Math::XYPoint>("output_plots_position", ROOT::Math::XYPoint(0, 0));
-
     auto model = detector_->getModel();
 
-    double min = model->getSensorCenter().z() - model->getSensorSize().z() / 2.0;
-    double max = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
+    auto center = model->getPixelCenter(1, 1);
+    auto size =
+        ROOT::Math::XYZVector(3 * model->getPixelSize().x(), 3 * model->getPixelSize().y(), model->getSensorSize().z());
+
+    auto position = config_.get<ROOT::Math::XYPoint>("output_plots_position", {center.x(), center.y()});
+    auto steps = config_.get<size_t>("output_plots_steps", 500);
+
+    double x_min = center.x() - size.x() / 2.0;
+    double x_max = center.x() + size.x() / 2.0;
+    double y_min = center.y() - size.y() / 2.0;
+    double y_max = center.y() + size.y() / 2.0;
+    double z_min = center.z() - size.z() / 2.0;
+    double z_max = center.z() + size.z() / 2.0;
 
     // Create 1D histograms
-    auto* histogram = new TH1F("potential1d", "#phi_{w}/V_{w};z (mm);unit potential", static_cast<int>(steps), min, max);
+    std::string title = "#phi_{w}/V_{w} at " + Units::display(position, {"um"}) + ";z (mm);unit potential";
+    auto* histogram = new TH1F("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
-        double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+        double z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
         auto pos = ROOT::Math::XYZPoint(position.x(), position.y(), z);
 
         // Get potential from detector and fill the histogram
-        auto potential = detector_->getWeightingPotential(pos, Pixel::Index(0, 0));
+        auto potential = detector_->getWeightingPotential(pos, Pixel::Index(1, 1));
         histogram->Fill(z, potential);
     }
 
     // Create 2D histogram
     auto* histogram2Dx = new TH2F("potential_x",
-                                  "#phi_{w}/V_{w};x (mm); z (mm); unit potential",
+                                  "#phi_{w}/V_{w} of Pixel(1,1);x (mm); z (mm); unit potential",
                                   static_cast<int>(steps),
-                                  -1.5 * model->getPixelSize().x(),
-                                  1.5 * model->getPixelSize().x(),
+                                  x_min,
+                                  x_max,
                                   static_cast<int>(steps),
-                                  min,
-                                  max);
+                                  z_min,
+                                  z_max);
 
     // Create 2D histogram
     auto* histogram2Dy = new TH2F("potential_y",
-                                  "#phi_{w}/V_{w};y (mm); z (mm); unit potential",
+                                  "#phi_{w}/V_{w} of Pixel(1,1);y (mm); z (mm); unit potential",
                                   static_cast<int>(steps),
-                                  -1.5 * model->getPixelSize().y(),
-                                  1.5 * model->getPixelSize().y(),
+                                  y_min,
+                                  y_max,
                                   static_cast<int>(steps),
-                                  min,
-                                  max);
+                                  z_min,
+                                  z_max);
 
     auto* histogram2Dz = new TH2F("potential_z",
-                                  "#phi_{w}/V_{w};x (mm); y (mm); unit potential",
+                                  "#phi_{w}/V_{w} of Pixel(1,1);x (mm); y (mm); unit potential",
                                   static_cast<int>(steps),
-                                  -1.5 * model->getPixelSize().x(),
-                                  1.5 * model->getPixelSize().x(),
+                                  x_min,
+                                  x_max,
                                   static_cast<int>(steps),
-                                  -1.5 * model->getPixelSize().y(),
-                                  1.5 * model->getPixelSize().y());
+                                  y_min,
+                                  y_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
-        double z = min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (max - min);
+        double z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
 
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double x = -0.5 * model->getPixelSize().x() +
-                       ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
-            double y = -0.5 * model->getPixelSize().y() +
-                       ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().y();
+            double x =
+                center.x() - size.x() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.x();
+            double y =
+                center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
 
-            // Get potential from detector and fill histogram. We calculate relative to pixel (1,0) so we need to shift:
-            auto potential_x = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, 0, z), Pixel::Index(1, 0));
-            auto potential_y = detector_->getWeightingPotential(ROOT::Math::XYZPoint(0, y, z), Pixel::Index(0, 1));
+            // Get potential from detector and fill histogram. We calculate relative to pixel (1,1) so we need to shift:
+            auto potential_x = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, center.y(), z), Pixel::Index(1, 1));
+            auto potential_y = detector_->getWeightingPotential(ROOT::Math::XYZPoint(center.x(), y, z), Pixel::Index(1, 1));
 
-            histogram2Dx->Fill(x - model->getPixelSize().x(), z, potential_x);
-            histogram2Dy->Fill(y - model->getPixelSize().y(), z, potential_y);
+            histogram2Dx->Fill(x, z, potential_x);
+            histogram2Dy->Fill(y, z, potential_y);
         }
     }
 
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
-        double x = -0.5 * model->getPixelSize().x() +
-                   ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().x();
+        double x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double y = -0.5 * model->getPixelSize().y() +
-                       ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * 3 * model->getPixelSize().y();
+            double y =
+                center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
             auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, 0), Pixel::Index(1, 1));
-            histogram2Dz->Fill(x - model->getPixelSize().x(), y - model->getPixelSize().y(), potential_z);
+            histogram2Dz->Fill(x, y, potential_z);
         }
     }
     LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: done ";
