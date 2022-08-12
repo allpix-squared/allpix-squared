@@ -41,6 +41,16 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
+.centos9:
+    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
+    tags:
+        - docker
+    variables:
+        COMPILER_TYPE: "gcc"
+    before_script:
+        - source .ci/init_x86_64.sh
+        - mkdir -p build/ && cd build/
+
 .docker:
     image: $DOCKER_DEPS_IMAGE
     tags:
@@ -124,6 +134,11 @@ cmp:cc7-llvm:
 cmp:cc8-gcc:
     extends:
         - .centos8
+        - .compile
+
+cmp:cc9-gcc:
+    extends:
+        - .centos9
         - .compile
 
 cmp:macos-clang:
@@ -356,6 +371,23 @@ core:cc8-gcc:
         - .testcore
     needs:
         - job: cmp:cc8-gcc
+          artifacts: true
+
+# CentOS 9
+mod:cc9-gcc:
+    extends:
+        - .centos9
+        - .testmod
+    needs:
+        - job: cmp:cc9-gcc
+          artifacts: true
+
+core:cc9-gcc:
+    extends:
+        - .centos9
+        - .testcore
+    needs:
+        - job: cmp:cc9-gcc
           artifacts: true
 
 # Mac OS
