@@ -292,6 +292,12 @@ void Detector::check_field_match(std::array<double, 3> size,
                      << Units::display(eff_thickness, "um");
     }
 
+    // FIXME this could be done properly in the detector models at some point:
+    if(model_->getPixelType() != Pixel::Type::RECTANGLE) {
+        LOG(INFO) << "Pixels of this detector are not rectangular, will not perform further field matching checks";
+        return;
+    }
+
     // Check that the total field size is n*pitch:
     auto scale_x =
         field_scale[0] * (mapping == FieldMapping::SENSOR || mapping == FieldMapping::PIXEL_FULL ||
