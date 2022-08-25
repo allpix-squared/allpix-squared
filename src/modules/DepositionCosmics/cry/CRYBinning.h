@@ -62,7 +62,7 @@ public:
     //
     // binning myBinning = { 1.0 2.0 3.0 8.0}
     //
-    // with monotonically increaing values describing
+    // with monotonically increasing values describing
     // the bin edges. The last value is the upper limit
     // of the last bin, so there is one more entry required
     // than the # of bins.

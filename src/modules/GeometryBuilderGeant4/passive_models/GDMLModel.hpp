@@ -51,7 +51,7 @@ namespace allpix {
 
         /**
          * @brief Method to build the volumes and add it to the world. Overrides the parent class method to be able to handle
-         * complex structurs with may solids from GDML files
+         * complex structures with may solids from GDML files
          * @param world_log Pointer to the world volume
          */
         void buildVolume(const std::shared_ptr<G4LogicalVolume>& world_log) override {

@@ -89,7 +89,7 @@ elif os.path.isfile(path.join(path.sep, "opt","allpix-squared","lib","libAllpixO
     lib_file_name = path.join(path.sep, "opt","allpix-squared","lib","libAllpixObjects.so")
 
 else:
-    print("WARNING: No Allpix Objects Library found, exitting")
+    print("WARNING: No Allpix Objects Library found, exiting")
     exit(1)
 
 

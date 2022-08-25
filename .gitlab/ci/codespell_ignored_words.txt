@@ -2,6 +2,8 @@
 # Put one word per line and sort alphabetically.
 asai
 hist
+globaly
+localy
 skelton
 synopsys
 te
