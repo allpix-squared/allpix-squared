@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
             std::cout << "\t -h                     display this help text" << std::endl;
             std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
             std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
-            std::cout << "\t -p <plane>             plane to be ploted. xy, yz or zx (default is yz)" << std::endl;
+            std::cout << "\t -p <plane>             plane to be plotted. xy, yz or zx (default is yz)" << std::endl;
             std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
             std::cout << "\t -s                     parsed observable is a scalar field" << std::endl;
             std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;

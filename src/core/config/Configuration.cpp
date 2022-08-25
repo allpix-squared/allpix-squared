@@ -88,7 +88,7 @@ std::string Configuration::getText(const std::string& key, const std::string& de
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
- * For a relative path the absolute path of the configuration file is preprended. Absolute paths are not changed.
+ * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
 std::filesystem::path Configuration::getPath(const std::string& key, bool check_exists) const {
@@ -114,7 +114,7 @@ Configuration::getPathWithExtension(const std::string& key, const std::string& e
 /**
  * @throws InvalidValueError If the path did not exists while the check_exists parameter is given
  *
- * For all relative paths the absolute path of the configuration file is preprended. Absolute paths are not changed.
+ * For all relative paths the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
 // TODO [doc] Document canonicalizing behaviour
 std::vector<std::filesystem::path> Configuration::getPathArray(const std::string& key, bool check_exists) const {

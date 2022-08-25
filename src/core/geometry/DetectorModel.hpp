@@ -71,7 +71,7 @@ namespace allpix {
 
         /**
          * @brief Helper method to determine if this detector model is of a given type
-         * The template parameter needs to be specified specifcally, i.e.
+         * The template parameter needs to be specified specifically, i.e.
          *     if(model->is<PixelDetectorModel>()) { }
          * @return Boolean indication whether this model is of the given type or not
          */
