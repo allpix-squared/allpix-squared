@@ -60,7 +60,7 @@ namespace allpix {
          */
         VisualizationGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
         /**
-         * @brief Destructor applies a workaround for some visualizaton drivers to prevent display during exception handling
+         * @brief Destructor applies a workaround for some visualization drivers to prevent display during exception handling
          */
         ~VisualizationGeant4Module() override;
 

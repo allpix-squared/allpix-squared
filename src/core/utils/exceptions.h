@@ -54,7 +54,7 @@ namespace allpix {
 
     /**
      * @ingroup Exceptions
-     * @brief Errors related to problems ocurring at runtime
+     * @brief Errors related to problems occurring at runtime
      *
      * Problems that could never have been detected at compile time
      */
