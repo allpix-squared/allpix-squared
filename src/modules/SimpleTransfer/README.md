@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "SimpleTransfer"
 description: "Transfers propagated charges to the pixel front-end"
-module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
+module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
 module_input: "PropagatedCharge"
 module_output: "PixelCharge"
