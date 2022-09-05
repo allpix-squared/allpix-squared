@@ -92,7 +92,7 @@ void TransientPropagationModule::initialize() {
     }
 
     if(detector_->getElectricFieldType() == FieldType::LINEAR) {
-        LOG(ERROR) << "This module can produce unphysical results when applying linear electric fields.";
+        LOG(ERROR) << "This module will likely produce unphysical results when applying linear electric fields.";
     }
 
     // Prepare mobility model
