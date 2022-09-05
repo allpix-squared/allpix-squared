@@ -101,7 +101,7 @@ namespace allpix {
                 gdml_daughter->SetRotation(rotation_matrix);
 
                 // Check if color information is available and set it to the daughter volume
-                for(auto aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
+                for(auto& aux : parser_.GetVolumeAuxiliaryInformation(gdml_daughter_log)) {
                     std::transform(aux.type.begin(), aux.type.end(), aux.type.begin(), ::tolower);
                     if(aux.type == "color" || aux.type == "colour") {
                         gdml_daughter_log->SetVisAttributes(G4VisAttributes(get_color(aux.value)));
