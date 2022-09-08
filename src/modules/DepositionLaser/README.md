@@ -5,8 +5,7 @@ title: "DepositionLaser"
 description: "A simplistic deposition generator for charge injection with a laser. Mainly intended for TCT studies simulations."
 module_maintainer: "Daniil Rastorguev (<daniil.rastorguev@desy.de>)"
 module_status: "Immature"
-# module_input: "Input message types (if applicable)"
-# module_output: "Output message types (if applicable)"
+# module_output: "DepositedCharge, MCTrack, MCParticle"
 ---
 
 ## Description
