@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -67,4 +68,45 @@ void DepositionLaserModule::initialize() {
     }
 }
 
-void DepositionLaserModule::run(Event* event) {}
+void DepositionLaserModule::run(Event* event) {
+
+    // Lambda for generating two unit vectors, orthogonal to beam direction:
+    // Adapted from TVector3::Orthogonal()
+    auto orthogonal_pair = [](const ROOT::Math::XYZVector& v) {
+        double xx = v.X() < 0.0 ? -v.X() : v.X();
+        double yy = v.Y() < 0.0 ? -v.Y() : v.Y();
+        double zz = v.Z() < 0.0 ? -v.Z() : v.Z();
+
+        ROOT::Math::XYZVector v1, v2;
+
+        if(xx < yy) {
+            if(xx < zz) {
+                v1 = ROOT::Math::XYZVector(0, v.Z(), -v.Y());
+            } else {
+                v1 = ROOT::Math::XYZVector(v.Y(), -v.X(), 0);
+            }
+        } else {
+            if(yy < zz) {
+                v1 = ROOT::Math::XYZVector(-v.Z(), 0, v.X());
+            } else {
+                v1 = ROOT::Math::XYZVector(v.Y(), -v.X(), 0);
+            }
+        }
+
+        v2 = v.Cross(v1);
+        return std::make_pair<ROOT::Math::XYZVector>(v1.Unit(), v2.Unit());
+    };
+
+    // Lambda for smearing the initial particle position with the beam size
+    auto beam_pos_smearing = [&](auto size) {
+        auto [v1, v2] = orthogonal_pair(beam_direction_);
+        double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+        double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+        return v1 * dx + v2 * dy;
+    };
+
+    // Loop over photons in a single laser pulse
+    for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
+        LOG(DEBUG) << beam_pos_smearing(beam_waist_);
+    }
+}
