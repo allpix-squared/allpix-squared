@@ -92,6 +92,13 @@ namespace allpix {
         if(type_ == FieldType::NONE) {
             return {};
         }
+        // Do not extend into sensor excess
+        if(pos.x() + pixel_size_.x() / 2.0 < 0 || pos.x() + pixel_size_.x() / 2.0 > sensor_size_.x()) {
+            return {};
+        }
+        if(pos.y() + pixel_size_.y() / 2.0 < 0 || pos.y() + pixel_size_.y() / 2.0 > sensor_size_.y()) {
+            return {};
+        }
 
         // Shift the coordinates by the offset configured for the field:
         auto x = pos.x() + offset_[0];
