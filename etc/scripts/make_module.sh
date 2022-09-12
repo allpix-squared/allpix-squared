@@ -32,7 +32,7 @@ read -p "Input message type? " MESSAGETYPE
 # Check that message type exists
 OBJDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 OBJDIR=$OBJDIR/../../src/objects
-if [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
+if [ ! -z "${MESSAGETYPE}"] && [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
 then
   echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
   exit 1
@@ -72,8 +72,9 @@ if [ -z "$MYMAIL" ]; then
     MYMAIL=$(hostname)
 fi
 sed -e "s/Dummy/$MODNAME/g" \
-    -e "s/\*NAME\*/$MYNAME/g" \
-    -e "s/\*EMAIL\*/$MYMAIL/g" \
+    -e "s/A dummy module/$MODDESC/g" \
+    -e "s/John Doe/$MYNAME/g" \
+    -e "s/john\.doe@example\.com/$MYMAIL/g" \
     -e "s/Functional/Immature/g" \
     "$MODDIR/Dummy/README.md" > "$MODDIR/$MODNAME/README.md"
 
@@ -132,10 +133,16 @@ if [ "$sequence" = 1 ]; then
   eval $command
 fi
 
-# Replace the corresponding message type in the header and source file
-command="sed ${opt} \
--e 's/PixelHit/${MESSAGETYPE}/g' \
-$MODDIR/$MODNAME/${MODNAME}Module.*pp"
+if [ ! -z "${MESSAGETYPE}"]; then
+  # Replace the corresponding message type in the header and source file
+  command="sed ${opt} \
+  -e 's/PixelHit/${MESSAGETYPE}/g' \
+  $MODDIR/$MODNAME/${MODNAME}Module.*pp"
+else
+  command="sed ${opt} \
+  -e '/PixelHit/g' \
+  $MODDIR/$MODNAME/${MODNAME}Module.*pp"
+fi
 eval $command
 
 # Print a summary of the module created:
@@ -143,7 +150,9 @@ FINALPATH=`realpath $MODDIR/$MODNAME`
 echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
 echo "Path:   $FINALPATH"
-echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
+if [ ! -z "${MESSAGETYPE}"]; then
+  echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
+fi
 if [ "$sequence" = 1 ]; then
   echo "This module requires sequential processing of events in multithreaded environments."
 fi
