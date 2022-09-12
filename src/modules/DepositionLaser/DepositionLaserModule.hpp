@@ -52,5 +52,11 @@ namespace allpix {
         // General module members
         GeometryManager* geo_manager_;
         Messenger* messenger_;
+
+        // Source parameters
+        ROOT::Math::XYZPoint source_position_{};
+        ROOT::Math::XYZVector beam_direction_{};
+        double beam_waist_;
+        int photon_number_;
     };
 } // namespace allpix
