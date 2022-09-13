@@ -13,6 +13,9 @@
 
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "objects/MCParticle.hpp"
+
+#include "TMath.h"
 
 using namespace allpix;
 
@@ -109,15 +112,58 @@ void DepositionLaserModule::run(Event* event) {
         ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
         LOG(DEBUG) << "Photon " << i_photon + 1 << " of " << photon_number_ << " generated in " << starting_point;
 
+        // Generate starting time in the pulse
+        // FIXME Read pulse duration from the config
+        double time_smear = 1; // ns
+        double starting_time = allpix::normal_distribution<double>(0, time_smear)(event->getRandomEngine());
+
         // Check intersections with every detector
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+        std::vector<MCParticle> mc_particles;
+
         for(auto& detector : detectors) {
             std::string detector_name = detector->getName();
             auto intersection = get_intersection(detector, starting_point, beam_direction_);
             if(intersection) {
-                ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * intersection.value().first;
-                ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * intersection.value().second;
+                // Calculate entry and exit points in global frame
+                double t0 = intersection.value().first;
+                double t1 = intersection.value().second;
+                ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
+                ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
+
+                // Transform entry and exit points to local frame
+                ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
+                ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
+                ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+                auto entry_point_local = transform_center.Inverse()(entry_point);
+                auto exit_point_local = transform_center.Inverse()(exit_point);
+
+                // Calculate time of flight
+
+                // Lambda to calculate time difference
+                auto time_difference = [](const ROOT::Math::XYZPoint& p1, const ROOT::Math::XYZPoint& p2) {
+                    double c = 299.7; // mm per ns
+                    double dist = TMath::Sqrt((p1 - p2).Mag2());
+                    return dist / c;
+                };
+
+                double start_to_entry = time_difference(starting_point, entry_point);
+                double entry_to_exit = time_difference(entry_point, exit_point);
+
+                // Construct an MCParticle of it
+
+                MCParticle p(entry_point_local,
+                             entry_point,
+                             exit_point_local,
+                             exit_point,
+                             22, // photon
+                             0,  // local time
+                             start_to_entry);
+
+                mc_particles.push_back(p);
+
                 LOG(DEBUG) << detector_name << ": entry at " << entry_point << ", exit at " << exit_point;
+
             } else {
                 LOG(DEBUG) << detector_name << ": no intersection";
             }
