@@ -41,6 +41,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Radek Privara, Palacky University Olomouc, [rprivara](https://gitlab.cern.ch/rprivara)
 * Nashad Rahman, The Ohio State University, [nashadroid](https://github.com/nashadroid)
 * Sabita Rao, GSDocs2020 Student, [srao](https://gitlab.cern.ch/srao)
+* Daniil Rastorguev, DESY, [drastorg](https://gitlab.cern.ch/drastorg)
 * Edoardo Rossi, DESY, [edrossi](https://gitlab.cern.ch/edrossi)
 * Jihad Saidi, Université de Genève, [jisaidi](https://gitlab.cern.ch/jisaidi)
 * Andre Sailer, CERN, [sailer](https://gitlab.cern.ch/sailer)
