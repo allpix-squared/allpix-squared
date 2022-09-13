@@ -132,11 +132,8 @@ void DepositionLaserModule::run(Event* event) {
                 ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
 
                 // Transform entry and exit points to local frame
-                ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
-                ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
-                ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
-                auto entry_point_local = transform_center.Inverse()(entry_point);
-                auto exit_point_local = transform_center.Inverse()(exit_point);
+                auto entry_point_local = detector->getLocalPosition(entry_point);
+                auto exit_point_local = detector->getLocalPosition(exit_point);
 
                 // Calculate time of flight
 
@@ -181,6 +178,7 @@ DepositionLaserModule::get_intersection(const std::shared_ptr<const Detector>& d
     // Transformation from locally centered into global coordinate system, consisting of
     // * The rotation into the global coordinate system
     // * The shift from the origin to the detector position
+    // Sensor-centered coordinate system is required for proper clipping!
     ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
     ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
