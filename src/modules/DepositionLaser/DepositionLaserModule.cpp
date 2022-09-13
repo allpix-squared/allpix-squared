@@ -15,7 +15,11 @@
 #include "core/utils/log.h"
 #include "objects/MCParticle.hpp"
 
+#include "boost/random/exponential_distribution.hpp"
+
 #include "TMath.h"
+
+#include <algorithm>
 
 using namespace allpix;
 
@@ -35,7 +39,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     }
 
     if(config_.has("beam_direction")) {
-        beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction");
+        beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
         LOG(DEBUG) << "Beam direction: " << beam_direction_;
     } else {
         throw MissingKeyError("beam_direction", "DepositionLaser");
@@ -110,60 +114,68 @@ void DepositionLaserModule::run(Event* event) {
 
         // Generate starting point in the beam
         ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
-        LOG(DEBUG) << "Photon " << i_photon + 1 << " of " << photon_number_ << " generated in " << starting_point;
+        LOG(DEBUG) << "Photon " << i_photon + 1 << " of " << photon_number_;
+        LOG(DEBUG) << "Generated starting point: " << starting_point;
 
         // Generate starting time in the pulse
         // FIXME Read pulse duration from the config
         double time_smear = 1; // ns
         double starting_time = allpix::normal_distribution<double>(0, time_smear)(event->getRandomEngine());
 
+        // Generate penetration depth
+        // FIXME Use actual pen depth
+        double absorption_length = 0.5; // mm
+        double penetration_depth =
+            boost::random::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
+        LOG(DEBUG) << "Generated penetration depth: " << Units::convert(penetration_depth, "um");
+
         // Check intersections with every detector
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-        std::vector<MCParticle> mc_particles;
+        std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
         for(auto& detector : detectors) {
-            std::string detector_name = detector->getName();
             auto intersection = get_intersection(detector, starting_point, beam_direction_);
             if(intersection) {
-                // Calculate entry and exit points in global frame
-                double t0 = intersection.value().first;
-                double t1 = intersection.value().second;
-                ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
-                ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
-
-                // Transform entry and exit points to local frame
-                auto entry_point_local = detector->getLocalPosition(entry_point);
-                auto exit_point_local = detector->getLocalPosition(exit_point);
-
-                // Calculate time of flight
-
-                // Lambda to calculate time difference
-                auto time_difference = [](const ROOT::Math::XYZPoint& p1, const ROOT::Math::XYZPoint& p2) {
-                    double c = 299.7; // mm per ns
-                    double dist = TMath::Sqrt((p1 - p2).Mag2());
-                    return dist / c;
-                };
-
-                double start_to_entry = time_difference(starting_point, entry_point);
-                double entry_to_exit = time_difference(entry_point, exit_point);
-
-                // Construct an MCParticle of it
-
-                MCParticle p(entry_point_local,
-                             entry_point,
-                             exit_point_local,
-                             exit_point,
-                             22, // photon
-                             0,  // local time
-                             start_to_entry);
-
-                mc_particles.push_back(p);
-
-                LOG(DEBUG) << detector_name << ": entry at " << entry_point << ", exit at " << exit_point;
-
+                intersection_segments.push_back(std::make_pair(detector, intersection.value()));
             } else {
-                LOG(DEBUG) << detector_name << ": no intersection";
+                LOG(DEBUG) << detector->getName() << ": no intersection";
             }
+        }
+
+        // Sort intersection segments along the track, starting from closest to source
+
+        auto comp = []<typename T>(const T& p1, const T& p2) { return p1.second < p2.second; };
+        std::sort(begin(intersection_segments), end(intersection_segments), comp);
+
+        bool hit = false;
+        double t_hit, t0_hit;
+        std::shared_ptr<Detector> d_hit;
+        for(const auto& [detector, points] : intersection_segments) {
+            double t0 = points.first;
+            double t1 = points.second;
+            double distance = t1 - t0;
+
+            ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
+            ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
+            LOG(DEBUG) << detector->getName() << ": travel distance " << Units::convert(distance, "um") << " um, entry at "
+                       << std::setprecision(5) << entry_point << ", exit at " << exit_point;
+
+            // Check for a hit
+            if(penetration_depth > distance) {
+                penetration_depth -= distance;
+            } else {
+                if(!hit) {
+                    hit = true;
+                    t_hit = t0 + penetration_depth;
+                    t0_hit = t0;
+                    d_hit = detector;
+                }
+            }
+        }
+
+        if(hit) {
+            ROOT::Math::XYZPoint hit_global = starting_point + beam_direction_ * t_hit;
+            LOG(DEBUG) << "Hit in " << d_hit->getName() << " at " << hit_global;
         }
     }
 }
