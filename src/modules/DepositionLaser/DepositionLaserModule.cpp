@@ -26,9 +26,6 @@ using namespace allpix;
 DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
 
-    // ... Implement ... (Typically bounds the required messages and optionally sets configuration defaults)
-    // Input required by this module
-
     // Read beam parameters from config
 
     if(config_.has("source_position")) {
@@ -39,6 +36,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     }
 
     if(config_.has("beam_direction")) {
+        // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
         beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
         LOG(DEBUG) << "Beam direction: " << beam_direction_;
     } else {
@@ -63,18 +61,12 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
 void DepositionLaserModule::initialize() {
 
-    // Loop over detectors and do something
-    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-    for(auto& detector : detectors) {
-        // Get the detector name
-        std::string detectorName = detector->getName();
-        LOG(DEBUG) << "Detector with name " << detectorName;
-    }
+    // Load data here maybe...
 }
 
 void DepositionLaserModule::run(Event* event) {
 
-    // Lambda for generating two unit vectors, orthogonal to beam direction:
+    // Lambda to generate two unit vectors, orthogonal to beam direction
     // Adapted from TVector3::Orthogonal()
     auto orthogonal_pair = [](const ROOT::Math::XYZVector& v) {
         double xx = v.X() < 0.0 ? -v.X() : v.X();
@@ -101,7 +93,7 @@ void DepositionLaserModule::run(Event* event) {
         return std::make_pair<ROOT::Math::XYZVector>(v1.Unit(), v2.Unit());
     };
 
-    // Lambda for smearing the initial particle position with the beam size
+    // Lambda to generate a smearing vector
     auto beam_pos_smearing = [&](auto size) {
         auto [v1, v2] = orthogonal_pair(beam_direction_);
         double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
@@ -118,12 +110,12 @@ void DepositionLaserModule::run(Event* event) {
         LOG(DEBUG) << "Generated starting point: " << starting_point;
 
         // Generate starting time in the pulse
-        // FIXME Read pulse duration from the config
+        // FIXME Read pulse duration from the config instead
         double time_smear = 1; // ns
         double starting_time = allpix::normal_distribution<double>(0, time_smear)(event->getRandomEngine());
 
         // Generate penetration depth
-        // FIXME Use actual pen depth
+        // FIXME Load absorption length from data instead
         double absorption_length = 0.5; // mm
         double penetration_depth =
             boost::random::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
@@ -143,6 +135,7 @@ void DepositionLaserModule::run(Event* event) {
         }
 
         // Sort intersection segments along the track, starting from closest to source
+        // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
 
         auto comp = []<typename T>(const T& p1, const T& p2) { return p1.second < p2.second; };
         std::sort(begin(intersection_segments), end(intersection_segments), comp);
@@ -150,6 +143,7 @@ void DepositionLaserModule::run(Event* event) {
         bool hit = false;
         double t_hit, t0_hit;
         std::shared_ptr<Detector> d_hit;
+
         for(const auto& [detector, points] : intersection_segments) {
             double t0 = points.first;
             double t1 = points.second;
@@ -161,15 +155,14 @@ void DepositionLaserModule::run(Event* event) {
                        << std::setprecision(5) << entry_point << ", exit at " << exit_point;
 
             // Check for a hit
-            if(penetration_depth > distance) {
-                penetration_depth -= distance;
+            if(penetration_depth < distance && !hit) {
+                hit = true;
+                t_hit = t0 + penetration_depth;
+                t0_hit = t0;
+                d_hit = detector;
+                // Go till the end of this loop anyway to produce consistent log output
             } else {
-                if(!hit) {
-                    hit = true;
-                    t_hit = t0 + penetration_depth;
-                    t0_hit = t0;
-                    d_hit = detector;
-                }
+                penetration_depth -= distance;
             }
         }
 
