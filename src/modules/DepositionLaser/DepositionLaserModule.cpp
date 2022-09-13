@@ -11,9 +11,6 @@
 
 #include "DepositionLaserModule.hpp"
 
-#include <string>
-#include <utility>
-
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
@@ -107,6 +104,83 @@ void DepositionLaserModule::run(Event* event) {
 
     // Loop over photons in a single laser pulse
     for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
-        LOG(DEBUG) << beam_pos_smearing(beam_waist_);
+
+        // Generate starting point in the beam
+        ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
+        LOG(DEBUG) << "Photon " << i_photon + 1 << " of " << photon_number_ << " generated in " << starting_point;
+
+        // Check intersections with every detector
+        std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+        for(auto& detector : detectors) {
+            std::string detector_name = detector->getName();
+            auto intersection = get_intersection(detector, starting_point, beam_direction_);
+            if(intersection) {
+                ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * intersection.value().first;
+                ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * intersection.value().second;
+                LOG(DEBUG) << detector_name << ": entry at " << entry_point << ", exit at " << exit_point;
+            } else {
+                LOG(DEBUG) << detector_name << ": no intersection";
+            }
+        }
+    }
+}
+
+std::optional<std::pair<double, double>>
+DepositionLaserModule::get_intersection(const std::shared_ptr<const Detector>& detector,
+                                        const ROOT::Math::XYZPoint& position_global,
+                                        const ROOT::Math::XYZVector& direction_global) const {
+    // Obtain total sensor size
+    auto sensor = detector->getModel()->getSensorSize();
+
+    // Transformation from locally centered into global coordinate system, consisting of
+    // * The rotation into the global coordinate system
+    // * The shift from the origin to the detector position
+    ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
+    ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
+    ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+    auto position = transform_center.Inverse()(position_global);
+
+    // Direction vector can directly be rotated
+    auto direction_local = detector->getOrientation().Inverse()(direction_global);
+
+    // Liang–Barsky clipping of a line against faces of a box
+    auto clip = [](double denominator, double numerator, double& t0, double& t1) {
+        if(denominator > 0) {
+            if(numerator > denominator * t1) {
+                return false;
+            }
+            if(numerator > denominator * t0) {
+                t0 = numerator / denominator;
+            }
+            return true;
+        } else if(denominator < 0) {
+            if(numerator > denominator * t0) {
+                return false;
+            }
+            if(numerator > denominator * t1) {
+                t1 = numerator / denominator;
+            }
+            return true;
+        } else {
+            return numerator <= 0;
+        }
+    };
+
+    // Clip the particle track against the six possible box faces
+    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
+    bool intersect = clip(direction_local.X(), -position.X() - sensor.X() / 2, t0, t1) &&
+                     clip(-direction_local.X(), position.X() - sensor.X() / 2, t0, t1) &&
+                     clip(direction_local.Y(), -position.Y() - sensor.Y() / 2, t0, t1) &&
+                     clip(-direction_local.Y(), position.Y() - sensor.Y() / 2, t0, t1) &&
+                     clip(direction_local.Z(), -position.Z() - sensor.Z() / 2, t0, t1) &&
+                     clip(-direction_local.Z(), position.Z() - sensor.Z() / 2, t0, t1);
+
+    // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
+    if(intersect && t0 > 0) {
+        // Return distance to entry and exit points
+        return std::make_pair(t0, t1);
+    } else {
+        // Otherwise: The line does not intersect the box.
+        return std::nullopt;
     }
 }

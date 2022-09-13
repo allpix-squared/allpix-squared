@@ -13,7 +13,9 @@
  * Refer to the User's Manual for more details.
  */
 
+#include <optional>
 #include <string>
+#include <utility>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
@@ -49,6 +51,10 @@ namespace allpix {
         void run(Event* event) override;
 
     private:
+        std::optional<std::pair<double, double>> get_intersection(const std::shared_ptr<const Detector>& detector,
+                                                                  const ROOT::Math::XYZPoint& position_global,
+                                                                  const ROOT::Math::XYZVector& direction_global) const;
+
         // General module members
         GeometryManager* geo_manager_;
         Messenger* messenger_;
