@@ -16,7 +16,7 @@
 #include <objects/DepositedCharge.hpp>
 #include <objects/MCParticle.hpp>
 
-#include "TMath.h"
+#include <TMath.h>
 
 #include <algorithm>
 
@@ -141,10 +141,7 @@ void DepositionLaserModule::run(Event* event) {
         // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
 
         // Ugly argument types because template lambdas do not exist in c++17
-        auto comp = [](const std::pair<std::shared_ptr<Detector>, std::pair<double, double>>& p1,
-                       const std::pair<std::shared_ptr<Detector>, std::pair<double, double>>& p2) {
-            return p1.second < p2.second;
-        };
+        auto comp = [](const auto& p1, const auto& p2) { return p1.second < p2.second; };
         std::sort(begin(intersection_segments), end(intersection_segments), comp);
 
         bool hit = false;
