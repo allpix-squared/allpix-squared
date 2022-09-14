@@ -185,10 +185,28 @@ void DepositionLaserModule::run(Event* event) {
                          0,  // FIXME local_time
                          0); // FIXME global_time
 
+            // setCarrierType method does not exist so that object is created twice :(
+            DepositedCharge d_e(d_hit->getLocalPosition(hit_global),
+                                hit_global,
+                                CarrierType::ELECTRON,
+                                1,  // value
+                                0,  // FIXME local_time
+                                0); // FIXME global_time
+
+            DepositedCharge d_h(d_hit->getLocalPosition(hit_global),
+                                hit_global,
+                                CarrierType::HOLE,
+                                1,  // value
+                                0,  // FIXME local_time
+                                0); // FIXME global_time
+
             if(!mc_particles.count(d_hit)) {
                 mc_particles[d_hit] = std::vector<MCParticle>();
+                deposited_charges[d_hit] = std::vector<DepositedCharge>();
             }
             mc_particles[d_hit].push_back(p);
+            deposited_charges[d_hit].push_back(d_e);
+            deposited_charges[d_hit].push_back(d_h);
         }
     } // loop over photons
 
@@ -196,8 +214,13 @@ void DepositionLaserModule::run(Event* event) {
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
         LOG(INFO) << detector->getName() << ": " << data.size() << " hits";
+
+        // I am not sure whether move works correctly in this case
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, mcparticle_message, event);
+
+        auto charge_message = std::make_shared<DepositedChargeMessage>(std::move(deposited_charges[detector]), detector);
+        messenger_->dispatchMessage(this, charge_message, event);
     }
 }
 
