@@ -195,7 +195,7 @@ void DepositionLaserModule::run(Event* event) {
 
         if(hit) {
             // If this was the first hit in this detector in this event, remember entry timestamp as local t=0 for this
-            // detector Here I boldly assume that photon that is created earler also hits earlier
+            // detector Here I boldly assume that photon that is created earlier also hits earlier
             if(local_time_offsets.count(d_hit) == 0) {
                 local_time_offsets[d_hit] = starting_time + t0_hit / c;
             }
