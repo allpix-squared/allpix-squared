@@ -9,11 +9,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "DepositionLaserModule.hpp"
+#include <DepositionLaserModule.hpp>
 
-#include "core/utils/distributions.h"
-#include "core/utils/log.h"
-#include "objects/MCParticle.hpp"
+#include <core/utils/distributions.h>
+#include <core/utils/log.h>
+#include <objects/DepositedCharge.hpp>
+#include <objects/MCParticle.hpp>
 
 #include "TMath.h"
 
@@ -99,6 +100,11 @@ void DepositionLaserModule::run(Event* event) {
         return v1 * dx + v2 * dy;
     };
 
+    // Containers for output messages
+
+    std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
+    std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposited_charges;
+
     // Loop over photons in a single laser pulse
     for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
 
@@ -164,9 +170,32 @@ void DepositionLaserModule::run(Event* event) {
         }
 
         if(hit) {
+            // Create and store corresponding MCParticle and DepositedCharge
+            ROOT::Math::XYZPoint hit_entry_global = starting_point + beam_direction_ * t0_hit;
             ROOT::Math::XYZPoint hit_global = starting_point + beam_direction_ * t_hit;
             LOG(DEBUG) << "Hit in " << d_hit->getName() << " at " << hit_global;
+
+            MCParticle p(d_hit->getLocalPosition(hit_entry_global),
+                         hit_entry_global,
+                         d_hit->getLocalPosition(hit_global),
+                         hit_global,
+                         22, // gamma
+                         0,  // FIXME local_time
+                         0); // FIXME global_time
+
+            if(!mc_particles.count(d_hit)) {
+                mc_particles[d_hit] = std::vector<MCParticle>();
+            }
+            mc_particles[d_hit].push_back(p);
         }
+    } // loop over photons
+
+    LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
+    // Dispatch messages
+    for(auto& [detector, data] : mc_particles) {
+        LOG(DEBUG) << detector->getName() << ": " << data.size() << " MCParticles";
+        auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
+        messenger_->dispatchMessage(this, mcparticle_message, event);
     }
 }
 
