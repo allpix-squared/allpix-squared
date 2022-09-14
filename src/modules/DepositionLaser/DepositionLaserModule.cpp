@@ -43,7 +43,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     }
 
     config_.setDefault<double>("beam_waist", 0.02);
-    config_.setDefault<int>("photon_number", 1000);
+    config_.setDefault<int>("photon_number", 10000);
 
     beam_waist_ = config_.get<double>("beam_waist");
     LOG(DEBUG) << "Beam waist: " << Units::convert(beam_waist_, "um") << " um";
