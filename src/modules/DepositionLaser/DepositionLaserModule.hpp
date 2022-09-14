@@ -63,6 +63,6 @@ namespace allpix {
         ROOT::Math::XYZPoint source_position_{};
         ROOT::Math::XYZVector beam_direction_{};
         double beam_waist_;
-        int photon_number_;
+        size_t photon_number_;
     };
 } // namespace allpix

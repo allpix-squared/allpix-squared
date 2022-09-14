@@ -51,7 +51,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value!");
     }
 
-    photon_number_ = config_.get<int>("photon_number");
+    photon_number_ = config_.get<size_t>("photon_number");
     LOG(DEBUG) << "Photon number: " << photon_number_;
     if(photon_number_ <= 0) {
         throw InvalidValueError(config_, "photon_number", "Photon number should be a positive nonzero value!");
@@ -126,7 +126,7 @@ void DepositionLaserModule::run(Event* event) {
 
     // Loop over photons in a single laser pulse
     // In time order
-    for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
+    for(size_t i_photon = 0; i_photon < photon_number_; ++i_photon) {
 
         std::string event_name = std::to_string(event->number);
         LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of " << photon_number_;
