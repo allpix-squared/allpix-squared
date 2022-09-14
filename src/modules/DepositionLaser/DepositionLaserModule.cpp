@@ -105,7 +105,27 @@ void DepositionLaserModule::run(Event* event) {
     std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
     std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposited_charges;
 
+    // Containers for timestamps
+    // Starting time points are generated in advance to correctly shift zero afterwards
+    // FIXME Read pulse duration from the config instead
+    double c = 299.72;               // mm/ns
+    double laser_pulse_duration = 1; // ns
+    std::vector<double> starting_times(photon_number_);
+    for(auto& item : starting_times) {
+        item = allpix::normal_distribution<double>(0, laser_pulse_duration)(event->getRandomEngine());
+    }
+
+    std::sort(begin(starting_times), end(starting_times));
+    double starting_time_offset = starting_times[0];
+    for(auto& item : starting_times) {
+        item -= starting_time_offset;
+    }
+
+    // To correctly offset local time for each detector
+    std::map<std::shared_ptr<Detector>, double> local_time_offsets;
+
     // Loop over photons in a single laser pulse
+    // In time order
     for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
 
         std::string event_name = std::to_string(event->number);
@@ -113,16 +133,17 @@ void DepositionLaserModule::run(Event* event) {
 
         // Generate starting point in the beam
         ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
-        LOG(DEBUG) << "Generated starting point: " << starting_point;
+        LOG(DEBUG) << "    Starting point: " << starting_point << ", direction " << beam_direction_;
 
-        // Generate starting time in the pulse
-        // FIXME Read pulse duration from the config instead
+        // Get starting time in the pulse
+        double starting_time = starting_times[i_photon];
+        LOG(DEBUG) << "    Starting timestamp: " << starting_time << " ns";
 
         // Generate penetration depth
         // FIXME Load absorption length from data instead
         double absorption_length = 0.5; // mm
         double penetration_depth = allpix::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
-        LOG(DEBUG) << "Generated penetration depth: " << Units::convert(penetration_depth, "um");
+        LOG(DEBUG) << "    Penetration depth: " << Units::convert(penetration_depth, "um") << " um";
 
         // Check intersections with every detector
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
@@ -133,14 +154,13 @@ void DepositionLaserModule::run(Event* event) {
             if(intersection) {
                 intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
             } else {
-                LOG(DEBUG) << detector->getName() << ": no intersection";
+                LOG(DEBUG) << "    Intersection with " << detector->getName() << ": no intersection";
             }
         }
 
         // Sort intersection segments along the track, starting from closest to source
         // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
 
-        // Ugly argument types because template lambdas do not exist in c++17
         auto comp = [](const auto& p1, const auto& p2) { return p1.second < p2.second; };
         std::sort(begin(intersection_segments), end(intersection_segments), comp);
 
@@ -156,8 +176,10 @@ void DepositionLaserModule::run(Event* event) {
 
             ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
             ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
-            LOG(DEBUG) << detector->getName() << ": travel distance " << Units::convert(distance, "um") << " um, entry at "
-                       << std::setprecision(5) << entry_point << ", exit at " << exit_point;
+            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
+                       << Units::convert(distance, "um") << " um, ";
+            LOG(DEBUG) << "        entry at " << entry_point << " mm, " << starting_time + t0 / c << " ns";
+            LOG(DEBUG) << "        exit at " << exit_point << " mm, " << starting_time + t1 / c << " ns";
 
             // Check for a hit
             if(penetration_depth < distance && !hit) {
@@ -172,33 +194,49 @@ void DepositionLaserModule::run(Event* event) {
         }
 
         if(hit) {
-            // Create and store corresponding MCParticle and DepositedCharge
-            ROOT::Math::XYZPoint hit_entry_global = starting_point + beam_direction_ * t0_hit;
-            ROOT::Math::XYZPoint hit_global = starting_point + beam_direction_ * t_hit;
-            LOG(DEBUG) << "Hit in " << d_hit->getName() << " at " << hit_global;
+            // If this was the first hit in this detector in this event, remember entry timestamp as local t=0 for this
+            // detector Here I boldly assume that photon that is created earler also hits earlier
+            if(local_time_offsets.count(d_hit) == 0) {
+                local_time_offsets[d_hit] = starting_time + t0_hit / c;
+            }
 
-            MCParticle p(d_hit->getLocalPosition(hit_entry_global),
+            // Create and store corresponding MCParticle and DepositedCharge
+            auto hit_entry_global = starting_point + beam_direction_ * t0_hit;
+            auto hit_global = starting_point + beam_direction_ * t_hit;
+            auto hit_entry_local = d_hit->getLocalPosition(hit_entry_global);
+            auto hit_local = d_hit->getLocalPosition(hit_global);
+
+            double time_entry_global = starting_time + t0_hit / c;
+            double time_hit_global = starting_time + t_hit / c;
+            double time_entry_local = time_entry_global - local_time_offsets[d_hit];
+            double time_hit_local = time_hit_global - local_time_offsets[d_hit];
+
+            LOG(DEBUG) << "    Hit in " << d_hit->getName();
+            LOG(DEBUG) << "        global: " << hit_global << " mm, " << time_hit_global << " ns";
+            LOG(DEBUG) << "        local: " << hit_local << " mm, " << time_hit_local << " ns";
+
+            MCParticle p(hit_entry_local,
                          hit_entry_global,
-                         d_hit->getLocalPosition(hit_global),
+                         hit_local,
                          hit_global,
                          22, // gamma
-                         0,  // FIXME local_time
-                         0); // FIXME global_time
+                         time_entry_local,
+                         time_entry_global);
 
             // setCarrierType method does not exist so that object is created twice :(
-            DepositedCharge d_e(d_hit->getLocalPosition(hit_global),
+            DepositedCharge d_e(hit_local,
                                 hit_global,
                                 CarrierType::ELECTRON,
-                                1,  // value
-                                0,  // FIXME local_time
-                                0); // FIXME global_time
+                                1, // value
+                                time_hit_local,
+                                time_hit_global);
 
-            DepositedCharge d_h(d_hit->getLocalPosition(hit_global),
+            DepositedCharge d_h(hit_local,
                                 hit_global,
                                 CarrierType::HOLE,
-                                1,  // value
-                                0,  // FIXME local_time
-                                0); // FIXME global_time
+                                1, // value
+                                time_hit_local,
+                                time_hit_global);
 
             if(mc_particles.count(d_hit) == 0) {
                 mc_particles[d_hit] = std::vector<MCParticle>();
