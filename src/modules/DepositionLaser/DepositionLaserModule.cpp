@@ -108,7 +108,7 @@ void DepositionLaserModule::run(Event* event) {
     // Containers for timestamps
     // Starting time points are generated in advance to correctly shift zero afterwards
     // FIXME Read pulse duration from the config instead
-    double c = 299.72;               // mm/ns
+    double c = 299.792;              // mm/ns
     double laser_pulse_duration = 1; // ns
     std::vector<double> starting_times(photon_number_);
     for(auto& item : starting_times) {
