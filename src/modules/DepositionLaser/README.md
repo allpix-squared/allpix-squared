@@ -30,7 +30,7 @@ TODOs:
 * `source_position`
 * `beam_direction`
 * `photon_number`: number of photons in a *single* event, defaults to 10000
-* `beam_waist`: std_dev of transversal beam profile, deafults to  20 um
+* `beam_waist`: std_dev of transversal beam profile, defaults to  20 um
 
 ## Usage
 *Example how to use this module*
