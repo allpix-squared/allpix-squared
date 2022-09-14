@@ -142,7 +142,11 @@ void DepositionLaserModule::run(Event* event) {
         // Sort intersection segments along the track, starting from closest to source
         // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
 
-        auto comp = []<typename T>(const T& p1, const T& p2) { return p1.second < p2.second; };
+        // Ugly argument types because template lambdas do not exist in c++17
+        auto comp = [](const std::pair<std::shared_ptr<Detector>, std::pair<double, double>>& p1,
+                       const std::pair<std::shared_ptr<Detector>, std::pair<double, double>>& p2) {
+            return p1.second < p2.second;
+        };
         std::sort(begin(intersection_segments), end(intersection_segments), comp);
 
         bool hit = false;
