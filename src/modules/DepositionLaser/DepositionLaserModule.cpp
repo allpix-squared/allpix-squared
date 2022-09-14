@@ -89,7 +89,7 @@ void DepositionLaserModule::run(Event* event) {
         }
 
         v2 = v.Cross(v1);
-        return std::make_pair<ROOT::Math::XYZVector>(v1.Unit(), v2.Unit());
+        return std::make_pair(v1.Unit(), v2.Unit());
     };
 
     // Lambda to generate a smearing vector
@@ -117,8 +117,6 @@ void DepositionLaserModule::run(Event* event) {
 
         // Generate starting time in the pulse
         // FIXME Read pulse duration from the config instead
-        double time_smear = 1; // ns
-        double starting_time = allpix::normal_distribution<double>(0, time_smear)(event->getRandomEngine());
 
         // Generate penetration depth
         // FIXME Load absorption length from data instead
@@ -133,7 +131,7 @@ void DepositionLaserModule::run(Event* event) {
         for(auto& detector : detectors) {
             auto intersection = get_intersection(detector, starting_point, beam_direction_);
             if(intersection) {
-                intersection_segments.push_back(std::make_pair(detector, intersection.value()));
+                intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
             } else {
                 LOG(DEBUG) << detector->getName() << ": no intersection";
             }
@@ -150,7 +148,8 @@ void DepositionLaserModule::run(Event* event) {
         std::sort(begin(intersection_segments), end(intersection_segments), comp);
 
         bool hit = false;
-        double t_hit, t0_hit;
+        double t_hit = 0;
+        double t0_hit = 0;
         std::shared_ptr<Detector> d_hit;
 
         for(const auto& [detector, points] : intersection_segments) {
@@ -204,7 +203,7 @@ void DepositionLaserModule::run(Event* event) {
                                 0,  // FIXME local_time
                                 0); // FIXME global_time
 
-            if(!mc_particles.count(d_hit)) {
+            if(mc_particles.count(d_hit) == 0) {
                 mc_particles[d_hit] = std::vector<MCParticle>();
                 deposited_charges[d_hit] = std::vector<DepositedCharge>();
             }
