@@ -15,8 +15,6 @@
 #include "core/utils/log.h"
 #include "objects/MCParticle.hpp"
 
-#include "boost/random/exponential_distribution.hpp"
-
 #include "TMath.h"
 
 #include <algorithm>
@@ -117,8 +115,7 @@ void DepositionLaserModule::run(Event* event) {
         // Generate penetration depth
         // FIXME Load absorption length from data instead
         double absorption_length = 0.5; // mm
-        double penetration_depth =
-            boost::random::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
+        double penetration_depth = allpix::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
         LOG(DEBUG) << "Generated penetration depth: " << Units::convert(penetration_depth, "um");
 
         // Check intersections with every detector
