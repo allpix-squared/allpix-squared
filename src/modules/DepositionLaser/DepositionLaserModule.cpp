@@ -108,9 +108,11 @@ void DepositionLaserModule::run(Event* event) {
     // Loop over photons in a single laser pulse
     for(int i_photon = 0; i_photon < photon_number_; ++i_photon) {
 
+        std::string event_name = std::to_string(event->number);
+        LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of " << photon_number_;
+
         // Generate starting point in the beam
         ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
-        LOG(DEBUG) << "Photon " << i_photon + 1 << " of " << photon_number_;
         LOG(DEBUG) << "Generated starting point: " << starting_point;
 
         // Generate starting time in the pulse
@@ -190,10 +192,10 @@ void DepositionLaserModule::run(Event* event) {
         }
     } // loop over photons
 
-    LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
+    LOG(INFO) << "Registered hits in " << mc_particles.size() << " detectors";
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
-        LOG(DEBUG) << detector->getName() << ": " << data.size() << " MCParticles";
+        LOG(INFO) << detector->getName() << ": " << data.size() << " hits";
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, mcparticle_message, event);
     }
