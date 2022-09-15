@@ -19,6 +19,9 @@
 #include <TMath.h>
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 
 using namespace allpix;
 
@@ -51,11 +54,43 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     config_.setDefault<bool>("verbose_tracking", false);
     verbose_tracking_ = config_.get<bool>("verbose_tracking");
+
+    // FIXME less hardcoded values
+    wavelength_ = config_.get<double>("wavelength");
+    if(wavelength_ < 250 || wavelength_ > 1450) {
+        throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
+    }
 }
 
 void DepositionLaserModule::initialize() {
 
-    // Load data here maybe...
+    // Load data
+    std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
+
+    std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
+
+    std::map<double, double> absorption_lut;
+    for(auto it = std::istream_iterator<double>(f); it != std::istream_iterator<double>(); it++) {
+        double wavelength_nm = *it;
+        double abs_length_mm = *(++it);
+        absorption_lut[wavelength_nm] = abs_length_mm;
+    }
+
+    LOG(INFO) << "Loading absorption data: " << laser_data_path;
+
+    // Find or interpolate absorption depth for given wavelength
+    if(absorption_lut.count(wavelength_)) {
+        absorption_length_ = absorption_lut[wavelength_];
+    } else {
+        auto it = absorption_lut.upper_bound(wavelength_);
+        double wl1 = (*prev(it)).first;
+        double wl2 = (*it).first;
+        absorption_length_ =
+            (absorption_lut[wl1] * (wl2 - wavelength_) + absorption_lut[wl2] * (wavelength_ - wl1)) / (wl2 - wl1);
+    }
+
+    LOG(INFO) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
+              << Units::convert(absorption_length_, "um") << " um";
 }
 
 void DepositionLaserModule::run(Event* event) {
@@ -126,9 +161,8 @@ void DepositionLaserModule::run(Event* event) {
         LOG(DEBUG) << "    Starting timestamp: " << starting_time << " ns";
 
         // Generate penetration depth
-        // FIXME Load absorption length from data instead
-        double absorption_length = 0.5; // mm
-        double penetration_depth = allpix::exponential_distribution<double>(1 / absorption_length)(event->getRandomEngine());
+        double penetration_depth =
+            allpix::exponential_distribution<double>(1 / absorption_length_)(event->getRandomEngine());
         LOG(DEBUG) << "    Penetration depth: " << Units::convert(penetration_depth, "um") << " um";
 
         // Check intersections with every detector
