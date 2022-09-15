@@ -54,9 +54,10 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
 
     // Initialize the detector fields with the model parameters:
-    electric_field_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
-    weighting_potential_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
-    doping_profile_.set_model_parameters(model_->getSensorCenter(), model_->getSensorSize(), model_->getPixelSize());
+    auto matrix_size = model_->getGridSize() + ROOT::Math::XYZVector(0, 0, model_->getSensorSize().z());
+    electric_field_.set_model_parameters(model_->getSensorCenter(), matrix_size, model_->getPixelSize());
+    weighting_potential_.set_model_parameters(model_->getSensorCenter(), matrix_size, model_->getPixelSize());
+    doping_profile_.set_model_parameters(model_->getSensorCenter(), matrix_size, model_->getPixelSize());
 
     build_transform();
 }
