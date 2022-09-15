@@ -27,20 +27,12 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     // Read beam parameters from config
 
-    if(config_.has("source_position")) {
-        source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
-        LOG(DEBUG) << "Source position: " << source_position_;
-    } else {
-        throw MissingKeyError("source_position", "DepositionLaser");
-    }
+    source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
+    LOG(DEBUG) << "Source position: " << source_position_;
 
-    if(config_.has("beam_direction")) {
-        // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
-        beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
-        LOG(DEBUG) << "Beam direction: " << beam_direction_;
-    } else {
-        throw MissingKeyError("beam_direction", "DepositionLaser");
-    }
+    // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
+    beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
+    LOG(DEBUG) << "Beam direction: " << beam_direction_;
 
     config_.setDefault<double>("beam_waist", 0.02);
     config_.setDefault<int>("photon_number", 10000);
