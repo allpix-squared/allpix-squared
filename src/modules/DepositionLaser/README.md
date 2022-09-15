@@ -31,7 +31,7 @@ TODOs:
 * `beam_direction`
 * `photon_number`: number of photons in a *single* event, defaults to 10000
 * `beam_waist`: std_dev of transversal beam profile, defaults to  20 um
-* `verbose_tracking`: defaults to `false`. If set to `true`, it will increase amount of tracking-related debug log output (and may sligthly increase computing cost if multiple detectors are present)
+* `verbose_tracking`: defaults to `false`. If set to `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
 
 ## Usage
 *Example how to use this module*
