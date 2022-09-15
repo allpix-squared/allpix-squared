@@ -149,7 +149,7 @@ void DefaultDigitizerModule::initialize() {
         }
 
         auto time_maximum = static_cast<double>(Units::convert(config_.get<double>("output_plots_timescale"), "ns"));
-        h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
+        h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, time_maximum);
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
         if(tdc_resolution_ > 0) {
