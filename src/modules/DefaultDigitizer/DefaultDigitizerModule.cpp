@@ -120,7 +120,8 @@ void DefaultDigitizerModule::initialize() {
         h_gain = CreateHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
         h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_thr = CreateHistogram<TH1D>(
+            "threshold", "applied threshold; threshold [ke];events", static_cast<int>(maximum), 0, maximum / 10);
         h_pxq_sat = CreateHistogram<TH1D>(
             "pixelcharge_saturation", "pixel charge with front-end saturation;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_thr = CreateHistogram<TH1D>(
