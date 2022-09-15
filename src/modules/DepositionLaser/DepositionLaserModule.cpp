@@ -95,15 +95,14 @@ void DepositionLaserModule::run(Event* event) {
     double c = 299.792;              // mm/ns
     double laser_pulse_duration = 1; // ns
     std::vector<double> starting_times(photon_number_);
-    for(auto& item : starting_times) {
+    std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
         item = allpix::normal_distribution<double>(0, laser_pulse_duration)(event->getRandomEngine());
-    }
+    });
 
     std::sort(begin(starting_times), end(starting_times));
     double starting_time_offset = starting_times[0];
-    for(auto& item : starting_times) {
-        item -= starting_time_offset;
-    }
+    std::for_each(
+        begin(starting_times), end(starting_times), [starting_time_offset](auto& item) { item -= starting_time_offset; });
 
     // To correctly offset local time for each detector
     std::map<std::shared_ptr<Detector>, double> local_time_offsets;
