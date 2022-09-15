@@ -110,7 +110,7 @@ void DefaultDigitizerModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        auto maximum = static_cast<double>(Units::convert(config_.get<double>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -148,7 +148,7 @@ void DefaultDigitizerModule::initialize() {
                 CreateHistogram<TH1D>("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
 
-        int time_maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_timescale"), "ns"));
+        auto time_maximum = static_cast<double>(Units::convert(config_.get<double>("output_plots_timescale"), "ns"));
         h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
