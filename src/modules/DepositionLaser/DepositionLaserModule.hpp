@@ -65,5 +65,7 @@ namespace allpix {
         double beam_waist_;
         size_t photon_number_;
         bool verbose_tracking_;
+        double wavelength_;
+        double absorption_length_;
     };
 } // namespace allpix
