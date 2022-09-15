@@ -67,17 +67,9 @@ void DepositionLaserModule::run(Event* event) {
         ROOT::Math::XYZVector v1, v2;
 
         if(xx < yy) {
-            if(xx < zz) {
-                v1 = ROOT::Math::XYZVector(0, v.Z(), -v.Y());
-            } else {
-                v1 = ROOT::Math::XYZVector(v.Y(), -v.X(), 0);
-            }
+            v1 = (xx < zz ? ROOT::Math::XYZVector(0, v.Z(), -v.Y()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
         } else {
-            if(yy < zz) {
-                v1 = ROOT::Math::XYZVector(-v.Z(), 0, v.X());
-            } else {
-                v1 = ROOT::Math::XYZVector(v.Y(), -v.X(), 0);
-            }
+            v1 = (yy < zz ? ROOT::Math::XYZVector(-v.Z(), 0, v.X()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
         }
 
         v2 = v.Cross(v1);
