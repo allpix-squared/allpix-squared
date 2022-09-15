@@ -64,5 +64,6 @@ namespace allpix {
         ROOT::Math::XYZVector beam_direction_{};
         double beam_waist_;
         size_t photon_number_;
+        bool verbose_tracking_;
     };
 } // namespace allpix

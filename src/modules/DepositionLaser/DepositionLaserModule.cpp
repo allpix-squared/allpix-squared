@@ -48,6 +48,9 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     if(photon_number_ == 0) {
         throw InvalidValueError(config_, "photon_number", "Photon number should be a nonzero value!");
     }
+
+    config_.setDefault<bool>("verbose_tracking", false);
+    verbose_tracking_ = config_.get<bool>("verbose_tracking");
 }
 
 void DepositionLaserModule::initialize() {
@@ -136,7 +139,7 @@ void DepositionLaserModule::run(Event* event) {
             auto intersection = get_intersection(detector, starting_point, beam_direction_);
             if(intersection) {
                 intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
-            } else {
+            } else if(verbose_tracking_) {
                 LOG(DEBUG) << "    Intersection with " << detector->getName() << ": no intersection";
             }
         }
@@ -159,10 +162,12 @@ void DepositionLaserModule::run(Event* event) {
 
             ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
             ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
-            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
-                       << Units::convert(distance, "um") << " um, ";
-            LOG(DEBUG) << "        entry at " << entry_point << " mm, " << starting_time + t0 / c << " ns";
-            LOG(DEBUG) << "        exit at " << exit_point << " mm, " << starting_time + t1 / c << " ns";
+            if(verbose_tracking_) {
+                LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
+                           << Units::convert(distance, "um") << " um, ";
+                LOG(DEBUG) << "        entry at " << entry_point << " mm, " << starting_time + t0 / c << " ns";
+                LOG(DEBUG) << "        exit at " << exit_point << " mm, " << starting_time + t1 / c << " ns";
+            }
 
             // Check for a hit
             if(penetration_depth < distance && !hit) {
@@ -170,7 +175,9 @@ void DepositionLaserModule::run(Event* event) {
                 t_hit = t0 + penetration_depth;
                 t0_hit = t0;
                 d_hit = detector;
-                // Go till the end of this loop anyway to produce consistent log output
+                if(!verbose_tracking_) {
+                    break;
+                }
             } else {
                 penetration_depth -= distance;
             }
