@@ -551,6 +551,14 @@ void DetectorHistogrammerModule::run(Event* event) {
         // Calculate 2D local position of particle:
         auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
 
+        // Check whether the particle position is in the sensor excess, and exclude it from the efficiency calculation if so
+        if(!detector_->getModel()->isWithinMatrix(particlePos)) {
+            LOG(DEBUG) << "Particle at local coordinates x = " << particlePos.x() << " mm"
+                       << ", y = " << particlePos.y() << " mm"
+                       << " hit in the sensor excess; removing from efficiency calculation.";
+            continue;
+        }
+
         // Find the nearest pixel
         auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
 
