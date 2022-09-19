@@ -40,7 +40,7 @@ DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
 
     auto model = detector_->getModel();
     config_.setDefault<XYVector>("matching_cut", model->getPixelSize() * 3);
-    config_.setDefault<XYVector>("track_resolution", ROOT::Math::XYVector(Units::get(2.0, "um"), Units::get(2.0, "um")));
+    config_.setDefault<XYVector>("track_resolution", ROOT::Math::XYVector(Units::get(0.0, "um"), Units::get(0.0, "um")));
 
     config_.setDefault<DisplacementVector2D<Cartesian2D<int>>>(
         "granularity",
@@ -397,7 +397,10 @@ void DetectorHistogrammerModule::run(Event* event) {
     std::shared_ptr<PixelHitMessage> pixels_message{nullptr};
     auto mcparticle_message = messenger_->fetchMessage<MCParticleMessage>(this, event);
 
-    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(detector_->getModel());
+    // Fetch detector model
+    auto model = detector_->getModel();
+
+    auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
 
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {
@@ -452,7 +455,7 @@ void DetectorHistogrammerModule::run(Event* event) {
         cluster_size_y->Fill(clusSizesXY.second);
 
         auto clusterPos = clus.getPosition();
-        auto [cluster_x, cluster_y] = detector_->getModel()->getPixelIndex(clusterPos);
+        auto [cluster_x, cluster_y] = model->getPixelIndex(clusterPos);
         LOG(DEBUG) << "Cluster at indices " << cluster_x << ", " << cluster_y << "(" << clusterPos
                    << " local coordinates) with charge " << Units::display(clus.getCharge(), "ke");
         cluster_map->Fill(cluster_x, cluster_y);
@@ -480,9 +483,9 @@ void DetectorHistogrammerModule::run(Event* event) {
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
 
             // Find the nearest pixel
-            auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
+            auto [xpixel, ypixel] = model->getPixelIndex(particlePos);
 
-            auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(xpixel, ypixel);
+            auto inPixelPos = particlePos - model->getPixelCenter(xpixel, ypixel);
             LOG(TRACE) << "MCParticle in pixel at " << Units::display(inPixelPos, {"mm", "um"});
 
             // Calculate residual with cluster position:
@@ -492,7 +495,7 @@ void DetectorHistogrammerModule::run(Event* event) {
             // If model is radial_strip, calculate polar residuals and in-pixel positions
             if(radial_model != nullptr) {
                 // Transform coordinates to polar representation
-                auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
+                auto strip_polar = radial_model->getPositionPolar(model->getPixelCenter(xpixel, ypixel));
                 auto particle_polar = radial_model->getPositionPolar(particlePos);
                 auto cluster_polar = radial_model->getPositionPolar(clusterPos);
 
@@ -552,24 +555,23 @@ void DetectorHistogrammerModule::run(Event* event) {
         auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
 
         // Check whether the particle position is in the sensor excess, and exclude it from the efficiency calculation if so
-        if(!detector_->getModel()->isWithinMatrix(particlePos)) {
+        if(!model->isWithinMatrix(particlePos)) {
             LOG(DEBUG) << "Particle at local coordinates x = " << particlePos.x() << " mm"
-                       << ", y = " << particlePos.y() << " mm, pixel index ("
-                       << detector_->getModel()->getPixelIndex(particlePos).first << ","
-                       << detector_->getModel()->getPixelIndex(particlePos).second
+                       << ", y = " << particlePos.y() << " mm, pixel index (" << model->getPixelIndex(particlePos).first
+                       << "," << model->getPixelIndex(particlePos).second
                        << "), hit in the sensor excess; removing from efficiency calculation.";
             continue;
         }
 
         // Find the nearest pixel
-        auto [xpixel, ypixel] = detector_->getModel()->getPixelIndex(particlePos);
+        auto [xpixel, ypixel] = model->getPixelIndex(particlePos);
 
-        auto inPixelPos = particlePos - detector_->getModel()->getPixelCenter(xpixel, ypixel);
+        auto inPixelPos = particlePos - model->getPixelCenter(xpixel, ypixel);
 
         // If model is radial_strip, recalculate inPixelPos
         if(radial_model != nullptr) {
             // Transform coordinates to polar representation
-            auto strip_polar = radial_model->getPositionPolar(detector_->getModel()->getPixelCenter(xpixel, ypixel));
+            auto strip_polar = radial_model->getPositionPolar(model->getPixelCenter(xpixel, ypixel));
             auto particle_polar = radial_model->getPositionPolar(particlePos);
 
             // Overwrite inPixelPos with correct values
