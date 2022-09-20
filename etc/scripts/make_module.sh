@@ -126,7 +126,7 @@ fi
 if [ "$sequence" = 1 ]; then
   # Change header file
   command="sed ${opt} \
-      -e 's/ Module/ SequentialModule/g' \
+      -e 's/public Module/public SequentialModule/g' \
       $MODDIR/$MODNAME/${MODNAME}Module.hpp"
   eval $command
   # Change implementation file
