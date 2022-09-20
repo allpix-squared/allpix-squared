@@ -150,6 +150,9 @@ if [ ! -z "${MESSAGETYPE}" ]; then
 else
   command="sed ${opt} \
   -e '/PixelHit/d' \
+  -e '/\/\/ Messages:/d' \
+  -e '/for(auto\& message/,+4d' \
+  -e '/particular message/,+2d' \
   $MODDIR/$MODNAME/${MODNAME}Module.*pp"
 fi
 eval $command
