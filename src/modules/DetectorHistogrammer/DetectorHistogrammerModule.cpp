@@ -556,9 +556,9 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         // Check whether the particle position is in the sensor excess, and exclude it from the efficiency calculation if so
         if(!model->isWithinMatrix(particlePos)) {
-            LOG(DEBUG) << "Particle at local coordinates x = " << particlePos.x() << " mm"
-                       << ", y = " << particlePos.y() << " mm, pixel index (" << model->getPixelIndex(particlePos).first
-                       << "," << model->getPixelIndex(particlePos).second
+            LOG(DEBUG) << "Particle at local coordinates x = " << Units::display(particlePos.x(), {"mm", "um"})
+                       << ", y = " << Units::display(particlePos.y(), {"mm", "um"}) << ", pixel index ("
+                       << model->getPixelIndex(particlePos).first << "," << model->getPixelIndex(particlePos).second
                        << "), hit in the sensor excess; removing from efficiency calculation.";
             continue;
         }

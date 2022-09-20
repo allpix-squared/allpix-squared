@@ -376,8 +376,8 @@ namespace allpix {
          * @return True if position within the pixel grid, false otherwise
          */
         bool isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
-            std::pair<int, int> pixelIndex = getPixelIndex(position);
-            return isWithinMatrix(pixelIndex.first, pixelIndex.second);
+            auto [index_x, index_y] = getPixelIndex(position);
+            return isWithinMatrix(index_x, index_y);
         }
 
         /**
