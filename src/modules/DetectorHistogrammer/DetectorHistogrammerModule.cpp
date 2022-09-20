@@ -397,10 +397,10 @@ void DetectorHistogrammerModule::run(Event* event) {
         // Calculate 2D local position of particle:
         auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
 
-        auto noOfPixels = model->getNPixels();
+        auto pixels = model->getNPixels();
 
-        if(particlePos.x() < -pitch.x() / 2 || particlePos.x() > noOfPixels.x() * pitch.x() - pitch.x() / 2 ||
-           particlePos.y() < -pitch.y() / 2 || particlePos.y() > noOfPixels.y() * pitch.y() - pitch.y() / 2) {
+        if(particlePos.x() < -pitch.x() / 2 || particlePos.x() > pixels.x() * pitch.x() - pitch.x() / 2 ||
+           particlePos.y() < -pitch.y() / 2 || particlePos.y() > pixels.y() * pitch.y() - pitch.y() / 2) {
             LOG(DEBUG) << "Particle at local coordinates x = " << Units::display(particlePos.x(), {"mm", "um"})
                        << ", y = " << Units::display(particlePos.y(), {"mm", "um"})
                        << " hit in the sensor excess; removing from efficiency calculation.";
