@@ -32,7 +32,7 @@ read -p "Input message type? " MESSAGETYPE
 # Check that message type exists
 OBJDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 OBJDIR=$OBJDIR/../../src/objects
-if [ ! -z "${MESSAGETYPE}"] && [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
+if [ ! -z "${MESSAGETYPE}" ] && [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
 then
   echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
   exit 1
@@ -133,14 +133,14 @@ if [ "$sequence" = 1 ]; then
   eval $command
 fi
 
-if [ ! -z "${MESSAGETYPE}"]; then
+if [ ! -z "${MESSAGETYPE}" ]; then
   # Replace the corresponding message type in the header and source file
   command="sed ${opt} \
   -e 's/PixelHit/${MESSAGETYPE}/g' \
   $MODDIR/$MODNAME/${MODNAME}Module.*pp"
 else
   command="sed ${opt} \
-  -e '/PixelHit/g' \
+  -e '/PixelHit/d' \
   $MODDIR/$MODNAME/${MODNAME}Module.*pp"
 fi
 eval $command
@@ -150,7 +150,7 @@ FINALPATH=`realpath $MODDIR/$MODNAME`
 echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
 echo "Path:   $FINALPATH"
-if [ ! -z "${MESSAGETYPE}"]; then
+if [ ! -z "${MESSAGETYPE}" ]; then
   echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
 fi
 if [ "$sequence" = 1 ]; then
