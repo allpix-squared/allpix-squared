@@ -19,8 +19,8 @@ If the PixelHit is free-standing, a new cluster is created.
 
 This module serves as a quick "mini-analysis" and creates the histograms listed below.
 The Monte Carlo truth position provided by the `MCParticle` objects is used as track reference position.
-An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convolved.
-For technical reasons, this offset is drawn randomly from a Gauss distribution independently for the resolution and the efficiency measurement.
+An additional uncertainty can be added by configuring a track resolution, with which every cluster residual is convolved. This makes it possible to perform a quick test beam-like analysis.
+For technical reasons, this offset is drawn randomly from a Gaussian distribution independently for the resolution and the efficiency measurement. **Note:** If a non-zero track resolution is used, pixel matrix edge effects may appear as particles hit the sensor excess.
 
 * A hitmap of all pixels in the pixel grid, displaying the number of times a pixel has been hit during the simulation run.
 * A cluster map indicating the cluster positions for the whole simulation run.
@@ -42,7 +42,7 @@ For technical reasons, this offset is drawn randomly from a Gauss distribution i
 * `granularity`: 2D integer vector defining the number of bins along the *x* and *y* axis for in-pixel maps. Defaults to the pixel pitch in micro meters, e.g. a detector with 100um x 100um pixels would be represented in a histogram with `100 * 100 = 10000` bins.
 * `granularity_local`: 2D integer vector defining the number of bins for each pixel along the *x* and *y* axis for maps in local coordinates where particle positions are used as reference. Defaults to `1 1` corresponding to a single bin per pixel.
 * `max_cluster_charge`: Upper limit for the cluster charge histogram, defaults to `50ke`.
-* `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `2um 2um`.
+* `track_resolution`: Assumed track resolution the Monte Carlo truth is smeared with. Expects two values for the resolution in local-x and local-y directions and defaults to `0um 0um`, i.e. no smearing.
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
 
 ## Usage
