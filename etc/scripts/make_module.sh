@@ -63,6 +63,9 @@ done
 
 # Create directory
 mkdir "$MODDIR/$MODNAME"
+if [ $? != 0 ]; then
+  exit 1
+fi
 
 # Copy over CMake file and sources from Dummy:
 sed -e "s/Dummy/$MODNAME/g" $MODDIR/Dummy/CMakeLists.txt > $MODDIR/$MODNAME/CMakeLists.txt
