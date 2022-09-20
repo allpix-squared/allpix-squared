@@ -401,9 +401,9 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         if(particlePos.x() < -pitch.x() / 2 || particlePos.x() > noOfPixels.x() * pitch.x() - pitch.x() / 2 ||
            particlePos.y() < -pitch.y() / 2 || particlePos.y() > noOfPixels.y() * pitch.y() - pitch.y() / 2) {
-            LOG(DEBUG) << "Particle at local coordinates x = " << particlePos.x() << " mm"
-                       << ", y = " << particlePos.y()
-                       << " mm hit in the sensor excess; removing from efficiency calculation.";
+            LOG(DEBUG) << "Particle at local coordinates x = " << Units::display(particlePos.x(), {"mm", "um"})
+                       << ", y = " << Units::display(particlePos.y(), {"mm", "um"})
+                       << " hit in the sensor excess; removing from efficiency calculation.";
             continue;
         }
 
