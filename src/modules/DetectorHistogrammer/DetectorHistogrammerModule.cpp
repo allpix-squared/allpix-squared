@@ -270,6 +270,9 @@ void DetectorHistogrammerModule::run(Event* event) {
     std::shared_ptr<PixelHitMessage> pixels_message{nullptr};
     auto mcparticle_message = messenger_->fetchMessage<MCParticleMessage>(this, event);
 
+    // Fetch detector model
+    auto model = detector_->getModel();
+
     // Check that we actually received pixel hits - we might have none and just received MCParticles!
     try {
         pixels_message = messenger_->fetchMessage<PixelHitMessage>(this, event);
@@ -334,7 +337,7 @@ void DetectorHistogrammerModule::run(Event* event) {
 
         LOG(TRACE) << "Matching primaries: " << intersection.size();
         for(const auto& particle : intersection) {
-            auto pitch = detector_->getModel()->getPixelSize();
+            auto pitch = model->getPixelSize();
 
             auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
@@ -389,10 +392,20 @@ void DetectorHistogrammerModule::run(Event* event) {
 
     // Calculate efficiency: search for matching clusters for all primary MCParticles
     for(auto& particle : primary_particles) {
-        auto pitch = detector_->getModel()->getPixelSize();
+        auto pitch = model->getPixelSize();
 
         // Calculate 2D local position of particle:
         auto particlePos = particle->getLocalReferencePoint() + track_smearing(track_resolution_);
+
+        auto pixels = model->getNPixels();
+
+        if(particlePos.x() < -pitch.x() / 2 || particlePos.x() > pixels.x() * pitch.x() - pitch.x() / 2 ||
+           particlePos.y() < -pitch.y() / 2 || particlePos.y() > pixels.y() * pitch.y() - pitch.y() / 2) {
+            LOG(DEBUG) << "Particle at local coordinate " << Units::display(particlePos, {"mm", "um"})
+                       << " hit in the sensor excess; removing from efficiency calculation.";
+            continue;
+        }
+
         auto inPixelPos = XYVector(std::fmod(particlePos.x() + pitch.x() / 2, pitch.x()),
                                    std::fmod(particlePos.y() + pitch.y() / 2, pitch.y()));
         auto inPixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
