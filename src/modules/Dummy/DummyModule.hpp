@@ -38,7 +38,7 @@ namespace allpix {
          * @brief Constructor for this unique module
          *
          * The constructor of the module is called right after the module has been instantiated. It has access to the module
-         * configuration and can set defaults and retriebe values from the config. The constructor is also the place where
+         * configuration and can set defaults and retrieve values from the config. The constructor is also the place where
          * multithreading capabilities of the module need to be announced, and where the messenger should be notified about
          * desired input messages that should be relayed to this module.
          *
