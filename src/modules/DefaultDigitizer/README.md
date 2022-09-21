@@ -23,7 +23,8 @@ In detail, the following steps are performed for every pixel charge:
 The QDC implementation also allows to simulate ToT (time-over-threshold) devices by setting the `qdc_offset` parameter to the negative `threshold`. Then, the QDC only converts charge above threshold.
 * A time-to-digital converter (TDC) with configurable resolution, given in bit, can be simulated if pulse information is available from the input data. If the necessary pulse information is available from the input data, e.g. by using the PulseTransfer module to generate PixelCharge objects, this module calculates the time-of-arrival (ToA) as the time when the integrated input charge crosses the threshold. Also here, the absolute of the integrated charge is compared to a positive threshold value to be independent of the signal polarity.
 First, the time from the start of the event until the first crossing of the charge threshold is calculated. It should be noted that this calculation does not take into account charge noise simulated in the QDC. The resulting ToA is smeared with a Gaussian distribution which allows to take TDC fluctuations into account. Then, the ToA is converted into TDC units using the `tdc_slope` and `tdc_offset` parameters provided. Finally, the calculated value is clamped to be contained within the TDC resolution, over- and underflows are treated as saturation.
-If no time information is available from the input data, a time stamp of 0 is stored.
+If no time information is available from the input data, a local time stamp of 0 is stored.
+It should be noted that when using the TDC simulation, the local time stamp of the produced PixelHit object is provided in TDC bins rather than in nanoseconds of the framework-internal units. The global timestamp, however, is always provided in nanoseconds and independent of the TDC settings.
 
 ### Gain Function
 
