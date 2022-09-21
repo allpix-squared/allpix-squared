@@ -110,7 +110,7 @@ void DefaultDigitizerModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        auto maximum = static_cast<double>(Units::convert(config_.get<double>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -120,7 +120,8 @@ void DefaultDigitizerModule::initialize() {
         h_gain = CreateHistogram<TH1D>("gain", "applied gain; gain factor;events", 40, -20, 20);
         h_pxq_gain = CreateHistogram<TH1D>(
             "pixelcharge_gain", "pixel charge w/ gain applied;pixel charge [ke];pixels", nbins, 0, maximum);
-        h_thr = CreateHistogram<TH1D>("threshold", "applied threshold; threshold [ke];events", maximum, 0, maximum / 10);
+        h_thr = CreateHistogram<TH1D>(
+            "threshold", "applied threshold; threshold [ke];events", static_cast<int>(maximum), 0, maximum / 10);
         h_pxq_sat = CreateHistogram<TH1D>(
             "pixelcharge_saturation", "pixel charge with front-end saturation;pixel charge [ke];pixels", nbins, 0, maximum);
         h_pxq_thr = CreateHistogram<TH1D>(
@@ -148,8 +149,8 @@ void DefaultDigitizerModule::initialize() {
                 CreateHistogram<TH1D>("pixelcharge_adc", "final pixel charge;pixel charge [ke];pixels", nbins, 0, maximum);
         }
 
-        int time_maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_timescale"), "ns"));
-        h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, maximum);
+        auto time_maximum = static_cast<double>(Units::convert(config_.get<double>("output_plots_timescale"), "ns"));
+        h_px_toa = CreateHistogram<TH1D>("pixel_toa", "pixel time-of-arrival;pixel ToA [ns];pixels", nbins, 0, time_maximum);
 
         // Create time-of-arrival plot with different axis, depending on whether TDC simulation is enabled or not
         if(tdc_resolution_ > 0) {
@@ -334,7 +335,7 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
         double integrated_charge = 0;
         for(bin = charges.begin(); bin != charges.end(); bin++) {
             integrated_charge += *bin;
-            if(integrated_charge >= threshold) {
+            if(std::abs(integrated_charge) >= threshold) {
                 break;
             }
         }
