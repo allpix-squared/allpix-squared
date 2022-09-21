@@ -58,7 +58,7 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     }
 
     auto temperature = config_.get<double>("temperature");
-    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature;
+    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature;
 
     // Mobility fixed to Jacoboni:
     mobility_ = std::make_unique<JacoboniCanali>(temperature);

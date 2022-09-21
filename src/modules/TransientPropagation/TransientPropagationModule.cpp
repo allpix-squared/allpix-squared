@@ -69,7 +69,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     }
 
     output_plots_ = config_.get<bool>("output_plots");
-    boltzmann_kT_ = Units::get(8.6173e-5, "eV/K") * temperature_;
+    boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
