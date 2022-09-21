@@ -31,7 +31,7 @@ Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
 Module::~Module() {
     // Remove delegates
     try {
-        for(auto delegate : delegates_) {
+        for(auto& delegate : delegates_) {
             delegate.first->remove_delegate(delegate.second);
         }
     } catch(std::out_of_range&) {
