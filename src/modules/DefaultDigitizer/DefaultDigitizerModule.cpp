@@ -316,11 +316,11 @@ void DefaultDigitizerModule::run(Event* event) {
             h_px_toa->Fill(time);
         }
 
+        // Store full arrival time for global timestamp and histogramming:
+        auto original_time = time;
+
         // Simulate TDC if resolution set to more than 0bit
         if(tdc_resolution_ > 0) {
-            // temporarily store full arrival time for histogramming:
-            auto original_time = time;
-
             // Add TDC smearing:
             allpix::normal_distribution<double> tdc_smearing(0, tdc_smearing_);
             time += tdc_smearing(event->getRandomEngine());
@@ -343,7 +343,7 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + time, charge, &pixel_charge);
+        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + original_time, charge, &pixel_charge);
     }
 
     // Output summary and update statistics
