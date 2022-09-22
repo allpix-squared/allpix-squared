@@ -59,16 +59,16 @@ The reader provides the following models for electric fields:
 The `depletion_depth` parameter can be used to control the thickness of the depleted region inside the sensor.
 This can be useful for devices such as HV-CMOS sensors, where the typical depletion depth but not necessarily the full
 depletion voltage are know. It should be noted that `depletion_voltage` and `depletion_depth` are mutually exclusive
-parameters and only one at a time can be specified.
+parameters and only one at a time can be specified. The alias `field_depth` can be used instead, as this parameter is the depth that the field will be created over. If the parameter is smaller than the field from an imported mesh, the field will be compressed in the z-direction.
 
 Furthermore the module can plot the electric field profile on an projection axis normal to the x,y or z-axis at a particular
 plane in the sensor. Additional plots comprise the individual field vector components as well as the field magnitude and can
-be enabled and controlled with the plotting parameter slisted below.
+be enabled and controlled with the plotting parameters listed below.
 
 ## Parameters
 - `model` : Type of the electric field model, either **linear**, **constant**, **parabolic**, **custom** or **mesh**.
 - `depletion_depth` : Thickness of the depleted region. Used for all electric fields. When using the depletion depth for the
-  **linear** model, no depletion voltage can be specified.
+  **linear** model, no depletion voltage can be specified. Defaults to the full sensor thickness. The alias `field_depth` can be used for improved readability when using the model **mesh** (as the depletion depth in an externally generated field may be smaller than the field depth).
 
 ### Parameters for models `linear` and `constant`
 - `bias_voltage` : Voltage over the whole sensor thickness. Used to calculate the electric field for the models **constant**
@@ -94,7 +94,7 @@ be enabled and controlled with the plotting parameter slisted below.
   of the 2D pixel plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not
   centered around a pixel cell but the corner between pixels.
 - `field_scale`:  Scaling factor of the electric field in x- and y-direction. By default, the scaling factors are set to
-  `{1, 1}` and the field is used with its physical extent stated in the field data file.
+  `{1, 1}` and the field is used with its physical extent stated in the field data file. To scale the field in the z-direction, the parameter `field_depth` can be used.
 - `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can
   be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
   The shift is applied in positive direction of the respective coordinate.

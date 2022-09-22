@@ -37,6 +37,8 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
 
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
+    // NOTE use field_depth as a synonym for depletion_depth
+    config_.setAlias("depletion_depth", "field_depth");
 }
 
 void ElectricFieldReaderModule::initialize() {
