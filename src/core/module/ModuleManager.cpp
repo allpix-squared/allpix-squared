@@ -219,13 +219,18 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             ModuleIdentifier identifier = id_mod.first;
 
             // Check if the unique instantiation already exists
-            auto iter = id_to_module_.find(identifier);
+            auto iter = std::find_if(id_to_module_.begin(), id_to_module_.end(), [&identifier](const auto& mapv) {
+                return identifier.getUniqueName() == mapv.first.getUniqueName();
+            });
             if(iter != id_to_module_.end()) {
                 // Unique name exists, check if its needs to be replaced
                 if(identifier.getPriority() < iter->first.getPriority()) {
                     // Priority of new instance is higher, replace the instance
                     LOG(TRACE) << "Replacing model instance " << iter->first.getUniqueName()
                                << " with instance with higher priority.";
+
+                    // Drop configuration from replaced module
+                    conf_manager_->dropInstanceConfiguration(iter->first);
 
                     module_execution_time_.erase(iter->second->get());
                     iter->second = modules_.erase(iter->second);
@@ -235,7 +240,9 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     if(identifier.getPriority() == iter->first.getPriority()) {
                         throw AmbiguousInstantiationError(config.getName());
                     }
-                    // Priority is lower, do not add this module to the run list
+                    // Priority is lower, do not add this module to the run list, drop config
+                    conf_manager_->dropInstanceConfiguration(identifier);
+                    module_execution_time_.erase(id_mod.second);
                     continue;
                 }
             }
@@ -259,6 +266,18 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         }
     }
     LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loaded " << configs.size() << " modules";
+}
+
+/**
+ * Calls config_manager->addInstanceConfiguration(identifier, config) while handling ModuleIdentifierAlreadyAddedError
+ */
+static inline Configuration&
+add_instance_configuration(ConfigManager* config_manager, const ModuleIdentifier& identifier, const Configuration& config) {
+    try {
+        return config_manager->addInstanceConfiguration(identifier, config);
+    } catch(ModuleIdentifierAlreadyAddedError&) {
+        throw AmbiguousInstantiationError(identifier.getUniqueName());
+    }
 }
 
 /**
@@ -301,7 +320,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     }
 
     // Create and add module instance config
-    Configuration& instance_config = conf_manager_->addInstanceConfiguration(identifier, config);
+    Configuration& instance_config = add_instance_configuration(conf_manager_, identifier, config);
 
     // Specialize instance configuration
     std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");
@@ -421,7 +440,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         auto start = std::chrono::steady_clock::now();
 
         // Create and add module instance config
-        Configuration& instance_config = conf_manager_->addInstanceConfiguration(instance.second, config);
+        Configuration& instance_config = add_instance_configuration(conf_manager_, instance.second, config);
 
         // Add internal module config
         std::filesystem::path output_dir = instance_config.get<std::string>("_global_dir");

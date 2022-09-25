@@ -73,14 +73,30 @@ namespace allpix {
         /**
          * @brief Operators for comparing identifiers
          *
-         * Identifiers are only compared on their unique name, identifiers are not distinguished on priorities
+         * Identifiers are compared on their unique name and their priorities
          */
-        bool operator==(const ModuleIdentifier& other) const { return getUniqueName() == other.getUniqueName(); }
-        bool operator!=(const ModuleIdentifier& other) const { return getUniqueName() != other.getUniqueName(); }
-        bool operator<(const ModuleIdentifier& other) const { return getUniqueName() < other.getUniqueName(); }
-        bool operator<=(const ModuleIdentifier& other) const { return getUniqueName() <= other.getUniqueName(); }
-        bool operator>(const ModuleIdentifier& other) const { return getUniqueName() > other.getUniqueName(); }
-        bool operator>=(const ModuleIdentifier& other) const { return getUniqueName() >= other.getUniqueName(); }
+        bool operator==(const ModuleIdentifier& other) const {
+            return getUniqueName() == other.getUniqueName() && getPriority() == other.getPriority();
+        }
+        bool operator!=(const ModuleIdentifier& other) const {
+            return getUniqueName() != other.getUniqueName() || getPriority() != other.getPriority();
+        }
+        bool operator<(const ModuleIdentifier& other) const {
+            return getUniqueName() != other.getUniqueName() ? getUniqueName() < other.getUniqueName()
+                                                            : getPriority() < other.getPriority();
+        }
+        bool operator<=(const ModuleIdentifier& other) const {
+            return getUniqueName() != other.getUniqueName() ? getUniqueName() <= other.getUniqueName()
+                                                            : getPriority() <= other.getPriority();
+        }
+        bool operator>(const ModuleIdentifier& other) const {
+            return getUniqueName() != other.getUniqueName() ? getUniqueName() > other.getUniqueName()
+                                                            : getPriority() > other.getPriority();
+        }
+        bool operator>=(const ModuleIdentifier& other) const {
+            return getUniqueName() != other.getUniqueName() ? getUniqueName() >= other.getUniqueName()
+                                                            : getPriority() >= other.getPriority();
+        }
         /// @}
 
     private:
