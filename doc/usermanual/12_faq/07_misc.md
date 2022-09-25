@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Miscellaneous"
-weight: 6
+weight: 7
 ---
 
 #### How can I produce nicely looking drift-diffusion line graphs?
