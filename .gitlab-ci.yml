@@ -214,8 +214,7 @@ fmt:proselint:
         - export PATH=~/.local/bin:$PATH
         - cd ../
         - pip install --trusted-host=pypi.org --user proselint
-        - proselint ./
-
+        - proselint `find ./ -name "*.md"`
 
 fmt:coverity:
     extends: .format
