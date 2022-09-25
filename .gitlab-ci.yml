@@ -563,7 +563,7 @@ deploy:eos:
         - pkg:cc8-gcc
         - pkg:macos-clang
     # Docker image with tools to deploy to EOS
-    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer@sha256:f22e1364863e86bcddc45ff1da08dfb6b4a6d0203a7c4b15562713dcf4a8b717
     script:
         - deploy-eos
     # do not run any globally defined before_script or after_script for this step
