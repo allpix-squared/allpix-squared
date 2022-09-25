@@ -7,7 +7,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 ## make_module.sh
 
-Short script to prepare the source code and CMake files for a new allpix<sup>2</sup> module. 
+Short script to prepare the source code and CMake files for a new allpix<sup>2</sup> module.
 The tool will ask for all necessary information, such as the module name ("Module" will be appended automatically) and the type.
 Both unique and detector-specific modules are supported.
 
@@ -23,7 +23,7 @@ etc/scripts/make_module.sh
 Example output:
 
 ```
-$ ../etc/make_module.sh 
+$ ../etc/make_module.sh
 
 Preparing code basis for a new module:
 
@@ -32,7 +32,7 @@ Type of the module?
 1) unique
 2) detector
 #? 1
-Creating directory and files...
+Creating directory and files…
 
 Name:   MyNewPropagator
 Author: John Doe (john.doe AT cern.ch)
@@ -97,9 +97,9 @@ Usage:
 python create_deposition_file.py
 ```
 
-This will create files called `deposition.csv` and/or `deposition.root`. If asking for `TTree`s, an inspection of the `TTree` is possible within the script. 
+This will create files called `deposition.csv` and/or `deposition.root`. If asking for `TTree`s, an inspection of the `TTree` is possible within the script.
 
 
-## create-db.sql                                                                                                                                                                                  
-                                                                                                                                                                                                    
+## create-db.sql
+
 Generates the postgreSQL database for the DatabaseWriter module. For instructions on how to use this script, please refer to the README of the DatabaseWriter module.

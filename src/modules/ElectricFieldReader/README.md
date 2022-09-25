@@ -14,7 +14,7 @@ applied.
 The reader provides the following models for electric fields:
 
 - For **constant** electric fields it add a constant electric field in the z-direction towards the pixel implants. This is
-  not very physical but might aid in developing and testing new charge propagation algorithms.
+  not physical but might aid in developing and testing new charge propagation algorithms.
 
 - For **linear** electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage.
   The sensor is depleted either from the implant or the back side, the direction of the electric field depends on the sign of
@@ -52,7 +52,7 @@ The reader provides the following models for electric fields:
 - The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components
   of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for
   the `z` component of the field vector, or with three functions representing the three components of the field vector. Using
-  the `field_parameters` configuration, values for free parameters defined in the formulae can be set. For the parameters,
+  the `field_parameters` configuration, values for the free parameters defined in the formulae can be set. For the parameters
   units are supported and parsed. Each of the field vector components has access to its own free parameters as well as all
   three coordinates `x`, `y` and `z` which are defined as the position within the respective pixel.
 

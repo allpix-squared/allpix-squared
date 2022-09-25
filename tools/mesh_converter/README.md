@@ -39,7 +39,7 @@ Both file formats can be imported into Allpix Squared.
 The **APF** (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
 
 The **INIT** file is an ASCII text file with a format used by other tools such as PixelAV.
-Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<...>` while other fields are not interpreted and can be left untouched:
+Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<…>` while other fields are not interpreted and can be left untouched:
 
 ```
 <first line: some descriptive text to identify the field or field source>
@@ -88,8 +88,8 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 ### Parameters
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `parser`: Parser class to interpret input data in. Currently, only **DF-ISE** is supported and used as default.
-* `region`: Region name or list of region names to be meshed, such as for example `bulk` or `"bulk","epi"` (No default value; required parameter).
-* `observable`: Observable to be interpolated, such as for example `ElectricField` (No default value; required parameter).
+* `region`: Region name or list of region names to be meshed, such as `bulk` or `"bulk","epi"` (No default value; required parameter).
+* `observable`: Observable to be interpolated, such as `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
 * `interpolate`: Boolean switch to select either the barycentric interpolation method or the closest-neighbor method. Defaults to `true`, i.e. using the interpolation method.
 * `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.

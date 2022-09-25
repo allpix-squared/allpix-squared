@@ -14,7 +14,7 @@ Similar to the SimpleTransferModule, this module combines individual sets of pro
 
 It is also possible to simulate assemblies with tilted chips, with non-uniform coupling over the pixel matrix, by providing the tilting angles between the chips, the nominal and minimum gaps between the pixel pads, the pixel coordinates where the chips are away from each other by the minimum gap provided and a root file containing ROOT::TGraph with coupling capacitances *vs* gap between pixel pads.
 
-The coupling matrix (imported via the `coupling_matrix` or the `coupling_file` configuration keys) represents the pixels coupling with a nominal gap between the chips, while the the ROOT file imported with the configuration key `coupling_scan_file` contains the coupling between the pixels for several gaps.
+The coupling matrix (imported via the `coupling_matrix` or the `coupling_file` configuration keys) represents the pixels coupling with a nominal gap between the chips, while the ROOT file imported with the configuration key `coupling_scan_file` contains the coupling between the pixels for several gaps.
 
 The coupling matrices can be used to easily simulate the cross-coupling in CCPDs with the nominal, and constant, gap between chips over the pixel matrix.
 In such cases, the "central pixel" (center element of the coupling matrix) always receive 100% of the charge transferred while neighbor pixels, with lower coupling capacitance, gets a fraction of the charged transferred to the central pixel, normalized by the nominal capacitance (capacitance to central pixel).
@@ -48,7 +48,7 @@ The cross-coupling matrix, to be parsed via the matrix file or via the configura
 ```
 
 The matrix center element, `cross_coupling_11` in this example, is the coupling to the closest pixel and should be always 1.
-The matrix can have any size, although square 3x3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with NxM, where N and M are the respective sizes of the matrix.
+The matrix can have any size, although square 3×3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with N×M, where N and M are the respective sizes of the matrix.
 
 ## Usage
 This module accepts only one coupling model (`coupling_scan_file`, coupling_file or `coupling_matrix`) at each time. If more then one option is provided, the simulation will not run.

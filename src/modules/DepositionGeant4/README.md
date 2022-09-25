@@ -52,7 +52,7 @@ where `Z` and `A` are unsigned integers, `Q` is a signed integer, `E` a floating
 ### Energy Deposition and Charge Carrier creation
 
 For all particles passing the sensitive device of the detectors, the energy loss is converted into deposited charge carriers in every step of the Geant4 simulation.
-Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of very thin sensors \[[@pai]\].
+Optionally, the Photoabsorption Ionization model (PAI) can be activated to improve the modeling of thin sensors \[[@pai]\].
 The information about the truth particle passage is also fully available, with every deposit linked to a MCParticle.
 Each trajectory which passes through at least one detector is also registered and stored as a global MCTrack.
 MCParticles are linked to their respective tracks and each track is linked to its parent track, if available.
