@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Introduction"
-description: "Introduction to the Allpix Squared project."
+description: "A brief introduction to the Allpix Squared framework and its goals."
 weight: 1
 ---
 

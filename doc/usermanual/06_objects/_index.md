@@ -6,5 +6,10 @@ description: "Objects which can be used to transfer data between modules."
 weight: 6
 ---
 
-Allpix Squared provides a set of objects which can be used to transfer data between modules. These objects can be sent with
-the messaging system as explained in [Section 4.6](../04_framework/06_messages.md).
+Allpix Squared provides a set of objects which can be used to transfer data between modules and to store the simulation
+results to file. These objects can be read again from file and dispatched to a secondary simulation chain using the
+[ROOTObjectReader](../07_modules/rootobjectreader.md) and [ROOTObjectWriter](../07_modules/rootobjectwriter.md) modules which
+dispatch them via the messaging system as explained in [Section 4.6](../04_framework/06_messages.md).
+
+Objects stored to a ROOT file can be analyzed using C or Python scripts, the example scripts for both languages described in
+[Section 13](13_additional/root_analysis_macros.md) are provided in the repository.

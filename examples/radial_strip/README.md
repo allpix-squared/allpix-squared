@@ -1,8 +1,8 @@
 ---
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "Radial Strip"
-description: "Simulation of a radial strip detector"
+title: "Radial Strip Detector"
+description: "Simulation of a silicon detector with radial strip electrodes"
 ---
 
 This example simulates a radial strip detector, which features a trapezoidal shape and strips fanning out radially from a common focal point.
