@@ -11,6 +11,9 @@ arising. Reports on issues, questions concerning the software as well as the doc
 are very much appreciated. These should preferably be brought up on the issues tracker of the project which can be found in
 the repository \[[@ap2-issue-tracker]\]. General support questions are best asked in the forum \[[@ap2-forum]\].
 
+The FAQ in [Chapter 12](../12_faq/_index.md) is good place to start looking if a question arises.
+In particular [Section 12.6](../12_faq/06_debugging.md) should be consulted before opening a bug report.
+
 
 [@ap2-issue-tracker]: https://gitlab.cern.ch/allpix-squared/allpix-squared/issues
 [@ap2-forum]: https://cern.ch/allpix-squared-forum
