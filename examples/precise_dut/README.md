@@ -1,8 +1,8 @@
 ---
 # SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
-title: "Precise DUT"
-description: "Fast simulation with high precision on the DUT"
+title: "Precise DUT Simulation"
+description: "Fast simulation of reference detectors with high precision on the DUT"
 ---
 
 This example combines features from the "Fast Simulation" and the "TCAD Field Simulation" examples. The setup consists of six telescope planes of Timepix-type detectors for reference tracks and a device under test (DUT), in this case a CLICpix2 detector, in the center of the telescope between the two arms. The goal of this setup is to demonstrate how to perform a fast simulation on the telescope planes while maintaining a high precision on the DUT.
