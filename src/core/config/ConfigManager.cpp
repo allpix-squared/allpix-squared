@@ -156,26 +156,25 @@ std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
 /**
  * @warning A previously stored configuration is directly invalidated if the same unique name is used again
  *
- * An instance configuration is a specialized configuration for a particular module instance. If an unique name already
- * exists the previous record is deleted and a new configuration record corresponding to the replaced instance is added.
+ * An instance configuration is a specialized configuration for a particular module instance. If a ModuleIdentifier already
+ * exists an error is thrown.
  */
 Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& identifier, const Configuration& config) {
-    std::string unique_name = identifier.getUniqueName();
     // Check uniqueness
-    if(instance_name_to_config_.find(unique_name) != instance_name_to_config_.end()) {
-        instance_configs_.erase(instance_name_to_config_[unique_name]);
+    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
+        throw ModuleIdentifierAlreadyAddedError(identifier);
     }
 
     // Add configuration
     instance_configs_.push_back(config);
     Configuration& ret_config = instance_configs_.back();
-    instance_name_to_config_[unique_name] = --instance_configs_.end();
+    instance_identifier_to_config_[identifier] = --instance_configs_.end();
 
     // Add identifier key to config
     ret_config.set<std::string>("identifier", identifier.getIdentifier());
 
     // Apply instance options
-    module_option_parser_.applyOptions(unique_name, ret_config);
+    module_option_parser_.applyOptions(identifier.getUniqueName(), ret_config);
     return ret_config;
 }
 
@@ -185,4 +184,19 @@ Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& i
  */
 std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
     return instance_configs_;
+}
+
+/**
+ * An instance configuration might be dropped when not used (e.g. it is overwritten by another module instance afterwards)
+ * We need to remove it from the instance configuration list to ensure dumping the config actually dumps only the instance
+ * configurations that were used.
+ */
+void ConfigManager::dropInstanceConfiguration(const ModuleIdentifier& identifier) {
+    // Remove config from instance configs and from instance identifier map
+    if(instance_identifier_to_config_.find(identifier) != instance_identifier_to_config_.end()) {
+        instance_configs_.erase(instance_identifier_to_config_[identifier]);
+        instance_identifier_to_config_.erase(identifier);
+    } else {
+        throw ModuleIdentifierNotFoundError(identifier);
+    }
 }

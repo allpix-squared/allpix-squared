@@ -11,6 +11,7 @@
 
 #include "core/config/exceptions.h"
 #include "Configuration.hpp"
+#include "core/module/ModuleIdentifier.hpp"
 
 using namespace allpix;
 
@@ -43,4 +44,14 @@ InvalidCombinationError::InvalidCombinationError(const Configuration& config,
     if(!reason.empty()) {
         error_message_ += ": " + reason;
     }
+}
+
+ModuleIdentifierNotFoundError::ModuleIdentifierNotFoundError(const ModuleIdentifier& identifier) {
+    error_message_ = "Module Identifier " + identifier.getUniqueName() + ":" + std::to_string(identifier.getPriority()) +
+                     " not found in the module identifier list";
+}
+
+ModuleIdentifierAlreadyAddedError::ModuleIdentifierAlreadyAddedError(const ModuleIdentifier& identifier) {
+    error_message_ = "Module Identifier " + identifier.getUniqueName() + ":" + std::to_string(identifier.getPriority()) +
+                     " already added to the module identifier list";
 }
