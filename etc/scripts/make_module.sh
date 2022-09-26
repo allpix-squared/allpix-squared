@@ -34,8 +34,8 @@ OBJDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 OBJDIR=$OBJDIR/../../src/objects
 if [ ! -z "${MESSAGETYPE}" ] && [ ! -e ${OBJDIR}/${MESSAGETYPE}.hpp ]
 then
-  echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
-  exit 1
+    echo -e "\nMessage type ${MESSAGETYPE} does not exist. \nPlease see the message types in ${OBJDIR}\n"
+    exit 1
 fi
 
 echo "Creating directory and files..."
@@ -50,15 +50,15 @@ DIRECTORIES[2]="src/modules"
 MODDIR=""
 for DIR in "${DIRECTORIES[@]}"; do
     if [ -d "$DIR" ]; then
-	MODDIR="$DIR"
-	break
+        MODDIR="$DIR"
+        break
     fi
 done
 
 # Create directory
 mkdir "$MODDIR/$MODNAME"
 if [ $? != 0 ]; then
-  exit 1
+    exit 1
 fi
 
 # Copy over CMake file and sources from Dummy:
@@ -93,61 +93,61 @@ if [ "$platform" = "Darwin" ]; then opt="-i \"\""; fi
 # Change to detector module type if necessary:
 if [ "$type" = 2 ]; then
 
-  # Prepare sed commands to change to per detector module
-  # Change module type in CMakeLists
-  command="sed $opt 's/_UNIQUE_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
-  eval $command
-  # Change header file
-  command="sed ${opt} \
-      -e 's/ unique / detector-specific /g' \
-      -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
-      -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
-      -e 's/GeometryManager/DetectorModel/g' \
-      $MODDIR/$MODNAME/${MODNAME}Module.hpp"
-  eval $command
-  # Change implementation file
-  command="sed ${opt} \
-      -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
-      -e 's/Module(config)/Module\(config\, detector\)/g' \
-      -e 's/bindMulti/bindSingle/g' \
-      -e '/for(auto/d' \
-      -e 's/geo_manager_(geo_manager)/detector_(detector)/g' \
-      -e '/geo_manager_/d' \
-      -e 's/detector->get/detector_->get/g' \
-      -e '/    }/d' \
-      -e '/Loop/d' \
-      -e 's/auto messages/auto message/g' \
-      -e 's/fetchMultiMessage/fetchMessage/g' \
-      $MODDIR/$MODNAME/${MODNAME}Module.cpp"
-  eval $command
+    # Prepare sed commands to change to per detector module
+    # Change module type in CMakeLists
+    command="sed $opt 's/_UNIQUE_/_DETECTOR_/g' $MODDIR/$MODNAME/CMakeLists.txt"
+    eval $command
+    # Change header file
+    command="sed ${opt} \
+        -e 's/ unique / detector-specific /g' \
+        -e 's/param geo_manager.*/param detector Pointer to the detector for this module instance/g' \
+        -e 's/GeometryManager\* geo\_manager/std::shared\_ptr\<Detector\> detector/g' \
+        -e 's/GeometryManager/DetectorModel/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.hpp"
+    eval $command
+    # Change implementation file
+    command="sed ${opt} \
+        -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
+        -e 's/Module(config)/Module\(config\, detector\)/g' \
+        -e 's/bindMulti/bindSingle/g' \
+        -e '/for(auto/d' \
+        -e 's/geo_manager_(geo_manager)/detector_(detector)/g' \
+        -e '/geo_manager_/d' \
+        -e 's/detector->get/detector_->get/g' \
+        -e '/    }/d' \
+        -e '/Loop/d' \
+        -e 's/auto messages/auto message/g' \
+        -e 's/fetchMultiMessage/fetchMessage/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.cpp"
+    eval $command
 fi
 
 # Change to SequentialModule if required
 if [ "$sequence" = 1 ]; then
-  # Change header file
-  command="sed ${opt} \
-      -e 's/public Module/public SequentialModule/g' \
-      $MODDIR/$MODNAME/${MODNAME}Module.hpp"
-  eval $command
-  # Change implementation file
-  command="sed ${opt} \
-      -e 's/ Module/ SequentialModule/g' \
-      $MODDIR/$MODNAME/${MODNAME}Module.cpp"
-  eval $command
+    # Change header file
+    command="sed ${opt} \
+        -e 's/public Module/public SequentialModule/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.hpp"
+    eval $command
+    # Change implementation file
+    command="sed ${opt} \
+        -e 's/ Module/ SequentialModule/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.cpp"
+    eval $command
 fi
 
 if [ ! -z "${MESSAGETYPE}" ]; then
-  # Replace the corresponding message type in the header and source file
-  command="sed ${opt} \
-  -e 's/PixelHit/${MESSAGETYPE}/g' \
-  $MODDIR/$MODNAME/${MODNAME}Module.*pp"
+    # Replace the corresponding message type in the header and source file
+    command="sed ${opt} \
+        -e 's/PixelHit/${MESSAGETYPE}/g' \
+        $MODDIR/$MODNAME/${MODNAME}Module.*pp"
 else
-  command="sed ${opt} \
-  -e '/PixelHit/d' \
-  -e '/\/\/ Messages:/d' \
-  -e '/for(auto\& message/,+4d' \
-  -e '/particular message/,+2d' \
-  $MODDIR/$MODNAME/${MODNAME}Module.*pp"
+    command="sed ${opt} \
+        -e '/PixelHit/d' \
+        -e '/\/\/ Messages:/d' \
+        -e '/for(auto\& message/,+4d' \
+        -e '/particular message/,+2d' \
+        $MODDIR/$MODNAME/${MODNAME}Module.*pp"
 fi
 eval $command
 
@@ -157,10 +157,10 @@ echo "Name:   $MODNAME"
 echo "Author: $MYNAME ($MYMAIL)"
 echo "Path:   $FINALPATH"
 if [ ! -z "${MESSAGETYPE}" ]; then
-  echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
+    echo "This module listens to \"$MESSAGETYPE\" messages from" $([ "$type" = 2 ] && echo "one detector" || echo "all detectors")
 fi
 if [ "$sequence" = 1 ]; then
-  echo "This module requires sequential processing of events in multithreaded environments."
+    echo "This module requires sequential processing of events in multithreaded environments."
 fi
 echo
 echo "Re-run CMake in order to build your new module."
