@@ -552,7 +552,7 @@ deploy:eos:
       - docker
     variables:
         GIT_STRATEGY: none
-    # Only run for new tags:
+    # Only run on new tags for releases and on schedules for nightlies:
     only:
         - tags@allpix-squared/allpix-squared
         - schedules@allpix-squared/allpix-squared
@@ -565,6 +565,7 @@ deploy:eos:
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
+        - if [ ! -z ${CI_COMMIT_TAG} ]; then cp public/usermanual/allpix-manual-*.pdf public/usermanual/allpix-manual.pdf; fi
         - deploy-eos
     # do not run any globally defined before_script or after_script for this step
     before_script: []
