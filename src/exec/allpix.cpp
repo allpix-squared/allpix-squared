@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
 
         if(arg == "-h") {
             print_help = true;
-        } else if(strcmp(argv[i], "--version") == 0) {
+        } else if(arg == "--version") {
             std::cout << "Allpix Squared version " << ALLPIX_PROJECT_VERSION;
 #ifdef ALLPIX_BUILD_ENV
             std::cout << " (" << ALLPIX_BUILD_ENV << ")";
