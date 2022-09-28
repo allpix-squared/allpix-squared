@@ -191,6 +191,13 @@ int main(int argc, char** argv) {
         auto regions = config.getArray<std::string>("region");
         auto observable = config.get<std::string>("observable");
         const auto units = config.get<std::string>("observable_units");
+        // Test if this unit is valid:
+        try {
+            auto unit = Units::get(units);
+        } catch(std::invalid_argument& e) {
+            throw allpix::InvalidValueError(config, "observable_units", e.what());
+        }
+
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
         const auto radius_step = config.get<double>("radius_step", 0.5);
