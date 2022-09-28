@@ -112,3 +112,7 @@ output_path = "test"
 my_switch = true
 my_other_switch = 0
 ```
+
+{{% alert title="Note" color="info" %}}
+In some places, providing configuration variables with units is mandatory. In case the respective input should be interpreted as base units, or without units such as a weighting potential, the parameter can be provided as empty string, i.e. `observable_units = ""`.
+{{% /alert %}}
