@@ -239,36 +239,44 @@ void DepositionLaserModule::run(Event* event) {
             LOG(DEBUG) << "        global: " << hit_global << " mm, " << time_hit_global << " ns";
             LOG(DEBUG) << "        local: " << hit_local << " mm, " << time_hit_local << " ns";
 
-            MCParticle p(hit_entry_local,
-                         hit_entry_global,
-                         hit_local,
-                         hit_global,
-                         22, // gamma
-                         time_entry_local,
-                         time_entry_global);
-
-            // setCarrierType method does not exist so that object is created twice :(
-            DepositedCharge d_e(hit_local,
-                                hit_global,
-                                CarrierType::ELECTRON,
-                                1, // value
-                                time_hit_local,
-                                time_hit_global);
-
-            DepositedCharge d_h(hit_local,
-                                hit_global,
-                                CarrierType::HOLE,
-                                1, // value
-                                time_hit_local,
-                                time_hit_global);
-
+            // If that is a first hit in this detector, create map entries
             if(mc_particles.count(d_hit) == 0) {
-                mc_particles[d_hit] = std::vector<MCParticle>();
+                // This vector is initially assigned size
+                // Otherwise, resize() would be called  during its fill
+                // and this will break pointers to MCParticle's in DepositedCharge's
+                mc_particles[d_hit] = std::vector<MCParticle>(photon_number_);
+            }
+            if(deposited_charges.count(d_hit) == 0) {
                 deposited_charges[d_hit] = std::vector<DepositedCharge>();
             }
-            mc_particles[d_hit].push_back(p);
-            deposited_charges[d_hit].push_back(d_e);
-            deposited_charges[d_hit].push_back(d_h);
+
+            // Construct all necessary objects in-place
+            // allpix::MCParticle
+            mc_particles[d_hit].emplace_back(hit_entry_local,
+                                             hit_entry_global,
+                                             hit_local,
+                                             hit_global,
+                                             22, // gamma
+                                             time_entry_local,
+                                             time_entry_global);
+
+            // allpix::DepositedCharge for electron
+            deposited_charges[d_hit].emplace_back(hit_local,
+                                                  hit_global,
+                                                  CarrierType::ELECTRON,
+                                                  1, // value
+                                                  time_hit_local,
+                                                  time_hit_global,
+                                                  &(mc_particles[d_hit].back()));
+
+            // allpix::DepositedCharge for hole
+            deposited_charges[d_hit].emplace_back(hit_local,
+                                                  hit_global,
+                                                  CarrierType::HOLE,
+                                                  1, // value
+                                                  time_hit_local,
+                                                  time_hit_global,
+                                                  &(mc_particles[d_hit].back()));
         }
     } // loop over photons
 
@@ -276,12 +284,12 @@ void DepositionLaserModule::run(Event* event) {
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
         LOG(INFO) << detector->getName() << ": " << data.size() << " hits";
-
-        // I am not sure whether move works correctly in this case
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, mcparticle_message, event);
+    }
 
-        auto charge_message = std::make_shared<DepositedChargeMessage>(std::move(deposited_charges[detector]), detector);
+    for(auto& [detector, data] : deposited_charges) {
+        auto charge_message = std::make_shared<DepositedChargeMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, charge_message, event);
     }
 }
