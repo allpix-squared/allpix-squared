@@ -79,7 +79,7 @@ void DepositionLaserModule::initialize() {
     LOG(INFO) << "Loading absorption data: " << laser_data_path;
 
     // Find or interpolate absorption depth for given wavelength
-    if(absorption_lut.count(wavelength_)) {
+    if(absorption_lut.count(wavelength_) != 0) {
         absorption_length_ = absorption_lut[wavelength_];
     } else {
         auto it = absorption_lut.upper_bound(wavelength_);
