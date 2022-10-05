@@ -40,6 +40,27 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     config_.setDefault<double>("beam_waist", 0.02);
     config_.setDefault<int>("photon_number", 10000);
 
+    size_t convergence_params_count = config_.count({"focal_distance", "beam_convergence"});
+    switch(convergence_params_count) {
+    case 0:
+        LOG(DEBUG) << "Beam geometry: cylindrical";
+        break;
+    case 1:
+        throw InvalidCombinationError(config_,
+                                      {"focal_distance", "beam_convergence"},
+                                      "Both focal distance and convergence should be given for a gaussian beam");
+        break;
+    case 2:
+        LOG(DEBUG) << "Beam geometry: converging";
+        focal_distance_ = config_.get<double>("focal_distance");
+        beam_convergence_ = config_.get<double>("beam_convergence");
+        LOG(DEBUG) << "Focal distance: " << focal_distance_.value()
+                   << " mm, convergence angle: " << Units::convert(beam_convergence_.value(), "deg") << " deg";
+        break;
+    default:
+        break;
+    }
+
     beam_waist_ = config_.get<double>("beam_waist");
     LOG(DEBUG) << "Beam waist: " << Units::convert(beam_waist_, "um") << " um";
     if(beam_waist_ < 0) {
