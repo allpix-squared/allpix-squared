@@ -16,9 +16,13 @@
 #include <objects/DepositedCharge.hpp>
 #include <objects/MCParticle.hpp>
 
+#include <Math/AxisAngle.h>
 #include <TMath.h>
 
+#define _USE_MATH_DEFINES
+
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -173,9 +177,46 @@ void DepositionLaserModule::run(Event* event) {
         std::string event_name = std::to_string(event->number);
         LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of " << photon_number_;
 
-        // Generate starting point in the beam
-        ROOT::Math::XYZPoint starting_point = source_position_ + beam_pos_smearing(beam_waist_);
-        LOG(DEBUG) << "    Starting point: " << starting_point << ", direction " << beam_direction_;
+        // Starting point and direction for this exact photon
+        ROOT::Math::XYZPoint starting_point{};
+        ROOT::Math::XYZVector photon_direction{};
+
+        // Generate starting point and direction in the beam
+        if(beam_convergence_ && focal_distance_) {
+            // Converging beam case
+
+            // Generate correct position in the focal plane
+            auto focal_position =
+                source_position_ + beam_direction_ * focal_distance_.value() + beam_pos_smearing(beam_waist_);
+
+            // Generate angles
+            double a = 1;
+            double phi = allpix::uniform_real_distribution<double>(0, -1)(event->getRandomEngine());
+            double sin_theta =
+                allpix::uniform_real_distribution<double>(0, sin(beam_convergence_.value()))(event->getRandomEngine());
+
+            // Rotate direction by given angles
+            // First, define and apply theta rotation
+            ROOT::Math::XYZVector theta_axis = orthogonal_pair(beam_direction_).first;
+            ROOT::Math::AxisAngle theta_rotation(theta_axis, asin(sin_theta));
+            photon_direction = theta_rotation(beam_direction_);
+
+            // Second, rotate that around the beam axis
+            ROOT::Math::AxisAngle phi_rotation(beam_direction_, phi);
+            photon_direction = phi_rotation(photon_direction);
+
+            // Backtrack position from the focal plane to the source plane
+            // This calculation is nuts, will add an explanation somewhere
+            starting_point = focal_position + photon_direction * beam_direction_.Dot(source_position_ - focal_position) /
+                                                  beam_direction_.Dot(photon_direction);
+
+        } else {
+            // Cylindrical beam case
+            starting_point = source_position_ + beam_pos_smearing(beam_waist_);
+            photon_direction = beam_direction_;
+        }
+
+        LOG(DEBUG) << "    Starting point: " << starting_point << ", direction " << photon_direction;
 
         // Get starting time in the pulse
         double starting_time = starting_times[i_photon];
@@ -191,7 +232,7 @@ void DepositionLaserModule::run(Event* event) {
         std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
         for(auto& detector : detectors) {
-            auto intersection = get_intersection(detector, starting_point, beam_direction_);
+            auto intersection = get_intersection(detector, starting_point, photon_direction);
             if(intersection) {
                 intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
             } else if(verbose_tracking_) {
@@ -215,8 +256,8 @@ void DepositionLaserModule::run(Event* event) {
             double t1 = points.second;
             double distance = t1 - t0;
 
-            ROOT::Math::XYZPoint entry_point = starting_point + beam_direction_ * t0;
-            ROOT::Math::XYZPoint exit_point = starting_point + beam_direction_ * t1;
+            ROOT::Math::XYZPoint entry_point = starting_point + photon_direction * t0;
+            ROOT::Math::XYZPoint exit_point = starting_point + photon_direction * t1;
             if(verbose_tracking_) {
                 LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
                            << Units::convert(distance, "um") << " um, ";
@@ -246,8 +287,8 @@ void DepositionLaserModule::run(Event* event) {
             }
 
             // Create and store corresponding MCParticle and DepositedCharge
-            auto hit_entry_global = starting_point + beam_direction_ * t0_hit;
-            auto hit_global = starting_point + beam_direction_ * t_hit;
+            auto hit_entry_global = starting_point + photon_direction * t0_hit;
+            auto hit_global = starting_point + photon_direction * t_hit;
             auto hit_entry_local = d_hit->getLocalPosition(hit_entry_global);
             auto hit_local = d_hit->getLocalPosition(hit_global);
 
