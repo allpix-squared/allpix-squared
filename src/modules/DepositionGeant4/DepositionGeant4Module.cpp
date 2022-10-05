@@ -218,6 +218,27 @@ void DepositionGeant4Module::initialize() {
     }
     physicsList->SetDefaultCutValue(production_cut);
 
+    // Set minimum remaining kinetic energy for a track
+    double min_charge_creation_energy{};
+    if(config_.has("charge_creation_energy")) {
+        min_charge_creation_energy = config_.get<double>("charge_creation_energy");
+        LOG(INFO) << "Setting minimum kinetic energy for tracks to " << Units::display(min_charge_creation_energy, {"eV"});
+    } else {
+        // Find minimum ionization energy from used detectors
+        min_charge_creation_energy = std::numeric_limits<double>::max();
+        std::string min_detector;
+        for(auto& detector : geo_manager_->getDetectors()) {
+            double this_min_charge_creation_energy = allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
+            if(this_min_charge_creation_energy < min_charge_creation_energy) {
+                min_charge_creation_energy = this_min_charge_creation_energy;
+                min_detector = detector->getName();
+            }
+        }
+        LOG(INFO) << "Setting minimum kinetic energy for tracks to " << Units::display(min_charge_creation_energy, {"eV"})
+                  << ", derived from material of detector \"" << min_detector << "\"";
+    }
+    user_limits_world_->SetUserMinEkine(min_charge_creation_energy);
+
     // Set user limits on world volume:
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
