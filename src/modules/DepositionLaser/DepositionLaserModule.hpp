@@ -63,6 +63,8 @@ namespace allpix {
         ROOT::Math::XYZPoint source_position_{};
         ROOT::Math::XYZVector beam_direction_{};
         double beam_waist_;
+        std::optional<double> beam_convergence_ = std::nullopt;
+        std::optional<double> focal_distance_ = std::nullopt;
         size_t photon_number_;
         bool verbose_tracking_;
         double wavelength_;
