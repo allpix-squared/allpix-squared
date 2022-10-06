@@ -190,8 +190,7 @@ void DepositionLaserModule::run(Event* event) {
                 source_position_ + beam_direction_ * focal_distance_.value() + beam_pos_smearing(beam_waist_);
 
             // Generate angles
-            double a = 1;
-            double phi = allpix::uniform_real_distribution<double>(0, -1)(event->getRandomEngine());
+            double phi = allpix::uniform_real_distribution<double>(0, 2 * M_PI)(event->getRandomEngine());
             double sin_theta =
                 allpix::uniform_real_distribution<double>(0, sin(beam_convergence_.value()))(event->getRandomEngine());
 
