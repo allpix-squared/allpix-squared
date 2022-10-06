@@ -305,7 +305,8 @@ void DepositionLaserModule::run(Event* event) {
                 // This vector is initially assigned size
                 // Otherwise, resize() would be called  during its fill
                 // and this will break pointers to MCParticle's in DepositedCharge's
-                mc_particles[d_hit] = std::vector<MCParticle>(photon_number_);
+                mc_particles[d_hit] = std::vector<MCParticle>();
+                mc_particles[d_hit].reserve(photon_number_);
             }
             if(deposited_charges.count(d_hit) == 0) {
                 deposited_charges[d_hit] = std::vector<DepositedCharge>();
