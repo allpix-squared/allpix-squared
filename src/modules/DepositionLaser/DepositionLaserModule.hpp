@@ -23,6 +23,10 @@
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 
+#include "TH1D.h"
+#include "TH2D.h"
+#include "tools/ROOT.h"
+
 namespace allpix {
     /**
      * @ingroup Modules
@@ -50,6 +54,11 @@ namespace allpix {
          */
         void run(Event* event) override;
 
+        /**
+         * @brief Finalize and write optional histograms
+         */
+        void finalize() override;
+
     private:
         std::optional<std::pair<double, double>> get_intersection(const std::shared_ptr<const Detector>& detector,
                                                                   const ROOT::Math::XYZPoint& position_global,
@@ -69,5 +78,12 @@ namespace allpix {
         bool verbose_tracking_;
         double wavelength_;
         double absorption_length_;
+
+        // Histograms
+        bool output_plots_;
+        Histogram<TH2D> h_intensity_sourceplane_{};
+        Histogram<TH2D> h_intensity_focalplane_{};
+        Histogram<TH1D> h_angular_phi_{};
+        Histogram<TH1D> h_angular_theta_{};
     };
 } // namespace allpix

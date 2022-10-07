@@ -85,6 +85,9 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     if(wavelength_ < 250 || wavelength_ > 1450) {
         throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
     }
+
+    config_.setDefault<bool>("output_plots", false);
+    output_plots_ = config.get<bool>("output_plots");
 }
 
 void DepositionLaserModule::initialize() {
@@ -116,6 +119,42 @@ void DepositionLaserModule::initialize() {
 
     LOG(INFO) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
               << Units::convert(absorption_length_, "um") << " um";
+
+    // Create Histograms
+    LOG(INFO) << "Initializing histograms";
+    if(output_plots_) {
+        Int_t nbins = 100;
+        double nsigmas = 3;
+        double focalplane_histsize = beam_waist_ * nsigmas;
+
+        h_intensity_focalplane_ = CreateHistogram<TH2D>("intensity_focalplane",
+                                                        "Beam profile in focal plane, a.u.",
+                                                        nbins,
+                                                        -focalplane_histsize,
+                                                        focalplane_histsize,
+                                                        nbins,
+                                                        -focalplane_histsize,
+                                                        focalplane_histsize);
+
+        double sourceplane_histsize = focalplane_histsize;
+        if(beam_convergence_ && focal_distance_) {
+            sourceplane_histsize += focal_distance_.value() * sin(beam_convergence_.value());
+        }
+
+        h_intensity_sourceplane_ = CreateHistogram<TH2D>("intensity_sourceplane",
+                                                         "Beam profile in focal plane, a.u.",
+                                                         nbins,
+                                                         -sourceplane_histsize,
+                                                         sourceplane_histsize,
+                                                         nbins,
+                                                         -sourceplane_histsize,
+                                                         sourceplane_histsize);
+
+        h_angular_phi_ =
+            CreateHistogram<TH1D>("phi_distribution", "Phi_distribution w.r.t. beam direction", nbins, -3.5, 3.5);
+        h_angular_theta_ =
+            CreateHistogram<TH1D>("theta_distribution", "Theta distribution w.r.t. beam direction", nbins, 0, 45);
+    }
 }
 
 void DepositionLaserModule::run(Event* event) {
@@ -145,6 +184,12 @@ void DepositionLaserModule::run(Event* event) {
         double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
         double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
         return v1 * dx + v2 * dy;
+    };
+
+    // Lambda to get scalar orthogonal components w.r.t. beam_direction
+    auto orthogonal_components = [&](const ROOT::Math::XYZVector& v) {
+        auto [v1, v2] = orthogonal_pair(beam_direction_);
+        return std::make_pair(v.Dot(v1), v.Dot(v2));
     };
 
     // Containers for output messages
@@ -209,10 +254,35 @@ void DepositionLaserModule::run(Event* event) {
             starting_point = focal_position + photon_direction * beam_direction_.Dot(source_position_ - focal_position) /
                                                   beam_direction_.Dot(photon_direction);
 
+            if(output_plots_) {
+                // Fill beam profile histos
+                auto [dx_focal, dy_focal] = orthogonal_components(focal_position - source_position_);
+                h_intensity_focalplane_->Fill(dx_focal, dy_focal);
+                auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
+                h_intensity_sourceplane_->Fill(dx_source, dy_source);
+            }
+
         } else {
             // Cylindrical beam case
             starting_point = source_position_ + beam_pos_smearing(beam_waist_);
             photon_direction = beam_direction_;
+
+            if(output_plots_) {
+                // Fill beam profle histos
+                auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
+                h_intensity_sourceplane_->Fill(dx_source, dy_source);
+                h_intensity_focalplane_->Fill(dx_source, dy_source);
+            }
+        }
+
+        // Fill histograms if needed
+        if(output_plots_) {
+            // Both are unit vectors
+            double theta = static_cast<double>(Units::convert(acos(beam_direction_.Dot(photon_direction)), "deg"));
+            auto [dx, dy] = orthogonal_components(photon_direction);
+            double phi = atan2(dy, dx);
+            h_angular_phi_->Fill(phi);
+            h_angular_theta_->Fill(theta);
         }
 
         LOG(DEBUG) << "    Starting point: " << starting_point << ", direction " << photon_direction;
@@ -353,6 +423,15 @@ void DepositionLaserModule::run(Event* event) {
     for(auto& [detector, data] : deposited_charges) {
         auto charge_message = std::make_shared<DepositedChargeMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, charge_message, event);
+    }
+}
+
+void DepositionLaserModule::finalize() {
+    if(output_plots_) {
+        h_intensity_focalplane_->Write();
+        h_intensity_sourceplane_->Write();
+        h_angular_phi_->Write();
+        h_angular_theta_->Write();
     }
 }
 
