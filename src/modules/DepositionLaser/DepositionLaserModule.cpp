@@ -191,13 +191,13 @@ void DepositionLaserModule::run(Event* event) {
 
             // Generate angles
             double phi = allpix::uniform_real_distribution<double>(0, 2 * M_PI)(event->getRandomEngine());
-            double sin_theta =
-                allpix::uniform_real_distribution<double>(0, sin(beam_convergence_.value()))(event->getRandomEngine());
+            double cos_theta =
+                allpix::uniform_real_distribution<double>(cos(beam_convergence_.value()), 1)(event->getRandomEngine());
 
             // Rotate direction by given angles
             // First, define and apply theta rotation
             ROOT::Math::XYZVector theta_axis = orthogonal_pair(beam_direction_).first;
-            ROOT::Math::AxisAngle theta_rotation(theta_axis, asin(sin_theta));
+            ROOT::Math::AxisAngle theta_rotation(theta_axis, acos(cos_theta));
             photon_direction = theta_rotation(beam_direction_);
 
             // Second, rotate that around the beam axis
