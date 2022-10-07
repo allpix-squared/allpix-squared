@@ -19,8 +19,6 @@
 #include <Math/AxisAngle.h>
 #include <TMath.h>
 
-#define _USE_MATH_DEFINES
-
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -235,7 +233,7 @@ void DepositionLaserModule::run(Event* event) {
                 source_position_ + beam_direction_ * focal_distance_.value() + beam_pos_smearing(beam_waist_);
 
             // Generate angles
-            double phi = allpix::uniform_real_distribution<double>(0, 2 * M_PI)(event->getRandomEngine());
+            double phi = allpix::uniform_real_distribution<double>(0, 2 * TMath::Pi())(event->getRandomEngine());
             double cos_theta =
                 allpix::uniform_real_distribution<double>(cos(beam_convergence_.value()), 1)(event->getRandomEngine());
 
