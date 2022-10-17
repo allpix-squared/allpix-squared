@@ -78,6 +78,7 @@ namespace allpix {
         bool verbose_tracking_;
         double wavelength_;
         double absorption_length_;
+        double pulse_duration_;
 
         // Histograms
         bool output_plots_;
