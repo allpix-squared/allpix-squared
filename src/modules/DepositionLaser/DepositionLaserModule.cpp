@@ -75,6 +75,13 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "photon_number", "Photon number should be a nonzero value!");
     }
 
+    config_.setDefault<double>("pulse_duration", 0.5);
+    pulse_duration_ = config_.get<double>("pulse_duration");
+    LOG(DEBUG) << "Pulse duration: " << pulse_duration_ << " ns";
+    if(pulse_duration_ < 0) {
+        throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value!");
+    }
+
     config_.setDefault<bool>("verbose_tracking", false);
     verbose_tracking_ = config_.get<bool>("verbose_tracking");
 
@@ -197,12 +204,10 @@ void DepositionLaserModule::run(Event* event) {
 
     // Containers for timestamps
     // Starting time points are generated in advance to correctly shift zero afterwards
-    // FIXME Read pulse duration from the config instead
-    double c = 299.792;              // mm/ns
-    double laser_pulse_duration = 1; // ns
+    double c = 299.792; // mm/ns
     std::vector<double> starting_times(photon_number_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
-        item = allpix::normal_distribution<double>(0, laser_pulse_duration)(event->getRandomEngine());
+        item = allpix::normal_distribution<double>(0, pulse_duration_)(event->getRandomEngine());
     });
 
     std::sort(begin(starting_times), end(starting_times));
