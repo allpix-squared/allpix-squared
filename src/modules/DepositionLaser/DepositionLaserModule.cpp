@@ -77,7 +77,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     config_.setDefault<double>("pulse_duration", 0.5);
     pulse_duration_ = config_.get<double>("pulse_duration");
-    LOG(DEBUG) << "Pulse duration: " << pulse_duration_ << " ns";
+    LOG(DEBUG) << "Pulse duration: " << pulse_duration_ << " ";
     if(pulse_duration_ < 0) {
         throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value!");
     }
@@ -109,7 +109,7 @@ void DepositionLaserModule::initialize() {
         absorption_lut[wavelength_nm] = abs_length_mm;
     }
 
-    LOG(INFO) << "Loading absorption data: " << laser_data_path;
+    LOG(DEBUG) << "Loading absorption data: " << laser_data_path;
 
     // Find or interpolate absorption depth for given wavelength
     if(absorption_lut.count(wavelength_) != 0) {
@@ -122,11 +122,11 @@ void DepositionLaserModule::initialize() {
             (absorption_lut[wl1] * (wl2 - wavelength_) + absorption_lut[wl2] * (wavelength_ - wl1)) / (wl2 - wl1);
     }
 
-    LOG(INFO) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
-              << Units::convert(absorption_length_, "um") << " um";
+    LOG(DEBUG) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
+               << Units::convert(absorption_length_, "um") << " um";
 
     // Create Histograms
-    LOG(INFO) << "Initializing histograms";
+    LOG(DEBUG) << "Initializing histograms";
     if(output_plots_) {
         Int_t nbins = 100;
         double nsigmas = 3;
@@ -415,10 +415,10 @@ void DepositionLaserModule::run(Event* event) {
         }
     } // loop over photons
 
-    LOG(INFO) << "Registered hits in " << mc_particles.size() << " detectors";
+    LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
-        LOG(INFO) << detector->getName() << ": " << data.size() << " hits";
+        LOG(DEBUG) << detector->getName() << ": " << data.size() << " hits";
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, mcparticle_message, event);
     }
