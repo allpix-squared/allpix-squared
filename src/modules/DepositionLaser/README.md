@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionLaser"
-description: "A simplistic deposition generator for charge injection with a laser. Mainly intended for TCT studies simulations."
+description: "A simplistic deposition generator for charge injection with a laser."
 module_maintainer: "Daniil Rastorguev (<daniil.rastorguev@desy.de>)"
 module_status: "Immature"
 # module_output: "DepositedCharge, MCParticle"
@@ -10,30 +10,35 @@ module_status: "Immature"
 
 ## Description
 
-Beam: gaussian transversal profile
-TODOs:
-* Pulse shape in config
-* Beam waist in waist units instead of sigma
+This deposition generator is mostly intended for simulations of laser-TCT experiments.
+This module implements physics algorithms by itself, without relying on external libraries (e.g., Geant4).
 
-Photon tracking: photons are currently tracked with straight lines using Liang-Barsky clipping, exponential (w.r.t. depth) absorption in silicon sensors is generated
-TODOs:
-* Terminate tracks if a passive object is hit
-* Photon refraction on sensor surface
+Current implementation assumes that laser pulse is a bunch of point-like photons, each traveling in a straight line. As they cross sensitive silicon volumes, they could be absorbed, respecting exponential distribution of penetration depth. A lookup table ([[1]](#1)) is used to determine absorption coefficients for a given wavelength.
 
-Lookup table for absorption from [[1]](#1) is used
+Laser simulation features:
+* all passive volumes are currently ignored;
+* although, behavior of stacked detectors would be correct;
+* gaussian beam shape could be simulated; if so, angular and spatial distribution of straight-line-photons is set to mimic intensity distribution in a gaussian beam
 
+Advanced tracking will be implemented later. This will include:
+* termination of tracks if a passive object is hit;
+* photon refraction as they cross silicon surface.
+
+As a result, this module yields multiple `DepositedCharge` instances for each detector, with them having physically correct spatial and temporal distribution.
 
 
 
 
 ## Parameters
 * `photon_number`: number of photons in a *single* event, defaults to 10000
-* `source_position`
-* `beam_direction`
-* `wavelength` in *nm*
+* `source_position`, a 3D position vector
+* `beam_direction`, a 3D direction vector
+* `wavelength` in *nm*, supported wavelengths are 250 -- 1450 nm
 * `beam_waist`: std_dev of transversal beam profile, defaults to 20 um
-* `focal_distance`(length) and `beam_convergence` (angle): if both are provided, beam will converge/diverge. Otherwise, it will be cylindrical.
-* `verbose_tracking`: defaults to `false`. If set to `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
+* `focal_distance`(length) and `beam_convergence` (angle): if both are provided, beam will converge/diverge; otherwise, it will be cylindrical
+* `pulse_duration`: gaussian width of pulse temporal profile
+* `verbose_tracking`, defaults to `false`; if set `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
+* `output_plots`, defaults to `false`
 
 ## Usage
 *Example how to use this module*
