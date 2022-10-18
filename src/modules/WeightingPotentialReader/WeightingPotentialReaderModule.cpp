@@ -50,6 +50,12 @@ void WeightingPotentialReaderModule::initialize() {
     if(field_model == WeightingPotential::MESH) {
         // Read field mapping from configuration
         auto field_mapping = config_.get<FieldMapping>("field_mapping");
+
+        // SENSOR style mapping does not work for Weighting potentials, we always need to center on an electrode:
+        if(field_mapping == FieldMapping::SENSOR) {
+            throw InvalidValueError(
+                config_, "field_mapping", "the weighting potential needs to be centered around an electrode");
+        }
         LOG(DEBUG) << "Weighting potential maps to " << magic_enum::enum_name(field_mapping);
         auto field_data = read_field();
 
