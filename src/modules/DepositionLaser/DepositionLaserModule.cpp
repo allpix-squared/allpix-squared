@@ -147,7 +147,7 @@ void DepositionLaserModule::initialize() {
         }
 
         h_intensity_sourceplane_ = CreateHistogram<TH2D>("intensity_sourceplane",
-                                                         "Beam profile in focal plane, a.u.",
+                                                         "Beam profile at source, a.u.",
                                                          nbins,
                                                          -sourceplane_histsize,
                                                          sourceplane_histsize,
