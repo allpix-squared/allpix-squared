@@ -60,7 +60,7 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
   `PIXEL_QUADRANT_II`, `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant
   of the 2D pixel plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not
   centered around a pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
-- `field_scale`:  Scaling factor of the electric field in x- and y-direction. By default, the scaling factors are set to
+- `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
   `{1, 1}` and the field is used with its physical extent stated in the field data file.
 - `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can
   be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
@@ -72,7 +72,10 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
 - `output_plots_steps` : Number of bins along the z-direction for which the weighting potential is evaluated. Defaults to
   500 bins and is only used if `output_plots` is enabled.
 - `output_plots_position`: 2D Position in x and y at which the weighting potential is evaluated along the z-axis. By default,
-  the potential is plotted for the position in the pixel center, i.e. (0, 0). Only used if `output_plots` is enabled.
+  the potential is plotted for the position in the pixel center, i.e. (0, 0). This parameter only affects the 1D weighting
+  potential histogram. Only used if `output_plots` is enabled.
+- `output_plots_zcut`: Position along the sensor `z` axis at which the 2D `x`-`y` weighting potential profile is evaluated.
+  Defaults to `0um`, i.e. the center plane of the sensor.
 
 ## Usage
 An example to add a weighting potential form a field data file to the detector called "dut" is given below.

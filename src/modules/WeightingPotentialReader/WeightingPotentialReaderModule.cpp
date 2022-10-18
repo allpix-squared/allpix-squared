@@ -172,7 +172,12 @@ void WeightingPotentialReaderModule::create_output_plots() {
         histogram->Fill(z, potential);
     }
 
-    // Create 2D histogram
+    auto zcut = config_.get<double>("output_plots_zcut", 0.0);
+    if(!model->isWithinSensor(ROOT::Math::XYZPoint(0, 0, zcut))) {
+        throw InvalidValueError(config_, "output_plots_zcut", "Position is outside the sensor");
+    }
+
+    // Create 2D histograms
     auto* histogram2Dx = new TH2F("potential_x",
                                   "#phi_{w}/V_{w} of Pixel(1,1);x (mm); z (mm); unit potential",
                                   static_cast<int>(steps),
@@ -182,7 +187,6 @@ void WeightingPotentialReaderModule::create_output_plots() {
                                   z_min,
                                   z_max);
 
-    // Create 2D histogram
     auto* histogram2Dy = new TH2F("potential_y",
                                   "#phi_{w}/V_{w} of Pixel(1,1);y (mm); z (mm); unit potential",
                                   static_cast<int>(steps),
@@ -229,7 +233,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
         for(size_t k = 0; k < steps; ++k) {
             double y =
                 center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
-            auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, 0), Pixel::Index(1, 1));
+            auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, zcut), Pixel::Index(1, 1));
             histogram2Dz->Fill(x, y, potential_z);
         }
     }
