@@ -168,16 +168,17 @@ void DepositionLaserModule::run(Event* event) {
     // Lambda to generate two unit vectors, orthogonal to beam direction
     // Adapted from TVector3::Orthogonal()
     auto orthogonal_pair = [](const ROOT::Math::XYZVector& v) {
-        double xx = v.X() < 0.0 ? -v.X() : v.X();
-        double yy = v.Y() < 0.0 ? -v.Y() : v.Y();
-        double zz = v.Z() < 0.0 ? -v.Z() : v.Z();
+        // Additional convenience variables for components' absolute values
+        double abs_x = v.X() < 0.0 ? -v.X() : v.X();
+        double abs_y = v.Y() < 0.0 ? -v.Y() : v.Y();
+        double abs_z = v.Z() < 0.0 ? -v.Z() : v.Z();
 
         ROOT::Math::XYZVector v1, v2;
 
-        if(xx < yy) {
-            v1 = (xx < zz ? ROOT::Math::XYZVector(0, v.Z(), -v.Y()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
+        if(abs_x < abs_y) {
+            v1 = (abs_x < abs_z ? ROOT::Math::XYZVector(0, v.Z(), -v.Y()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
         } else {
-            v1 = (yy < zz ? ROOT::Math::XYZVector(-v.Z(), 0, v.X()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
+            v1 = (abs_y < abs_z ? ROOT::Math::XYZVector(-v.Z(), 0, v.X()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
         }
 
         v2 = v.Cross(v1);
@@ -318,8 +319,9 @@ void DepositionLaserModule::run(Event* event) {
         // Sort intersection segments along the track, starting from closest to source
         // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
 
-        auto comp = [](const auto& p1, const auto& p2) { return p1.second < p2.second; };
-        std::sort(begin(intersection_segments), end(intersection_segments), comp);
+        std::sort(begin(intersection_segments), end(intersection_segments), [](const auto& p1, const auto& p2) {
+            return p1.second < p2.second;
+        });
 
         bool hit = false;
         double t_hit = 0;
