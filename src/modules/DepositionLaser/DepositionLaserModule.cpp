@@ -33,7 +33,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     // Read beam parameters from config
 
     source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
-    LOG(DEBUG) << "Source position: " << source_position_;
+    LOG(DEBUG) << "Source position: " << source_position_ <<"mm";
 
     // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
     beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
@@ -56,15 +56,15 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         LOG(DEBUG) << "Beam geometry: converging";
         focal_distance_ = config_.get<double>("focal_distance");
         beam_convergence_ = config_.get<double>("beam_convergence");
-        LOG(DEBUG) << "Focal distance: " << focal_distance_.value()
-                   << " mm, convergence angle: " << Units::convert(beam_convergence_.value(), "deg") << " deg";
+        LOG(DEBUG) << "Focal distance: " << Units::display(focal_distance_.value(), "mm")
+                   << ", convergence angle: " << Units::display(beam_convergence_.value(), "deg");
         break;
     default:
         break;
     }
 
     beam_waist_ = config_.get<double>("beam_waist");
-    LOG(DEBUG) << "Beam waist: " << Units::convert(beam_waist_, "um") << " um";
+    LOG(DEBUG) << "Beam waist: " << Units::display(beam_waist_, "um");
     if(beam_waist_ < 0) {
         throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value!");
     }
@@ -77,7 +77,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     config_.setDefault<double>("pulse_duration", 0.5);
     pulse_duration_ = config_.get<double>("pulse_duration");
-    LOG(DEBUG) << "Pulse duration: " << pulse_duration_ << " ";
+    LOG(DEBUG) << "Pulse duration: " << Units::display(pulse_duration_, "ns");
     if(pulse_duration_ < 0) {
         throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value!");
     }
@@ -123,7 +123,7 @@ void DepositionLaserModule::initialize() {
     }
 
     LOG(DEBUG) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
-               << Units::convert(absorption_length_, "um") << " um";
+               << Units::display(absorption_length_, "um");
 
     // Create Histograms
     LOG(DEBUG) << "Initializing histograms";
@@ -288,16 +288,16 @@ void DepositionLaserModule::run(Event* event) {
             h_angular_theta_->Fill(theta);
         }
 
-        LOG(DEBUG) << "    Starting point: " << starting_point << ", direction " << photon_direction;
+        LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;;
 
         // Get starting time in the pulse
         double starting_time = starting_times[i_photon];
-        LOG(DEBUG) << "    Starting timestamp: " << starting_time << " ns";
+        LOG(DEBUG) << "    Starting timestamp: " << Units::display(starting_time, "ns");
 
         // Generate penetration depth
         double penetration_depth =
             allpix::exponential_distribution<double>(1 / absorption_length_)(event->getRandomEngine());
-        LOG(DEBUG) << "    Penetration depth: " << Units::convert(penetration_depth, "um") << " um";
+        LOG(DEBUG) << "    Penetration depth: " << Units::display(penetration_depth, "um");
 
         // Check intersections with every detector
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
@@ -332,9 +332,9 @@ void DepositionLaserModule::run(Event* event) {
             ROOT::Math::XYZPoint exit_point = starting_point + photon_direction * t1;
             if(verbose_tracking_) {
                 LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
-                           << Units::convert(distance, "um") << " um, ";
-                LOG(DEBUG) << "        entry at " << entry_point << " mm, " << starting_time + t0 / c << " ns";
-                LOG(DEBUG) << "        exit at " << exit_point << " mm, " << starting_time + t1 / c << " ns";
+                           << Units::display(distance, "um");
+                LOG(DEBUG) << "        entry at " << entry_point << "mm, " << Units::display(starting_time + t0 / c, "ns");
+                LOG(DEBUG) << "        exit at " << exit_point << "mm, " << Units::display(starting_time + t1 / c, "ns");
             }
 
             // Check for a hit
@@ -370,8 +370,8 @@ void DepositionLaserModule::run(Event* event) {
             double time_hit_local = time_hit_global - local_time_offsets[d_hit];
 
             LOG(DEBUG) << "    Hit in " << d_hit->getName();
-            LOG(DEBUG) << "        global: " << hit_global << " mm, " << time_hit_global << " ns";
-            LOG(DEBUG) << "        local: " << hit_local << " mm, " << time_hit_local << " ns";
+            LOG(DEBUG) << "        global: " << hit_global << "mm, " << Units::display(time_hit_global, "ns");
+            LOG(DEBUG) << "        local: " << hit_local << "mm, " << Units::display(time_hit_local, "ns");
 
             // If that is a first hit in this detector, create map entries
             if(mc_particles.count(d_hit) == 0) {
