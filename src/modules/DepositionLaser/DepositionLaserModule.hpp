@@ -74,7 +74,7 @@ namespace allpix {
         double beam_waist_;
         std::optional<double> beam_convergence_ = std::nullopt;
         std::optional<double> focal_distance_ = std::nullopt;
-        size_t photon_number_;
+        size_t number_of_photons_;
         bool verbose_tracking_;
         double wavelength_;
         double absorption_length_;

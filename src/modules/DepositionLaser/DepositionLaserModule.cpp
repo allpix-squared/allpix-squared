@@ -33,14 +33,14 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     // Read beam parameters from config
 
     source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
-    LOG(DEBUG) << "Source position: " << source_position_ <<"mm";
+    LOG(DEBUG) << "Source position: " << source_position_ << "mm";
 
     // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
     beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
     LOG(DEBUG) << "Beam direction: " << beam_direction_;
 
     config_.setDefault<double>("beam_waist", 0.02);
-    config_.setDefault<int>("photon_number", 10000);
+    config_.setDefault<int>("number_of_photons", 10000);
 
     size_t convergence_params_count = config_.count({"focal_distance", "beam_convergence"});
     switch(convergence_params_count) {
@@ -69,10 +69,10 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value!");
     }
 
-    photon_number_ = config_.get<size_t>("photon_number");
-    LOG(DEBUG) << "Photon number: " << photon_number_;
+    number_of_photons_ = config_.get<size_t>("number_of_photons");
+    LOG(DEBUG) << "Number of photons: " << number_of_photons_;
     if(photon_number_ == 0) {
-        throw InvalidValueError(config_, "photon_number", "Photon number should be a nonzero value!");
+        throw InvalidValueError(config_, "number_of_photons", "Number of photons should be a nonzero value!");
     }
 
     config_.setDefault<double>("pulse_duration", 0.5);
@@ -205,7 +205,7 @@ void DepositionLaserModule::run(Event* event) {
     // Containers for timestamps
     // Starting time points are generated in advance to correctly shift zero afterwards
     double c = 299.792; // mm/ns
-    std::vector<double> starting_times(photon_number_);
+    std::vector<double> starting_times(number_of_photons_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
         item = allpix::normal_distribution<double>(0, pulse_duration_)(event->getRandomEngine());
     });
@@ -220,10 +220,11 @@ void DepositionLaserModule::run(Event* event) {
 
     // Loop over photons in a single laser pulse
     // In time order
-    for(size_t i_photon = 0; i_photon < photon_number_; ++i_photon) {
+    for(size_t i_photon = 0; i_photon < number_of_photons_; ++i_photon) {
 
         std::string event_name = std::to_string(event->number);
-        LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of " << photon_number_;
+        LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of "
+                                       << number_of_photons_;
 
         // Starting point and direction for this exact photon
         ROOT::Math::XYZPoint starting_point{};
@@ -288,7 +289,8 @@ void DepositionLaserModule::run(Event* event) {
             h_angular_theta_->Fill(theta);
         }
 
-        LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;;
+        LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;
+        ;
 
         // Get starting time in the pulse
         double starting_time = starting_times[i_photon];
@@ -379,7 +381,7 @@ void DepositionLaserModule::run(Event* event) {
                 // Otherwise, resize() would be called  during its fill
                 // and this will break pointers to MCParticle's in DepositedCharge's
                 mc_particles[d_hit] = std::vector<MCParticle>();
-                mc_particles[d_hit].reserve(photon_number_);
+                mc_particles[d_hit].reserve(number_of_photons_);
             }
             if(deposited_charges.count(d_hit) == 0) {
                 deposited_charges[d_hit] = std::vector<DepositedCharge>();
