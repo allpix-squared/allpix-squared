@@ -103,20 +103,21 @@ void DepositionLaserModule::initialize() {
     std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
 
     std::map<double, double> absorption_lut;
-    for(auto it = std::istream_iterator<double>(f); it != std::istream_iterator<double>(); it++) {
-        double wavelength_nm = *it;
-        double abs_length_mm = *(++it);
-        absorption_lut[wavelength_nm] = abs_length_mm;
+    double wl = 0;
+    double abs_length = 0;
+
+    while(f >> wl >> abs_length) {
+        absorption_lut[Units::get(wl, "nm")] = abs_length;
     }
 
     LOG(DEBUG) << "Loading absorption data: " << laser_data_path;
 
     // Find or interpolate absorption depth for given wavelength
-    double wavelength_nm = Units::convert(wavelength_, "nm");
-    if(absorption_lut.count(wavelength_nm) != 0) {
-        absorption_length_ = absorption_lut[wavelength_nm];
+
+    if(absorption_lut.count(wavelength_) != 0) {
+        absorption_length_ = absorption_lut[wavelength_];
     } else {
-        auto it = absorption_lut.upper_bound(wavelength_nm);
+        auto it = absorption_lut.upper_bound(wavelength_);
         double wl1 = (*prev(it)).first;
         double wl2 = (*it).first;
         absorption_length_ =
@@ -124,7 +125,7 @@ void DepositionLaserModule::initialize() {
     }
 
     LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm") << ", corresponding absorption length is "
-               << Units::display(absorption_length_, "um");
+               << Units::display(absorption_length_, {"um", "mm"});
 
     // Create Histograms
     LOG(DEBUG) << "Initializing histograms";
