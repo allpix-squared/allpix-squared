@@ -205,7 +205,7 @@ void DepositionLaserModule::run(Event* event) {
 
     // Containers for timestamps
     // Starting time points are generated in advance to correctly shift zero afterwards
-    double c = 299.792; // mm/ns
+    double c = TMath::C() * 100; // speed of light in mm/ns
     std::vector<double> starting_times(number_of_photons_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
         item = allpix::normal_distribution<double>(0, pulse_duration_)(event->getRandomEngine());
