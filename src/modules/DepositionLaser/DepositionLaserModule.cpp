@@ -71,7 +71,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     number_of_photons_ = config_.get<size_t>("number_of_photons");
     LOG(DEBUG) << "Number of photons: " << number_of_photons_;
-    if(photon_number_ == 0) {
+    if(number_of_photons_ == 0) {
         throw InvalidValueError(config_, "number_of_photons", "Number of photons should be a nonzero value!");
     }
 

@@ -30,10 +30,10 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 
 
 ## Parameters
-* `photon_number`: number of photons in a *single* event, defaults to 10000
+* `number_of_photons`: number of photons in a *single* event, defaults to 10000
 * `source_position`, a 3D position vector
 * `beam_direction`, a 3D direction vector
-* `wavelength` in *nm*, supported wavelengths are 250 -- 1450 nm
+* `wavelength`, supported values are 250 -- 1450 nm
 * `beam_waist`: std_dev of transversal beam profile, defaults to 20 um
 * `focal_distance`(length) and `beam_convergence` (angle): if both are provided, beam will converge/diverge; otherwise, it will be cylindrical
 * `pulse_duration`: gaussian width of pulse temporal profile
