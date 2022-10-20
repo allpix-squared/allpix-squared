@@ -87,7 +87,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     // FIXME less hardcoded values
     wavelength_ = config_.get<double>("wavelength");
-    if(wavelength_ < 250 || wavelength_ > 1450) {
+    if(Units::convert(wavelength_, "nm") < 250 || Units::convert(wavelength_, "nm") > 1450) {
         throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
     }
 
@@ -112,17 +112,18 @@ void DepositionLaserModule::initialize() {
     LOG(DEBUG) << "Loading absorption data: " << laser_data_path;
 
     // Find or interpolate absorption depth for given wavelength
-    if(absorption_lut.count(wavelength_) != 0) {
-        absorption_length_ = absorption_lut[wavelength_];
+    double wavelength_nm = Units::convert(wavelength_, "nm");
+    if(absorption_lut.count(wavelength_nm) != 0) {
+        absorption_length_ = absorption_lut[wavelength_nm];
     } else {
-        auto it = absorption_lut.upper_bound(wavelength_);
+        auto it = absorption_lut.upper_bound(wavelength_nm);
         double wl1 = (*prev(it)).first;
         double wl2 = (*it).first;
         absorption_length_ =
             (absorption_lut[wl1] * (wl2 - wavelength_) + absorption_lut[wl2] * (wavelength_ - wl1)) / (wl2 - wl1);
     }
 
-    LOG(DEBUG) << "Wavelength = " << wavelength_ << " nm, corresponding absorption length is "
+    LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm") << ", corresponding absorption length is "
                << Units::display(absorption_length_, "um");
 
     // Create Histograms
