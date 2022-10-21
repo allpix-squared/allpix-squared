@@ -42,7 +42,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     LOG(DEBUG) << "Beam direction: " << beam_direction_;
 
     beam_geometry_ = config_.get<BeamGeometry>("beam_geometry");
-    size_t convergence_params_count = config_.count({"focal_distance", "beam_convergence"});
+    size_t convergence_params_count = config_.count({"focal_distance", "beam_convergence_angle"});
     if(beam_geometry_ == BeamGeometry::CYLINDRICAL) {
         LOG(DEBUG) << "Beam geometry: cylindrical";
         if(convergence_params_count > 0) {
@@ -52,13 +52,13 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         LOG(DEBUG) << "Beam geometry: converging";
         if(convergence_params_count < 2) {
             throw InvalidCombinationError(config_,
-                                          {"focal_distance", "beam_convergence"},
+                                          {"beam_geometry", "focal_distance", "beam_convergence_angle"},
                                           "Both focal distance and convergence should be specified for a gaussian beam");
         }
         focal_distance_ = config_.get<double>("focal_distance");
-        beam_convergence_ = config_.get<double>("beam_convergence");
+        beam_convergence_angle_ = config_.get<double>("beam_convergence_angle");
         LOG(DEBUG) << "Focal distance: " << Units::display(focal_distance_, "mm")
-                   << ", convergence angle: " << Units::display(beam_convergence_, "deg");
+                   << ", convergence angle: " << Units::display(beam_convergence_angle_, "deg");
     }
 
     config_.setDefault<double>("beam_waist", 0.02);
@@ -145,7 +145,7 @@ void DepositionLaserModule::initialize() {
 
         double sourceplane_histsize = focalplane_histsize;
         if(beam_geometry_ == BeamGeometry::CONVERGING) {
-            sourceplane_histsize += focal_distance_ * sin(beam_convergence_);
+            sourceplane_histsize += focal_distance_ * sin(beam_convergence_angle_);
         }
 
         h_intensity_sourceplane_ = CreateHistogram<TH2D>("intensity_sourceplane",
@@ -242,7 +242,7 @@ void DepositionLaserModule::run(Event* event) {
             // Generate angles
             double phi = allpix::uniform_real_distribution<double>(0, 2 * TMath::Pi())(event->getRandomEngine());
             double cos_theta =
-                allpix::uniform_real_distribution<double>(cos(beam_convergence_), 1)(event->getRandomEngine());
+                allpix::uniform_real_distribution<double>(cos(beam_convergence_angle_), 1)(event->getRandomEngine());
 
             // Rotate direction by given angles
             // First, define and apply theta rotation

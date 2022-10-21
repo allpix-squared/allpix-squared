@@ -33,10 +33,13 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 * `number_of_photons`: number of photons in a *single* event, defaults to 10000
 * `source_position`, a 3D position vector
 * `beam_direction`, a 3D direction vector
-* `wavelength`, supported values are 250 -- 1450 nm
-* `beam_waist`: std_dev of transversal beam profile, defaults to 20 um
-* `focal_distance`(length) and `beam_convergence` (angle): if both are provided, beam will converge/diverge; otherwise, it will be cylindrical
+* `wavelength` of a laser supported values are 250 -- 1450 nm
 * `pulse_duration`: gaussian width of pulse temporal profile
+
+* `beam_waist`: std_dev of transversal beam profile, defaults to 20 um
+* `beam_geometry`, either `cylindrical` or `converging`
+* `focal_distance`(length) and `beam_convergence` (angle): both need to be specified for a `converging` beam
+
 * `verbose_tracking`, defaults to `false`; if set `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
 * `output_plots`, defaults to `false`
 

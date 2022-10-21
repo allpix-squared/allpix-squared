@@ -80,7 +80,7 @@ namespace allpix {
         double beam_waist_;
 
         BeamGeometry beam_geometry_{};
-        double beam_convergence_;
+        double beam_convergence_angle_;
         double focal_distance_;
 
         size_t number_of_photons_;
