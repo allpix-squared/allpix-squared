@@ -30,7 +30,9 @@ using namespace allpix;
 DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
 
+    //
     // Read beam parameters from config
+    //
 
     source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
     LOG(DEBUG) << "Source position: " << source_position_ << "mm";
@@ -39,36 +41,34 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
     LOG(DEBUG) << "Beam direction: " << beam_direction_;
 
-    config_.setDefault<double>("beam_waist", 0.02);
-    config_.setDefault<int>("number_of_photons", 10000);
-
+    beam_geometry_ = config_.get<BeamGeometry>("beam_geometry");
     size_t convergence_params_count = config_.count({"focal_distance", "beam_convergence"});
-    switch(convergence_params_count) {
-    case 0:
+    if(beam_geometry_ == BeamGeometry::CYLINDRICAL) {
         LOG(DEBUG) << "Beam geometry: cylindrical";
-        break;
-    case 1:
-        throw InvalidCombinationError(config_,
-                                      {"focal_distance", "beam_convergence"},
-                                      "Both focal distance and convergence should be given for a gaussian beam");
-        break;
-    case 2:
+        if(convergence_params_count > 0) {
+            LOG(DEBUG) << "Beam convergence parameters are ignored for a cylindrical beam";
+        }
+    } else if(beam_geometry_ == BeamGeometry::CONVERGING) {
         LOG(DEBUG) << "Beam geometry: converging";
+        if(convergence_params_count < 2) {
+            throw InvalidCombinationError(config_,
+                                          {"focal_distance", "beam_convergence"},
+                                          "Both focal distance and convergence should be specified for a gaussian beam");
+        }
         focal_distance_ = config_.get<double>("focal_distance");
         beam_convergence_ = config_.get<double>("beam_convergence");
-        LOG(DEBUG) << "Focal distance: " << Units::display(focal_distance_.value(), "mm")
-                   << ", convergence angle: " << Units::display(beam_convergence_.value(), "deg");
-        break;
-    default:
-        break;
+        LOG(DEBUG) << "Focal distance: " << Units::display(focal_distance_, "mm")
+                   << ", convergence angle: " << Units::display(beam_convergence_, "deg");
     }
 
+    config_.setDefault<double>("beam_waist", 0.02);
     beam_waist_ = config_.get<double>("beam_waist");
     LOG(DEBUG) << "Beam waist: " << Units::display(beam_waist_, "um");
     if(beam_waist_ < 0) {
         throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value");
     }
 
+    config_.setDefault<int>("number_of_photons", 10000);
     number_of_photons_ = config_.get<size_t>("number_of_photons");
     LOG(DEBUG) << "Number of photons: " << number_of_photons_;
     if(number_of_photons_ == 0) {
@@ -144,8 +144,8 @@ void DepositionLaserModule::initialize() {
                                                         focalplane_histsize);
 
         double sourceplane_histsize = focalplane_histsize;
-        if(beam_convergence_ && focal_distance_) {
-            sourceplane_histsize += focal_distance_.value() * sin(beam_convergence_.value());
+        if(beam_geometry_ == BeamGeometry::CONVERGING) {
+            sourceplane_histsize += focal_distance_ * sin(beam_convergence_);
         }
 
         h_intensity_sourceplane_ = CreateHistogram<TH2D>("intensity_sourceplane",
@@ -233,17 +233,16 @@ void DepositionLaserModule::run(Event* event) {
         ROOT::Math::XYZVector photon_direction{};
 
         // Generate starting point and direction in the beam
-        if(beam_convergence_ && focal_distance_) {
+        if(beam_geometry_ == BeamGeometry::CONVERGING) {
             // Converging beam case
 
             // Generate correct position in the focal plane
-            auto focal_position =
-                source_position_ + beam_direction_ * focal_distance_.value() + beam_pos_smearing(beam_waist_);
+            auto focal_position = source_position_ + beam_direction_ * focal_distance_ + beam_pos_smearing(beam_waist_);
 
             // Generate angles
             double phi = allpix::uniform_real_distribution<double>(0, 2 * TMath::Pi())(event->getRandomEngine());
             double cos_theta =
-                allpix::uniform_real_distribution<double>(cos(beam_convergence_.value()), 1)(event->getRandomEngine());
+                allpix::uniform_real_distribution<double>(cos(beam_convergence_), 1)(event->getRandomEngine());
 
             // Rotate direction by given angles
             // First, define and apply theta rotation
