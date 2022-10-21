@@ -15,6 +15,8 @@
 #include <Math/Point3D.h>
 #include <Math/Vector3D.h>
 
+#include <optional>
+
 namespace allpix {
 
     /**
@@ -28,14 +30,14 @@ namespace allpix {
      * @param direction Direction vector of the motion
      * @param position Original ("before") position to be considered
      * @param box Size of the box to calculate the intersections with
-     * @return Closest intersection with box in the direction indicated by input vector
-     *
-     * @throws std::invalid_argument if no intersection of track segment with the box volume can be found in positive
+     * @return Closest intersection with box in the direction indicated by input vector if there is such intersection,
+     * std::nullopt if no intersection of track segment with the box volume can be found in positive
      * direction from the given position.
+     *
      */
-    inline ROOT::Math::XYZPoint LiangBarsky(const ROOT::Math::XYZVector& direction,
-                                            const ROOT::Math::XYZPoint& position,
-                                            const ROOT::Math::XYZVector& box) {
+    inline std::optional<ROOT::Math::XYZPoint> LiangBarsky(const ROOT::Math::XYZVector& direction,
+                                                           const ROOT::Math::XYZPoint& position,
+                                                           const ROOT::Math::XYZVector& box) {
 
         auto clip = [](double denominator, double numerator, double& t0, double& t1) {
             if(denominator > 0) {
@@ -80,7 +82,7 @@ namespace allpix {
         }
 
         // Otherwise: The line does not intersect the box.
-        throw std::invalid_argument("no intersection with volume boundaries found");
+        return std::nullopt;
     }
 } // namespace allpix
 
