@@ -16,6 +16,7 @@
 #include <Math/Vector3D.h>
 
 #include <optional>
+#include <utility>
 
 namespace allpix {
 
@@ -35,9 +36,10 @@ namespace allpix {
      * direction from the given position.
      *
      */
-    inline std::optional<ROOT::Math::XYZPoint> LiangBarskyClosestIntersection(const ROOT::Math::XYZVector& direction,
-                                                                              const ROOT::Math::XYZPoint& position,
-                                                                              const ROOT::Math::XYZVector& box) {
+
+    inline std::optional<std::pair<double, double>> LiangBarskyIntersectionDistances(const ROOT::Math::XYZVector& direction,
+                                                                                     const ROOT::Math::XYZPoint& position,
+                                                                                     const ROOT::Math::XYZVector& box) {
 
         auto clip = [](double denominator, double numerator, double& t0, double& t1) {
             if(denominator > 0) {
@@ -70,8 +72,21 @@ namespace allpix {
                          clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
                          clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
 
+        if(intersect) {
+            return std::make_pair(t0, t1);
+        }
+        return std::nullopt;
+    }
+
+    inline std::optional<ROOT::Math::XYZPoint> LiangBarskyClosestIntersection(const ROOT::Math::XYZVector& direction,
+                                                                              const ROOT::Math::XYZPoint& position,
+                                                                              const ROOT::Math::XYZVector& box) {
+
+        auto intersect = LiangBarskyIntersectionDistances(direction, position, box);
+
         // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the motion)
         if(intersect) {
+            auto [t0, t1] = intersect.value();
             if(t0 > 0 && t1 > 0) {
                 return (position + std::min(t0, t1) * direction);
             } else if(t0 > 0) {
