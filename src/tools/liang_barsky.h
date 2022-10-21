@@ -84,16 +84,18 @@ namespace allpix {
 
         auto intersect = LiangBarskyIntersectionDistances(direction, position, box);
 
+        if(!intersect) {
+            return std::nullopt;
+        }
         // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the motion)
-        if(intersect) {
-            auto [t0, t1] = intersect.value();
-            if(t0 > 0 && t1 > 0) {
-                return (position + std::min(t0, t1) * direction);
-            } else if(t0 > 0) {
-                return (position + t0 * direction);
-            } else if(t1 > 0) {
-                return (position + t1 * direction);
-            }
+
+        auto [t0, t1] = intersect.value();
+        if(t0 > 0 && t1 > 0) {
+            return (position + std::min(t0, t1) * direction);
+        } else if(t0 > 0) {
+            return (position + t0 * direction);
+        } else if(t1 > 0) {
+            return (position + t1 * direction);
         }
 
         // Otherwise: The line does not intersect the box.
