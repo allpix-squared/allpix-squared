@@ -225,9 +225,8 @@ void DepositionLaserModule::run(Event* event) {
     // In time order
     for(size_t i_photon = 0; i_photon < number_of_photons_; ++i_photon) {
 
-        std::string event_name = std::to_string(event->number);
-        LOG_PROGRESS(INFO, event_name) << "Event " << event_name << ": photon " << i_photon + 1 << " of "
-                                       << number_of_photons_;
+        LOG_PROGRESS(INFO, "photon_counter")
+            << "Event " << event->number << ": photon " << i_photon + 1 << " of " << number_of_photons_;
 
         // Starting point and direction for this exact photon
         ROOT::Math::XYZPoint starting_point{};
