@@ -2,6 +2,12 @@
  * @file
  * @brief Utility to perform Liang-Barsky clipping checks on volumes
  *
+ * @see Liang, Y. D., and Barsky, B., "A New Concept and Method for Line Clipping", ACM Transactions on Graphics,
+ * 3(1):1–22 for an in-depth explanation.
+ * This method requires the position to be in the coordinate system of the box
+ * to be tested for intersections, with the box center at its origin and the box sides aligned with the coordinate
+ * axes.
+ *
  * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
@@ -21,22 +27,14 @@
 namespace allpix {
 
     /**
-     * @brief Liang–Barsky clipping of a line against faces of a box.
-     *
-     * See Liang, Y. D., and Barsky, B., "A New Concept and Method for Line Clipping", ACM Transactions on Graphics,
-     * 3(1):1–22 for an in-depth explanation. This method requires the position to be in the coordinate system of the box
-     * to be tested for intersections, with the box center at its origin and the box sides aligned with the coordinate
-     * axes.
-     *
-     * @param direction Direction vector of the motion
-     * @param position Original ("before") position to be considered
+     * @brief Check intersection of a line defined by a point and a vector with a box
+     * @param direction Defining vector of the line
+     * @param position A point on that line
      * @param box Size of the box to calculate the intersections with
-     * @return Closest intersection with box in the direction indicated by input vector if there is such intersection,
-     * std::nullopt if no intersection of track segment with the box volume can be found in positive
-     * direction from the given position.
-     *
+     * @return Pair of signed distances from `position` to intersection points along the line in units of length of
+     * `direction`, with sign of these distances meaning direction w.r.t. line-defining vector or std::nullopt if the line
+     * has no intersection with the given box
      */
-
     inline std::optional<std::pair<double, double>> LiangBarskyIntersectionDistances(const ROOT::Math::XYZVector& direction,
                                                                                      const ROOT::Math::XYZPoint& position,
                                                                                      const ROOT::Math::XYZVector& box) {
@@ -78,6 +76,15 @@ namespace allpix {
         return std::nullopt;
     }
 
+    /**
+     * @brief Get closest intersection point in positive direction
+     * @param direction Direction vector of the motion
+     * @param position Original ("before") position to be considered
+     * @param box Size of the box to calculate the intersections with
+     * @return Closest intersection with box in the direction indicated by input vector
+     * or std::nullopt if no intersection of track segment with the box volume can be found in positive
+     * direction from the given position.
+     */
     inline std::optional<ROOT::Math::XYZPoint> LiangBarskyClosestIntersection(const ROOT::Math::XYZVector& direction,
                                                                               const ROOT::Math::XYZPoint& position,
                                                                               const ROOT::Math::XYZVector& box) {
@@ -88,7 +95,6 @@ namespace allpix {
             return std::nullopt;
         }
         // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the motion)
-
         auto [t0, t1] = intersect.value();
         if(t0 > 0 && t1 > 0) {
             return (position + std::min(t0, t1) * direction);
@@ -98,7 +104,7 @@ namespace allpix {
             return (position + t1 * direction);
         }
 
-        // Otherwise: The line does not intersect the box.
+        // Otherwise: there is no intersection in positive direction
         return std::nullopt;
     }
 } // namespace allpix
