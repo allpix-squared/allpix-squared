@@ -35,6 +35,12 @@ namespace allpix {
      * More detailed explanation of module
      */
     class DepositionLaserModule : public Module {
+
+        enum class BeamGeometry {
+            CYLINDRICAL,
+            CONVERGING,
+        };
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -68,12 +74,15 @@ namespace allpix {
         GeometryManager* geo_manager_;
         Messenger* messenger_;
 
-        // Source parameters
+        // Laser parameters
         ROOT::Math::XYZPoint source_position_{};
         ROOT::Math::XYZVector beam_direction_{};
         double beam_waist_;
-        std::optional<double> beam_convergence_ = std::nullopt;
-        std::optional<double> focal_distance_ = std::nullopt;
+
+        BeamGeometry beam_geometry_{};
+        double beam_convergence_;
+        double focal_distance_;
+
         size_t number_of_photons_;
         bool verbose_tracking_;
         double wavelength_;
