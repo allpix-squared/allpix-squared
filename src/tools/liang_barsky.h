@@ -35,9 +35,9 @@ namespace allpix {
      * direction from the given position.
      *
      */
-    inline std::optional<ROOT::Math::XYZPoint> LiangBarsky(const ROOT::Math::XYZVector& direction,
-                                                           const ROOT::Math::XYZPoint& position,
-                                                           const ROOT::Math::XYZVector& box) {
+    inline std::optional<ROOT::Math::XYZPoint> LiangBarskyClosestIntersection(const ROOT::Math::XYZVector& direction,
+                                                                              const ROOT::Math::XYZPoint& position,
+                                                                              const ROOT::Math::XYZVector& box) {
 
         auto clip = [](double denominator, double numerator, double& t0, double& t1) {
             if(denominator > 0) {
