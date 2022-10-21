@@ -66,20 +66,20 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     beam_waist_ = config_.get<double>("beam_waist");
     LOG(DEBUG) << "Beam waist: " << Units::display(beam_waist_, "um");
     if(beam_waist_ < 0) {
-        throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value!");
+        throw InvalidValueError(config_, "beam_waist", "Beam waist should be a positive value");
     }
 
     number_of_photons_ = config_.get<size_t>("number_of_photons");
     LOG(DEBUG) << "Number of photons: " << number_of_photons_;
     if(number_of_photons_ == 0) {
-        throw InvalidValueError(config_, "number_of_photons", "Number of photons should be a nonzero value!");
+        throw InvalidValueError(config_, "number_of_photons", "Number of photons should be a nonzero value");
     }
 
     config_.setDefault<double>("pulse_duration", 0.5);
     pulse_duration_ = config_.get<double>("pulse_duration");
     LOG(DEBUG) << "Pulse duration: " << Units::display(pulse_duration_, "ns");
     if(pulse_duration_ < 0) {
-        throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value!");
+        throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value");
     }
 
     config_.setDefault<bool>("verbose_tracking", false);
