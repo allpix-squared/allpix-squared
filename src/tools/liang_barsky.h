@@ -26,87 +26,91 @@
 
 namespace allpix {
 
-    /**
-     * @brief Check intersection of a line defined by a point and a vector with a box
-     * @param direction Defining vector of the line
-     * @param position A point on that line
-     * @param box Size of the box to calculate the intersections with
-     * @return Pair of signed distances from `position` to intersection points along the line in units of length of
-     * `direction`, with sign of these distances meaning direction w.r.t. line-defining vector or std::nullopt if the line
-     * has no intersection with the given box
-     */
-    inline std::optional<std::pair<double, double>> LiangBarskyIntersectionDistances(const ROOT::Math::XYZVector& direction,
-                                                                                     const ROOT::Math::XYZPoint& position,
-                                                                                     const ROOT::Math::XYZVector& box) {
-
-        auto clip = [](double denominator, double numerator, double& t0, double& t1) {
-            if(denominator > 0) {
-                if(numerator > denominator * t1) {
-                    return false;
-                }
-                if(numerator > denominator * t0) {
-                    t0 = numerator / denominator;
-                }
-                return true;
-            } else if(denominator < 0) {
-                if(numerator > denominator * t0) {
-                    return false;
-                }
-                if(numerator > denominator * t1) {
-                    t1 = numerator / denominator;
-                }
-                return true;
-            } else {
-                return numerator <= 0;
-            }
-        };
-
-        // Clip the particle track against the six possible box faces
-        double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-        bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
-                         clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
-                         clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
-                         clip(-direction.Y(), position.Y() - box.Y() / 2, t0, t1) &&
-                         clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
-                         clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
-
-        if(intersect) {
-            return std::make_pair(t0, t1);
-        }
-        return std::nullopt;
-    }
-
-    /**
-     * @brief Get closest intersection point in positive direction
-     * @param direction Direction vector of the motion
-     * @param position Original ("before") position to be considered
-     * @param box Size of the box to calculate the intersections with
-     * @return Closest intersection with box in the direction indicated by input vector
-     * or std::nullopt if no intersection of track segment with the box volume can be found in positive
-     * direction from the given position.
-     */
-    inline std::optional<ROOT::Math::XYZPoint> LiangBarskyClosestIntersection(const ROOT::Math::XYZVector& direction,
+    class LiangBarsky {
+    public:
+        /**
+         * @brief Check intersection of a line defined by a point and a vector with a box
+         * @param direction Defining vector of the line
+         * @param position A point on that line
+         * @param box Size of the box to calculate the intersections with
+         * @return Pair of signed distances from `position` to intersection points along the line in units of length of
+         * `direction`, with sign of these distances meaning direction w.r.t. line-defining vector or std::nullopt if the
+         * line has no intersection with the given box
+         */
+        static std::optional<std::pair<double, double>> IntersectionDistances(const ROOT::Math::XYZVector& direction,
                                                                               const ROOT::Math::XYZPoint& position,
                                                                               const ROOT::Math::XYZVector& box) {
 
-        auto intersect = LiangBarskyIntersectionDistances(direction, position, box);
+            auto clip = [](double denominator, double numerator, double& t0, double& t1) {
+                if(denominator > 0) {
+                    if(numerator > denominator * t1) {
+                        return false;
+                    }
+                    if(numerator > denominator * t0) {
+                        t0 = numerator / denominator;
+                    }
+                    return true;
+                } else if(denominator < 0) {
+                    if(numerator > denominator * t0) {
+                        return false;
+                    }
+                    if(numerator > denominator * t1) {
+                        t1 = numerator / denominator;
+                    }
+                    return true;
+                } else {
+                    return numerator <= 0;
+                }
+            };
 
-        if(!intersect) {
+            // Clip the particle track against the six possible box faces
+            double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
+            bool intersect = clip(direction.X(), -position.X() - box.X() / 2, t0, t1) &&
+                             clip(-direction.X(), position.X() - box.X() / 2, t0, t1) &&
+                             clip(direction.Y(), -position.Y() - box.Y() / 2, t0, t1) &&
+                             clip(-direction.Y(), position.Y() - box.Y() / 2, t0, t1) &&
+                             clip(direction.Z(), -position.Z() - box.Z() / 2, t0, t1) &&
+                             clip(-direction.Z(), position.Z() - box.Z() / 2, t0, t1);
+
+            if(intersect) {
+                return std::make_pair(t0, t1);
+            }
             return std::nullopt;
         }
-        // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the motion)
-        auto [t0, t1] = intersect.value();
-        if(t0 > 0 && t1 > 0) {
-            return (position + std::min(t0, t1) * direction);
-        } else if(t0 > 0) {
-            return (position + t0 * direction);
-        } else if(t1 > 0) {
-            return (position + t1 * direction);
-        }
 
-        // Otherwise: there is no intersection in positive direction
-        return std::nullopt;
-    }
+        /**
+         * @brief Get closest intersection point in positive direction
+         * @param direction Direction vector of the motion
+         * @param position Original ("before") position to be considered
+         * @param box Size of the box to calculate the intersections with
+         * @return Closest intersection with box in the direction indicated by input vector
+         * or std::nullopt if no intersection of track segment with the box volume can be found in positive
+         * direction from the given position.
+         */
+        static std::optional<ROOT::Math::XYZPoint> ClosestIntersection(const ROOT::Math::XYZVector& direction,
+                                                                       const ROOT::Math::XYZPoint& position,
+                                                                       const ROOT::Math::XYZVector& box) {
+
+            auto intersect = IntersectionDistances(direction, position, box);
+
+            if(!intersect) {
+                return std::nullopt;
+            }
+            // The intersection is a point P + t * D. Return closest impact point if positive (i.e. in direction of the
+            // motion)
+            auto [t0, t1] = intersect.value();
+            if(t0 > 0 && t1 > 0) {
+                return (position + std::min(t0, t1) * direction);
+            } else if(t0 > 0) {
+                return (position + t0 * direction);
+            } else if(t1 > 0) {
+                return (position + t1 * direction);
+            }
+
+            // Otherwise: there is no intersection in positive direction
+            return std::nullopt;
+        }
+    };
 } // namespace allpix
 
 #endif /* ALLPIX_LIANG_BARSKY_H */
