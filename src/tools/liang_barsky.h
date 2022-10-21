@@ -2,8 +2,8 @@
  * @file
  * @brief Utility to perform Liang-Barsky clipping checks on volumes
  *
- * @see Liang, Y. D., and Barsky, B., "A New Concept and Method for Line Clipping", ACM Transactions on Graphics,
- * 3(1):1–22 for an in-depth explanation.
+ * @see Liang, Y. D., and Barsky, B., "A New Concept and Method for Line Clipping",
+ * ACM Transactions on Graphics, 3(1):1–22 for an in-depth explanation.
  * This method requires the position to be in the coordinate system of the box
  * to be tested for intersections, with the box center at its origin and the box sides aligned with the coordinate
  * axes.
