@@ -113,22 +113,22 @@ void Materials::init_materials() {
     materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
     materials_["titanium"] = nistman->FindOrBuildMaterial("G4_Ti");
 
-    // Create required elements:
-    auto* H = new G4Element("Hydrogen", "H", 1., 1.01 * CLHEP::g / CLHEP::mole);
-    auto* C = new G4Element("Carbon", "C", 6., 12.01 * CLHEP::g / CLHEP::mole);
-    auto* N = new G4Element("Nitrogen", "N", 7., 14.0067 * CLHEP::g / CLHEP::mole);
-    auto* O = new G4Element("Oxygen", "O", 8., 16.0 * CLHEP::g / CLHEP::mole);
-    auto* Al = new G4Element("Aluminum", "Al", 13, 26.98 * CLHEP::g / CLHEP::mole);
-    auto* Si = new G4Element("Silicon", "Si", 14, 28.086 * CLHEP::g / CLHEP::mole);
-    auto* Cl = new G4Element("Chlorine", "Cl", 17., 35.45 * CLHEP::g / CLHEP::mole);
-    auto* Ti = new G4Element("Titanium", "Ti", 22., 47.87 * CLHEP::g / CLHEP::mole);
-    auto* V = new G4Element("Vanadium", "Ti", 23., 50.94 * CLHEP::g / CLHEP::mole);
-    auto* Zn = new G4Element("Zinc", "Zn", 30., 65.38 * CLHEP::g / CLHEP::mole);
-    auto* Ga = new G4Element("Gallium", "Ga", 31., 69.723 * CLHEP::g / CLHEP::mole);
-    auto* Cd = new G4Element("Cadmium", "Cd", 48., 112.41 * CLHEP::g / CLHEP::mole);
-    auto* Sn = new G4Element("Tin", "Sn", 50., 118.710 * CLHEP::g / CLHEP::mole);
-    auto* Te = new G4Element("Tellurium", "Te", 52., 127.60 * CLHEP::g / CLHEP::mole);
-    auto* Pb = new G4Element("Lead", "Pb", 82., 207.2 * CLHEP::g / CLHEP::mole);
+    // Get required elements from database
+    auto* H = nistman->FindOrBuildElement("H");
+    auto* C = nistman->FindOrBuildElement("C");
+    auto* N = nistman->FindOrBuildElement("N");
+    auto* O = nistman->FindOrBuildElement("O");
+    auto* Al = nistman->FindOrBuildElement("Al");
+    auto* Si = nistman->FindOrBuildElement("Si");
+    auto* Cl = nistman->FindOrBuildElement("Cl");
+    auto* Ti = nistman->FindOrBuildElement("Ti");
+    auto* V = nistman->FindOrBuildElement("V");
+    auto* Zn = nistman->FindOrBuildElement("Zn");
+    auto* Ga = nistman->FindOrBuildElement("Ga");
+    auto* Cd = nistman->FindOrBuildElement("Cd");
+    auto* Sn = nistman->FindOrBuildElement("Sn");
+    auto* Te = nistman->FindOrBuildElement("Te");
+    auto* Pb = nistman->FindOrBuildElement("Pb");
 
     // Create Epoxy material
     auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
