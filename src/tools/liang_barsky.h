@@ -37,7 +37,7 @@ namespace allpix {
          * `direction`, with sign of these distances meaning direction w.r.t. line-defining vector or std::nullopt if the
          * line has no intersection with the given box
          */
-        static std::optional<std::pair<double, double>> IntersectionDistances(const ROOT::Math::XYZVector& direction,
+        static std::optional<std::pair<double, double>> intersectionDistances(const ROOT::Math::XYZVector& direction,
                                                                               const ROOT::Math::XYZPoint& position,
                                                                               const ROOT::Math::XYZVector& box) {
 
@@ -87,11 +87,11 @@ namespace allpix {
          * or std::nullopt if no intersection of track segment with the box volume can be found in positive
          * direction from the given position.
          */
-        static std::optional<ROOT::Math::XYZPoint> ClosestIntersection(const ROOT::Math::XYZVector& direction,
+        static std::optional<ROOT::Math::XYZPoint> closestIntersection(const ROOT::Math::XYZVector& direction,
                                                                        const ROOT::Math::XYZPoint& position,
                                                                        const ROOT::Math::XYZVector& box) {
 
-            auto intersect = IntersectionDistances(direction, position, box);
+            auto intersect = intersectionDistances(direction, position, box);
 
             if(!intersect) {
                 return std::nullopt;
