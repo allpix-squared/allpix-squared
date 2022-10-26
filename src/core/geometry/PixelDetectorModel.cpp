@@ -118,7 +118,7 @@ ROOT::Math::XYZPoint PixelDetectorModel::getSensorIntercept(const ROOT::Math::XY
     auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
 
     auto intersection_point =
-        LiangBarsky::ClosestIntersection(direction, translation_local.Inverse()(inside), getSensorSize());
+        LiangBarsky::closestIntersection(direction, translation_local.Inverse()(inside), getSensorSize());
 
     // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
     if(intersection_point) {
