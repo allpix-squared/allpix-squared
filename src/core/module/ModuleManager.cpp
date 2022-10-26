@@ -825,17 +825,14 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 // Reset logging
                 ModuleManager::set_module_after(old_settings);
 
-                // Update execution time
-                auto end = std::chrono::steady_clock::now();
-                auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
-
-                /*{
-                  std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
-                  event_time += duration;
-                  this->module_execution_time_[module.get()] += duration;
-                  }*/
-
                 if(plot) {
+                    // Update execution time
+                    auto end = std::chrono::steady_clock::now();
+                    auto duration = static_cast<std::chrono::duration<long double>>(end - start).count();
+
+                    std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+                    event_time += duration;
+                    this->module_execution_time_[module.get()] += duration;
                     this->module_event_time_[module.get()]->Fill(static_cast<double>(duration));
                 }
 
