@@ -117,10 +117,13 @@ ROOT::Math::XYZPoint PixelDetectorModel::getSensorIntercept(const ROOT::Math::XY
     // We have to be centered around the sensor box. This means we need to shift by the matrix center
     auto translation_local = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getMatrixCenter()));
 
-    try {
-        // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
-        return translation_local(LiangBarsky(direction, translation_local.Inverse()(inside), getSensorSize()));
-    } catch(std::invalid_argument&) {
+    auto intersection_point =
+        LiangBarsky::closestIntersection(direction, translation_local.Inverse()(inside), getSensorSize());
+
+    // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
+    if(intersection_point) {
+        return translation_local(intersection_point.value());
+    } else {
         return inside;
     }
 }
