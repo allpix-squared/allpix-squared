@@ -837,7 +837,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
                     auto future = thread_pool_->submit(event->number, event_function, false);
                     assert(future.valid() || !thread_pool_->valid());
-                    auto buffered_events = 0; // thread_pool_->bufferedQueueSize();
+                    auto buffered_events = thread_pool_->bufferedQueueSize();
                     LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
                                                        << " of " << number_of_events << " events";
                     return;
@@ -851,7 +851,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             thread_pool_->markComplete(event->number);
             LOG(INFO) << "Finished event " << event_num << " with seed " << event_seed;
 
-            auto buffered_events = 0; // thread_pool_->bufferedQueueSize();
+            auto buffered_events = thread_pool_->bufferedQueueSize();
             if(plot) {
                 this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
                 event_time_->Fill(static_cast<double>(event_time));
