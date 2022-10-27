@@ -80,6 +80,13 @@ namespace allpix {
                                                                   const ROOT::Math::XYZVector& direction_global) const;
 
         /**
+         * @brief Generate starting position and direction for a single photon, obeying the set beam geometry
+         *  @param event is passed to get proper RNGs
+         * Also fills histograms
+         */
+        std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> generate_photon_geometry(Event* event);
+
+        /**
          * @brief Track a photon, starting at the given point
          * version 1: casting straight rays, ignoring passive objects
          */

@@ -166,40 +166,6 @@ void DepositionLaserModule::initialize() {
 
 void DepositionLaserModule::run(Event* event) {
 
-    // Lambda to generate two unit vectors, orthogonal to beam direction
-    // Adapted from TVector3::Orthogonal()
-    auto orthogonal_pair = [](const ROOT::Math::XYZVector& v) {
-        // Additional convenience variables for components' absolute values
-        double abs_x = v.X() < 0.0 ? -v.X() : v.X();
-        double abs_y = v.Y() < 0.0 ? -v.Y() : v.Y();
-        double abs_z = v.Z() < 0.0 ? -v.Z() : v.Z();
-
-        ROOT::Math::XYZVector v1, v2;
-
-        if(abs_x < abs_y) {
-            v1 = (abs_x < abs_z ? ROOT::Math::XYZVector(0, v.Z(), -v.Y()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
-        } else {
-            v1 = (abs_y < abs_z ? ROOT::Math::XYZVector(-v.Z(), 0, v.X()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
-        }
-
-        v2 = v.Cross(v1);
-        return std::make_pair(v1.Unit(), v2.Unit());
-    };
-
-    // Lambda to generate a smearing vector
-    auto beam_pos_smearing = [&](auto size) {
-        auto [v1, v2] = orthogonal_pair(beam_direction_);
-        double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-        double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-        return v1 * dx + v2 * dy;
-    };
-
-    // Lambda to get scalar orthogonal components w.r.t. beam_direction
-    auto orthogonal_components = [&](const ROOT::Math::XYZVector& v) {
-        auto [v1, v2] = orthogonal_pair(beam_direction_);
-        return std::make_pair(v.Dot(v1), v.Dot(v2));
-    };
-
     // Containers for output messages
 
     std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
@@ -228,68 +194,7 @@ void DepositionLaserModule::run(Event* event) {
             << "Event " << event->number << ": photon " << i_photon + 1 << " of " << number_of_photons_;
 
         // Starting point and direction for this exact photon
-        ROOT::Math::XYZPoint starting_point{};
-        ROOT::Math::XYZVector photon_direction{};
-
-        // Generate starting point and direction in the beam
-        if(beam_geometry_ == BeamGeometry::CONVERGING) {
-            // Converging beam case
-
-            // Generate correct position in the focal plane
-            auto focal_position = source_position_ + beam_direction_ * focal_distance_ + beam_pos_smearing(beam_waist_);
-
-            // Generate angles
-            double phi = allpix::uniform_real_distribution<double>(0, 2 * TMath::Pi())(event->getRandomEngine());
-            double cos_theta =
-                allpix::uniform_real_distribution<double>(cos(beam_convergence_angle_), 1)(event->getRandomEngine());
-
-            // Rotate direction by given angles
-            // First, define and apply theta rotation
-            ROOT::Math::XYZVector theta_axis = orthogonal_pair(beam_direction_).first;
-            ROOT::Math::AxisAngle theta_rotation(theta_axis, acos(cos_theta));
-            photon_direction = theta_rotation(beam_direction_);
-
-            // Second, rotate that around the beam axis
-            ROOT::Math::AxisAngle phi_rotation(beam_direction_, phi);
-            photon_direction = phi_rotation(photon_direction);
-
-            // Backtrack position from the focal plane to the source plane
-            // This calculation is nuts, will add an explanation somewhere
-            starting_point = focal_position + photon_direction * beam_direction_.Dot(source_position_ - focal_position) /
-                                                  beam_direction_.Dot(photon_direction);
-
-            if(output_plots_) {
-                // Fill beam profile histos
-                auto [dx_focal, dy_focal] = orthogonal_components(focal_position - source_position_);
-                h_intensity_focalplane_->Fill(dx_focal, dy_focal);
-                auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
-                h_intensity_sourceplane_->Fill(dx_source, dy_source);
-            }
-
-        } else {
-            // Cylindrical beam case
-            starting_point = source_position_ + beam_pos_smearing(beam_waist_);
-            photon_direction = beam_direction_;
-
-            if(output_plots_) {
-                // Fill beam profle histos
-                auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
-                h_intensity_sourceplane_->Fill(dx_source, dy_source);
-                h_intensity_focalplane_->Fill(dx_source, dy_source);
-            }
-        }
-
-        // Fill histograms if needed
-        if(output_plots_) {
-            // Both are unit vectors
-            double theta = static_cast<double>(Units::convert(acos(beam_direction_.Dot(photon_direction)), "deg"));
-            auto [dx, dy] = orthogonal_components(photon_direction);
-            double phi = atan2(dy, dx);
-            h_angular_phi_->Fill(phi);
-            h_angular_theta_->Fill(theta);
-        }
-
-        LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;
+        auto [starting_point, photon_direction] = generate_photon_geometry(event);
 
         // Get starting time in the pulse
         double starting_time = starting_times[i_photon];
@@ -392,6 +297,107 @@ void DepositionLaserModule::finalize() {
         h_angular_phi_->Write();
         h_angular_theta_->Write();
     }
+}
+
+std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> DepositionLaserModule::generate_photon_geometry(Event* event) {
+    // Lambda to generate two unit vectors, orthogonal to beam direction
+    // Adapted from TVector3::Orthogonal()
+    auto orthogonal_pair = [](const ROOT::Math::XYZVector& v) {
+        // Additional convenience variables for components' absolute values
+        double abs_x = v.X() < 0.0 ? -v.X() : v.X();
+        double abs_y = v.Y() < 0.0 ? -v.Y() : v.Y();
+        double abs_z = v.Z() < 0.0 ? -v.Z() : v.Z();
+
+        ROOT::Math::XYZVector v1, v2;
+
+        if(abs_x < abs_y) {
+            v1 = (abs_x < abs_z ? ROOT::Math::XYZVector(0, v.Z(), -v.Y()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
+        } else {
+            v1 = (abs_y < abs_z ? ROOT::Math::XYZVector(-v.Z(), 0, v.X()) : ROOT::Math::XYZVector(v.Y(), -v.X(), 0));
+        }
+
+        v2 = v.Cross(v1);
+        return std::make_pair(v1.Unit(), v2.Unit());
+    };
+
+    // Lambda to generate a smearing vector
+    auto beam_pos_smearing = [&](auto size) {
+        auto [v1, v2] = orthogonal_pair(beam_direction_);
+        double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+        double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+        return v1 * dx + v2 * dy;
+    };
+
+    // Lambda to get scalar orthogonal components w.r.t. beam_direction
+    auto orthogonal_components = [&](const ROOT::Math::XYZVector& v) {
+        auto [v1, v2] = orthogonal_pair(beam_direction_);
+        return std::make_pair(v.Dot(v1), v.Dot(v2));
+    };
+
+    ROOT::Math::XYZPoint starting_point{};
+    ROOT::Math::XYZVector photon_direction{};
+
+    // Generate starting point and direction in the beam
+    if(beam_geometry_ == BeamGeometry::CONVERGING) {
+        // Converging beam case
+
+        // Generate correct position in the focal plane
+        auto focal_position = source_position_ + beam_direction_ * focal_distance_ + beam_pos_smearing(beam_waist_);
+
+        // Generate angles
+        double phi = allpix::uniform_real_distribution<double>(0, 2 * TMath::Pi())(event->getRandomEngine());
+        double cos_theta =
+            allpix::uniform_real_distribution<double>(cos(beam_convergence_angle_), 1)(event->getRandomEngine());
+
+        // Rotate direction by given angles
+        // First, define and apply theta rotation
+        ROOT::Math::XYZVector theta_axis = orthogonal_pair(beam_direction_).first;
+        ROOT::Math::AxisAngle theta_rotation(theta_axis, acos(cos_theta));
+        photon_direction = theta_rotation(beam_direction_);
+
+        // Second, rotate that around the beam axis
+        ROOT::Math::AxisAngle phi_rotation(beam_direction_, phi);
+        photon_direction = phi_rotation(photon_direction);
+
+        // Backtrack position from the focal plane to the source plane
+        // This calculation is nuts, will add an explanation somewhere
+        starting_point = focal_position + photon_direction * beam_direction_.Dot(source_position_ - focal_position) /
+                                              beam_direction_.Dot(photon_direction);
+
+        if(output_plots_) {
+            // Fill beam profile histos
+            auto [dx_focal, dy_focal] = orthogonal_components(focal_position - source_position_);
+            h_intensity_focalplane_->Fill(dx_focal, dy_focal);
+            auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
+            h_intensity_sourceplane_->Fill(dx_source, dy_source);
+        }
+
+    } else {
+        // Cylindrical beam case
+        starting_point = source_position_ + beam_pos_smearing(beam_waist_);
+        photon_direction = beam_direction_;
+
+        if(output_plots_) {
+            // Fill beam profle histos
+            auto [dx_source, dy_source] = orthogonal_components(starting_point - source_position_);
+            h_intensity_sourceplane_->Fill(dx_source, dy_source);
+            h_intensity_focalplane_->Fill(dx_source, dy_source);
+        }
+    }
+
+    // Fill histograms if needed
+    if(output_plots_) {
+        // Both are unit vectors
+        double theta = static_cast<double>(Units::convert(acos(beam_direction_.Dot(photon_direction)), "deg"));
+        auto [dx, dy] = orthogonal_components(photon_direction);
+        double phi = atan2(dy, dx);
+        h_angular_phi_->Fill(phi);
+        h_angular_theta_->Fill(theta);
+    }
+
+    LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;
+
+    return {starting_point, photon_direction};
 }
 
 std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(const ROOT::Math::XYZPoint& position,
