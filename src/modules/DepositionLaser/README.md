@@ -38,7 +38,7 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 
 * `beam_waist`: std_dev of transversal beam profile, defaults to 20 um
 * `beam_geometry`, either `cylindrical` or `converging`
-* `focal_distance`(length) and `beam_convergence` (angle): both need to be specified for a `converging` beam
+* `focal_distance`(length) and `beam_convergence_angle`: both need to be specified for a `converging` beam
 
 * `verbose_tracking`, defaults to `false`; if set `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
 * `output_plots`, defaults to `false`
