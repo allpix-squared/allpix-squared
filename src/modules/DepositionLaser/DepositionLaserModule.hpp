@@ -42,7 +42,7 @@ namespace allpix {
         };
 
         // Data to return from tracking algorithms
-        struct PhotonHit {
+        struct PhotonHit { // NOLINT
             std::shared_ptr<Detector> detector;
             ROOT::Math::XYZPoint entry_global;
             ROOT::Math::XYZPoint hit_global;
@@ -81,7 +81,7 @@ namespace allpix {
 
         /**
          * @brief Generate starting position and direction for a single photon, obeying the set beam geometry
-         *  @param event is passed to get proper RNGs
+         * @param event is passed to get proper RNGs
          * Also fills histograms
          */
         std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> generate_photon_geometry(Event* event);
