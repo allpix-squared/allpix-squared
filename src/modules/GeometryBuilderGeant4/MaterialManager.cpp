@@ -212,6 +212,13 @@ void Materials::init_materials() {
     TitaniumGrade5->AddElement(V, 0.04);
     materials_["ti5"] = TitaniumGrade5;
 
+    auto* isoB10 = new G4Isotope("isoB10", 5, 10, 10.012937 * CLHEP::g / CLHEP::mole);
+    auto* elB10 = new G4Element("element B10", "eleB10", 1);
+    elB10->AddIsotope(isoB10, 1);
+    auto* B10 = new G4Material("B10", 2.34 * CLHEP::g / CLHEP::cm3, 1);
+    B10->AddElement(elB10, 1);
+    materials_["b10"] = B10;
+
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 }
