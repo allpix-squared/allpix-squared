@@ -41,6 +41,15 @@ namespace allpix {
             CONVERGING,
         };
 
+        // Data to return from tracking algorithms
+        struct PhotonHit {
+            std::shared_ptr<Detector> detector;
+            ROOT::Math::XYZPoint entry_global;
+            ROOT::Math::XYZPoint hit_global;
+            double time_to_entry;
+            double time_to_hit;
+        };
+
     public:
         /**
          * @brief Constructor for this unique module
@@ -69,6 +78,13 @@ namespace allpix {
         std::optional<std::pair<double, double>> get_intersection(const std::shared_ptr<const Detector>& detector,
                                                                   const ROOT::Math::XYZPoint& position_global,
                                                                   const ROOT::Math::XYZVector& direction_global) const;
+
+        /**
+         * @brief Track a photon, starting at the given point
+         * version 1: casting straight rays, ignoring passive objects
+         */
+        std::optional<PhotonHit>
+        track(const ROOT::Math::XYZPoint& position, const ROOT::Math::XYZVector& direction, double penetration_depth) const;
 
         // General module members
         GeometryManager* geo_manager_;

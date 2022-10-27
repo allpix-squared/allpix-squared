@@ -207,7 +207,6 @@ void DepositionLaserModule::run(Event* event) {
 
     // Containers for timestamps
     // Starting time points are generated in advance to correctly shift zero afterwards
-    double c = TMath::C() * 100; // speed of light in mm/ns
     std::vector<double> starting_times(number_of_photons_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
         item = allpix::normal_distribution<double>(0, pulse_duration_)(event->getRandomEngine());
@@ -291,7 +290,6 @@ void DepositionLaserModule::run(Event* event) {
         }
 
         LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;
-        ;
 
         // Get starting time in the pulse
         double starting_time = starting_times[i_photon];
@@ -302,121 +300,75 @@ void DepositionLaserModule::run(Event* event) {
             allpix::exponential_distribution<double>(1 / absorption_length_)(event->getRandomEngine());
         LOG(DEBUG) << "    Penetration depth: " << Units::display(penetration_depth, "um");
 
-        // Check intersections with every detector
-        std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-        std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
+        // Perform tracking
+        auto hit_opt = track(starting_point, photon_direction, penetration_depth);
 
-        for(auto& detector : detectors) {
-            auto intersection = get_intersection(detector, starting_point, photon_direction);
-            if(intersection) {
-                intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
-            } else if(verbose_tracking_) {
-                LOG(DEBUG) << "    Intersection with " << detector->getName() << ": no intersection";
-            }
+        // If this photon did not hit any of the detectors, skip this iteration
+        if(!hit_opt) {
+            continue;
         }
 
-        // Sort intersection segments along the track, starting from closest to source
-        // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
+        PhotonHit hit = hit_opt.value();
 
-        std::sort(begin(intersection_segments), end(intersection_segments), [](const auto& p1, const auto& p2) {
-            return p1.second < p2.second;
-        });
-
-        bool hit = false;
-        double t_hit = 0;
-        double t0_hit = 0;
-        std::shared_ptr<Detector> d_hit;
-
-        for(const auto& [detector, points] : intersection_segments) {
-            double t0 = points.first;
-            double t1 = points.second;
-            double distance = t1 - t0;
-
-            ROOT::Math::XYZPoint entry_point = starting_point + photon_direction * t0;
-            ROOT::Math::XYZPoint exit_point = starting_point + photon_direction * t1;
-            if(verbose_tracking_) {
-                LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
-                           << Units::display(distance, "um");
-                LOG(DEBUG) << "        entry at " << entry_point << "mm, " << Units::display(starting_time + t0 / c, "ns");
-                LOG(DEBUG) << "        exit at " << exit_point << "mm, " << Units::display(starting_time + t1 / c, "ns");
-            }
-
-            // Check for a hit
-            if(penetration_depth < distance && !hit) {
-                hit = true;
-                t_hit = t0 + penetration_depth;
-                t0_hit = t0;
-                d_hit = detector;
-                if(!verbose_tracking_) {
-                    break;
-                }
-            } else {
-                penetration_depth -= distance;
-            }
+        // If this was the first hit in this detector in this event, remember entry timestamp as local t=0 for this
+        // detector Here I boldly assume that photon that is created earlier also hits earlier
+        if(local_time_offsets.count(hit.detector) == 0) {
+            local_time_offsets[hit.detector] = starting_time + hit.time_to_entry;
         }
 
-        if(hit) {
-            // If this was the first hit in this detector in this event, remember entry timestamp as local t=0 for this
-            // detector Here I boldly assume that photon that is created earlier also hits earlier
-            if(local_time_offsets.count(d_hit) == 0) {
-                local_time_offsets[d_hit] = starting_time + t0_hit / c;
-            }
+        // Create and store corresponding MCParticle and DepositedCharge
+        auto entry_local = hit.detector->getLocalPosition(hit.entry_global);
+        auto hit_local = hit.detector->getLocalPosition(hit.hit_global);
 
-            // Create and store corresponding MCParticle and DepositedCharge
-            auto hit_entry_global = starting_point + photon_direction * t0_hit;
-            auto hit_global = starting_point + photon_direction * t_hit;
-            auto hit_entry_local = d_hit->getLocalPosition(hit_entry_global);
-            auto hit_local = d_hit->getLocalPosition(hit_global);
+        double time_entry_global = starting_time + hit.time_to_entry;
+        double time_hit_global = starting_time + hit.time_to_hit;
+        double time_entry_local = time_entry_global - local_time_offsets[hit.detector];
+        double time_hit_local = time_hit_global - local_time_offsets[hit.detector];
 
-            double time_entry_global = starting_time + t0_hit / c;
-            double time_hit_global = starting_time + t_hit / c;
-            double time_entry_local = time_entry_global - local_time_offsets[d_hit];
-            double time_hit_local = time_hit_global - local_time_offsets[d_hit];
+        LOG(DEBUG) << "    Hit in " << hit.detector->getName();
+        LOG(DEBUG) << "        global: " << hit.hit_global << "mm, " << Units::display(time_hit_global, "ns");
+        LOG(DEBUG) << "        local: " << hit_local << "mm, " << Units::display(time_hit_local, "ns");
 
-            LOG(DEBUG) << "    Hit in " << d_hit->getName();
-            LOG(DEBUG) << "        global: " << hit_global << "mm, " << Units::display(time_hit_global, "ns");
-            LOG(DEBUG) << "        local: " << hit_local << "mm, " << Units::display(time_hit_local, "ns");
-
-            // If that is a first hit in this detector, create map entries
-            if(mc_particles.count(d_hit) == 0) {
-                // This vector is initially assigned size
-                // Otherwise, resize() would be called  during its fill
-                // and this will break pointers to MCParticle's in DepositedCharge's
-                mc_particles[d_hit] = std::vector<MCParticle>();
-                mc_particles[d_hit].reserve(number_of_photons_);
-            }
-            if(deposited_charges.count(d_hit) == 0) {
-                deposited_charges[d_hit] = std::vector<DepositedCharge>();
-            }
-
-            // Construct all necessary objects in-place
-            // allpix::MCParticle
-            mc_particles[d_hit].emplace_back(hit_entry_local,
-                                             hit_entry_global,
-                                             hit_local,
-                                             hit_global,
-                                             22, // gamma
-                                             time_entry_local,
-                                             time_entry_global);
-
-            // allpix::DepositedCharge for electron
-            deposited_charges[d_hit].emplace_back(hit_local,
-                                                  hit_global,
-                                                  CarrierType::ELECTRON,
-                                                  1, // value
-                                                  time_hit_local,
-                                                  time_hit_global,
-                                                  &(mc_particles[d_hit].back()));
-
-            // allpix::DepositedCharge for hole
-            deposited_charges[d_hit].emplace_back(hit_local,
-                                                  hit_global,
-                                                  CarrierType::HOLE,
-                                                  1, // value
-                                                  time_hit_local,
-                                                  time_hit_global,
-                                                  &(mc_particles[d_hit].back()));
+        // If that is a first hit in this detector, create map entries
+        if(mc_particles.count(hit.detector) == 0) {
+            // This vector is initially assigned size
+            // Otherwise, resize() would be called  during its fill
+            // and this will break pointers to MCParticle's in DepositedCharge's
+            mc_particles[hit.detector] = std::vector<MCParticle>();
+            mc_particles[hit.detector].reserve(number_of_photons_);
         }
+        if(deposited_charges.count(hit.detector) == 0) {
+            deposited_charges[hit.detector] = std::vector<DepositedCharge>();
+        }
+
+        // Construct all necessary objects in-place
+        // allpix::MCParticle
+        mc_particles[hit.detector].emplace_back(entry_local,
+                                                hit.entry_global,
+                                                hit_local,
+                                                hit.hit_global,
+                                                22, // gamma
+                                                time_entry_local,
+                                                time_entry_global);
+
+        // allpix::DepositedCharge for electron
+        deposited_charges[hit.detector].emplace_back(hit_local,
+                                                     hit.hit_global,
+                                                     CarrierType::ELECTRON,
+                                                     1, // value
+                                                     time_hit_local,
+                                                     time_hit_global,
+                                                     &(mc_particles[hit.detector].back()));
+
+        // allpix::DepositedCharge for hole
+        deposited_charges[hit.detector].emplace_back(hit_local,
+                                                     hit.hit_global,
+                                                     CarrierType::HOLE,
+                                                     1, // value
+                                                     time_hit_local,
+                                                     time_hit_global,
+                                                     &(mc_particles[hit.detector].back()));
+
     } // loop over photons
 
     LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
@@ -440,6 +392,70 @@ void DepositionLaserModule::finalize() {
         h_angular_phi_->Write();
         h_angular_theta_->Write();
     }
+}
+
+std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(const ROOT::Math::XYZPoint& position,
+                                                                             const ROOT::Math::XYZVector& direction,
+                                                                             double penetration_depth) const {
+
+    double c = TMath::C() * 100; // speed of light in mm/ns
+
+    // Check intersections with every detector
+    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+    std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
+
+    for(auto& detector : detectors) {
+        auto intersection = get_intersection(detector, position, direction);
+        if(intersection) {
+            intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
+        } else if(verbose_tracking_) {
+            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": no intersection";
+        }
+    }
+
+    // Sort intersection segments along the track, starting from closest to source
+    // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
+
+    std::sort(begin(intersection_segments), end(intersection_segments), [](const auto& p1, const auto& p2) {
+        return p1.second < p2.second;
+    });
+
+    bool hit = false;
+    double t_hit = 0;
+    double t0_hit = 0;
+    std::shared_ptr<Detector> d_hit;
+
+    for(const auto& [detector, points] : intersection_segments) {
+        double t0 = points.first;
+        double t1 = points.second;
+        double distance = t1 - t0;
+
+        if(verbose_tracking_) {
+            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
+                       << Units::display(distance, "um");
+            LOG(DEBUG) << "        entry at " << position + direction * t0 << "mm";
+            LOG(DEBUG) << "        exit at " << position + direction * t1 << "mm";
+        }
+
+        // Check for a hit
+        if(penetration_depth < distance && !hit) {
+            hit = true;
+            t_hit = t0 + penetration_depth;
+            t0_hit = t0;
+            d_hit = detector;
+            if(!verbose_tracking_) {
+                break;
+            }
+        } else {
+            penetration_depth -= distance;
+        }
+    }
+
+    if(!hit) {
+        return std::nullopt;
+    }
+
+    return PhotonHit{d_hit, position + direction * t0_hit, position + direction * t_hit, t0_hit / c, t_hit / c};
 }
 
 std::optional<std::pair<double, double>>
