@@ -76,13 +76,21 @@ namespace allpix {
 
     private:
         /**
-         * @brief Check intersection of a given track with the given detector
+         * @brief Check intersection of the given track with the given detector
          * This is a wrapper around LiangBarsky::intersectionDistances,
          * which properly transforms coordinates to make it work
          */
         std::optional<std::pair<double, double>> intersect_with_sensor(const std::shared_ptr<const Detector>& detector,
                                                                        const ROOT::Math::XYZPoint& position_global,
                                                                        const ROOT::Math::XYZVector& direction_global) const;
+
+        /**
+         * @brief Get a normal vector for a point where the given track enters the given detector
+         * Returns a normal vector to sensor face, closest to the hit_point
+         */
+
+        ROOT::Math::XYZVector intersection_normal_vector(const std::shared_ptr<const Detector>& detector,
+                                                         const ROOT::Math::XYZPoint& position_global) const;
 
         /**
          * @brief Generate starting position and direction for a single photon, obeying the set beam geometry

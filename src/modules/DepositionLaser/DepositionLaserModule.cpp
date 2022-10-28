@@ -498,3 +498,42 @@ DepositionLaserModule::intersect_with_sensor(const std::shared_ptr<const Detecto
     }
     return intersect;
 }
+
+ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const std::shared_ptr<const Detector>& detector,
+                                                                        const ROOT::Math::XYZPoint& position_global) const {
+    // Obtain total sensor size
+    auto sensor = detector->getModel()->getSensorSize();
+
+    // Transform original position and direction to a sensor-related coordinate system,
+
+    // Construct transformation from the sensor system to the global one
+    // * The rotation into the global coordinate system
+    // * The shift from the origin to the detector position
+    ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
+    ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
+    ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+
+    // Apply inverse of that transformation
+    auto position_local = transform_center.Inverse()(position_global);
+
+    std::vector<double> distances_to_faces = {abs(position_local.X() - sensor.X() / 2),
+                                              abs(position_local.X() + sensor.X() / 2),
+                                              abs(position_local.Y() - sensor.Y() / 2),
+                                              abs(position_local.Y() + sensor.Y() / 2),
+                                              abs(position_local.Z() - sensor.Z() / 2),
+                                              abs(position_local.Z() + sensor.Z() / 2)};
+
+    std::vector<ROOT::Math::XYZVector> normals_to_faces = {
+        {1, 0, 0},
+        {-1, 0, 0},
+        {0, 1, 0},
+        {0, -1, 0},
+        {0, 0, 1},
+        {0, 0, -1},
+    };
+
+    auto iter_min = std::min_element(begin(distances_to_faces), end(distances_to_faces));
+    long int index_min = iter_min - begin(distances_to_faces);
+
+    return rotation_center(normals_to_faces[index_min]);
+}
