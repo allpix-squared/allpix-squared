@@ -94,6 +94,10 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     config_.setDefault<bool>("output_plots", false);
     output_plots_ = config.get<bool>("output_plots");
+
+    config_.setDefault<bool>("tracking_v2", false);
+    tracking_v2_ = config.get<bool>("tracking_v2");
+    LOG(DEBUG) << (tracking_v2_ ? "tracking v2" : "tracking v1");
 }
 
 void DepositionLaserModule::initialize() {
@@ -207,7 +211,12 @@ void DepositionLaserModule::run(Event* event) {
         LOG(DEBUG) << "    Penetration depth: " << Units::display(penetration_depth, "um");
 
         // Perform tracking
-        auto hit_opt = track(starting_point, photon_direction, penetration_depth);
+        std::optional<PhotonHit> hit_opt;
+        if(tracking_v2_) {
+            hit_opt = track_v2(starting_point, photon_direction, penetration_depth);
+        } else {
+            hit_opt = track(starting_point, photon_direction, penetration_depth);
+        }
 
         // If this photon did not hit any of the detectors, skip this iteration
         if(!hit_opt) {
@@ -464,6 +473,12 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     }
 
     return PhotonHit{d_hit, position + direction * t0_hit, position + direction * t_hit, t0_hit / c, t_hit / c};
+}
+
+std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(const ROOT::Math::XYZPoint& position,
+                                                                                const ROOT::Math::XYZVector& direction,
+                                                                                double penetration_depth) const {
+    return std::nullopt;
 }
 
 std::optional<std::pair<double, double>>
