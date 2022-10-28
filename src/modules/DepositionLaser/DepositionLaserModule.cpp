@@ -413,7 +413,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
     for(auto& detector : detectors) {
-        auto intersection = get_intersection(detector, position, direction);
+        auto intersection = intersect_with_sensor(detector, position, direction);
         if(intersection) {
             intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
         } else if(verbose_tracking_) {
@@ -467,19 +467,22 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
 }
 
 std::optional<std::pair<double, double>>
-DepositionLaserModule::get_intersection(const std::shared_ptr<const Detector>& detector,
-                                        const ROOT::Math::XYZPoint& position_global,
-                                        const ROOT::Math::XYZVector& direction_global) const {
+DepositionLaserModule::intersect_with_sensor(const std::shared_ptr<const Detector>& detector,
+                                             const ROOT::Math::XYZPoint& position_global,
+                                             const ROOT::Math::XYZVector& direction_global) const {
     // Obtain total sensor size
     auto sensor = detector->getModel()->getSensorSize();
 
-    // Transformation from locally centered into global coordinate system, consisting of
+    // Transform original position and direction to a sensor-related coordinate system,
+
+    // Construct transformation from the sensor system to the global one
     // * The rotation into the global coordinate system
     // * The shift from the origin to the detector position
-    // Sensor-centered coordinate system is required for proper clipping!
     ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
     ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+
+    // Apply inverse of that transformation
     auto position_local = transform_center.Inverse()(position_global);
 
     // Direction vector can directly be rotated
@@ -487,7 +490,6 @@ DepositionLaserModule::get_intersection(const std::shared_ptr<const Detector>& d
 
     auto intersect = LiangBarsky::intersectionDistances(direction_local, position_local, sensor);
 
-    // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
     if(!intersect) {
         return std::nullopt;
     }
