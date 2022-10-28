@@ -15,6 +15,7 @@
 #include <core/utils/log.h>
 #include <objects/DepositedCharge.hpp>
 #include <objects/MCParticle.hpp>
+#include <tools/liang_barsky.h>
 
 #include <Math/AxisAngle.h>
 #include <TMath.h>
@@ -479,49 +480,19 @@ DepositionLaserModule::get_intersection(const std::shared_ptr<const Detector>& d
     ROOT::Math::Rotation3D rotation_center(detector->getOrientation());
     ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(detector->getPosition()));
     ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
-    auto position = transform_center.Inverse()(position_global);
+    auto position_local = transform_center.Inverse()(position_global);
 
     // Direction vector can directly be rotated
     auto direction_local = detector->getOrientation().Inverse()(direction_global);
 
-    // Liang–Barsky clipping of a line against faces of a box
-    auto clip = [](double denominator, double numerator, double& t0, double& t1) {
-        if(denominator > 0) {
-            if(numerator > denominator * t1) {
-                return false;
-            }
-            if(numerator > denominator * t0) {
-                t0 = numerator / denominator;
-            }
-            return true;
-        } else if(denominator < 0) {
-            if(numerator > denominator * t0) {
-                return false;
-            }
-            if(numerator > denominator * t1) {
-                t1 = numerator / denominator;
-            }
-            return true;
-        } else {
-            return numerator <= 0;
-        }
-    };
-
-    // Clip the particle track against the six possible box faces
-    double t0 = std::numeric_limits<double>::lowest(), t1 = std::numeric_limits<double>::max();
-    bool intersect = clip(direction_local.X(), -position.X() - sensor.X() / 2, t0, t1) &&
-                     clip(-direction_local.X(), position.X() - sensor.X() / 2, t0, t1) &&
-                     clip(direction_local.Y(), -position.Y() - sensor.Y() / 2, t0, t1) &&
-                     clip(-direction_local.Y(), position.Y() - sensor.Y() / 2, t0, t1) &&
-                     clip(direction_local.Z(), -position.Z() - sensor.Z() / 2, t0, t1) &&
-                     clip(-direction_local.Z(), position.Z() - sensor.Z() / 2, t0, t1);
+    auto intersect = LiangBarsky::intersectionDistances(direction_local, position_local, sensor);
 
     // The intersection is a point P + t * D with t = t0. Return if positive (i.e. in direction of track vector)
-    if(intersect && t0 > 0) {
-        // Return distance to entry and exit points
-        return std::make_pair(t0, t1);
-    } else {
-        // Otherwise: The line does not intersect the box.
+    if(!intersect) {
         return std::nullopt;
     }
+    if(intersect.value().first < 0) {
+        return std::nullopt;
+    }
+    return intersect;
 }
