@@ -533,7 +533,7 @@ ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const st
     };
 
     auto iter_min = std::min_element(begin(distances_to_faces), end(distances_to_faces));
-    long int index_min = iter_min - begin(distances_to_faces);
+    size_t index_min = iter_min - begin(distances_to_faces);
 
     return rotation_center(normals_to_faces[index_min]);
 }
