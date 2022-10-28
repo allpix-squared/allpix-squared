@@ -215,8 +215,9 @@ void DepositionLaserModule::run(Event* event) {
 
         PhotonHit hit = hit_opt.value();
 
-        // If this was the first hit in this detector in this event, remember entry timestamp as local t=0 for this
-        // detector Here I boldly assume that photon that is created earlier also hits earlier
+        // If this was the first hit in this detector in this event,
+        // remember entry timestamp as local t=0 for this detector.
+        // It is assumed that photon that is created earlier also hits earlier
         if(local_time_offsets.count(hit.detector) == 0) {
             local_time_offsets[hit.detector] = starting_time + hit.time_to_entry;
         }
