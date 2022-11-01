@@ -15,35 +15,41 @@ FUNCTION(get_version project_version)
             EXEC_PROGRAM(
                 git ${CMAKE_CURRENT_SOURCE_DIR}
                 ARGS describe --tags HEAD
-                OUTPUT_VARIABLE ${project_version})
-            STRING(REGEX REPLACE "^release-" "" ${project_version} ${${project_version}})
-            STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1-\\2-\\3" ${project_version} ${${project_version}})
-            EXEC_PROGRAM(
-                git ARGS
-                status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}
-                OUTPUT_VARIABLE PROJECT_STATUS)
-            IF(PROJECT_STATUS STREQUAL "")
-                MESSAGE(STATUS "Git project directory is clean.")
-            ELSE(PROJECT_STATUS STREQUAL "")
-                MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
-                SET(${project_version} "${${project_version}}-dirty")
-            ENDIF(PROJECT_STATUS STREQUAL "")
+                OUTPUT_VARIABLE version
+                RETURN_VALUE status)
+            IF(status AND NOT status EQUAL 0)
+                MESSAGE(STATUS "Git repository present, but could not find any tags.")
+                SET(${project_version} "${${project_version}}-unknown")
+            ELSE()
+                STRING(REGEX REPLACE "^release-" "" version ${version})
+                STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1-\\2-\\3" ${project_version} ${version})
+                EXEC_PROGRAM(
+                    git ARGS
+                    status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}
+                    OUTPUT_VARIABLE PROJECT_STATUS)
+                IF(PROJECT_STATUS STREQUAL "")
+                    MESSAGE(STATUS "Git project directory is clean.")
+                ELSE(PROJECT_STATUS STREQUAL "")
+                    MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
+                    SET(${project_version} "${${project_version}}-dirty")
+                ENDIF(PROJECT_STATUS STREQUAL "")
 
-            # Check if commit flag has been set by the CI:
-            IF(DEFINED ENV{CI_COMMIT_TAG})
-                MESSAGE(STATUS "Found CI tag flag, building tagged version")
-                SET(tag_found TRUE)
+                # Check if commit flag has been set by the CI:
+                IF(DEFINED ENV{CI_COMMIT_TAG})
+                    MESSAGE(STATUS "Found CI tag flag, building tagged version")
+                    SET(tag_found TRUE)
+                ENDIF()
             ENDIF()
-        ELSE(GIT_FOUND)
+        ELSE()
             MESSAGE(STATUS "Git repository present, but could not find git executable.")
             SET(${project_version} "${${project_version}}-unknown")
-        ENDIF(GIT_FOUND)
+        ENDIF()
     ELSE(NOT source_package)
         # If we don't have git we can not really do anything
         MESSAGE(STATUS "Source tarball build - no repository present, appending last commit for reference.")
         SET(${project_version} "$Format:%(describe)$-tar")
         SET(tag_found TRUE)
-    ENDIF(NOT source_package)
+    ENDIF()
 
     # Set the project version in the parent scope
     SET(TAG_FOUND
