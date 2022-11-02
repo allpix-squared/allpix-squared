@@ -674,7 +674,7 @@ void ModuleManager::initialize() {
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
-    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    initialize_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 }
 
 /**
@@ -900,7 +900,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     }
 
     auto end_time = std::chrono::steady_clock::now();
-    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    run_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
 
     LOG(TRACE) << "Destroying thread pool";
     thread_pool_.reset();
@@ -991,7 +991,8 @@ void ModuleManager::finalize() {
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();
-    total_time_ += static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    finalize_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    auto total_time = initialize_time_ + run_time_ + finalize_time_;
 
     // Check for unused configuration keys:
     auto unused_keys = global_config.getUnusedKeys();
@@ -1031,7 +1032,7 @@ void ModuleManager::finalize() {
             slowest_module = module_time.first->getUniqueName();
         }
     }
-    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time_) << ", spending "
+    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time) << ", spending "
                 << std::round((100 * slowest_time) / std::max(1.0l, total_module_time))
                 << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
@@ -1041,11 +1042,11 @@ void ModuleManager::finalize() {
     long double processing_time = 0;
     auto total_events = global_config.get<uint64_t>("number_of_events");
     if(total_events > 0) {
-        processing_time = std::round((1000 * total_time_) / total_events);
+        processing_time = std::round((1000 * run_time_) / total_events);
     }
 
     LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config.get<double>("number_of_events") / total_time_) << " Hz\x1B[0m";
+                << std::round(global_config.get<double>("number_of_events") / run_time_) << " Hz\x1B[0m";
 
     if(global_config.get<unsigned int>("workers") > 0) {
         auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
