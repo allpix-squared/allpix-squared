@@ -156,7 +156,7 @@ namespace allpix {
 
         std::unique_ptr<TFile> modules_file_;
 
-        std::map<Module*, long double> module_execution_time_;
+        std::map<Module*, std::chrono::microseconds> module_execution_time_;
         std::map<Module*, Histogram<TH1D>> module_event_time_;
         Histogram<TH1D> event_time_;
         Histogram<TH1D> buffer_fill_level_;
