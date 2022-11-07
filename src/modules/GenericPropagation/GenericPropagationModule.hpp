@@ -42,7 +42,7 @@ namespace allpix {
      * Splits the sets of deposited charge in several sets which are propagated individually. The propagation consist of a
      * combination of drift from a charge mobility parameterization and diffusion using a Gaussian random walk process.
      * Propagation continues until the charge deposits 'leave' the sensitive device. Sets of charges do not interact with
-     * each other and are threated fully separate, allowing for a speed-up by propagating the charges in multiple threads.
+     * each other and are treated fully separate, allowing for a speed-up by propagating the charges in multiple threads.
      */
     class GenericPropagationModule : public Module {
     public:
