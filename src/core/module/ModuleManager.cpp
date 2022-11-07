@@ -348,7 +348,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     set_module_after(old_settings);
     // Update execution time
     auto end = std::chrono::steady_clock::now();
-    module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
     // Set the module directory afterwards to catch invalid access in constructor
     module->get_configuration().set<std::string>("_output_dir", output_dir);
@@ -461,7 +461,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
         // Set the module directory afterwards to catch invalid access in constructor
         module->get_configuration().set<std::string>("_output_dir", output_dir);
@@ -661,7 +661,7 @@ void ModuleManager::initialize() {
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
         // Book per-module performance plots
         if(global_config.get<bool>("performance_plots")) {
@@ -829,7 +829,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 auto end = std::chrono::steady_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
                 // Note: we do not need to lock a mutex because the std::map is not altered and its values are atomic.
-                this->module_execution_time_[module.get()] += duration;
+                this->module_execution_time_[module.get()] += duration.count();
 
                 if(plot) {
                     std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
@@ -955,7 +955,7 @@ void ModuleManager::finalize() {
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
 
     // Store performance plots
@@ -1027,7 +1027,7 @@ void ModuleManager::finalize() {
     long double slowest_time = 0, total_module_time = 0;
     std::string slowest_module;
     for(auto& module_exec_time : module_execution_time_) {
-        auto module_time = std::chrono::duration<double>(module_exec_time.second).count();
+        auto module_time = std::chrono::duration<double>(std::chrono::microseconds(module_exec_time.second)).count();
         total_module_time += module_time;
         if(module_time > slowest_time) {
             slowest_time = module_time;
@@ -1039,7 +1039,8 @@ void ModuleManager::finalize() {
                 << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took "
-                  << std::chrono::duration<double>(module_execution_time_[module.get()]).count() << " seconds";
+                  << std::chrono::duration<double>(std::chrono::microseconds(module_execution_time_[module.get()])).count()
+                  << " seconds";
     }
 
     long double processing_time = 0;
