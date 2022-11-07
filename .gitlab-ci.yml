@@ -563,7 +563,7 @@ deploy:eos:
         - pkg:cc8-gcc
         - pkg:macos-clang
     # Docker image with tools to deploy to EOS
-    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer@sha256:f22e1364863e86bcddc45ff1da08dfb6b4a6d0203a7c4b15562713dcf4a8b717
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
         - if [ ! -z ${CI_COMMIT_TAG} ]; then cp public/usermanual/allpix-manual-*.pdf public/usermanual/allpix-manual.pdf; fi
         - deploy-eos
