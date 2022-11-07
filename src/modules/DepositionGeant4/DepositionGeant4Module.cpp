@@ -59,8 +59,9 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
     : SequentialModule(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
-    // Enable multithreading of this module if multithreading is enabled, waive any sequence requirement
+    // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+    // Waive any sequence requirement: base module not sequential, but derived modules might be
     waive_sequence_requirement();
 
     // Set default physics list
