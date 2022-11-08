@@ -478,6 +478,62 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
 std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(const ROOT::Math::XYZPoint& position,
                                                                                 const ROOT::Math::XYZVector& direction,
                                                                                 double penetration_depth) const {
+
+    // Lambda for angle calcualation
+    auto angle = [](const ROOT::Math::XYZVector& v1, const ROOT::Math::XYZVector& v2) {
+        return acos(v1.Unit().Dot(v2.Unit()));
+    };
+
+    // FIXME lookup table
+    // refraction index
+    double refraction_index = 3;
+
+    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+    std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
+
+    for(auto& detector : detectors) {
+        auto intersection = intersect_with_sensor(detector, position, direction);
+        if(intersection) {
+            intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
+        }
+    }
+
+    if(intersection_segments.empty()) {
+        LOG(DEBUG) << "No intersections with sensitive detectors";
+        return std::nullopt;
+    }
+
+    auto it_first_detector = std::min_element(begin(intersection_segments),
+                                              end(intersection_segments),
+                                              [](const auto& p1, const auto& p2) { return p1.second < p2.second; });
+
+    auto detector = it_first_detector->first;
+    double t0 = it_first_detector->second.first;
+
+    auto normal_vector = -1 * intersection_normal_vector(detector, position + direction * t0);
+
+    double incidence_angle = angle(direction, normal_vector);
+    double refraction_angle = asin(sin(incidence_angle) / refraction_index);
+
+    // Construct direction of the refracted ray
+    auto binormal = direction.Cross(normal_vector);
+    ROOT::Math::AxisAngle refraction_rotation(binormal, incidence_angle - refraction_angle);
+    ROOT::Math::XYZVector new_direction = refraction_rotation(direction);
+
+    LOG(DEBUG) << "    Intersection with " << detector->getName();
+    LOG(DEBUG) << "        entry at " << position + direction * t0 << "mm";
+    LOG(DEBUG) << "        normal at entry: " << normal_vector << ", binormal: " << binormal.Unit();
+    LOG(DEBUG) << "        incidence angle: " << Units::display(incidence_angle, "deg")
+               << ", refraction_angle: " << Units::display(refraction_angle, "deg");
+    LOG(DEBUG) << "        direction after refraction: " << new_direction;
+
+    // Intersect the refracted ray with the detector
+    auto intersection = intersect_with_sensor(detector, position + direction * t0, new_direction);
+    auto [t0_refract, t1_refract] = intersection.value();
+    double crossing_distance = t1_refract - t0_refract;
+
+    LOG(DEBUG) << "        crossing_distance: " << Units::display(crossing_distance, {"um", "mm"});
+
     return std::nullopt;
 }
 
@@ -506,9 +562,6 @@ DepositionLaserModule::intersect_with_sensor(const std::shared_ptr<const Detecto
     auto intersect = LiangBarsky::intersectionDistances(direction_local, position_local, sensor);
 
     if(!intersect) {
-        return std::nullopt;
-    }
-    if(intersect.value().first < 0) {
         return std::nullopt;
     }
     return intersect;
