@@ -534,6 +534,11 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
 
     LOG(DEBUG) << "        crossing_distance: " << Units::display(crossing_distance, {"um", "mm"});
 
+    if(crossing_distance < penetration_depth) {
+        LOG(DEBUG) << "    Photon is not absorbed";
+        return std::nullopt;
+    }
+
     return std::nullopt;
 }
 
