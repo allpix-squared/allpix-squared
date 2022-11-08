@@ -348,7 +348,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     set_module_after(old_settings);
     // Update execution time
     auto end = std::chrono::steady_clock::now();
-    module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
     // Set the module directory afterwards to catch invalid access in constructor
     module->get_configuration().set<std::string>("_output_dir", output_dir);
@@ -461,7 +461,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         // Set the module directory afterwards to catch invalid access in constructor
         module->get_configuration().set<std::string>("_output_dir", output_dir);
@@ -661,7 +661,7 @@ void ModuleManager::initialize() {
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         // Book per-module performance plots
         if(global_config.get<bool>("performance_plots")) {
@@ -674,7 +674,8 @@ void ModuleManager::initialize() {
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
     auto end_time = std::chrono::steady_clock::now();
-    initialize_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    initialize_time_ =
+        static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
 }
 
 /**
@@ -765,7 +766,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &aborted_events](
                 std::shared_ptr<Event> event,
                 ModuleList::iterator module_iter,
-                long double event_time,
+                int64_t event_time,
                 auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
@@ -827,14 +828,15 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
                 // Update execution time
                 auto end = std::chrono::steady_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
                 // Note: we do not need to lock a mutex because the std::map is not altered and its values are atomic.
-                this->module_execution_time_[module.get()] += duration.count();
+                this->module_execution_time_[module.get()] += duration;
 
                 if(plot) {
                     std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
-                    event_time += std::chrono::duration<double>(duration).count();
-                    this->module_event_time_[module.get()]->Fill(std::chrono::duration<double>(duration).count());
+                    event_time += duration;
+                    this->module_event_time_[module.get()]->Fill(
+                        std::chrono::duration<double>(std::chrono::nanoseconds(duration)).count());
                 }
 
                 if(abort) {
@@ -869,7 +871,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             auto buffered_events = thread_pool_->bufferedQueueSize();
             if(plot) {
                 this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
-                event_time_->Fill(static_cast<double>(event_time));
+                event_time_->Fill(static_cast<double>(event_time) / 1e9);
             }
 
             finished_events++;
@@ -901,14 +903,14 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     }
 
     auto end_time = std::chrono::steady_clock::now();
-    run_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    run_time_ = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
 
     LOG(TRACE) << "Destroying thread pool";
     thread_pool_.reset();
 }
 
-static std::string seconds_to_time(long double seconds) {
-    auto duration = std::chrono::duration<long long>(static_cast<long long>(std::round(seconds)));
+static std::string nanoseconds_to_time(uint64_t nanoseconds) {
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::nanoseconds(nanoseconds));
 
     std::string time_str;
     auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
@@ -955,7 +957,7 @@ void ModuleManager::finalize() {
         set_module_after(old_settings);
         // Update execution time
         auto end = std::chrono::steady_clock::now();
-        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
     // Store performance plots
@@ -992,7 +994,8 @@ void ModuleManager::finalize() {
     modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();
-    finalize_time_ = static_cast<std::chrono::duration<long double>>(end_time - start_time).count();
+    finalize_time_ =
+        static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
     auto total_time = initialize_time_ + run_time_ + finalize_time_;
 
     // Check for unused configuration keys:
@@ -1024,38 +1027,34 @@ void ModuleManager::finalize() {
     }
 
     // Find the slowest module, and accumulate the total run-time for all modules
-    long double slowest_time = 0, total_module_time = 0;
+    int64_t slowest_time = 0, total_module_time = 0;
     std::string slowest_module;
     for(auto& module_exec_time : module_execution_time_) {
-        auto module_time = std::chrono::duration<double>(std::chrono::microseconds(module_exec_time.second)).count();
-        total_module_time += module_time;
-        if(module_time > slowest_time) {
-            slowest_time = module_time;
+        total_module_time += module_exec_time.second;
+        if(module_exec_time.second > slowest_time) {
+            slowest_time = module_exec_time.second;
             slowest_module = module_exec_time.first->getUniqueName();
         }
     }
-    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << seconds_to_time(total_time) << ", spending "
-                << std::round((100 * slowest_time) / std::max(1.0l, total_module_time))
+    LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << nanoseconds_to_time(total_time)
+                << ", spending " << std::round((100 * slowest_time) / std::max(int64_t(1), total_module_time))
                 << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took "
-                  << std::chrono::duration<double>(std::chrono::microseconds(module_execution_time_[module.get()])).count()
-                  << " seconds";
+                  << Units::display(module_execution_time_[module.get()].load(), {"s", "ms"});
     }
 
-    long double processing_time = 0;
-    auto total_events = global_config.get<uint64_t>("number_of_events");
-    if(total_events > 0) {
-        processing_time = std::round((1000 * run_time_) / total_events);
-    }
-
-    LOG(STATUS) << "Average processing time is \x1B[1m" << processing_time << " ms/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config.get<double>("number_of_events") / run_time_) << " Hz\x1B[0m";
+    auto processing_time =
+        std::round((1000ul * run_time_) / std::max(uint64_t(1), global_config.get<uint64_t>("number_of_events")));
+    LOG(STATUS) << "Average processing time is \x1B[1m" << Units::display(processing_time, {"ms", "us"})
+                << "/event\x1B[0m, event generation at \x1B[1m"
+                << std::round(global_config.get<double>("number_of_events") / static_cast<double>(run_time_))
+                << " Hz\x1B[0m";
 
     if(global_config.get<unsigned int>("workers") > 0) {
         auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
-        LOG(STATUS) << "This corresponds to a processing time of \x1B[1m" << event_processing_time
-                    << " ms/event\x1B[0m per worker";
+        LOG(STATUS) << "This corresponds to a processing time of \x1B[1m"
+                    << Units::display(event_processing_time, {"ms", "us"}) << "/event\x1B[0m per worker";
     }
 }
 
