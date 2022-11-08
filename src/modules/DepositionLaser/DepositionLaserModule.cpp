@@ -479,7 +479,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
                                                                                 const ROOT::Math::XYZVector& direction,
                                                                                 double penetration_depth) const {
 
-    // Lambda for angle calcualation
+    // Lambda for angle calculation
     auto angle = [](const ROOT::Math::XYZVector& v1, const ROOT::Math::XYZVector& v2) {
         return acos(v1.Unit().Dot(v2.Unit()));
     };
