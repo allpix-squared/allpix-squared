@@ -487,6 +487,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
     // FIXME lookup table
     // refraction index
     double refraction_index = 3;
+    double c = TMath::C() * 100; // speed of light in mm/ns
 
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
@@ -539,7 +540,13 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
         return std::nullopt;
     }
 
-    return std::nullopt;
+    // Construct a hit
+
+    return PhotonHit{detector,
+                     position + direction * t0,
+                     position + direction * t0 + new_direction * penetration_depth,
+                     t0 / c,
+                     t0 / c + penetration_depth / c * refraction_index};
 }
 
 std::optional<std::pair<double, double>>
