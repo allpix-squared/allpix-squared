@@ -334,12 +334,10 @@ void GenericPropagationModule::run(Event* event) {
                 if(output_plots_) {
                     recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
                 }
-                continue;
             } else if(state == CarrierState::TRAPPED) {
                 LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
                            << " in " << Units::display(time, "ns") << " time, removing";
                 trapped_charges_count += charge_per_step;
-                continue;
             }
 
             LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
