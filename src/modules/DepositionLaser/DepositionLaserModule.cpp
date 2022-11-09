@@ -303,7 +303,7 @@ void DepositionLaserModule::run(Event* event) {
 
     } // loop over photons
 
-    LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
+    LOG(INFO) << "Registered hits in " << mc_particles.size() << " detectors";
 
     // After all the containers are filled, assign MCParticle links in DepositedCharges
 
@@ -316,7 +316,7 @@ void DepositionLaserModule::run(Event* event) {
 
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
-        LOG(DEBUG) << detector->getName() << ": " << data.size() << " hits";
+        LOG(INFO) << "    " << detector->getName() << ": " << data.size() << " hits";
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
         messenger_->dispatchMessage(this, mcparticle_message, event);
     }
