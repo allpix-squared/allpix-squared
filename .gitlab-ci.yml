@@ -247,12 +247,12 @@ fmt:reuse:
 .testmod:
     extends: .test
     script:
-        - ctest -R modules/ --no-compress-output --test-action Test
+        - ctest -R modules/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 .testcore:
     extends: .test
     script:
-        - ctest -R core/ --no-compress-output --test-action Test
+        - ctest -R core/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 
 # Test if examples still execute fine:
@@ -264,7 +264,7 @@ examples:
         - job: cmp:cc7-gcc
           artifacts: true
     script:
-        - ctest -R examples/ --no-compress-output --test-action Test
+        - ctest -R examples/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 # LXPLUS
 mod:lxplus-gcc:
