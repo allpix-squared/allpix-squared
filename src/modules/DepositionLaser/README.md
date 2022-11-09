@@ -13,7 +13,7 @@ module_status: "Immature"
 This deposition generator is mostly intended for simulations of laser-TCT experiments.
 This module implements physics algorithms by itself, without relying on external libraries (e.g., Geant4).
 
-Current implementation assumes that laser pulse is a bunch of point-like photons, each traveling in a straight line. As they cross sensitive silicon volumes, they could be absorbed, respecting exponential distribution of penetration depth. A lookup table ([[1]](#1)) is used to determine absorption coefficients for a given wavelength.
+Current implementation assumes that laser pulse is a bunch of point-like photons, each traveling in a straight line. As they cross sensitive silicon volumes, they could be absorbed, respecting exponential distribution of penetration depth. A lookup table \[[@optical_properties]\] is used to determine absorption coefficients for a given wavelength.
 
 Laser simulation features:
 * all passive volumes are currently ignored;
@@ -47,6 +47,4 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 *Example how to use this module*
 
 ## References
-<a id="1">[1]</a>
-M. A. Green and Keevers, M. J., “Optical properties of intrinsic silicon at 300 K”,
-Progress in Photovoltaics: Research and Applications, vol. 3, pp. 189 - 192, 1995.
+[@optical_properties]: https://doi.org/10.1002/pip.4670030303
