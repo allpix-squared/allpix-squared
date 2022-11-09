@@ -1044,11 +1044,10 @@ void ModuleManager::finalize() {
                   << Units::display(module_execution_time_[module.get()].load(), {"s", "ms"});
     }
 
-    auto processing_time =
-        std::round((1000ul * run_time_) / std::max(uint64_t(1), global_config.get<uint64_t>("number_of_events")));
+    auto processing_time = std::round(run_time_ / std::max(uint64_t(1), global_config.get<uint64_t>("number_of_events")));
     LOG(STATUS) << "Average processing time is \x1B[1m" << Units::display(processing_time, {"ms", "us"})
                 << "/event\x1B[0m, event generation at \x1B[1m"
-                << std::round(global_config.get<double>("number_of_events") / static_cast<double>(run_time_))
+                << std::round(global_config.get<double>("number_of_events") / Units::convert(run_time_, "s"))
                 << " Hz\x1B[0m";
 
     if(global_config.get<unsigned int>("workers") > 0) {
