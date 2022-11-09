@@ -55,122 +55,120 @@ int main(int argc, char** argv) {
 
     int return_code = 0;
 
-    try {
+    // Register the default set of units with this executable:
+    allpix::register_units();
 
-        // Register the default set of units with this executable:
-        allpix::register_units();
+    // Add stream and set default logging level
+    Log::addStream(std::cout);
 
-        // If no arguments are provided, print the help:
-        bool print_help = false;
-        if(argc == 1) {
+    // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
+    std::signal(SIGQUIT, interrupt_handler);
+    std::signal(SIGINT, interrupt_handler);
+
+    // If no arguments are provided, print the help:
+    bool print_help = false;
+    if(argc == 1) {
+        print_help = true;
+        return_code = 1;
+    }
+
+    std::string file_prefix;
+    std::string init_file_prefix;
+    std::string log_file_name;
+
+    std::string conf_file_name;
+
+    for(int i = 1; i < argc; i++) {
+        if(strcmp(argv[i], "-h") == 0) {
             print_help = true;
-            return_code = 1;
-        }
-
-        // Add stream and set default logging level
-        Log::addStream(std::cout);
-
-        // Install abort handler (CTRL+\) and interrupt handler (CTRL+C)
-        std::signal(SIGQUIT, interrupt_handler);
-        std::signal(SIGINT, interrupt_handler);
-
-        std::string file_prefix;
-        std::string init_file_prefix;
-        std::string log_file_name;
-
-        std::string conf_file_name;
-        allpix::LogLevel log_level = allpix::LogLevel::NONE;
-
-        for(int i = 1; i < argc; i++) {
-            if(strcmp(argv[i], "-h") == 0) {
-                print_help = true;
-            } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
-                try {
-                    log_level = Log::getLevelFromString(std::string(argv[++i]));
-                } catch(std::invalid_argument& e) {
-                    LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
-                    return_code = 1;
-                }
-            } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
-                file_prefix = std::string(argv[++i]);
-
-                // Pre-fill config file name if not set yet:
-                if(conf_file_name.empty()) {
-                    conf_file_name = file_prefix + ".conf";
-                }
-            } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
-                conf_file_name = std::string(argv[++i]);
-            } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
-                init_file_prefix = std::string(argv[++i]);
-            } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
-                log_file_name = std::string(argv[++i]);
-            } else {
-                LOG(ERROR) << "Unrecognized command line argument or missing value \"" << argv[i] << "\"";
-                print_help = true;
+        } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
+            try {
+                auto log_level = Log::getLevelFromString(std::string(argv[++i]));
+                Log::setReportingLevel(log_level);
+            } catch(std::invalid_argument& e) {
+                LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
                 return_code = 1;
             }
-        }
+        } else if(strcmp(argv[i], "-f") == 0 && (i + 1 < argc)) {
+            file_prefix = std::string(argv[++i]);
 
-        if(file_prefix.empty()) {
+            // Pre-fill config file name if not set yet:
+            if(conf_file_name.empty()) {
+                conf_file_name = file_prefix + ".conf";
+            }
+        } else if(strcmp(argv[i], "-c") == 0 && (i + 1 < argc)) {
+            conf_file_name = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-o") == 0 && (i + 1 < argc)) {
+            init_file_prefix = std::string(argv[++i]);
+        } else if(strcmp(argv[i], "-l") == 0 && (i + 1 < argc)) {
+            log_file_name = std::string(argv[++i]);
+        } else {
+            LOG(ERROR) << "Unrecognized command line argument or missing value \"" << argv[i] << "\"";
             print_help = true;
             return_code = 1;
         }
+    }
 
-        if(init_file_prefix.empty()) {
-            init_file_prefix = file_prefix;
-            auto sep_idx = init_file_prefix.find_last_of('/');
-            if(sep_idx != std::string::npos) {
-                init_file_prefix = init_file_prefix.substr(sep_idx + 1);
-            }
+    if(file_prefix.empty()) {
+        print_help = true;
+        return_code = 1;
+    }
+
+    if(init_file_prefix.empty()) {
+        init_file_prefix = file_prefix;
+        auto sep_idx = init_file_prefix.find_last_of('/');
+        if(sep_idx != std::string::npos) {
+            init_file_prefix = init_file_prefix.substr(sep_idx + 1);
         }
+    }
 
-        // Print help if requested or no arguments given
-        if(print_help) {
-            std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
-            std::cout << "Required parameters:" << std::endl;
-            std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
-            std::cout << "Optional parameters:" << std::endl;
-            std::cout << "\t -c <config_file>  configuration file name" << std::endl;
-            std::cout << "\t -h                display this help text" << std::endl;
-            std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
-            std::cout
-                << "\t -o <file_prefix>  output file prefix without .init extension (defaults to file name of <file_prefix>)"
-                << std::endl;
-            std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+    // Print help if requested or no arguments given
+    if(print_help) {
+        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
+        std::cout << "Required parameters:" << std::endl;
+        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
+        std::cout << "Optional parameters:" << std::endl;
+        std::cout << "\t -c <config_file>  configuration file name" << std::endl;
+        std::cout << "\t -h                display this help text" << std::endl;
+        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
+        std::cout
+            << "\t -o <file_prefix>  output file prefix without .init extension (defaults to file name of <file_prefix>)"
+            << std::endl;
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
 
+        Log::finish();
+        return return_code;
+    }
+
+    // NOTE: this stream should be available for the duration of the logging
+    std::ofstream log_file;
+    if(!log_file_name.empty()) {
+        log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
+        if(!log_file.good()) {
+            LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
             Log::finish();
-            return return_code;
+            return 1;
         }
+        Log::addStream(log_file);
+    }
 
+    try {
         std::ifstream file(conf_file_name);
         allpix::ConfigReader reader(file, conf_file_name);
         allpix::Configuration config = reader.getHeaderConfiguration();
 
+        auto log_level = Log::getReportingLevel();
         if(log_level == allpix::LogLevel::NONE) {
             auto log_level_string = config.get<std::string>("log_level", "INFO");
             std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
             try {
                 log_level = Log::getLevelFromString(log_level_string);
+                Log::setReportingLevel(log_level);
             } catch(std::invalid_argument& e) {
                 LOG(ERROR) << "Log level \"" << log_level_string
                            << "\" specified in the configuration is invalid, defaulting to INFO instead";
-                log_level = allpix::LogLevel::INFO;
+                Log::setReportingLevel(allpix::LogLevel::INFO);
             }
-        }
-
-        // Set log level:
-        Log::setReportingLevel(log_level);
-
-        // NOTE: this stream should be available for the duration of the logging
-        std::ofstream log_file;
-        if(!log_file_name.empty()) {
-            log_file.open(log_file_name, std::ios_base::out | std::ios_base::trunc);
-            if(!log_file.good()) {
-                LOG(FATAL) << "Cannot write to provided log file! Check if permissions are sufficient.";
-                Log::finish();
-                return 1;
-            }
-            Log::addStream(log_file);
         }
 
         LOG(STATUS) << "Welcome to the Mesh Converter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
@@ -191,6 +189,13 @@ int main(int argc, char** argv) {
         auto regions = config.getArray<std::string>("region");
         auto observable = config.get<std::string>("observable");
         const auto units = config.get<std::string>("observable_units");
+        // Test if this unit is valid:
+        try {
+            (void)Units::get(units);
+        } catch(std::invalid_argument& e) {
+            throw allpix::InvalidValueError(config, "observable_units", e.what());
+        }
+
         const auto vector_field = config.get<bool>("vector_field", (observable == "ElectricField"));
 
         const auto radius_step = config.get<double>("radius_step", 0.5);
