@@ -247,11 +247,7 @@ void DepositionLaserModule::run(Event* event) {
 
         // If that is a first hit in this detector, create map entries
         if(mc_particles.count(hit.detector) == 0) {
-            // This vector is initially assigned size
-            // Otherwise, resize() would be called  during its fill
-            // and this will break pointers to MCParticle's in DepositedCharge's
             mc_particles[hit.detector] = std::vector<MCParticle>();
-            mc_particles[hit.detector].reserve(number_of_photons_);
         }
         if(deposited_charges.count(hit.detector) == 0) {
             deposited_charges[hit.detector] = std::vector<DepositedCharge>();
@@ -273,8 +269,7 @@ void DepositionLaserModule::run(Event* event) {
                                                      CarrierType::ELECTRON,
                                                      1, // value
                                                      time_hit_local,
-                                                     time_hit_global,
-                                                     &(mc_particles[hit.detector].back()));
+                                                     time_hit_global);
 
         // allpix::DepositedCharge for hole
         deposited_charges[hit.detector].emplace_back(hit_local,
@@ -282,12 +277,21 @@ void DepositionLaserModule::run(Event* event) {
                                                      CarrierType::HOLE,
                                                      1, // value
                                                      time_hit_local,
-                                                     time_hit_global,
-                                                     &(mc_particles[hit.detector].back()));
+                                                     time_hit_global);
 
     } // loop over photons
 
     LOG(DEBUG) << "Registered hits in " << mc_particles.size() << " detectors";
+
+    // After all the containers are filled, assign MCParticle links in DepositedCharges
+
+    for(const auto& [detector, data] : mc_particles) {
+        for(size_t i = 0; i < size(mc_particles[detector]); ++i) {
+            deposited_charges[detector][2 * i].setMCParticle(&(data[i]));
+            deposited_charges[detector][2 * i + 1].setMCParticle(&(data[i]));
+        }
+    }
+
     // Dispatch messages
     for(auto& [detector, data] : mc_particles) {
         LOG(DEBUG) << detector->getName() << ": " << data.size() << " hits";
