@@ -46,5 +46,4 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 ## Usage
 *Example how to use this module*
 
-## References
 [@optical_properties]: https://doi.org/10.1002/pip.4670030303
