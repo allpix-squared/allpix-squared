@@ -78,4 +78,4 @@ that is) but can be summarized as follows:
 - The pointer asterisk should be left-aligned, i.e. `int* foo` instead of `int *foo`.
 
 The continuous integration automatically checks if the code adheres to the defined format as described in
-[Section 10.3](../10_devtools/03_ci.md).
+[Section 11.3](../11_devtools/03_ci.md).

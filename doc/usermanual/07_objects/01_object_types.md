@@ -32,7 +32,7 @@ associated with.
 
 MCParticles provide local and global coordinates in space for both the entry and the exit of the particle in the sensor
 volume, as well as local and global time information. The global spatial coordinates are calculated with respect to the
-global reference frame defined in [Section 4.5](../04_framework/05_geometry_detectors.md#coordinate-systems), the global time
+global reference frame defined in [Section 5.1](../05_geometry_detectors/01_geometry.md#coordinate-systems), the global time
 is counted from the beginning of the event. Local spatial coordinates are determined by the respective detector, the local
 time measurement references the entry point of the *first* MCParticle of the event into the detector.
 

@@ -55,10 +55,10 @@ backtrace
 
 Geant4's output stream is configured in the GeometryBuilderGeant4 module. The output stream for Geant4's error stream is
 logged with logging level `WARNING`, the standard stream with logging level `TRACE`. These values can be adjusted via
-`log_level_g4cerr` and `log_level_g4cout` (see [module documentation](../07_modules/geometrybuildergeant4.md#parameters)).
+`log_level_g4cerr` and `log_level_g4cout` (see [module documentation](../08_modules/geometrybuildergeant4.md#parameters)).
 
 #### How can I enable tracking verbosity for Geant4?
 
 By setting `geant4_tracking_verbosity = 1` in the DepositionGeant4 module. For details check the parameter entry in the
-[module documentation](../07_modules/depositiongeant4.md#parameters). Note that you also need the appropriate logging level
+[module documentation](../08_modules/depositiongeant4.md#parameters). Note that you also need the appropriate logging level
 to get the Geant4 output (see "[How can I see the output of Geant4?](#how-can-i-see-the-output-of-geant4)").

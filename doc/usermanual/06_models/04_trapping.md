@@ -11,7 +11,7 @@ function of the fluence and, partially, the temperature. The fluence needs to be
 module, and is always interpreted as 1-MeV neutron equivalent fluence \[[@niel]\].
 
 The decision on whether a charge carrier has been trapped during a step during the propagation process is calculated
-similarly to the recombination processes, described in [Section 5.3](./03_lifetime_recombination.md).
+similarly to the recombination processes, described in [Section 6.3](./03_lifetime_recombination.md).
 
 It should be noted that the trapping of charge carriers is only one of several effects induced by radiation damage. In Allpix
 Squared, these effects are treated independently, i.e. defining the fluence for a propagation module will not affect any

@@ -62,7 +62,7 @@ MyParallelModule::MyParallelModule(Configuration& config, Messenger* messenger, 
 
 By adding this statement, the module certifies to work correctly if its `run()` method is executed multiple times in
 parallel, for different events. This means in particular that the module will safely handle access to shared (for example
-static) variables as described in [Section 9.4](../09_development/04_thread_safe_code.md#member-variables) and that it will
+static) variables as described in [Section 10.4](../10_development/04_thread_safe_code.md#member-variables) and that it will
 properly assign and bind ROOT histograms to their respective directories in the output ROOT file before the event processing
 starts and the `run()` method is called the first time. Access to constant operations in the `GeometryManager`, `Detector`
 and `DetectorModel` is always valid between various threads. In addition, sending and receiving messages is thread-safe.

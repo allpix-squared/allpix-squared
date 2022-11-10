@@ -11,5 +11,5 @@ No, models can be specialized in the detector configuration file. To specialize 
 changed in the standard detector model, e.g. like `sensor_thickness`, should be added as key to the section of the detector
 configuration (which already contains the position, orientation and the base model of the detector). Only parameters in the
 header of detector models can be changed. If support layers should be changed, or new support layers are needed, a new model
-should be created instead. Please refer to [Section 4.5](../04_framework/05_geometry_detectors.md#detector-models) for more
+should be created instead. Please refer to [Section 5.2](../05_geometry_detectors/02_models.md) for more
 information.

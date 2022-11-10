@@ -13,7 +13,7 @@ referenced objects are stored as special ROOT pointers inside the object, which 
 is available in memory. In Allpix Squared this requirement can be automatically fulfilled by also binding the history object
 of interest in a module. During analysis, the tree holding the referenced object should be loaded and pointing to the same
 event entry as the object that requests the reference. If the referenced object can not be loaded, an exception is thrown by
-the retrieving method. Please refer to [Section 6.2](../06_objects/02_object_history.md) for more information.
+the retrieving method. Please refer to [Section 7.2](../07_objects/02_object_history.md) for more information.
 
 #### How do I access the Monte Carlo truth of a specific PixelHit?
 
@@ -21,7 +21,7 @@ The Monte Carlo truth is part of the history of a PixelHit. This means that the 
 described in the question above. Because accessing the Monte Carlo truth of a PixelHit is quite a common task, these
 references are stored directly for every new object created. This allows to retain the information without the necessity to
 keep the full object history including all intermediate steps in memory. Please refer to
-[Section 6.2](../06_objects/02_object_history.md) for more information.
+[Section 7.2](../07_objects/02_object_history.md) for more information.
 
 #### How do I find out, which Monte Carlo particles are primary particles and which have been generated in the sensor?
 
@@ -116,7 +116,7 @@ void readTree(TFile* file, std::string detector) {
 ```
 
 A more elaborate example for a data analysis script can be found in the `tools` directory of the repository \[[@ap2-repo]\]
-and in [Section 13.3](../13_additional/root_analysis_macros.md). Scripts written in both C++ and in Python are provided.
+and in [Section 14.3](../14_additional/root_analysis_macros.md). Scripts written in both C++ and in Python are provided.
 
 #### How can I convert data from the ROOTObject format to other formats?
 

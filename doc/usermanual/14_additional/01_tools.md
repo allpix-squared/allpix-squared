@@ -43,7 +43,7 @@ tableaus. It allows to integrate a system of equations in several steps with cus
 be updated during the integration depending on the error of the Runge-Kutta method (if a tableau with error estimation is
 used).
 
-The [`GenericPropagation module`](../07_modules/genericpropagation.md) uses Runge-Kutta integrator with the
+The [`GenericPropagation module`](../08_modules/genericpropagation.md) uses Runge-Kutta integrator with the
 Runge-Kutta-Fehlberg method (RK5 tableau). After the integrator has been created with the initial position of the charge
 carrier to be transported, the `step()` function allows to advance the simulation to the next step.
 

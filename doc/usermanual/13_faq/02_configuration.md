@@ -79,7 +79,7 @@ Yes, it is possible to specify verbosity levels and log formats per module. This
 #### Can I import an electric field from TCAD and use it for simulating propagation?
 
 Yes, the framework includes a tool to convert DF-ISE files from TCAD to an internal format which Allpix Squared can parse.
-More information about this tool can be found in [Section 13.2](../13_additional/mesh_converter.md), instructions to import
+More information about this tool can be found in [Section 14.2](../14_additional/mesh_converter.md), instructions to import
 the generated field are provided in [Section 3.7](../03_getting_started/07_extending_simulation_chain.md#electric-fields).
 
 #### What parameters should I consider when writig a simulation for a non-silicon sensor?
@@ -94,16 +94,16 @@ consistent results.
 
 - Charge creation energy:
   The parameter `charge_creation_energy` is available in several modules for energy deposition and provides a material
-  dependent default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
+  dependent default. For default values refer to [Section 6.1](../06_models/01_material_properties.md).
 
 - Fano factor:
   The parameter `fano_factor` is available in several modules for energy deposition and provides a material dependent
-  default. For default values refer to [Section 5.1](../05_models/01_material_properties.md).
+  default. For default values refer to [Section 6.1](../06_models/01_material_properties.md).
 
 - Mobility Model:
   The parameter `mobility_model` needs to be adapted to the sensor material by the user.
-  [Section 6.2](../05_models/02_carrier_mobility.md) lists the available models.
+  [Section 6.2](../06_models/02_carrier_mobility.md) lists the available models.
 
 - Recombination Model:
-  The parameter `recombination_model` can be adapted by the user. [Section 6.3](../05_models/03_lifetime_recombination.md)
+  The parameter `recombination_model` can be adapted by the user. [Section 6.3](../06_models/03_lifetime_recombination.md)
   lists the available models.

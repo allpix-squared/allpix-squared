@@ -33,7 +33,7 @@ Additional sources of documentation which may be useful during the development o
 - The framework documentation in [Chapter 4](../04_framework/_index.md) for an introduction to the different components of
   the framework.
 
-- The module documentation in [Chapter 7](../07_modules/_index.md) for a description of the functionality of other modules
+- The module documentation in [Chapter 8](../08_modules/_index.md) for a description of the functionality of other modules
   already implemented, and to look for similar modules which can help during development.
 
 - The Doxygen (core) reference documentation included in the framework \[[@ap2-doxygen]\].
@@ -68,7 +68,7 @@ ALLPIX_ENABLE_DEFAULT(OFF)
 ```
 
 General guidelines and instructions for implementing new modules are provided in
-[Section 9.3](../09_development/03_new_module.md).
+[Section 10.3](../10_development/03_new_module.md).
 
 ### `CMakeLists.txt`
 
@@ -88,7 +88,7 @@ Contains the build description of the module with the following components:
 4.  Possible lines to include additional directories and to link libraries for dependencies loaded earlier.
 
 5.  A line with `ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME})` adds the Geant4 interface library as explained in
-    [Section 13.1](../13_additional/01_tools.md#geant4-interface).
+    [Section 14.1](../14_additional/01_tools.md#geant4-interface).
 
 6.  A line to register the directory with module tests, for example `tests` as in
     `{ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")`.
@@ -130,7 +130,7 @@ ALLPIX_MODULE_INSTALL(${MODULE_NAME})
 ### `README.md`
 
 The `README.md` serves as the documentation for the module and should be written in GitLab Flavored Markdown (GLFM)
-\[[@markdown]\]. It is automatically included in the user manual in [Chapter 7](../07_modules/_index.md).
+\[[@markdown]\]. It is automatically included in the user manual in [Chapter 8](../08_modules/_index.md).
 
 The `README.md` should follow the structure indicated in the `README.md` file of the `DummyModule` in `src/modules/Dummy`,
 and should contain at least the following sections:

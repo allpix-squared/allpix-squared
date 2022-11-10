@@ -6,7 +6,7 @@ weight: 2
 ---
 
 Different types of detector models are available and distributed together with the framework: these models use the
-configuration format introduced in [Section 4.3](./03_configuration.md#file-format) and can be found in the `models`
+configuration format introduced in [Section 4.3](../04_framework/03_configuration.md#file-format) and can be found in the `models`
 directory of the repository. Every model extends from the `DetectorModel` base class, which defines the minimum required
 parameters of a detector model within the framework. The coordinates place the detector in the global coordinate system, with
 the reference point taken as the geometric center of the active matrix. This is defined by the number of pixels in the sensor
@@ -25,7 +25,7 @@ between the sensor and readout chip.
 
 Models are defined in configuration files which are used to instantiate the actual model classes; these files contain various
 types of parameters, some of which are required for all models while others are optional or only supported by certain model
-types. For more details on how to add and use a new detector model, [Section 9.5](../09_development/05_new_detector_model.md)
+types. For more details on how to add and use a new detector model, [Section 10.5](../10_development/05_new_detector_model.md)
 should be consulted.
 
 The set of base parameters supported by every model is provided below. These parameters should be given at the top of the
@@ -182,9 +182,9 @@ added. Support layers allow for the following parameters.
 
 - `material`:
   Material of the support. Allpix Squared does not provide a set of materials to choose from; it is up to the modules using
-  this parameter to implement the materials such that they can use it. [Chapter 7](../07_modules/_index.md) provides
+  this parameter to implement the materials such that they can use it. [Chapter 8](../08_modules/_index.md) provides
   details about the materials supported by the geometry builder modules (for example in the
-  [`GeometryBuilderGeant4 module documenation`](../07_modules/geometrybuildergeant4.md)).
+  [`GeometryBuilderGeant4 module documentation`](../08_modules/geometrybuildergeant4.md)).
 
 
 ## Accessing specific detector models within the framework

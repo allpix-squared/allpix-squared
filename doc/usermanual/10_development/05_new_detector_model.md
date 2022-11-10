@@ -6,7 +6,7 @@ weight: 5
 ---
 
 Custom detector models based on the detector classes provided with Allpix Squared can easily be added to the framework. In
-particular [Section 4.5](../04_framework/05_geometry_detectors.md#detector-model-parameters) explains all parameters of the
+particular [Section 5.2](../05_geometry_detectors/02_models.md) explains all parameters of the
 detector models currently available. The default models provided in the `models` directory of the repository can serve as
 examples. To create a new detector model, the following steps should be taken:
 
@@ -16,7 +16,7 @@ examples. To create a new detector model, the following steps should be taken:
     respectively monolithic sensors or hybrid models with bump bonds and a separate readout chip.
 
 3.  Add all required parameters and possibly optional parameters as explained in
-    [Section 4.5](../04_framework/05_geometry_detectors.md#detector-model-parameters).
+    [Section 5.2](../05_geometry_detectors/02_models.md).
 
 4.  Include the detector model in the search path of the framework by adding the `model_paths` parameter to the general
     setting of the main configuration (see [Section 3.4](../03_getting_started/04_framework_parameters.md)), pointing either
