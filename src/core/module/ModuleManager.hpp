@@ -163,6 +163,7 @@ namespace allpix {
         Histogram<TH1D> event_time_;
         Histogram<TH1D> buffer_fill_level_;
 
+        // Durations in ns
         uint64_t initialize_time_{}, run_time_{}, finalize_time_{};
 
         std::map<std::string, void*> loaded_libraries_;
