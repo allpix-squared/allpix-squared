@@ -871,7 +871,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             auto buffered_events = thread_pool_->bufferedQueueSize();
             if(plot) {
                 this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
-                event_time_->Fill(static_cast<double>(event_time) / 1e9);
+                event_time_->Fill(static_cast<double>(event_time) * 1e-9);
             }
 
             finished_events++;
