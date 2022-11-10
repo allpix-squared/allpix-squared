@@ -48,6 +48,7 @@ namespace allpix {
             // Priority queue is missing a pop returning a non-const reference, so need to apply a const_cast
             out = std::move(const_cast<PQValue&>(priority_queue_.top())).second; // NOLINT
             priority_queue_.pop();
+            priority_queue_size_--;
         } else { // pop_standard
             out = std::move(queue_.front());
             queue_.pop();
@@ -111,6 +112,7 @@ namespace allpix {
 
         // Push a new element to the queue and notify possible consumer
         priority_queue_.emplace(n, std::move(value));
+        priority_queue_size_++;
         lock.unlock();
         pop_condition_.notify_one();
         return true;
@@ -153,10 +155,7 @@ namespace allpix {
         return queue_.size() + priority_queue_.size();
     }
 
-    template <typename T> size_t ThreadPool::SafeQueue<T>::prioritySize() const {
-        std::lock_guard<std::mutex> lock{mutex_};
-        return priority_queue_.size();
-    }
+    template <typename T> size_t ThreadPool::SafeQueue<T>::prioritySize() const { return priority_queue_size_; }
 
     /*
      * Used to ensure no conditions are being waited for in pop when a thread or the application is trying to exit. The queue
@@ -165,6 +164,7 @@ namespace allpix {
     template <typename T> void ThreadPool::SafeQueue<T>::invalidate() {
         std::unique_lock<std::mutex> lock{mutex_};
         std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>>().swap(priority_queue_);
+        priority_queue_size_ = 0;
         std::queue<T>().swap(queue_);
         valid_ = false;
         lock.unlock();

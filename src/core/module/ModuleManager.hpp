@@ -158,12 +158,14 @@ namespace allpix {
 
         std::unique_ptr<TFile> modules_file_;
 
-        std::map<Module*, long double> module_execution_time_;
+        // Duration in ns
+        std::map<Module*, std::atomic_int64_t> module_execution_time_;
         std::map<Module*, Histogram<TH1D>> module_event_time_;
         Histogram<TH1D> event_time_;
         Histogram<TH1D> buffer_fill_level_;
 
-        long double total_time_{};
+        // Durations in ns
+        uint64_t initialize_time_{}, run_time_{}, finalize_time_{};
 
         std::map<std::string, void*> loaded_libraries_;
 
