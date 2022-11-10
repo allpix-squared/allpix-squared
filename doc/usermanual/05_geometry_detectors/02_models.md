@@ -105,34 +105,37 @@ the following:
   the grid.
 
 
-## Hexagonal Pixels
+## Specializing detector models
 
-Hexagonal pixel grids in Allpix Squared use an axial coordinate system to describe the relative positions and indices of
-hexagons on the grid, following largely the definitions provided in \[[@hexagons]\]. Similar to the Cartesian coordinate
-system used for regular pixel layouts, the origin is the lower-left corner of the sensor, with the hexagon indices $`(0,0)`$.
-Owing to the orientation of the grid axes, negative can occur in the top-left region of the sensor.
+A detector model contains default values for all parameters. Some parameters like the sensor thickness can however vary
+between different detectors of the same model. To allow for easy adjustment of these parameters, models can be specialized in
+the detector configuration file introduced in [Section 3.3](../03_getting_started/03_detector_configuration.md). All model
+parameters, except the type parameter and the support layers, can be changed by adding a parameter with the exact same key
+and the updated value to the detector configuration. The framework will then automatically create a copy of this model with
+the requested change.
 
-Two orientations of hexagons are supported, subsequently referred to as *pointy* with sides parallel to the $`y`$ axis of the
-Cartesian coordinate system and corners at the top and bottom, and *flat* with sides parallel to the Cartesian $`x`$ axis and
-corners to the left and right. The pitches $`p_x`$ and $`p_y`$ of the hexagon align with the axial coordinate system and are
-rotated differently with respect to the Cartesian system between the two variants. The orientation of the pitches as well as
-the resulting corner positions in Cartesian coordinates are shown in the figure below:
+{{% alert title="Note" color="warning" %}}
+Before re-implementing models, it should be checked if the desired change can be achieved using the detector model
+specialization. For most cases this provides a quick and flexible way to adapt detectors to different needs and setups (for
+example, detectors with different sensor thicknesses).
+{{% /alert %}}
 
-![](./hexagon_orientations.png)\
-*Definition of the pitches $`p_x`$ and $`p_y`$, and corner positions for the pointy (left) and flat (right) hexagon
-orientation in Cartesian coordinates. The pitches align with the axes of the axial coordinate system of the hexagonal grid.*
+## Search order for models
 
-The additional parameters for the **hexagonal** model are as follows:
+To support different detector models and storage locations, the framework searches different paths for model files in the
+following order:
 
-- `pixel_type`:
-   The shape/orientation of the hexagonal pixels within the grid, either `hexagon_pointy` or `hexagon_flat`.
+1.  If defined, the paths provided in the global `model_paths` parameter are searched first. Files are read and parsed
+    directly. If the path is a directory, all files in the directory are added (without recursing into subdirectories).
 
-The number of pixels in a hexagonal grid are counted along the Cartesian axes, taking the offset pixels into account.
-For example, an 8-by-4 grid comprises 32 pixels both for *pointy* and *flat* hexagon orientation, but results in different
-overall grid dimensions as demonstrated below:
+2.  The location where the models are installed to (refer to the description of the `MODEL_DIRECTORY` variable in
+    [Section 2.5](../02_installation/05_cmake_configuration.md)).
 
-![](./hexagon_grids.png)\
-*Grid layouts for pointy (left) and flat (right) hexagons with a size of 8-by-4 pixels.*
+3.  The standard data paths on the system as given by the environmental variable `XDG_ DATA_DIRS` with `Allpix/models`
+    appended. The variable defaults to `/usr/local/share/` (thus effectively `/usr/local/share/Allpix/models`) followed by
+    `/usr/share/` (effectively `/usr/share/Allpix/models`).
+
+4.  The path of the main configuration file.
 
 
 ## Support Layers
@@ -183,6 +186,7 @@ added. Support layers allow for the following parameters.
   details about the materials supported by the geometry builder modules (for example in the
   [`GeometryBuilderGeant4 module documenation`](../07_modules/geometrybuildergeant4.md)).
 
+
 ## Accessing specific detector models within the framework
 
 Some modules are written to act on only a particular type of detector model. In order to ensure that a specific detector
@@ -197,38 +201,3 @@ if(hybrid_model != nullptr) {
     // The model of this Detector is a HybridPixelDetectorModel
 }
 ```
-
-## Specializing detector models
-
-A detector model contains default values for all parameters. Some parameters like the sensor thickness can however vary
-between different detectors of the same model. To allow for easy adjustment of these parameters, models can be specialized in
-the detector configuration file introduced in [Section 3.3](../03_getting_started/03_detector_configuration.md). All model
-parameters, except the type parameter and the support layers, can be changed by adding a parameter with the exact same key
-and the updated value to the detector configuration. The framework will then automatically create a copy of this model with
-the requested change.
-
-{{% alert title="Note" color="warning" %}}
-Before re-implementing models, it should be checked if the desired change can be achieved using the detector model
-specialization. For most cases this provides a quick and flexible way to adapt detectors to different needs and setups (for
-example, detectors with different sensor thicknesses).
-{{% /alert %}}
-
-## Search order for models
-
-To support different detector models and storage locations, the framework searches different paths for model files in the
-following order:
-
-1.  If defined, the paths provided in the global `model_paths` parameter are searched first. Files are read and parsed
-    directly. If the path is a directory, all files in the directory are added (without recursing into subdirectories).
-
-2.  The location where the models are installed to (refer to the description of the `MODEL_DIRECTORY` variable in
-    [Section 2.5](../02_installation/05_cmake_configuration.md)).
-
-3.  The standard data paths on the system as given by the environmental variable `XDG_ DATA_DIRS` with `Allpix/models`
-    appended. The variable defaults to `/usr/local/share/` (thus effectively `/usr/local/share/Allpix/models`) followed by
-    `/usr/share/` (effectively `/usr/share/Allpix/models`).
-
-4.  The path of the main configuration file.
-
-
-[@hexagons]: https://www.redblobgames.com/grids/hexagons/
