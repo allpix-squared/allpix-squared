@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Automated Testing"
 description: "The testing framework to prevent regressions."
-weight: 11
+weight: 12
 ---
 
 The build system of the framework provides a set of automated tests which are executed by the CI to ensure proper functioning

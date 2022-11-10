@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "FAQ"
 description: "Some of the most frequently asked questions."
-weight: 12
+weight: 13
 ---
 
 This chapter provides answers to some of the most frequently asked questions concerning usage, configuration and extension of

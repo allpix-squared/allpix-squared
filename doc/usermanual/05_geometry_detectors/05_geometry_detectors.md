@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Geometry and Detectors"
-weight: 5
+weight: 1
 ---
 
 Simulations are frequently performed for a set of different detectors (such as a beam telescope and a device under test). All

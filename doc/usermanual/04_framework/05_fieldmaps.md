@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Field Maps"
-weight: 6
+weight: 5
 ---
 
 Allpix Squared allows to load externally generated field maps for various quantities such as the electric field or the doping

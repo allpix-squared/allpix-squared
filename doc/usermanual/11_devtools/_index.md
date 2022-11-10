@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Development Tools & CI"
 description: "A few tools to ease development and help to maintain a high code quality."
-weight: 10
+weight: 11
 ---
 
 The following chapter will introduce a few tools included in the framework to ease development and help to maintain a high

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Modules"
 description: "Description and parameter documentation of all available Allpix Squared modules."
-weight: 7
+weight: 8
 ---
 
 This section describes all currently available modules in detail. This comprises a description of the physics implemented as

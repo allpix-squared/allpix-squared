@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Module & Detector Development"
 description: "How to develop new simulation modules and detector models."
-weight: 9
+weight: 10
 ---
 
 This chapter provides a few brief recipes for developing new simulation modules and detector models for the Allpix Squared

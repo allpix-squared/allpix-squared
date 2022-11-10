@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Examples"
 description: "Description of the example configurations."
-weight: 8
+weight: 9
 ---
 
 This section provides brief descriptions of the example configurations currently provided in the Allpix Squared repository

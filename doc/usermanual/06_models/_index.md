@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Physics Models & Materials"
 description: "Description of the different physics models and material properties for semiconductor detectors."
-weight: 5
+weight: 6
 ---
 
 Allpix Squared implements a variety of properties and models to describe the physics of semiconductor detectors. Models are

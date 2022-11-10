@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Objects"
 description: "Objects which can be used to transfer data between modules."
-weight: 6
+weight: 7
 ---
 
 Allpix Squared provides a set of objects which can be used to transfer data between modules and to store the simulation
