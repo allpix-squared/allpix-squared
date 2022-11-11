@@ -133,6 +133,7 @@ namespace allpix {
         bool verbose_tracking_;
         double wavelength_;
         double absorption_length_;
+        double refractive_index_;
         double pulse_duration_;
 
         bool tracking_v2_;
