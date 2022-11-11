@@ -107,30 +107,35 @@ void DepositionLaserModule::initialize() {
 
     std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
 
-    std::map<double, double> absorption_lut;
+    // wavelength: {absorption_length, refractive_index}
+    std::map<double, std::pair<double, double>> optics_lut;
     double wl = 0;
     double abs_length = 0;
+    double refr_ind = 0;
 
-    while(f >> wl >> abs_length) {
-        absorption_lut[Units::get(wl, "nm")] = abs_length;
+    while(f >> wl >> abs_length >> refr_ind) {
+        optics_lut[Units::get(wl, "nm")] = {abs_length, refr_ind};
     }
 
     LOG(DEBUG) << "Loading absorption data: " << laser_data_path;
 
     // Find or interpolate absorption depth for given wavelength
 
-    if(absorption_lut.count(wavelength_) != 0) {
-        absorption_length_ = absorption_lut[wavelength_];
+    if(optics_lut.count(wavelength_) != 0) {
+        absorption_length_ = optics_lut[wavelength_].first;
+        refractive_index_ = optics_lut[wavelength_].second;
     } else {
-        auto it = absorption_lut.upper_bound(wavelength_);
+        auto it = optics_lut.upper_bound(wavelength_);
         double wl1 = (*prev(it)).first;
         double wl2 = (*it).first;
         absorption_length_ =
-            (absorption_lut[wl1] * (wl2 - wavelength_) + absorption_lut[wl2] * (wavelength_ - wl1)) / (wl2 - wl1);
+            (optics_lut[wl1].first * (wl2 - wavelength_) + optics_lut[wl2].first * (wavelength_ - wl1)) / (wl2 - wl1);
+        refractive_index_ =
+            (optics_lut[wl1].second * (wl2 - wavelength_) + optics_lut[wl2].second * (wavelength_ - wl1)) / (wl2 - wl1);
     }
 
     LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm") << ", corresponding absorption length is "
-               << Units::display(absorption_length_, {"um", "mm"});
+               << Units::display(absorption_length_, {"um", "mm"}) << ", refractive_index: " << refractive_index_;
 
     // Create Histograms
     LOG(DEBUG) << "Initializing histograms";
@@ -513,9 +518,6 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
         return acos(v1.Unit().Dot(v2.Unit()));
     };
 
-    // FIXME lookup table
-    // refraction index
-    double refraction_index = 3;
     double c = TMath::C() * 100; // speed of light in mm/ns
 
     std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
@@ -543,7 +545,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
     auto normal_vector = -1 * intersection_normal_vector(detector, position + direction * t0);
 
     double incidence_angle = angle(direction, normal_vector);
-    double refraction_angle = asin(sin(incidence_angle) / refraction_index);
+    double refraction_angle = asin(sin(incidence_angle) / refractive_index_);
 
     // Construct direction of the refracted ray
     auto binormal = direction.Cross(normal_vector);
@@ -575,7 +577,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
                      position + direction * t0,
                      position + direction * t0 + new_direction * penetration_depth,
                      t0 / c,
-                     t0 / c + penetration_depth / c * refraction_index};
+                     t0 / c + penetration_depth / c * refractive_index_};
 }
 
 std::optional<std::pair<double, double>>
