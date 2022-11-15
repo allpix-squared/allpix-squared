@@ -145,10 +145,6 @@ void DetectorModel::addImplant(const Implant::Type& type,
         Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(material)));
 }
 
-std::vector<DetectorModel::Implant> DetectorModel::getImplants() const {
-    return implants_;
-}
-
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
     // Shift position to implant coordinate system and apply rotation around z axis:
     auto pos = orientation_(position - offset_);
