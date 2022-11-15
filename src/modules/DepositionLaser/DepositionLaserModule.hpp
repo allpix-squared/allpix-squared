@@ -140,6 +140,6 @@ namespace allpix {
         Histogram<TH2D> h_intensity_focalplane_{};
         Histogram<TH1D> h_angular_phi_{};
         Histogram<TH1D> h_angular_theta_{};
-        std::map<const std::shared_ptr<Detector>, Histogram<TH3D>> deposited_charge_shape_;
+        std::map<const std::shared_ptr<Detector>, Histogram<TH3D>> h_deposited_charge_shapes_;
     };
 } // namespace allpix
