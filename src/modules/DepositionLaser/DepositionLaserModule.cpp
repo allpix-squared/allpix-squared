@@ -94,10 +94,6 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
     config_.setDefault<bool>("output_plots", false);
     output_plots_ = config.get<bool>("output_plots");
-
-    config_.setDefault<bool>("tracking_v2", false);
-    tracking_v2_ = config.get<bool>("tracking_v2");
-    LOG(DEBUG) << (tracking_v2_ ? "tracking v2" : "tracking v1");
 }
 
 void DepositionLaserModule::initialize() {
@@ -243,12 +239,7 @@ void DepositionLaserModule::run(Event* event) {
         LOG(DEBUG) << "    Penetration depth: " << Units::display(penetration_depth, "um");
 
         // Perform tracking
-        std::optional<PhotonHit> hit_opt;
-        if(tracking_v2_) {
-            hit_opt = track_v2(starting_point, photon_direction, penetration_depth);
-        } else {
-            hit_opt = track(starting_point, photon_direction, penetration_depth);
-        }
+        std::optional<PhotonHit> hit_opt = track(starting_point, photon_direction, penetration_depth);
 
         // If this photon did not hit any of the detectors, skip this iteration
         if(!hit_opt) {
@@ -457,70 +448,6 @@ std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> DepositionLaserModule::ge
 std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(const ROOT::Math::XYZPoint& position,
                                                                              const ROOT::Math::XYZVector& direction,
                                                                              double penetration_depth) const {
-
-    double c = TMath::C() * 100; // speed of light in mm/ns
-
-    // Check intersections with every detector
-    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
-    std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
-
-    for(auto& detector : detectors) {
-        auto intersection = intersect_with_sensor(detector, position, direction);
-        if(intersection) {
-            intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
-        } else if(verbose_tracking_) {
-            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": no intersection";
-        }
-    }
-
-    // Sort intersection segments along the track, starting from closest to source
-    // Since beam_direction is a unity vector, t-values produced by clipping algorithm are in actual length units
-
-    std::sort(begin(intersection_segments), end(intersection_segments), [](const auto& p1, const auto& p2) {
-        return p1.second < p2.second;
-    });
-
-    bool hit = false;
-    double t_hit = 0;
-    double t0_hit = 0;
-    std::shared_ptr<Detector> d_hit;
-
-    for(const auto& [detector, points] : intersection_segments) {
-        double t0 = points.first;
-        double t1 = points.second;
-        double distance = t1 - t0;
-
-        if(verbose_tracking_) {
-            LOG(DEBUG) << "    Intersection with " << detector->getName() << ": travel distance "
-                       << Units::display(distance, "um");
-            LOG(DEBUG) << "        entry at " << position + direction * t0 << "mm";
-            LOG(DEBUG) << "        exit at " << position + direction * t1 << "mm";
-        }
-
-        // Check for a hit
-        if(penetration_depth < distance && !hit) {
-            hit = true;
-            t_hit = t0 + penetration_depth;
-            t0_hit = t0;
-            d_hit = detector;
-            if(!verbose_tracking_) {
-                break;
-            }
-        } else {
-            penetration_depth -= distance;
-        }
-    }
-
-    if(!hit) {
-        return std::nullopt;
-    }
-
-    return PhotonHit{d_hit, position + direction * t0_hit, position + direction * t_hit, t0_hit / c, t_hit / c};
-}
-
-std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(const ROOT::Math::XYZPoint& position,
-                                                                                const ROOT::Math::XYZVector& direction,
-                                                                                double penetration_depth) const {
 
     // Lambda for angle calculation
     auto angle = [](const ROOT::Math::XYZVector& v1, const ROOT::Math::XYZVector& v2) {

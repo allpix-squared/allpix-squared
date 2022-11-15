@@ -110,18 +110,10 @@ namespace allpix {
 
         /**
          * @brief Track a photon, starting at the given point
-         * version 1: casting straight rays, ignoring passive objects
+         * version 2: refraction
          */
         std::optional<PhotonHit>
         track(const ROOT::Math::XYZPoint& position, const ROOT::Math::XYZVector& direction, double penetration_depth) const;
-
-        /**
-         * @brief Track a photon, starting at the given point
-         * version 2: refraction
-         */
-        std::optional<PhotonHit> track_v2(const ROOT::Math::XYZPoint& position,
-                                          const ROOT::Math::XYZVector& direction,
-                                          double penetration_depth) const;
 
         // General module members
         GeometryManager* geo_manager_;
@@ -142,8 +134,6 @@ namespace allpix {
         double absorption_length_;
         double refractive_index_;
         double pulse_duration_;
-
-        bool tracking_v2_;
 
         // Histograms
         bool output_plots_;
