@@ -83,9 +83,6 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value");
     }
 
-    config_.setDefault<bool>("verbose_tracking", false);
-    verbose_tracking_ = config_.get<bool>("verbose_tracking");
-
     // FIXME less hardcoded values
     wavelength_ = config_.get<double>("wavelength");
     if(Units::convert(wavelength_, "nm") < 250 || Units::convert(wavelength_, "nm") > 1450) {
