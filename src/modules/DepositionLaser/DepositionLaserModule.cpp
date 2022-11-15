@@ -98,7 +98,7 @@ void DepositionLaserModule::initialize() {
     // Check for incompatible passive objects, warn user if there are any
     auto passive_configs = geo_manager_->getPassiveElements();
     for(const auto& item : passive_configs) {
-        std::string shape = item.get<std::string>("type");
+        auto shape = item.get<std::string>("type");
         if(shape != "box") {
             LOG(WARNING) << item.getName() << " passive object has unsupported type (" << shape << ") and will be ignored";
         }
@@ -554,7 +554,7 @@ DepositionLaserModule::intersect_with_passives(const ROOT::Math::XYZPoint& posit
     auto passive_configs = geo_manager_->getPassiveElements();
 
     for(const auto& item : passive_configs) {
-        std::string shape = item.get<std::string>("type");
+        auto shape = item.get<std::string>("type");
         if(shape != "box") {
             continue;
         }
