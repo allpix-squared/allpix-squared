@@ -179,17 +179,17 @@ void DepositionLaserModule::initialize() {
             std::string name = "dep_charge_" + detector->getName();
             auto sensor = detector->getModel()->getSensorSize();
 
-            deposited_charge_shape_[detector] = CreateHistogram<TH3D>(name.c_str(),
-                                                                      name.c_str(),
-                                                                      100,
-                                                                      -sensor.X() / 2,
-                                                                      sensor.X() / 2,
-                                                                      100,
-                                                                      -sensor.Y() / 2,
-                                                                      sensor.Y() / 2,
-                                                                      100,
-                                                                      -sensor.Z() / 2,
-                                                                      sensor.Z() / 2);
+            h_deposited_charge_shapes_[detector] = CreateHistogram<TH3D>(name.c_str(),
+                                                                         name.c_str(),
+                                                                         100,
+                                                                         -sensor.X() / 2,
+                                                                         sensor.X() / 2,
+                                                                         100,
+                                                                         -sensor.Y() / 2,
+                                                                         sensor.Y() / 2,
+                                                                         100,
+                                                                         -sensor.Z() / 2,
+                                                                         sensor.Z() / 2);
         }
     }
 }
@@ -266,7 +266,7 @@ void DepositionLaserModule::run(Event* event) {
         LOG(DEBUG) << "        local: " << hit_local << "mm, " << Units::display(time_hit_local, "ns");
 
         if(output_plots_) {
-            deposited_charge_shape_[hit.detector]->Fill(hit_local.X(), hit_local.Y(), hit_local.Z());
+            h_deposited_charge_shapes_[hit.detector]->Fill(hit_local.X(), hit_local.Y(), hit_local.Z());
         }
 
         // If that is a first hit in this detector, create map entries
@@ -335,7 +335,7 @@ void DepositionLaserModule::finalize() {
         h_intensity_sourceplane_->Write();
         h_angular_phi_->Write();
         h_angular_theta_->Write();
-        for(auto& [detector, histo] : deposited_charge_shape_) {
+        for(auto& [detector, histo] : h_deposited_charge_shapes_) {
             histo->Write();
         }
     }
