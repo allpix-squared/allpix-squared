@@ -107,7 +107,7 @@ namespace allpix {
              * @brief Get the material of the implant
              * @return Implant material
              */
-            std::string getMaterial() const { return material_; }
+            inline const std::string& getMaterial() const { return material_; }
             /**
              * @brief Return the type of the implant
              * @return implant type
@@ -154,8 +154,8 @@ namespace allpix {
                     ROOT::Math::XYZVector offset,
                     ROOT::Math::RotationZ orientation,
                     std::string material)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
-                  material_(std::move(material)) {}
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)),
+                  orientation_(std::move(orientation)), material_(std::move(material)) {}
 
             // Actual parameters returned
             Type type_;
@@ -271,7 +271,7 @@ namespace allpix {
          * @brief Return all implants
          * @return List of all the implants
          */
-        std::vector<Implant> getImplants() const;
+        inline const std::vector<Implant>& getImplants() const { return implants_; };
 
         /**
          * @brief Add a new implant
