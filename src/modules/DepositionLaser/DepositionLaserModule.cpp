@@ -543,12 +543,7 @@ DepositionLaserModule::intersect_with_sensor(const std::shared_ptr<const Detecto
     // Direction vector can directly be rotated
     auto direction_local = detector->getOrientation().Inverse()(direction_global);
 
-    auto intersect = LiangBarsky::intersectionDistances(direction_local, position_local, sensor);
-
-    if(!intersect) {
-        return std::nullopt;
-    }
-    return intersect;
+    return LiangBarsky::intersectionDistances(direction_local, position_local, sensor);
 }
 
 std::optional<std::pair<double, std::string>>
