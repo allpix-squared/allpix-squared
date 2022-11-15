@@ -497,7 +497,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     LOG(DEBUG) << "        entry at " << Units::display(position + direction * t0, {"mm"});
     LOG(DEBUG) << "        normal at entry: " << normal_vector << ", binormal: " << binormal.Unit();
     LOG(DEBUG) << "        incidence angle: " << Units::display(incidence_angle, "deg")
-               << ", refraction_angle: " << Units::display(refraction_angle, "deg");
+               << ", refraction angle: " << Units::display(refraction_angle, "deg");
     LOG(DEBUG) << "        direction after refraction: " << new_direction;
 
     // Intersect the refracted ray with the detector
