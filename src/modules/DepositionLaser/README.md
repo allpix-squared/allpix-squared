@@ -4,28 +4,26 @@
 title: "DepositionLaser"
 description: "A simplistic deposition generator for charge injection with a laser."
 module_maintainer: "Daniil Rastorguev (<daniil.rastorguev@desy.de>)"
-module_status: "Immature"
-# module_output: "DepositedCharge, MCParticle"
+module_status: "Functional"
+module_output: "DepositedCharge, MCParticle"
 ---
 
 ## Description
 
 This deposition generator is mostly intended for simulations of laser-TCT experiments.
-This module implements physics algorithms by itself, without relying on external libraries (e.g., Geant4).
+It would generate charge, deposited by absorption of a laser pulse in silicon bulk.
 
-Current implementation assumes that laser pulse is a bunch of point-like photons, each traveling in a straight line. As they cross sensitive silicon volumes, they could be absorbed, respecting exponential distribution of penetration depth. A lookup table \[[@optical_properties]\] is used to determine absorption coefficients for a given wavelength.
+Current implementation assumes that the laser pulse is a bunch of point-like photons, each traveling in a straight line. A lookup table \[[@optical_properties]\] is used to determine absorption and refraction coefficients for a given wavelength.
 
-Laser simulation features:
-* all passive volumes are currently ignored;
-* although, behavior of stacked detectors would be correct;
-* gaussian beam shape could be simulated; if so, angular and spatial distribution of straight-line-photons is set to mimic intensity distribution in a gaussian beam
+This module has its own tracking algorithms (no dependencies on Geant4), based on Allpix geometry
+Tracking features:
+* photons are absorbed in detector bulk on physically correct depth
+* photons refract on silicon-air interface
+* tracks are terminated when a photon leaves *first encountered* sensitive volume
+* tracks are terminated if a passive object is hit (the only supported passive object type is `box`)
 
-Advanced tracking will be implemented later. This will include:
-* termination of tracks if a passive object is hit;
-* photon refraction as they cross silicon surface.
-
+Spatial and temporal distribution of incident photons are tuned to mimic a real laser pulse.
 As a result, this module yields multiple `DepositedCharge` instances for each detector, with them having physically correct spatial and temporal distribution.
-
 
 
 
@@ -40,10 +38,10 @@ As a result, this module yields multiple `DepositedCharge` instances for each de
 * `beam_geometry`, either `cylindrical` or `converging`
 * `focal_distance`(length) and `beam_convergence_angle`: both need to be specified for a `converging` beam
 
-* `verbose_tracking`, defaults to `false`; if set `true`, it will increase amount of tracking-related debug log output (and may slightly increase computing cost if multiple detectors are present)
 * `output_plots`, defaults to `false`
 
 ## Usage
-*Example how to use this module*
+`DepositedCharge` instances created by this module are properly assigned time.
+Thus, a simulation pipeline with `DepositionLaser`, `TransientPropagation` and `PulseTransfer` is expected to produce pulse shapes, comparable with experimentally obtained ones.
 
 [@optical_properties]: https://doi.org/10.1002/pip.4670030303
