@@ -551,6 +551,14 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track_v2(
     auto detector = it_first_detector->first;
     double t0 = it_first_detector->second.first;
 
+    auto intersect_passive = intersect_with_passives(position, direction);
+    if(intersect_passive) {
+        if(intersect_passive.value().first < t0) {
+            LOG(DEBUG) << "Absorbed by (" << intersect_passive.value().second << ") passive object";
+            return std::nullopt;
+        }
+    }
+
     auto normal_vector = -1 * intersection_normal_vector(detector, position + direction * t0);
 
     double incidence_angle = angle(direction, normal_vector);
