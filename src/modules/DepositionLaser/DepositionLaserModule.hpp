@@ -87,10 +87,17 @@ namespace allpix {
                                                                        const ROOT::Math::XYZVector& direction_global) const;
 
         /**
+         * @brief Check intersection with passive objects if there is any
+         * Only works for boxes
+         */
+        std::optional<std::pair<double, std::string>>
+        intersect_with_passives(const ROOT::Math::XYZPoint& position_global,
+                                const ROOT::Math::XYZVector& direction_global) const;
+
+        /**
          * @brief Get a normal vector for a point where the given track enters the given detector
          * Returns a normal vector to sensor face, closest to the hit_point
          */
-
         ROOT::Math::XYZVector intersection_normal_vector(const std::shared_ptr<const Detector>& detector,
                                                          const ROOT::Math::XYZPoint& position_global) const;
 
