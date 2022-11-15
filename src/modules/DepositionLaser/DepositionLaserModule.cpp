@@ -36,7 +36,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     //
 
     source_position_ = config_.get<ROOT::Math::XYZPoint>("source_position");
-    LOG(DEBUG) << "Source position: " << source_position_ << "mm";
+    LOG(DEBUG) << "Source position: " << Units::display(source_position_, {"mm"});
 
     // Make beam_direction a unity vector, so t-values produced by clipping algorithm are in actual length units
     beam_direction_ = config_.get<ROOT::Math::XYZVector>("beam_direction").Unit();
@@ -262,8 +262,8 @@ void DepositionLaserModule::run(Event* event) {
         double time_hit_local = time_hit_global - local_time_offsets[hit.detector];
 
         LOG(DEBUG) << "    Hit in " << hit.detector->getName();
-        LOG(DEBUG) << "        global: " << hit.hit_global << "mm, " << Units::display(time_hit_global, "ns");
-        LOG(DEBUG) << "        local: " << hit_local << "mm, " << Units::display(time_hit_local, "ns");
+        LOG(DEBUG) << "        global: " << Units::display(hit.hit_global, {"mm"}) << Units::display(time_hit_global, "ns");
+        LOG(DEBUG) << "        local: " << Units::display(hit_local, {"mm"}) << Units::display(time_hit_local, "ns");
 
         if(output_plots_) {
             h_deposited_charge_shapes_[hit.detector]->Fill(hit_local.X(), hit_local.Y(), hit_local.Z());
@@ -437,7 +437,7 @@ std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> DepositionLaserModule::ge
         h_angular_theta_->Fill(theta);
     }
 
-    LOG(DEBUG) << "    Starting point: " << starting_point << "mm, direction: " << photon_direction;
+    LOG(DEBUG) << "    Starting point: " << Units::display(starting_point, {"mm"}) << ", direction: " << photon_direction;
 
     return {starting_point, photon_direction};
 }
@@ -494,7 +494,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     ROOT::Math::XYZVector new_direction = refraction_rotation(direction);
 
     LOG(DEBUG) << "    Intersection with " << detector->getName();
-    LOG(DEBUG) << "        entry at " << position + direction * t0 << "mm";
+    LOG(DEBUG) << "        entry at " << Units::display(position + direction * t0, {"mm"});
     LOG(DEBUG) << "        normal at entry: " << normal_vector << ", binormal: " << binormal.Unit();
     LOG(DEBUG) << "        incidence angle: " << Units::display(incidence_angle, "deg")
                << ", refraction_angle: " << Units::display(refraction_angle, "deg");
