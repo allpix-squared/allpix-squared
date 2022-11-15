@@ -619,6 +619,48 @@ DepositionLaserModule::intersect_with_sensor(const std::shared_ptr<const Detecto
     return intersect;
 }
 
+std::optional<std::pair<double, std::string>>
+DepositionLaserModule::intersect_with_passives(const ROOT::Math::XYZPoint& position_global,
+                                               const ROOT::Math::XYZVector& direction_global) const {
+
+    std::optional<std::pair<double, std::string>> result{};
+    auto passive_configs = geo_manager_->getPassiveElements();
+
+    for(const auto& item : passive_configs) {
+        std::string shape = item.get<std::string>("type");
+        if(shape != "box") {
+            continue;
+        }
+
+        auto [passive_position, passive_orientation] = geo_manager_->getPassiveElementOrientation(item.getName());
+        auto passive_size = item.get<ROOT::Math::XYZVector>("size");
+
+        ROOT::Math::Rotation3D rotation_center(passive_orientation);
+        ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(passive_position));
+        ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+        auto position_local = transform_center.Inverse()(position_global);
+        auto direction_local = rotation_center.Inverse()(direction_global);
+
+        auto intersect = LiangBarsky::intersectionDistances(direction_local, position_local, passive_size);
+
+        if(!intersect) {
+            continue;
+        }
+
+        double distance = intersect.value().first;
+
+        if(!result) {
+            result = {distance, item.getName()};
+        }
+
+        if(distance < result.value().first) {
+            result = {distance, item.getName()};
+        }
+    }
+
+    return result;
+}
+
 ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const std::shared_ptr<const Detector>& detector,
                                                                         const ROOT::Math::XYZPoint& position_global) const {
     // Obtain total sensor size
