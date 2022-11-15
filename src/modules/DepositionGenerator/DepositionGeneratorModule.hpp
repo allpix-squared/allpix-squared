@@ -15,8 +15,6 @@
 #include "../DepositionGeant4/DepositionGeant4Module.hpp"
 #include "PrimariesReader.hpp"
 
-#include <mutex>
-
 namespace allpix {
     /**
      * @ingroup Modules
