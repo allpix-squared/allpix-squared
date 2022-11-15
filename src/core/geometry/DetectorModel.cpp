@@ -305,20 +305,20 @@ ROOT::Math::XYZPoint DetectorModel::getImplantIntercept(const Implant& implant,
     auto [xpixel_in, ypixel_in] = getPixelIndex(inside);
     auto transl = ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(getPixelCenter(xpixel_in, ypixel_in)));
 
-    try {
-        // Call implant intersection and re-transform back to local coordinates:
-        return transl(implant.intersect(direction, transl.Inverse()(outside)));
-    } catch(std::invalid_argument&) {
+    // Call implant intersection and re-transform back to local coordinates:
+    auto intercept = implant.intersect(direction, transl.Inverse()(outside));
+    if(!intercept.has_value()) {
         return inside;
     }
+    return transl(intercept.value());
 }
 
-ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVector& direction,
-                                                       const ROOT::Math::XYZPoint& position) const {
+std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT::Math::XYZVector& direction,
+                                                                      const ROOT::Math::XYZPoint& position) const {
     // Shift position to implant coordinate system and apply rotation around z axis!
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Use Liang-Barsky line clipping method:
-        return LiangBarsky(orientation_(direction), orientation_(position - offset_), size_);
+        return LiangBarsky::closestIntersection(orientation_(direction), orientation_(position - offset_), size_);
     } else if(shape_ == Implant::Shape::ELLIPSE) {
         // Translate so the ellipse is centered at the origin.
         auto pos = orientation_(position - offset_);
@@ -371,7 +371,7 @@ ROOT::Math::XYZPoint DetectorModel::Implant::intersect(const ROOT::Math::XYZVect
         }
 
         // No intersection or only contact point found.
-        throw std::invalid_argument("no intersection with volume boundaries found");
+        return std::nullopt;
     }
     throw std::invalid_argument("Intersection not implemented for this implant type");
 }

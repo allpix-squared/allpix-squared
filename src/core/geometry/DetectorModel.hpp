@@ -130,13 +130,13 @@ namespace allpix {
             /**
              * @brief calculate intersection of line segment with implant. The first intersection in the given direction is
              * returned.
-             * @throws std::invalid_argument if no intersection can be found.
+             * @throws std::invalid_argument if intersection calculation is not implemented for the implant type
              * @param  direction Direction vector of line
              * @param  position  Position vector of line
-             * @return Intersection point with implant
+             * @return Closest intersection point with implant, std::nullopt if none could be found
              */
-            ROOT::Math::XYZPoint intersect(const ROOT::Math::XYZVector& direction,
-                                           const ROOT::Math::XYZPoint& position) const;
+            std::optional<ROOT::Math::XYZPoint> intersect(const ROOT::Math::XYZVector& direction,
+                                                          const ROOT::Math::XYZPoint& position) const;
 
         private:
             /**
