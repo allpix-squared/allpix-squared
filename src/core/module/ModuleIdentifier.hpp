@@ -42,12 +42,12 @@ namespace allpix {
          * @brief Get the name of the module
          * @return Module name
          */
-        std::string getName() const { return name_; }
+        const std::string& getName() const { return name_; }
         /**
          * @brief Get the identifier of the instantiation
          * @return Module identifier
          */
-        std::string getIdentifier() const { return identifier_; }
+        const std::string& getIdentifier() const { return identifier_; }
         /**
          * @brief Get the unique name of the instantiation
          * @return Unique module name

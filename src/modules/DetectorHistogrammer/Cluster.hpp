@@ -77,13 +77,14 @@ namespace allpix {
          * @brief Get the PixelHits contained in this cluster
          * @return List of all contained PixelHits
          */
-        std::set<const PixelHit*> getPixelHits() const { return pixel_hits_; }
+        const std::set<const PixelHit*>& getPixelHits() const { return pixel_hits_; }
 
         /**
          * @brief Get all MCParticles related to the cluster
+         * @note MCParticles can only be fetched if the full history of objects are in scope and stored
          * @return Vector of all related MCParticles
          */
-        std::set<const MCParticle*> getMCParticles() const;
+        const std::set<const MCParticle*>& getMCParticles() const { return mc_particles_; }
 
     private:
         const PixelHit* seed_pixel_hit_;

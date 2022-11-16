@@ -70,13 +70,17 @@ namespace allpix {
         /**
          * @brief Get the global configuration
          * @return Reference to global configuration
+         *
+         * The global configuration is the combination of all sections with a global header.
          */
-        Configuration& getGlobalConfiguration();
+        Configuration& getGlobalConfiguration() { return global_config_; }
         /**
          * @brief Get all the module configurations
          * @return Reference to list of module configurations
+         *
+         * All special global and ignored sections are not included in the list of module configurations.
          */
-        std::list<Configuration>& getModuleConfigurations();
+        std::list<Configuration>& getModuleConfigurations() { return module_configs_; }
 
         /**
          * @brief Add a new module instance configuration and applies instance options
@@ -88,8 +92,12 @@ namespace allpix {
         /**
          * @brief Get all the instance configurations
          * @return Reference to list of instance configurations
+         *
+         * The list of instance configurations can contain configurations with duplicate names, but the instanceconfiguration
+         * is guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config
+         * name.
          */
-        std::list<Configuration>& getInstanceConfigurations();
+        std::list<Configuration>& getInstanceConfigurations() { return instance_configs_; }
 
         /**
          * @brief Drops an instance configuration from instance configuration storage

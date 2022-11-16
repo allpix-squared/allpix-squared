@@ -60,13 +60,13 @@ namespace allpix {
          * @brief Function to retrieve time binning of pulse
          * @return Width of one pulse bin in nanoseconds
          */
-        double getBinning() const;
+        double getBinning() const { return bin_; }
 
         /**
          * @brief Method to check if this is an initialized or empty pulse
          * @return Initialization status of the pulse object
          */
-        bool isInitialized() const;
+        bool isInitialized() const { return initialized_; }
 
         /**
          * @brief compound assignment operator to sum different pulses

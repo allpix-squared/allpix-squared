@@ -56,19 +56,19 @@ namespace allpix {
          * @brief Get the pixel containing the charges
          * @return Pixel indices in the grid
          */
-        const Pixel& getPixel() const;
+        const Pixel& getPixel() const { return pixel_; }
 
         /**
          * @brief Shortcut to retrieve the pixel indices
          * @return Index of the pixel
          */
-        Pixel::Index getIndex() const;
+        Pixel::Index getIndex() const { return getPixel().getIndex(); }
 
         /**
          * @brief Get the charge at the pixel
          * @return Total charge stored
          */
-        long getCharge() const;
+        long getCharge() const { return charge_; }
 
         /**
          * @brief Get the absolute charge value at the pixel
@@ -99,19 +99,19 @@ namespace allpix {
          *  @brief Get recoded charge pulse
          *  @return Constant reference to the full charge pulse
          */
-        const Pulse& getPulse() const;
+        const Pulse& getPulse() const { return pulse_; }
 
         /**
          * @brief Get time after start of event in global reference frame
          * @return Time from start event
          */
-        double getGlobalTime() const;
+        double getGlobalTime() const { return global_time_; }
 
         /**
          * @brief Get local time in the sensor
          * @return Time with respect to local sensor
          */
-        double getLocalTime() const;
+        double getLocalTime() const { return local_time_; }
 
         /**
          * @brief Print an ASCII representation of PixelCharge to the given stream

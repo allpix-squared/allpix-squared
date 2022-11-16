@@ -54,23 +54,23 @@ namespace allpix {
          * @brief Get local position of the set of charges in the sensor
          * @return Local position of charges
          */
-        ROOT::Math::XYZPoint getLocalPosition() const;
+        const ROOT::Math::XYZPoint& getLocalPosition() const { return local_position_; }
 
         /**
          * @brief Get the global position of the set of charges in the sensor
          */
-        ROOT::Math::XYZPoint getGlobalPosition() const;
+        const ROOT::Math::XYZPoint& getGlobalPosition() const { return global_position_; }
 
         /**
          * @brief Get the type of charge carrier
          * @return Type of charge carrier
          */
-        CarrierType getType() const;
+        CarrierType getType() const { return type_; }
         /**
          * @brief Get total amount of charges stored
          * @return Total charge stored
          */
-        unsigned int getCharge() const;
+        unsigned int getCharge() const { return charge_; }
 
         /**
          * @brief Get the sign of the charge for set of charge carriers
@@ -82,13 +82,13 @@ namespace allpix {
          * @brief Get time after start of event in global reference frame
          * @return Time from start event
          */
-        double getGlobalTime() const;
+        double getGlobalTime() const { return global_time_; }
 
         /**
          * @brief Get local time in the sensor
          * @return Time with respect to local sensor
          */
-        double getLocalTime() const;
+        double getLocalTime() const { return local_time_; }
 
         /**
          * @brief Print an ASCII representation of SensorCharge to the given stream

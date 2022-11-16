@@ -29,28 +29,28 @@ namespace allpix {
          * @brief Get the center of the support layer
          * @return Center of the support layer
          */
-        ROOT::Math::XYZPoint getCenter() const { return center_; }
+        const ROOT::Math::XYZPoint& getCenter() const { return center_; }
         /**
          * @brief Get the size of the support layer
          * @return Size of the support layer
          */
-        ROOT::Math::XYZVector getSize() const { return size_; }
+        const ROOT::Math::XYZVector& getSize() const { return size_; }
         /**
          * @brief Get the material of the support layer
          * @return Support material
          */
-        std::string getMaterial() const { return material_; }
+        const std::string& getMaterial() const { return material_; }
         /**
          * @brief Return if the support layer contains a hole
          * @return True if the support layer has a hole, false otherwise
          */
-        bool hasHole() { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
+        bool hasHole() const { return hole_size_.x() > 1e-9 && hole_size_.y() > 1e-9; }
 
         /**
          * @brief Return the support layer hole type
          * @return support layer hole type
          */
-        std::string getHoleType() { return type_; }
+        const std::string& getHoleType() const { return type_; }
 
         /**
          * @brief Get the center of the hole in the support layer
@@ -63,11 +63,11 @@ namespace allpix {
          * @brief Get the full size of the hole in the support layer
          * @return Size of the hole
          */
-        ROOT::Math::XYZVector getHoleSize() const { return hole_size_; }
+        const ROOT::Math::XYZVector& getHoleSize() const { return hole_size_; }
         /**
          * @brief Get the location of the support layer
          */
-        std::string getLocation() const { return location_; }
+        const std::string& getLocation() const { return location_; }
 
     private:
         /**

@@ -39,13 +39,13 @@ namespace allpix {
          * @brief Getter for custom id of track
          * @return The custom track id
          */
-        int getID() const;
+        int getID() const { return custom_track_id_; }
 
         /**
          * @brief Getter for parent's track id of track
          * @return The parent's custrom track id
          */
-        int getParentID() const;
+        int getParentID() const { return parent_track_id_; }
 
         /**
          * @brief Update track info from the G4Track
@@ -57,80 +57,80 @@ namespace allpix {
          * @brief Get the point where the track originated in global coordinates
          * @return Track start point
          */
-        ROOT::Math::XYZPoint getStartPoint() const;
+        const ROOT::Math::XYZPoint& getStartPoint() const { return start_point_; }
 
         /**
          * @brief Get the point of where the track terminated in global coordinates
          * @return Track end point
          */
-        ROOT::Math::XYZPoint getEndPoint() const;
+        const ROOT::Math::XYZPoint& getEndPoint() const { return end_point_; }
 
         /**
          * @brief Get PDG particle id for the particle
          * @return Particle id
          */
-        int getParticleID() const;
+        int getParticleID() const { return particle_id_; }
 
         /**
          * @brief Get the starting time of the particle
          * @return The time at the beginning of the track
          */
-        double getStartTime() const;
+        double getStartTime() const { return start_time_; }
 
         /**
          * @brief Get the end time of the particle
          * @return The time at the end of the track
          */
-        double getEndTime() const;
+        double getEndTime() const { return end_time_; }
 
         /**
          * @brief Get the Geant4 internal ID of the process which created the particle
          * @return The Geant4 process type, or "-1" if no such process exists
          */
-        int getCreationProcessType() const;
+        int getCreationProcessType() const { return origin_g4_process_type_; }
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track was created
          * @return The kinetic energy in MeV of the particle at the beginning of the track
          */
-        double getKineticEnergyInitial() const;
+        double getKineticEnergyInitial() const { return initial_kin_E_; }
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track was
          * created
          * @return The total energy in MeV of the particle at the beginning of the track
          */
-        double getTotalEnergyInitial() const;
+        double getTotalEnergyInitial() const { return initial_tot_E_; }
 
         /**
          * @brief Getter for the kinetic energy the particle had when the track terminated
          * @return The kinetic energy in MeV of the particle at the end of the track
          */
-        double getKineticEnergyFinal() const;
+        double getKineticEnergyFinal() const { return final_kin_E_; }
 
         /**
          * @brief Getter for the total energy (i.e. kinetic energy and dynamic mass) the particle had when the track
          * terminated
          * @return The total energy in MeV of the particle at the end of the track
          */
-        double getTotalEnergyFinal() const;
+        double getTotalEnergyFinal() const { return final_tot_E_; }
 
         /**
          * @brief Getter for the Geant4 name of the physical volume in which the track originated
          * @return The name of the phyical volume
          */
-        std::string getOriginatingVolumeName() const;
+        const std::string& getOriginatingVolumeName() const { return initial_g4_vol_name_; }
 
         /**
          * @brief Getter for the Geant4 name of the physical volume in which the track ends
          * @return The name of the phyical volume
          */
-        std::string getTerminatingVolumeName() const;
+        const std::string& getTerminatingVolumeName() const { return final_g4_vol_name_; }
 
         /**
          * @brief Getter for the name of the process which created this particle
          * @return The process name, or "none" if no such process exists
          */
-        std::string getCreationProcessName() const;
+        const std::string& getCreationProcessName() const { return origin_g4_process_name_; }
 
     private:
         // Assigned track id to track

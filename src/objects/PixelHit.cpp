@@ -42,14 +42,6 @@ PixelHit::PixelHit(Pixel pixel,
     }
 }
 
-const Pixel& PixelHit::getPixel() const {
-    return pixel_;
-}
-
-Pixel::Index PixelHit::getIndex() const {
-    return getPixel().getIndex();
-}
-
 /**
  * @throws MissingReferenceException If the pointed object is not in scope
  *

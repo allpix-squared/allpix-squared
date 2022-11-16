@@ -55,13 +55,6 @@ std::string Module::getUniqueName() const {
 }
 
 /**
- * Detector modules always have a linked detector and unique modules are guaranteed not to have one
- */
-std::shared_ptr<Detector> Module::getDetector() const {
-    return detector_;
-}
-
-/**
  * @throws ModuleError If the file cannot be accessed (or created if it did not yet exist)
  * @throws InvalidModuleActionException If this method is called from the constructor with the global flag false
  * @throws ModuleError If the file exists but the "deny_overwrite" flag is set to true (defaults to false)
@@ -162,27 +155,6 @@ ConfigManager* Module::getConfigManager() const {
 }
 void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
-}
-
-bool Module::multithreadingEnabled() const {
-    return multithreading_;
-}
-void Module::allow_multithreading() {
-    multithreading_ = true;
-}
-void Module::set_multithreading(bool multithreading) {
-    multithreading_ = multithreading;
-}
-
-Configuration& Module::get_configuration() {
-    return config_;
-}
-
-void Module::set_identifier(ModuleIdentifier identifier) {
-    identifier_ = std::move(identifier);
-}
-ModuleIdentifier Module::get_identifier() const {
-    return identifier_;
 }
 
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {

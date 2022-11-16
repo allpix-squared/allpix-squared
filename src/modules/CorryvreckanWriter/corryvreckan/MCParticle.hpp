@@ -45,8 +45,8 @@ namespace corryvreckan {
 
         // Member functions
         int getID() const { return m_particle_id; }
-        ROOT::Math::XYZPoint getLocalStart() const { return m_local_start_point; }
-        ROOT::Math::XYZPoint getLocalEnd() const { return m_local_end_point; }
+        const ROOT::Math::XYZPoint& getLocalStart() const { return m_local_start_point; }
+        const ROOT::Math::XYZPoint& getLocalEnd() const { return m_local_end_point; }
 
     private:
         int m_particle_id{};

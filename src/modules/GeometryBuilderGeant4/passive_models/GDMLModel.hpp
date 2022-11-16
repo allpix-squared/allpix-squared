@@ -61,7 +61,7 @@ namespace allpix {
             G4LogicalVolume* mother_log_volume = nullptr;
             if(!getMotherVolume().empty()) {
                 auto* log_volume_store = G4LogicalVolumeStore::GetInstance();
-                mother_log_volume = log_volume_store->GetVolume(getMotherVolume().append("_log"));
+                mother_log_volume = log_volume_store->GetVolume(getMotherVolume() + "_log");
             } else {
                 mother_log_volume = world_log.get();
             }
