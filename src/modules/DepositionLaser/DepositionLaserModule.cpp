@@ -136,8 +136,9 @@ void DepositionLaserModule::initialize() {
             (optics_lut[wl1].second * (wl2 - wavelength_) + optics_lut[wl2].second * (wavelength_ - wl1)) / (wl2 - wl1);
     }
 
-    LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm") << ", corresponding absorption length is "
-               << Units::display(absorption_length_, {"um", "mm"}) << ", refractive_index: " << refractive_index_;
+    LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm")
+               << ", absorption length: " << Units::display(absorption_length_, {"um", "mm"})
+               << ", refractive index: " << refractive_index_;
 
     // Create Histograms
     LOG(DEBUG) << "Initializing histograms";
