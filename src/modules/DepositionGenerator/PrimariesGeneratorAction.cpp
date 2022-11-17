@@ -40,6 +40,7 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
     std::vector<PrimaryParticle> particles = reader_->getParticles();
 
     // Dispatch them to the Geant4 particle gun
+    LOG(DEBUG) << "Primary particles generated:";
     for(const auto& particle : particles) {
         auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_gun_->SetParticleDefinition(pdg_table->FindParticle(particle.pdg()));
