@@ -23,11 +23,15 @@ namespace allpix {
 
     /**
      * @brief Initializer for the generator actions, required for \ref RunManager
+     *
+     * We directly inherit from Geant4's action initialization class instead of the DepositionGeant4 class since the latter
+     * provides functionality specific to that module which we do not need - while we need to be able to pass an additional
+     * parameter, the PrimariesReader, to the action constructor.
      */
     template <class GEN> class ActionInitializationPrimaries : public G4VUserActionInitialization {
     public:
         explicit ActionInitializationPrimaries(const Configuration& config, std::shared_ptr<PrimariesReader> reader)
-            : config_(config), reader_(std::move(reader)){};
+            : config_(config), reader_(reader){};
 
         /**
          * @brief Build the user action to be executed by the worker
