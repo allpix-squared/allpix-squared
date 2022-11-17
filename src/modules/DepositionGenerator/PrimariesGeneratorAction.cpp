@@ -17,6 +17,7 @@
 
 #include <G4Event.hh>
 #include <G4ParticleTable.hh>
+#include <G4TransportationManager.hh>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
@@ -28,6 +29,15 @@ PrimariesGeneratorAction::PrimariesGeneratorAction(const Configuration&, std::sh
     : particle_gun_(std::make_unique<G4ParticleGun>()), reader_(std::move(reader)) {
 
     LOG(DEBUG) << "Setting up Geant4 generator action";
+}
+
+bool PrimariesGeneratorAction::check_vertex_inside_world(const G4ThreeVector& pos) const {
+    auto* solid = G4TransportationManager::GetTransportationManager()
+                      ->GetNavigatorForTracking()
+                      ->GetWorldVolume()
+                      ->GetLogicalVolume()
+                      ->GetSolid();
+    return solid->Inside(pos) == kInside;
 }
 
 /**
@@ -42,6 +52,12 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
     // Dispatch them to the Geant4 particle gun
     LOG(DEBUG) << "Primary particles generated:";
     for(const auto& particle : particles) {
+        // Check world boundary of primary vertex
+        if(!check_vertex_inside_world(particle.position())) {
+            LOG(WARNING) << "Vertex at " << particle.position() << " outside world volume, skipping.";
+            continue;
+        }
+
         auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_gun_->SetParticleDefinition(pdg_table->FindParticle(particle.pdg()));
         particle_gun_->SetParticleEnergy(particle.energy());

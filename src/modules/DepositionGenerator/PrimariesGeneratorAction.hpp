@@ -39,6 +39,13 @@ namespace allpix {
         void GeneratePrimaries(G4Event*) override;
 
     private:
+        /**
+         * @brief helper method to check if particle is to be dispateched within the defined world volume
+         * @param  pos Initial position of the primary particle
+         * @return     True if within the world volume, false otherwise
+         */
+        bool check_vertex_inside_world(const G4ThreeVector& pos) const;
+
         std::unique_ptr<G4ParticleGun> particle_gun_;
         std::shared_ptr<PrimariesReader> reader_;
     };
