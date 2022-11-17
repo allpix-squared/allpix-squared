@@ -14,8 +14,6 @@
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 
-#include <G4TransportationManager.hh>
-
 #include <HepMC3/Print.h>
 #include <HepMC3/ReaderAscii.h>
 #include <HepMC3/ReaderAsciiHepMC2.h>
@@ -46,15 +44,6 @@ PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
         throw InvalidValueError(config, "file_name", "could not open input file");
     }
     LOG(INFO) << "Successfully opened data file " << file_path;
-}
-
-bool PrimariesReaderHepMC::check_vertex_inside_world(const G4ThreeVector& pos) const {
-    auto* solid = G4TransportationManager::GetTransportationManager()
-                      ->GetNavigatorForTracking()
-                      ->GetWorldVolume()
-                      ->GetLogicalVolume()
-                      ->GetSolid();
-    return solid->Inside(pos) == kInside;
 }
 
 std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
@@ -91,13 +80,7 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
     std::vector<Particle> particles;
     for(const auto& v : evt.vertices()) {
 
-        // Check world boundary of primary vertex
         auto pos = v->position();
-        G4ThreeVector vertex_pos(pos.x(), pos.y(), pos.z());
-        if(!check_vertex_inside_world(vertex_pos)) {
-            LOG(WARNING) << "Vertex at " << vertex_pos << " outside world volume, skipping.";
-            continue;
-        }
 
         // Loop over all outgoing particles of this vertex:
         for(const auto& p : v->particles_out()) {
@@ -111,7 +94,8 @@ std::vector<PrimariesReader::Particle> PrimariesReaderHepMC::getParticles() {
 
             // Store particle
             auto momentum = G4ThreeVector(p->momentum().px(), p->momentum().py(), p->momentum().pz());
-            particles.emplace_back(p->pdg_id(), p->momentum().e(), momentum, vertex_pos, pos.t());
+            particles.emplace_back(
+                p->pdg_id(), p->momentum().e(), momentum, G4ThreeVector(pos.x(), pos.y(), pos.z()), pos.t());
             LOG(DEBUG) << "Adding particle with ID " << p->pdg_id() << " energy " << p->momentum().e();
         }
     }

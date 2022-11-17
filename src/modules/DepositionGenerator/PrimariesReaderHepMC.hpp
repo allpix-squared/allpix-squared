@@ -37,8 +37,6 @@ namespace allpix {
         std::vector<Particle> getParticles() override;
 
     private:
-        bool check_vertex_inside_world(const G4ThreeVector& pos) const;
-
         std::shared_ptr<HepMC3::Reader> reader_;
     };
 } // namespace allpix
