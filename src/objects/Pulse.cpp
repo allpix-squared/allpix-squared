@@ -46,7 +46,7 @@ void Pulse::addCharge(double charge, double time) {
 
 int Pulse::getCharge() const {
     double charge = std::accumulate(this->begin(), this->end(), 0.0);
-    return static_cast<int>(std::round(charge));
+    return static_cast<int>(std::lround(charge));
 }
 
 double Pulse::getBinning() const {

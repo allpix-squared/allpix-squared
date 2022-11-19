@@ -85,8 +85,8 @@ ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(const int x, const int y
 }
 
 std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
-    auto pixel_x = static_cast<int>(std::round(position.x() / pixel_size_.x()));
-    auto pixel_y = static_cast<int>(std::round(position.y() / pixel_size_.y()));
+    auto pixel_x = static_cast<int>(std::lround(position.x() / pixel_size_.x()));
+    auto pixel_y = static_cast<int>(std::lround(position.y() / pixel_size_.y()));
     return {pixel_x, pixel_y};
 }
 
