@@ -219,7 +219,9 @@ void DepositionLaserModule::run(Event* event) {
     std::vector<double> starting_times(number_of_photons_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
         item = yield_starting_time();
-        h_pulse_shape_->Fill(item);
+        if(output_plots_) {
+            h_pulse_shape_->Fill(item);
+        }
     });
 
     std::sort(begin(starting_times), end(starting_times));
