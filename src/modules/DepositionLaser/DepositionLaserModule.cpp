@@ -141,8 +141,8 @@ void DepositionLaserModule::initialize() {
                << ", refractive index: " << refractive_index_;
 
     // Create Histograms
-    LOG(DEBUG) << "Initializing histograms";
     if(output_plots_) {
+        LOG(DEBUG) << "Initializing histograms";
         Int_t nbins = 100;
         double nsigmas = 3;
         double focalplane_histsize = beam_waist_ * nsigmas;
@@ -174,6 +174,8 @@ void DepositionLaserModule::initialize() {
             CreateHistogram<TH1D>("phi_distribution", "Phi_distribution w.r.t. beam direction", nbins, -3.5, 3.5);
         h_angular_theta_ =
             CreateHistogram<TH1D>("theta_distribution", "Theta distribution w.r.t. beam direction", nbins, 0, 45);
+        h_pulse_shape_ =
+            CreateHistogram<TH1D>("pulse_shape", "Phi_distribution w.r.t. beam direction", nbins, 0, 8 * pulse_duration_);
 
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
         for(const auto& detector : detectors) {
@@ -213,6 +215,10 @@ void DepositionLaserModule::run(Event* event) {
     double starting_time_offset = starting_times[0];
     std::for_each(
         begin(starting_times), end(starting_times), [starting_time_offset](auto& item) { item -= starting_time_offset; });
+
+    for(const auto& item : starting_times) {
+        h_pulse_shape_->Fill(item);
+    }
 
     // To correctly offset local time for each detector
     std::map<std::shared_ptr<Detector>, double> local_time_offsets;
@@ -336,6 +342,7 @@ void DepositionLaserModule::finalize() {
         h_intensity_sourceplane_->Write();
         h_angular_phi_->Write();
         h_angular_theta_->Write();
+        h_pulse_shape_->Write();
         for(auto& [detector, histo] : h_deposited_charge_shapes_) {
             histo->Write();
         }
