@@ -204,21 +204,25 @@ void DepositionLaserModule::run(Event* event) {
     std::map<std::shared_ptr<Detector>, std::vector<MCParticle>> mc_particles;
     std::map<std::shared_ptr<Detector>, std::vector<DepositedCharge>> deposited_charges;
 
+    // Lambda generator to yield pulse shape
+    auto yield_starting_time = [&]() {
+        int cut_sigmas = 4;
+        double result = -1;
+        while(result < 0) {
+            result =
+                allpix::normal_distribution<double>(cut_sigmas * pulse_duration_, pulse_duration_)(event->getRandomEngine());
+        }
+        return result;
+    };
+
     // Containers for timestamps
-    // Starting time points are generated in advance to correctly shift zero afterwards
     std::vector<double> starting_times(number_of_photons_);
     std::for_each(begin(starting_times), end(starting_times), [&](auto& item) {
-        item = allpix::normal_distribution<double>(0, pulse_duration_)(event->getRandomEngine());
+        item = yield_starting_time();
+        h_pulse_shape_->Fill(item);
     });
 
     std::sort(begin(starting_times), end(starting_times));
-    double starting_time_offset = starting_times[0];
-    std::for_each(
-        begin(starting_times), end(starting_times), [starting_time_offset](auto& item) { item -= starting_time_offset; });
-
-    for(const auto& item : starting_times) {
-        h_pulse_shape_->Fill(item);
-    }
 
     // To correctly offset local time for each detector
     std::map<std::shared_ptr<Detector>, double> local_time_offsets;
