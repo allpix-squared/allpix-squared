@@ -12,6 +12,7 @@
 #include <Math/DisplacementVector2D.h>
 #include <Math/Point3D.h>
 #include <TH1D.h>
+#include <TH2D.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -118,6 +119,8 @@ namespace allpix {
 
         // Output plots
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;
+        Histogram<TH2D> induced_charge_vs_depth_histo_, induced_charge_e_vs_depth_histo_, induced_charge_h_vs_depth_histo_;
+        Histogram<TH2D> induced_charge_map_, induced_charge_e_map_, induced_charge_h_map_;
         Histogram<TH1D> step_length_histo_, group_size_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> recombine_histo_;

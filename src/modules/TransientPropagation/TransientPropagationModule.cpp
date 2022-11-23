@@ -117,6 +117,10 @@ void TransientPropagationModule::initialize() {
     }
 
     if(output_plots_) {
+
+        auto pitch_x = static_cast<double>(Units::convert(model_->getPixelSize().x(), "um"));
+        auto pitch_y = static_cast<double>(Units::convert(model_->getPixelSize().y(), "um"));
+
         potential_difference_ = CreateHistogram<TH1D>(
             "potential_difference",
             "Weighting potential difference between two steps;#left|#Delta#phi_{w}#right| [a.u.];events",
@@ -140,6 +144,61 @@ void TransientPropagationModule::initialize() {
                                   static_cast<int>(integration_time_ / timestep_),
                                   0,
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
+        induced_charge_vs_depth_histo_ =
+            CreateHistogram<TH2D>("induced_charge_vs_depth_histo",
+                                  "Induced charge per time vs depth, all pixels;Drift time [ns];depth [mm];charge [e]",
+                                  static_cast<int>(integration_time_ / timestep_),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")),
+                                  100,
+                                  -model_->getSensorSize().z() / 2.,
+                                  model_->getSensorSize().z() / 2.);
+        induced_charge_e_vs_depth_histo_ = CreateHistogram<TH2D>(
+            "induced_charge_e_vs_depth_histo",
+            "Induced charge per time vs depth, electrons only, all pixels;Drift time [ns];depth [mm];charge [e]",
+            static_cast<int>(integration_time_ / timestep_),
+            0,
+            static_cast<double>(Units::convert(integration_time_, "ns")),
+            100,
+            -model_->getSensorSize().z() / 2.,
+            model_->getSensorSize().z() / 2.);
+        induced_charge_h_vs_depth_histo_ = CreateHistogram<TH2D>(
+            "induced_charge_h_vs_depth_histo",
+            "Induced charge per time vs depth, holes only, all pixels;Drift time [ns];depth [mm];charge [e]",
+            static_cast<int>(integration_time_ / timestep_),
+            0,
+            static_cast<double>(Units::convert(integration_time_, "ns")),
+            100,
+            -model_->getSensorSize().z() / 2.,
+            model_->getSensorSize().z() / 2.);
+        induced_charge_map_ = CreateHistogram<TH2D>(
+            "induced_charge_map",
+            "Induced charge as a function of in-pixel carrier position;x%pitch [#mum];y%pitch [#mum];charge [e]",
+            static_cast<int>(pitch_x),
+            -pitch_x / 2,
+            pitch_x / 2,
+            static_cast<int>(pitch_y),
+            -pitch_y / 2,
+            pitch_y / 2);
+        induced_charge_e_map_ = CreateHistogram<TH2D>("induced_charge_e_map",
+                                                      "Induced charge as a function of in-pixel carrier position, electrons "
+                                                      "only;x%pitch [#mum];y%pitch [#mum];charge [e]",
+                                                      static_cast<int>(pitch_x),
+                                                      -pitch_x / 2,
+                                                      pitch_x / 2,
+                                                      static_cast<int>(pitch_y),
+                                                      -pitch_y / 2,
+                                                      pitch_y / 2);
+        induced_charge_h_map_ = CreateHistogram<TH2D>(
+            "induced_charge_h_map",
+            "Induced charge as a function of in-pixel carrier position, holes only;x%pitch [#mum];y%pitch [#mum];charge [e]",
+            static_cast<int>(pitch_x),
+            -pitch_x / 2,
+            pitch_x / 2,
+            static_cast<int>(pitch_y),
+            -pitch_y / 2,
+            pitch_y / 2);
+
         step_length_histo_ =
             CreateHistogram<TH1D>("step_length_histo",
                                   "Step length;length [#mum];integration steps",
@@ -458,12 +517,22 @@ TransientPropagationModule::propagate(Event* event,
                 pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
 
                 if(output_plots_) {
+                    auto pitch = model_->getPixelSize();
+                    auto inPixelPos = XYVector(std::fmod(position.x() + pitch.x() / 2, pitch.x()),
+                                               std::fmod(position.y() + pitch.y() / 2, pitch.y()));
+
                     potential_difference_->Fill(std::fabs(ramo - last_ramo));
                     induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                    induced_charge_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                    induced_charge_map_->Fill(inPixelPos.x(), inPixelPos.y(), induced);
                     if(type == CarrierType::ELECTRON) {
                         induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                        induced_charge_e_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                        induced_charge_e_map_->Fill(inPixelPos.x(), inPixelPos.y(), induced);
                     } else {
                         induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
+                        induced_charge_h_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                        induced_charge_h_map_->Fill(inPixelPos.x(), inPixelPos.y(), induced);
                     }
                 }
             }
@@ -489,5 +558,11 @@ void TransientPropagationModule::finalize() {
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
+        induced_charge_vs_depth_histo_->Write();
+        induced_charge_e_vs_depth_histo_->Write();
+        induced_charge_h_vs_depth_histo_->Write();
+        induced_charge_map_->Write();
+        induced_charge_e_map_->Write();
+        induced_charge_h_map_->Write();
     }
 }
