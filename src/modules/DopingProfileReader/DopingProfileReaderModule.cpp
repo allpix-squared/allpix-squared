@@ -12,6 +12,8 @@
 #include <string>
 #include <utility>
 
+#include <TH2F.h>
+
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -99,6 +101,143 @@ void DopingProfileReaderModule::initialize() {
 
         detector_->setDopingProfileFunction(function, type);
     }
+
+    // Produce doping_concentration_histograms if needed
+    if(config_.get<bool>("output_plots", false)) {
+        create_output_plots();
+    }
+}
+
+void DopingProfileReaderModule::create_output_plots() {
+    LOG(TRACE) << "Creating output plots";
+
+    auto steps = config_.get<size_t>("output_plots_steps", 500);
+    auto project = config_.get<char>("output_plots_project", 'x');
+
+    if(project != 'x' && project != 'y' && project != 'z') {
+        throw InvalidValueError(config_, "output_plots_project", "can only project on x, y or z axis");
+    }
+
+    auto model = detector_->getModel();
+
+    // If we need to plot a single pixel, we use size and position of the pixel at the origin
+    auto single_pixel = config_.get<bool>("output_plots_single_pixel", true);
+    auto center = (single_pixel ? model->getPixelCenter(0, 0) : model->getSensorCenter());
+    auto size =
+        (single_pixel
+             ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
+             : model->getSensorSize());
+
+    double z_min = center.z() - size.z() / 2.0;
+    double z_max = center.z() + size.z() / 2.0;
+
+    // Determine minimum and maximum index depending on projection axis
+    double min1 = NAN, max1 = NAN;
+    double min2 = NAN, max2 = NAN;
+    if(project == 'x') {
+        min1 = center.y() - size.y() / 2.0;
+        max1 = center.y() + size.y() / 2.0;
+        min2 = z_min;
+        max2 = z_max;
+    } else if(project == 'y') {
+        min1 = center.x() - size.x() / 2.0;
+        max1 = center.x() + size.x() / 2.0;
+        min2 = z_min;
+        max2 = z_max;
+    } else {
+        min1 = center.x() - size.x() / 2.0;
+        max1 = center.x() + size.x() / 2.0;
+        min2 = center.y() - size.y() / 2.0;
+        max2 = center.y() + size.y() / 2.0;
+    }
+
+    // Create 2D doping_concentration_histograms
+    auto* doping_concentration_histogram = new TH2F("doping_concentration",
+                                                    "Doping concentration (1/cm^{3})",
+                                                    static_cast<int>(steps),
+                                                    min1,
+                                                    max1,
+                                                    static_cast<int>(steps),
+                                                    min2,
+                                                    max2);
+    doping_concentration_histogram->SetOption("colz");
+
+    // Create 1D doping_concentration_histogram
+    auto* doping_concentration_histogram1D = new TH1F("concentration1D_z",
+                                                      "Doping concentration along z;z (mm);Doping concentration (1/cm^{3})",
+                                                      static_cast<int>(steps),
+                                                      min2,
+                                                      max2);
+    doping_concentration_histogram1D->SetOption("hist");
+
+    // Determine the coordinate to use for projection
+    double x = 0, y = 0, z = 0;
+    if(project == 'x') {
+        x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.x();
+        doping_concentration_histogram->GetXaxis()->SetTitle("y (mm)");
+        doping_concentration_histogram->GetYaxis()->SetTitle("z (mm)");
+        doping_concentration_histogram->SetTitle(
+            ("Doping concentration (1/cm^{3}) at x=" + std::to_string(x) + " mm").c_str());
+    } else if(project == 'y') {
+        y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.y();
+        doping_concentration_histogram->GetXaxis()->SetTitle("x (mm)");
+        doping_concentration_histogram->GetYaxis()->SetTitle("z (mm)");
+        doping_concentration_histogram->SetTitle(
+            ("Doping concentration (1/cm^{3}) at y=" + std::to_string(y) + " mm").c_str());
+    } else {
+        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.z();
+        doping_concentration_histogram->GetXaxis()->SetTitle("x (mm)");
+        doping_concentration_histogram->GetYaxis()->SetTitle("y (mm)");
+        doping_concentration_histogram->SetTitle(
+            ("Doping concentration (1/cm^{3}) at z=" + std::to_string(z) + " mm").c_str());
+    }
+
+    // set z axis tile
+    doping_concentration_histogram->GetZaxis()->SetTitle("Concentration");
+
+    // Find the doping concentration at every index, scan axes in local coordinates!
+    for(size_t j = 0; j < steps; ++j) {
+        if(project == 'x') {
+            y = center.y() - size.y() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.y();
+        } else if(project == 'y') {
+            x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
+        } else {
+            x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
+        }
+        for(size_t k = 0; k < steps; ++k) {
+            if(project == 'x') {
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
+            } else if(project == 'y') {
+                z = z_min + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.z();
+            } else {
+                y = center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
+            }
+
+            // Get doping concentration from detector - directly convert to double
+            // and 1/cm3 to fill root doping_concentration_histograms
+            auto concentration = static_cast<double>(
+                Units::convert(detector_->getDopingConcentration(ROOT::Math::XYZPoint(x, y, z)), "/cm/cm/cm"));
+            // Fill the main doping_concentration_histogram
+            if(project == 'x') {
+                doping_concentration_histogram->Fill(y, z, concentration);
+            } else if(project == 'y') {
+                doping_concentration_histogram->Fill(x, z, concentration);
+            } else {
+                doping_concentration_histogram->Fill(x, y, concentration);
+            }
+            // Fill the 1d doping_concentration_histogram, in the middle of the range
+            if(j == steps / 2) {
+                doping_concentration_histogram1D->Fill(z, concentration);
+            }
+        }
+    }
+
+    // Write the doping_concentration_histograms to module file
+    doping_concentration_histogram->Write();
+    doping_concentration_histogram1D->Write();
+
+    LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
+               << " 1/cm3";
 }
 
 /**
@@ -113,7 +252,7 @@ FieldData<double> DopingProfileReaderModule::read_field(std::array<double, 2> fi
         // Get field from file
         auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "/cm/cm/cm");
 
-        // Check if electric field matches chip
+        // Check if doping concentration profile matches chip
         check_detector_match(field_data.getSize(), field_scale);
 
         LOG(INFO) << "Set doping concentration map with " << field_data.getDimensions().at(0) << "x"
