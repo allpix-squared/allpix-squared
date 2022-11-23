@@ -25,6 +25,7 @@ Tracking features:
 * photons refract on silicon-air interface
 * tracks are terminated when a photon leaves *first encountered* sensitive volume
 * tracks are terminated if a passive object is hit (the only supported passive object type is `box`)
+Verbose information on tracking for each photon is printed if this module is run with `DEBUG` logging level.
 
 Initial direction and starting timestamp for every photon in the bunch are generated to mimic
 spatial and temporal distributions of delivered intensity of a real laser pulse.
@@ -46,7 +47,6 @@ As a result, this module yields `DepositedCharge` instances for each detector, w
 
 
 ## Parameters
-* `log_level`: follows the general rules of Allpix Squared. `INFO` will output photon counter and stats on hits for each event. `DEBUG` will also include verbose information of tracking for each photon.
 * `number_of_photons`: number of incident photons, generated in *one* event. Defaults to 10000. The total deposited charge will also depend on wavelength and geometry.
 * `wavelength` of the laser. Supported values are 250 -- 1450 nm.
 * `pulse_duration`: gaussian width of pulse temporal profile. Defaults to 0.5 ns.
