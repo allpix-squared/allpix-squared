@@ -60,8 +60,10 @@ As a result, this module yields `DepositedCharge` instances for each detector, w
 
 ## Usage
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and `PulseTransfer`.
-`PulseTransfer` is to be run with `output_pulsegraphs = true`. Usually it is enough to run a few or just a single event.
-Multithreading is unsupported since it is designed to run multiple events in parallel, but for typical use cases of this module each event is computation-heavy (multithreading is also not allowed by `PulseTransfer` with `output_pulsegraphs = true`).
+Usually it is enough to run just a single event (or a few).
+Multithreading is supported by this module.
+One should note that for the pipeline above each event is very computation-heavy, and runs with just one event do not gain any additional performance from multi-threaded execution.
+
 Such pipeline is expected to produce pulse shapes, comparable with experimentally obtained ones. An example of `DepositionLaser` configuration is shown below.
 
 ```
