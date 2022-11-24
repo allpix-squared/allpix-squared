@@ -395,7 +395,7 @@ void DetectorHistogrammerModule::initialize() {
 
         std::string residual_r_title = "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [#mum];events";
         residual_r = CreateHistogram<TH1D>(
-            "residual_r", residual_r_title.c_str(), static_cast<int>(12 * max_pitch), 0, 2 * max_pitch);
+            "residual_r", residual_r_title.c_str(), static_cast<int>(12 * Units::convert(max_pitch, "um")), 0, static_cast<double>(Units::convert(max_pitch, "um")));
     }
 }
 
