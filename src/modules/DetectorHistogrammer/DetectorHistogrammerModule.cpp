@@ -394,8 +394,11 @@ void DetectorHistogrammerModule::initialize() {
         max_pitch *= (model->is<HexagonalPixelDetectorModel>() ? std::sqrt(3) / 2 : 1);
 
         std::string residual_r_title = "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [#mum];events";
-        residual_r = CreateHistogram<TH1D>(
-            "residual_r", residual_r_title.c_str(), static_cast<int>(12 * Units::convert(max_pitch, "um")), 0, static_cast<double>(Units::convert(max_pitch, "um")));
+        residual_r = CreateHistogram<TH1D>("residual_r",
+                                           residual_r_title.c_str(),
+                                           static_cast<int>(12 * Units::convert(max_pitch, "um")),
+                                           0,
+                                           static_cast<double>(Units::convert(max_pitch, "um")));
     }
 }
 
