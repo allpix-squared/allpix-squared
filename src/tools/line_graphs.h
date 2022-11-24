@@ -239,8 +239,8 @@ namespace allpix {
 
             // Create animation of moving charges
             auto animation_time = static_cast<unsigned int>(
-                std::round((Units::convert(config.get<long double>("output_plots_step"), "ms") / 10.0) *
-                           config.get<long double>("output_animations_time_scaling", 1e9)));
+                std::lround((Units::convert(config.get<long double>("output_plots_step"), "ms") / 10.0) *
+                            config.get<long double>("output_animations_time_scaling", 1e9)));
             unsigned long plot_idx = 0;
             unsigned int point_cnt = 0;
             LOG_PROGRESS(INFO, module->getUniqueName() + "_OUTPUT_PLOTS")
@@ -278,7 +278,7 @@ namespace allpix {
                     const auto& [time, charge, type, state] = deposit;
 
                     auto diff = static_cast<unsigned long>(
-                        std::round((time - start_time) / config.get<long double>("output_plots_step")));
+                        std::lround((time - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
                         min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                         continue;

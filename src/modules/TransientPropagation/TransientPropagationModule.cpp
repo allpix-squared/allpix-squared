@@ -364,7 +364,7 @@ void TransientPropagationModule::run(Event* event) {
             if(state == CarrierState::RECOMBINED) {
                 recombined_charges_count += charge_per_step;
                 if(output_plots_) {
-                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                    recombination_time_histo_->Fill(time, charge_per_step);
                 }
             } else if(state == CarrierState::TRAPPED) {
                 trapped_charges_count += charge_per_step;
@@ -529,7 +529,7 @@ TransientPropagationModule::propagate(Event* event,
         // Check if the charge carrier has been trapped:
         if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
-                trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
+                trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
@@ -614,10 +614,8 @@ TransientPropagationModule::propagate(Event* event,
             }
 
             if(output_plots_) {
-                auto inPixel_um_x =
-                    static_cast<double>(Units::convert(position.x() - model_->getPixelCenter(xpixel, ypixel).x(), "um"));
-                auto inPixel_um_y =
-                    static_cast<double>(Units::convert(position.y() - model_->getPixelCenter(xpixel, ypixel).y(), "um"));
+                auto inPixel_um_x = (position.x() - model_->getPixelCenter(xpixel, ypixel).x()) * 1e3;
+                auto inPixel_um_y = (position.y() - model_->getPixelCenter(xpixel, ypixel).y()) * 1e3;
 
                 potential_difference_->Fill(std::fabs(ramo - last_ramo));
                 induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);

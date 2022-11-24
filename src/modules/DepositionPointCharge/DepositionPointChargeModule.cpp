@@ -87,7 +87,7 @@ void DepositionPointChargeModule::initialize() {
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         if(type_ == SourceType::MIP) {
-            root_ = static_cast<unsigned int>(std::round(std::sqrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
@@ -96,7 +96,7 @@ void DepositionPointChargeModule::initialize() {
             voxel_ = ROOT::Math::XYZVector(
                 model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
         } else {
-            root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::cbrt(events)));
             if(events != root_ * root_ * root_) {
                 LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
                              << "Closest cube is " << root_ * root_ * root_;

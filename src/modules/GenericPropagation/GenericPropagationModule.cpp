@@ -349,7 +349,7 @@ void GenericPropagationModule::run(Event* event) {
             PropagatedCharge propagated_charge(final_position,
                                                global_position,
                                                deposit.getType(),
-                                               static_cast<unsigned int>(std::round(charge_per_step * gain)),
+                                               static_cast<unsigned int>(std::lround(charge_per_step * gain)),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
                                                state,
