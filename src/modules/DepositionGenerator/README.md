@@ -48,7 +48,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 
 ## Usage
 
-```toml
+```ini
 [DepositionGenerator]
 physics_list = FTFP_BERT_LIV
 max_step_length = 10.0um
