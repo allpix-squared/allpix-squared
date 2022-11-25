@@ -76,7 +76,7 @@ void DepositionPointChargeModule::initialize() {
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
 
         // Check if the number of charge carriers is larger than zero
-        if(carriers == 0) {
+        if(carriers_ == 0) {
             throw InvalidValueError(config_,
                                     "number_of_steps",
                                     "Number of charge carriers deposited per step is zero due to a large step number or "
