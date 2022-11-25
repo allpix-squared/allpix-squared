@@ -74,6 +74,15 @@ void DepositionPointChargeModule::initialize() {
         carriers_ = static_cast<unsigned int>(eh_per_um * step_size_z_);
         LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
+
+        // Check if the number of charge carriers is larger than zero
+        if(carriers_ == 0) {
+            throw InvalidValueError(config_,
+                                    "number_of_steps",
+                                    "Number of charge carriers deposited per step is zero due to a large step number or "
+                                    "small number of e/h pairs per um");
+        }
+
     } else {
         config_.setDefault("number_of_charges", 1);
         carriers_ = config_.get<unsigned int>("number_of_charges");
