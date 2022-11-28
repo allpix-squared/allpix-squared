@@ -15,7 +15,9 @@ WORKDIR "/data"
 RUN mkdir -p /tmp/allpix-squared/build && \
     cd /tmp/allpix-squared/build && \
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-          -DBUILD_ALL_MODULES=ON \
+          -DBUILD_DatabaseWriter=ON \
+          -DBUILD_LCIOWriter=ON \
+          -DBUILD_VisualizationGeant4=OFF \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
