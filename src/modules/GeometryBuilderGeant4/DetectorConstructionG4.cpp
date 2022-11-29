@@ -101,14 +101,14 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             LOG(TRACE) << "Applying stereo angle of " << Units::display(stereo_angle, "mrad");
 
             // Transformation for the angled cylindrical section
-            auto* angled_tub_rot = new G4RotationMatrix();
-            angled_tub_rot->rotateZ(stereo_angle);
+            auto angled_tub_rot = G4RotationMatrix();
+            angled_tub_rot.rotateZ(stereo_angle);
             auto center_radius = radial_model->getCenterRadius();
-            auto* angled_tub_pos =
-                new G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
-            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto angled_tub_pos =
+                G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto angled_tub_trf = G4Transform3D(angled_tub_rot, angled_tub_pos);
             auto wrapper_final_tub = make_shared_no_delete<G4IntersectionSolid>(
-                "wrapper_" + name, wrapper_base_tub, wrapper_angled_tub, *angled_tub_trf);
+                "wrapper_" + name, wrapper_base_tub, wrapper_angled_tub, angled_tub_trf);
             solids_.push_back(wrapper_final_tub);
         } else {
             // Create the wrapper box
@@ -193,14 +193,14 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             auto stereo_angle = radial_model->getStereoAngle();
 
             // Transformation for the angled cylindrical section
-            auto* angled_tub_rot = new G4RotationMatrix();
-            angled_tub_rot->rotateZ(stereo_angle);
+            auto angled_tub_rot = G4RotationMatrix();
+            angled_tub_rot.rotateZ(stereo_angle);
             auto center_radius = radial_model->getCenterRadius();
-            auto* angled_tub_pos =
-                new G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
-            auto* angled_tub_trf = new G4Transform3D(*angled_tub_rot, *angled_tub_pos);
+            auto angled_tub_pos =
+                G4ThreeVector(center_radius * sin(stereo_angle), -center_radius * (1 - cos(stereo_angle)), 0);
+            auto angled_tub_trf = G4Transform3D(angled_tub_rot, angled_tub_pos);
             auto sensor_final_tub = make_shared_no_delete<G4IntersectionSolid>(
-                "wrapper_" + name, sensor_base_tub, sensor_angled_tub, *angled_tub_trf);
+                "wrapper_" + name, sensor_base_tub, sensor_angled_tub, angled_tub_trf);
             solids_.push_back(sensor_final_tub);
         } else {
             auto sensor_box = make_shared_no_delete<G4Box>("sensor_" + name,

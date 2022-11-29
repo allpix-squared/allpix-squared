@@ -435,11 +435,9 @@ TransientPropagationModule::propagate(Event* event,
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-        Eigen::Vector3d diffusion{};
-        for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(event->getRandomEngine());
-        }
-        return diffusion;
+        return Eigen::Vector3d(gauss_distribution(event->getRandomEngine()),
+                               gauss_distribution(event->getRandomEngine()),
+                               gauss_distribution(event->getRandomEngine()));
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
