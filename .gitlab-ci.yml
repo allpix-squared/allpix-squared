@@ -7,6 +7,13 @@ variables:
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
+default:
+    retry:
+        max: 2
+        when:
+            - stuck_or_timeout_failure
+            - runner_system_failure
+
 stages:
     - compilation
     - testing
