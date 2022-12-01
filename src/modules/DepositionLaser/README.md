@@ -20,6 +20,7 @@ Multiple photons are produced in a *one* event, thus a *single* event models a *
 
 
 Tracking features:
+
 * photons are absorbed in detector bulk on physically correct depth
 * each photon is assumed to create exactly one e-h pair
 * photons refract on silicon-air interface
@@ -39,6 +40,7 @@ For a `converging` beam, track directions would have isotropic distribution (but
 For this module, global t=0 is chosen in such a way that the mean value of temporal distribution is *always* positioned at *4 standard deviations*  w.r.t. the global t=0.
 Thus, there is not necessarily a particle that is created exactly when the global time starts.
 Although, the following Allpix Squared conventions still apply:
+
 * No particles have a negative timestamp.
 * Local time zero for each detector is a moment when the first particle that creates a hit in this detectors enters its bulk.
 
@@ -47,6 +49,7 @@ As a result, this module yields `DepositedCharge` instances for each detector, w
 
 
 ## Parameters
+
 * `number_of_photons`: number of incident photons, generated in *one* event. Defaults to 10000. The total deposited charge will also depend on wavelength and geometry.
 * `wavelength` of the laser. Supported values are 250 -- 1450 nm.
 * `pulse_duration`: gaussian width of pulse temporal profile. Defaults to 0.5 ns.
