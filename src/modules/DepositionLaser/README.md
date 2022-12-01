@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionLaser"
-description: "A simplistic deposition generator for charge injection with a laser."
+description: "A simplistic deposition generator for charge injection with a laser"
 module_maintainer: "Daniil Rastorguev (<daniil.rastorguev@desy.de>)"
 module_status: "Functional"
 module_output: "DepositedCharge, MCParticle"
