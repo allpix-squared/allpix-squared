@@ -62,12 +62,12 @@ namespace allpix {
         DepositionLaserModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
-         * @brief [Initialise this module]
+         * @brief Initialization method of the module
          */
         void initialize() override;
 
         /**
-         * @brief [Run the function of this module]
+         * @brief Run method of the module
          */
         void run(Event* event) override;
 
