@@ -69,7 +69,7 @@ One should note that for the pipeline above each event is very computation-heavy
 
 Such pipeline is expected to produce pulse shapes, comparable with experimentally obtained ones. An example of `DepositionLaser` configuration is shown below.
 
-```
+```ini
 [Allpix]
 detectors_file = "geometry.conf"
 # A single event is often enough
