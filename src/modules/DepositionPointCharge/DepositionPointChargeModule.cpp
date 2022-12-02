@@ -176,6 +176,7 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     mcparticles.emplace_back(position, position_global, position, position_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
+    mcparticles.back().setTotalDepositedCharge(carriers_);
 
     charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
     charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
@@ -209,14 +210,17 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     auto start_global = detector_->getGlobalPosition(start_local);
     auto end_global = detector_->getGlobalPosition(end_local);
 
+    // Total number of carriers will be:
+    auto charge = carriers_ * (end_local.z() - start_local.z()) / step_size_z_;
     // Create MCParticle:
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
                << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
+    mcparticles.back().setTotalDepositedCharge(charge);
 
     // Deposit the charge carriers:
     auto position_local = start_local;
-    while(position_local.z() < model->getSensorSize().z() / 2.0) {
+    while(position_local.z() < end_local.z()) {
         position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 

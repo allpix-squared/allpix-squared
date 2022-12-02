@@ -220,6 +220,7 @@ void DepositionReaderModule::run(Event* event) {
     std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_code;
     std::map<std::shared_ptr<Detector>, std::vector<double>> mc_particle_time;
     std::map<std::shared_ptr<Detector>, std::vector<int>> mc_particle_parent;
+    std::map<std::shared_ptr<Detector>, std::vector<unsigned int>> mc_particle_charge;
 
     std::map<std::shared_ptr<Detector>, std::vector<int>> particles_to_deposits;
     std::map<std::shared_ptr<Detector>, std::map<int, size_t>> track_id_to_mcparticle;
@@ -307,10 +308,12 @@ void DepositionReaderModule::run(Event* event) {
             mc_particle_time[detector].push_back(time);
             mc_particle_code[detector].push_back(pdg_code);
             mc_particle_parent[detector].push_back(parent_id);
+            mc_particle_charge[detector].push_back(charge);
             track_id_to_mcparticle[detector][track_id] = (mc_particle_start[detector].size() - 1);
         } else {
             LOG(DEBUG) << "Found MCParticle with track id " << track_id << ", updating position";
             mc_particle_end[detector].at(iter->second) = global_position;
+            mc_particle_charge[detector].at(iter->second) += charge;
         }
 
         particles_to_deposits[detector].push_back(track_id);
@@ -344,6 +347,7 @@ void DepositionReaderModule::run(Event* event) {
 
             mc_particles.emplace_back(
                 start_local, start_global, end_local, end_global, pdg_code, time - time_reference, time);
+            mc_particles.back().setTotalDepositedCharge(mc_particle_charge[detector].at(i));
         }
 
         for(size_t i = 0; i < mc_particle_size; i++) {
