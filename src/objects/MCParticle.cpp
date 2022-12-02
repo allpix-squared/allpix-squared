@@ -60,6 +60,14 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     }
 }
 
+unsigned int MCParticle::getTotalDepositedCharge() const {
+    return deposited_charge_;
+}
+
+void MCParticle::setTotalDepositedCharge(unsigned int total_charge) {
+    deposited_charge_ = total_charge;
+}
+
 int MCParticle::getParticleID() const {
     return particle_id_;
 }
