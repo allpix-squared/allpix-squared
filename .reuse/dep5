@@ -51,3 +51,8 @@ License: BSD-3-Clause
 Files: src/modules/DepositionCosmics/data/*
 Copyright: 2017-2022 CERN and the Allpix Squared authors
 License: CC0-1.0
+
+Files: src/modules/DepositionLaser/data/silicon_photoabsorption.data
+Copyright: 1995 John Wiley & Sons, Ltd.
+License: CC0-1.0
+Comment: Taken from https://doi.org/10.1002/pip.4670030303
