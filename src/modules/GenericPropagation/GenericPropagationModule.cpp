@@ -433,9 +433,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-        return Eigen::Vector3d(gauss_distribution(random_generator),
-                               gauss_distribution(random_generator),
-                               gauss_distribution(random_generator));
+        auto x = gauss_distribution(random_generator);
+        auto y = gauss_distribution(random_generator);
+        auto z = gauss_distribution(random_generator);
+        return Eigen::Vector3d(x, y, z);
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step
