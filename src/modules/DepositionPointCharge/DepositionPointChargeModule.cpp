@@ -74,6 +74,15 @@ void DepositionPointChargeModule::initialize() {
         carriers_ = static_cast<unsigned int>(eh_per_um * step_size_z_);
         LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
+
+        // Check if the number of charge carriers is larger than zero
+        if(carriers_ == 0) {
+            throw InvalidValueError(config_,
+                                    "number_of_steps",
+                                    "Number of charge carriers deposited per step is zero due to a large step number or "
+                                    "small number of e/h pairs per um");
+        }
+
     } else {
         config_.setDefault("number_of_charges", 1);
         carriers_ = config_.get<unsigned int>("number_of_charges");
@@ -87,7 +96,7 @@ void DepositionPointChargeModule::initialize() {
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         if(type_ == SourceType::MIP) {
-            root_ = static_cast<unsigned int>(std::round(std::sqrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
@@ -96,7 +105,7 @@ void DepositionPointChargeModule::initialize() {
             voxel_ = ROOT::Math::XYZVector(
                 model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
         } else {
-            root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::cbrt(events)));
             if(events != root_ * root_ * root_) {
                 LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
                              << "Closest cube is " << root_ * root_ * root_;

@@ -41,7 +41,7 @@ respective module.
 [@fano]: https://doi.org/10.1103/PhysRevB.22.5565
 [@Germanium_Creation_Fano]: https://doi.org/10.1016/0883-2889(91)90002-I
 [@GaAs_Fano]: https://doi.org/10.1063/1.1406546
-[@GaN_Creation_Fano]:https://etd.ohiolink.edu/apexprod/rws_etd/send_file/send?accession=osu1448405475
+[@GaN_Creation_Fano]: https://etd.ohiolink.edu/apexprod/rws_etd/send_file/send?accession=osu1448405475
 [@CdTe_Creation]: https://doi.org/10.1016/0029-554X(74)90662-4
 [@CdTe_Fano]: https://doi.org/10.1016/j.nima.2018.09.025
 [@CdZnTe_Creation]: https://doi.org/10.1016/j.astropartphys.2021.102563

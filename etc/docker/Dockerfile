@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2018-2022 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
-FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v2
+FROM gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v3
 MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 ARG ALLPIX_BUILD_ENV="Docker"
 
@@ -15,7 +15,9 @@ WORKDIR "/data"
 RUN mkdir -p /tmp/allpix-squared/build && \
     cd /tmp/allpix-squared/build && \
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-          -DBUILD_ALL_MODULES=ON \
+          -DBUILD_DatabaseWriter=ON \
+          -DBUILD_LCIOWriter=ON \
+          -DBUILD_VisualizationGeant4=OFF \
           .. && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \

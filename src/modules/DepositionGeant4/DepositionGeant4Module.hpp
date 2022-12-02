@@ -44,7 +44,7 @@ namespace allpix {
      * deposits are specific for a detector. The module also returns the information of the real particle passage (the
      * MCParticle).
      */
-    class DepositionGeant4Module : public Module {
+    class DepositionGeant4Module : public SequentialModule {
         friend class SDAndFieldConstruction;
         friend class SetTrackInfoUserHookG4;
 

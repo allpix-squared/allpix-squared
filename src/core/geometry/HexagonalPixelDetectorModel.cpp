@@ -127,9 +127,9 @@ bool HexagonalPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
 // Rounding is more easy in cubic coordinates, so we need to reconstruct the third coordinate from the other two as z = - x -
 // y:
 std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, double y) const {
-    auto q = static_cast<int>(std::round(x));
-    auto r = static_cast<int>(std::round(y));
-    auto s = static_cast<int>(std::round(-x - y));
+    auto q = static_cast<int>(std::lround(x));
+    auto r = static_cast<int>(std::lround(y));
+    auto s = static_cast<int>(std::lround(-x - y));
     double q_diff = std::abs(q - x);
     double r_diff = std::abs(r - y);
     double s_diff = std::abs(s - (-x - y));

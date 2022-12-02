@@ -20,7 +20,7 @@ namespace allpix {
 
         // Return empty field if outside the matrix or no field is set
         auto [px, py] = model_->getPixelIndex(pos);
-        if(!model_->isWithinMatrix(px, py) || type_ == FieldType::NONE) {
+        if(type_ == FieldType::NONE || !model_->isWithinMatrix(px, py)) {
             return {};
         }
 

@@ -349,7 +349,7 @@ void GenericPropagationModule::run(Event* event) {
             PropagatedCharge propagated_charge(final_position,
                                                global_position,
                                                deposit.getType(),
-                                               static_cast<unsigned int>(std::round(charge_per_step * gain)),
+                                               static_cast<unsigned int>(std::lround(charge_per_step * gain)),
                                                deposit.getLocalTime() + time,
                                                deposit.getGlobalTime() + time,
                                                state,
@@ -433,11 +433,10 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-        Eigen::Vector3d diffusion{};
-        for(int i = 0; i < 3; ++i) {
-            diffusion[i] = gauss_distribution(random_generator);
-        }
-        return diffusion;
+        auto x = gauss_distribution(random_generator);
+        auto y = gauss_distribution(random_generator);
+        auto z = gauss_distribution(random_generator);
+        return Eigen::Vector3d(x, y, z);
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step

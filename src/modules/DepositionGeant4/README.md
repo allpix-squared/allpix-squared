@@ -111,6 +111,10 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 ### Parameters for source `macro`
 * `file_name` : Path to the Geant4 source macro file.
 
+### Note for Developers
+
+This module is used as base for other deposition modules using Geant4 for particle tracking, e.g. DepositionCosmics or DepositionGenerator. Since some of these modules might have a sequence requirement for event processing, this module is a `SequentialModule` but waives the sequence requirement in its constructor. Any derived module that requires a strict sequence has to call `waive_sequence_requirement(false)` in its constructor to overwrite this setting.
+
 ## Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
 
