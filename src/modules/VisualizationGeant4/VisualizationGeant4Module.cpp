@@ -126,7 +126,7 @@ void VisualizationGeant4Module::initialize() {
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
             for(const auto& nickname : system->GetNicknames()) {
-                if(!nickname.contains("FALLBACK")) {
+                if(nickname.find("FALLBACK") == std::string::npos) {
                     candidates.insert(nickname);
                 }
             }

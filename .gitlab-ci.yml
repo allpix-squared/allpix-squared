@@ -1,4 +1,5 @@
 variables:
+    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v2"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
@@ -37,7 +38,7 @@ stages:
         - mkdir -p build/ && cd build/
 
 .docker:
-    image: gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:latest
+    image: $DOCKER_DEPS_IMAGE
     tags:
         - docker
     before_script:
