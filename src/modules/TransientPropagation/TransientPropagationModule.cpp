@@ -67,7 +67,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots",
                              config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
     config_.setDefault<bool>("output_animations_color_markers", false);
-    config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
+    config_.setDefault<double>("output_plots_step", config_.get<double>("timestep"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
