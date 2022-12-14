@@ -97,6 +97,15 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
 void DepositionLaserModule::initialize() {
 
+    // Check for unsupported detector materials, warn user if present
+
+    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+    for(auto& detector : detectors) {
+        auto material = detector->getModel()->getSensorMaterial();
+        if(material != SensorMaterial::SILICON) {
+            LOG(WARNING) << "Detector " << detector->getName() << " has unsupported material and will be ignored";
+        }
+    }
     // Check for incompatible passive objects, warn user if there are any
     auto passive_configs = geo_manager_->getPassiveElements();
     for(const auto& item : passive_configs) {
@@ -179,7 +188,6 @@ void DepositionLaserModule::initialize() {
         h_pulse_shape_ =
             CreateHistogram<TH1D>("pulse_shape", "Phi_distribution w.r.t. beam direction", nbins, 0, 8 * pulse_duration_);
 
-        std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
         for(const auto& detector : detectors) {
             std::string name = "dep_charge_" + detector->getName();
             auto sensor = detector->getModel()->getSensorSize();
@@ -473,6 +481,9 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
     for(auto& detector : detectors) {
+        if(detector->getModel()->getSensorMaterial() != SensorMaterial::SILICON) {
+            continue;
+        }
         auto intersection = intersect_with_sensor(detector, position, direction);
         if(intersection) {
             intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
