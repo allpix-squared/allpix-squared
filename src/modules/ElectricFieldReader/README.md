@@ -12,7 +12,7 @@ The reader provides the following models for electric fields:
   If the sensor is depleted from the implant side, the absolute value of the electric field is calculated using the formula
 
     ```math
-  E(z) = \|frac{U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( 1- \frac{z}{d} \right),
+  E(z) = \frac{|U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( 1- \frac{z}{d} \right),
     ```
     where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively. In case of a depletion from the back side, the absolute value of the electric field is calculated as
     ```math
