@@ -19,7 +19,7 @@ The reader provides the following models for electric fields:
 - For **linear** electric fields, the field has a constant slope determined by the bias voltage and the depletion voltage.
   The sensor is depleted either from the implant or the back side, the direction of the electric field depends on the sign of
   the bias voltage (with negative bias voltage the electric field vector points towards the backplane and vice versa).
-  The sign of depletion_voltage is always ignored. 
+  The sign of depletion voltage is always ignored. 
   If the sensor is depleted from the implant side, the absolute value of the electric field is calculated using the formula
   ```math
   E(z) = \|frac{U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( 1- \frac{z}{d} \right),
