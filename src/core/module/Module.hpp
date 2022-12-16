@@ -266,7 +266,7 @@ namespace allpix {
         /**
          * @brief Release strict sequence processing requirement
          */
-        void waive_sequence_requirement();
+        void waive_sequence_requirement(bool waive = true);
 
     private:
         /**
