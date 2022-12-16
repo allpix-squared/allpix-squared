@@ -248,7 +248,7 @@ namespace allpix {
          * @brief Get the number of thread including the main thread (thus always at least one)
          * @return Total count of threads
          */
-        static unsigned int threadCount() { return thread_total_; }
+        static unsigned int threadCount();
 
         /**
          * @brief Add number to the total count of threads that could be used

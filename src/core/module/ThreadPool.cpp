@@ -170,6 +170,10 @@ unsigned int ThreadPool::threadNum() {
     return 0;
 }
 
+unsigned int ThreadPool::threadCount() {
+    return thread_total_;
+}
+
 void ThreadPool::registerThreadCount(unsigned int cnt) {
     thread_total_ += cnt;
 }
