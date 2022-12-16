@@ -12,7 +12,7 @@ properties attached to it:
 - A unique detector `name` to refer to the detector in the configuration.
 
 - The `position` in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in
-  world coordinates as X, Y and Z s defined in [Section 4.5](./01_geometry.md#coordinate-systems) (note that any
+  world coordinates as X, Y and Z s defined in [Section 5.1.1](#coordinate-systems) (note that any
   additional components like the chip and possible support layers are ignored when determining the geometric center).
 
 - An `orientation_mode` that determines the way that the orientation is applied. This can be either `xyz`, `zyx` or `zxz`,
@@ -94,7 +94,7 @@ different detectors do not necessarily have to belong to the same particle track
 
 The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained
 in [Section 4.4](../04_framework/04_modules.md#module-instantiation). The procedure of finding and loading the appropriate
-detector models is explained in more detail in the [next section](#detector-models).
+detector models is explained in more detail in the [next section](./02_models.md).
 
 The geometry is directly added from the detector configuration file described in
 [Section 3.3](../03_getting_started/03_detector_configuration.md). The geometry manager parses this file on construction, and
