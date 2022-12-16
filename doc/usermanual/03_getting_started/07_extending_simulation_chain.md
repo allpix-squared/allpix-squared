@@ -54,7 +54,7 @@ viewer:
     ```
 
 More information about all possible configuration parameters can be found in the
-[`VisualizationGeant4` documentation](../07_modules/visualizationgeant4.md).
+[`VisualizationGeant4` documentation](../08_modules/visualizationgeant4.md).
 
 ## Electric Fields
 
@@ -64,7 +64,7 @@ added to each detector using the `ElectricFieldReader` module.
 The section below calculates a linear electric field for every point in active sensor volume based on the depletion voltage
 of the sensor and the applied bias voltage. The sensor is always depleted from the implant side. The direction of the
 electric field depends on the sign of the bias voltage as described in the
-[`ElectricFieldReader documentation](../07_modules/electricfieldreader.md).
+[`ElectricFieldReader` documentation](../08_modules/electricfieldreader.md).
 
 ```ini
 # Add an electric field
@@ -82,9 +82,9 @@ electric field. In order to speed up the lookup of the electric field values at 
 adaptive TCAD mesh has to be interpolated and transformed into a regular grid with configurable feature size before use.
 Allpix Squared comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field,
 and writes this out in an appropriate format. A more detailed description of the tool can be found in
-[Section 13.2](../13_additional/mesh_converter.md). An example electric field can be found in the repository \[[@ap2-repo]\]
+[Section 14.2](../14_additional/mesh_converter.md). An example electric field can be found in the repository \[[@ap2-repo]\]
 at `etc/example_electric_field.init`. A detailed description of supported field geometries and their mapping onto the sensor
-plane is provided in [Section 13.2](../04_framework/06_fieldmaps.md).
+plane is provided in [Section 4.5](../04_framework/05_fieldmaps.md).
 
 Electric fields can be attached to a specific detector using the
 standard syntax for detector binding. A possible configuration would be:
@@ -116,11 +116,11 @@ magnetic_field = 0mT 3.8T 0T
 
 The global magnetic field is used by the interface to Geant4 and therefore exposes charged primary particles to the Lorentz
 force, and as a property of each detector present, enabling a Lorentz drift of the charge carriers in the active sensors, if
-supported by the used propagation modules. See the [Chapter 7](../07_modules/_index.md) for more information on the available
+supported by the used propagation modules. See the [Chapter 8](../08_modules/_index.md) for more information on the available
 propagation modules.
 
 Currently, only constant magnetic fields can be applied. For all parameters, refer to the
-[`MagneticFieldReader` documentation](../07_modules/magneticfieldreader.md).
+[`MagneticFieldReader` documentation](../08_modules/magneticfieldreader.md).
 
 
 [@geant4vis]: https://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/ForApplicationDeveloper/html/ch08.html

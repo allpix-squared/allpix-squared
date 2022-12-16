@@ -26,7 +26,7 @@ systems provided are:
     The geometry subsystem supplies helpers for the simulation geometry. The manager instantiates all detectors from the
     detector configuration file. A detector object contains the position and orientation linked to an instantiation of a
     particular detector model, itself containing all parameters describing the geometry of the detector. More details about
-    geometry and detector models is provided in [Section 4.5](./05_geometry_detectors.md).
+    geometry and detector models is provided in [Chapter 5](../05_geometry_detectors/_index.md).
 
 4.  **Messenger**:
     The messenger is responsible for sending objects from one module to another. The messenger object is passed to every

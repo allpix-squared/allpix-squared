@@ -12,8 +12,8 @@ on how to implement a specific feature. Getting in touch with other developers e
 time on features which already exist or are currently under development by other users.
 
 An introduction to the development of Allpix Squared and its different tools is provided in
-[Chapter 9](../09_development/_index.md), including a ["How to contribute" Section](../09_development/contributing.md)
-describing the steps necessary to get involved in the development. [Chapter 10](../10_devtools/_index.md) details the tools
+[Chapter 10](../10_development/_index.md), including a ["How to contribute" Section](../10_development/contributing.md)
+describing the steps necessary to get involved in the development. [Chapter 11](../11_devtools/_index.md) details the tools
 provided with the repository which ease and facilitate contributions and ensure code quality.
 
 

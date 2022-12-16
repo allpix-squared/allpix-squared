@@ -26,7 +26,7 @@ external dependencies:
   distributions (most notably of `boost::normal_distribution`) has changed in the past, a recent version is required.
 
 For some modules, additional dependencies exist. For details about the dependencies and their installation see
-[Chapter 7](../07_modules/_index.md). The following dependencies are needed to compile the standard installation:
+[Chapter 8](../08_modules/_index.md). The following dependencies are needed to compile the standard installation:
 
 - Geant4 \[[@geant4]\]:
   Simulates the desired particles and their interactions with matter, depositing charges in the detectors with the help of

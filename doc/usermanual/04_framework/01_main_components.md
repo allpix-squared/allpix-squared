@@ -15,7 +15,7 @@ The framework consists of the following four main components that together form 
 2.  **Modules**:
     A module is a set of methods which is executed as part of the simulation chain. Modules are built as separate libraries
     and loaded dynamically on demand by the core. The available modules and their parameters are discussed in detail in
-    [Chapter 7](../07_modules/_index.md).
+    [Chapter 8](../08_modules/_index.md).
 
 3.  **Objects**:
     Objects form the data passed between modules using the message framework provided by the core. Modules can listen and
@@ -27,13 +27,13 @@ The framework consists of the following four main components that together form 
 
 4.  **Physics**:
     In many cases, several modules depend on the same underlying physics models. These models are separated from the modules
-    themselves. The implemented physics models are described in [Chapter 5](../05_models/_index.md).
+    themselves. The implemented physics models are described in [Chapter 6](../06_models/_index.md).
 
 5.  **Tools**:
     Allpix Squared provides a set of header-only 'tools' and a shared library that allow access to common logic shared by
     various modules. Examples are the Runge-Kutta solver \[[@fehlberg]\] implemented using the Eigen3 library and the set of
     template specializations for ROOT and Geant4 configurations. More information about the tools can be found in
-    [Chapter 13](../13_additional/_index.md). This set of tools is different from the set of core utilities the framework
+    [Chapter 14](../14_additional/_index.md). This set of tools is different from the set of core utilities the framework
     itself provides, which is part of the core and explained in [Section 4.8](./08_logging.md).
 
 Finally, Allpix Squared provides an executable which instantiates the core of the framework, receives and distributes the

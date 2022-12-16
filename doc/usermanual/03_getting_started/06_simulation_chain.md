@@ -7,7 +7,7 @@ weight: 6
 
 In the following, the framework parameters are used to set up a fully functional simulation. Module parameters are shortly
 introduced when they are first used. For more details about the module parameters, the respective module documentation in
-[Chapter 7](../07_modules/_index.md) should be consulted. A typical simulation in Allpix Squared will contain the following
+[Chapter 8](../08_modules/_index.md) should be consulted. A typical simulation in Allpix Squared will contain the following
 components:
 
 - The **geometry builder**, responsible for creating the external Geant4 geometry from the internal geometry. In this

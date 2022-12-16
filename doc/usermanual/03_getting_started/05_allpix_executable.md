@@ -66,7 +66,7 @@ The executable handles the following arguments:
   options, but only one type of key can be specified to overwrite an option for a single detector. These are specified by
   adding a dot (`.`) between the detector and the actual key as it would be given in the detector configuration file (thus
   `detector.key`). This method also works for customizing detector models as described in
-  [Section 4.5](../04_framework/05_geometry_detectors.md#detector-models). An example to overwrite the sensor thickness for
+  [Section 5.2](../05_geometry_detectors/02_models.md). An example to overwrite the sensor thickness for
   a particular detector named `detector1` to `50um` would be `allpix -c <file> -g detector1.sensor_thickness=50um`.
 
 No interaction with the framework is possible during the simulation. Signals can however be send using keyboard shortcuts to
