@@ -16,7 +16,7 @@ utilities.
 
 Relations between objects within a single event are internally stored as ROOT TRefs \[[@roottref]\], allowing retrieval of
 related objects as long as these are loaded in memory. An exception will be thrown when trying to access an object which is
-not in memory. Refer to [Section 6.2](../06_objects/02_object_history.md) for more information about object history.
+not in memory. Refer to [Section 7.2](../07_objects/02_object_history.md) for more information about object history.
 
 In order to save all objects of the simulation, a `ROOTObjectWriter` module has to be added with a `file_name` parameter to
 specify the file location of the created ROOT file in the global output directory. The file extension `.root` will be
@@ -32,7 +32,7 @@ file_name = "data"
 
 The generated output file can be analyzed using ROOT macros. A simple macro for converting the results to a tree with
 standard branches for comparison is described in
-[Section 13.3](../13_additional/root_analysis_macros.md#display-monte-carlo-hits-python).
+[Section 14.3](../14_additional/root_analysis_macros.md#display-monte-carlo-hits-python).
 
 It is also possible to read object data back in, in order to dispatch them as messages to further modules. This feature is
 intended to allow splitting the execution of parts of the simulation into independent steps, which can be repeated multiple
@@ -47,10 +47,10 @@ file_name = "../output/data.root"
 ```
 
 The Allpix Squared framework comes with a few more output modules which allow data storage in different formats, such as the
-[`LCIOWriter`](../07_modules/lciowriter.md) for the LCIO persistency event data model \[[@lcio]\], the
-[`RCEWriter`](../07_modules/rcewriter.md) for the native RCE file format \[[@rce]\], or the
-[`CorryvreckanWriter`](../07_modules/corryvreckanwriter.md) for the Corryvreckan reconstruction framework data format.
-Consult [Chapter 7](../07_modules/_index.md) for all output modules.
+[`LCIOWriter`](../08_modules/lciowriter.md) for the LCIO persistency event data model \[[@lcio]\], the
+[`RCEWriter`](../08_modules/rcewriter.md) for the native RCE file format \[[@rce]\], or the
+[`CorryvreckanWriter`](../08_modules/corryvreckanwriter.md) for the Corryvreckan reconstruction framework data format.
+Consult [Chapter 8](../08_modules/_index.md) for all output modules.
 
 
 [@roottree]: https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html

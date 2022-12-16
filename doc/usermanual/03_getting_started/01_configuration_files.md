@@ -17,7 +17,7 @@ The framework has the following three required layers of configuration files:
   framework configuration and the list of modules to instantiate together with their configuration. An example can be found
   in the repository at `examples/example.conf`. More details and a more thorough example are found in
   [Section 3.2](./02_main_configuration.md), several advanced simulation chain configurations are presented in
-  [Chapter 8](../08_examples/_index.md).
+  [Chapter 9](../09_examples/_index.md).
 
 - The **geometry** configuration:
   It is passed to the framework to determine the detector setup and passive materials. Describes the detector setup,
@@ -28,14 +28,14 @@ The framework has the following three required layers of configuration files:
 - The detector **model** configuration:
   Contains the parameters describing a particular type of detector. Several models are already provided by the framework,
   but new types of detectors can easily be added. See `models/test.conf` in the repository for an example. Please refer to
-  [Section 9.5](../09_development/05_new_detector_model.md) for more details about adding new models.
+  [Section 10.5](../10_development/05_new_detector_model.md) for more details about adding new models.
 
 ## Parsing Types and Units
 
 The Allpix Squared framework supports the use of a variety of types for all configuration values. The module specifies how
 the value type should be interpreted. An error will be raised if either the key is not specified in the configuration file,
 the conversion to the desired type is not possible, or if the given value is outside the domain of possible options. Please
-refer to the [Chapter 7](../07_modules/_index.md) for the list of module parameters and their types. Parsing the value
+refer to the [Chapter 8](../08_modules/_index.md) for the list of module parameters and their types. Parsing the value
 roughly follows common-sense (more details can be found in
 [Section 4.3](../04_framework/03_configuration.md#accessing-parameters)). A few special rules do apply:
 

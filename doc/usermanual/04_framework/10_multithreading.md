@@ -63,4 +63,4 @@ The usage of the Geant4 library in Allpix Squared has some constraints because t
 to handle parallelization internally which violates the Allpix Squared design. Furthermore, Geant4 does not guarantee results
 reproducibility between its multithreaded and sequential run managers. Modules that would like to use the Geant4 library
 shall not use the run managers provided by Geant4. Instead, they must use the custom run managers provided by Allpix Squared
-as described in [Section 13.1](../13_additional/01_tools.md#geant4-interface).
+as described in [Section 14.1](../14_additional/01_tools.md#geant4-interface).

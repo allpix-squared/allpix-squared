@@ -42,7 +42,7 @@ system. Of course, any additional command line arguments known to the `allpix` e
 For tagged versions, the tag name should be appended to the image name, e.g.
 `gitlab-registry.cern.ch/allpix-squared/allpix-squared:v2.2.2`, and a full list of available Docker containers is provided
 via the project's container registry \[[@ap2-container-registry]\]. A short description of how Docker images for this project
-are built can be found in [Section 10.5](../10_devtools/05_building_docker_images.md).
+are built can be found in [Section 11.5](../11_devtools/05_building_docker_images.md).
 
 
 [@ap2-container-registry]: https://gitlab.cern.ch/allpix-squared/allpix-squared/container_registry

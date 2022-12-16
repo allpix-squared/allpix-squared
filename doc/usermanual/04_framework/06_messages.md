@@ -7,7 +7,7 @@ weight: 6
 
 Communication between modules is performed by the exchange of messages. Messages are templated instantiations of the
 `Message` class carrying a vector of objects. The list of objects available in the Allpix Squared objects library is given in
-[Section 6.1](../06_objects/01_object_types.md). The messaging system has a dispatching mechanism to send messages and a
+[Section 7.1](../07_objects/01_object_types.md). The messaging system has a dispatching mechanism to send messages and a
 receiving part that fetches incoming messages. Messages are always received by modules in the order they have been dispatched
 by preceding modules.
 
@@ -130,7 +130,7 @@ Flags can be added to the bind and listening methods which enable a particular b
 ## Persistency
 
 As objects may contain information relating to other objects, in particular for storing their corresponding Monte Carlo
-history (see [Section 6.2](../06_objects/02_object_history.md)), objects are by default persistent until the end of each
+history (see [Section 7.2](../07_objects/02_object_history.md)), objects are by default persistent until the end of each
 event. All messages are stored as shared pointers and are released at the end of each event. If no other copies of the shared
 message pointer are created, then these will be subsequently deleted, including the objects stored therein. Where a module
 requires access to data from a previous event (such as to simulate the effects of pile-up etc.), local copies of the data

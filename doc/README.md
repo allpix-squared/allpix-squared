@@ -92,7 +92,7 @@ The following notes should be taken for these fields:
     for example module READMEs, the `weight` field must be omitted so that hugo sorts them alphabetically.
 
 For modules, additional front matter tags have to be set, as explained in the
-[documentation](./usermanual/09_development/03_new_module.md#readmemd).
+[documentation](./usermanual/10_development/03_new_module.md#readmemd).
 
 ## Formulae
 

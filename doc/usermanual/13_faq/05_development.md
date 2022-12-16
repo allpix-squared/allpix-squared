@@ -64,7 +64,7 @@ When adding a new sensor material, additions at several positions in the code ar
 - Define default values for the material properties listed in `src/physics/MaterialProperties.hpp`.
 
 - Add the list of material properties to the corresponding section of the user manual
-  (`doc/usermanual/chapters/05_models/01_material_properties.md`).
+  (`doc/usermanual/chapters/06_models/01_material_properties.md`).
 
 Any contribution to the framework in terms of new sensor material definitions is welcome and can be added via a dedicated
 merge request in the repository \[[@ap2-repo]\].

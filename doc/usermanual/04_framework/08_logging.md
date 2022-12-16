@@ -104,7 +104,7 @@ automatically resolved using the unit system discussed above. The string utiliti
 functions missing in the STL.
 
 Furthermore, the Allpix Squared tool system contains extensions to allow automatic conversions for ROOT and Geant4 types as
-explained in [Section 13.1](../13_additional/01_tools.md#root-and-geant4-utilities).
+explained in [Section 14.1](../14_additional/01_tools.md#root-and-geant4-utilities).
 
 To be able to provide cross-platform reproducibility of simulations, Allpix Squared uses random number distributions from the
 Boost.Random library. Their implementation is fixed and therefore does not depend on the standard library of the respective

@@ -45,7 +45,7 @@ CMake can be run with several extra arguments to change the type of installation
 - `BUILD_ALL_MODULES`:
   Build all included modules, defaulting to `OFF`. This overwrites any selection using the parameters described above.
 
-An example of a custom debug build, without the [`GeometryBuilderGeant4` module](../07_modules/geometrybuildergeant4.md) and
+An example of a custom debug build, without the [`GeometryBuilderGeant4` module](../08_modules/geometrybuildergeant4.md) and
 with installation to a custom directory is shown below:
 
 ```shell

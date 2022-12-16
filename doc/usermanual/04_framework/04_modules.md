@@ -75,7 +75,7 @@ worker threads as specified in the configuration or determined from system param
 
 Detailed description of how the framework implements the multithreading feature can be found in
 [Section 4.10](./10_multithreading.md) and an overview of important considerations when writing a new module capable of
-multithreading is provided in [Section 9.4](../09_development/04_thread_safe_code.md).
+multithreading is provided in [Section 10.4](../10_development/04_thread_safe_code.md).
 
 
 [@linuxld]: http://man7.org/linux/man-pages/man8/ld.so.8.html

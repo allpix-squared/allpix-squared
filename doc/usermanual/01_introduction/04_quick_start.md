@@ -36,7 +36,7 @@ in the detectors, the carrier propagation and the conversion of the collected ch
 data is finally stored on disk in ROOT TTrees or other commonly used data formats for later analysis.
 
 After this quick start it is very much recommended to proceed to the other chapters of this user manual. For quickly
-resolving common issues, the [Frequently Asked Questions](../12_faq/_index.md) may be particularly useful.
+resolving common issues, the [Frequently Asked Questions](../13_faq/_index.md) may be particularly useful.
 
 
 [@root]: http://root.cern.ch/

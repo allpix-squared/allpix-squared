@@ -10,14 +10,14 @@ header describing the name used to identify the detector; all names are required
 all of the following parameters:
 
 - A string referring to the `type` of the detector model. The model should exist in the search path as described in
-  [Section 4.5](../04_framework/05_geometry_detectors.md#detector-models).
+  [Section 5.2](../05_geometry_detectors/02_models.md).
 
 - The 3-dimensional `position` in the world frame in the order x, y, z. See
-  [Section 4.5](../04_framework/05_geometry_detectors.md) for details.
+  [Section 5.1](../05_geometry_detectors/01_geometry.md) for details.
 
 - The `orientation` specified as X-Y-Z extrinsic Euler angles. This means the detector is rotated first around the world's
   X-axis, then around the world's Y-axis and then around the world's Z-axis. Alternatively the orientation can be set as
-  Z-Y-X or Z-X-Z extrinsic Euler angles, refer to section [Section 4.5](../04_framework/05_geometry_detectors.md) for
+  Z-Y-X or Z-X-Z extrinsic Euler angles, refer to section [Section 5.1](../05_geometry_detectors/01_geometry.md) for
   details.
 
 In addition to these required parameters, the following parameters allow to randomly misalign the respective detector from
@@ -38,7 +38,7 @@ The optional parameter `role` accepts the values `active` for detectors and `pas
 no value is given, `active` is taken as the default value.
 
 Furthermore it is possible to specify certain parameters of the detector, which is explained in more detail in
-[Section 4.5](../04_framework/05_geometry_detectors.md#detector-models). This allows to quickly adapt e.g. the sensor
+[Section 5.2](../05_geometry_detectors/02_models.md). This allows to quickly adapt e.g. the sensor
 thickness of a certain detector without altering the actual detector model file.
 
 An example configuration file describing a setup with one CLICpix2 detector and two Timepix \[[@timepix]\] models is the
@@ -92,16 +92,16 @@ Every passive material has to contain all of the following parameters:
 
 - A string referring to the `type` of the passive material. The model should be interpreted by the module constructing the
   passive material, such as for example the
-  [`GeometryBuilderGeant4` module](../07_modules/geometrybuildergeant4.md#passive-volumes).
+  [`GeometryBuilderGeant4` module](../08_modules/geometrybuildergeant4.md#passive-volumes).
 
 - A string referring to the `material` of the passive material. The materials for the `GeometryBuilderGeant4` module are
-  defined in the [module documentation](../07_modules/geometrybuildergeant4.md#materials).
+  defined in the [module documentation](../08_modules/geometrybuildergeant4.md#materials).
 
 - A set of size parameters specific for the model that is chosen. All size parameters that describe the total length of
   something are placed such that half of this total length extends from each side of the given `position`. If a parameter
   describes the radius, this means the radius will extend from the `position` on both sides, making its total size two
   times the radius in the given direction. The size parameters for the specific models in the `GeometryBuilderGeant4`
-  module are described in the [module documentation](../07_modules/geometrybuildergeant4.md#passive-volumes).
+  module are described in the [module documentation](../08_modules/geometrybuildergeant4.md#passive-volumes).
 
 In addition, an optional string referring to the `mother_volume`, which defines another passive material the volume will be
 placed in, can be specified.
@@ -118,7 +118,7 @@ Placing a passive volume in the hollow part requires a different `mother_volume`
 {{% /alert %}}
 
 Similar to the detector configuration, the parameters `orientation_mode` (see
-[Section 4.5](../04_framework/05_geometry_detectors.md)), `alignment_precision_position` and
+[Section 5.1](../05_geometry_detectors/01_geometry.md)), `alignment_precision_position` and
 `alignment_precision_orientation` (see [Section 3.3](./03_detector_configuration.md)) can be used optionally to define the
 rotation order and a possible misalignment of passive materials.
 

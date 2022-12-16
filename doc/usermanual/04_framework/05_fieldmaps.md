@@ -8,7 +8,7 @@ weight: 5
 Allpix Squared allows to load externally generated field maps for various quantities such as the electric field or the doping
 profile of the sensor. These maps have to be provided as regularly-spaced meshes in one of the supported field file formats.
 A conversion and interpolation tool to translate adaptive-mesh fields from TCAD applications to the format required by Allpix
-Squared is provided together with the framework and is described in [Section 13.2](../13_additional/mesh_converter.md).
+Squared is provided together with the framework and is described in [Section 14.2](../14_additional/mesh_converter.md).
 
 ![](./maps_types.png)\
 *Examples for pixel geometries in field maps. The dark spot represents the pixel center, the red extend the electric field.
@@ -90,7 +90,8 @@ applied to the sensor, and the following possibilities are available:
 
 
 All axes mentioned here are Cartesian axes aligning with the local coordinate system of the sensor, described in
-[Section 4.5](./05_geometry_detectors.md#coordinate-systems), and passing through the center of the pixel unit cell regarded.
+[Section 5.2](../05_geometry_detectors/01_geometry.md#coordinate-systems), and passing through the center of the pixel unit
+cell regarded.
 It should be noted that some of these mappings are equivalent to rotating or mirroring the field before loading it in
 Allpix Squared, and are only provided for convenience.
 
