@@ -154,8 +154,8 @@ namespace allpix {
                     ROOT::Math::XYZVector offset,
                     ROOT::Math::RotationZ orientation,
                     std::string material)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)),
-                  orientation_(std::move(orientation)), material_(std::move(material)) {}
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
+                  material_(std::move(material)) {}
 
             // Actual parameters returned
             Type type_;
