@@ -56,7 +56,6 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Mess
     // Set to accumulate all hits and display at the end by default
     config_.setDefault("accumulate", true);
     config_.setDefault("simple_view", true);
-
     mode_ = config_.get<ViewingMode>("mode");
 }
 /**
@@ -282,7 +281,11 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Set default viewer orientation
-    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi -70 20");
+    auto viewpoint_angles =
+        config_.getArray<double>("viewpoint_thetaphi", {Units::get<double>(-70, "deg"), Units::get<double>(20, "deg")});
+    auto viewpoint_cmd = "/vis/viewer/set/viewpointThetaPhi " + std::to_string(Units::convert(viewpoint_angles[0], "deg")) +
+                         " " + std::to_string(Units::convert(viewpoint_angles[1], "deg"));
+    UI->ApplyCommand(viewpoint_cmd);
 
     // Do auto refresh if not accumulating and start viewer already
     if(!accumulate) {
