@@ -40,6 +40,7 @@ This module requires an installation of Geant4.
 * `draw_hits` : Determines if hits in the detector should be displayed. Defaults to false. Option is only useful if Geant4 hits are generated in a module.
 * `macro_init` : Optional Geant4 macro to execute during initialization. Whenever possible, the configuration parameters above should be used instead of this option.
 * `display_limit` : Sets the `displayListLimit` of the visualization GUI, in case the geometry which has to be loaded is too complex for the GUI to be displayed with the current size Display List. Defaults to 1000000.
+* `viewpoint_thetaphi` : Sets the theta and phi angles for the viewpoint. Defaults to -70deg 20deg.
 
 ### Usage
 An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:
