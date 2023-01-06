@@ -103,7 +103,7 @@ namespace allpix {
                     ((daughter_rotation != nullptr) ? new G4RotationMatrix(*daughter_rotation * *rotation_)
                                                     : new G4RotationMatrix(*rotation_));
                 LOG(TRACE) << "Rotation matrix: " << *rotation_matrix;
-                gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
+                gdml_daughter->SetTranslation((rotation_->inverse()) * gdml_daughter->GetTranslation() + position_vector);
                 gdml_daughter->SetRotation(rotation_matrix);
 
                 // Check if color information is available and set it to the daughter volume
