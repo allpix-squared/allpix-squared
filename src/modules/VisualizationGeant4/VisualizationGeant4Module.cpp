@@ -283,6 +283,11 @@ void VisualizationGeant4Module::set_visualization_settings() {
     // Set default viewer orientation
     auto viewpoint_angles =
         config_.getArray<double>("viewpoint_thetaphi", {Units::get<double>(-70, "deg"), Units::get<double>(20, "deg")});
+    if(viewpoint_angles.size() != 2) {
+        LOG(FATAL)
+            << "Parameter viewpoint_thetaphi VisualizationGeant4Module is not valid. Must be two angles (theta, phi).";
+        throw InvalidValueError(config_, "viewpoint_thetaphi", "invalid number of parameters given, must be two");
+    }
     auto viewpoint_cmd = "/vis/viewer/set/viewpointThetaPhi " + std::to_string(Units::convert(viewpoint_angles[0], "deg")) +
                          " " + std::to_string(Units::convert(viewpoint_angles[1], "deg"));
     UI->ApplyCommand(viewpoint_cmd);
