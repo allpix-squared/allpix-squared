@@ -51,7 +51,7 @@ VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Mess
     // Set to accumulate all hits and display at the end by default
     config_.setDefault("accumulate", true);
     config_.setDefault("simple_view", true);
- 
+
     mode_ = config_.get<ViewingMode>("mode");
 }
 /**
