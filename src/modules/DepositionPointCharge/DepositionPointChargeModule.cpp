@@ -212,7 +212,7 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     auto end_global = detector_->getGlobalPosition(end_local);
 
     // Total number of carriers will be:
-    auto charge = carriers_ * (end_local.z() - start_local.z()) / step_size_z_;
+    auto charge = static_cast<unsigned int>(carriers_ * (end_local.z() - start_local.z()) / step_size_z_);
     // Create MCParticle:
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
