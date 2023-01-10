@@ -116,7 +116,8 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
         auto min = geo_manager_->getMinimumCoordinate();
         auto max = geo_manager_->getMaximumCoordinate();
         auto size = std::max(max.x() - min.x(), max.y() - min.y());
-        auto size_meters = static_cast<unsigned int>(std::ceil(Units::convert(size, "m")));
+        // Round calculated value up to 10 cm
+        auto size_meters = static_cast<double>(std::ceil(Units::convert(size, "m") * 10.0)) / 10.0;
         if(size_meters > 300) {
             throw ModuleError("Size of the setup too large, tabulated data only available for areas up to 300m");
         }
