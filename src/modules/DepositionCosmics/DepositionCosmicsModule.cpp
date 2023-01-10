@@ -124,7 +124,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
                    << ", selecting subbox of size " << size_meters << "m";
         cry_config << " subboxLength " << size_meters;
     } else {
-        auto area = Units::convert(config_.get<int>("area"), "m");
+        auto area = Units::convert(config_.get<double>("area"), "m");
         if(area > 300) {
             throw InvalidValueError(config_, "area", "only areas with side lengths of up to 300m are supported");
         }
