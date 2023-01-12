@@ -11,12 +11,12 @@ module_output: "DepositedCharge, MCParticle"
 ## Description
 
 This deposition generator is mostly intended for simulations of laser-TCT experiments.
-It would generate charge, deposited by absorption of a laser pulse in silicon bulk.
+It generates charge, deposited by absorption of a laser pulse in silicon bulk.
 This module is not dependent on Geant4. Instead, it implements tracking algorithms and simulations of corresponding physical phenomena by its own, using internal Allpix geometry.
 
 Current implementation assumes that the laser pulse is a bunch of point-like photons, each traveling in a straight line. A lookup table \[[@optical_properties]\] is used to determine absorption and refraction coefficients for a given wavelength.
 
-Multiple photons are produced in a *one* event, thus a *single* event models a *single* laser pulse.  
+Multiple photons are produced in a *one* event, thus a *single* event models a *single* laser pulse.
 
 
 Tracking features:
