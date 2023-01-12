@@ -101,9 +101,10 @@ void MCTrack::print(std::ostream& out) const {
         << std::left << std::setw(big_gap) << "Production in G4Volume: " << std::right << std::setw(small_gap)
         << origin_g4_vol_name_ << '\n'
         << std::left << std::setw(big_gap) << "Initial position:" << std::right << std::setw(med_gap) << start_point_.X()
-        << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
+        << " mm | " << std::setw(med_gap) << start_point_.Y() << " mm | " << std::setw(med_gap) << start_point_.Z()
+        << " mm\n"
         << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
-        << " mm |" << std::setw(med_gap) << end_point_.Y() << " mm |" << std::setw(med_gap) << end_point_.Z() << " mm\n"
+        << " mm | " << std::setw(med_gap) << end_point_.Y() << " mm | " << std::setw(med_gap) << end_point_.Z() << " mm\n"
         << std::left << std::setw(big_gap) << "Initial kinetic energy: " << std::right << std::setw(med_gap)
         << initial_kin_E_ << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap)
         << "Final kinetic energy: " << std::right << std::setw(med_gap) << final_kin_E_ << std::setw(small_gap)
