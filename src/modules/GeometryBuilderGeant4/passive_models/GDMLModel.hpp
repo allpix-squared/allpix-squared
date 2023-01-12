@@ -96,8 +96,13 @@ namespace allpix {
 
                 // Add offset and rotation to current daughter location
                 G4ThreeVector position_vector = toG4Vector(position_);
-                auto* rotation_matrix = new G4RotationMatrix(*gdml_daughter->GetRotation() * *rotation_);
-                gdml_daughter->SetTranslation(gdml_daughter->GetTranslation() + position_vector);
+                auto* daughter_rotation = gdml_daughter->GetRotation();
+                // It seems that in the case of a trivial rotation the daughter_rotation can be a nullptr
+                auto* rotation_matrix =
+                    ((daughter_rotation != nullptr) ? new G4RotationMatrix(*daughter_rotation * *rotation_)
+                                                    : new G4RotationMatrix(*rotation_));
+                LOG(TRACE) << "Rotation matrix: " << *rotation_matrix;
+                gdml_daughter->SetTranslation((rotation_->inverse()) * gdml_daughter->GetTranslation() + position_vector);
                 gdml_daughter->SetRotation(rotation_matrix);
 
                 // Check if color information is available and set it to the daughter volume
