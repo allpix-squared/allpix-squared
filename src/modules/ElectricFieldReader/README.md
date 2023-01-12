@@ -12,11 +12,11 @@ The reader provides the following models for electric fields:
   If the sensor is depleted from the implant side, the absolute value of the electric field is calculated using the formula
 
     ```math
-  E(z) = \frac{|U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( 1- \frac{z}{d} \right),
+    E(z) = \frac{|U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( 1- \frac{z}{d} \right),
     ```
     where d is the thickness of the sensor, and $`U_{depl}`$, $`U_{bias}`$ are the depletion and bias voltages, respectively. In case of a depletion from the back side, the absolute value of the electric field is calculated as
     ```math
-  E(z) = \frac{|U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( \frac{z}{d} \right).
+    E(z) = \frac{|U_{bias}| - |U_{depl}|}{d} + 2 \frac{|U_{depl}|}{d}\left( \frac{z}{d} \right).
     ```
 * For **parabolic** electric fields, a parabola is defined in order to emulate a double-peaked field such as the electric fields observed in sensors after irradiation. The parabola is calculated from the position $`z_{min}`$ and value $`E_{min}`$ of the minimum field in the sensor and the field value at the readout electrode, $`E_{max}`$. The parameters of parabolic equation $`E(z) = az^2 + bz + c`$ then resolve to:
     ```math
