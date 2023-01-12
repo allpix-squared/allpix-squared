@@ -29,6 +29,10 @@ Some models include temperature-dependent scaling of trapping probabilities, and
 The trapping probability is calculated at each step of the propagation by drawing a random number from an uniform distribution with $`0 \leq r \leq 1`$ and comparing it to the expression $`1 - e^{-dt/\tau_{eff}}`$, where $`dt`$ is the time step of the last charge carrier movement and $`\tau_{eff}`$ the effective trapping time constant.
 A list of available models can be found in the user manual.
 
+Detrapping of charge carriers can be enabled by setting a detrapping model via the parameter `detrapping_model`.
+The default value is `none`, corresponding to no charge carrier detrapping being simulated.
+A list of available models can be found in the user manual.
+
 The propagation module also produces a variety of output plots. These include a 3D line plot of the path of all separately propagated charge carrier sets from their point of deposition to the end of their drift, with nearby paths having different colors. In this coloring scheme, electrons are marked in blue colors, while holes are presented in different shades of orange.
 In addition, a 3D GIF animation for the drift of all individual sets of charges (with the size of the point proportional to the number of charges in the set) can be produced. Finally, the module produces 2D contour animations in all the planes normal to the X, Y and Z axis, showing the concentration flow in the sensor.
 It should be noted that generating the animations is very time-consuming and should be switched off even when investigating drift behavior.
@@ -43,6 +47,7 @@ This module requires an installation of Eigen3.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
 * `trapping_model`: Model for simulating charge carrier trapping from radiation-induced damage. Defaults to `none`, a list of available models can be found in the documentation. All models require explicitly setting a fluence parameter.
 * `fluence`: 1MeV-neutron equivalent fluence the sensor has been exposed to.
+* `detrapping_model`: Model for simulating charge carrier detrapping from radiation-induced damage. Defaults to `none`, a list of available models can be found in the documentation.
 * `charge_per_step` : Maximum number of charge carriers to propagate together. Divides the total number of deposited charge carriers at a specific point into sets of this number of charge carriers and a set with the remaining charge carriers. A value of 10 charges per step is used by default if this value is not specified.
 * `max_charge_groups`: Maximum number of charge groups to propagate from a single deposit point. Temporarily increases the value of `charge_per_step` to reduce the number of propagated groups if the deposit is larger than the value `max_charge_groups`*`charge_per_step`, thus reducing the negative performance impact of unexpectedly large deposits. If it is set to 0, there is no upper limit on the number of charge groups propagated. The default value is 0 charge groups.
 * `spatial_precision` : Spatial precision to aim for. The timestep of the Runge-Kutta propagation is adjusted to reach this spatial precision after calculating the uncertainty from the fifth-order error method. Defaults to 0.25nm.

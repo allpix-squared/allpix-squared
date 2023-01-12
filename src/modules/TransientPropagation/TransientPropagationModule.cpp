@@ -50,6 +50,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<std::string>("mobility_model", "jacoboni");
     config_.setDefault<std::string>("recombination_model", "none");
     config_.setDefault<std::string>("trapping_model", "none");
+    config_.setDefault<std::string>("detrapping_model", "none");
 
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<bool>("output_plots", false);
@@ -103,6 +104,9 @@ void TransientPropagationModule::initialize() {
 
     // Prepare trapping model
     trapping_ = Trapping(config_);
+
+    // Prepare detrapping model
+    detrapping_ = Detrapping(config_);
 
     // Check for magnetic field
     has_magnetic_field_ = detector->hasMagneticField();
@@ -223,8 +227,25 @@ void TransientPropagationModule::initialize() {
                                   100,
                                   0,
                                   1);
+        recombination_time_histo_ =
+            CreateHistogram<TH1D>("recombination_time_histo",
+                                  "Time until recombination of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
         trapped_histo_ = CreateHistogram<TH1D>(
             "trapping_histo", "Fraction of trapped charge carriers;trapping [N / N_{total}] ;number of events", 100, 0, 1);
+        trapping_time_histo_ = CreateHistogram<TH1D>("trapping_time_histo",
+                                                     "Local time of trapping of charge carriers;time [ns];charge carriers",
+                                                     static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                                     0,
+                                                     static_cast<double>(Units::convert(integration_time_, "ns")));
+        detrapping_time_histo_ =
+            CreateHistogram<TH1D>("detrapping_time_histo",
+                                  "Time from trapping until detrapping of charge carriers;time [ns];charge carriers",
+                                  static_cast<int>(Units::convert(integration_time_, "ns") * 5),
+                                  0,
+                                  static_cast<double>(Units::convert(integration_time_, "ns")));
     }
 }
 
@@ -293,12 +314,15 @@ void TransientPropagationModule::run(Event* event) {
 
             propagated_charges.push_back(std::move(propagated_charge));
 
-            if(alive) {
-                propagated_charges_count += charge_per_step;
+            if(!alive) {
+                recombined_charges_count += charge_per_step;
+                if(output_plots_) {
+                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
+                }
             } else if(trapped) {
                 trapped_charges_count += charge_per_step;
             } else {
-                recombined_charges_count += charge_per_step;
+                propagated_charges_count += charge_per_step;
             }
 
             if(output_plots_) {
@@ -350,7 +374,7 @@ TransientPropagationModule::propagate(Event* event,
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> survival(0, 1);
+    allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
     std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
@@ -417,16 +441,24 @@ TransientPropagationModule::propagate(Event* event,
         // Check if charge carrier is still alive:
         is_alive = !recombination_(type,
                                    detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                                   survival(event->getRandomEngine()),
+                                   uniform_distribution(event->getRandomEngine()),
                                    timestep_);
 
         // Check if the charge carrier has been trapped:
-        auto [trapped, traptime] = trapping_(type, survival(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()));
-        if(trapped) {
-            if((initial_time + runge_kutta.getTime() + traptime) < integration_time_) {
+        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+            if(output_plots_) {
+                trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
+            }
+
+            auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
+            if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 // De-trap and advance in time if still below integration time
-                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(traptime, {"ns", "us"});
-                runge_kutta.advanceTime(traptime);
+                LOG(TRACE) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
+                runge_kutta.advanceTime(detrap_time);
+
+                if(output_plots_) {
+                    detrapping_time_histo_->Fill(static_cast<double>(Units::convert(detrap_time, "ns")), charge);
+                }
             } else {
                 // Mark as trapped otherwise
                 is_trapped = true;
