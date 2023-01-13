@@ -14,7 +14,7 @@ This module simulates cosmic ray particle shower distributions and their energy 
 The cosmic ray particle showers are simulated using the Cosmic-ray shower generator (CRY) \[[@cry]\], the generated particles are transported through the setup by Geant4.
 More detailed information about CRY can be found in its physics description \[[@cryphysics]\] and user manual \[[@crymanual]\].
 
-This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there.
+This module inherits functionality from the *DepositionGeant4* module and several of its parameters have their origin there.
 A detailed description of these configuration parameters can be found in the respective module documentation.
 The parameter `number_of_particles` here refers to full shower developments instead of individual particles, there can be multiple particles per shower.
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy \[[@chargecreation]\], fluctuations are modeled using a Fano factor assuming Gaussian statistics \[[@fano]\].
