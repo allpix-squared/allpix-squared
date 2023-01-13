@@ -16,7 +16,7 @@ The different file formats can be selected via the `model` parameter, the path t
 
 Events are read consecutively from the generator event data and event number are matched. This means that the event with number 5 in Allpix Squared will contain the data from event number 5 of the generator data file. If events are missing in the generator data, no primary particles are generated in Allpix Squared and the event remains empty.
 
-This module inherits functionality from the DepositionGeant4 modules and several of its parameters have their origin there.
+This module inherits functionality from the *DepositionGeant4* module and several of its parameters have their origin there.
 A detailed description of these configuration parameters can be found in the respective module documentation.
 The number of electron/hole pairs created by a given energy deposition is calculated using the mean pair creation energy [@chargecreation], fluctuations are modeled using a Fano factor assuming Gaussian statistics [@fano].
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
