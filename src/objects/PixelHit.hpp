@@ -50,13 +50,13 @@ namespace allpix {
          * @brief Get the pixel hit
          * @return Pixel indices in the grid
          */
-        const Pixel& getPixel() const { return pixel_; }
+        const Pixel& getPixel() const;
 
         /**
          * @brief Shortcut to retrieve the pixel indices
          * @return Index of the pixel
          */
-        Pixel::Index getIndex() const { return getPixel().getIndex(); }
+        Pixel::Index getIndex() const;
 
         /**
          * @brief Get the timing data of the hit in the global reference frame
