@@ -53,6 +53,8 @@ If a new tag is pushed to the project repository, the CI in the project reposito
 repository. This pipeline clones the project repository to get the Markdown documentation, generates the HTML with hugo and
 deploys it. This setup allows to update information on the website without pushing a new tag to the project repository.
 
+For more information on the documentation, see `doc/README.md` in the project repository \[[@ap2-repo]\].
+
 
 [@cvmfs]: https://pos.sissa.it/070/052/
 [@ap2-repo]: https://gitlab.cern.ch/allpix-squared/allpix-squared
