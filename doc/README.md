@@ -107,7 +107,7 @@ also means that explicit backticks (like `` $` `` or `` ```math ``) can't be use
 You can easily test the website of the documentation with your changes yourself by running:
 ```shell
 git clone --recurse-submodules https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
-APSQ_REPO=your_user_name/allpix-squared APSQ_REF=branch_name ./get_artifacts.sh
+./get_artifacts.sh ref your_branch_name your_cern_user_name/allpix-squared
 hugo server
 ```
 
