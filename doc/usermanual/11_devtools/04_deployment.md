@@ -29,27 +29,35 @@ the tarball releases and publishes them to the CLICdp experiment CVMFS space, th
 be found in `.gitlab/ci/gitlab_deployment.sh`. This job requires a private API token to be set as secret project variable
 through the GitLab interface, currently this token belongs to the service account user `ap2`.
 
-### Documentation deployment to EOS
+### Documentation deployment
 
-The project documentation is deployed to the project's EOS space at `/eos/project/a/allpix-squared/www/` for publication on
-the project website. This comprises both the PDF and HTML versions of the user manual (subdirectory `usermanual`) as well as
-the Doxygen code reference (subdirectory `reference/`). The documentation is only published for new tagged versions of the
-framework.
+The documentation is provided as an online version and a PDF. Both get generated from the Markdown \[[@markdown]\]
+documentation found in the project repository \[[@ap2-repo]\]. For the PDF the plain Markdown documentation is converted via
+pandoc \[[@pandoc]\] and a Python script adjusting to the LaTeX for the PDF.
+
+The CI deploys the PDF on CERN's EOS at `/eos/project/a/allpix-squared/www/usermanual/`. The PDF documentation is published
+for new tagged versions of the framework and for nightlies (version `latest`). The version number is attached to the file
+name so that the [website](https://project-allpix-squared.web.cern.ch/usermanual/) contains the usermanual for all versions.
 
 The CI jobs uses the `ci-web-deployer` Docker image from the CERN GitLab CI tools to access EOS, which requires a specific
 file structure of the artifact. All files in the artifact's `public/` folder will be published to the `www/` folder of the
 given project. This job requires the secret project variables `EOS_ACCOUNT_USERNAME` and `EOS_ACCOUNT_PASSWORD` to be set via
 the GitLab web interface. Currently, this uses the credentials of the service account user `ap2`.
 
-### Release tarball deployment to EOS
+The online version of the documentation is included in the project's website, which uses hugo \[[@hugo]\] to generate HTML
+from Markdown. The project website is hosted in its own repositroy \[[@ap2-website-repo]\] and deployed directly from the CI
+via [GitLab Pages](https://docs.gitlab.com/ee/user/project/pages/) (see also
+[how-to.docs.cern.ch](https://how-to.docs.cern.ch/)).
 
-Binary release tarballs are deployed to EOS to serve as downloads from the website to the directory
-`/eos/project/a/allpix-squared/www/releases`. New tarballs are produced for every tag as well as for nightly builds of the
-`master` branch, which are deployed with the name `allpix-squared-latest-<system-tag>-opt.tar.gz`.
+If a new tag is pushed to the project repository, the CI in the project repository triggers a CI pipeline in the website
+repository. This pipeline clones the project repository to get the Markdown documentation, generates the HTML with hugo and
+deploys it. This setup allows to update information on the website without pushing a new tag to the project repository.
 
-The files are taken from the packaging jobs and published via the `ci-web-deployer` Docker image from the CERN GitLab CI
-tools. This job requires the secret project variables `EOS_ACCOUNT_USERNAME` and `EOS_ACCOUNT_PASSWORD` to be set via the
-GitLab web interface. Currently, this uses the credentials of the service account user `ap2`.
+For more information on the documentation, see `doc/README.md` in the project repository \[[@ap2-repo]\].
 
 
 [@cvmfs]: https://pos.sissa.it/070/052/
+[@ap2-repo]: https://gitlab.cern.ch/allpix-squared/allpix-squared
+[@markdown]: https://docs.gitlab.com/ee/user/markdown.html
+[@ap2-website-repo]: https://gitlab.cern.ch/allpix-squared/allpix-squared-website/
+[@hugo]: https://gohugo.io/

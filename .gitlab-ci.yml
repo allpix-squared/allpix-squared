@@ -565,10 +565,6 @@ deploy:eos:
         - schedules@allpix-squared/allpix-squared
     dependencies:
         - docs:usermanual-pdf
-        - pkg:cc7-gcc
-        - pkg:cc7-llvm
-        - pkg:cc8-gcc
-        - pkg:macos-clang
     # Docker image with tools to deploy to EOS
     image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
