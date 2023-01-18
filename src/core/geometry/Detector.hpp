@@ -58,24 +58,24 @@ namespace allpix {
          * @brief Get name of the detector
          * @return Detector name
          */
-        std::string getName() const;
+        const std::string& getName() const { return name_; }
 
         /**
          * @brief Get type of the detector
          * @return Type of the detector model
          */
-        std::string getType() const;
+        const std::string& getType() const { return model_->getType(); }
 
         /**
          * @brief Get position in the world
          * @return Global position in Cartesian coordinates
          */
-        ROOT::Math::XYZPoint getPosition() const;
+        const ROOT::Math::XYZPoint& getPosition() const { return position_; }
         /**
          * @brief Get orientation in the world
          * @return Rotation matrix representing the orientation
          */
-        ROOT::Math::Rotation3D getOrientation() const;
+        const ROOT::Math::Rotation3D& getOrientation() const { return orientation_; }
 
         /**
          * @brief Convert a global position to a position in the detector frame
@@ -106,12 +106,13 @@ namespace allpix {
          * @brief Returns if the detector has an electric field in the sensor
          * @return True if the detector has an electric field, false otherwise
          */
-        bool hasElectricField() const;
+        bool hasElectricField() const { return electric_field_.isValid(); }
         /**
          * @brief Return the type of electric field that is simulated.
+         * @note The type of the electric field is set depending on the function used to apply it
          * @return The type of the electric field
          */
-        FieldType getElectricFieldType() const;
+        FieldType getElectricFieldType() const { return electric_field_.getType(); }
         /**
          * @brief Get the electric field in the sensor at a local position
          * @param local_pos Position in the local frame
@@ -150,12 +151,13 @@ namespace allpix {
          * @brief Returns if the detector has a doping profile in the sensor
          * @return True if the detector has a doping profile, false otherwise
          */
-        bool hasDopingProfile() const;
+        bool hasDopingProfile() const { return doping_profile_.isValid(); }
         /**
          * @brief Return the type of doping profile that is simulated.
+         * @note The type of the doping profile is set depending on the function used to apply it
          * @return The type of the doping profile
          */
-        FieldType getDopingProfileType() const;
+        FieldType getDopingProfileType() const { return doping_profile_.getType(); }
         /**
          * @brief Get the doping profile in the sensor at a local position
          * @param pos Position in the local frame
@@ -191,12 +193,13 @@ namespace allpix {
          * @brief Returns if the detector has a weighting potential in the sensor
          * @return True if the detector has a weighting potential, false otherwise
          */
-        bool hasWeightingPotential() const;
+        bool hasWeightingPotential() const { return weighting_potential_.isValid(); }
         /**
          * @brief Return the type of weighting potential that is simulated.
+         * @note The type of the weighting potential is set depending on the function used to apply it
          * @return The type of the weighting potential
          */
-        FieldType getWeightingPotentialType() const;
+        FieldType getWeightingPotentialType() const { return weighting_potential_.getType(); }
 
         /**
          * @brief Get the weighting potential in the sensor at a local position
@@ -243,7 +246,7 @@ namespace allpix {
          * @brief Returns if the detector has a magnetic field in the sensor
          * @return True if the detector has an magnetic field, false otherwise
          */
-        bool hasMagneticField() const;
+        bool hasMagneticField() const { return magnetic_field_on_; }
         /**
          * @brief Get the magnetic field in the sensor at a local position
          * @param local_pos Position in the local frame
@@ -255,7 +258,7 @@ namespace allpix {
          * @brief Get the model of this detector
          * @return Pointer to the constant detector model
          */
-        const std::shared_ptr<DetectorModel> getModel() const;
+        const std::shared_ptr<DetectorModel> getModel() const { return model_; }
 
     private:
         /**

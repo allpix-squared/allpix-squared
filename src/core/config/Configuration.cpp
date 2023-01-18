@@ -62,13 +62,6 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
     return found;
 }
 
-std::string Configuration::getName() const {
-    return name_;
-}
-std::filesystem::path Configuration::getFilePath() const {
-    return path_;
-}
-
 std::string Configuration::getText(const std::string& key) const {
     try {
         // NOTE: returning literally including ""
@@ -175,10 +168,6 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
     if(warn) {
         LOG(WARNING) << "Parameter \"" << old_key << "\" is deprecated and superseded by \"" << new_key << "\"";
     }
-}
-
-unsigned int Configuration::countSettings() const {
-    return static_cast<unsigned int>(config_.size());
 }
 
 /**

@@ -46,7 +46,7 @@ namespace allpix {
          * @brief Get detector bound to this message
          * @return Linked detector
          */
-        std::shared_ptr<const Detector> getDetector() const;
+        std::shared_ptr<const Detector> getDetector() const { return detector_; }
 
         /**
          * @brief Get list of objects stored in this message if possible

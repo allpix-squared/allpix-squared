@@ -72,13 +72,13 @@ namespace allpix {
          * @brief return name of this volume
          * @return Volume name
          */
-        std::string getName() const { return name_; }
+        const std::string& getName() const { return name_; }
 
         /**
          * @brief return name of the mother volume or an empty string of none is set
          * @return Mother volume
          */
-        std::string getMotherVolume() const { return mother_volume_; }
+        const std::string& getMotherVolume() const { return mother_volume_; }
 
     protected:
         /**

@@ -337,7 +337,7 @@ namespace allpix {
          *     if(model->is<MyModel>()) { }
          * @return Boolean indication whether this model is of the given type or not
          */
-        template <class T> bool is() { return dynamic_cast<T*>(model_.get()) != nullptr; }
+        template <class T> bool is() const { return dynamic_cast<T*>(model_.get()) != nullptr; }
 
     private:
         std::unique_ptr<ImpactIonizationModel> model_{};

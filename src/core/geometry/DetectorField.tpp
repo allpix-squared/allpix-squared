@@ -204,11 +204,6 @@ namespace allpix {
     }
 
     /**
-     * The type of the field is set depending on the function used to apply it.
-     */
-    template <typename T, size_t N> FieldType DetectorField<T, N>::getType() const { return type_; }
-
-    /**
      * @throws std::invalid_argument If the field bins are incorrect or the thickness domain is outside the sensor
      */
     template <typename T, size_t N>

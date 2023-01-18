@@ -283,20 +283,20 @@ namespace allpix {
          * @brief Return total number of key / value pairs
          * @return Number of settings
          */
-        unsigned int countSettings() const;
+        unsigned int countSettings() const { return static_cast<unsigned int>(config_.size()); }
 
         /**
          * @brief Get name of the configuration header
          * @return Configuration name
          */
-        std::string getName() const;
+        const std::string& getName() const { return name_; }
 
         /**
          * @brief Get path to the file containing the configuration if it has one
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file
          */
-        std::filesystem::path getFilePath() const;
+        std::filesystem::path getFilePath() const { return path_; }
 
         /**
          * @brief Merge other configuration, only adding keys that are not yet defined in this configuration
