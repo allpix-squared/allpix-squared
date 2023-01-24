@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # Generate some example HepMC3 files in ROOT Tree or ASCII format
