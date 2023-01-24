@@ -95,8 +95,10 @@ namespace allpix {
         /**
          * @brief Get the detector linked to this module
          * @return Linked detector or a null pointer if this is an unique module
+         *
+         * Detector modules always have a linked detector and unique modules are guaranteed not to have one.
          */
-        std::shared_ptr<Detector> getDetector() const;
+        std::shared_ptr<Detector> getDetector() const { return detector_; }
 
         /**
          * @brief Get the unique name of this module
@@ -134,7 +136,7 @@ namespace allpix {
          * @brief Returns if multithreading of this module is enabled
          * @return True if multithreading is enabled, false otherwise (the default)
          */
-        bool multithreadingEnabled() const;
+        bool multithreadingEnabled() const { return multithreading_; }
 
         /**
          * @brief Initialize the module for each thread after the global initialization
@@ -179,13 +181,13 @@ namespace allpix {
         /**
          * @brief Enable multithreading for this module
          */
-        void allow_multithreading();
+        void allow_multithreading() { set_multithreading(true); }
 
         /**
          * @brief Get the module configuration for internal use
          * @return Configuration of the module
          */
-        Configuration& get_configuration();
+        Configuration& get_configuration() { return config_; }
         Configuration& config_;
 
     private:
@@ -193,12 +195,12 @@ namespace allpix {
          * @brief Set the module identifier for internal use
          * @param identifier Identifier of the instantiation
          */
-        void set_identifier(ModuleIdentifier identifier);
+        void set_identifier(ModuleIdentifier identifier) { identifier_ = std::move(identifier); }
         /**
          * @brief Get the module identifier for internal use
          * @return Identifier of the instantiation
          */
-        ModuleIdentifier get_identifier() const;
+        ModuleIdentifier get_identifier() const { return identifier_; }
         ModuleIdentifier identifier_;
 
         /**
@@ -241,7 +243,7 @@ namespace allpix {
         /**
          * @brief Sets the multithreading flag
          */
-        void set_multithreading(bool multithreading);
+        void set_multithreading(bool multithreading) { multithreading_ = multithreading; }
         bool multithreading_{false};
 
         /**

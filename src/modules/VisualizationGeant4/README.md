@@ -46,6 +46,7 @@ This module requires an installation of Geant4.
 * `macro_init` : Optional Geant4 macro to execute during initialization. Whenever possible, the configuration parameters above should be used instead of this option.
 * `display_limit` : Sets the `displayListLimit` of the visualization GUI, in case the geometry which has to be loaded is too complex for the GUI to be displayed with the current size Display List. Defaults to 1000000.
 * `line_segments` : Sets the number of line segments to approximate a circle with. This parameter can be used when simulating radial detectors to visualize their curved edges with more precision. Defaults to 250.
+* `viewpoint_thetaphi` : Sets the theta and phi angles for the viewpoint. Defaults to -70deg 20deg.
 
 ## Usage
 An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:

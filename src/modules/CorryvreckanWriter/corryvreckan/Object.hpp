@@ -52,8 +52,8 @@ namespace corryvreckan {
         ~Object() override;
 
         // Methods to get member variables
-        std::string getDetectorID() const { return m_detectorID; }
-        std::string detectorID() const { return getDetectorID(); }
+        const std::string& getDetectorID() const { return m_detectorID; }
+        const std::string& detectorID() const { return getDetectorID(); }
 
         double timestamp() const { return m_timestamp; }
         void timestamp(double time) { m_timestamp = time; }

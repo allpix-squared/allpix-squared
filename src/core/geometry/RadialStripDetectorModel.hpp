@@ -116,7 +116,7 @@ namespace allpix {
          *  radius of the first row, the last element is the outer radius of the last row (virtually
          *  the inner radius of the nonexistent (N+1)-th row).
          */
-        std::vector<double> getRowRadii() { return row_radius_; }
+        const std::vector<double>& getRowRadii() const { return row_radius_; }
 
         /**
          * @brief Get the radius of the sensor center

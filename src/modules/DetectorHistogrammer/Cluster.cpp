@@ -74,13 +74,6 @@ std::pair<unsigned int, unsigned int> Cluster::getSizeXY() const {
     return sizes;
 }
 
-/**
- * MCParticles can only be fetched if the full history of objects are in scope and stored
- */
-std::set<const MCParticle*> Cluster::getMCParticles() const {
-    return mc_particles_;
-}
-
 const PixelHit* Cluster::getPixelHit(int x, int y) const {
     for(const auto& pixel : this->getPixelHits()) {
         if(pixel->getPixel().getIndex().x() == x && pixel->getPixel().getIndex().y() == y) {

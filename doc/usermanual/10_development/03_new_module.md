@@ -159,6 +159,8 @@ and should contain at least the following sections:
 - An H2-size section with the title **Usage** which should contain at least one simple example of a valid configuration for
   the module.
 
+For advances features in GLFM such as citations and formulae, see `doc/README.md` in the project repository \[[@ap2-repo]\].
+
 ### `<ModuleName>Module.hpp` and `<ModuleName>Module.cpp`
 
 All modules should consist of both a header file and a source file. In the header file, the module is defined together with

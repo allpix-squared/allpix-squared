@@ -200,7 +200,7 @@ namespace allpix {
          * @brief Get the type of the model
          * @return Model type
          */
-        std::string getType() const { return type_; }
+        const std::string& getType() const { return type_; }
 
         const std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
 
@@ -254,7 +254,7 @@ namespace allpix {
          * @brief Get size of a single pixel
          * @return Size of a pixel
          */
-        ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
+        const ROOT::Math::XYVector& getPixelSize() const { return pixel_size_; }
         /**
          * @brief Get type of the pixels
          * @return TYpe of the pixels indicating their shape
@@ -328,7 +328,7 @@ namespace allpix {
          * @brief Get the material of the sensor
          * @return Material of the sensor
          */
-        SensorMaterial getSensorMaterial() { return sensor_material_; }
+        SensorMaterial getSensorMaterial() const { return sensor_material_; }
         /**
          * @brief Set the thickness of the sensor
          * @param val Thickness of the sensor

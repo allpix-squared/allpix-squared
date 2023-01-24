@@ -76,24 +76,6 @@ void Detector::build_transform() {
     transform_ = transform_center * transform_local.Inverse();
 }
 
-std::string Detector::getName() const {
-    return name_;
-}
-std::string Detector::getType() const {
-    return model_->getType();
-}
-
-const std::shared_ptr<DetectorModel> Detector::getModel() const {
-    return model_;
-}
-
-ROOT::Math::XYZPoint Detector::getPosition() const {
-    return position_;
-}
-ROOT::Math::Rotation3D Detector::getOrientation() const {
-    return orientation_;
-}
-
 /**
  * @warning The local coordinate position does normally not have its origin at the center of rotation
  *
@@ -131,23 +113,8 @@ Pixel Detector::getPixel(const Pixel::Index& index) const {
  * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the electric field is strictly zero by definition.
  */
-bool Detector::hasElectricField() const {
-    return electric_field_.isValid();
-}
-
-/**
- * The electric field is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
- * stage). Outside of the sensor the electric field is strictly zero by definition.
- */
 ROOT::Math::XYZVector Detector::getElectricField(const ROOT::Math::XYZPoint& local_pos) const {
     return electric_field_.get(local_pos);
-}
-
-/**
- * The type of the electric field is set depending on the function used to apply it.
- */
-FieldType Detector::getElectricFieldType() const {
-    return electric_field_.getType();
 }
 
 /**
@@ -170,10 +137,6 @@ void Detector::setElectricFieldFunction(FieldFunction<ROOT::Math::XYZVector> fun
     electric_field_.setFunction(std::move(function), thickness_domain, type);
 }
 
-bool Detector::hasWeightingPotential() const {
-    return weighting_potential_.isValid();
-}
-
 /**
  * The weighting potential is retrieved relative to a reference pixel. Outside of the sensor the weighting potential is
  * strictly zero by definition.
@@ -184,13 +147,6 @@ double Detector::getWeightingPotential(const ROOT::Math::XYZPoint& local_pos, co
     // Requiring to extrapolate the field along z because equilibrium means no change in weighting potential,
     // Without this, we would get large jumps close to the electrode once charge carriers cross the boundary.
     return weighting_potential_.getRelativeTo(local_pos, ref, true);
-}
-
-/**
- * The type of the weighting potential is set depending on the function used to apply it.
- */
-FieldType Detector::getWeightingPotentialType() const {
-    return weighting_potential_.getType();
 }
 
 /**
@@ -214,10 +170,6 @@ void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
     weighting_potential_.setFunction(std::move(function), thickness_domain, type);
 }
 
-bool Detector::hasMagneticField() const {
-    return magnetic_field_on_;
-}
-
 // TODO Currently the magnetic field in the detector is fixed to the field vector at it's center position. Change in case a
 // field gradient is needed inside the sensor.
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
@@ -236,24 +188,9 @@ ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint&) co
  * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
  * stage). Outside of the sensor the doping profile is strictly zero by definition.
  */
-bool Detector::hasDopingProfile() const {
-    return doping_profile_.isValid();
-}
-
-/**
- * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
- * stage). Outside of the sensor the doping profile is strictly zero by definition.
- */
 double Detector::getDopingConcentration(const ROOT::Math::XYZPoint& pos) const {
     // Extrapolate doping profile if outside defined field:
     return doping_profile_.get(pos, true);
-}
-
-/**
- * The type of the doping profile is set depending on the function used to apply it.
- */
-FieldType Detector::getDopingProfileType() const {
-    return doping_profile_.getType();
 }
 
 /**

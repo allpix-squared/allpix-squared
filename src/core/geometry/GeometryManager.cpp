@@ -133,16 +133,6 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 }
 
 /**
- * The default list of models to search for are in the following order
- * - The list of paths provided in the main configuration as model_paths
- * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
- * - The directories in XDG_DATA_DIRS with ALLPIX_PROJECT_NAME attached or /usr/share/:/usr/local/share if not defined
- */
-std::vector<std::string> GeometryManager::getModelsPath() {
-    return model_paths_;
-}
-
-/**
  * Returns the pre-calculated position and orientation of a passive element in global coordinates
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
@@ -276,9 +266,6 @@ bool GeometryManager::hasModel(const std::string& name) const {
     return model_names_.find(name) != model_names_.end();
 }
 
-std::vector<std::shared_ptr<DetectorModel>> GeometryManager::getModels() const {
-    return models_;
-}
 /**
  * @throws InvalidDetectorError If a model with this name does not exist
  */
@@ -368,10 +355,6 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     }
 
     return result;
-}
-
-std::list<Configuration>& GeometryManager::getPassiveElements() {
-    return passive_elements_;
 }
 
 void GeometryManager::load_models() {

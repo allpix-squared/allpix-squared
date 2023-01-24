@@ -365,10 +365,48 @@ ENDMACRO()
 
 # Enable Geant4 interface library requirement
 MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
+    SET(options REQUIRED)
+    SET(oneValueArgs "")
+    SET(multiValueArgs COMPONENTS)
+    CMAKE_PARSE_ARGUMENTS(GEANT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
     SET(ALLPIX_BUILD_GEANT4_INTERFACE
         "ON"
         CACHE BOOL "Build Geant4 interface library" FORCE)
     TARGET_LINK_LIBRARIES(${name} ${ALLPIX_GEANT4_INTERFACE})
+
+    IF(GEANT_REQUIRED)
+        FIND_PACKAGE(Geant4 REQUIRED COMPONENTS "${GEANT_COMPONENTS}")
+    ELSE()
+        FIND_PACKAGE(Geant4 COMPONENTS "${GEANT_COMPONENTS}")
+    ENDIF()
+    IF(NOT Geant4_FOUND)
+        MESSAGE(FATAL_ERROR "Could not find Geant4, make sure to source the Geant4 environment\n"
+                            "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
+    ENDIF()
+
+    # Add "geant4.sh" as runtime dependency for setup.sh file:
+    ADD_RUNTIME_DEP(geant4.sh)
+
+    # Add Geant4 flags before our own flags
+    ADD_DEFINITIONS(${Geant4_DEFINITIONS})
+    SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+    IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS}")
+    ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
+        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
+    ENDIF()
+
+    # Add GDML flag if supported
+    IF(Geant4_gdml_FOUND)
+        ADD_DEFINITIONS(-DGeant4_GDML)
+    ENDIF()
+
+    # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
+    TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+
+    # Add Geant4 libraries
+    TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
 ENDMACRO()
 
 # Macro to set up ROOT:: targets so that we can use the same code for root 6.8 and for root 6.10 and beyond

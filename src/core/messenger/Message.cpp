@@ -22,10 +22,6 @@ BaseMessage::BaseMessage() = default;
 BaseMessage::BaseMessage(std::shared_ptr<const Detector> detector) : detector_(std::move(detector)) {}
 BaseMessage::~BaseMessage() = default;
 
-std::shared_ptr<const Detector> BaseMessage::getDetector() const {
-    return detector_;
-}
-
 /**
  * @throws MessageWithoutObjectException If this method is not overridden
  *

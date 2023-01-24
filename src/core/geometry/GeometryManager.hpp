@@ -86,8 +86,13 @@ namespace allpix {
         /**
          * @brief Returns the list of standard paths where models should be searched in
          * @return List of absolute paths to file or directories that contain models
+         *
+         * The default list of models to search for are in the following order
+         * - The list of paths provided in the main configuration as model_paths
+         * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
+         * - The directories in XDG_DATA_DIRS attached by ALLPIX_PROJECT_NAME or /usr/share/:/usr/local/share if not defined
          */
-        std::vector<std::string> getModelsPath();
+        const std::vector<std::string>& getModelsPath() const { return model_paths_; }
 
         /**
          * @brief Returns the position and orientation for a passive element
@@ -143,7 +148,7 @@ namespace allpix {
          * @returns List of all models
          * @warning The models returned might not be used in the geometry
          */
-        std::vector<std::shared_ptr<DetectorModel>> getModels() const;
+        const std::vector<std::shared_ptr<DetectorModel>>& getModels() const { return models_; }
 
         /**
          * @brief Get a detector model by its name
@@ -246,13 +251,13 @@ namespace allpix {
          * @brief Get all names of external objects registered via setExternalObject
          * @return Set of names of external objects
          */
-        std::set<std::string> getExternalObjectNames() const { return external_object_names_; };
+        const std::set<std::string>& getExternalObjectNames() const { return external_object_names_; }
 
         /**
          * @brief Get the list of Configuration objects for all passive elements in the current geometry
          * @return List of Configuration objects for passive elements
          */
-        std::list<Configuration>& getPassiveElements();
+        const std::list<Configuration>& getPassiveElements() const { return passive_elements_; }
 
     private:
         /**

@@ -27,7 +27,7 @@ namespace mesh_converter {
         Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3){};
         Point(double py, double pz) noexcept : y(py), z(pz), dim(2){};
 
-        bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); };
+        bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); }
 
         double x{0}, y{0}, z{0};
         unsigned int dim{0};
@@ -177,7 +177,7 @@ namespace mesh_converter {
          * @brief Member to retrieve interpolated result from valid mesh element
          * @return Interpolated result from valid mesh element
          */
-        Point result() const { return result_; }
+        const Point& result() const { return result_; }
     };
 
 } // namespace mesh_converter

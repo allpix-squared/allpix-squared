@@ -8,8 +8,7 @@ weight: 1
 #### What is the easiest way to use Allpix Squared on CERN's LXPLUS?
 
 Central installations of Allpix Squared on LXPLUS are provided via CVMFS for both supported LXPLUS operating systems, CERN
-CentOS 7 and CentOS 8. Please refer to [Section 11.4](../11_devtools/04_deployment.md#software-deployment-to-cvmfs) for the
-details of how to access these installations.
+CentOS 7 and CentOS 8. Please refer to [Section 2.8](../02_installation/08_cvmfs.md) for the details of how to access these installations.
 
 #### What is the quickest way to get a local installation of Allpix Squared?
 

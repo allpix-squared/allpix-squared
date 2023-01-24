@@ -85,13 +85,6 @@ void ConfigManager::parse_detectors() {
 }
 
 /**
- * The global configuration is the combination of all sections with a global header.
- */
-Configuration& ConfigManager::getGlobalConfiguration() {
-    return global_config_;
-}
-
-/**
  * Load all extra options that should be added on top of the configuration in the file. The options loaded here are
  * automatically applied to the module instance when these are added later.
  */
@@ -140,12 +133,6 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
 }
 
 /**
- * All special global and ignored sections are not included in the list of module configurations.
- */
-std::list<Configuration>& ConfigManager::getModuleConfigurations() {
-    return module_configs_;
-}
-/**
  * The list of detector configurations is read from the configuration defined in 'detector_file'
  */
 std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
@@ -176,14 +163,6 @@ Configuration& ConfigManager::addInstanceConfiguration(const ModuleIdentifier& i
     // Apply instance options
     module_option_parser_.applyOptions(identifier.getUniqueName(), ret_config);
     return ret_config;
-}
-
-/**
- * The list of instance configurations can contain configurations with duplicate names, but the instance configuration is
- * guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config name
- */
-std::list<Configuration>& ConfigManager::getInstanceConfigurations() {
-    return instance_configs_;
 }
 
 /**

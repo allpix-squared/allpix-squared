@@ -198,19 +198,19 @@ namespace allpix {
          * @brief Get the lowest ID that is not completely processed yet
          * @return n Identifier that is not yet completed
          */
-        uint64_t minimumUncompleted() const;
+        uint64_t minimumUncompleted() const { return queue_.currentId(); }
 
         /**
          * @brief Return the total number of enqueued jobs
          * @return The number of enqueued jobs
          */
-        size_t queueSize() const;
+        size_t queueSize() const { return queue_.size(); }
 
         /**
          * @brief Return the number of jobs in buffered priority queue
          * @return The number of enqueued jobs in the buffered queue
          */
-        size_t bufferedQueueSize() const;
+        size_t bufferedQueueSize() const { return queue_.prioritySize(); }
 
         /**
          * @brief Check if any worker thread has thrown an exception
