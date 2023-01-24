@@ -176,7 +176,8 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     mcparticles.emplace_back(position, position_global, position, position_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
-    mcparticles.back().setTotalDepositedCharge(carriers_);
+    // Count electrons and holes:
+    mcparticles.back().setTotalDepositedCharge(2 * carriers_);
 
     charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
     charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
@@ -216,7 +217,8 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
                << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
-    mcparticles.back().setTotalDepositedCharge(charge);
+    // Count electrons and holes:
+    mcparticles.back().setTotalDepositedCharge(2 * charge);
 
     // Deposit the charge carriers:
     auto position_local = start_local;

@@ -347,7 +347,8 @@ void DepositionReaderModule::run(Event* event) {
 
             mc_particles.emplace_back(
                 start_local, start_global, end_local, end_global, pdg_code, time - time_reference, time);
-            mc_particles.back().setTotalDepositedCharge(mc_particle_charge[detector].at(i));
+            // Count electrons and holes:
+            mc_particles.back().setTotalDepositedCharge(2 * mc_particle_charge[detector].at(i));
         }
 
         for(size_t i = 0; i < mc_particle_size; i++) {

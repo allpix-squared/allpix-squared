@@ -188,7 +188,8 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto global_end = detector_->getGlobalPosition(local_end);
         mc_particles.emplace_back(
             local_begin, global_begin, local_end, global_end, pdg_code, track_time_local, track_time_global);
-        mc_particles.back().setTotalDepositedCharge(charge);
+        // Count electrons and holes:
+        mc_particles.back().setTotalDepositedCharge(2 * charge);
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
