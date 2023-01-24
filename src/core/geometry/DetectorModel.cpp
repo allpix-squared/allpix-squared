@@ -342,8 +342,9 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
         double C = 4 * pos.x() * pos.x() / size_.x() / size_.x() + 4 * pos.y() * pos.y() / size_.y() / size_.y() - 1;
         auto discriminant = B * B - 4 * A * C;
 
+        // No intersection with negative discriminant:
         if(discriminant < 0) {
-            throw std::invalid_argument("no intersection with volume boundaries found");
+            return std::nullopt;
         }
 
         auto t1 = (-B - std::sqrt(discriminant));
