@@ -65,13 +65,8 @@ and temporal distribution.
   shape will effectively stretch along its direction due to refraction and the actual focus will be further away from the
   source.
 * `beam_convergence_angle`: max angle between tracks and `beam_direction`. Needs to be specified for a `converging` beam.
-<<<<<<< HEAD
-* `output_plots`: if set `true`, this module will produce histograms to monitor beam shape and also 3D distributions of
-  charges, deposited in each detector. Histograms would look sensible even for one-event runs. Defaults to `false`.
-=======
 * `output_plots`: if set `true`, this module will produce histograms to monitor beam shape and also 3D distributions of charges, deposited in each detector. Histograms would look sensible even for one-event runs. Defaults to `false`.
 * `absorption_length` and `refractive_index`: if both are specified, they override corresponding values from the lookup table. This also allows use of sensor materials other than silicon.
->>>>>>> Laser: user optical properties in readme
 
 ## Usage
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
