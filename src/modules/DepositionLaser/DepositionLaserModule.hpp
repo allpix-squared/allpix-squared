@@ -133,6 +133,7 @@ namespace allpix {
         double absorption_length_;
         double refractive_index_;
         double pulse_duration_;
+        bool is_user_optics_;
 
         // Histograms
         bool output_plots_;
