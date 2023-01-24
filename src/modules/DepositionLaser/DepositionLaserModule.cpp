@@ -96,7 +96,56 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 }
 
 void DepositionLaserModule::initialize() {
+    // Check if there are user-specified optical properties for materials
+    is_user_optics_ = (config_.count({"absorption_length", "refractive_index"}) == 2);
+    if(is_user_optics_) {
+        absorption_length_ = config_.get<double>("absorption_length");
+        refractive_index_ = config_.get<double>("refractive_index");
+        LOG(DEBUG) << "Setting user-defined optical properties for sensor material";
+    } else {
+        // Load data
+        std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
+        std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
+        // wavelength: {absorption_length, refractive_index}
+        std::map<double, std::pair<double, double>> optics_lut;
+        double wl = 0;
+        double abs_length = 0;
+        double refr_ind = 0;
 
+        while(f >> wl >> abs_length >> refr_ind) {
+            optics_lut[Units::get(wl, "nm")] = {abs_length, refr_ind};
+        }
+
+        LOG(DEBUG) << "Loading optical properties for sensor material from LUT: " << laser_data_path;
+
+        // Find or interpolate absorption depth for given wavelength
+
+        if(optics_lut.count(wavelength_) != 0) {
+            absorption_length_ = optics_lut[wavelength_].first;
+            refractive_index_ = optics_lut[wavelength_].second;
+        } else {
+            auto it = optics_lut.upper_bound(wavelength_);
+            double wl1 = (*prev(it)).first;
+            double wl2 = (*it).first;
+            absorption_length_ =
+                (optics_lut[wl1].first * (wl2 - wavelength_) + optics_lut[wl2].first * (wavelength_ - wl1)) / (wl2 - wl1);
+            refractive_index_ =
+                (optics_lut[wl1].second * (wl2 - wavelength_) + optics_lut[wl2].second * (wavelength_ - wl1)) / (wl2 - wl1);
+        }
+    }
+    LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm")
+               << ", absorption length: " << Units::display(absorption_length_, {"um", "mm"})
+               << ", refractive index: " << refractive_index_;
+
+    // Check for unsupported detector materials, warn user if present
+
+    std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
+    for(auto& detector : detectors) {
+        auto material = detector->getModel()->getSensorMaterial();
+        if(material != SensorMaterial::SILICON && !is_user_optics_) {
+            LOG(WARNING) << "Detector " << detector->getName() << " has unsupported material and will be ignored";
+        }
+    }
     // Check for incompatible passive objects, warn user if there are any
     auto passive_configs = geo_manager_->getPassiveElements();
     for(const auto& item : passive_configs) {
@@ -105,42 +154,6 @@ void DepositionLaserModule::initialize() {
             LOG(WARNING) << item.getName() << " passive object has unsupported type (" << shape << ") and will be ignored";
         }
     }
-
-    // Load data
-    std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
-
-    std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
-
-    // wavelength: {absorption_length, refractive_index}
-    std::map<double, std::pair<double, double>> optics_lut;
-    double wl = 0;
-    double abs_length = 0;
-    double refr_ind = 0;
-
-    while(f >> wl >> abs_length >> refr_ind) {
-        optics_lut[Units::get(wl, "nm")] = {abs_length, refr_ind};
-    }
-
-    LOG(DEBUG) << "Loading absorption data: " << laser_data_path;
-
-    // Find or interpolate absorption depth for given wavelength
-
-    if(optics_lut.count(wavelength_) != 0) {
-        absorption_length_ = optics_lut[wavelength_].first;
-        refractive_index_ = optics_lut[wavelength_].second;
-    } else {
-        auto it = optics_lut.upper_bound(wavelength_);
-        double wl1 = (*prev(it)).first;
-        double wl2 = (*it).first;
-        absorption_length_ =
-            (optics_lut[wl1].first * (wl2 - wavelength_) + optics_lut[wl2].first * (wavelength_ - wl1)) / (wl2 - wl1);
-        refractive_index_ =
-            (optics_lut[wl1].second * (wl2 - wavelength_) + optics_lut[wl2].second * (wavelength_ - wl1)) / (wl2 - wl1);
-    }
-
-    LOG(DEBUG) << "Wavelength = " << Units::display(wavelength_, "nm")
-               << ", absorption length: " << Units::display(absorption_length_, {"um", "mm"})
-               << ", refractive index: " << refractive_index_;
 
     // Create Histograms
     if(output_plots_) {
@@ -179,7 +192,6 @@ void DepositionLaserModule::initialize() {
         h_pulse_shape_ =
             CreateHistogram<TH1D>("pulse_shape", "Phi_distribution w.r.t. beam direction", nbins, 0, 8 * pulse_duration_);
 
-        std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
         for(const auto& detector : detectors) {
             std::string name = "dep_charge_" + detector->getName();
             auto sensor = detector->getModel()->getSensorSize();
@@ -473,6 +485,9 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
     std::vector<std::pair<std::shared_ptr<Detector>, std::pair<double, double>>> intersection_segments;
 
     for(auto& detector : detectors) {
+        if(detector->getModel()->getSensorMaterial() != SensorMaterial::SILICON && !is_user_optics_) {
+            continue;
+        }
         auto intersection = intersect_with_sensor(detector, position, direction);
         if(intersection) {
             intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));

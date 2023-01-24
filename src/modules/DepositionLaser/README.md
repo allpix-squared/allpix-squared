@@ -10,13 +10,12 @@ module_output: "DepositedCharge, MCParticle"
 
 ## Description
 
-This deposition generator is intended for simulations of laser-TCT experiments.
-It generates charge, deposited by absorption of a laser pulse in silicon bulk.
-This module is not dependent on Geant4. Instead, it implements tracking algorithms and simulations of corresponding physical
-phenomena by its own, using internal Allpix geometry.
+This deposition generator is mostly intended for simulations of laser-TCT experiments.
+It generates charge, deposited by absorption of a laser pulse in detector bulk.
+This module is not dependent on Geant4. Instead, it implements tracking algorithms and simulations of corresponding physical phenomena by its own, using internal Allpix geometry.
 
-Current implementation assumes that the laser pulse is a bunch of point-like photons, each traveling in a straight line. A
-lookup table \[[@optical_properties]\] is used to determine absorption and refraction coefficients for a given wavelength.
+Current implementation assumes that the laser pulse is a bunch of point-like photons, each traveling in a straight line. A lookup table \[[@optical_properties]\] is used to determine absorption and refraction coefficients in silicon for a given wavelength.
+The only supported sensor material is silicon, unless optical properties are explicitly set (see *Parameters*).
 
 Multiple photons are produced in *one* event, thus a *single* event models a *single* laser pulse.
 
@@ -66,8 +65,8 @@ and temporal distribution.
   shape will effectively stretch along its direction due to refraction and the actual focus will be further away from the
   source.
 * `beam_convergence_angle`: max angle between tracks and `beam_direction`. Needs to be specified for a `converging` beam.
-* `output_plots`: if set `true`, this module will produce histograms to monitor beam shape and also 3D distributions of
-  charges, deposited in each detector. Histograms would look sensible even for one-event runs. Defaults to `false`.
+* `output_plots`: if set `true`, this module will produce histograms to monitor beam shape and also 3D distributions of charges, deposited in each detector. Histograms would look sensible even for one-event runs. Defaults to `false`.
+* `absorption_length` and `refractive_index`: if both are specified, they override corresponding values from the lookup table. This also allows use of sensor materials other than silicon.
 
 ## Usage
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
