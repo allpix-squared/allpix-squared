@@ -167,12 +167,6 @@ Implants allow for the following parameters:
   2D values in the x-y plane, defining the offset of the implant from the center of the pixel cell. This parameter is
   optional and defaults to $`0, 0`$, i.e. a position at the pixel center be default.
 
-- `material`:
-  The material of this implant. Defaults to silicon. It should be noted that Allpix Squared does not provide a set of
-  materials to choose from; it is up to the modules using this parameter to implement the materials such that they can use it.
-  [Chapter 7](../07_modules/_index.md) provides details about the materials supported by the geometry builder module
-  `GeometryBuilderGeant4`.
-
 
 ### Support Layers
 

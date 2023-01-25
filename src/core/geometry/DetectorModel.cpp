@@ -86,7 +86,6 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         auto size = implant_config.get<XYZVector>("size");
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto orientation = implant_config.get<double>("orientation", 0.);
-        auto material = implant_config.get<std::string>("material", "silicon");
 
         // if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
         // throw InvalidValueError(implant_config, "size", "implant size cannot be larger than pixel pitch");
@@ -101,7 +100,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         // throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
         // }
 
-        addImplant(imtype, shape, size, offset, orientation, material);
+        addImplant(imtype, shape, size, offset, orientation);
     }
 
     // Read support layers
@@ -136,13 +135,11 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                const Implant::Shape& shape,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
-                               double orientation,
-                               std::string material) {
+                               double orientation) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(
-        Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(material)));
+    implants_.push_back(Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation)));
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {

@@ -104,11 +104,6 @@ namespace allpix {
              */
             ROOT::Math::XYZVector getSize() const { return size_; }
             /**
-             * @brief Get the material of the implant
-             * @return Implant material
-             */
-            inline const std::string& getMaterial() const { return material_; }
-            /**
              * @brief Return the type of the implant
              * @return implant type
              */
@@ -146,16 +141,14 @@ namespace allpix {
              * @param size Size of the implant
              * @param offset Offset of the implant from the pixel center
              * @param orientation Rotation angle around the implant z-axis
-             * @param material Material of the implant
              */
             Implant(Type type,
                     Shape shape,
                     ROOT::Math::XYZVector size,
                     ROOT::Math::XYZVector offset,
-                    ROOT::Math::RotationZ orientation,
-                    std::string material)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
-                  material_(std::move(material)) {}
+                    ROOT::Math::RotationZ orientation)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation) {
+            }
 
             // Actual parameters returned
             Type type_;
@@ -163,7 +156,6 @@ namespace allpix {
             ROOT::Math::XYZVector size_;
             ROOT::Math::XYZVector offset_;
             ROOT::Math::RotationZ orientation_;
-            std::string material_;
         };
 
         /**
@@ -280,14 +272,12 @@ namespace allpix {
          * @param size Size of the implant
          * @param offset Offset of the implant from the pixel center
          * @param orientation Rotation angle around the implant z-axis
-         * @param material Material of the implant
          */
         void addImplant(const Implant::Type& type,
                         const Implant::Shape& shape,
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
-                        double orientation,
-                        std::string material);
+                        double orientation);
 
         /**
          * @brief Get total size of the pixel grid
