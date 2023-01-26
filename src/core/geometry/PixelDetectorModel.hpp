@@ -115,6 +115,9 @@ namespace allpix {
          * @return         Boolean whether pixels are neighbors or not
          */
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
+
+    protected:
+        void validate() override;
     };
 } // namespace allpix
 

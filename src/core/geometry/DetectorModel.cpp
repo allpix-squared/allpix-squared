@@ -48,17 +48,23 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     }
 
     // Instantiate the correct detector model
+    std::shared_ptr<DetectorModel> model;
     if(geometry == "pixel") {
-        return std::make_shared<PixelDetectorModel>(name, assembly, reader);
+        model = std::make_shared<PixelDetectorModel>(name, assembly, reader);
     } else if(geometry == "radial_strip") {
-        return std::make_shared<RadialStripDetectorModel>(name, assembly, reader);
+        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader);
     } else if(geometry == "hexagonal") {
-        return std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader);
+        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader);
+    } else {
+        LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
+        // FIXME: The model can probably be silently ignored if we have more model readers later
+        throw InvalidValueError(config, "geometry", "model geometry is not supported");
     }
 
-    LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
-    // FIXME: The model can probably be silently ignored if we have more model readers later
-    throw InvalidValueError(config, "geometry", "model geometry is not supported");
+    // Validate the detector model - we call this here because validation might depend on derived class properties:
+    model->validate();
+
+    return model;
 }
 
 DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader)
@@ -129,6 +135,11 @@ void DetectorModel::addImplant(const Implant::Type& type,
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
     implants_.push_back(
         Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(config)));
+}
+
+void DetectorModel::validate() {
+    // FIXME at some point we might make this a requirement and throw an exception instead?
+    LOG(WARNING) << "No validation implemented for this detector geometry";
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {

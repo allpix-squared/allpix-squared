@@ -31,6 +31,27 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     setPixelSize(pixel_size);
 }
 
+void PixelDetectorModel::validate() {
+
+    // Validate implants:
+    for(const auto& implant : this->getImplants()) {
+        if(implant.getSize().x() > pixel_size_.x() || implant.getSize().y() > pixel_size_.y()) {
+            throw InvalidValueError(implant.getConfiguration(), "size", "implant size cannot be larger than pixel pitch");
+        }
+        if(implant.getSize().z() > getSensorSize().z()) {
+            throw InvalidValueError(
+                implant.getConfiguration(), "size", "implant depth cannot be larger than sensor thickness");
+        }
+
+        // Offset of the collection diode implant from the pixel center, defaults to zero.
+        if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
+           std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
+            throw InvalidValueError(
+                implant.getConfiguration(), "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+        }
+    }
+}
+
 /**
  * The definition of inside the sensor is determined by the detector model
  */

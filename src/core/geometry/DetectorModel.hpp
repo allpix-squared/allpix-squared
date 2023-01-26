@@ -180,17 +180,6 @@ namespace allpix {
          */
         virtual ~DetectorModel() = default;
 
-        ///@{
-        /**
-         * @brief Use default copy and move behaviour
-         */
-        DetectorModel(const DetectorModel&) = default;
-        DetectorModel& operator=(const DetectorModel&) = default;
-
-        DetectorModel(DetectorModel&&) = default;
-        DetectorModel& operator=(DetectorModel&&) = default;
-        ///@}
-
         /**
          * @brief Get the configuration associated with this model
          * @return Configuration used to construct the model
@@ -559,6 +548,20 @@ namespace allpix {
         std::vector<SupportLayer> support_layers_;
 
     private:
+        ///@{
+        /**
+         * @brief Use default copy and move behaviour
+         */
+        DetectorModel(const DetectorModel&) = default;
+        DetectorModel& operator=(const DetectorModel&) = default;
+
+        DetectorModel(DetectorModel&&) = default;
+        DetectorModel& operator=(DetectorModel&&) = default;
+        ///@}
+
+        // Validation of the detector model
+        virtual void validate();
+
         ConfigReader reader_;
     };
 } // namespace allpix
