@@ -123,6 +123,12 @@ namespace allpix {
             bool contains(const ROOT::Math::XYZVector& position) const;
 
             /**
+             * @brief Fetch the configuration of this implant
+             * @return Implant configuration
+             */
+            const Configuration& getConfiguration() const { return config_; }
+
+            /**
              * @brief calculate intersection of line segment with implant. The first intersection in the given direction is
              * returned.
              * @throws std::invalid_argument if intersection calculation is not implemented for the implant type
@@ -141,14 +147,16 @@ namespace allpix {
              * @param size Size of the implant
              * @param offset Offset of the implant from the pixel center
              * @param orientation Rotation angle around the implant z-axis
+             * @param config Configuration
              */
             Implant(Type type,
                     Shape shape,
                     ROOT::Math::XYZVector size,
                     ROOT::Math::XYZVector offset,
-                    ROOT::Math::RotationZ orientation)
-                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation) {
-            }
+                    ROOT::Math::RotationZ orientation,
+                    Configuration config)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
+                  config_(config) {}
 
             // Actual parameters returned
             Type type_;
@@ -156,6 +164,7 @@ namespace allpix {
             ROOT::Math::XYZVector size_;
             ROOT::Math::XYZVector offset_;
             ROOT::Math::RotationZ orientation_;
+            Configuration config_;
         };
 
         /**
@@ -272,12 +281,14 @@ namespace allpix {
          * @param size Size of the implant
          * @param offset Offset of the implant from the pixel center
          * @param orientation Rotation angle around the implant z-axis
+         * @param config Configuration of the implant
          */
         void addImplant(const Implant::Type& type,
                         const Implant::Shape& shape,
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
-                        double orientation);
+                        double orientation,
+                        Configuration config);
 
         /**
          * @brief Get total size of the pixel grid

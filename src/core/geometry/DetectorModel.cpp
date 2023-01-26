@@ -87,20 +87,7 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto orientation = implant_config.get<double>("orientation", 0.);
 
-        // if(size.x() > pixel_size.x() || size.y() > pixel_size.y()) {
-        // throw InvalidValueError(implant_config, "size", "implant size cannot be larger than pixel pitch");
-        // }
-        // if(size.z() > getSensorSize().z()) {
-        // throw InvalidValueError(implant_config, "size", "implant depth cannot be larger than sensor thickness");
-        // }
-
-        // Offset of the collection diode implant from the pixel center, defaults to zero.
-        // if(std::fabs(offset.x()) + size.x() / 2 > pixel_size.x() / 2 ||
-        // std::fabs(offset.y()) + size.y() / 2 > pixel_size.y() / 2) {
-        // throw InvalidValueError(implant_config, "offset", "implant exceeds pixel cell. Reduce implant size or offset");
-        // }
-
-        addImplant(imtype, shape, size, offset, orientation);
+        addImplant(imtype, shape, size, offset, orientation, implant_config);
     }
 
     // Read support layers
@@ -135,11 +122,13 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                const Implant::Shape& shape,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
-                               double orientation) {
+                               double orientation,
+                               Configuration config) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation)));
+    implants_.push_back(
+        Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(config)));
 }
 
 bool DetectorModel::Implant::contains(const ROOT::Math::XYZVector& position) const {
