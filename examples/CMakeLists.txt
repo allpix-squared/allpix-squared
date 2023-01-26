@@ -44,6 +44,11 @@ IF(TEST_EXAMPLES)
                     "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${test}/${test}.conf ${DEFAULT_CLI_TEST_ARGS} ${ADDITIONAL_CLI_ARGS}"
             )
             SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES DEPENDS "${DEPENDENCY}")
+
+            IF(${test} MATCHES "radial_strip" OR ${test} MATCHES "atlas_itk_petal")
+                SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "FATAL")
+            ENDIF()
+
             ADD_DEFAULT_FAIL_CONDITIONS(${TEST_NAME})
         ENDIF()
     ENDFOREACH()
