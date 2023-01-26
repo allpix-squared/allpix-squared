@@ -562,6 +562,16 @@ TransientPropagationModule::propagate(Event* event,
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
+        // If charge carrier reaches implant, interpolate surface position for higher accuracy:
+        if(auto implant = model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            auto new_position = model_->getImplantIntercept(implant.value(),
+                                                            static_cast<ROOT::Math::XYZPoint>(last_position),
+                                                            static_cast<ROOT::Math::XYZPoint>(position));
+            position = Eigen::Vector3d(new_position.x(), new_position.y(), new_position.z());
+            state = CarrierState::HALTED;
+        }
+
         // Check for overshooting outside the sensor and correct for it:
         if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
             LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});

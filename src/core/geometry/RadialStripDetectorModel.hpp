@@ -246,16 +246,6 @@ namespace allpix {
                                                 const ROOT::Math::XYZPoint& outside) const override;
 
         /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
-         * @param position Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
-         *
-         * @note Pixel implant region is not implemented properly when using radial_strip
-         *      detectors due to the requirement of a TCAD electric field.
-         */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& position) const override;
-
-        /**
          * @brief Returns if a strip index is within the grid of strips defined for the device
          * @param strip_index Strip index to be checked
          * @return True if strip_index is within the strip grid, false otherwise

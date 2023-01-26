@@ -23,6 +23,7 @@
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
+#include <Math/RotationZ.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
@@ -78,6 +79,95 @@ namespace allpix {
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
         /**
+         * @brief Helper class to hold implant definitions for a detector model
+         */
+        class Implant {
+            friend class DetectorModel;
+
+        public:
+            enum class Type { FRONTSIDE, BACKSIDE };
+            enum class Shape { RECTANGLE, ELLIPSE };
+
+            /**
+             * @brief Get the offset of the implant with respect to the pixel center
+             * @return Implant offset
+             */
+            ROOT::Math::XYZVector getOffset() const { return offset_; }
+            /**
+             * @brief Get the implant orientation as rotation around its z-axis
+             * @return Implant orientation
+             */
+            ROOT::Math::RotationZ getOrientation() const { return orientation_; }
+            /**
+             * @brief Get the size of the implant
+             * @return Size of the implant
+             */
+            ROOT::Math::XYZVector getSize() const { return size_; }
+            /**
+             * @brief Return the type of the implant
+             * @return implant type
+             */
+            Type getType() const { return type_; }
+
+            /**
+             * @brief Return the shape of the implant
+             * @return implant shape
+             */
+            Shape getShape() const { return shape_; }
+
+            /**
+             * @brief helper to calculate containment of points with this implant
+             * @param  position Position relative to the pixel center
+             * @return True if point lies within implant, false otherwise
+             */
+            bool contains(const ROOT::Math::XYZVector& position) const;
+
+            /**
+             * @brief Fetch the configuration of this implant
+             * @return Implant configuration
+             */
+            const Configuration& getConfiguration() const { return config_; }
+
+            /**
+             * @brief calculate intersection of line segment with implant. The first intersection in the given direction is
+             * returned.
+             * @throws std::invalid_argument if intersection calculation is not implemented for the implant type
+             * @param  direction Direction vector of line
+             * @param  position  Position vector of line
+             * @return Closest intersection point with implant, std::nullopt if none could be found
+             */
+            std::optional<ROOT::Math::XYZPoint> intersect(const ROOT::Math::XYZVector& direction,
+                                                          const ROOT::Math::XYZPoint& position) const;
+
+        private:
+            /**
+             * @brief Constructs an implant, used in \ref DetectorModel::addImplant
+             * @param type Type of the implant
+             * @param shape Shape of the implant cross-section
+             * @param size Size of the implant
+             * @param offset Offset of the implant from the pixel center
+             * @param orientation Rotation angle around the implant z-axis
+             * @param config Configuration
+             */
+            Implant(Type type,
+                    Shape shape,
+                    ROOT::Math::XYZVector size,
+                    ROOT::Math::XYZVector offset,
+                    ROOT::Math::RotationZ orientation,
+                    Configuration config)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
+                  config_(std::move(config)) {}
+
+            // Actual parameters returned
+            Type type_;
+            Shape shape_;
+            ROOT::Math::XYZVector size_;
+            ROOT::Math::XYZVector offset_;
+            ROOT::Math::RotationZ orientation_;
+            Configuration config_;
+        };
+
+        /**
          * @brief Constructs the base detector model
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
@@ -89,17 +179,6 @@ namespace allpix {
          * @brief Essential virtual destructor
          */
         virtual ~DetectorModel() = default;
-
-        ///@{
-        /**
-         * @brief Use default copy and move behaviour
-         */
-        DetectorModel(const DetectorModel&) = default;
-        DetectorModel& operator=(const DetectorModel&) = default;
-
-        DetectorModel(DetectorModel&&) = default;
-        DetectorModel& operator=(DetectorModel&&) = default;
-        ///@}
 
         /**
          * @brief Get the configuration associated with this model
@@ -177,16 +256,29 @@ namespace allpix {
          * @param val Size of a pixel
          */
         void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+
         /**
-         * @brief Get size of the collection diode
-         * @return Size of the collection diode implant
+         * @brief Return all implants
+         * @return List of all the implants
          */
-        const ROOT::Math::XYVector& getImplantSize() const { return implant_size_; }
+        inline const std::vector<Implant>& getImplants() const { return implants_; };
+
         /**
-         * @brief Set the size of the implant (collection diode) within a pixel
-         * @param val Size of the collection diode implant
+         * @brief Add a new implant
+         * @param type Type of the implant
+         * @param shape Shape of the implant cross-section
+         * @param size Size of the implant
+         * @param offset Offset of the implant from the pixel center
+         * @param orientation Rotation angle around the implant z-axis
+         * @param config Configuration of the implant
          */
-        void setImplantSize(ROOT::Math::XYVector val) { implant_size_ = std::move(val); }
+        void addImplant(const Implant::Type& type,
+                        const Implant::Shape& shape,
+                        ROOT::Math::XYZVector size,
+                        const ROOT::Math::XYVector& offset,
+                        double orientation,
+                        Configuration config);
+
         /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
@@ -343,13 +435,30 @@ namespace allpix {
                                                         const ROOT::Math::XYZPoint& outside) const = 0;
 
         /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
-         * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
+         * @brief Returns if a local position is within the pixel implant region of the sensitive device.
          *
-         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
+         * If the implant is defined as 3D volume in the detector model, this method returns true if the given position is
+         * found within the implant volume. If the impland is configured with two dimensions only, i.e. an area on the sensor
+         * surface, the additional depth parameter is used to create a volume within which carriers are considered inside the
+         * implant.
+         *
+         * @param local_pos Position in local coordinates of the detector model
+         * @return Either the implant in which the position is located, or false
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
+        virtual std::optional<Implant> isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
+         * point inside (after step).
+         * @throws std::invalid_argument if no intersection of track segment with implant volume can be found
+         * @param implant The implant the intercept should be calculated for
+         * @param  outside Position before the step, outside the implant volume
+         * @param  inside  Position after the step, inside the implant volume
+         * @return Entry point in implant in local coordinates of the sensor
+         */
+        ROOT::Math::XYZPoint getImplantIntercept(const Implant& implant,
+                                                 const ROOT::Math::XYZPoint& outside,
+                                                 const ROOT::Math::XYZPoint& inside) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
@@ -428,7 +537,6 @@ namespace allpix {
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
-        ROOT::Math::XYVector implant_size_;
         Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 
         double sensor_thickness_{};
@@ -436,9 +544,24 @@ namespace allpix {
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         std::shared_ptr<DetectorAssembly> assembly_;
+        std::vector<Implant> implants_;
         std::vector<SupportLayer> support_layers_;
 
     private:
+        ///@{
+        /**
+         * @brief Use default copy and move behaviour
+         */
+        DetectorModel(const DetectorModel&) = default;
+        DetectorModel& operator=(const DetectorModel&) = default;
+
+        DetectorModel(DetectorModel&&) = default;
+        DetectorModel& operator=(DetectorModel&&) = default;
+        ///@}
+
+        // Validation of the detector model
+        virtual void validate();
+
         ConfigReader reader_;
     };
 } // namespace allpix

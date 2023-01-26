@@ -105,17 +105,38 @@ void PulseTransferModule::run(Event* event) {
         auto pulses = propagated_charge.getPulses();
 
         if(pulses.empty()) {
-            LOG(TRACE) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers.";
+            LOG_ONCE(INFO) << "No pulse information available - producing pseudo-pulse from arrival time of charge carriers";
 
             auto model = detector_->getModel();
             auto position = propagated_charge.getLocalPosition();
 
-            // Ignore if outside depth range of implant
-            if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
-               max_depth_distance_) {
+            if(collect_from_implant_) {
+                std::call_once(first_event_flag_, [&]() {
+                    if(model->getImplants().empty()) {
+                        throw InvalidValueError(
+                            config_,
+                            "collect_from_implant",
+                            "Detector model does not have implants defined, but collection requested from implants");
+                    }
+                    if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+                        throw ModuleError(
+                            "Charge collection from implant region should not be used with linear electric fields.");
+                    }
+                });
+
+                // Ignore if outside the implant region:
+                if(!model->isWithinImplant(position)) {
+                    LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                               << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                               << " because their local position is outside the pixel implant";
+                    continue;
+                }
+            } else if(std::fabs(position.z() - (model->getSensorCenter().z() + model->getSensorSize().z() / 2.0)) >
+                      max_depth_distance_) {
+                // Ignore if not close to the sensor surface:
                 LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                           << " because their local position is not in implant range";
+                           << " because their local position is not near sensor surface";
                 continue;
             }
 
@@ -128,21 +149,6 @@ void PulseTransferModule::run(Event* event) {
                            << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
                            << " because their nearest pixel (" << xpixel << "," << ypixel << ") is outside the grid";
                 continue;
-            }
-
-            // Ignore if outside the implant region:
-            if(collect_from_implant_) {
-                if(detector_->getElectricFieldType() == FieldType::LINEAR) {
-                    throw ModuleError(
-                        "Charge collection from implant region should not be used with linear electric fields.");
-                }
-
-                if(!detector_->getModel()->isWithinImplant(position)) {
-                    LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                               << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
-                               << " because it is outside the pixel implant.";
-                    continue;
-                }
             }
 
             Pixel::Index pixel_index(xpixel, ypixel);

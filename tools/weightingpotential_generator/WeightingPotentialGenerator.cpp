@@ -139,7 +139,19 @@ int main(int argc, char** argv) {
         std::ifstream file(model_path);
         allpix::ConfigReader reader(file, model_path);
         auto model = allpix::DetectorModel::factory(model_path, reader);
-        auto implant = model->getImplantSize();
+
+        // Get pixel implant size from the detector model:
+        auto implants = model->getImplants();
+        if(implants.size() > 1) {
+            throw std::invalid_argument("Detector model contains more than one implant, not supported for pad potential");
+        }
+
+        auto implant = (implants.empty() ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0)
+                                         : implants.front().getSize());
+        // This module currently only works with pad definition, i.e. 2D implant deinition:
+        if(implant.z() > std::numeric_limits<double>::epsilon()) {
+            throw std::invalid_argument("Generator can only be used with 2D implants, but non-zero thickness found");
+        }
 
         // Calculate thickness domain
         auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;

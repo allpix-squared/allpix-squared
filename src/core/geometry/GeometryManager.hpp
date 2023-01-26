@@ -13,6 +13,7 @@
 #define ALLPIX_GEOMETRY_MANAGER_H
 
 #include <memory>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -225,6 +226,16 @@ namespace allpix {
          */
         template <typename T>
         std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id) const;
+
+        /**
+         * @brief Fetch an array of external objects associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param regex Regular expression which the ID is required to satisfy
+         * @return Vector of external objects, empty vector if no match could be found
+         */
+        template <typename T>
+        std::vector<std::shared_ptr<T>> getExternalObjects(const std::string& associated_name,
+                                                           const std::regex& regex) const;
 
         /**
          * @brief Sets an external object associated to a detector or passive volume

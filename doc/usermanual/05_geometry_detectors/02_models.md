@@ -47,10 +47,6 @@ file before the start of any sub-sections.
   The pitch of a single pixel in the pixel matrix. Provided as 2D parameter in the x-y-plane. This parameter is required
   for all models.
 
-- `implant_size`:
-  The size of the collection diode implant in each pixel of the matrix. Provided as 2D parameter in the x-y-plane. This
-  parameter is optional, the implant size defaults to the pixel pitch if not specified otherwise.
-
 - `sensor_material`:
   Semiconductor material of the sensor. This can be any of the sensor materials supported by Allpix Squared, currently
   `SILICON`, `GALLIUM_ARSENIDE`, `GERMANIUM`, `CADMIUM_TELLURIDE`, `CADMIUM_ZINC_TELLURIDE`, `DIAMOND` and
@@ -136,6 +132,40 @@ following order:
     `/usr/share/` (effectively `/usr/share/Allpix/models`).
 
 4.  The path of the main configuration file.
+
+
+## Implants
+
+Multiple implants per pixel cell can be simulated in Allpix Squared. Here, implants are any volume in the sensor in which
+charge carriers do not propagated, such as collection diodes, ohmic volumes or columns, as well as trenches filled with
+different materials e.g. for alpha conversion.
+
+When charge carriers reach an implant, their propagation is stopped. Depending on the type of implant, they might be either
+discarded by the transfer module for back-side implants, or taken into account when forming the front-end electronics input
+signal for front-side implants.
+
+Each implant should be defined in its own section headed with the name `[implant]`. By default, no implants are added.
+Implants allow for the following parameters:
+
+- `type`:
+  Type of the implant. This parameter can be set to either `frontsize` for an implant from the sensor front side, collecting
+  charge carriers, or to `backside` for an implant connected to the ohmic contact at the sensor back side.
+
+- `shape`:
+  Shape of the implant, supported shapes are `rectangle` and `ellipse`. Defaults to `rectangle`.
+
+- `size`:
+  The size of the implant as 3D vector with size in $`x`$ and $`y`$ as well as the implant depth. Depending on the implant shape,
+  the $`x`$ and $`y`$ values are either interpreted as the side lengths of the rectangle or the major and minor axes of the
+  ellipse.
+
+- `orientation`:
+  Rotation of the implant around its $`z`$ axis. Defaults to 0 degrees, i.e. the implant axes are aligned with the local
+  coordinate system of the sensor.
+
+- `offset`:
+  2D values in the x-y plane, defining the offset of the implant from the center of the pixel cell. This parameter is
+  optional and defaults to $`0, 0`$, i.e. a position at the pixel center be default.
 
 
 ## Support Layers

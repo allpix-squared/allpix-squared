@@ -81,6 +81,10 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     // By default, only record MCTracks connected to MCParticles in the sensitive volume
     config_.setDefault<bool>("record_all_tracks", false);
 
+    // Defaults for energy deposition in implants
+    config_.setDefault<bool>("deposit_in_frontside_implants", true);
+    config_.setDefault<bool>("deposit_in_backside_implants", false);
+
     // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
         std::make_unique<G4UserLimits>(config_.get<double>("max_step_length"), DBL_MAX, config_.get<double>("cutoff_time"));
@@ -461,6 +465,21 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
 
         // Add the sensitive detector action
         logical_volume->SetSensitiveDetector(sensitive_detector_action);
+
+        // Add the sensitive detector action to fronmtside implant volumes
+        std::regex regex;
+        if(config_.get<bool>("deposit_in_frontside_implants") && config_.get<bool>("deposit_in_backside_implants")) {
+            regex = "implant_log_.*";
+        } else if(config_.get<bool>("deposit_in_frontside_implants")) {
+            regex = "implant_log_frontside_.*";
+        } else if(config_.get<bool>("deposit_in_backside_implants")) {
+            regex = "implant_log_backside_.*";
+        }
+        for(const auto& implant : geo_manager_->getExternalObjects<G4LogicalVolume>(detector->getName(), regex)) {
+            implant->SetUserLimits(user_limits_.get());
+            implant->SetSensitiveDetector(sensitive_detector_action);
+        }
+
         sensors_.push_back(sensitive_detector_action);
 
         // If requested, prepare output plots
