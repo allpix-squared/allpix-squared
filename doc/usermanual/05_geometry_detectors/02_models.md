@@ -155,7 +155,7 @@ Implants allow for the following parameters:
   Shape of the implant, supported shapes are `rectangle` and `ellipse`. Defaults to `rectangle`.
 
 - `size`:
-  The size of the implant as 3D vector with size in $x$ and $y$ as well as the implant depth. Depending on the implant shape,
+  The size of the implant as 3D vector with size in $`x`$ and $`y`$ as well as the implant depth. Depending on the implant shape,
   the $`x`$ and $`y`$ values are either interpreted as the side lengths of the rectangle or the major and minor axes of the
   ellipse.
 
