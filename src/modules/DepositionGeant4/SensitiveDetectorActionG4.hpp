@@ -140,6 +140,8 @@ namespace allpix {
         std::map<int, int> track_pdg_;
         // Arrival timestamp of the tracks
         std::map<int, double> track_time_;
+        // Total charge by track
+        std::map<int, unsigned int> track_charge_;
 
         // Map from deposit index to track id
         std::vector<int> deposit_to_id_;

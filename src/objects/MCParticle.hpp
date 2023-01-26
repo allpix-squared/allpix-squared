@@ -95,6 +95,18 @@ namespace allpix {
         double getLocalTime() const;
 
         /**
+         * @brief Set the total number of charge carriers produced by this particle
+         * @param total_charge Total charge deposited by this particle
+         */
+        void setTotalDepositedCharge(unsigned int total_charge);
+
+        /**
+         * @brief Return the total number of charge carriers deposited by this particle
+         * @return Total number of deposited charge carriers
+         */
+        unsigned int getTotalDepositedCharge() const;
+
+        /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
          * @warning Special method because parent can only be set after creation, should not be replaced later.
@@ -132,7 +144,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 9); // NOLINT
+        ClassDefOverride(MCParticle, 10); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -156,6 +168,7 @@ namespace allpix {
         int particle_id_{};
         double local_time_{};
         double global_time_{};
+        unsigned int deposited_charge_{};
 
         PointerWrapper<MCParticle> parent_;
         PointerWrapper<MCTrack> track_;
