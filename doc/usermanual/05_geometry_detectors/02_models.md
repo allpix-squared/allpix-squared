@@ -134,7 +134,7 @@ following order:
 4.  The path of the main configuration file.
 
 
-### Implants
+## Implants
 
 Multiple implants per pixel cell can be simulated in Allpix Squared. Here, implants are any volume in the sensor in which
 charge carriers do not propagated, such as collection diodes, ohmic volumes or columns, as well as trenches filled with
@@ -148,8 +148,8 @@ Each implant should be defined in its own section headed with the name `[implant
 Implants allow for the following parameters:
 
 - `type`:
-   Type of the implant. This parameter can be set to either `frontsize` for an implant from the sensor front side, collecting
-   charge carriers, or to `backside` for an implant connected to the ohmic contact at the sensor back side.
+  Type of the implant. This parameter can be set to either `frontsize` for an implant from the sensor front side, collecting
+  charge carriers, or to `backside` for an implant connected to the ohmic contact at the sensor back side.
 
 - `shape`:
   Shape of the implant, supported shapes are `rectangle` and `ellipse`. Defaults to `rectangle`.
@@ -168,7 +168,7 @@ Implants allow for the following parameters:
   optional and defaults to $`0, 0`$, i.e. a position at the pixel center be default.
 
 
-### Support Layers
+## Support Layers
 
 In addition to the active layer, multiple layers of support material can be added to the detector description. It is possible
 to place support layers at arbitrary positions relative to the sensor, while the default position is behind the readout chip
