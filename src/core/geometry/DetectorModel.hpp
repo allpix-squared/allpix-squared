@@ -156,7 +156,7 @@ namespace allpix {
                     ROOT::Math::RotationZ orientation,
                     Configuration config)
                 : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
-                  config_(config) {}
+                  config_(std::move(config)) {}
 
             // Actual parameters returned
             Type type_;
