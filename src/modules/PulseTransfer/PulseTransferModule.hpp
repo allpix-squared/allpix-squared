@@ -70,6 +70,7 @@ namespace allpix {
 
         double max_depth_distance_{};
         bool collect_from_implant_{};
+        std::once_flag first_event_flag_;
 
         // Output histograms
         Histogram<TH1D> h_total_induced_charge_, h_induced_pixel_charge_;
