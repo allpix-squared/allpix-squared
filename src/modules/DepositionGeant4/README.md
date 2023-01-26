@@ -89,7 +89,7 @@ This module requires an installation Geant4.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
 Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
 * `record_all_tracks` : Switch to enable the recording of all Geant4 tracks in the event. By default, this parameter is set to `false` and MCTrack objects are only generated for particles interacting with sensor material, not those that never interact with any detector.
-* `geant4_tracking_verbosity ` : Verbosity level for Geant4 tracking, defaults to `0`. Higher levels mean more output. It should be noted that the respective log output is redirected to the logging level set via the `log_level_g4cout` parameter in the *GeometryBuilderGeant4* module.
+* `geant4_tracking_verbosity` : Verbosity level for Geant4 tracking, defaults to `0`. Higher levels mean more output. It should be noted that the respective log output is redirected to the logging level set via the `log_level_g4cout` parameter in the *GeometryBuilderGeant4* module.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.

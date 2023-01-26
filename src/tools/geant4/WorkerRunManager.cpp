@@ -213,7 +213,7 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
 
     thread_run_manager->Initialize();
 
-    // Execute UI commands stored in the masther UI manager
+    // Execute UI commands stored in the master UI manager
     std::vector<G4String> cmds = master_run_manager->GetCommandStack();
     G4UImanager* uimgr = G4UImanager::GetUIpointer();        // TLS instance
     std::vector<G4String>::const_iterator it = cmds.begin(); // NOLINT
