@@ -38,6 +38,8 @@ PrimariesReaderHepMC::PrimariesReaderHepMC(const Configuration& config) {
     } else if(model == FileModel::HEPMCTTREE) {
         file_path = config.getPathWithExtension("file_name", "root", true);
         reader_ = std::make_unique<HepMC3::ReaderRootTree>(file_path);
+    } else {
+        throw InvalidValueError(config, "model", "failed to instantiate file reader");
     }
 
     if(reader_->failed()) {
