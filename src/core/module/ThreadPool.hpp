@@ -120,7 +120,7 @@ namespace allpix {
 
         private:
             std::atomic_bool valid_{true};
-            mutable std::mutex mutex_;
+            mutable std::mutex mutex_{};
             std::queue<T> queue_;
             std::set<uint64_t> completed_ids_;
             uint64_t current_id_{0};
@@ -274,7 +274,7 @@ namespace allpix {
         std::atomic_bool done_{false};
 
         std::atomic<unsigned int> run_cnt_{0};
-        mutable std::mutex run_mutex_;
+        mutable std::mutex run_mutex_{};
         std::condition_variable run_condition_;
         std::vector<std::thread> threads_;
 
