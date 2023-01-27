@@ -420,10 +420,9 @@ void ProjectionPropagationModule::run(Event* event) {
     }
     charge_lost = total_charge - total_projected_charge;
 
-    if(total_charge > 0) {
-        LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
-                  << (charge_lost / total_charge * 100.) << "%)";
-    }
+    LOG(INFO) << "Total charge: " << total_charge << " (lost: " << charge_lost << ", "
+              << (total_charge > 0 ? (charge_lost / total_charge * 100.) : 0) << "%)";
+
     LOG(DEBUG) << "Total count of propagated charge carriers: " << propagated_charges.size();
 
     // Output plots if required
@@ -432,7 +431,7 @@ void ProjectionPropagationModule::run(Event* event) {
     }
 
     if(output_plots_) {
-        recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / total_charge);
+        recombine_histo_->Fill(total_charge > 0 ? (static_cast<double>(recombined_charges_count) / total_charge) : 0.);
     }
 
     // Create a new message with propagated charges
