@@ -465,14 +465,12 @@ void VisualizationGeant4Module::finalize() {
     UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
 
     // Set new signal handler to fetch CTRL+C and close the Qt application
-    if(gui_session_ != nullptr) {
-        has_gui = true;
-    }
     prev_handler = std::signal(SIGINT, interrupt_handler);
 
     // Open GUI / terminal or start viewer depending on mode
-    if(mode_ == ViewingMode::GUI && has_gui) {
+    if(mode_ == ViewingMode::GUI && gui_session_ != nullptr) {
         LOG(INFO) << "Starting visualization session";
+        has_gui = true;
         gui_session_->SessionStart();
     } else if(mode_ == ViewingMode::TERMINAL) {
         LOG(INFO) << "Starting terminal session";
