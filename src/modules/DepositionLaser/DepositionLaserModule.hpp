@@ -130,10 +130,10 @@ namespace allpix {
 
         size_t number_of_photons_;
         double wavelength_;
-        double absorption_length_;
-        double refractive_index_;
+        double absorption_length_{0.};
+        double refractive_index_{0.};
         double pulse_duration_;
-        bool is_user_optics_;
+        bool is_user_optics_{false};
 
         // Histograms
         bool output_plots_;
