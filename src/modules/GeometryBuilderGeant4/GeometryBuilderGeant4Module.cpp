@@ -129,6 +129,8 @@ void GeometryBuilderGeant4Module::initialize() {
     } else {
         LOG(DEBUG) << "Making a single-thread RunManager";
         run_manager_g4_ = std::make_unique<RunManager>();
+        LOG(INFO) << "Using Geant4 modules without multithreading might reduce performance when using complex geometries, "
+                     "please check the documentation for details";
     }
 
     // Set the geometry construction to use
