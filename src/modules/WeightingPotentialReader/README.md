@@ -25,16 +25,16 @@ If this behavior is desirable, or e.g. only a single row of pixels is simulated,
 A warning is printed if the size does not correspond to a multiple of the pixel size.
 While this is not a problem in general, it might hint at a wrong potential map being used.
 
-#### Generating a weighting potential using TCAD and Allpix Squared
+#### Generating a weighting potential using TCAD and Allpix Squared  
 
 The weighting potential is calculated by taking the difference of the electrostatic potentials arising from applying two slightly different bias voltages to one electrode. 
 The steps below outline how to create a weighting potential from TCAD simulations.
 
-    1. Produce two TCAD fields that differ slightly in one collection electrode bias voltage, for instance for 0.1 V or 0.01 V, with all the other electrodes grounded. Export the DF-ISE .dat and .grd files containing the electrostatic potential.
-    2. Use the `mesh_converter` tool to extract the electrostatic potential from both configurations. Working with the converted files in INIT format is advisable as is human readable and this makes the process of writing a macro for the calculation simpler. 
-    3. Calculate the difference between entries from both files, and divide them by the difference in collection electrode bias voltage.
-    4. Verify that the values are within a range from 0 to 1, which is the physical range of a weighting potential.
-    5. Save the resulting file with the same format and import it into Allpix Squared using the `[WeightingPotentialReader]` module and the **mesh** model.
+1. Produce two TCAD fields that differ slightly in one collection electrode bias voltage, for instance for 0.1 V or 0.01 V, with all the other electrodes grounded. Export the DF-ISE .dat and .grd files containing the electrostatic potential.
+2. Use the `mesh_converter` tool to extract the electrostatic potential from both configurations. Working with the converted files in INIT format is advisable as is human readable and this makes the process of writing a macro for the calculation simpler. 
+3. Calculate the difference between entries from both files, and divide them by the difference in collection electrode bias voltage.
+4. Verify that the values are within a range from 0 to 1, which is the physical range of a weighting potential.
+5. Save the resulting file with the same format and import it into Allpix Squared using the `[WeightingPotentialReader]` module and the **mesh** model.
 
 ### Weighting potential of a pad
 
