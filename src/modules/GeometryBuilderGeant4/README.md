@@ -57,6 +57,24 @@ The necessary module errors and warnings have been included to make sure the use
 
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
+#### Cons:
+A cone or partly made cone with an inner and outer radius at the (- half-length , + half-length)
+ outer_radius_mDz : at - half-length the outer radius
+                outer_radius_pDz : at + half-length the outer radius
+                inner_radius_mDz : at - half-length the inner radius (must be smaller than outer_radius_mDz)
+                inner_radius_pDz : at + half-length the inner radius (must be smaller than outer_radius_mDz)
+                starting_angle   : start-angle ( default 0)
+                arc_length       : length-of the arc (360 deg default)
+* The `outer_radius_pDz` of the cone is the radius of the cone at the + half-lenght position
+* The `outer_radius_mDz` of the cone is the radius of the cone at the - half-lenght position
+* The `inner_radius_pDz` of the cone is the radius of the cone at the + half-lenght position
+* The `inner_radius_mDz` of the cone is the radius of the cone at the - half-lenght position
+* The `inner_radius_mDz` of the cone is the radius of the cone at the - half-lenght position
+* The `length`  of the cone is the total length of the cone
+* (Optional) The `starting_angle` of the cone is the azimuthal angle at which circumference of the cone will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+* (Optional) The `arc_length` of the cone is the arc-length of the cone that will be drawn
+Note that `arc_length` works the same as the `arc_length` from the cylinder
+
 #### GDML:
 This model allows to load arbitrary GDML files \[[@gdml]\] as passive materials. All volumes from the GDML file which are contained within the world volume are processed and added to the geometry of the simulation.
 The only parameter specific to this model is `file_name` which should provide the path to the GDML file to be read.
