@@ -148,7 +148,7 @@ Each implant should be defined in its own section headed with the name `[implant
 Implants allow for the following parameters:
 
 - `type`:
-  Type of the implant. This parameter can be set to either `frontsize` for an implant from the sensor front side, collecting
+  Type of the implant. This parameter can be set to either `frontside` for an implant from the sensor front side, collecting
   charge carriers, or to `backside` for an implant connected to the ohmic contact at the sensor back side.
 
 - `shape`:
