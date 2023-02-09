@@ -268,6 +268,9 @@ void ROOTObjectReaderModule::initialize() {
 void ROOTObjectReaderModule::run(Event* event) {
     auto root_lock = root_process_lock();
 
+    // Retrieve current object count:
+    auto object_count = TProcessID::GetObjectCount();
+
     // Beware: ROOT uses signed entry counters for its trees
     auto event_num = static_cast<int64_t>(event->number);
     --event_num;
@@ -322,6 +325,10 @@ void ROOTObjectReaderModule::run(Event* event) {
         // Reset the message pointer:
         message_inf.message.reset();
     }
+
+    // Reset the TObject count after reading in this event because the TRef counting will start over again from the beginning
+    // in the next event.
+    TProcessID::SetObjectCount(object_count);
 }
 
 void ROOTObjectReaderModule::finalize() {
