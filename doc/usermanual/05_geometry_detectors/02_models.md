@@ -110,7 +110,7 @@ parameters, except the type parameter and the support layers, can be changed by 
 and the updated value to the detector configuration. The framework will then automatically create a copy of this model with
 the requested change.
 
-{{% alert title="Note" color="warning" %}}
+{{% alert title="Note" color="info" %}}
 Before re-implementing models, it should be checked if the desired change can be achieved using the detector model
 specialization. For most cases this provides a quick and flexible way to adapt detectors to different needs and setups (for
 example, detectors with different sensor thicknesses).

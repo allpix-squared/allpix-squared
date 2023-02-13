@@ -44,7 +44,7 @@ properties attached to it:
   which describes the rotation of 45° around the Z axis, followed by a 10° rotation around the initial Y axis, and finally]
   a rotation of 12° around the initial X axis.
 
-  {{% alert title="Note" color="warning" %}}
+  {{% alert title="Note" color="info" %}}
   All supported rotations are extrinsic active rotations, i.e. the vector itself is rotated, not the coordinate system. All
   angles in configuration files should be specified in the order they will be applied.
   {{% /alert %}}
