@@ -121,10 +121,6 @@ for(auto& object : objects) {
 }
 ```
 
-Since `TRef` object IDs are reused and counted up only on a per-event basis to keep the size of the central reference table 
-under control, the ROOT-internal object count has to be reset also after *reading* an entire event from file and before 
-proceeding with the next one. Otherwise the reused IDs from the previous event will still remain in the reference table, but 
-pointing to invalid memory locations or to objects from the previous event.
 
 
 
