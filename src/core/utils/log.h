@@ -281,7 +281,8 @@ namespace allpix {
  */
 #define CONCAT_IMPL(x, y) x##y
 #define CONCAT(x, y) CONCAT_IMPL(x, y)
-#define GENERATE_LOG_VAR(Count) static std::atomic<int> CONCAT(local___FUNCTION__, __LINE__) {Count}
+#define GENERATE_LOG_VAR(Count)                                                                                             \
+    static std::atomic<int> CONCAT(local___FUNCTION__, __LINE__) { Count }
 #define GET_LOG_VARIABLE() CONCAT(local___FUNCTION__, __LINE__)
 ///@}
 
