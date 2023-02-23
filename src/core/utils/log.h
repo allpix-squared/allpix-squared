@@ -275,13 +275,18 @@ namespace allpix {
  */
 #define LOG_ONCE(level) LOG_N(level, 1)
 
+///@{
 /**
- * @brief Generator for a local variable to hold the logging count of a message
- * @param  Count Number of allowed counts
- * @return       Local counter variable
+ * @brief Macros to generate and retrieve line-specific local variables to hold the logging count of a message
+ *
+ * Note: the double concat macro is needed to ensure __LINE__ is evaluated, see https://stackoverflow.com/a/19666216/17555746
  */
-#define GENERATE_LOG_VAR(Count) static std::atomic<int> local___FUNCTION__##Count##__LINE__(Count)
-#define GET_LOG_VARIABLE(Count) local___FUNCTION__##Count##__LINE__
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
+#define GENERATE_LOG_VAR(Count)                                                                                             \
+    static std::atomic<int> CONCAT(local___FUNCTION__, __LINE__) { Count }
+#define GET_LOG_VARIABLE() CONCAT(local___FUNCTION__, __LINE__)
+///@}
 
 /**
  * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged more than
@@ -291,11 +296,11 @@ namespace allpix {
  */
 #define LOG_N(level, max_log_count)                                                                                         \
     GENERATE_LOG_VAR(max_log_count);                                                                                        \
-    if(GET_LOG_VARIABLE(max_log_count) > 0)                                                                                 \
+    if(GET_LOG_VARIABLE() > 0)                                                                                              \
         if(allpix::LogLevel::level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty())               \
     allpix::Log().getStream(                                                                                                \
         allpix::LogLevel::level, __FILE_NAME__, std::string(static_cast<const char*>(__func__)), __LINE__)                  \
-        << std::string(--GET_LOG_VARIABLE(max_log_count) == 0 ? "[further messages suppressed] " : "")
+        << ((--GET_LOG_VARIABLE() == 0) ? "[further messages suppressed] " : "")
 
     /**
      * @brief Suppress a stream from writing any output
