@@ -223,7 +223,7 @@ fmt:coverity:
 
 fmt:reuse:
     image:
-        name: fsfe/reuse:latest
+        name: registry.cern.ch/docker.io/fsfe/reuse:latest
         entrypoint: [""]
     tags:
       - docker
@@ -470,7 +470,7 @@ docs:usermanual-hugo:
 # Compile LaTeX user manual:
 docs:usermanual-pdf:
     extends: .doc
-    image: thomasweise/docker-texlive-full:latest
+    image: registry.cern.ch/docker.io/thomasweise/docker-texlive-full:latest
     script:
         - apt update && apt install -y git cmake ninja-build python3-yaml pandoc
         - pandoc --version
