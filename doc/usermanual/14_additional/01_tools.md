@@ -35,6 +35,20 @@ The DepositionGeant4 module uses `MTRunManager` to be able to call the `BeamOn` 
 benefiting from the multithreading feature while the VisualizationGeant4 module uses `RunManager` to be able to visualize the
 particles passage through the detectors.
 
+{{% alert title="Note" color="info" %}}
+The `MTRunManager` significantly reduces Geant4's run initialization time (this happens before every event in Allpix Squared)
+compared to Geant4's stock run managers (see [Bugzilla/Geant4 2527](https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2527) for
+details).
+
+It is not feasible to implement this improvement in the single-threaded `RunManager` since it directly inherits from Geant4's
+stock `G4RunManager`. With this run manager, the run initialization time scales with the complexity of the geometry and can -
+*in the worst case scenario* - take significantly more time than the actual simulation itself.
+
+Thus it is recommended to use multithreading when using Geant4 in Allpix Squared if allowed by the module configuration.
+Allpix Squared allows to use multithreading with only one worker as alternative to `multithreading=false`, though it is
+suggested to benchmark the performance for both cases to find the optimal setting for the given geometry.
+{{% /alert %}}
+
 ## Runge-Kutta integrator
 
 A fast Eigen-powered \[[@eigen3]\] Runge-Kutta integrator is provided as a tool to numerically solve differential equations

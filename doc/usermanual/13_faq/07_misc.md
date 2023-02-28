@@ -44,3 +44,15 @@ charge carriers per group can be used to vary the density of lines drawn. Larger
 *Drift and diffusion visualization of charge carrier groups being transported through a high-resistivity CMOS silicon sensor.
 The plot shows the situation after an integration time of 20 nanoseconds, only charge carrier groups which reached the
 implant side of the sensor are drawn.*
+
+#### Why does GeometryBuilderGeant4 warn me about reduced performance with disabled multithreading?
+
+You might have see this log message:
+```
+Using Geant4 modules without multithreading might reduce performance when using complex geometries, please check the documentation for details
+```
+
+You might want to set `multithreading=true` and `workers=1` instead of instead of `multithreading=false` if this is allowed
+by the module configuration.
+
+The reason behind message this is explained more detailed in [Section 14.1](../14_additional/01_tools.md#geant4-interface).

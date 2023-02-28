@@ -567,8 +567,10 @@ void ModuleManager::initialize() {
             available_hardware_concurrency -= 1u;
         }
         number_of_threads_ = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
-        if(number_of_threads_ < 2) {
-            throw InvalidValueError(global_config, "workers", "number of workers should be larger than one");
+        if(number_of_threads_ < 1) {
+            throw InvalidValueError(global_config, "workers", "number of workers should be larger than zero");
+        } else if(number_of_threads_ == 1) {
+            LOG(WARNING) << "Using multithreading with only one worker, this might be slower than multithreading=false";
         }
 
         if(number_of_threads_ > std::thread::hardware_concurrency()) {
