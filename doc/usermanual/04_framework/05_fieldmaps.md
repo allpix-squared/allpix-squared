@@ -125,7 +125,8 @@ Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} \textrm{d}t = q \left[ \phi (\vec{x}_1) 
 
 assuming discrete time steps.
 Here, $`q`$ is the charge of the carrier, $`\phi(\vec{x})`$ the weighting potential at position $`\vec{x}`$ and
-$`I_n^{ind}`$ the induced current in the particular time step.
+$`I_n^{ind}`$ the induced current in the particular time step. A detailed description of the procedure is provided in
+\[[@apsq_transient]\] along with examples of application.
 
 Since this procedure requires a realignment of the weighting potential for every pixel or electrode in question, the 
 `SENSOR` mapping geometry is not a viable option. The weighting potential map needs to be centered around the electrode
@@ -168,3 +169,4 @@ the pixel in question os by definition zero.*
 [@shockley]: http://dx.doi.org/10.1063/1.1710367
 [@ramo]: http://dx.doi.org/10.1109/JRPROC.1939.228757
 [@planecondenser]: http://dx.doi.org/10.1016/j.nima.2014.08.044
+[@apsq_transient]: https://doi.org/10.1016/j.nima.2022.166491
