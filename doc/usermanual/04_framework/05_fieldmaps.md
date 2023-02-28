@@ -10,6 +10,11 @@ profile of the sensor. These maps have to be provided as regularly-spaced meshes
 A conversion and interpolation tool to translate adaptive-mesh fields from TCAD applications to the format required by Allpix
 Squared is provided together with the framework and is described in [Section 14.2](../14_additional/mesh_converter.md).
 
+This section of the manual provides an overview of the different field types and possibilities of mapping field of single 
+pixels or fractions thereof to full sensor simulations in Allpix Squared.
+
+## Mapping of Fields to the Sensor Plane
+
 ![](./maps_types.png)\
 *Examples for pixel geometries in field maps. The dark spot represents the pixel center, the red extend the electric field.
 Pixel boundaries are indicated with a dotted line where applicable.*
@@ -25,6 +30,8 @@ are of interest.
 
 A special case is the field presented in the right panel of the figure above. Here, the field is not centered at the pixel
 unit cell center, but at the corner of four adjacent rectangular pixels.
+
+Not all mapping geometries might be available for all types of fields used in Allpix Squared as will be detailed below.
 
 ![](./maps_half.png)\
 *Location and orientation of the field map with respect to the pixel center when providing a half of the pixel plane. Here,
@@ -99,3 +106,61 @@ In addition to these mappings, the field maps can be shifted and stretched using
 parameters of the respective module. The values of these parameters are always interpreted as fractions of the field map
 size that has been loaded. This means for example, that an offset of `field_offset = 0.5, 0.5` applied to a field map with
 a size of `100um x 50um` will shift the respective field by `50um` along `x` and `25um` along `y`.
+
+## Weighting Potential Maps & Induction
+
+Induced currents in Allpix Squared are calculated following the Shockley-Ramo theorem \[[@shockley],[@ramo]\]. 
+The induced current of a moving charge carrier requires the knowledge of the weighting potential in addition to the electric
+field of the sensor. The weighting potential for a given sensor geometry can be calculated analytically or by means of a 
+finite-element simulation by setting the electrode of the pixel under consideration to unit potential, and all other 
+electrodes to ground \[[@planecondenser]\].
+
+The Shockley-Ramo theorem then states that the charge $`Q_n^{ind}`$ induced by the motion of a charge carrier is equivalent
+to the difference in weighting potential between the previous location $`\vec{x}_0`$ and its current position $`\vec{x}_1`$,
+viz.
+
+```math
+Q_n^{ind}  = \int_{t_0}^{t_1} I_n^{ind} \textrm{d}t = q \left[ \phi (\vec{x}_1) - \phi(\vec{x}_0) \right],
+```
+
+assuming discrete time steps.
+Here, $`q`$ is the charge of the carrier, $`\phi(\vec{x})`$ the weighting potential at position $`\vec{x}`$ and
+$`I_n^{ind}`$ the induced current in the particular time step.
+
+The following drawings indicate how the induced current calculations are performed in Allpix Squared. Here, the pixels in
+the region of interest for which the induced current is calculated are shown in blue. The charge carrier position is
+indicated by the red dot and the weighting potential is displayed in orange, with its electrode at unit potential as small
+black square and its full extent indicated by the orange line.
+
+The weighting potential is centred with its readout electrode on unit potential on the pixel of interest for which the
+induced current by the charge carrier movement is to be calculated. For the subsequent pixel of interest, the position
+of the weighting potential is adjusted accordingly.
+
+![](./induction_1.png)\
+*Calculation of the induced current in the pixel under which the charge carrier is moving. The weighting potential is
+therefore centered on this pixel. The weighting potential difference is calculated from the two carrier positions in
+the center of the 3x3 pixel map.*
+
+![](./induction_2.png)\
+*Calculation of the induced current in a pixel neighboring the one under which the charge carrier is moving. The weighting
+potential is shifted accordingly to be centered on the neighbor pixel in question. The weighting potential difference is
+calculated from the two carrier positions in the lower-right pixel of the 3x3 pixel map.*
+
+![](./induction_3.png)\
+*Calculation of the induced current in a pixel neighboring the one under which the charge carrier is moving. The weighting
+potential is shifted accordingly to be centered on the neighbor pixel in question. The weighting potential difference is
+calculated from the two carrier positions in the center-left pixel of the 3x3 pixel map.*
+
+
+For the special case of a strongly confined weighting potential at the collection electrode, it suffices to consider the
+potential of a single pixel cell. In this case, the induced current in all neighboring pixels is zero since they reside
+outside the defined weighting potential.
+
+![](./induction_4.png)\
+*The induced current in the lower-left pixel neighboring the one under which the charge carrier moves is zero, since the
+weighting potential has a size of only 1x1 pixels and the potential at the position of the charge carrier with respect to
+the pixel in question os by definition zero.*
+
+[@shockley]: http://dx.doi.org/10.1063/1.1710367
+[@ramo]: http://dx.doi.org/10.1109/JRPROC.1939.228757
+[@planecondenser]: http://dx.doi.org/10.1016/j.nima.2014.08.044
