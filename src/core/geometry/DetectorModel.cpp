@@ -85,6 +85,14 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
     // Sensor material:
     sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
+    // Throw an exception for pre-3.0 implant definitions:
+    if(config.has("implant_size")) {
+        throw InvalidValueError(
+            config,
+            "implant_size",
+            "implant definition not supported, individual [implant] sections should be used for implant definitions");
+    }
+
     // Read implants
     for(auto& implant_config : reader_.getConfigurations("implant")) {
         auto imtype = implant_config.get<Implant::Type>("type");
