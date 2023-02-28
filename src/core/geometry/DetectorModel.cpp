@@ -87,10 +87,8 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
 
     // Throw an exception for pre-3.0 implant definitions:
     if(config.has("implant_size")) {
-        throw InvalidValueError(
-            config,
-            "implant_size",
-            "implant definition not supported, individual [implant] sections should be used for implant definitions");
+        LOG(WARNING) << "Parameter \"implant_size\" of model " << config.getFilePath() << " not supported," << std::endl
+                     << "Individual [implant] sections must be used for implant definitions";
     }
 
     // Read implants
