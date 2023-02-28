@@ -127,6 +127,10 @@ assuming discrete time steps.
 Here, $`q`$ is the charge of the carrier, $`\phi(\vec{x})`$ the weighting potential at position $`\vec{x}`$ and
 $`I_n^{ind}`$ the induced current in the particular time step.
 
+Since this procedure requires a realignment of the weighting potential for every pixel or electrode in question, the 
+`SENSOR` mapping geometry is not a viable option. The weighting potential map needs to be centered around the electrode
+on unit potential.
+
 The following drawings indicate how the induced current calculations are performed in Allpix Squared. Here, the pixels in
 the region of interest for which the induced current is calculated are shown in blue. The charge carrier position is
 indicated by the red dot and the weighting potential is displayed in orange, with its electrode at unit potential as small
