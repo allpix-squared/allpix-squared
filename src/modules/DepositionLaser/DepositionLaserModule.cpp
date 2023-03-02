@@ -86,9 +86,24 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     }
 
     // FIXME less hardcoded values
-    wavelength_ = config_.get<double>("wavelength");
-    if(Units::convert(wavelength_, "nm") < 250 || Units::convert(wavelength_, "nm") > 1450) {
-        throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
+
+    is_user_optics_ = (config_.count({"absorption_length", "refractive_index"}) == 2);
+
+    if(config_.count({"absorption_length", "refractive_index", "wavelength"}) == 3) {
+        throw InvalidCombinationError(config_,
+                                      {"absorption_length", "refractive_index", "wavelength"},
+                                      "User definition for optical parameters an wavelength are mutually exclusive!");
+    }
+
+    if(is_user_optics_) {
+        absorption_length_ = config_.get<double>("absorption_length");
+        refractive_index_ = config_.get<double>("refractive_index");
+        LOG(DEBUG) << "Setting user-defined optical properties for sensor material";
+    } else {
+        wavelength_ = config_.get<double>("wavelength");
+        if(Units::convert(wavelength_, "nm") < 250 || Units::convert(wavelength_, "nm") > 1450) {
+            throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
+        }
     }
 
     config_.setDefault<bool>("output_plots", false);
@@ -97,12 +112,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
 
 void DepositionLaserModule::initialize() {
     // Check if there are user-specified optical properties for materials
-    is_user_optics_ = (config_.count({"absorption_length", "refractive_index"}) == 2);
-    if(is_user_optics_) {
-        absorption_length_ = config_.get<double>("absorption_length");
-        refractive_index_ = config_.get<double>("refractive_index");
-        LOG(DEBUG) << "Setting user-defined optical properties for sensor material";
-    } else {
+    if(!is_user_optics_) {
         // wavelength: {absorption_length, refractive_index}
         std::map<double, std::pair<double, double>> optics_lut;
         double wl = 0;
