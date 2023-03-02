@@ -55,7 +55,8 @@ and temporal distribution.
 
 * `number_of_photons`: number of incident photons, generated in *one* event. Defaults to 10000. The total deposited charge
   will also depend on wavelength and geometry.
-* `wavelength` of the laser. Supported values are 250 -- 1450 nm.
+* `wavelength` of the laser. If specified, it is used to retrieve sensor optical properties from the lookup table (data is available for the range of 250 -- 1450 nm). The only supported material is silicon.
+* `absorption_length` and `refractive_index`: if both are specified, given values are used instead of the lookup table. This also allows use of sensor materials other than silicon.
 * `pulse_duration`: gaussian width of pulse temporal profile. Defaults to 0.5 ns.
 * `source_position`: a 3D position vector.
 * `beam_direction`: a 3D direction vector.
@@ -66,7 +67,7 @@ and temporal distribution.
   source.
 * `beam_convergence_angle`: max angle between tracks and `beam_direction`. Needs to be specified for a `converging` beam.
 * `output_plots`: if set `true`, this module will produce histograms to monitor beam shape and also 3D distributions of charges, deposited in each detector. Histograms would look sensible even for one-event runs. Defaults to `false`.
-* `absorption_length` and `refractive_index`: if both are specified, they override corresponding values from the lookup table. This also allows use of sensor materials other than silicon.
+
 
 ## Usage
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
