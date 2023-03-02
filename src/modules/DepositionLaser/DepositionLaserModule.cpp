@@ -92,7 +92,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     if(config_.count({"absorption_length", "refractive_index", "wavelength"}) == 3) {
         throw InvalidCombinationError(config_,
                                       {"absorption_length", "refractive_index", "wavelength"},
-                                      "User definition for optical parameters an wavelength are mutually exclusive!");
+                                      "User definition for optical parameters and wavelength are mutually exclusive!");
     }
 
     if(is_user_optics_) {
