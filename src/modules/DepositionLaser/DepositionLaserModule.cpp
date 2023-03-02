@@ -103,20 +103,25 @@ void DepositionLaserModule::initialize() {
         refractive_index_ = config_.get<double>("refractive_index");
         LOG(DEBUG) << "Setting user-defined optical properties for sensor material";
     } else {
-        // Load data
-        std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
-        std::ifstream f(std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data");
         // wavelength: {absorption_length, refractive_index}
         std::map<double, std::pair<double, double>> optics_lut;
         double wl = 0;
         double abs_length = 0;
         double refr_ind = 0;
 
+        // Load data
+        std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
+        auto file_path = std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data";
+        std::ifstream f(file_path);
+        LOG(DEBUG) << "Loading optical properties for sensor material from LUT: " << file_path.string();
+
+        if(!f || !std::filesystem::is_regular_file(file_path)) {
+            throw ModuleError("Could not open optical properties reference file at \"" + file_path.string() + "\"");
+        }
+
         while(f >> wl >> abs_length >> refr_ind) {
             optics_lut[Units::get(wl, "nm")] = {abs_length, refr_ind};
         }
-
-        LOG(DEBUG) << "Loading optical properties for sensor material from LUT: " << laser_data_path;
 
         // Find or interpolate absorption depth for given wavelength
 
