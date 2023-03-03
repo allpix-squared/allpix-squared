@@ -533,7 +533,7 @@ void TransientPropagationModule::propagate(Event* event,
             auto inverted_type = magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type));
             if(gain_integer < floor_gain) {
                 auto current_pos = static_cast<ROOT::Math::XYZPoint>(position);
-                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
+                LOG(DEBUG) << "Set of charge carriers (" << inverted_type.value() << ") from gain on "
                            << Units::display(current_pos, {"mm", "um"});
 
                 propagate(event,
@@ -546,9 +546,8 @@ void TransientPropagationModule::propagate(Event* event,
                           output_plot_points);
                 // Update the gain factor we have already generated opposite type charges for:
                 gain_integer = floor_gain;
-                LOG(DEBUG) << "Continuing propagation of chare carrier set (" << type << ") at "
+                LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
                            << Units::display(current_pos, {"mm", "um"});
-                ;
             }
         }
 
