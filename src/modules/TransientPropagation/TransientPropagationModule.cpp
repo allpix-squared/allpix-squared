@@ -334,14 +334,14 @@ void TransientPropagationModule::run(Event* event) {
             }
 
             // Get position and propagate through sensor
-            auto [local_position, time, gain, state] = propagate(event,
-                                                                 deposit,
-                                                                 deposit.getLocalPosition(),
-                                                                 deposit.getType(),
-                                                                 charge_per_step,
-                                                                 deposit.getLocalTime(),
-                                                                 propagated_charges,
-                                                                 output_plot_points);
+            propagate(event,
+                      deposit,
+                      deposit.getLocalPosition(),
+                      deposit.getType(),
+                      charge_per_step,
+                      deposit.getLocalTime(),
+                      propagated_charges,
+                      output_plot_points);
         }
     }
 
@@ -384,15 +384,14 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
-TransientPropagationModule::propagate(Event* event,
-                                      const DepositedCharge& deposit,
-                                      const ROOT::Math::XYZPoint& pos,
-                                      const CarrierType& type,
-                                      const unsigned int charge,
-                                      const double initial_time,
-                                      std::vector<PropagatedCharge>& propagated_charges,
-                                      LineGraph::OutputPlotPoints& output_plot_points) {
+void TransientPropagationModule::propagate(Event* event,
+                                           const DepositedCharge& deposit,
+                                           const ROOT::Math::XYZPoint& pos,
+                                           const CarrierType& type,
+                                           const unsigned int charge,
+                                           const double initial_time,
+                                           std::vector<PropagatedCharge>& propagated_charges,
+                                           LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
 
@@ -533,15 +532,14 @@ TransientPropagationModule::propagate(Event* event,
             auto floor_gain = static_cast<size_t>(std::floor(gain));
             auto inverted_type = magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type));
             if(gain_integer < floor_gain) {
-                auto [temp1, temp2, temp3, temp4] =
-                    propagate(event,
-                              deposit,
-                              static_cast<ROOT::Math::XYZPoint>(position),
-                              inverted_type.value(), // type is inverted, we generate only the other
-                              charge * (floor_gain - gain_integer),
-                              initial_time + runge_kutta.getTime(),
-                              propagated_charges,
-                              output_plot_points);
+                propagate(event,
+                          deposit,
+                          static_cast<ROOT::Math::XYZPoint>(position),
+                          inverted_type.value(), // type is inverted, we generate only the other
+                          charge * (floor_gain - gain_integer),
+                          initial_time + runge_kutta.getTime(),
+                          propagated_charges,
+                          output_plot_points);
                 // Update the gain factor we have already generated opposite type charges for:
                 gain_integer = floor_gain;
             }
@@ -679,8 +677,6 @@ TransientPropagationModule::propagate(Event* event,
             group_size_histo_->Fill(charge);
         }
     */
-    // Return the final position of the propagated charge, the time it took to propagate and its final state
-    return std::make_tuple(local_position, runge_kutta.getTime(), gain, state);
 }
 
 void TransientPropagationModule::finalize() {
