@@ -333,6 +333,7 @@ void TransientPropagationModule::run(Event* event) {
                       deposit.getType(),
                       charge_per_step,
                       deposit.getLocalTime(),
+                      deposit.getGlobalTime(),
                       propagated_charges,
                       output_plot_points);
         }
@@ -382,7 +383,8 @@ void TransientPropagationModule::propagate(Event* event,
                                            const ROOT::Math::XYZPoint& pos,
                                            const CarrierType& type,
                                            const unsigned int charge,
-                                           const double initial_time,
+                                           const double initial_time_local,
+                                           const double initial_time_global,
                                            std::vector<PropagatedCharge>& propagated_charges,
                                            LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
@@ -460,7 +462,7 @@ void TransientPropagationModule::propagate(Event* event,
     ROOT::Math::XYZVector efield{}, last_efield{};
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
-    while(state == CarrierState::MOTION && (initial_time + runge_kutta.getTime()) < integration_time_) {
+    while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) { // Set final state of charge carrier for plotting:
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
@@ -504,7 +506,7 @@ void TransientPropagationModule::propagate(Event* event,
             }
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
-            if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
+            if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 // De-trap and advance in time if still below integration time
                 LOG(TRACE) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 runge_kutta.advanceTime(detrap_time);
@@ -544,7 +546,8 @@ void TransientPropagationModule::propagate(Event* event,
                           current_pos,
                           inverted_type.value(), // type is inverted, we generate only the other
                           charge * (floor_gain - gain_integer),
-                          initial_time + runge_kutta.getTime(),
+                          initial_time_local + runge_kutta.getTime(),
+                          initial_time_global + runge_kutta.getTime(),
                           propagated_charges,
                           output_plot_points);
                 // Update the gain factor we have already generated opposite type charges for:
@@ -598,7 +601,7 @@ void TransientPropagationModule::propagate(Event* event,
         LOG(TRACE) << "Moving carriers below pixel " << Pixel::Index(xpixel, ypixel) << " from "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << ", "
-                   << Units::display(initial_time + runge_kutta.getTime(), "ns");
+                   << Units::display(initial_time_local + runge_kutta.getTime(), "ns");
 
         for(const auto& pixel_index : neighbors) {
             auto ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(position), pixel_index);
@@ -612,11 +615,11 @@ void TransientPropagationModule::propagate(Event* event,
             // Create pulse if it doesn't exist. Store induced charge in the returned pulse iterator
             auto pixel_map_iterator = pixel_map.emplace(pixel_index, Pulse(timestep_, integration_time_));
             try {
-                pixel_map_iterator.first->second.addCharge(induced, initial_time + runge_kutta.getTime());
+                pixel_map_iterator.first->second.addCharge(induced, initial_time_local + runge_kutta.getTime());
             } catch(const PulseBadAllocException& e) {
                 LOG(ERROR) << e.what() << std::endl
                            << "Ignoring pulse contribution at time "
-                           << Units::display(initial_time + runge_kutta.getTime(), {"ms", "us", "ns"});
+                           << Units::display(initial_time_local + runge_kutta.getTime(), {"ms", "us", "ns"});
             }
 
             if(output_plots_) {
@@ -624,16 +627,18 @@ void TransientPropagationModule::propagate(Event* event,
                 auto inPixel_um_y = (position.y() - model_->getPixelCenter(xpixel, ypixel).y()) * 1e3;
 
                 potential_difference_->Fill(std::fabs(ramo - last_ramo));
-                induced_charge_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                induced_charge_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                induced_charge_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                induced_charge_vs_depth_histo_->Fill(initial_time_local + runge_kutta.getTime(), position.z(), induced);
                 induced_charge_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 if(type == CarrierType::ELECTRON) {
-                    induced_charge_e_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                    induced_charge_e_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                    induced_charge_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                    induced_charge_e_vs_depth_histo_->Fill(
+                        initial_time_local + runge_kutta.getTime(), position.z(), induced);
                     induced_charge_e_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 } else {
-                    induced_charge_h_histo_->Fill(initial_time + runge_kutta.getTime(), induced);
-                    induced_charge_h_vs_depth_histo_->Fill(initial_time + runge_kutta.getTime(), position.z(), induced);
+                    induced_charge_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                    induced_charge_h_vs_depth_histo_->Fill(
+                        initial_time_local + runge_kutta.getTime(), position.z(), induced);
                     induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 }
             }
@@ -657,8 +662,8 @@ void TransientPropagationModule::propagate(Event* event,
                                        global_position,
                                        type,
                                        std::move(pixel_map),
-                                       initial_time + runge_kutta.getTime(),
-                                       initial_time + runge_kutta.getTime(), // FIXME global time
+                                       initial_time_local + runge_kutta.getTime(),
+                                       initial_time_global + runge_kutta.getTime(), // FIXME global time
                                        state,
                                        &deposit);
 

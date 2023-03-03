@@ -92,7 +92,8 @@ namespace allpix {
                        const ROOT::Math::XYZPoint& pos,
                        const CarrierType& type,
                        const unsigned int charge,
-                       const double initial_time,
+                       const double initial_time_local,
+                       const double initial_time_global,
                        std::vector<PropagatedCharge>& propagated_charges,
                        LineGraph::OutputPlotPoints& output_plot_points);
 
