@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Implementation of Geant4 geometry visualization module
- * @copyright Copyright (c) 2017-2020 CERN and the Allpix Squared authors.
+ *
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -456,14 +457,12 @@ void VisualizationGeant4Module::finalize() {
     UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
 
     // Set new signal handler to fetch CTRL+C and close the Qt application
-    if(gui_session_ != nullptr) {
-        has_gui = true;
-    }
     prev_handler = std::signal(SIGINT, interrupt_handler);
 
     // Open GUI / terminal or start viewer depending on mode
-    if(mode_ == ViewingMode::GUI) {
+    if(mode_ == ViewingMode::GUI && gui_session_ != nullptr) {
         LOG(INFO) << "Starting visualization session";
+        has_gui = true;
         gui_session_->SessionStart();
     } else if(mode_ == ViewingMode::TERMINAL) {
         LOG(INFO) << "Starting terminal session";

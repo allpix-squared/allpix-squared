@@ -91,7 +91,7 @@ namespace allpix {
         std::string user_;
         std::string password_;
         std::string run_id_;
-        int run_nr_;
+        int run_nr_{0};
         bool timing_global_{};
 
         // Statistical information about number of objects
