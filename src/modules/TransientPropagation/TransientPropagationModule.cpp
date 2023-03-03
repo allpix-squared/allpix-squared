@@ -531,15 +531,17 @@ TransientPropagationModule::propagate(Event* event,
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
             auto floor_gain = static_cast<size_t>(std::floor(gain));
+            auto inverted_type = magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type));
             if(gain_integer < floor_gain) {
-                auto [temp1, temp2, temp3, temp4] = propagate(event,
-                                                              deposit,
-                                                              static_cast<ROOT::Math::XYZPoint>(position),
-                                                              type, // FIXME invert type!
-                                                              charge * (floor_gain - gain_integer),
-                                                              initial_time + runge_kutta.getTime(),
-                                                              propagated_charges,
-                                                              output_plot_points);
+                auto [temp1, temp2, temp3, temp4] =
+                    propagate(event,
+                              deposit,
+                              static_cast<ROOT::Math::XYZPoint>(position),
+                              inverted_type.value(), // type is inverted, we generate only the other
+                              charge * (floor_gain - gain_integer),
+                              initial_time + runge_kutta.getTime(),
+                              propagated_charges,
+                              output_plot_points);
                 // Update the gain factor we have already generated opposite type charges for:
                 gain_integer = floor_gain;
             }
