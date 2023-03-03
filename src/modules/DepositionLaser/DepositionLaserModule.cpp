@@ -104,6 +104,39 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         if(Units::convert(wavelength_, "nm") < 250 || Units::convert(wavelength_, "nm") > 1450) {
             throw InvalidValueError(config_, "wavelength", "Currently supported wavelengths are 250 -- 1450 nm");
         }
+
+        // Register lookup path for data files:
+        if(config_.has("data_path")) {
+            auto path = config_.getPath("data_path", true);
+            if(!std::filesystem::is_directory(path)) {
+                throw InvalidValueError(config_, "data_path", "path does not point to a directory");
+            }
+            LOG(TRACE) << "Registered absorption data path from configuration: " << path;
+        } else {
+            if(std::filesystem::is_directory(ALLPIX_LASER_DATA_DIRECTORY)) {
+                config_.set<std::string>("data_path", ALLPIX_LASER_DATA_DIRECTORY);
+                LOG(TRACE) << "Registered absorption data path from system: " << ALLPIX_LASER_DATA_DIRECTORY;
+            } else {
+                const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
+                if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
+                    data_dirs_env = "/usr/local/share/:/usr/share/:";
+                }
+
+                auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
+                for(auto data_dir : data_dirs) {
+                    data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / "data";
+                    if(std::filesystem::is_directory(data_dir)) {
+                        config_.set<std::string>("data_path", data_dir);
+                        LOG(TRACE) << "Registered absorption data path from XDG_DATA_DIRS: " << data_dir;
+                    } else {
+                        throw ModuleError(
+                            "Cannot find absorption data files, provide them in the configuration, via XDG_DATA_DIRS or "
+                            "in system directory " +
+                            std::string(ALLPIX_LASER_DATA_DIRECTORY));
+                    }
+                }
+            }
+        }
     }
 
     config_.setDefault<bool>("output_plots", false);
@@ -120,10 +153,9 @@ void DepositionLaserModule::initialize() {
         double refr_ind = 0;
 
         // Load data
-        std::string laser_data_path = ALLPIX_LASER_DATA_DIRECTORY;
-        auto file_path = std::filesystem::path(laser_data_path) / "silicon_photoabsorption.data";
+        auto file_path = config_.getPath("data_path", true) / "silicon_photoabsorption.data";
         std::ifstream f(file_path);
-        LOG(DEBUG) << "Loading optical properties for sensor material from LUT: " << file_path.string();
+        LOG(DEBUG) << "Loading optical properties for sensor material from LUT: " << std::endl << file_path.string();
 
         if(!f || !std::filesystem::is_regular_file(file_path)) {
             throw ModuleError("Could not open optical properties reference file at \"" + file_path.string() + "\"");
@@ -134,7 +166,6 @@ void DepositionLaserModule::initialize() {
         }
 
         // Find or interpolate absorption depth for given wavelength
-
         if(optics_lut.count(wavelength_) != 0) {
             absorption_length_ = optics_lut[wavelength_].first;
             refractive_index_ = optics_lut[wavelength_].second;
