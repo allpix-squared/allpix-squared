@@ -326,13 +326,6 @@ void TransientPropagationModule::run(Event* event) {
             }
             charges_remaining -= charge_per_step;
 
-            // Add point of deposition to the output plots if requested
-            if(output_linegraphs_) {
-                output_plot_points.emplace_back(
-                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
-                    std::vector<ROOT::Math::XYZPoint>());
-            }
-
             // Get position and propagate through sensor
             propagate(event,
                       deposit,
@@ -394,6 +387,13 @@ void TransientPropagationModule::propagate(Event* event,
                                            LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
+
+    // Add point of deposition to the output plots if requested
+    if(output_linegraphs_) {
+        output_plot_points.emplace_back(std::make_tuple(deposit.getGlobalTime(), charge, type, CarrierState::MOTION),
+                                        std::vector<ROOT::Math::XYZPoint>());
+    }
+    auto output_plot_index = output_plot_points.size() - 1;
 
     // Initialize gain
     double gain = 1.;
@@ -464,8 +464,8 @@ void TransientPropagationModule::propagate(Event* event,
         if(output_linegraphs_) { // Set final state of charge carrier for plotting:
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
-                output_plot_points.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
-                next_idx = output_plot_points.back().second.size();
+                output_plot_points.at(output_plot_index).second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points.at(output_plot_index).second.size();
             }
         }
 
@@ -635,9 +635,9 @@ void TransientPropagationModule::propagate(Event* event,
     if(output_linegraphs_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-            std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
+            std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
         } else {
-            std::get<3>(output_plot_points.back().first) = state;
+            std::get<3>(output_plot_points.at(output_plot_index).first) = state;
         }
     }
 
