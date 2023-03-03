@@ -78,24 +78,27 @@ namespace allpix {
 
         /**
          * @brief Propagate a single set of charges through the sensor
-         * @param event        Pointer to current event
-         * @param pos          Position of the deposit in the sensor
-         * @param type         Type of the carrier to propagate
-         * @param charge       Total charge of the observed charge carrier set
-         * @param initial_time Initial timestamp referring to the start of the event
-         * @param pixel_map    Map of surrounding pixels and their induced pulses. Provided as reference to store simulation
-         *                  result in
+         * @param event               Pointer to current event
+         * @param deposit             Reference to the original deposited charge object
+         * @param pos                 Position of the deposit in the sensor
+         * @param type                Type of the carrier to propagate
+         * @param charge              Total charge of the observed charge carrier set
+         * @param initial_time_local  Initial local time with respect to the start of the event
+         * @param initial_time_global Initial global time with respect to the start of the event
+         * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
          * @param output_plot_points Reference to vector to hold points for line graph output plots
+         *
+         * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        void propagate(Event* event,
-                       const DepositedCharge& deposit,
-                       const ROOT::Math::XYZPoint& pos,
-                       const CarrierType& type,
-                       const unsigned int charge,
-                       const double initial_time_local,
-                       const double initial_time_global,
-                       std::vector<PropagatedCharge>& propagated_charges,
-                       LineGraph::OutputPlotPoints& output_plot_points);
+        std::tuple<double, double, double> propagate(Event* event,
+                                                     const DepositedCharge& deposit,
+                                                     const ROOT::Math::XYZPoint& pos,
+                                                     const CarrierType& type,
+                                                     const unsigned int charge,
+                                                     const double initial_time_local,
+                                                     const double initial_time_global,
+                                                     std::vector<PropagatedCharge>& propagated_charges,
+                                                     LineGraph::OutputPlotPoints& output_plot_points);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};

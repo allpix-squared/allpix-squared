@@ -327,15 +327,20 @@ void TransientPropagationModule::run(Event* event) {
             charges_remaining -= charge_per_step;
 
             // Get position and propagate through sensor
-            propagate(event,
-                      deposit,
-                      deposit.getLocalPosition(),
-                      deposit.getType(),
-                      charge_per_step,
-                      deposit.getLocalTime(),
-                      deposit.getGlobalTime(),
-                      propagated_charges,
-                      output_plot_points);
+            auto [recombined, trapped, propagated] = propagate(event,
+                                                               deposit,
+                                                               deposit.getLocalPosition(),
+                                                               deposit.getType(),
+                                                               charge_per_step,
+                                                               deposit.getLocalTime(),
+                                                               deposit.getGlobalTime(),
+                                                               propagated_charges,
+                                                               output_plot_points);
+
+            // Update statistics:
+            recombined_charges_count += recombined;
+            trapped_charges_count += trapped;
+            propagated_charges_count += propagated;
         }
     }
 
@@ -378,17 +383,21 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-void TransientPropagationModule::propagate(Event* event,
-                                           const DepositedCharge& deposit,
-                                           const ROOT::Math::XYZPoint& pos,
-                                           const CarrierType& type,
-                                           const unsigned int charge,
-                                           const double initial_time_local,
-                                           const double initial_time_global,
-                                           std::vector<PropagatedCharge>& propagated_charges,
-                                           LineGraph::OutputPlotPoints& output_plot_points) {
+std::tuple<double, double, double> TransientPropagationModule::propagate(Event* event,
+                                                                         const DepositedCharge& deposit,
+                                                                         const ROOT::Math::XYZPoint& pos,
+                                                                         const CarrierType& type,
+                                                                         const unsigned int charge,
+                                                                         const double initial_time_local,
+                                                                         const double initial_time_global,
+                                                                         std::vector<PropagatedCharge>& propagated_charges,
+                                                                         LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
+
+    unsigned int propagated_charges_count = 0;
+    unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
@@ -541,15 +550,22 @@ void TransientPropagationModule::propagate(Event* event,
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type.value() << ") from gain on "
                            << Units::display(current_pos, {"mm", "um"});
 
-                propagate(event,
-                          deposit,
-                          current_pos,
-                          inverted_type.value(), // type is inverted, we generate only the other
-                          charge * (floor_gain - gain_integer),
-                          initial_time_local + runge_kutta.getTime(),
-                          initial_time_global + runge_kutta.getTime(),
-                          propagated_charges,
-                          output_plot_points);
+                auto [recombined, trapped, propagated] =
+                    propagate(event,
+                              deposit,
+                              current_pos,
+                              inverted_type.value(), // type is inverted, we generate only the other
+                              charge * (floor_gain - gain_integer),
+                              initial_time_local + runge_kutta.getTime(),
+                              initial_time_global + runge_kutta.getTime(),
+                              propagated_charges,
+                              output_plot_points);
+
+                // Update statistics:
+                recombined_charges_count += recombined;
+                trapped_charges_count += trapped;
+                propagated_charges_count += propagated;
+
                 // Update the gain factor we have already generated opposite type charges for:
                 gain_integer = floor_gain;
                 LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
@@ -674,14 +690,14 @@ void TransientPropagationModule::propagate(Event* event,
     propagated_charges.push_back(std::move(propagated_charge));
 
     if(state == CarrierState::RECOMBINED) {
-        // recombined_charges_count += charge;
+        recombined_charges_count += charge * gain;
         if(output_plots_) {
             recombination_time_histo_->Fill(runge_kutta.getTime(), charge * gain);
         }
     } else if(state == CarrierState::TRAPPED) {
-        // trapped_charges_count += charge;
+        trapped_charges_count += charge * gain;
     } else {
-        // propagated_charges_count += charge;
+        propagated_charges_count += charge * gain;
     }
 
     if(output_plots_) {
@@ -689,6 +705,9 @@ void TransientPropagationModule::propagate(Event* event,
                                 static_cast<unsigned int>(charge * gain));
         group_size_histo_->Fill(charge);
     }
+
+    // Return the final position of the propagated charge, the time it took to propagate and its final state
+    return std::make_tuple(recombined_charges_count, trapped_charges_count, propagated_charges_count);
 }
 
 void TransientPropagationModule::finalize() {
