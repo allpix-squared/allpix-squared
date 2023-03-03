@@ -56,6 +56,7 @@ and temporal distribution.
 * `number_of_photons`: number of incident photons, generated in *one* event. Defaults to 10000. The total deposited charge
   will also depend on wavelength and geometry.
 * `wavelength` of the laser. If specified, it is used to retrieve sensor optical properties from the lookup table (data is available for the range of 250 -- 1450 nm). The only supported material is silicon.
+* `data_path`: Directory to read the tabulated input data for the absorption on silicon. By default, this is the standard installation path of the data files shipped with the framework.
 * `absorption_length` and `refractive_index`: if both are specified, given values are used instead of the lookup table. This also allows use of sensor materials other than silicon.
 * `pulse_duration`: gaussian width of pulse temporal profile. Defaults to 0.5 ns.
 * `source_position`: a 3D position vector.
