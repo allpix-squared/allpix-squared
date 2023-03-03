@@ -398,6 +398,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Initialize gain
     double gain = 1.;
+    size_t gain_integer = 1;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
@@ -526,6 +527,22 @@ TransientPropagationModule::propagate(Event* event,
             LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
                        << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+            // If the gain increased, we need to generate new charge carriers of the opposite type
+            // Same-type carriers are simulated via the gain factor:
+            auto floor_gain = static_cast<size_t>(std::floor(gain));
+            if(gain_integer < floor_gain) {
+                auto [temp1, temp2, temp3, temp4] = propagate(event,
+                                                              deposit,
+                                                              static_cast<ROOT::Math::XYZPoint>(position),
+                                                              type, // FIXME invert type!
+                                                              charge * (floor_gain - gain_integer),
+                                                              initial_time + runge_kutta.getTime(),
+                                                              propagated_charges,
+                                                              output_plot_points);
+                // Update the gain factor we have already generated opposite type charges for:
+                gain_integer = floor_gain;
+            }
         }
 
         // Update step length histogram
