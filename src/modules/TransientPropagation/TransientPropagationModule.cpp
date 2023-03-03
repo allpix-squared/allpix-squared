@@ -673,24 +673,22 @@ void TransientPropagationModule::propagate(Event* event,
 
     propagated_charges.push_back(std::move(propagated_charge));
 
-    /*
-        if(state == CarrierState::RECOMBINED) {
-            recombined_charges_count += charge;
-            if(output_plots_) {
-                recombination_time_histo_->Fill(time, charge);
-            }
-        } else if(state == CarrierState::TRAPPED) {
-            trapped_charges_count += charge;
-        } else {
-            propagated_charges_count += charge;
-        }
-
+    if(state == CarrierState::RECOMBINED) {
+        // recombined_charges_count += charge;
         if(output_plots_) {
-            drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")),
-                                    static_cast<unsigned int>(charge * gain));
-            group_size_histo_->Fill(charge);
+            recombination_time_histo_->Fill(runge_kutta.getTime(), charge * gain);
         }
-    */
+    } else if(state == CarrierState::TRAPPED) {
+        // trapped_charges_count += charge;
+    } else {
+        // propagated_charges_count += charge;
+    }
+
+    if(output_plots_) {
+        drift_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")),
+                                static_cast<unsigned int>(charge * gain));
+        group_size_histo_->Fill(charge);
+    }
 }
 
 void TransientPropagationModule::finalize() {
