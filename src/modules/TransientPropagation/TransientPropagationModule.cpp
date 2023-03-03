@@ -397,6 +397,7 @@ void TransientPropagationModule::propagate(Event* event,
 
     // Initialize gain
     double gain = 1.;
+    double gain_previous = 1.;
     size_t gain_integer = 1;
 
     // Define a function to compute the diffusion
@@ -522,10 +523,12 @@ void TransientPropagationModule::propagate(Event* event,
         if(gain > 20.) {
             LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
                          << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-        } else if(gain > 1.) {
+        } else if(gain > gain_previous) {
             LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
                        << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+            gain_previous = gain;
 
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
