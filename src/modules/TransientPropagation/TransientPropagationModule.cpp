@@ -325,7 +325,6 @@ void TransientPropagationModule::run(Event* event) {
                 charge_per_step = charges_remaining;
             }
             charges_remaining -= charge_per_step;
-            std::map<Pixel::Index, Pulse> px_map;
 
             // Add point of deposition to the output plots if requested
             if(output_linegraphs_) {
@@ -336,47 +335,13 @@ void TransientPropagationModule::run(Event* event) {
 
             // Get position and propagate through sensor
             auto [local_position, time, gain, state] = propagate(event,
+                                                                 deposit,
                                                                  deposit.getLocalPosition(),
                                                                  deposit.getType(),
                                                                  charge_per_step,
                                                                  deposit.getLocalTime(),
-                                                                 px_map,
+                                                                 propagated_charges,
                                                                  output_plot_points);
-
-            // Create a new propagated charge and add it to the list
-            auto global_position = detector_->getGlobalPosition(local_position);
-            PropagatedCharge propagated_charge(local_position,
-                                               global_position,
-                                               deposit.getType(),
-                                               std::move(px_map),
-                                               deposit.getLocalTime() + time,
-                                               deposit.getGlobalTime() + time,
-                                               state,
-                                               &deposit);
-
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(local_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time, induced "
-                       << Units::display(propagated_charge.getCharge(), {"e"})
-                       << ", final state: " << allpix::to_string(state);
-
-            propagated_charges.push_back(std::move(propagated_charge));
-
-            if(state == CarrierState::RECOMBINED) {
-                recombined_charges_count += charge_per_step;
-                if(output_plots_) {
-                    recombination_time_histo_->Fill(time, charge_per_step);
-                }
-            } else if(state == CarrierState::TRAPPED) {
-                trapped_charges_count += charge_per_step;
-            } else {
-                propagated_charges_count += charge_per_step;
-            }
-
-            if(output_plots_) {
-                drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")),
-                                        static_cast<unsigned int>(charge_per_step * gain));
-                group_size_histo_->Fill(charge_per_step);
-            }
         }
     }
 
@@ -421,13 +386,15 @@ void TransientPropagationModule::run(Event* event) {
  */
 std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
 TransientPropagationModule::propagate(Event* event,
+                                      const DepositedCharge& deposit,
                                       const ROOT::Math::XYZPoint& pos,
                                       const CarrierType& type,
                                       const unsigned int charge,
                                       const double initial_time,
-                                      std::map<Pixel::Index, Pulse>& pixel_map,
+                                      std::vector<PropagatedCharge>& propagated_charges,
                                       LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
+    std::map<Pixel::Index, Pulse> pixel_map;
 
     // Initialize gain
     double gain = 1.;
@@ -657,8 +624,44 @@ TransientPropagationModule::propagate(Event* event,
         }
     }
 
+    // Create a new propagated charge and add it to the list
+    auto local_position = static_cast<ROOT::Math::XYZPoint>(position);
+    auto global_position = detector_->getGlobalPosition(local_position);
+    PropagatedCharge propagated_charge(local_position,
+                                       global_position,
+                                       type,
+                                       std::move(pixel_map),
+                                       initial_time + runge_kutta.getTime(),
+                                       initial_time + runge_kutta.getTime(), // FIXME global time
+                                       state,
+                                       &deposit);
+
+    LOG(DEBUG) << " Propagated " << charge << " to " << Units::display(local_position, {"mm", "um"}) << " in "
+               << Units::display(runge_kutta.getTime(), "ns") << " time, induced "
+               << Units::display(propagated_charge.getCharge(), {"e"}) << ", final state: " << allpix::to_string(state);
+
+    propagated_charges.push_back(std::move(propagated_charge));
+
+    /*
+        if(state == CarrierState::RECOMBINED) {
+            recombined_charges_count += charge;
+            if(output_plots_) {
+                recombination_time_histo_->Fill(time, charge);
+            }
+        } else if(state == CarrierState::TRAPPED) {
+            trapped_charges_count += charge;
+        } else {
+            propagated_charges_count += charge;
+        }
+
+        if(output_plots_) {
+            drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")),
+                                    static_cast<unsigned int>(charge * gain));
+            group_size_histo_->Fill(charge);
+        }
+    */
     // Return the final position of the propagated charge, the time it took to propagate and its final state
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), runge_kutta.getTime(), gain, state);
+    return std::make_tuple(local_position, runge_kutta.getTime(), gain, state);
 }
 
 void TransientPropagationModule::finalize() {
