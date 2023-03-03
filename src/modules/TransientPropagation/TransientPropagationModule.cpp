@@ -545,22 +545,21 @@ TransientPropagationModule::propagate(Event* event,
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
             auto floor_gain = static_cast<unsigned int>(std::floor(gain));
-            auto inverted_type = magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type));
+            auto inverted_type = invertCarrierType(type);
             if(gain_integer < floor_gain) {
                 auto current_pos = static_cast<ROOT::Math::XYZPoint>(position);
-                LOG(DEBUG) << "Set of charge carriers (" << inverted_type.value() << ") from gain on "
+                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(current_pos, {"mm", "um"});
 
-                auto [recombined, trapped, propagated] =
-                    propagate(event,
-                              deposit,
-                              current_pos,
-                              inverted_type.value(), // type is inverted, we generate only the other
-                              charge * (floor_gain - gain_integer),
-                              initial_time_local + runge_kutta.getTime(),
-                              initial_time_global + runge_kutta.getTime(),
-                              propagated_charges,
-                              output_plot_points);
+                auto [recombined, trapped, propagated] = propagate(event,
+                                                                   deposit,
+                                                                   current_pos,
+                                                                   inverted_type,
+                                                                   charge * (floor_gain - gain_integer),
+                                                                   initial_time_local + runge_kutta.getTime(),
+                                                                   initial_time_global + runge_kutta.getTime(),
+                                                                   propagated_charges,
+                                                                   output_plot_points);
 
                 // Update statistics:
                 recombined_charges_count += recombined;
