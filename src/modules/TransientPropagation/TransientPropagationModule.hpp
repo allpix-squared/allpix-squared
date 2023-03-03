@@ -90,15 +90,15 @@ namespace allpix {
          *
          * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        std::tuple<double, double, double> propagate(Event* event,
-                                                     const DepositedCharge& deposit,
-                                                     const ROOT::Math::XYZPoint& pos,
-                                                     const CarrierType& type,
-                                                     const unsigned int charge,
-                                                     const double initial_time_local,
-                                                     const double initial_time_global,
-                                                     std::vector<PropagatedCharge>& propagated_charges,
-                                                     LineGraph::OutputPlotPoints& output_plot_points);
+        std::tuple<unsigned int, unsigned int, unsigned int> propagate(Event* event,
+                                                                       const DepositedCharge& deposit,
+                                                                       const ROOT::Math::XYZPoint& pos,
+                                                                       const CarrierType& type,
+                                                                       const unsigned int charge,
+                                                                       const double initial_time_local,
+                                                                       const double initial_time_global,
+                                                                       std::vector<PropagatedCharge>& propagated_charges,
+                                                                       LineGraph::OutputPlotPoints& output_plot_points);
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};

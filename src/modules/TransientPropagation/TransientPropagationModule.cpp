@@ -383,15 +383,16 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<double, double, double> TransientPropagationModule::propagate(Event* event,
-                                                                         const DepositedCharge& deposit,
-                                                                         const ROOT::Math::XYZPoint& pos,
-                                                                         const CarrierType& type,
-                                                                         const unsigned int charge,
-                                                                         const double initial_time_local,
-                                                                         const double initial_time_global,
-                                                                         std::vector<PropagatedCharge>& propagated_charges,
-                                                                         LineGraph::OutputPlotPoints& output_plot_points) {
+std::tuple<unsigned int, unsigned int, unsigned int>
+TransientPropagationModule::propagate(Event* event,
+                                      const DepositedCharge& deposit,
+                                      const ROOT::Math::XYZPoint& pos,
+                                      const CarrierType& type,
+                                      const unsigned int charge,
+                                      const double initial_time_local,
+                                      const double initial_time_global,
+                                      std::vector<PropagatedCharge>& propagated_charges,
+                                      LineGraph::OutputPlotPoints& output_plot_points) {
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
 
@@ -409,7 +410,7 @@ std::tuple<double, double, double> TransientPropagationModule::propagate(Event* 
     // Initialize gain
     double gain = 1.;
     double gain_previous = 1.;
-    size_t gain_integer = 1;
+    unsigned int gain_integer = 1;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
@@ -543,7 +544,7 @@ std::tuple<double, double, double> TransientPropagationModule::propagate(Event* 
 
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
-            auto floor_gain = static_cast<size_t>(std::floor(gain));
+            auto floor_gain = static_cast<unsigned int>(std::floor(gain));
             auto inverted_type = magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type));
             if(gain_integer < floor_gain) {
                 auto current_pos = static_cast<ROOT::Math::XYZPoint>(position);
@@ -690,14 +691,14 @@ std::tuple<double, double, double> TransientPropagationModule::propagate(Event* 
     propagated_charges.push_back(std::move(propagated_charge));
 
     if(state == CarrierState::RECOMBINED) {
-        recombined_charges_count += charge * gain;
+        recombined_charges_count += static_cast<unsigned int>(charge * gain);
         if(output_plots_) {
             recombination_time_histo_->Fill(runge_kutta.getTime(), charge * gain);
         }
     } else if(state == CarrierState::TRAPPED) {
-        trapped_charges_count += charge * gain;
+        trapped_charges_count += static_cast<unsigned int>(charge * gain);
     } else {
-        propagated_charges_count += charge * gain;
+        propagated_charges_count += static_cast<unsigned int>(charge * gain);
     }
 
     if(output_plots_) {
