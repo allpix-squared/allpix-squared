@@ -532,15 +532,18 @@ TransientPropagationModule::propagate(Event* event,
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
         gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
-        if(gain > 20.) {
-            LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                         << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-        } else if(gain > gain_previous) {
+        if(gain > gain_previous) {
             LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
                        << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
+            // Update already processed gain factor:
             gain_previous = gain;
+
+            if(gain > 20.) {
+                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+            }
 
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
