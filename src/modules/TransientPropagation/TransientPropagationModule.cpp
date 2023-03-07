@@ -548,8 +548,8 @@ TransientPropagationModule::propagate(Event* event,
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
             auto floor_gain = static_cast<unsigned int>(std::floor(gain));
-            auto inverted_type = invertCarrierType(type);
             if(gain_integer < floor_gain) {
+                auto inverted_type = invertCarrierType(type);
                 auto current_pos = static_cast<ROOT::Math::XYZPoint>(position);
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(current_pos, {"mm", "um"});
