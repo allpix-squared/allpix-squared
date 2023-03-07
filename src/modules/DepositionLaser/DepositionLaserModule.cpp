@@ -85,8 +85,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "pulse_duration_", "Pulse should be a positive value");
     }
 
-    // FIXME less hardcoded values
-
+    // Select user optics or silicon absorption lookup:
     is_user_optics_ = (config_.count({"absorption_length", "refractive_index"}) == 2);
 
     if(config_.count({"absorption_length", "refractive_index", "wavelength"}) == 3) {
