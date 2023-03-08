@@ -312,26 +312,23 @@ void GenericPropagationModule::run(Event* event) {
             charges_remaining -= charge_per_step;
 
             // Propagate a single charge deposit
-            auto [recombined, trapped, propagated] = propagate(event,
-                                                               deposit,
-                                                               deposit.getLocalPosition(),
-                                                               deposit.getType(),
-                                                               charge_per_step,
-                                                               deposit.getLocalTime(),
-                                                               deposit.getGlobalTime(),
-                                                               0,
-                                                               propagated_charges,
-                                                               output_plot_points);
+            auto [recombined, trapped, propagated, steps, time] = propagate(event,
+                                                                            deposit,
+                                                                            deposit.getLocalPosition(),
+                                                                            deposit.getType(),
+                                                                            charge_per_step,
+                                                                            deposit.getLocalTime(),
+                                                                            deposit.getGlobalTime(),
+                                                                            0,
+                                                                            propagated_charges,
+                                                                            output_plot_points);
 
-            // Update statistics:
+            // Update statistical information
             recombined_charges_count += recombined;
             trapped_charges_count += trapped;
             propagated_charges_count += propagated;
-
-            // Update statistical information
-            // FIXME ++step_count;
-            // propagated_charges_count += charge_per_step;
-            // FIXME total_time += charge_per_step * time;
+            step_count += steps;
+            total_time += time;
         }
     }
 
@@ -380,7 +377,7 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<unsigned int, unsigned int, unsigned int>
+std::tuple<unsigned int, unsigned int, unsigned int, unsigned int, long double>
 GenericPropagationModule::propagate(Event* event,
                                     const DepositedCharge& deposit,
                                     const ROOT::Math::XYZPoint& pos,
@@ -404,6 +401,8 @@ GenericPropagationModule::propagate(Event* event,
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
+    unsigned int steps = 0;
+    long double total_time = 0;
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
@@ -634,6 +633,9 @@ GenericPropagationModule::propagate(Event* event,
                    << Units::display(time, "ns") << " time, removing";
         trapped_charges_count += final_charge;
     }
+    propagated_charges_count += charge;
+    ++steps;
+    total_time += time * charge;
 
     LOG(DEBUG) << " Propagated " << final_charge << " to " << Units::display(local_position, {"mm", "um"}) << " in "
                << Units::display(time, "ns") << " time, gain " << gain << ", final state: " << allpix::to_string(state);
@@ -657,7 +659,7 @@ GenericPropagationModule::propagate(Event* event,
     }
 
     // Return statistics counters about this and all daughter propagated charge carrier groups and their final states
-    return std::make_tuple(recombined_charges_count, trapped_charges_count, propagated_charges_count);
+    return std::make_tuple(recombined_charges_count, trapped_charges_count, propagated_charges_count, steps, total_time);
 }
 
 void GenericPropagationModule::finalize() {

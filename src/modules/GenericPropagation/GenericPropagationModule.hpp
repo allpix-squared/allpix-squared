@@ -93,7 +93,7 @@ namespace allpix {
          *
          * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        std::tuple<unsigned int, unsigned int, unsigned int>
+        std::tuple<unsigned int, unsigned int, unsigned int, unsigned int, long double>
         propagate(Event* event,
                   const DepositedCharge& deposit,
                   const ROOT::Math::XYZPoint& pos,
