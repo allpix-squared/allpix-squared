@@ -91,23 +91,24 @@ namespace allpix {
          *
          * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        std::tuple<unsigned int, unsigned int, unsigned int> propagate(Event* event,
-                                                                       const DepositedCharge& deposit,
-                                                                       const ROOT::Math::XYZPoint& pos,
-                                                                       const CarrierType& type,
-                                                                       const unsigned int charge,
-                                                                       const double initial_time_local,
-                                                                       const double initial_time_global,
-                                                                       const unsigned int depth,
-                                                                       std::vector<PropagatedCharge>& propagated_charges,
-                                                                       LineGraph::OutputPlotPoints& output_plot_points);
+        std::tuple<unsigned int, unsigned int, unsigned int>
+        propagate(Event* event,
+                  const DepositedCharge& deposit,
+                  const ROOT::Math::XYZPoint& pos,
+                  const CarrierType& type,
+                  const unsigned int charge,
+                  const double initial_time_local,
+                  const double initial_time_global,
+                  const unsigned int depth,
+                  std::vector<PropagatedCharge>& propagated_charges,
+                  LineGraph::OutputPlotPoints& output_plot_points) const;
 
         /**
          * @brief Invert the type of a charge carrier
          * @param type Initial type of the charge carrier
          * @return Inverted type of the charge carrier
          */
-        inline CarrierType invertCarrierType(const CarrierType& type) {
+        inline CarrierType invertCarrierType(const CarrierType& type) const {
             return magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type)).value();
         }
 

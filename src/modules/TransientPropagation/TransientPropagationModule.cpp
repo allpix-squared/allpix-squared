@@ -396,7 +396,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const double initial_time_global,
                                       const unsigned int depth,
                                       std::vector<PropagatedCharge>& propagated_charges,
-                                      LineGraph::OutputPlotPoints& output_plot_points) {
+                                      LineGraph::OutputPlotPoints& output_plot_points) const {
 
     if(depth > multiplication_depth_) {
         LOG(WARNING) << "Found impact ionization shower with depth larger than " << multiplication_depth_
