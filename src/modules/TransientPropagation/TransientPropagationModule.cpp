@@ -57,7 +57,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
-    config_.setDefault<double>("multiplication_depth", 5);
+    config_.setDefault<unsigned int>("multiplication_depth", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
@@ -695,7 +695,7 @@ TransientPropagationModule::propagate(Event* event,
                                        type,
                                        std::move(pixel_map),
                                        initial_time_local + runge_kutta.getTime(),
-                                       initial_time_global + runge_kutta.getTime(), // FIXME global time
+                                       initial_time_global + runge_kutta.getTime(),
                                        state,
                                        &deposit);
 
@@ -722,7 +722,7 @@ TransientPropagationModule::propagate(Event* event,
         group_size_histo_->Fill(charge);
     }
 
-    // Return the final position of the propagated charge, the time it took to propagate and its final state
+    // Return statistics counters about this and all daughter propagated charge carrier groups and their final states
     return std::make_tuple(recombined_charges_count, trapped_charges_count, propagated_charges_count);
 }
 
