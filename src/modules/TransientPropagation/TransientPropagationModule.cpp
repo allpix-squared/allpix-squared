@@ -550,13 +550,14 @@ TransientPropagationModule::propagate(Event* event,
             auto floor_gain = static_cast<unsigned int>(std::floor(gain));
             if(gain_integer < floor_gain) {
                 auto inverted_type = invertCarrierType(type);
-                auto current_pos = static_cast<ROOT::Math::XYZPoint>(position);
+                // Placing new charge carrier mid-step::
+                auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(last_position + position) / 2.;
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
-                           << Units::display(current_pos, {"mm", "um"});
+                           << Units::display(carrier_pos, {"mm", "um"});
 
                 auto [recombined, trapped, propagated] = propagate(event,
                                                                    deposit,
-                                                                   current_pos,
+                                                                   carrier_pos,
                                                                    inverted_type,
                                                                    charge * (floor_gain - gain_integer),
                                                                    initial_time_local + runge_kutta.getTime(),
@@ -572,7 +573,7 @@ TransientPropagationModule::propagate(Event* event,
                 // Update the gain factor we have already generated opposite type charges for:
                 gain_integer = floor_gain;
                 LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
-                           << Units::display(current_pos, {"mm", "um"});
+                           << Units::display(carrier_pos, {"mm", "um"});
             }
         }
 
