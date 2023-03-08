@@ -85,6 +85,7 @@ namespace allpix {
          * @param charge              Total charge of the observed charge carrier set
          * @param initial_time_local  Initial local time with respect to the start of the event
          * @param initial_time_global Initial global time with respect to the start of the event
+         * @param depth               Current depth of the generated shower
          * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
          * @param output_plot_points Reference to vector to hold points for line graph output plots
          *
@@ -97,6 +98,7 @@ namespace allpix {
                                                                        const unsigned int charge,
                                                                        const double initial_time_local,
                                                                        const double initial_time_global,
+                                                                       const unsigned int depth,
                                                                        std::vector<PropagatedCharge>& propagated_charges,
                                                                        LineGraph::OutputPlotPoints& output_plot_points);
 
@@ -116,6 +118,7 @@ namespace allpix {
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
+        unsigned int multiplication_depth_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;

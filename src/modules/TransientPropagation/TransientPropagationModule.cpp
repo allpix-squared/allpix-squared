@@ -57,6 +57,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
+    config_.setDefault<double>("multiplication_depth", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
@@ -81,6 +82,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
+    multiplication_depth_ = config.get<unsigned int>("multiplication_depth");
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -334,6 +336,7 @@ void TransientPropagationModule::run(Event* event) {
                                                                charge_per_step,
                                                                deposit.getLocalTime(),
                                                                deposit.getGlobalTime(),
+                                                               0,
                                                                propagated_charges,
                                                                output_plot_points);
 
@@ -391,8 +394,16 @@ TransientPropagationModule::propagate(Event* event,
                                       const unsigned int charge,
                                       const double initial_time_local,
                                       const double initial_time_global,
+                                      const unsigned int depth,
                                       std::vector<PropagatedCharge>& propagated_charges,
                                       LineGraph::OutputPlotPoints& output_plot_points) {
+
+    if(depth > multiplication_depth_) {
+        LOG(WARNING) << "Found impact ionization shower with depth larger than " << multiplication_depth_
+                     << ", interrupting";
+        return {};
+    }
+
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
 
@@ -562,6 +573,7 @@ TransientPropagationModule::propagate(Event* event,
                                                                    charge * (floor_gain - gain_integer),
                                                                    initial_time_local + runge_kutta.getTime(),
                                                                    initial_time_global + runge_kutta.getTime(),
+                                                                   depth + 1,
                                                                    propagated_charges,
                                                                    output_plot_points);
 
