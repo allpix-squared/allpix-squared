@@ -248,6 +248,12 @@ void GenericPropagationModule::initialize() {
                      << "This might lead to unphysical gain values.";
     }
 
+    // Check for propagating both types of charge carrier
+    if(!multiplication_.is<NoImpactIonization>() && (!propagate_electrons_ || !propagate_holes_)) {
+        LOG(WARNING) << "Not propagating both types of charge carriers with charge multiplication enabled may lead to "
+                        "unphysical results";
+    }
+
     // Prepare trapping model
     trapping_ = Trapping(config_);
 
