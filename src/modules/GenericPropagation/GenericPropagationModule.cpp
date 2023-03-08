@@ -414,6 +414,8 @@ GenericPropagationModule::propagate(Event* event,
 
     // Initialize gain
     double gain = 1.;
+    double gain_previous = 1.;
+    unsigned int gain_integer = 1;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping_concentration, double timestep) -> Eigen::Vector3d {
@@ -551,13 +553,53 @@ GenericPropagationModule::propagate(Event* event,
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
         gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
-        if(gain > 20.) {
-            LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                         << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-        } else if(gain > 1.) {
+        if(gain > gain_previous) {
             LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
                        << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+            // Update already processed gain factor:
+            gain_previous = gain;
+
+            if(gain > 20.) {
+                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+            }
+
+            // If the gain increased, we need to generate new charge carriers of the opposite type
+            // Same-type carriers are simulated via the gain factor:
+            auto floor_gain = static_cast<unsigned int>(std::floor(gain));
+            if(gain_integer < floor_gain) {
+                auto inverted_type = invertCarrierType(type);
+                // Placing new charge carrier mid-step::
+                auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(last_position + position) / 2.;
+                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
+                           << Units::display(carrier_pos, {"mm", "um"});
+
+                auto [recombined, trapped, propagated, psteps, ptime] =
+                    propagate(event,
+                              deposit,
+                              carrier_pos,
+                              inverted_type,
+                              charge * (floor_gain - gain_integer),
+                              initial_time_local + runge_kutta.getTime(),
+                              initial_time_global + runge_kutta.getTime(),
+                              depth + 1,
+                              propagated_charges,
+                              output_plot_points);
+
+                // Update statistics:
+                recombined_charges_count += recombined;
+                trapped_charges_count += trapped;
+                propagated_charges_count += propagated;
+                steps += psteps;
+                total_time += ptime * charge;
+
+                // Update the gain factor we have already generated opposite type charges for:
+                gain_integer = floor_gain;
+                LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
+                           << Units::display(carrier_pos, {"mm", "um"});
+            }
         }
 
         // Update step length histogram
