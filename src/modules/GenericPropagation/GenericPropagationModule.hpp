@@ -80,22 +80,30 @@ namespace allpix {
 
         /**
          * @brief Propagate a single set of charges through the sensor
-         * @param pos Position of the deposit in the sensor
-         * @param type Type of the carrier to propagate
-         * @param initial_time Initial time passed before propagation starts in local time coordinates
-         * @param random_generator Reference to the random number engine to be used
+         * @param event               Pointer to current event
+         * @param deposit             Reference to the original deposited charge object
+         * @param pos                 Position of the deposit in the sensor
+         * @param type                Type of the carrier to propagate
+         * @param charge              Total charge of the observed charge carrier set
+         * @param initial_time_local  Initial local time with respect to the start of the event
+         * @param initial_time_global Initial global time with respect to the start of the event
+         * @param depth               Current depth of the generated shower
+         * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
          * @param output_plot_points Reference to vector to hold points for line graph output plots
-         * @param charge Total charge of the observed charge carrier set
-         * @return Tuple with the point where the deposit ended after propagation, the time the propagation took, the
-         * cumulative gain and the final state of the charge carrier at the end of processing
+         *
+         * @return Total recombined, trapped and propagated charge for statistics purposes
          */
-        std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
-        propagate(const ROOT::Math::XYZPoint& pos,
+        std::tuple<unsigned int, unsigned int, unsigned int>
+        propagate(Event* event,
+                  const DepositedCharge& deposit,
+                  const ROOT::Math::XYZPoint& pos,
                   const CarrierType& type,
-                  const double initial_time,
-                  RandomNumberGenerator& random_generator,
-                  LineGraph::OutputPlotPoints& output_plot_points,
-                  const unsigned int charge) const;
+                  const unsigned int charge,
+                  const double initial_time_local,
+                  const double initial_time_global,
+                  const unsigned int depth,
+                  std::vector<PropagatedCharge>& propagated_charges,
+                  LineGraph::OutputPlotPoints& output_plot_points) const;
 
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_min_{}, timestep_max_{}, timestep_start_{}, integration_time_{},
@@ -105,6 +113,7 @@ namespace allpix {
         bool propagate_electrons_{}, propagate_holes_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
+        unsigned int multiplication_depth_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;

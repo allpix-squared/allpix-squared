@@ -97,6 +97,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     // Set defaults for charge carrier multiplication
     config_.setDefault<std::string>("multiplication_model", "none");
     config_.setDefault<double>("multiplication_threshold", 1e-2);
+    config_.setDefault<unsigned int>("multiplication_depth", 5);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -116,6 +117,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
+    multiplication_depth_ = config.get<unsigned int>("multiplication_depth");
 
     // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -309,62 +311,27 @@ void GenericPropagationModule::run(Event* event) {
             }
             charges_remaining -= charge_per_step;
 
-            // Get position and propagate through sensor
-            auto initial_position = deposit.getLocalPosition();
-
-            // Add point of deposition to the output plots if requested
-            if(output_linegraphs_) {
-                output_plot_points.emplace_back(
-                    std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
-                    std::vector<ROOT::Math::XYZPoint>());
-            }
-
             // Propagate a single charge deposit
-            auto [final_position, time, gain, state] = propagate(initial_position,
-                                                                 deposit.getType(),
-                                                                 deposit.getLocalTime(),
-                                                                 event->getRandomEngine(),
-                                                                 output_plot_points,
-                                                                 charge_per_step);
+            auto [recombined, trapped, propagated] = propagate(event,
+                                                               deposit,
+                                                               deposit.getLocalPosition(),
+                                                               deposit.getType(),
+                                                               charge_per_step,
+                                                               deposit.getLocalTime(),
+                                                               deposit.getGlobalTime(),
+                                                               0,
+                                                               propagated_charges,
+                                                               output_plot_points);
 
-            if(state == CarrierState::RECOMBINED) {
-                LOG(DEBUG) << " Recombined " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
-                           << " in " << Units::display(time, "ns") << " time, removing";
-                recombined_charges_count += charge_per_step;
-                if(output_plots_) {
-                    recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
-                }
-            } else if(state == CarrierState::TRAPPED) {
-                LOG(DEBUG) << " Trapped " << charge_per_step << " at " << Units::display(final_position, {"mm", "um"})
-                           << " in " << Units::display(time, "ns") << " time, removing";
-                trapped_charges_count += charge_per_step;
-            }
-
-            LOG(DEBUG) << " Propagated " << charge_per_step << " to " << Units::display(final_position, {"mm", "um"})
-                       << " in " << Units::display(time, "ns") << " time, gain " << gain
-                       << ", final state: " << allpix::to_string(state);
-
-            // Create a new propagated charge and add it to the list
-            auto global_position = detector_->getGlobalPosition(final_position);
-            PropagatedCharge propagated_charge(final_position,
-                                               global_position,
-                                               deposit.getType(),
-                                               static_cast<unsigned int>(std::lround(charge_per_step * gain)),
-                                               deposit.getLocalTime() + time,
-                                               deposit.getGlobalTime() + time,
-                                               state,
-                                               &deposit);
-
-            propagated_charges.push_back(std::move(propagated_charge));
+            // Update statistics:
+            recombined_charges_count += recombined;
+            trapped_charges_count += trapped;
+            propagated_charges_count += propagated;
 
             // Update statistical information
-            ++step_count;
-            propagated_charges_count += charge_per_step;
-            total_time += charge_per_step * time;
-            if(output_plots_) {
-                drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge_per_step);
-                group_size_histo_->Fill(charge_per_step);
-            }
+            // FIXME ++step_count;
+            // propagated_charges_count += charge_per_step;
+            // FIXME total_time += charge_per_step * time;
         }
     }
 
@@ -413,15 +380,38 @@ void GenericPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-std::tuple<ROOT::Math::XYZPoint, double, double, CarrierState>
-GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
+std::tuple<unsigned int, unsigned int, unsigned int>
+GenericPropagationModule::propagate(Event* event,
+                                    const DepositedCharge& deposit,
+                                    const ROOT::Math::XYZPoint& pos,
                                     const CarrierType& type,
-                                    const double initial_time,
-                                    RandomNumberGenerator& random_generator,
-                                    LineGraph::OutputPlotPoints& output_plot_points,
-                                    const unsigned int charge) const {
+                                    const unsigned int charge,
+                                    const double initial_time_local,
+                                    const double initial_time_global,
+                                    const unsigned int depth,
+                                    std::vector<PropagatedCharge>& propagated_charges,
+                                    LineGraph::OutputPlotPoints& output_plot_points) const {
+
+    if(depth > multiplication_depth_) {
+        LOG(WARNING) << "Found impact ionization shower with depth larger than " << multiplication_depth_
+                     << ", interrupting";
+        return {};
+    }
+
     // Create a runge kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
+
+    unsigned int propagated_charges_count = 0;
+    unsigned int recombined_charges_count = 0;
+    unsigned int trapped_charges_count = 0;
+
+    // Add point of deposition to the output plots if requested
+    if(output_linegraphs_) {
+        output_plot_points.emplace_back(
+            std::make_tuple(deposit.getGlobalTime(), charge, deposit.getType(), CarrierState::MOTION),
+            std::vector<ROOT::Math::XYZPoint>());
+    }
+    auto output_plot_index = output_plot_points.size() - 1;
 
     // Initialize gain
     double gain = 1.;
@@ -433,9 +423,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-        auto x = gauss_distribution(random_generator);
-        auto y = gauss_distribution(random_generator);
-        auto z = gauss_distribution(random_generator);
+        auto x = gauss_distribution(event->getRandomEngine());
+        auto y = gauss_distribution(event->getRandomEngine());
+        auto z = gauss_distribution(event->getRandomEngine());
         return Eigen::Vector3d(x, y, z);
     };
 
@@ -487,13 +477,13 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
     double last_time = 0;
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
-    while(state == CarrierState::MOTION && (initial_time + runge_kutta.getTime()) < integration_time_) {
+    while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
         // Update output plots if necessary (depending on the plot step)
         if(output_linegraphs_) {
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
-                output_plot_points.back().second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
-                next_idx = output_plot_points.back().second.size();
+                output_plot_points.at(output_plot_index).second.push_back(static_cast<ROOT::Math::XYZPoint>(position));
+                next_idx = output_plot_points.at(output_plot_index).second.size();
             }
         }
 
@@ -529,19 +519,19 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // Check if charge carrier is still alive:
         if(recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          uniform_distribution(random_generator),
+                          uniform_distribution(event->getRandomEngine()),
                           timestep)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, uniform_distribution(random_generator), timestep, std::sqrt(efield.Mag2()))) {
+        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
 
-            auto detrap_time = detrapping_(type, uniform_distribution(random_generator), std::sqrt(efield.Mag2()));
-            if((initial_time + runge_kutta.getTime() + detrap_time) < integration_time_) {
+            auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
+            if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {
                 LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 // De-trap and advance in time if still below integration time
                 runge_kutta.advanceTime(detrap_time);
@@ -557,7 +547,7 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
 
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um", "mm"})
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
-                   << Units::display(initial_time + runge_kutta.getTime(), {"ps", "ns", "us"})
+                   << Units::display(initial_time_local + runge_kutta.getTime(), {"ps", "ns", "us"})
                    << ", state: " << allpix::to_string(state);
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
@@ -612,9 +602,9 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(!model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position)) &&
            (time >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45)) {
-            std::get<3>(output_plot_points.back().first) = CarrierState::UNKNOWN;
+            std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
         } else {
-            std::get<3>(output_plot_points.back().first) = state;
+            std::get<3>(output_plot_points.at(output_plot_index).first) = state;
         }
     }
 
@@ -629,8 +619,45 @@ GenericPropagationModule::propagate(const ROOT::Math::XYZPoint& pos,
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"});
     }
 
-    // Return the final position of the propagated charge, the time it took to propagate and its final state
-    return std::make_tuple(static_cast<ROOT::Math::XYZPoint>(position), time, gain, state);
+    auto local_position = static_cast<ROOT::Math::XYZPoint>(position);
+    auto final_charge = static_cast<unsigned int>(charge * gain);
+
+    if(state == CarrierState::RECOMBINED) {
+        LOG(DEBUG) << " Recombined " << final_charge << " at " << Units::display(local_position, {"mm", "um"}) << " in "
+                   << Units::display(time, "ns") << " time, removing";
+        recombined_charges_count += final_charge;
+        if(output_plots_) {
+            recombination_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), final_charge);
+        }
+    } else if(state == CarrierState::TRAPPED) {
+        LOG(DEBUG) << " Trapped " << final_charge << " at " << Units::display(local_position, {"mm", "um"}) << " in "
+                   << Units::display(time, "ns") << " time, removing";
+        trapped_charges_count += final_charge;
+    }
+
+    LOG(DEBUG) << " Propagated " << final_charge << " to " << Units::display(local_position, {"mm", "um"}) << " in "
+               << Units::display(time, "ns") << " time, gain " << gain << ", final state: " << allpix::to_string(state);
+
+    // Create a new propagated charge and add it to the list
+    auto global_position = detector_->getGlobalPosition(local_position);
+    PropagatedCharge propagated_charge(local_position,
+                                       global_position,
+                                       deposit.getType(),
+                                       static_cast<unsigned int>(std::lround(charge * gain)),
+                                       deposit.getLocalTime() + time,
+                                       deposit.getGlobalTime() + time,
+                                       state,
+                                       &deposit);
+
+    propagated_charges.push_back(std::move(propagated_charge));
+
+    if(output_plots_) {
+        drift_time_histo_->Fill(static_cast<double>(Units::convert(time, "ns")), charge);
+        group_size_histo_->Fill(charge);
+    }
+
+    // Return statistics counters about this and all daughter propagated charge carrier groups and their final states
+    return std::make_tuple(recombined_charges_count, trapped_charges_count, propagated_charges_count);
 }
 
 void GenericPropagationModule::finalize() {

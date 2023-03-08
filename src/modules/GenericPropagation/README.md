@@ -66,6 +66,7 @@ This module requires an installation of Eigen3.
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 * `multiplication_model`: Model used to calculate impact ionization parameters and charge multiplication. Defaults to `none` which corresponds to unity gain, a list of available models can be found in the documentation.
 * `multiplication_threshold`: Threshold field above which charge multiplication is calculated. Defaults to `100kV/cm`.
+* `multiplication_depth`: Maximum depth of the generated impact ionization charge multiplication shower after which the generation of further multiplication charge carrier levels is prohibited. This number represents the maximum number of daughter charge carrier groups that can be produced by one initial charge carrier group. This does not concern the size of the charge group itself but solely the level of generation. If a group generates a secondary group through impact ionization, the depth is `1`. If this secondary group again creates charge carriers when propagating, the depth is `2` and so on. The default value is `5`.
 
 ## Plotting parameters
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
