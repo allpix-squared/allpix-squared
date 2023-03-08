@@ -29,6 +29,15 @@ namespace allpix {
     }
 
     /**
+     * @brief Invert the type of a charge carrier
+     * @param type Initial type of the charge carrier
+     * @return Inverted type of the charge carrier
+     */
+    inline CarrierType invertCarrierType(const CarrierType& type) {
+        return (type == CarrierType::ELECTRON ? CarrierType::HOLE : CarrierType::ELECTRON);
+    }
+
+    /**
      * @ingroup Objects
      * @brief Base object for charge deposits and propagated charges in the sensor
      */

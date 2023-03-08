@@ -103,15 +103,6 @@ namespace allpix {
                   std::vector<PropagatedCharge>& propagated_charges,
                   LineGraph::OutputPlotPoints& output_plot_points) const;
 
-        /**
-         * @brief Invert the type of a charge carrier
-         * @param type Initial type of the charge carrier
-         * @return Inverted type of the charge carrier
-         */
-        inline CarrierType invertCarrierType(const CarrierType& type) const {
-            return magic_enum::enum_cast<CarrierType>(-1 * magic_enum::enum_integer(type)).value();
-        }
-
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
