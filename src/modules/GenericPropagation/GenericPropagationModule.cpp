@@ -575,9 +575,15 @@ GenericPropagationModule::propagate(Event* event,
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
             auto floor_gain = static_cast<unsigned int>(std::floor(gain));
-            if(gain_integer < floor_gain) {
-                auto inverted_type = invertCarrierType(type);
-                // Placing new charge carrier mid-step::
+
+            auto inverted_type = invertCarrierType(type);
+            auto do_propagate = [&]() {
+                return (type == CarrierType::ELECTRON && propagate_electrons_) ||
+                       (type == CarrierType::HOLE && propagate_holes_);
+            };
+
+            if(gain_integer < floor_gain && do_propagate()) {
+                // Placing new charge carrier mid-step:
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(last_position + position) / 2.;
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(carrier_pos, {"mm", "um"});
