@@ -397,6 +397,10 @@ void TransientPropagationModule::run(Event* event) {
         }
     }
 
+    LOG(INFO) << "Propagated " << propagated_charges_count << " charges" << std::endl
+              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+              << "Trapped " << trapped_charges_count << " charges during transport";
+
     if(output_plots_) {
         auto total = (propagated_charges_count + recombined_charges_count + trapped_charges_count);
         recombine_histo_->Fill(static_cast<double>(recombined_charges_count) / (total == 0 ? 1 : total));
