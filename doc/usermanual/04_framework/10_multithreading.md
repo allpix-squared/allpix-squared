@@ -111,7 +111,8 @@ are only generated and stored in the table for objects that require it - all ref
 possible to reset the ROOT-internal object ID of `TRef` references after the event has been processed. The subsequent event will 
 reuse the same IDs again, preventing a continuous growth of the reference table and related memory re-allocation issues.
 
-As a consequence, when reading objects back from file, the `TRef` has to be converted back to a C memory pointer, again to avoid 
+As a consequence, when reading objects back from file in a mutlithreaded environment, the `TRef` has to be converted back to a C
+memory pointer in the reading thread, both to prevent mixing of re-used `TRef` object IDs from different events and to avoid 
 locking access to the central reference table when looking up the memory location from there. This is performed similarly to the 
 generation of history relations, and here only relations to valid TRefs are loaded, other relations will hold a `nullptr`:
 
@@ -121,7 +122,8 @@ for(auto& object : objects) {
 }
 ```
 
-
-
+For single-threaded applications such as ROOT analysis macros, this step is not necessary and the reference will be lazy-loaded
+when accessed, i.e. the `TRef` reference will be converted to a direct raw pointer only when actually used. Since events are
+processed sequentially and memory is freed between events, no mixing of IDs occurs.
 
 
