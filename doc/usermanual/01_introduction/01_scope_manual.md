@@ -25,4 +25,4 @@ required from novice users, but knowledge of (modern) C++ will be useful in the 
 overall understanding of the mechanisms.
 
 
-[@ap2-doxygen]: https://cern.ch/allpix-squared/reference/
+[@ap2-doxygen]: https://allpix-squared.docs.cern.ch/reference/
