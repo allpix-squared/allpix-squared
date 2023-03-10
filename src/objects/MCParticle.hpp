@@ -20,6 +20,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Monte-Carlo particle through the sensor
      */
     class MCParticle : public Object {
