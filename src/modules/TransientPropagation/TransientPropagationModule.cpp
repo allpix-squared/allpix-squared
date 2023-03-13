@@ -562,7 +562,7 @@ TransientPropagationModule::propagate(Event* event,
             if(gain_integer < floor_gain) {
                 auto inverted_type = invertCarrierType(type);
                 // Placing new charge carrier mid-step::
-                auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(last_position + position) / 2.;
+                auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(position);
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(carrier_pos, {"mm", "um"});
 
