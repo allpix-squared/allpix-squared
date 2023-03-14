@@ -183,7 +183,7 @@ void TransientPropagationModule::initialize() {
         if(!multiplication_.is<NoImpactIonization>()) {
             induced_charge_primary_histo_ =
                 CreateHistogram<TH1D>("induced_charge_primary_histo",
-                                      "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                      "Induced charge per time, primaries only, all pixels;Drift time [ns];charge [e]",
                                       static_cast<int>(integration_time_ / timestep_),
                                       0,
                                       static_cast<double>(Units::convert(integration_time_, "ns")));
@@ -201,7 +201,7 @@ void TransientPropagationModule::initialize() {
                                       static_cast<double>(Units::convert(integration_time_, "ns")));
             induced_charge_secondary_histo_ =
                 CreateHistogram<TH1D>("induced_charge_secondary_histo",
-                                      "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                      "Induced charge per time, secondaries only, all pixels;Drift time [ns];charge [e]",
                                       static_cast<int>(integration_time_ / timestep_),
                                       0,
                                       static_cast<double>(Units::convert(integration_time_, "ns")));
