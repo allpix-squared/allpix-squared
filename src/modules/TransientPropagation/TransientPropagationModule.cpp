@@ -180,6 +180,44 @@ void TransientPropagationModule::initialize() {
                                   static_cast<int>(integration_time_ / timestep_),
                                   0,
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
+        if(!multiplication_.is<NoImpactIonization>()) {
+            induced_charge_primary_histo_ =
+                CreateHistogram<TH1D>("induced_charge_primary_histo",
+                                      "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                      static_cast<int>(integration_time_ / timestep_),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+            induced_charge_primary_e_histo_ = CreateHistogram<TH1D>(
+                "induced_charge_primary_e_histo",
+                "Induced charge per time, primary electrons only, all pixels;Drift time [ns];charge [e]",
+                static_cast<int>(integration_time_ / timestep_),
+                0,
+                static_cast<double>(Units::convert(integration_time_, "ns")));
+            induced_charge_primary_h_histo_ =
+                CreateHistogram<TH1D>("induced_charge_primary_h_histo",
+                                      "Induced charge per time, primary holes only, all pixels;Drift time [ns];charge [e]",
+                                      static_cast<int>(integration_time_ / timestep_),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+            induced_charge_secondary_histo_ =
+                CreateHistogram<TH1D>("induced_charge_secondary_histo",
+                                      "Induced charge per time, all pixels;Drift time [ns];charge [e]",
+                                      static_cast<int>(integration_time_ / timestep_),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+            induced_charge_secondary_e_histo_ = CreateHistogram<TH1D>(
+                "induced_charge_secondary_e_histo",
+                "Induced charge per time, secondary electrons only, all pixels;Drift time [ns];charge [e]",
+                static_cast<int>(integration_time_ / timestep_),
+                0,
+                static_cast<double>(Units::convert(integration_time_, "ns")));
+            induced_charge_secondary_h_histo_ =
+                CreateHistogram<TH1D>("induced_charge_secondary_h_histo",
+                                      "Induced charge per time, secondary holes only, all pixels;Drift time [ns];charge [e]",
+                                      static_cast<int>(integration_time_ / timestep_),
+                                      0,
+                                      static_cast<double>(Units::convert(integration_time_, "ns")));
+        }
         induced_charge_vs_depth_histo_ =
             CreateHistogram<TH2D>("induced_charge_vs_depth_histo",
                                   "Induced charge per time vs depth, all pixels;Drift time [ns];depth [mm];charge [e]",
@@ -278,6 +316,45 @@ void TransientPropagationModule::initialize() {
                                   static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                   0,
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
+
+        if(!multiplication_.is<NoImpactIonization>()) {
+            gain_primary_histo_ = CreateHistogram<TH1D>(
+                "gain_primary_histo",
+                "Gain per primarily induced charge carrier group after propagation;gain;number of groups transported",
+                500,
+                1,
+                25);
+            gain_all_histo_ =
+                CreateHistogram<TH1D>("gain_all_histo",
+                                      "Gain per charge carrier group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            gain_e_histo_ =
+                CreateHistogram<TH1D>("gain_e_histo",
+                                      "Gain per primary electron group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            gain_h_histo_ =
+                CreateHistogram<TH1D>("gain_h_histo",
+                                      "Gain per primary hole group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            multiplication_depthlevel_histo_ = CreateHistogram<TH1D>(
+                "multiplication_depthlevel_histo",
+                "Multiplication depth level of propagated charge carriers;multiplication depth;charge carriers",
+                static_cast<int>(multiplication_depth_),
+                0,
+                static_cast<int>(multiplication_depth_));
+            multiplication_depth_histo_ =
+                CreateHistogram<TH1D>("multiplication_depth_histo",
+                                      "Generation depth of charge carriers via impact ionization;depth [mm];charge carriers",
+                                      200,
+                                      -model_->getSensorSize().z() / 2.,
+                                      model_->getSensorSize().z() / 2.);
+        }
     }
 }
 
@@ -565,6 +642,9 @@ TransientPropagationModule::propagate(Event* event,
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(position);
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(carrier_pos, {"mm", "um"});
+                if(output_plots_) {
+                    multiplication_depth_histo_->Fill(carrier_pos.z(), charge * (floor_gain - gain_integer));
+                }
 
                 auto [recombined, trapped, propagated] = propagate(event,
                                                                    deposit,
@@ -673,8 +753,39 @@ TransientPropagationModule::propagate(Event* event,
                         initial_time_local + runge_kutta.getTime(), position.z(), induced);
                     induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 }
+                if(!multiplication_.is<NoImpactIonization>()) {
+                    if(depth == 0) {
+                        induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        if(type == CarrierType::ELECTRON) {
+                            induced_charge_primary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        } else {
+                            induced_charge_primary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        }
+                    } else {
+                        induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        if(type == CarrierType::ELECTRON) {
+                            induced_charge_secondary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        } else {
+                            induced_charge_secondary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
+                        }
+                    }
+                }
             }
         }
+    }
+
+    if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
+        if(depth == 0) {
+            gain_primary_histo_->Fill(gain, charge);
+            if(type == CarrierType::ELECTRON) {
+                gain_e_histo_->Fill(gain, charge);
+            } else {
+                gain_h_histo_->Fill(gain, charge);
+            }
+        }
+        gain_all_histo_->Fill(gain, charge);
+
+        multiplication_depthlevel_histo_->Fill(depth, charge);
     }
 
     // Set final state of charge carrier for plotting:
@@ -742,11 +853,27 @@ void TransientPropagationModule::finalize() {
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
+        if(!multiplication_.is<NoImpactIonization>()) {
+            induced_charge_primary_histo_->Write();
+            induced_charge_primary_e_histo_->Write();
+            induced_charge_primary_h_histo_->Write();
+            induced_charge_secondary_histo_->Write();
+            induced_charge_secondary_e_histo_->Write();
+            induced_charge_secondary_h_histo_->Write();
+        }
         induced_charge_vs_depth_histo_->Write();
         induced_charge_e_vs_depth_histo_->Write();
         induced_charge_h_vs_depth_histo_->Write();
         induced_charge_map_->Write();
         induced_charge_e_map_->Write();
         induced_charge_h_map_->Write();
+        if(!multiplication_.is<NoImpactIonization>()) {
+            gain_primary_histo_->Write();
+            gain_all_histo_->Write();
+            gain_e_histo_->Write();
+            gain_h_histo_->Write();
+            multiplication_depthlevel_histo_->Write();
+            multiplication_depth_histo_->Write();
+        }
     }
 }

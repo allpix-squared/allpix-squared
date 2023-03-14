@@ -143,5 +143,14 @@ namespace allpix {
         Histogram<TH1D> recombination_time_histo_;
         Histogram<TH1D> trapping_time_histo_;
         Histogram<TH1D> detrapping_time_histo_;
+        Histogram<TH1D> gain_primary_histo_;
+        Histogram<TH1D> gain_all_histo_;
+        Histogram<TH1D> gain_e_histo_;
+        Histogram<TH1D> gain_h_histo_;
+        Histogram<TH1D> multiplication_depthlevel_histo_;
+        Histogram<TH1D> multiplication_depth_histo_;
+        Histogram<TH1D> induced_charge_primary_histo_, induced_charge_primary_e_histo_, induced_charge_primary_h_histo_;
+        Histogram<TH1D> induced_charge_secondary_histo_, induced_charge_secondary_e_histo_,
+            induced_charge_secondary_h_histo_;
     };
 } // namespace allpix
