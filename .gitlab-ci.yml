@@ -95,6 +95,7 @@ stages:
             - build
             - bin
             - lib
+            - share
         expire_in: 24 hour
 
 # Ensure that our LXPLUS setup script is functional:
