@@ -229,8 +229,44 @@ void GenericPropagationModule::initialize() {
                                   static_cast<int>(Units::convert(integration_time_, "ns") * 5),
                                   0,
                                   static_cast<double>(Units::convert(integration_time_, "ns")));
-        gain_histo_ = CreateHistogram<TH1D>(
-            "gain_histo", "Gain per charge carrier group after propagation;gain;number of groups transported", 500, 1, 25);
+        if(!multiplication_.is<NoImpactIonization>()) {
+            gain_primary_histo_ = CreateHistogram<TH1D>(
+                "gain_primary_histo",
+                "Gain per primarily induced charge carrier group after propagation;gain;number of groups transported",
+                500,
+                1,
+                25);
+            gain_all_histo_ =
+                CreateHistogram<TH1D>("gain_all_histo",
+                                      "Gain per charge carrier group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            gain_e_histo_ =
+                CreateHistogram<TH1D>("gain_e_histo",
+                                      "Gain per primary electron group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            gain_h_histo_ =
+                CreateHistogram<TH1D>("gain_h_histo",
+                                      "Gain per primary hole group after propagation;gain;number of groups transported",
+                                      500,
+                                      1,
+                                      25);
+            multiplication_depthlevel_histo_ = CreateHistogram<TH1D>(
+                "multiplication_depthlevel_histo",
+                "Multiplication depth level of propagated charge carriers;multiplication depth;charge carriers",
+                static_cast<int>(multiplication_depth_),
+                0,
+                static_cast<int>(multiplication_depth_));
+            multiplication_depth_histo_ =
+                CreateHistogram<TH1D>("multiplication_depth_histo",
+                                      "Generation depth of charge carriers via impact ionization;depth [mm];charge carriers",
+                                      200,
+                                      -model_->getSensorSize().z() / 2.,
+                                      model_->getSensorSize().z() / 2.);
+        }
     }
 
     // Prepare mobility model
@@ -587,6 +623,9 @@ GenericPropagationModule::propagate(Event* event,
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(last_position + position) / 2.;
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
                            << Units::display(carrier_pos, {"mm", "um"});
+                if(output_plots_) {
+                    multiplication_depth_histo_->Fill(carrier_pos.z(), charge * (floor_gain - gain_integer));
+                }
 
                 auto [recombined, trapped, propagated, psteps, ptime] =
                     propagate(event,
@@ -661,8 +700,18 @@ GenericPropagationModule::propagate(Event* event,
         }
     }
 
-    if(output_plots_) {
-        gain_histo_->Fill(gain);
+    if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
+        if(depth == 0) {
+            gain_primary_histo_->Fill(gain, charge);
+            if(type == CarrierType::ELECTRON) {
+                gain_e_histo_->Fill(gain, charge);
+            } else {
+                gain_h_histo_->Fill(gain, charge);
+            }
+        }
+        gain_all_histo_->Fill(gain, charge);
+
+        multiplication_depthlevel_histo_->Fill(depth, charge);
     }
 
     if(state == CarrierState::RECOMBINED) {
@@ -729,7 +778,14 @@ void GenericPropagationModule::finalize() {
         recombination_time_histo_->Write();
         trapping_time_histo_->Write();
         detrapping_time_histo_->Write();
-        gain_histo_->Write();
+        if(!multiplication_.is<NoImpactIonization>()) {
+            gain_primary_histo_->Write();
+            gain_all_histo_->Write();
+            gain_e_histo_->Write();
+            gain_h_histo_->Write();
+            multiplication_depthlevel_histo_->Write();
+            multiplication_depth_histo_->Write();
+        }
     }
 
     long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
