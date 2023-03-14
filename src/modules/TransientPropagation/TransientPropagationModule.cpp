@@ -721,6 +721,15 @@ TransientPropagationModule::propagate(Event* event,
 
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
             auto induced = charge * gain * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+
+            auto induced_primary = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+            auto induced_secondary =
+                charge * (gain - 1) * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+            if(depth != 0) {
+                induced_primary = 0.;
+                induced_secondary = induced;
+            }
+
             LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                        << " q = " << Units::display(induced, "e");
 
@@ -754,20 +763,16 @@ TransientPropagationModule::propagate(Event* event,
                     induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 }
                 if(!multiplication_.is<NoImpactIonization>()) {
-                    if(depth == 0) {
-                        induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        if(type == CarrierType::ELECTRON) {
-                            induced_charge_primary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        } else {
-                            induced_charge_primary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        }
+                    induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
+                    induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_secondary);
+                    if(type == CarrierType::ELECTRON) {
+                        induced_charge_primary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
+                        induced_charge_secondary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(),
+                                                                induced_secondary);
                     } else {
-                        induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        if(type == CarrierType::ELECTRON) {
-                            induced_charge_secondary_e_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        } else {
-                            induced_charge_secondary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced);
-                        }
+                        induced_charge_primary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
+                        induced_charge_secondary_h_histo_->Fill(initial_time_local + runge_kutta.getTime(),
+                                                                induced_secondary);
                     }
                 }
             }
