@@ -129,7 +129,7 @@ namespace allpix {
         double focal_distance_;
 
         size_t number_of_photons_;
-        double wavelength_;
+        double wavelength_{0.};
         double absorption_length_{0.};
         double refractive_index_{0.};
         double pulse_duration_;
