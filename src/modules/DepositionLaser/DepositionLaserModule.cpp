@@ -150,7 +150,7 @@ void DepositionLaserModule::initialize() {
         double focalplane_histsize = beam_waist_ * nsigmas;
 
         h_intensity_focalplane_ = CreateHistogram<TH2D>("intensity_focalplane",
-                                                        "Beam profile in focal plane, a.u.",
+                                                        "Beam profile in focal plane, a.u.;x [mm];y [mm]",
                                                         nbins,
                                                         -focalplane_histsize,
                                                         focalplane_histsize,
@@ -164,7 +164,7 @@ void DepositionLaserModule::initialize() {
         }
 
         h_intensity_sourceplane_ = CreateHistogram<TH2D>("intensity_sourceplane",
-                                                         "Beam profile at source, a.u.",
+                                                         "Beam profile at source, a.u.;x [mm];y [mm]",
                                                          nbins,
                                                          -sourceplane_histsize,
                                                          sourceplane_histsize,
@@ -172,19 +172,21 @@ void DepositionLaserModule::initialize() {
                                                          -sourceplane_histsize,
                                                          sourceplane_histsize);
 
-        h_angular_phi_ =
-            CreateHistogram<TH1D>("phi_distribution", "Phi_distribution w.r.t. beam direction", nbins, -3.5, 3.5);
-        h_angular_theta_ =
-            CreateHistogram<TH1D>("theta_distribution", "Theta distribution w.r.t. beam direction", nbins, 0, 45);
-        h_pulse_shape_ = CreateHistogram<TH1D>("pulse_shape", "Pulse shape", nbins, 0, 8 * pulse_duration_);
+        h_angular_phi_ = CreateHistogram<TH1D>(
+            "phi_distribution", "Phi_distribution w.r.t. beam direction;Phi [rad];Counts", nbins, -3.5, 3.5);
+        h_angular_theta_ = CreateHistogram<TH1D>(
+            "theta_distribution", "Theta distribution w.r.t. beam direction;Theta [deg];Counts", nbins, 0, 45);
+        h_pulse_shape_ =
+            CreateHistogram<TH1D>("pulse_shape", "Pulse shape;t [ns];Intensity [a.u.]", nbins, 0, 8 * pulse_duration_);
 
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
         for(const auto& detector : detectors) {
             std::string name = "dep_charge_" + detector->getName();
+            std::string title = name + ";x [mm];y [mm];z [mm]";
             auto sensor = detector->getModel()->getSensorSize();
 
             h_deposited_charge_shapes_[detector] = CreateHistogram<TH3D>(name.c_str(),
-                                                                         name.c_str(),
+                                                                         title.c_str(),
                                                                          100,
                                                                          -sensor.X() / 2,
                                                                          sensor.X() / 2,
