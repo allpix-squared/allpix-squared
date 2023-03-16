@@ -176,8 +176,7 @@ void DepositionLaserModule::initialize() {
             CreateHistogram<TH1D>("phi_distribution", "Phi_distribution w.r.t. beam direction", nbins, -3.5, 3.5);
         h_angular_theta_ =
             CreateHistogram<TH1D>("theta_distribution", "Theta distribution w.r.t. beam direction", nbins, 0, 45);
-        h_pulse_shape_ =
-            CreateHistogram<TH1D>("pulse_shape", "Phi_distribution w.r.t. beam direction", nbins, 0, 8 * pulse_duration_);
+        h_pulse_shape_ = CreateHistogram<TH1D>("pulse_shape", "Pulse shape", nbins, 0, 8 * pulse_duration_);
 
         std::vector<std::shared_ptr<Detector>> detectors = geo_manager_->getDetectors();
         for(const auto& detector : detectors) {
