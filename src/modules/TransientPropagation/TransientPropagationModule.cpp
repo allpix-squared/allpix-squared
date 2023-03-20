@@ -59,6 +59,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("multiplication_threshold", 1e-2);
     config_.setDefault<unsigned int>("multiplication_depth", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
+    config_.setDefault<bool>("multiplication_probability_based", false);
+    config_.setDefault<unsigned int>("multiplication_probability_samples", 20);
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_linegraphs_collected", false);
@@ -83,6 +85,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
     multiplication_depth_ = config.get<unsigned int>("multiplication_depth");
+    multiplication_probability_based_ = config.get<bool>("multiplication_probability_based");
+    multiplication_probability_samples_ = config.get<unsigned int>("multiplication_probability_samples");
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -619,19 +623,43 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
-        gain *= multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
+        auto local_gain =
+            multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
+
+        if(local_gain > 1.0) {
+            if(multiplication_probability_based_) {
+                LOG(DEBUG) << "Calculated local gain of " << local_gain << " for step of "
+                           << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
+                           << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                           << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+                auto multiplication_probability = ROOT::Math::log(local_gain) / multiplication_probability_samples_;
+                for(unsigned int sample = 0; sample < multiplication_probability_samples_; ++sample) {
+                    for(unsigned int electron = 0; electron < static_cast<unsigned int>(std::floor(gain)); ++electron) {
+                        if(uniform_distribution(event->getRandomEngine()) < multiplication_probability) {
+                            gain += 1;
+                            LOG(DEBUG) << "Impact ionisation via multiplication probability detected";
+                        }
+                    }
+                }
+            } else {
+                gain *= local_gain;
+                LOG(DEBUG) << "Calculated integrated gain of " << gain << " (local gain: " << local_gain << ") for step of "
+                           << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
+                           << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                           << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+                if(gain > 20.) {
+                    LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                                 << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+                }
+            }
+        }
+
         if(gain > gain_previous) {
-            LOG(DEBUG) << "Calculated gain of " << gain << " for step of " << Units::display(step.value.norm(), {"um", "nm"})
-                       << " from field of " << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
-                       << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
             // Update already processed gain factor:
             gain_previous = gain;
-
-            if(gain > 20.) {
-                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-            }
 
             // If the gain increased, we need to generate new charge carriers of the opposite type
             // Same-type carriers are simulated via the gain factor:
