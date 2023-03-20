@@ -123,8 +123,8 @@ namespace allpix {
     public:
         VanOverstraetenDeMan(double temperature, double threshold)
             : ImpactIonizationModel(threshold),
-              gamma_(std::tanh(Units::get(0.063e6, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * 300.)) /
-                     std::tanh(Units::get(0.063e6, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * temperature))),
+              gamma_(std::tanh(Units::get(0.063, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * 300.)) /
+                     std::tanh(Units::get(0.063, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * temperature))),
               e_zero_(Units::get(4.0e5, "V/cm")), electron_a_(Units::get(7.03e5, "/cm")),
               electron_b_(Units::get(1.231e6, "V/cm")), hole_a_low_(Units::get(1.582e6, "/cm")),
               hole_a_high_(Units::get(6.71e5, "/cm")), hole_b_low_(Units::get(2.036e6, "V/cm")),
