@@ -110,6 +110,10 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
 void ROOTObjectWriterModule::run(Event* event) {
     auto root_lock = root_process_lock();
 
+    // Retrieve current object count:
+    auto object_count = TProcessID::GetObjectCount();
+
+    // Fetch filtered messages
     auto messages = messenger_->fetchFilteredMessages(this, event);
 
     // Mark objects to be stored:
@@ -192,8 +196,6 @@ void ROOTObjectWriterModule::run(Event* event) {
         // Fill the branch vector
         for(Object& object : object_array) {
             // Trigger the creation of TRefs for cross-object references to be able to store them to file.
-            // We can reset the TObject count after processing this event because the TRef creation is only done here locally
-            // in one worker thread instead of framew-work wide.
             object.petrifyHistory();
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
@@ -212,6 +214,10 @@ void ROOTObjectWriterModule::run(Event* event) {
     for(auto& index_data : write_list_) {
         index_data.second->clear();
     }
+
+    // We can reset the TObject count after processing this event because the TRef creation is only done here locally
+    // in one worker thread instead of framework wide.
+    TProcessID::SetObjectCount(object_count);
 }
 
 void ROOTObjectWriterModule::finalize() {

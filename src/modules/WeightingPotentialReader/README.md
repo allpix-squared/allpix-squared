@@ -53,13 +53,13 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
 - `model` : Type of the weighting potential model, either **mesh** or **pad**.
 - `file_name` : Location of file containing the weighting potential in one of the supported field file formats. Only used if
   the *model* parameter has the value **mesh**.
-- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `SENSOR` for
-  sensor-wide mapping, `PIXEL_FULL`, indicating that the map spans the full 2D plane and the field is centered around the
-  pixel center, `PIXEL_HALF_TOP` or `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`,
-  `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`,
-  `PIXEL_QUADRANT_II`, `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant
-  of the 2D pixel plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not
-  centered around a pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
+- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `PIXEL_FULL`, 
+  indicating that the map spans the full 2D plane and the field is centered around the pixel center, `PIXEL_HALF_TOP` or 
+  `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` 
+  indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`, `PIXEL_QUADRANT_II`, 
+  `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel 
+  plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a 
+  pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
 - `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
   `{1, 1}` and the field is used with its physical extent stated in the field data file.
 - `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can

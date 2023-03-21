@@ -57,7 +57,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
-    config_.setDefault<unsigned int>("multiplication_depth", 5);
+    config_.setDefault<unsigned int>("max_multiplication_level", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
     config_.setDefault<bool>("multiplication_probability_based", false);
     config_.setDefault<unsigned int>("multiplication_probability_samples", 20);
@@ -84,7 +84,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
-    multiplication_depth_ = config.get<unsigned int>("multiplication_depth");
+
+    max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
     multiplication_probability_based_ = config.get<bool>("multiplication_probability_based");
     multiplication_probability_samples_ = config.get<unsigned int>("multiplication_probability_samples");
 
@@ -346,12 +347,12 @@ void TransientPropagationModule::initialize() {
                                       500,
                                       1,
                                       25);
-            multiplication_depthlevel_histo_ = CreateHistogram<TH1D>(
-                "multiplication_depthlevel_histo",
-                "Multiplication depth level of propagated charge carriers;multiplication depth;charge carriers",
-                static_cast<int>(multiplication_depth_),
+            multiplication_level_histo_ = CreateHistogram<TH1D>(
+                "multiplication_level_histo",
+                "Multiplication level of propagated charge carriers;multiplication level;charge carriers",
+                static_cast<int>(max_multiplication_level_),
                 0,
-                static_cast<int>(multiplication_depth_));
+                static_cast<int>(max_multiplication_level_));
             multiplication_depth_histo_ =
                 CreateHistogram<TH1D>("multiplication_depth_histo",
                                       "Generation depth of charge carriers via impact ionization;depth [mm];charge carriers",
@@ -475,12 +476,12 @@ TransientPropagationModule::propagate(Event* event,
                                       const unsigned int charge,
                                       const double initial_time_local,
                                       const double initial_time_global,
-                                      const unsigned int depth,
+                                      const unsigned int level,
                                       std::vector<PropagatedCharge>& propagated_charges,
                                       LineGraph::OutputPlotPoints& output_plot_points) const {
 
-    if(depth > multiplication_depth_) {
-        LOG(WARNING) << "Found impact ionization shower with depth larger than " << multiplication_depth_
+    if(level > max_multiplication_level_) {
+        LOG(WARNING) << "Found impact ionization shower with level larger than " << max_multiplication_level_
                      << ", interrupting";
         return {};
     }
@@ -681,7 +682,7 @@ TransientPropagationModule::propagate(Event* event,
                                                                    charge * (floor_gain - gain_integer),
                                                                    initial_time_local + runge_kutta.getTime(),
                                                                    initial_time_global + runge_kutta.getTime(),
-                                                                   depth + 1,
+                                                                   level + 1,
                                                                    propagated_charges,
                                                                    output_plot_points);
 
@@ -753,7 +754,7 @@ TransientPropagationModule::propagate(Event* event,
             auto induced_primary = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
             auto induced_secondary =
                 charge * (gain - 1) * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
-            if(depth != 0) {
+            if(level != 0) {
                 induced_primary = 0.;
                 induced_secondary = induced;
             }
@@ -808,7 +809,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
-        if(depth == 0) {
+        if(level == 0) {
             gain_primary_histo_->Fill(gain, charge);
             if(type == CarrierType::ELECTRON) {
                 gain_e_histo_->Fill(gain, charge);
@@ -818,7 +819,7 @@ TransientPropagationModule::propagate(Event* event,
         }
         gain_all_histo_->Fill(gain, charge);
 
-        multiplication_depthlevel_histo_->Fill(depth, charge);
+        multiplication_level_histo_->Fill(level, charge);
     }
 
     // Set final state of charge carrier for plotting:
@@ -905,7 +906,7 @@ void TransientPropagationModule::finalize() {
             gain_all_histo_->Write();
             gain_e_histo_->Write();
             gain_h_histo_->Write();
-            multiplication_depthlevel_histo_->Write();
+            multiplication_level_histo_->Write();
             multiplication_depth_histo_->Write();
         }
     }
