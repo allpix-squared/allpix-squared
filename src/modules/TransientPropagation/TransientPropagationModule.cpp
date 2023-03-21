@@ -649,11 +649,10 @@ TransientPropagationModule::propagate(Event* event,
                            << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
                            << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                            << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
-
-                if(gain > 20.) {
-                    LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                                 << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-                }
+            }
+            if(gain > 50.) {
+                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
             }
         }
 
