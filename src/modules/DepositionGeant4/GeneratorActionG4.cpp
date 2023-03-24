@@ -257,7 +257,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
             // Warn about non-zero source energy:
             if(config_.get<double>("source_energy") > 0) {
-                LOG(WARNING)
+                LOG_ONCE(WARNING)
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
         } else if(particle_type_.substr(0, 3) == "ion") {
