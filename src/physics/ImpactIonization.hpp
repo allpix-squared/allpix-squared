@@ -102,11 +102,31 @@ namespace allpix {
             }
         };
 
+    protected:
         double electron_a_;
         double electron_b_;
 
         double hole_a_;
         double hole_b_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Massey model for impact ionization with optimized parameters
+     *
+     * This is the Massey impact ionization model with updated parameters from fits to measurements performed at CERN within
+     * the RD50 collaboration and the CERN EP R&D programme on technologies for future experiments. Values from Table 2 in
+     * https://arxiv.org/abs/2211.16543
+     */
+    class MasseyOptimized : virtual public Massey {
+    public:
+        MasseyOptimized(double temperature, double threshold)
+            : ImpactIonizationModel(threshold), Massey(temperature, threshold) {
+            electron_a_ = Units::get(1.186e6, "/cm");
+            electron_b_ = Units::get(1.020e6, "V/cm") + Units::get(1.043e3, "V/cm/K") * temperature;
+            hole_a_ = Units::get(2.250e6, "/cm");
+            hole_b_ = Units::get(1.851e6, "V/cm") + Units::get(1.828e3, "V/cm/K") * temperature;
+        };
     };
 
     /**
@@ -303,6 +323,8 @@ namespace allpix {
 
                 if(model == "massey") {
                     model_ = std::make_unique<Massey>(temperature, threshold);
+                } else if(model == "massey_optimized") {
+                    model_ = std::make_unique<MasseyOptimized>(temperature, threshold);
                 } else if(model == "overstraeten") {
                     model_ = std::make_unique<VanOverstraetenDeMan>(temperature, threshold);
                 } else if(model == "okuto") {
