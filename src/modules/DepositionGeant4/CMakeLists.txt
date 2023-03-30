@@ -13,7 +13,11 @@ ALLPIX_MODULE_SOURCES(
     TrackInfoG4.cpp
     TrackInfoManager.cpp
     SetTrackInfoUserHookG4.cpp
-    SDAndFieldConstruction.cpp)
+    SDAndFieldConstruction.cpp
+    additionalphysicslists/microelec/MicroElecSiPhysics.cpp
+    additionalphysicslists/microelec/MicroElecPhysics.cpp
+    additionalphysicslists/microelec/G4ElectronCapture.cpp
+    additionalphysicslists/microelec/ElectronCapture.cpp)
 
 # Allpix Geant4 interface is required for this module
 ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME} REQUIRED)
