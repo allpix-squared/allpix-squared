@@ -39,6 +39,8 @@ While $`A`$ is assumed to be temperature-independent, parameter $`B`$ exhibits a
 B(T) = C + D \cdot T.
 ```
 
+### Original publication
+
 The parameter values implemented in Allpix Squared are taken from Section 3 of \[[@massey]\] as:
 
 ```math
@@ -56,6 +58,26 @@ The parameter values implemented in Allpix Squared are taken from Section 3 of \
 for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "massey"`.
+
+### Optimized parameters
+
+An optimized parametrization of the Massey model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 2 of \[[@rd50ionization]\] with the values:
+
+```math
+\begin{aligned}
+    A_{e} &= 1.186\times 10^{6} \,\text{/cm}\\
+    C_{e} &= 1.020\times 10^{6} \,\text{V/cm}\\
+    D_{e} &= 1.043\times 10^{3} \,\text{V/cm/K}\\
+\\
+    A_{h} &= 2.250\times 10^{6} \,\text{/cm}\\
+    C_{h} &= 1.851\times 10^{6} \,\text{V/cm}\\
+    D_{h} &= 1.828\times 10^{3} \,\text{V/cm/K}\\
+\end{aligned}
+```
+
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter `multiplication_model = "massey_optimized"`.
 
 
 ## Van Overstraeten-De Man Model
@@ -233,6 +255,7 @@ supports all corresponding features, mathematical expressions and constants.
 
 
 [@massey]: https://doi.org/10.1109/TED.2006.881010
+[@rd50ionization]: https://arxiv.org/abs/2211.16543
 [@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
 [@okuto]: https://doi.org/10.1016/0038-1101(75)90099-4
 [@bologna]: https://doi.org/10.1109/SISPAD.1999.799251
