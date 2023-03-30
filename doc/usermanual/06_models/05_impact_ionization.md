@@ -81,7 +81,7 @@ Temperature scaling of the ionization coefficient is performed via the $`\gamma(
 Sentaurus TCAD user manual as:
 
 ```math
-\gamma (T) = \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
+\gamma (T) = \tanh \left(\frac{0.063 \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063 \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
 ```
 
 The value of the reference temperature $`T_0`$ is not entirely clear as it is never stated explicitly, a value of
