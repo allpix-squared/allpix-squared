@@ -30,10 +30,8 @@ namespace allpix {
          * @return              Pointer to the G4VModularPhysicsList of the found physics list, or a nullptr if not found.
          */
         G4VModularPhysicsList* getList(std::string list_name) {
-            if(list_name == std::string("microelec"))
-                return static_cast<G4VModularPhysicsList*>(new MicroElecPhysics());
 
-            else if(list_name == "microelec-sionly")
+            if(list_name == "microelec-sionly")
                 return static_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
 
             return nullptr;
