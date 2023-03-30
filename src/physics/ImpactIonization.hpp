@@ -225,10 +225,30 @@ namespace allpix {
             }
         };
 
+    protected:
         double electron_ac_;
         double electron_bd_;
         double hole_ac_;
         double hole_bd_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Okuto Crowell model for impact ionization with optimized parameters
+     *
+     * This is the Okuto Crowell impact ionization model with updated parameters from fits to measurements
+     * performed at CERN within the RD50 collaboration and the CERN EP R&D programme on technologies for future experiments.
+     * Values from Table 4 in https://arxiv.org/abs/2211.16543
+     */
+    class OkutoCrowellOptimized : virtual public OkutoCrowell {
+    public:
+        OkutoCrowellOptimized(double temperature, double threshold)
+            : ImpactIonizationModel(threshold), OkutoCrowell(temperature, threshold) {
+            electron_ac_ = Units::get(0.289, "/V") * (1. + 9.03e-4 * (temperature - 300));
+            electron_bd_ = Units::get(4.01e5, "V/cm") * (1. + 1.11e-3 * (temperature - 300));
+            hole_ac_ = Units::get(0.202, "/V") * (1. - 2.20e-3 * (temperature - 300));
+            hole_bd_ = Units::get(6.40e5, "V/cm") * (1. + 8.25e-4 * (temperature - 300));
+        };
     };
 
     /**
@@ -359,6 +379,8 @@ namespace allpix {
                     model_ = std::make_unique<VanOverstraetenDeManOptimized>(temperature, threshold);
                 } else if(model == "okuto") {
                     model_ = std::make_unique<OkutoCrowell>(temperature, threshold);
+                } else if(model == "okuto_optimized") {
+                    model_ = std::make_unique<OkutoCrowellOptimized>(temperature, threshold);
                 } else if(model == "bologna") {
                     model_ = std::make_unique<Bologna>(temperature, threshold);
                 } else if(model == "none") {
