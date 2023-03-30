@@ -161,6 +161,7 @@ namespace allpix {
             }
         };
 
+    protected:
         double gamma_;
         double e_zero_;
 
@@ -171,6 +172,33 @@ namespace allpix {
         double hole_a_high_;
         double hole_b_low_;
         double hole_b_high_;
+    };
+
+    /**
+     * @ingroup Models
+     * @brief van Overstraeten de Man model for impact ionization with optimized parameters
+     *
+     * This is the van Overstraeten de Man impact ionization model with updated parameters from fits to measurements
+     * performed at CERN within the RD50 collaboration and the CERN EP R&D programme on technologies for future experiments.
+     * Values from Table 3 in https://arxiv.org/abs/2211.16543
+     *
+     * In contrast to the original model from van Overstraeten de Man, this publication uses a parametrization without
+     * differentiating between low and high field regions.
+     */
+    class VanOverstraetenDeManOptimized : virtual public VanOverstraetenDeMan {
+    public:
+        VanOverstraetenDeManOptimized(double temperature, double threshold)
+            : ImpactIonizationModel(threshold), VanOverstraetenDeMan(temperature, threshold) {
+            gamma_ = std::tanh(Units::get(0.0758, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * 300.)) /
+                     std::tanh(Units::get(0.0758, "eV") / (2. * Units::get(8.6173333e-5, "eV/K") * temperature));
+            electron_a_ = Units::get(1.149e6, "/cm");
+            electron_b_ = Units::get(1.325e6, "V/cm");
+            hole_a_low_ = Units::get(2.519e6, "/cm");
+            hole_b_low_ = Units::get(2.428e6, "V/cm");
+            // The publication uses the same parameters for low and high electric field regions:
+            hole_a_high_ = Units::get(2.519e6, "/cm");
+            hole_b_high_ = Units::get(2.428e6, "V/cm");
+        };
     };
 
     /**
@@ -327,6 +355,8 @@ namespace allpix {
                     model_ = std::make_unique<MasseyOptimized>(temperature, threshold);
                 } else if(model == "overstraeten") {
                     model_ = std::make_unique<VanOverstraetenDeMan>(temperature, threshold);
+                } else if(model == "overstraeten_optimized") {
+                    model_ = std::make_unique<VanOverstraetenDeManOptimized>(temperature, threshold);
                 } else if(model == "okuto") {
                     model_ = std::make_unique<OkutoCrowell>(temperature, threshold);
                 } else if(model == "bologna") {
