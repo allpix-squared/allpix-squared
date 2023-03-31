@@ -61,7 +61,7 @@ This model can be selected in the configuration file via the parameter `multipli
 
 ### Optimized parameters
 
-An optimized parametrization of the Massey model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 2 of \[[@rd50ionization]\] with the values:
+An optimized parametrization of the Massey model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 2 of \[[@rd50ionization]\] with the values:
 
 ```math
 \begin{aligned}
@@ -103,10 +103,10 @@ Temperature scaling of the ionization coefficient is performed via the $`\gamma(
 Sentaurus TCAD user manual as:
 
 ```math
-\gamma (T) = \tanh \left(\frac{\hbar \omega_{op}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{\hbar \omega_{op}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
+\gamma (T) = \tanh \left(\frac{\hbar \omega_{op}}{2 k_{\mathrm{B}} \cdot T_0} \right) \cdot \tanh \left(\frac{\hbar \omega_{op}}{2 k_{\mathrm{B}} \cdot T} \right)^{-1}
 ```
 
-with $`\hbar \omega_{op} = 0.063 \,\text{eV}`$. The value of the reference temperature $`T_0`$ is not entirely clear as it is never
+with $`\hbar \omega_{op} = 0.063 \,\text{eV}`$ and the Boltzmann constant $`k_{\mathrm{B}} = 8.6173\times 10^{-5} \,\text{eV/K}`$. The value of the reference temperature $`T_0`$ is not entirely clear as it is never
 stated explicitly, a value of $`T_0 = 300 \,\text{K}`$ is assumed.
 
 ### Original publication
@@ -132,7 +132,7 @@ This model can be selected in the configuration file via the parameter `multipli
 
 ### Optimized parameters
 
-An optimized parametrization of the Van Overstraeten-De Man model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 3 of \[[@rd50ionization]\] with the following parameter values:
+An optimized parametrization of the Van Overstraeten-De Man model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 3 of \[[@rd50ionization]\] with the following parameter values:
 
 ```math
 \begin{aligned}
@@ -142,11 +142,12 @@ An optimized parametrization of the Van Overstraeten-De Man model based on measu
     a_{\infty, h} &= 2.519\times 10^{6} \,\text{/cm}\\
     b_{h} &= 2.428\times 10^{6} \,\text{V/cm}\\
     \\
-    \hbar \omega_{op} = 0.0758 \,\text{eV}
+    \hbar \omega_{op} &= 0.0758 \,\text{eV}
 \end{aligned}
 ```
 
-In contrast to the original model, this publication uses a parametrization without differentiating between low and high field regions.
+In contrast to the original model, this publication uses a parametrization without differentiating between low and high field regions, hence only one parameter value is provided for each of $`a_{\infty, h}`$ and $`b_{h}`$.
+
 This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten_optimized"`.
 
 
@@ -192,7 +193,7 @@ This model can be selected in the configuration file via the parameter `multipli
 
 ### Optimized parameters
 
-An optimized parametrization of the Okuto-Crowell model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 4 of \[[@rd50ionization]\] with the following parameter values:
+An optimized parametrization of the Okuto-Crowell model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 4 of \[[@rd50ionization]\] with the following parameter values:
 
 ```math
 \begin{aligned}
