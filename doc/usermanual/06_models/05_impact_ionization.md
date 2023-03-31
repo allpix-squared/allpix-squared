@@ -103,11 +103,15 @@ Temperature scaling of the ionization coefficient is performed via the $`\gamma(
 Sentaurus TCAD user manual as:
 
 ```math
-\gamma (T) = \tanh \left(\frac{0.063 \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063 \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
+\gamma (T) = \tanh \left(\frac{\hbar \omega_{op}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{\hbar \omega_{op}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
 ```
 
-The value of the reference temperature $`T_0`$ is not entirely clear as it is never stated explicitly, a value of
-$`T_0 = 300 \,\text{K}`$ is assumed. The other parameter values implemented in Allpix Squared are taken from the abstract
+with $`\hbar \omega_{op} = 0.063 \,\text{eV}`$. The value of the reference temperature $`T_0`$ is not entirely clear as it is never
+stated explicitly, a value of $`T_0 = 300 \,\text{K}`$ is assumed.
+
+### Original publication
+
+The other model parameter values implemented in Allpix Squared are taken from the abstract
 of \[[@overstraeten]\] as:
 
 ```math
@@ -124,6 +128,28 @@ of \[[@overstraeten]\] as:
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten"`.
+
+
+### Optimized parameters
+
+An optimized parametrization of the Van Overstraeten-De Man model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 3 of \[[@rd50ionization]\] with the following parameter values:
+
+```math
+\begin{aligned}
+    a_{\infty, e} &= 1.149\times 10^{6} \,\text{/cm}\\
+    b_{e} &= 1.325\times 10^{6} \,\text{V/cm}\\
+    \\
+    a_{\infty, h} &= 2.519\times 10^{6} \,\text{/cm}\\
+    b_{h} &= 2.428\times 10^{6} \,\text{V/cm}\\
+    \\
+    \hbar \omega_{op} = 0.0758 \,\text{eV}
+\end{aligned}
+```
+
+In contrast to the original model, this publication uses a parametrization without differentiating between low and high field regions.
+This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten_optimized"`.
+
+
 
 ## Okuto-Crowell Model
 
