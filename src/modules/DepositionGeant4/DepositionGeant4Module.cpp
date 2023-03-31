@@ -45,7 +45,7 @@
 #include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
 
-#include "additionalphysicslists/AdditionalPhysicsLists.hpp"
+#include "AdditionalPhysicsLists.hpp"
 
 #include "ActionInitializationG4.hpp"
 #include "GeneratorActionG4.hpp"
