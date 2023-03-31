@@ -4,6 +4,9 @@
 # Define module
 ALLPIX_UNIQUE_MODULE(MODULE_NAME)
 
+# Set variable to microelectronics example folder
+set(MICROELEC $ENV{GEANT4_DATA_DIR}/../examples/advanced/microelectronics)
+
 # Add source files to library
 ALLPIX_MODULE_SOURCES(
     ${MODULE_NAME}
@@ -14,10 +17,11 @@ ALLPIX_MODULE_SOURCES(
     TrackInfoManager.cpp
     SetTrackInfoUserHookG4.cpp
     SDAndFieldConstruction.cpp
-    additionalphysicslists/microelec/MicroElecSiPhysics.cpp
-    additionalphysicslists/microelec/MicroElecPhysics.cpp
-    additionalphysicslists/microelec/G4ElectronCapture.cpp
-    additionalphysicslists/microelec/ElectronCapture.cpp)
+    ${MICROELEC}/src/MicroElecSiPhysics.cc
+    ${MICROELEC}/src/ElectronCapture.cc)
+
+# Add includes from the microelectronics example
+TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${MICROELEC}/include)
 
 # Allpix Geant4 interface is required for this module
 ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME} REQUIRED)
