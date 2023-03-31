@@ -14,6 +14,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 
 * Babar Ali, Czech Technical University in Prague, [bali](https://gitlab.cern.ch/bali)
 * Mohamed Moanis Ali, GSOC2019 Student, [mmoanis](https://github.com/mmoanis)
+* Jay Archer, University of Wollongong, [jarcher](https://gitlab.cern.ch/jarcher)
 * Mathieu Benoit, BNL, [mbenoit](https://gitlab.cern.ch/mbenoit)
 * Thomas Billoud, Université de Montréal, [tbilloud](https://gitlab.cern.ch/tbilloud)
 * Tobias Bisanz, CERN, [tbisanz](https://gitlab.cern.ch/tbisanz)
