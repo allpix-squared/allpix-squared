@@ -73,7 +73,7 @@ The scale of the plot axis can be adjusted using the `output_plots_scale` parame
 This module requires an installation Geant4.
 
 ## Parameters
-* `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website \[[@g4physicslists]\].
+* `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website \[[@g4physicslists]\]. The MicroElec track structure physics list \[[@microelec]\] can also be implemented for ions and electrons, currently in only silicon by specifying **microelec-sionly**.
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
 * `charge_creation_energy` : Energy needed to create a charge deposit. Defaults to the energy needed to create an electron-hole pair in the respective sensor material (e.g. 3.64 eV for silicon sensors, \[[@chargecreation]\]). A full list of supported materials can be found elsewhere in the manual.
@@ -165,3 +165,4 @@ number_of_particles = 1
 [@pai]: https://doi.org/10.1016/S0168-9002(00)00457-5
 [@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
 [@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
+[@microelec]: https://doi.org/10.1016/j.nimb.2020.11.016
