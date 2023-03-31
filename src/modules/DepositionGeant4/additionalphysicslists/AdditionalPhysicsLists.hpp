@@ -12,9 +12,7 @@
 #ifndef ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 #define ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 
-// The MicroElec PhysicsLists
-#include "microelec/MicroElecPhysics.hpp"
-#include "microelec/MicroElecSiPhysics.hpp"
+#include "MicroElecSiPhysics.hh"
 
 namespace allpix {
     /**
@@ -31,8 +29,10 @@ namespace allpix {
          */
         G4VModularPhysicsList* getList(std::string list_name) {
 
-            if(list_name == "microelec-sionly")
-                return static_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
+            if(list_name == "microelec-sionly") {
+                // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
+                return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
+            }
 
             return nullptr;
         }
