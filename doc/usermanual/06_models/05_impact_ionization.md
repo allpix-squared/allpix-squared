@@ -170,6 +170,8 @@ $`T_0 = 300 \,\text{K}`$ as:
 \end{aligned}
 ```
 
+## Original publication
+
 The parameter values implemented in Allpix Squared are taken from Table 1 of \[[@okuto]\], using the values for silicon, as:
 
 ```math
@@ -187,6 +189,28 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "okuto"`.
+
+### Optimized parameters
+
+An optimized parametrization of the Okuto-Crowell model based on measurements with an infrared lased TCT setup is implemented in Allpix Squared, based on Table 4 of \[[@rd50ionization]\] with the following parameter values:
+
+```math
+\begin{aligned}
+    a_{300, e} &= 0.289 \,\text{/V}\\
+    c_{e} &= 9.03\times 10^{-4}\\
+    b_{300, e} &= 4.01\times 10^{5} \,\text{V/cm}\\
+    d_{e} &= 1.11\times 10^{-3}\\
+\\
+    a_{300, h} &= 0.202 \,\text{/cm}\\
+    c_{h} &= -2.20\times 10^{-3}\\
+    b_{300, h} &= 6.40\times 10^{5} \,\text{V/cm}\\
+    d_{h} &= 8.25\times 10^{-4}\\
+\end{aligned}
+```
+
+This model can be selected in the configuration file via the parameter `multiplication_model = "okuto_optimized"`.
+
+
 
 ## Bologna Model
 
