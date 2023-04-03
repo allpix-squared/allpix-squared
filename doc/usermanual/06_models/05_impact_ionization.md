@@ -182,7 +182,7 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
     b_{300, e} &= 4.81\times 10^{5} \,\text{V/cm}\\
     d_{e} &= 6.86\times 10^{-4}\\
 \\
-    a_{300, h} &= 0.243 \,\text{/cm}\\
+    a_{300, h} &= 0.243 \,\text{/V}\\
     c_{h} &= 5.35\times 10^{-4}\\
     b_{300, h} &= 6.53\times 10^{5} \,\text{V/cm}\\
     d_{h} &= 5.67\times 10^{-4}\\
@@ -202,7 +202,7 @@ An optimized parametrization of the Okuto-Crowell model based on measurements wi
     b_{300, e} &= 4.01\times 10^{5} \,\text{V/cm}\\
     d_{e} &= 1.11\times 10^{-3}\\
 \\
-    a_{300, h} &= 0.202 \,\text{/cm}\\
+    a_{300, h} &= 0.202 \,\text{/V}\\
     c_{h} &= -2.20\times 10^{-3}\\
     b_{300, h} &= 6.40\times 10^{5} \,\text{V/cm}\\
     d_{h} &= 8.25\times 10^{-4}\\
