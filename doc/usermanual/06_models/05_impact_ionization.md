@@ -39,6 +39,8 @@ While $`A`$ is assumed to be temperature-independent, parameter $`B`$ exhibits a
 B(T) = C + D \cdot T.
 ```
 
+### Original publication
+
 The parameter values implemented in Allpix Squared are taken from Section 3 of \[[@massey]\] as:
 
 ```math
@@ -56,6 +58,26 @@ The parameter values implemented in Allpix Squared are taken from Section 3 of \
 for electrons and holes, respectively.
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "massey"`.
+
+### Optimized parameters
+
+An optimized parametrization of the Massey model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 2 of \[[@rd50ionization]\] with the values:
+
+```math
+\begin{aligned}
+    A_{e} &= 1.186\times 10^{6} \,\text{/cm}\\
+    C_{e} &= 1.020\times 10^{6} \,\text{V/cm}\\
+    D_{e} &= 1.043\times 10^{3} \,\text{V/cm/K}\\
+\\
+    A_{h} &= 2.250\times 10^{6} \,\text{/cm}\\
+    C_{h} &= 1.851\times 10^{6} \,\text{V/cm}\\
+    D_{h} &= 1.828\times 10^{3} \,\text{V/cm/K}\\
+\end{aligned}
+```
+
+for electrons and holes, respectively.
+
+This model can be selected in the configuration file via the parameter `multiplication_model = "massey_optimized"`.
 
 
 ## Van Overstraeten-De Man Model
@@ -81,11 +103,15 @@ Temperature scaling of the ionization coefficient is performed via the $`\gamma(
 Sentaurus TCAD user manual as:
 
 ```math
-\gamma (T) = \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T_0} \right) \cdot \tanh \left(\frac{0.063\times 10^{6} \,\text{eV}}{2 \times 8.6173\times 10^{-5} \,\text{eV/K} \cdot T} \right)^{-1}
+\gamma (T) = \tanh \left(\frac{\hbar \omega_{op}}{2 k_{\mathrm{B}} \cdot T_0} \right) \cdot \tanh \left(\frac{\hbar \omega_{op}}{2 k_{\mathrm{B}} \cdot T} \right)^{-1}
 ```
 
-The value of the reference temperature $`T_0`$ is not entirely clear as it is never stated explicitly, a value of
-$`T_0 = 300 \,\text{K}`$ is assumed. The other parameter values implemented in Allpix Squared are taken from the abstract
+with $`\hbar \omega_{op} = 0.063 \,\text{eV}`$ and the Boltzmann constant $`k_{\mathrm{B}} = 8.6173\times 10^{-5} \,\text{eV/K}`$. The value of the reference temperature $`T_0`$ is not entirely clear as it is never
+stated explicitly, a value of $`T_0 = 300 \,\text{K}`$ is assumed.
+
+### Original publication
+
+The other model parameter values implemented in Allpix Squared are taken from the abstract
 of \[[@overstraeten]\] as:
 
 ```math
@@ -102,6 +128,29 @@ of \[[@overstraeten]\] as:
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten"`.
+
+
+### Optimized parameters
+
+An optimized parametrization of the Van Overstraeten-De Man model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 3 of \[[@rd50ionization]\] with the following parameter values:
+
+```math
+\begin{aligned}
+    a_{\infty, e} &= 1.149\times 10^{6} \,\text{/cm}\\
+    b_{e} &= 1.325\times 10^{6} \,\text{V/cm}\\
+    \\
+    a_{\infty, h} &= 2.519\times 10^{6} \,\text{/cm}\\
+    b_{h} &= 2.428\times 10^{6} \,\text{V/cm}\\
+    \\
+    \hbar \omega_{op} &= 0.0758 \,\text{eV}
+\end{aligned}
+```
+
+In contrast to the original model, this publication uses a parametrization without differentiating between low and high field regions, hence only one parameter value is provided for each of $`a_{\infty, h}`$ and $`b_{h}`$.
+
+This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten_optimized"`.
+
+
 
 ## Okuto-Crowell Model
 
@@ -122,6 +171,8 @@ $`T_0 = 300 \,\text{K}`$ as:
 \end{aligned}
 ```
 
+## Original publication
+
 The parameter values implemented in Allpix Squared are taken from Table 1 of \[[@okuto]\], using the values for silicon, as:
 
 ```math
@@ -131,7 +182,7 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
     b_{300, e} &= 4.81\times 10^{5} \,\text{V/cm}\\
     d_{e} &= 6.86\times 10^{-4}\\
 \\
-    a_{300, h} &= 0.243 \,\text{/cm}\\
+    a_{300, h} &= 0.243 \,\text{/V}\\
     c_{h} &= 5.35\times 10^{-4}\\
     b_{300, h} &= 6.53\times 10^{5} \,\text{V/cm}\\
     d_{h} &= 5.67\times 10^{-4}\\
@@ -139,6 +190,28 @@ The parameter values implemented in Allpix Squared are taken from Table 1 of \[[
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "okuto"`.
+
+### Optimized parameters
+
+An optimized parametrization of the Okuto-Crowell model based on measurements with an infrared laser is implemented in Allpix Squared, based on Table 4 of \[[@rd50ionization]\] with the following parameter values:
+
+```math
+\begin{aligned}
+    a_{300, e} &= 0.289 \,\text{/V}\\
+    c_{e} &= 9.03\times 10^{-4}\\
+    b_{300, e} &= 4.01\times 10^{5} \,\text{V/cm}\\
+    d_{e} &= 1.11\times 10^{-3}\\
+\\
+    a_{300, h} &= 0.202 \,\text{/V}\\
+    c_{h} &= -2.20\times 10^{-3}\\
+    b_{300, h} &= 6.40\times 10^{5} \,\text{V/cm}\\
+    d_{h} &= 8.25\times 10^{-4}\\
+\end{aligned}
+```
+
+This model can be selected in the configuration file via the parameter `multiplication_model = "okuto_optimized"`.
+
+
 
 ## Bologna Model
 
@@ -233,6 +306,7 @@ supports all corresponding features, mathematical expressions and constants.
 
 
 [@massey]: https://doi.org/10.1109/TED.2006.881010
+[@rd50ionization]: https://arxiv.org/abs/2211.16543
 [@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
 [@okuto]: https://doi.org/10.1016/0038-1101(75)90099-4
 [@bologna]: https://doi.org/10.1109/SISPAD.1999.799251
