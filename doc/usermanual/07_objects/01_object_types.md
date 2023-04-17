@@ -169,10 +169,29 @@ For more details refer to the [code reference](https://allpix-squared.docs.cern.
 
 ## PixelHit
 
-The digitised pixel hits after processing in the detector's front-end electronics. The object allows the storage of both the
-time and signal value. The time can be stored in an arbitrary unit used to timestamp the hits. The signal can hold different
-kinds of information depending on the type of the digitizer used. Examples of the signal information is the "true"
-information of a binary readout chip, the number of ADC counts or the ToT (time-over-threshold).
+The digitised pixel hits after processing the [PixelCharge](#pixelcharge) in the detector's front-end electronics. The object
+allows the storage of both the time and signal value. The time can be stored in an arbitrary unit used to timestamp the hits.
+The signal can hold different kinds of information depending on the type of the digitizer used. Examples of the signal
+information is the "true" information of a binary readout chip, the number of ADC counts or the ToT (time-over-threshold).
+
+The exact type of the time and signal values depends on the digitizer module used, for which the
+[module documentation](../08_modules/_index.md) is to be consulted.
+
+Main parameters:
+- The pixel corresponding to the hit
+  ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a1da68ec967f329bc389024fc6967c4ad))
+  and its index
+  ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a0859f268a4f7a69aad7ca6cce742f03b))
+- The related [PixelCharge](#pixelcharge)
+  ([`getPixelCharge()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a3c0794a68c71e930913438f151afcf66))
+  and PixelPulse, if any
+  ([`getPixelPulse()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a2cb314929cced5f6f82ebe7e4a3016bd))
+- The signal of the hit
+  ([`getSignal()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#ae9fc38ec4d0aa41aff2eb019ce2ce236))
+- The time information of the hit in local and global coordinates
+  ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a99fad43a7ba5d87f7f774d26d81c7dc2),
+   [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html#a1d541acb02366d25691b2114613a8521))
+
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelHit.html).
 
