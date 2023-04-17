@@ -128,23 +128,18 @@ Main parameters:
   ([`getState()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PropagatedCharge.html#ac14ea433405562d18a6113948707552f))
 
 The following values for the carrier state are possible:
-
 - `CarrierState::UNKNOWN`:
   The final state of the charge carrier is unknown, for example because it might not have been provided by the used
-  propagation algorithm.
-
+  propagation algorithm
 - `CarrierState::MOTION`:
   The charge carrier was still in motion when the propagation routine finished, for example when the configured integration
-  time was reached.
-
+  time was reached
 - `CarrierState::RECOMBINED`:
-  The charge carrier has recombined with the silicon lattice at the given position.
-
+  The charge carrier has recombined with the silicon lattice at the given position
 - `CarrierState::TRAPPED`:
-  The charge carrier has been trapped by a lattice defect at the given position.
-
+  The charge carrier has been trapped by a lattice defect at the given position
 - `CarrierState::HALTED`:
-  The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface.
+  The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PropagatedCharge.html).
 
