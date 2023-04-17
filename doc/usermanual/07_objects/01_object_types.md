@@ -154,6 +154,22 @@ The set of charge carriers collected at a single pixel. The pixel indices are st
 from zero for the first pixel. Only the total number of charges at the pixel is currently stored, the timing information of
 the individual charges can be retrieved from the related [PropagatedCharge](#propagatedcharge) objects.
 
+Main parameters:
+- The pixel corresponding to the charge
+  ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#ab511f3005b3893a0496a8f1623ddde1f))
+  and its index
+  ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#a8c24718e64e7e49a84893a1b60b04696))
+- The charge collected in the pixel
+  ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#a3aaf82b5ca4439c17614536ff668d569),
+   [`getAbsoluteCharge()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#af767e1d8b8672c5628093a1491f83da5))
+- The related [propagates charges](#propagatedcharge)
+  ([`getPropagatedCharges()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#af7edef4aaa932efb3552939a912e3751))
+- The associated time of the charge in local and global coordinates
+  ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#adbfb1bceab6b1f5fcc9d2761689c1565),
+   [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#a14db92143cf86e53ecd1e17fae6b797c))
+- The recorded charge pulse, if any
+  ([`getPulse()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html#a49f7cf79b556b7744fc9234c7252be4c))
+
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PixelCharge.html).
 
 ## PixelHit
