@@ -8,25 +8,32 @@
 SET(DOCS_DOXYGEN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/reference")
 
 FIND_PACKAGE(Doxygen)
-FIND_PACKAGE(Doxybook2)
 
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/reference/Doxyfile" "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile" @ONLY)
 
+ADD_CUSTOM_TARGET(
+    apsq_ref_doxygen
+    COMMAND Doxygen::doxygen "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile"
+    DEPENDS Doxygen::doxygen Python::Interpreter
+    WORKING_DIRECTORY "${DOCS_DOXYGEN_BINARY_DIR}"
+    COMMENT "Generating API reference with Doxygen"
+    VERBATIM)
+
+FIND_PACKAGE(Doxybook2)
 SET(REF_MARKDOWN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/reference_markdown")
 
 ADD_CUSTOM_TARGET(
-    apsq_docs_reference
+    apsq_ref_markdown
     COMMAND
         ${CMAKE_COMMAND} -E remove_directory -f ${REF_MARKDOWN_BINARY_DIR}
     COMMAND
         ${CMAKE_COMMAND} -E make_directory -f ${REF_MARKDOWN_BINARY_DIR}
-    COMMAND Doxygen::doxygen "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile"
     COMMAND
         Doxybook2::doxybook2 -q -i "${DOCS_DOXYGEN_BINARY_DIR}/xml" -o "${REF_MARKDOWN_BINARY_DIR}"
         -t "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook" -c "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook/config.json"
-    DEPENDS Doxygen::doxygen Python::Interpreter Doxybook2::doxybook2
+    DEPENDS Python::Interpreter Doxybook2::doxybook2 apsq_ref_doxygen
     WORKING_DIRECTORY "${DOCS_DOXYGEN_BINARY_DIR}"
-    COMMENT "Generating API reference with Doxygen"
+    COMMENT "Generating Markdown tree from Doxygen XML"
     VERBATIM)
 
 #######################################
