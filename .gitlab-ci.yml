@@ -456,7 +456,7 @@ docs:doxygen:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_reference
-        - mv doc/reference/html ../public/reference
+        - mv doc/reference_markdown ../public/reference_markdown
 
 # Create file tree for hugo
 docs:usermanual-hugo:
