@@ -27,8 +27,8 @@ Main properties:
   [`getStartPoint()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a1bddb8af8c3f64067bf8767c5a435117),
   [`getEndPoint()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a1ae55b27c872c7adfa6fd890f2f83195))
 - Global time when the track had its first and last appearance (
-  [`getGlobalStartTime`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a913166027c8a2dec9ffba22361b289f1),
-  [`getGlobalEndTime`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a01377a4a6f447bc85b92e306da5989c3))
+  [`getGlobalStartTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a913166027c8a2dec9ffba22361b289f1),
+  [`getGlobalEndTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a01377a4a6f447bc85b92e306da5989c3))
 - Initial and final kinetic and total energy (
   [`getKineticEnergyInitial()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a9998511439c665d777d65779f9f9dcdf),
   [`getTotalEnergyInitial()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCTrack.html#a25c481bd56d0c2ab8ba15c4292c8ecc7),
@@ -75,12 +75,38 @@ Main parameters:
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html).
 
+## SensorCharge
+
+This is a meta class for a set of charges within a sensor. SThe properties of this object are inherited by
+[DepositedCharge](#depositedcharge) and [PropagatedCharge](#propagatedcharge) objects.
+
+Main parameters:
+- The position of the set of charges in the sensor in local and global coordinates (
+  [`getLocalPosition()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a3ab0b177b8b64535057d98bd3238cae3),
+  [`getGlobalPosition()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#adcf461c7b657982725c8abad6ff74ac4))
+- The associated time of the set of charges in local and global coordinates (
+  [`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#a365ea8e1f752290ffba385a5fdd0d52d),
+  [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#ad42d8e19a3e01bf9204d002ec9370018))
+- The sign of the charge carries (
+  [`getSign()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#a70e90b3397690567c5e5e98b441108d6))
+  and the amount of charges in the set (
+  [`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#adab95a4c287dc8b3ae106e07a22214f6))
+- The carrier type to check if the charge carriers are electrons or holes (
+  [`getType()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html#a903e762bc987c43fe1e8128f400e4ea3))
+
+For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1SensorCharge.html).
+
 ## DepositedCharge
 
 The set of charge carriers deposited by an ionizing particle crossing the active material of the sensor. The object stores
 the *local* position in the sensor together with the total number of deposited charges in elementary charge units. In
 addition, the time (in *ns* as the internal framework unit) of the deposition after the start of the event and the type of
 carrier (electron or hole) is stored.
+
+Main parameters:
+- Everything from [SensorCharge](#sensorcharge)
+- The [MCParticle](#mcparticle) that created the deposited charge (
+  [`getMCParticle()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1DepositedCharge.html#a371c2f081846e00b6ea5aaaba049dbb7))
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1DepositedCharge.html).
 
@@ -92,8 +118,16 @@ ready to be collected) or on any other position in the sensor if the set of char
 another process. Timing information giving the total time to arrive at the final location, from the start of the event, can
 also be stored.
 
-The state of the charge carrier at the end of the propagation can be retrieved via the `getState()` method. The following
-values are available:
+Main parameters:
+- Everything from [SensorCharge](#sensorcharge)
+- The associated [DepositedCharge](#depositedcharge) object (
+  [`getDepositedCharge()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PropagatedCharge.html#a2faa699e53a1809e645d0556ce924345))
+- The associated induced pulses, if any (
+  [`getPulses()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PropagatedCharge.html#a6dfb809cfda7bab0893292c4861e85d3))
+- The carrier state of the charge carriers described below (
+  [`getState()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1PropagatedCharge.html#ac14ea433405562d18a6113948707552f))
+
+The following values for the carrier state are possible:
 
 - `CarrierState::UNKNOWN`:
   The final state of the charge carrier is unknown, for example because it might not have been provided by the used
