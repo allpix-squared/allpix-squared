@@ -65,21 +65,21 @@ namespace allpix {
          */
         ~DefaultLogger();
 
-        ///@{
+        /// @{
         /**
          * @brief Disable copying
          */
         DefaultLogger(const DefaultLogger&) = delete;
         DefaultLogger& operator=(const DefaultLogger&) = delete;
-        ///@}
+        /// @}
 
-        ///@{
+        /// @{
         /**
          * @brief Use default move behaviour
          */
         DefaultLogger(DefaultLogger&&) noexcept(false) = default;
         DefaultLogger& operator=(DefaultLogger&&) noexcept(false) = default;
-        ///@}
+        /// @}
 
         /**
          * @brief Gives a stream to write to using the C++ stream syntax
@@ -275,7 +275,7 @@ namespace allpix {
  */
 #define LOG_ONCE(level) LOG_N(level, 1)
 
-///@{
+/// @{
 /**
  * @brief Macros to generate and retrieve line-specific local variables to hold the logging count of a message
  *
@@ -286,7 +286,7 @@ namespace allpix {
 #define GENERATE_LOG_VAR(Count)                                                                                             \
     static std::atomic<int> CONCAT(local___FUNCTION__, __LINE__) { Count }
 #define GET_LOG_VARIABLE() CONCAT(local___FUNCTION__, __LINE__)
-///@}
+/// @}
 
 /**
  * @brief Create a logging stream if the reporting level is high enough and this message has not yet been logged more than

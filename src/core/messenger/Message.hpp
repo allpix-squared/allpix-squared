@@ -31,7 +31,7 @@ namespace allpix {
          */
         virtual ~BaseMessage();
 
-        ///@{
+        /// @{
         /**
          * @brief Use default copy and move behaviour
          */
@@ -40,7 +40,7 @@ namespace allpix {
 
         BaseMessage(BaseMessage&&) noexcept = default;
         BaseMessage& operator=(BaseMessage&&) noexcept = default;
-        ///@}
+        /// @}
 
         /**
          * @brief Get detector bound to this message
