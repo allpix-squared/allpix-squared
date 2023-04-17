@@ -857,8 +857,7 @@ WARN_LOGFILE           =
 INPUT                  = "@PROJECT_SOURCE_DIR@/src/" \
                          "@PROJECT_SOURCE_DIR@/tools/mesh_converter/" \
                          "@PROJECT_SOURCE_DIR@/tools/apf_tools/" \
-                         "@PROJECT_SOURCE_DIR@/tools/weightingpotential_generator/" \
-                         "@PROJECT_SOURCE_DIR@/doc/reference/README.md"
+                         "@PROJECT_SOURCE_DIR@/tools/weightingpotential_generator/"
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -932,7 +931,7 @@ EXCLUDE_PATTERNS       =
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = cereal, eutelescope, lcio
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -1014,7 +1013,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/doc/reference/README.md"
+USE_MDFILE_AS_MAINPAGE = 
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
