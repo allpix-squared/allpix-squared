@@ -66,10 +66,11 @@ Main parameters:
   [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#ac50facfceaf33ebdc7199085ec3549f7))
 - PDG id for this particle type (
   [`getParticleID()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a940f894b9773e58eed588acd85712bd4))
-- If the particle is a primary particle or a secondary particle with a parent (
-  [`isPrimary()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a7cc9e9f4ace629928a34c5e3f72d5efa),
+- If the particle is a primary particle or has a parent particle (
+  [`isPrimary()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a7cc9e9f4ace629928a34c5e3f72d5efa)),
+  and the parent particle, if any (
   [`getParent()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a8985cb34f41e91cf6f193ac72b9f0ed3))
-- The track of the particle (
+- The track the particle is related to, if any (
   [`getTrack()`](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html#a997b124cb9020557ffb8bf18620eb970))
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classallpix_1_1MCParticle.html).
