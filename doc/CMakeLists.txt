@@ -11,10 +11,19 @@ FIND_PACKAGE(Doxygen)
 
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/reference/Doxyfile" "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile" @ONLY)
 
+SET(REF_MARKDOWN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/reference_markdown")
+
 ADD_CUSTOM_TARGET(
     apsq_docs_reference
+    COMMAND
+        ${CMAKE_COMMAND} -E remove_directory -f ${REF_MARKDOWN_BINARY_DIR}
+    COMMAND
+        ${CMAKE_COMMAND} -E make_directory -f ${REF_MARKDOWN_BINARY_DIR}
     COMMAND Doxygen::doxygen "${DOCS_DOXYGEN_BINARY_DIR}/Doxyfile"
-    DEPENDS Doxygen::doxygen
+    COMMAND
+        Doxybook2::doxybook2 -q -i "${DOCS_DOXYGEN_BINARY_DIR}/xml" -o "${REF_MARKDOWN_BINARY_DIR}"
+        -t "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook" -c "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook/config.json"
+    DEPENDS Doxygen::doxygen Python::Interpreter Doxybook2::doxybook2
     WORKING_DIRECTORY "${DOCS_DOXYGEN_BINARY_DIR}"
     COMMENT "Generating API reference with Doxygen"
     VERBATIM)
@@ -54,10 +63,7 @@ ADD_CUSTOM_TARGET(
     COMMAND
         Python::Interpreter "-B" ${DOCS_PYTHON_HELPER} "copylower"
         "${DOCS_TESTS_CONF}" "${DOCS_MARKDOWN_BINARY_DIR}/15_appendix"
-    COMMAND
-        Doxybook2::doxybook2 -q -i "${DOCS_DOXYGEN_BINARY_DIR}/xml" -o "${DOCS_MARKDOWN_BINARY_DIR}/15_api_ref"
-        -t "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook" -c "${CMAKE_CURRENT_SOURCE_DIR}/reference/doxybook/config.json"
-    DEPENDS Python::Interpreter Doxybook2::doxybook2 apsq_docs_reference
+    DEPENDS Python::Interpreter
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/convert"
     COMMENT "Generating source tree of the Markdown documentation"
     VERBATIM)
