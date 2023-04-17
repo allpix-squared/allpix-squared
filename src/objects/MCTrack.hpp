@@ -19,6 +19,7 @@
 
 namespace allpix {
     /**
+     * @ingroup Objects
      * @brief Monte-Carlo track through the world
      */
     class MCTrack : public Object {
