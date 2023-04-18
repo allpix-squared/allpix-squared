@@ -454,7 +454,7 @@ docs:doxygen:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     script:
         - wget --quiet https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip -O /tmp/doxybook2-linux64.zip
-        - unzip /tmp/doxybook2-linux64.zip -d doxybook2/
+        - unzip /tmp/doxybook2-linux64.zip -d ~/.local/
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_reference
