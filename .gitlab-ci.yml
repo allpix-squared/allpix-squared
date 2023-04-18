@@ -453,7 +453,7 @@ docs:doxygen:
     extends: .doc
     image: $DOCKER_DEPS_IMAGE
     script:
-        - apt install -y unzip
+        - apt install -y unzip doxygen
         - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
         - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
         - cmake -DBUILD_DOCS_ONLY=ON ..
