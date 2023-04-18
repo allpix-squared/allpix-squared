@@ -455,7 +455,7 @@ docs:doxygen:
     script:
         - apt install -y unzip
         - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
-        - unzip /tmp/doxybook2-linux64.zip -d ~/.local/
+        - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
         - cmake -DBUILD_DOCS_ONLY=ON ..
         - make apsq_ref_markdown
         - mv doc/reference_markdown ../public/reference_markdown
