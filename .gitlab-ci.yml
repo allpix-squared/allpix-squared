@@ -451,12 +451,14 @@ perf:cc7-gcc:
 # Compile Doxygen reference
 docs:doxygen:
     extends: .doc
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    image: $DOCKER_DEPS_IMAGE
     script:
-        - source ../.ci/init_x86_64.sh
-        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
-        - ninja apsq_docs_reference
-        - mv doc/reference/html ../public/reference
+        - apt install -y unzip doxygen
+        - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
+        - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make apsq_ref_markdown
+        - mv doc/reference_markdown ../public/reference_markdown
 
 # Create file tree for hugo
 docs:usermanual-hugo:

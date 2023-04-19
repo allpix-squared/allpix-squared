@@ -48,6 +48,19 @@
 % To fix warnings
 \usepackage{scrhack}
 
+% Fix deploying nested lists inherited from Doxygen
+\usepackage{enumitem}
+\setlistdepth{8}
+\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,2]{label=$\bullet$}
+\setlist[itemize,3]{label=$\bullet$}
+\setlist[itemize,4]{label=$\bullet$}
+\setlist[itemize,5]{label=$\bullet$}
+\setlist[itemize,6]{label=$\bullet$}
+\setlist[itemize,7]{label=$\bullet$}
+\setlist[itemize,8]{label=$\bullet$}
+\renewlist{itemize}{itemize}{8}
+
 % Latin Modern fonts
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
