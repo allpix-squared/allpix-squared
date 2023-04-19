@@ -11,7 +11,7 @@ jobs:
   compile-centos7:
     strategy:
       matrix:
-        compiler: [gcc10, clang10]
+        compiler: [gcc11, clang12]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         whichtest: [test_core, test_modules, examples]
-        compiler: [gcc10, clang10]
+        compiler: [gcc11, clang12]
     steps:
     - uses: actions/checkout@v2
       with:
