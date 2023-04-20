@@ -108,7 +108,7 @@ namespace allpix {
     template <typename T, std::enable_if_t<std::is_enum<T>::value, bool> = true>
     std::string to_string_impl(T inp, empty_tag);
 
-    ///@{
+    /// @{
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
@@ -119,7 +119,7 @@ namespace allpix {
     inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
     inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
     inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
-    ///@}
+    /// @}
 
     /**
      * @brief Splits string into substrings at delimiters

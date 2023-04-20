@@ -82,7 +82,7 @@ $ make install
 ## Documentation
 
 The User Manual of the most recent release version of Allpix<sup>2</sup> is available [from the website](https://cern.ch/allpix-squared/usermanual/allpix-manual.pdf).\
-The respective Doxygen reference is [published online](https://cern.ch/allpix-squared/reference/) as well.
+The respective Doxygen reference is [published online](https://allpix-squared.docs.cern.ch/reference/) as well.
 
 
 ## Citing Allpix<sup>2</sup>

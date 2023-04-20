@@ -153,7 +153,7 @@ int main(int argc, const char* argv[]) {
             std::cout << std::endl;
 #endif
 
-            std::cout << "Copyright (c) 2016-2022 CERN and the Allpix Squared authors." << std::endl << std::endl;
+            std::cout << "Copyright (c) 2016-2023 CERN and the Allpix Squared authors." << std::endl << std::endl;
             std::cout << "This software is distributed under the terms of the MIT License." << std::endl;
             std::cout << "In applying this license, CERN does not waive the privileges and immunities" << std::endl;
             std::cout << "granted to it by virtue of its status as an Intergovernmental Organization" << std::endl;

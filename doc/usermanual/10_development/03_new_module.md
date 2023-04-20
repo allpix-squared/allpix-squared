@@ -231,6 +231,6 @@ implementing additional functionality. This will ensure that the run method will
 sequence.
 
 
-[@ap2-doxygen]: https://cern.ch/allpix-squared/reference/
+[@ap2-doxygen]: https://allpix-squared.docs.cern.ch/reference/
 [@ap2-repo]: https://gitlab.cern.ch/allpix-squared/allpix-squared
 [@markdown]: https://docs.gitlab.com/ee/user/markdown.html
