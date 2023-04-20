@@ -629,13 +629,15 @@ TransientPropagationModule::propagate(Event* event,
                        << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
-            auto multiplication_probability = ROOT::Math::log(local_gain);
+            unsigned int n_secondaries = 0;
             for(unsigned int electron = 0; electron < static_cast<unsigned int>(std::floor(gain)); ++electron) {
-                if(uniform_distribution(event->getRandomEngine()) < multiplication_probability) {
-                    gain += 1;
-                    LOG(DEBUG) << "Impact ionisation via multiplication probability detected";
-                }
+                n_secondaries += static_cast<unsigned int>(
+                    std::floor(std::log(uniform_distribution(event->getRandomEngine())) / std::log1p(-1. / local_gain)));
             }
+            if(n_secondaries != 0) {
+                LOG(WARNING) << "Secondaries!!! amount: " << n_secondaries;
+            }
+            gain += n_secondaries;
 
             if(gain > 50.) {
                 LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
