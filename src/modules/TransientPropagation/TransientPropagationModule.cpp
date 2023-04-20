@@ -57,8 +57,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("multiplication_threshold", 1e-2);
     config_.setDefault<unsigned int>("max_multiplication_level", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
-    config_.setDefault<bool>("multiplication_probability_based", false);
-    config_.setDefault<unsigned int>("multiplication_probability_samples", 20);
 
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_linegraphs_collected", false);
@@ -84,8 +82,6 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
-    multiplication_probability_based_ = config.get<bool>("multiplication_probability_based");
-    multiplication_probability_samples_ = config.get<unsigned int>("multiplication_probability_samples");
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -626,27 +622,17 @@ TransientPropagationModule::propagate(Event* event,
             multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
 
         if(local_gain > 1.0) {
-            if(multiplication_probability_based_) {
-                LOG(DEBUG) << "Calculated local gain of " << local_gain << " for step of "
-                           << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
-                           << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
-                           << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+            LOG(DEBUG) << "Calculated local gain of " << local_gain << " for step of "
+                       << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
+                       << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                       << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
-                auto multiplication_probability = ROOT::Math::log(local_gain) / multiplication_probability_samples_;
-                for(unsigned int sample = 0; sample < multiplication_probability_samples_; ++sample) {
-                    for(unsigned int electron = 0; electron < static_cast<unsigned int>(std::floor(gain)); ++electron) {
-                        if(uniform_distribution(event->getRandomEngine()) < multiplication_probability) {
-                            gain += 1;
-                            LOG(DEBUG) << "Impact ionisation via multiplication probability detected";
-                        }
-                    }
+            auto multiplication_probability = ROOT::Math::log(local_gain);
+            for(unsigned int electron = 0; electron < static_cast<unsigned int>(std::floor(gain)); ++electron) {
+                if(uniform_distribution(event->getRandomEngine()) < multiplication_probability) {
+                    gain += 1;
+                    LOG(DEBUG) << "Impact ionisation via multiplication probability detected";
                 }
-            } else {
-                gain *= local_gain;
-                LOG(DEBUG) << "Calculated integrated gain of " << gain << " (local gain: " << local_gain << ") for step of "
-                           << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
-                           << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
-                           << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
             }
             if(gain > 50.) {
                 LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
