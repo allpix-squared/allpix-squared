@@ -618,6 +618,8 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
+        // The multiplication factor is not scaled by the velocity fraction transverse to the electric field, as the
+        // correction is negligible for semiconductors
         auto local_gain =
             multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
 
@@ -634,6 +636,7 @@ TransientPropagationModule::propagate(Event* event,
                     LOG(DEBUG) << "Impact ionisation via multiplication probability detected";
                 }
             }
+
             if(gain > 50.) {
                 LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
                              << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
