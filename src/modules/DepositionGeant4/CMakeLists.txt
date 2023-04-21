@@ -45,6 +45,9 @@ IF(DEFINED GEANT4_EXAMPLES_DIR)
     TARGET_SOURCES(${MODULE_NAME} PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/MicroElecSiPhysics.cc
         ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc)
+
+    SET_SOURCE_FILES_PROPERTIES(
+        ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
     # Add includes from the microelectronics example
     TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/include)
 ENDIF()
