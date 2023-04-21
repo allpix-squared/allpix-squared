@@ -12,32 +12,31 @@
 #ifndef ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 #define ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 
+#include <G4VModularPhysicsList.hh>
+
 #include "MicroElecSiPhysics.hh"
 
-namespace allpix {
+/**
+ * @brief Handler namespace for implementing additional PhysicsLists included in AllPix2 but not in the
+ * G4PhysListFactory.
+ */
+namespace allpix::physicslists {
+
     /**
-     * @brief Handler namespace for implementing additional PhysicsLists included in AllPix2 but not in the
-     * G4PhysListFactory.
+     * @brief Function to obtain
+     * @param  list_name    Name of the additional physics list
+     * @return              Pointer to the G4VModularPhysicsList of the found physics list, or a nullptr if not found.
      */
+    inline G4VModularPhysicsList* getList(const std::string& list_name) {
 
-    namespace AdditionalPhysicsLists {
-
-        /**
-         * @brief Function to obtain
-         * @param  list_name    Name of the additional physics list
-         * @return              Pointer to the G4VModularPhysicsList of the found physics list, or a nullptr if not found.
-         */
-        G4VModularPhysicsList* getList(std::string list_name) {
-
-            if(list_name == "microelec-sionly") {
-                // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
-                return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
-            }
-
-            return nullptr;
+        if(list_name == "microelec-sionly") {
+            // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
+            return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
         }
 
-    } // namespace AdditionalPhysicsLists
-} // namespace allpix
+        return nullptr;
+    }
+
+} // namespace allpix::physicslists
 
 #endif

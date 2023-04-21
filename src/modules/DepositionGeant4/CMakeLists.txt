@@ -37,9 +37,11 @@ ENDIF()
 
 IF(DEFINED GEANT4_EXAMPLES_DIR)
     MESSAGE(STATUS "  Found Geant4 Examples, building add. physics lists")
-    CONFIGURE_FILE(${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
-    CONFIGURE_FILE(${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/ElectronCapture.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
-    
+    CONFIGURE_FILE(
+        ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
+    CONFIGURE_FILE(
+        ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/ElectronCapture.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
+
     TARGET_SOURCES(${MODULE_NAME} PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/MicroElecSiPhysics.cc
         ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc)

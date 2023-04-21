@@ -222,7 +222,7 @@ void DepositionGeant4Module::initialize() {
 
     // If the specified physics list is one of the microelec variations, apply a target region to the volumes with silicon
     // materials
-    if(specifiedPhysicsList == "microelec" || physics_list == "microelec-sionly") {
+    if(physics_list == "microelec" || physics_list == "microelec-sionly") {
         // Create target region
         auto* region = new G4Region("Target");
 
