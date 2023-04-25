@@ -630,9 +630,13 @@ TransientPropagationModule::propagate(Event* event,
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
             unsigned int n_secondaries = 0;
-            for(unsigned int electron = 0; electron < static_cast<unsigned int>(std::floor(gain)); ++electron) {
+
+            // For each charge carrier draw a number from a geometric distribution (Yule process) to determine the number of
+            // secondaries generated in this step
+            double log_prob = 1. / std::log1p(-1. / local_gain);
+            for(unsigned int i_carrier = 0; i_carrier < static_cast<unsigned int>(std::floor(gain)); ++i_carrier) {
                 n_secondaries += static_cast<unsigned int>(
-                    std::floor(std::log(uniform_distribution(event->getRandomEngine())) / std::log1p(-1. / local_gain)));
+                    std::floor(std::log(uniform_distribution(event->getRandomEngine())) * log_prob));
             }
             if(n_secondaries != 0) {
                 LOG(WARNING) << "Secondaries!!! amount: " << n_secondaries;
