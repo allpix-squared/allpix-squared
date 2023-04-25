@@ -122,7 +122,7 @@ Main parameters:
 - Everything from [SensorCharge](#sensorcharge)
 - The associated [DepositedCharge](#depositedcharge) object
   ([`getDepositedCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getdepositedcharge))
-- The associated induced pulses, if any
+- The associated induced [pulses](#pulse), if any
   ([`getPulses()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getpulses))
 - The carrier state of the charge carriers described below
   ([`getState()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getstate))
@@ -162,10 +162,24 @@ Main parameters:
 - The associated time of the charge in local and global coordinates
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getglobaltime))
-- The recorded charge pulse, if any
+- The recorded [charge pulse](#pulse), if any
   ([`getPulse()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getpulse))
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/).
+
+## Pulse
+
+The pulse object is a meta class mainly used to hold the time information of a charge pulse arriving at the collection
+implant, if such information is available in the simulation. A pulse object always has a fixed time binning chosen during the
+creation of the object. It inherits from [std::vector<doulbe>](https://en.cppreference.com/w/cpp/container/vector).
+
+Main parameters:
+- The total charge of the pulse
+  ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pulse/#function-getcharge))
+- The time binning of the pulse
+  ([`getBinning()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pulse/#function-getbinning))
+
+For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pulse/)
 
 ## PixelHit
 
@@ -192,8 +206,23 @@ Main parameters:
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getglobaltime))
 
-
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/).
+
+## PixelPulse
+
+If the detector's front-end electronics provide a digitized front-end pulse, this object can be used to store that
+information. It inherits from the [Pulse](#pulse) object.
+
+Main parameters:
+- Everything from [Pulse](#pulse)
+- The pixel corresponding to the digitized pulse
+  ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getpixel))
+  and its index
+  ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getindex))
+- The corresponding [pixel charge](#pixelcharge)
+  ([`getPixelCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getpixelcharge))
+
+For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/).
 
 
 [@pdg]: http://hepdata.cedar.ac.uk/lbl/2016/reviews/rpp2016-rev-monte-carlo-numbering.pdf
