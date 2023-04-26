@@ -112,8 +112,6 @@ namespace allpix {
         unsigned int max_charge_groups_{};
 
         unsigned int max_multiplication_level_{};
-        bool multiplication_probability_based_{};
-        unsigned int multiplication_probability_samples_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;

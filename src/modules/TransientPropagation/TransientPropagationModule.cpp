@@ -616,7 +616,7 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Apply multiplication step: calculate gain factor from local efield and step length; Interpolate efield values
-        // The multiplication factor is not scaled by the velocity fraction transverse to the electric field, as the
+        // The multiplication factor is not scaled by the velocity fraction parallel to the electric field, as the
         // correction is negligible for semiconductors
         auto local_gain =
             multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
