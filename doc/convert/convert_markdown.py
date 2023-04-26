@@ -131,21 +131,6 @@ def latex_fix_duplicate_autocites(string: str) -> str:
     return re.sub(r'\\autocite{[^{} :]+?}:[ \n]\S+', '', string)
 
 
-def latex_fix_ellipsis(string: str) -> str:
-    """
-    Fixes text ellipsis which is not understood by LaTex.
-    FIXME We should use \ldots here since it translates to \textellipsis in regular text and \mathellipsis in math mode
-    automatically once we figured out how listings work with this.
-
-    Args:
-        string: String formatted in LaTeX.
-
-    Returns:
-        String formatted in LaTeX.
-    """
-    return re.sub('…', '...', string)
-
-
 def latex_convert_hugo_alert(string: str) -> str:
     """
     Converts the pandoc-converted hugo alters to LaTeX warning boxes.
@@ -282,7 +267,6 @@ def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> s
 
     string = latex_fix_images(string, file_path)
     string = latex_fix_duplicate_autocites(string)
-    string = latex_fix_ellipsis(string)
     string = latex_convert_hugo_alert(string)
     string = latex_convert_href_references(string, file_path)
 
