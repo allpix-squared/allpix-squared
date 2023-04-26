@@ -668,9 +668,10 @@ TransientPropagationModule::propagate(Event* event,
                            << Units::display(carrier_pos, {"mm", "um"});
             }
 
-            if(charge / initial_charge > 50.) {
-                LOG(WARNING) << "Detected gain of " << charge / initial_charge << ", local electric field of "
-                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+            if((charge + n_secondaries) / initial_charge > 50.) {
+                LOG(WARNING) << "Detected gain of " << (charge + n_secondaries) / initial_charge
+                             << ", local electric field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
+                             << ", diode seems to be in breakdown";
             }
         }
 
