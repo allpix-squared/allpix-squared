@@ -214,7 +214,7 @@ fmt:proselint:
         - export PATH=~/.local/bin:$PATH
         - cd ../
         - pip install --trusted-host=pypi.org --user proselint
-        - proselint doc/ src/ tools/ etc/
+        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
 
 fmt:coverity:
     extends: .format
