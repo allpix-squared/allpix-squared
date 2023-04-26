@@ -642,7 +642,7 @@ TransientPropagationModule::propagate(Event* event,
 
                 // Generate new charge carriers of the opposite type
                 auto inverted_type = invertCarrierType(type);
-                // Placing new charge carrier mid-step::
+                // Placing new charge carrier at the end of the step:
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(position);
                 LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") generated from impact ionization on "
                            << Units::display(carrier_pos, {"mm", "um"});
