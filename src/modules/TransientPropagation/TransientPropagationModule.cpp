@@ -615,7 +615,7 @@ TransientPropagationModule::propagate(Event* event,
             }
         }
 
-        // Apply multiplication step, fully deterministic from local efield and step length; Interpolate efield values
+        // Apply multiplication step: calculate gain factor from local efield and step length; Interpolate efield values
         // The multiplication factor is not scaled by the velocity fraction transverse to the electric field, as the
         // correction is negligible for semiconductors
         auto local_gain =
