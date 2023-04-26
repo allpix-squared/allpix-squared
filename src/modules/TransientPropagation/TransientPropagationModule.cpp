@@ -467,7 +467,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const DepositedCharge& deposit,
                                       const ROOT::Math::XYZPoint& pos,
                                       const CarrierType& type,
-                                      const unsigned int charge,
+                                      unsigned int charge,
                                       const double initial_time_local,
                                       const double initial_time_global,
                                       const unsigned int level,
@@ -495,9 +495,7 @@ TransientPropagationModule::propagate(Event* event,
     auto output_plot_index = output_plot_points.size() - 1;
 
     // Initialize gain
-    double gain = 1.;
-    double gain_previous = 1.;
-    unsigned int gain_integer = 1;
+    const unsigned int initial_charge = charge;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
@@ -634,44 +632,29 @@ TransientPropagationModule::propagate(Event* event,
             // For each charge carrier draw a number from a geometric distribution (Yule process) to determine the number of
             // secondaries generated in this step
             double log_prob = 1. / std::log1p(-1. / local_gain);
-            for(unsigned int i_carrier = 0; i_carrier < static_cast<unsigned int>(std::floor(gain)); ++i_carrier) {
+            for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
                 n_secondaries += static_cast<unsigned int>(
                     std::floor(std::log(uniform_distribution(event->getRandomEngine())) * log_prob));
             }
             if(n_secondaries != 0) {
-                LOG(WARNING) << "Secondaries!!! amount: " << n_secondaries;
-            }
-            gain += n_secondaries;
+                // Same-type charge carriers are simulated by increasing the propagated charge
+                charge += n_secondaries;
 
-            if(gain > 50.) {
-                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
-            }
-        }
-
-        if(gain > gain_previous) {
-
-            // Update already processed gain factor:
-            gain_previous = gain;
-
-            // If the gain increased, we need to generate new charge carriers of the opposite type
-            // Same-type carriers are simulated via the gain factor:
-            auto floor_gain = static_cast<unsigned int>(std::floor(gain));
-            if(gain_integer < floor_gain) {
+                // Generate new charge carriers of the opposite type
                 auto inverted_type = invertCarrierType(type);
                 // Placing new charge carrier mid-step::
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(position);
-                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") from gain on "
+                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") generated from impact ionization on "
                            << Units::display(carrier_pos, {"mm", "um"});
                 if(output_plots_) {
-                    multiplication_depth_histo_->Fill(carrier_pos.z(), charge * (floor_gain - gain_integer));
+                    multiplication_depth_histo_->Fill(carrier_pos.z(), n_secondaries);
                 }
 
                 auto [recombined, trapped, propagated] = propagate(event,
                                                                    deposit,
                                                                    carrier_pos,
                                                                    inverted_type,
-                                                                   charge * (floor_gain - gain_integer),
+                                                                   n_secondaries,
                                                                    initial_time_local + runge_kutta.getTime(),
                                                                    initial_time_global + runge_kutta.getTime(),
                                                                    level + 1,
@@ -683,10 +666,13 @@ TransientPropagationModule::propagate(Event* event,
                 trapped_charges_count += trapped;
                 propagated_charges_count += propagated;
 
-                // Update the gain factor we have already generated opposite type charges for:
-                gain_integer = floor_gain;
                 LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
                            << Units::display(carrier_pos, {"mm", "um"});
+            }
+
+            if(charge / initial_charge > 50.) {
+                LOG(WARNING) << "Detected gain of " << charge / initial_charge << ", local electric field of "
+                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
             }
         }
 
@@ -741,15 +727,12 @@ TransientPropagationModule::propagate(Event* event,
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-            auto induced = charge * gain * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+            auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
 
-            auto induced_primary = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
-            auto induced_secondary =
-                charge * (gain - 1) * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
-            if(level != 0) {
-                induced_primary = 0.;
-                induced_secondary = induced;
-            }
+            auto induced_primary = level != 0 ? 0.
+                                              : initial_charge * (ramo - last_ramo) *
+                                                    static_cast<std::underlying_type<CarrierType>::type>(type);
+            auto induced_secondary = induced - induced_primary;
 
             LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                        << " q = " << Units::display(induced, "e");
@@ -801,17 +784,18 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
+        auto gain = charge / initial_charge;
         if(level == 0) {
-            gain_primary_histo_->Fill(gain, charge);
+            gain_primary_histo_->Fill(gain, initial_charge);
             if(type == CarrierType::ELECTRON) {
-                gain_e_histo_->Fill(gain, charge);
+                gain_e_histo_->Fill(gain, initial_charge);
             } else {
-                gain_h_histo_->Fill(gain, charge);
+                gain_h_histo_->Fill(gain, initial_charge);
             }
         }
-        gain_all_histo_->Fill(gain, charge);
+        gain_all_histo_->Fill(gain, initial_charge);
 
-        multiplication_level_histo_->Fill(level, charge);
+        multiplication_level_histo_->Fill(level, initial_charge);
     }
 
     // Set final state of charge carrier for plotting:
@@ -836,27 +820,28 @@ TransientPropagationModule::propagate(Event* event,
                                        state,
                                        &deposit);
 
-    LOG(DEBUG) << " Propagated " << charge << " to " << Units::display(local_position, {"mm", "um"}) << " in "
-               << Units::display(runge_kutta.getTime(), "ns") << " time, induced "
-               << Units::display(propagated_charge.getCharge(), {"e"}) << ", final state: " << allpix::to_string(state);
+    LOG(DEBUG) << " Propagated " << charge << " (initial: " << initial_charge << ") to "
+               << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(runge_kutta.getTime(), "ns")
+               << " time, induced " << Units::display(propagated_charge.getCharge(), {"e"})
+               << ", final state: " << allpix::to_string(state);
 
     propagated_charges.push_back(std::move(propagated_charge));
 
     if(state == CarrierState::RECOMBINED) {
-        recombined_charges_count += static_cast<unsigned int>(charge * gain);
+        recombined_charges_count += static_cast<unsigned int>(charge);
         if(output_plots_) {
-            recombination_time_histo_->Fill(runge_kutta.getTime(), charge * gain);
+            recombination_time_histo_->Fill(runge_kutta.getTime(), charge);
         }
     } else if(state == CarrierState::TRAPPED) {
-        trapped_charges_count += static_cast<unsigned int>(charge * gain);
+        trapped_charges_count += static_cast<unsigned int>(charge);
     } else {
-        propagated_charges_count += static_cast<unsigned int>(charge * gain);
+        propagated_charges_count += static_cast<unsigned int>(charge);
     }
 
     if(output_plots_) {
         drift_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")),
-                                static_cast<unsigned int>(charge * gain));
-        group_size_histo_->Fill(charge);
+                                static_cast<unsigned int>(charge));
+        group_size_histo_->Fill(initial_charge);
     }
 
     // Return statistics counters about this and all daughter propagated charge carrier groups and their final states
