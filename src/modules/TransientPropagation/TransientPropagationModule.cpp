@@ -633,8 +633,7 @@ TransientPropagationModule::propagate(Event* event,
             // secondaries generated in this step
             double log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
-                n_secondaries += static_cast<unsigned int>(
-                    std::floor(std::log(uniform_distribution(event->getRandomEngine())) * log_prob));
+                n_secondaries += static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
             }
             if(n_secondaries != 0) {
                 // Generate new charge carriers of the opposite type
