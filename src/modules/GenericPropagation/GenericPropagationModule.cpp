@@ -454,7 +454,7 @@ GenericPropagationModule::propagate(Event* event,
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
-    // Initialize gain
+    // Store initial charge
     const unsigned int initial_charge = charge;
 
     // Define a function to compute the diffusion
