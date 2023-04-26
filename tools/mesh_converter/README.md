@@ -39,7 +39,7 @@ Both file formats can be imported into Allpix Squared.
 The **APF** (Allpix Squared Field) data format contains the field data in binary form and is therefore a bit more compact and can be read much faster. Whenever possible, this format should be preferred.
 
 The **INIT** file is an ASCII text file with a format used by other tools such as PixelAV.
-Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<…>` while other fields are not interpreted and can be left untouched:
+Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<...>` while other fields are not interpreted and can be left untouched:
 
 ```
 <first line: some descriptive text to identify the field or field source>

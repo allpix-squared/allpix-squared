@@ -72,14 +72,14 @@ Empty lines as well as lines starting with a hash (`#`) are ignored, all other l
 Event: <N>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
-# …
+# ...
 # For example:
 211, 3.234674e+01, 1.091620e-02, -2.515335e+00, 4.427924e+00, -2.497500e-01, MyDetector, 1, 0
 211, 3.234843e+01, 1.184756e-02, -2.528475e+00, 4.453544e+00, -2.445500e-01, MyDetector, 2, 1
 
 Event: <N+1>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
-# …
+# ...
 ```
 
 where `<N>` is the current event number, `<PID>` is the PDG particle ID \[[@pdg]\], `<T>` the time of deposition, calculated from the beginning of the event, `<E>` is the deposited energy, `<[X-Z]>` is the position of the energy deposit in global coordinates of the setup, and `<V>` the detector name (volume) the energy deposit should be assigned to.

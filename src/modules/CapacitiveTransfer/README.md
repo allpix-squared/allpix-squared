@@ -48,7 +48,7 @@ The cross-coupling matrix, to be parsed via the matrix file or via the configura
 ```
 
 The matrix center element, `cross_coupling_11` in this example, is the coupling to the closest pixel and should be always 1.
-The matrix can have any size, although square 3×3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with N×M, where N and M are the respective sizes of the matrix.
+The matrix can have any size, although square 3x3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with NxM, where N and M are the respective sizes of the matrix.
 
 ## Usage
 This module accepts only one coupling model (`coupling_scan_file`, coupling_file or `coupling_matrix`) at each time. If more then one option is provided, the simulation will not run.

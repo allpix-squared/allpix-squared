@@ -32,7 +32,7 @@ Type of the module?
 1) unique
 2) detector
 #? 1
-Creating directory and files…
+Creating directory and files...
 
 Name:   MyNewPropagator
 Author: John Doe (john.doe AT cern.ch)
