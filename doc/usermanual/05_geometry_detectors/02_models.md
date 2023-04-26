@@ -106,7 +106,7 @@ the following:
 A detector model contains default values for all parameters. Some parameters like the sensor thickness can however vary
 between different detectors of the same model. To allow for easy adjustment of these parameters, models can be specialized in
 the detector configuration file introduced in [Section 3.3](../03_getting_started/03_detector_configuration.md). All model
-parameters, except the type parameter and the support layers, can be changed by adding a parameter with the exact same key
+parameters, except the type parameter and the support layers, can be changed by adding a parameter with the same key
 and the updated value to the detector configuration. The framework will then automatically create a copy of this model with
 the requested change.
 
@@ -121,17 +121,17 @@ example, detectors with different sensor thicknesses).
 To support different detector models and storage locations, the framework searches different paths for model files in the
 following order:
 
-1.  If defined, the paths provided in the global `model_paths` parameter are searched first. Files are read and parsed
-    directly. If the path is a directory, all files in the directory are added (without recursing into subdirectories).
+1. If defined, the paths provided in the global `model_paths` parameter are searched first. Files are read and parsed
+   directly. If the path is a directory, all files in the directory are added (without recursing into subdirectories).
 
-2.  The location where the models are installed to (refer to the description of the `MODEL_DIRECTORY` variable in
-    [Section 2.5](../02_installation/05_cmake_configuration.md)).
+2. The location where the models are installed to (refer to the description of the `MODEL_DIRECTORY` variable in
+   [Section 2.5](../02_installation/05_cmake_configuration.md)).
 
-3.  The standard data paths on the system as given by the environmental variable `XDG_ DATA_DIRS` with `Allpix/models`
-    appended. The variable defaults to `/usr/local/share/` (thus effectively `/usr/local/share/Allpix/models`) followed by
-    `/usr/share/` (effectively `/usr/share/Allpix/models`).
+3. The standard data paths on the system as given by the environmental variable `XDG_ DATA_DIRS` with `Allpix/models`
+   appended. The variable defaults to `/usr/local/share/` (thus effectively `/usr/local/share/Allpix/models`) followed by
+   `/usr/share/` (effectively `/usr/share/Allpix/models`).
 
-4.  The path of the main configuration file.
+4. The path of the main configuration file.
 
 
 ## Implants

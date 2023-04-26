@@ -14,7 +14,7 @@ standard does not contain. These utilities are used internally in the framework 
 ### Logging system
 
 The logging system is built to handle input/output in the same way as `std::cin` and `std::cout` do. This approach is both
-very flexible and easy to read. The system is globally configured, thus only one logger instance exists. The following
+flexible and easy to read. The system is globally configured, thus only one logger instance exists. The following
 commands are available for sending messages to the logging system at a level of `LEVEL`:
 
 - `LOG(LEVEL)`:
@@ -69,7 +69,7 @@ More details about the logging levels and formats can be found in
 Correctly handling units and conversions is of paramount importance. Having a separate C++ type for every unit would however
 be too cumbersome for a lot of operations, therefore units are stored in standard C++ floating point types in a default unit
 which all code in the framework should use for calculations. In configuration files, as well as for logging, it is however
-very useful to provide quantities in different units.
+useful to provide quantities in different units.
 
 The unit system allows adding, retrieving, converting and displaying units. It is a global system transparently used
 throughout the framework. Examples of using the unit system are given below:

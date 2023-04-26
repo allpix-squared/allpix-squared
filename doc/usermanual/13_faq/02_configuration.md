@@ -34,7 +34,7 @@ depletion_voltage = -30V
 
 Please refer to [Section 4.3](../04_framework/04_modules.md#module-instantiation) for more information.
 
-#### How can I run the exact same type of module with different settings?
+#### How can I run the same type of module with different settings?
 
 This is possible by using the `input` and `output` parameters of a module that specify the messages of the module:
 

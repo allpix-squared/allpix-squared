@@ -69,7 +69,7 @@ The detector configuration is provided in the detector configuration file as exp
 
 Local coordinate systems for each detector and a global frame ofreference for the full setup are defined. The global
 coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around
-the geometrical center of their sensor.
+the geometric center of their sensor.
 
 Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the
 sensor plane. The origin of this coordinate system is the center of the lower left pixel in the grid, i.e. the pixel with
@@ -92,7 +92,7 @@ different detectors do not necessarily have to belong to the same particle track
 
 ## Changing and accessing the geometry
 
-The geometry is needed at a very early stage because it determines the number of detector module instantiations as explained
+The geometry is needed at an early stage because it determines the number of detector module instantiations as explained
 in [Section 4.4](../04_framework/04_modules.md#module-instantiation). The procedure of finding and loading the appropriate
 detector models is explained in more detail in the [next section](./02_models.md).
 

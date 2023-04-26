@@ -76,7 +76,7 @@ terminate the simulation, either gracefully or with force. The executable unders
   Request a graceful shutdown of the simulation. This means the currently processed events are finished, while events
   placed on the buffer as well as all additionally requested events from the configuration file are ignored. After
   finishing the current events, the finalization stage is run for every module to ensure that the simulation terminates
-  properly. This signal can be very useful when too many events are specified and the simulation takes too long to finish
+  properly. This signal can be useful when too many events are specified and the simulation takes too long to finish
   entirely, but the output generated so far should still be kept.
 
 - SIGTERM:

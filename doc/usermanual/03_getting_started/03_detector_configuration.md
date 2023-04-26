@@ -91,7 +91,7 @@ Every passive material has to contain all of the following parameters:
   [Section 3.3](./03_detector_configuration.md).
 
 - A string referring to the `type` of the passive material. The model should be interpreted by the module constructing the
-  passive material, such as for example the
+  passive material, for example the
   [`GeometryBuilderGeant4` module](../08_modules/geometrybuildergeant4.md#passive-volumes).
 
 - A string referring to the `material` of the passive material. The materials for the `GeometryBuilderGeant4` module are

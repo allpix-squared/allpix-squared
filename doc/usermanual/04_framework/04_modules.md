@@ -29,17 +29,17 @@ should follow the order of the real process. For each section in the main config
 (the exception being the global framework section). Module libraries are always named following the scheme
 `libAllpixModule<ModuleName>`, reflecting the `ModuleName` configured via CMake. The module search order is as follows:
 
-1.  Modules already loaded before from an earlier section header
+1. Modules already loaded before from an earlier section header
 
-2.  All directories in the global configuration parameter `library_directories` in the provided order, if this parameter
-    exists.
+2. All directories in the global configuration parameter `library_directories` in the provided order, if this parameter
+   exists.
 
-3.  The internal library paths of the executable, that should automatically point to the libraries that are built and
-    installed together with the executable. These library paths are stored in `RPATH` on Linux, see the next point for more
-    information.
+3. The internal library paths of the executable, that should automatically point to the libraries that are built and
+   installed together with the executable. These library paths are stored in `RPATH` on Linux, see the next point for more
+   information.
 
-4.  The other standard locations to search for libraries depending on the operating system. Details about the procedure Linux
-    follows can be found in \[[@linuxld]\].
+4. The other standard locations to search for libraries depending on the operating system. Details about the procedure Linux
+   follows can be found in \[[@linuxld]\].
 
 If the loading of the module library is successful, the module is checked to determine if it is a unique or detector module.
 As a single module may be called multiple times in the configuration, with overlapping requirements (such as a module which
