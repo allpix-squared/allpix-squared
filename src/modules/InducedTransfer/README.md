@@ -20,15 +20,15 @@ The total induced charge is calculated by multiplying the potential difference w
 Q_n^{ind} = \int_{t_{initial}}^{t_{final}} I_n^{ind} = q \left( \phi (x_{final}) - \phi(x_{initial}) \right)
 ```
 
-The resulting induced charge is summed for all propagated charge carriers and returned as a `PixelCharge` object. The number of neighboring pixels taken into account can be configured using the `induction_matrix` parameter.
+The resulting induced charge is summed for all propagated charge carriers and returned as a `PixelCharge` object. The number of neighboring pixels taken into account can be configured using the `distance` parameter.
 
 ## Parameters
-* `induction_matrix`: Size of the pixel sub-matrix for which the induced charge is calculated, provided as number of pixels in x and y. The numbers have to be odd and default to `3, 3`. Usually, a 3x3 grid (9 pixels) should suffice since the weighting potential at a distance of more than one pixel pitch normally is small enough to be neglected.
+* `distance`: Maximum distance of pixels to be considered for current induction, calculated from the pixel the charge carrier under investigation is below. A distance of `1` for example means that the induced current for the closest pixel plus all neighbors is calculated. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, for Cartesian sensors a 3x3 grid (9 pixels, distance 1) should suffice since the weighting potential at a distance of more than one pixel pitch often is small enough to be neglected while the simulation time is almost tripled for `distance = 2` (5x5 grid, 25 pixels). To just calculate the induced current in the one pixel the charge carrier is below, `distance = 0` can be used. Defaults to `1`.
 
 ## Usage
 ```ini
 [InducedTransfer]
-induction_matrix = 3 3
+distance = 1
 ```
 
 [@shockley]: https://doi.org/10.1063/1.1710367
