@@ -50,9 +50,8 @@ void GDMLOutputWriterModule::initialize() {
 
     G4GDMLParser parser;
     parser.SetRegionExport(true);
-    parser.Write(GDML_output_file,
-                 G4TransportationManager::GetTransportationManager()
-                     ->GetNavigatorForTracking()
-                     ->GetWorldVolume()
-                     ->GetLogicalVolume());
+    parser.Write(
+        GDML_output_file,
+        G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume(),
+        false);
 }
