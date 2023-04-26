@@ -69,7 +69,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 ### Plotting parameters
 
-* `output_plots`: Enables simple output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
+* `output_plots`: Enables simple output histograms to be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale`: Set the x-axis scale of the output histograms, defaults to 30ke.
 * `output_plots_bins`: Set the number of bins for the output histograms, defaults to 100.
 * `output_pulsegraphs`: Determines if pulse graphs should be generated for every event. This creates several graphs per event, depending on how many pixels see a signal, and can slow down the simulation. It is not recommended to enable this option for runs with more than a couple of events. Disabled by default.

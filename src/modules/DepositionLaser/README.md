@@ -74,7 +74,7 @@ and temporal distribution.
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
 `PulseTransfer`.
 Usually it is enough to run just a single event (or a few).
-While multithreading is supported by this module, one should note that the pipeline for each event is very computationally
+While multithreading is supported by this module, one should note that the pipeline for each event is quite computationally
 intensive and runs with only one event do not gain any additional performance from multi-threaded execution.
 
 Such pipeline is expected to produce pulse shapes, comparable with experimentally obtained ones. An example of

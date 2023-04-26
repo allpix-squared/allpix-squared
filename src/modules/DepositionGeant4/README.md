@@ -93,7 +93,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
 * `deposit_in_frontside_implants` : Boolean to select whether charge carriers should be generated in frontside implants. Defaults to `true`.
 * `deposit_in_backside_implants` : Boolean to select whether charge carriers should be generated in backside implants. Defaults to `false`.
-* `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
+* `output_plots` : Enables output histograms to be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ### Parameters for source `beam`

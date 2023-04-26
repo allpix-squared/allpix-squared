@@ -74,7 +74,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `tdc_slope` : Slope of the TDC calibration in nanoseconds per TDC unit (unit: "ns"). Defaults to 10ns.
 * `tdc_offset` : Offset of the TDC calibration in nanoseconds. Defaults to 0.
 * `allow_zero_tdc`: Allows the TDC to return a value of zero if enabled, otherwise the minimum value returned is one. Defaults to `false`.
-* `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
+* `output_plots` : Enables output histograms to be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of charge-related output plot, defaults to 30ke.
 * `output_plots_timescale` : Set the x-axis scale of time-related output plot, defaults to 300ns.
 * `output_plots_bins` : Set the number of bins for the output plot histograms, defaults to 100.
