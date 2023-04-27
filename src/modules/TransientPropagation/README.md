@@ -14,6 +14,7 @@ Simulates the transport of electrons and holes through the sensitive sensor volu
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
 This module implements charge multiplication by impact ionization. The multiplication model can be chosen using the `multiplication_model` parameter, the list of available models can be found in the user manual. By default, the model defaults to `none` and impact ionization is switched off, generating unity gain.
+To simulate impact ionization, the number of newly generated electron-hole pairs is calculated for every propagation step and every charge carrier in the group, based on drawing a random number from a geometric distribution. This represents a stepwise approach to the avalanche generation process. The charge of a charge group is increased by the number of impact ionization processes per step and opposite-type charge carriers are generated at the end of the step.
 
 A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 

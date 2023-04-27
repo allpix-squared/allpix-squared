@@ -96,7 +96,7 @@ namespace allpix {
                   const DepositedCharge& deposit,
                   const ROOT::Math::XYZPoint& pos,
                   const CarrierType& type,
-                  const unsigned int charge,
+                  unsigned int charge,
                   const double initial_time_local,
                   const double initial_time_global,
                   const unsigned int level,
@@ -110,6 +110,7 @@ namespace allpix {
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
+
         unsigned int max_multiplication_level_{};
 
         // Models for electron and hole mobility and lifetime

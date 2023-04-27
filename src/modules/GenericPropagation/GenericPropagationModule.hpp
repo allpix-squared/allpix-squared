@@ -98,7 +98,7 @@ namespace allpix {
                   const DepositedCharge& deposit,
                   const ROOT::Math::XYZPoint& pos,
                   const CarrierType& type,
-                  const unsigned int charge,
+                  unsigned int charge,
                   const double initial_time_local,
                   const double initial_time_global,
                   const unsigned int level,
