@@ -8,7 +8,7 @@ weight: 5
 Allpix Squared implements charge multiplication via impact ionization models. These models are only used by propagation
 modules which perform a step-by-step simulation of the charge carrier motion.
 
-The gain $`g`$ is calculated for all models as exponential of the model-dependent impact ionization coefficient $`\alpha`$ and
+The per-step gain $`g`$ is calculated for all models as exponential of the model-dependent impact ionization coefficient $`\alpha`$ and
 the length of the step $`l`$ performed in the respective electric field. If the electric field strength stays below a
 configurable threshold $`E_{\text{thr}}`$, unity gain is assumed:
 
@@ -20,6 +20,22 @@ g (E, T) = \left\{
 \end{array}
 \right.
 ```
+
+The impact ionization coefficient $`\alpha`$ is calculated depending on the selected impact ionization model. The models themselves are described below.
+
+The number of additional charge carriers generated per step $`n`$ is determined via a stochastic approach by applying the following equation dependent on a random number drawn from a uniform distribution $`u(0,1)`$
+```math
+n = \frac{\ln(u)}{\ln(1-1/g)} = \frac{1}{\log_u(1-1/g)}
+```
+This distribution is applied e.g. in Garfield++\[[@garfieldpp]\] and represents a microscopic simulation of Yule processes.
+
+The number of secondary charge carriers generated from impact ionization is calculated for every individual charge carrier within a group of charge carriers and summed per propagation step. Additional charge carriers are then added to the group (same-type carriers) or deposited (opposite-type) at the end of the corresponding step.
+
+This algorithm results in a mean number of secondaries generated equal to
+```math
+<n_{total}> = \exp\left(\int_{x_0}^{x_n}\alpha(x)dx \right)
+```
+for sufficiently low step sizes.
 
 The following impact ionization models are available:
 
@@ -305,6 +321,7 @@ The interpretation of the custom impact ionization functions is based on the `RO
 supports all corresponding features, mathematical expressions and constants.
 
 
+[@garfieldpp]: https://gitlab.cern.ch/garfield/garfieldpp
 [@massey]: https://doi.org/10.1109/TED.2006.881010
 [@rd50ionization]: https://arxiv.org/abs/2211.16543
 [@overstraeten]: https://doi.org/10.1016/0038-1101(70)90139-5
