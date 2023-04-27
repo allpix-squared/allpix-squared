@@ -605,7 +605,7 @@ GenericPropagationModule::propagate(Event* event,
                        << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
 
-            // For each charge carrier draw a number from a geometric distribution (Yule process) to determine the number of
+            // For each charge carrier draw a number to determine the number of
             // secondaries generated in this step
             double log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
