@@ -117,6 +117,54 @@ lifetime_hole = 4.5ns
 
 This model can be selected in the configuration file via the parameter `recombination_model = "constant"`.
 
+## Custom Recombination Models
+
+Allpix Squared provides the possibility to use fully custom recombination models. In order to use a custom model, the parameter
+`recombination_model = "custom"` needs to be set in the configuration file. Additionally, the following configuration keys have to
+be provided:
+
+- `lifetime_function_electrons`:
+  The formula describing the electron lifetime.
+
+- `lifetime_function_holes`:
+  The formula describing the hole lifetime.
+
+The functions defined via these parameters can depend on the local doping concentration. In
+order to use the doping concentration in the formula, an `x` has to be placed at the respective position.
+
+Parameters of the functions can either be placed directly in the formulas in framework-internal units, or provided separately
+as arrays via the `lifetime_parameters_electrons` and `lifetime_parameters_electrons`. Placeholders for parameters in the
+formula are denoted with squared brackets and a parameter number, for example `[0]` for the first parameter provided.
+Parameters specified separately from the formula can contain units which will be interpreted automatically.
+
+{{% alert title="Warning" color="warning" %}}
+Parameters directly placed in the recombination formula have to be supplied in framework-internal units since the function will be
+evaluated with the doping concentration in internal units. It is recommended to use the
+possibility of separately configuring the parameters and to make use of units to avoid conversion mistakes.
+{{% /alert %}}
+
+The following set of parameters re-implements the [Shockley-Read-Hall recombination](#shockley-read-hall-recombination) model using a custom
+recombination model. The lifetimes are calculated at a fixed temperature of 293 Kelvin.
+
+```ini
+# Replicating the Shockley-Read-Hall model at T = 293K
+recombination_model = "custom"
+
+lifetime_function_electrons = "[0]/(1 + x / [1])"
+lifetime_parameters_electrons = 1.036e-5s, 1e16/cm/cm/cm
+
+lifetime_function_holes = "[0]/(1 + x / [1])"
+lifetime_parameters_holes = 4.144e-4s, 7.1e15/cm/cm/cm
+```
+
+{{% alert title="Warning" color="warning" %}}
+It should be noted that the temperature passed via the module configuration is not evaluated for the custom recombination model,
+but the model parameters need to be manually adjusted to the required temperature.
+{{% /alert %}}
+
+The interpretation of the custom recombination functions is based on the `ROOT::TFormula` class \[[@rootformula]\] and supports
+all corresponding features, mathematical expressions and constants.
+
 
 [@shockley-read]: https://doi.org/10.1103/PhysRev.87.835
 [@hall]: https://doi.org/10.1103/PhysRev.87.387

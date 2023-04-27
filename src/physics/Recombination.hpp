@@ -172,6 +172,60 @@ namespace allpix {
     };
 
     /**
+     * @ingroup Models
+     * @brief Custom recombination model for charge carriers
+     */
+    class CustomRecombination : public RecombinationModel {
+    public:
+        CustomRecombination(const Configuration& config, bool doping) {
+            electron_lifetime_ = configure_lifetime(config, CarrierType::ELECTRON, doping);
+            hole_lifetime_ = configure_lifetime(config, CarrierType::HOLE, doping);
+        };
+
+        bool operator()(const CarrierType& type, double doping, double survival_prob, double timestep) const override {
+            return survival_prob < (1 - std::exp(-1. * timestep /
+                                                 (type == CarrierType::ELECTRON ? electron_lifetime_->Eval(doping)
+                                                                                : hole_lifetime_->Eval(doping))));
+        };
+
+    private:
+        std::unique_ptr<TFormula> electron_lifetime_;
+        std::unique_ptr<TFormula> hole_lifetime_;
+
+        std::unique_ptr<TFormula> configure_lifetime(const Configuration& config, const CarrierType type, bool doping) {
+            std::string name = (type == CarrierType::ELECTRON ? "electrons" : "holes");
+            auto function = config.get<std::string>("lifetime_function_" + name);
+            auto parameters = config.getArray<double>("lifetime_parameters_" + name, {});
+
+            auto lifetime = std::make_unique<TFormula>(("lifetime_" + name).c_str(), function.c_str());
+
+            if(!lifetime->IsValid()) {
+                throw InvalidValueError(
+                    config, "lifetime_function_" + name, "The provided model is not a valid ROOT::TFormula expression");
+            }
+
+            // Check if a doping concentration dependency can be detected by checking for the number of dimensions:
+            if(!doping && lifetime->GetNdim() == 1) {
+                throw ModelUnsuitable("No doping profile available but doping dependence found");
+            }
+
+            // Check if number of parameters match up
+            if(static_cast<size_t>(lifetime->GetNpar()) != parameters.size()) {
+                throw InvalidValueError(config,
+                                        "lifetime_parameters_" + name,
+                                        "The number of provided parameters and parameters in the function do not match");
+            }
+
+            // Set the parameters
+            for(size_t n = 0; n < parameters.size(); ++n) {
+                lifetime->SetParameter(static_cast<int>(n), parameters[n]);
+            }
+
+            return lifetime;
+        };
+    };
+
+    /**
      * @brief Wrapper class and factory for recombination models.
      *
      * This class allows to store recombination objects independently of the model chosen and simplifies access to the
@@ -206,6 +260,8 @@ namespace allpix {
                 } else if(model == "none") {
                     LOG(INFO) << "No charge carrier recombination model chosen, finite lifetime not simulated";
                     model_ = std::make_unique<None>();
+                } else if(model == "custom") {
+                    model_ = std::make_unique<CustomRecombination>(config, doping);
                 } else {
                     throw InvalidModelError(model);
                 }
