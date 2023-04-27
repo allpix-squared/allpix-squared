@@ -609,8 +609,8 @@ GenericPropagationModule::propagate(Event* event,
             // secondaries generated in this step
             double log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
-                n_secondaries += static_cast<unsigned int>(
-                n_secondaries += static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
+                n_secondaries +=
+                    static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
             }
 
             auto inverted_type = invertCarrierType(type);
