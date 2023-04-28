@@ -83,7 +83,8 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
     if(group_photons_ == 0) {
         throw InvalidValueError(config_, "group_photons", "Should be a nonzero value");
     } else if(group_photons_ > 1) {
-        LOG(DEBUG) << "Photons generated as groups of " << group_photons_;
+        number_of_photons_ /= group_photons_;
+        LOG(DEBUG) << "Photons will be generated as " << number_of_photons_ << " groups of " << group_photons_;
     }
 
     config_.setDefault<double>("pulse_duration", 0.5);
@@ -374,7 +375,7 @@ void DepositionLaserModule::run(Event* event) {
         deposited_charges[hit.detector].emplace_back(hit_local,
                                                      hit.hit_global,
                                                      CarrierType::ELECTRON,
-                                                     1, // value
+                                                     group_photons_, // value
                                                      time_hit_local,
                                                      time_hit_global);
 
@@ -382,7 +383,7 @@ void DepositionLaserModule::run(Event* event) {
         deposited_charges[hit.detector].emplace_back(hit_local,
                                                      hit.hit_global,
                                                      CarrierType::HOLE,
-                                                     1, // value
+                                                     group_photons_, // value
                                                      time_hit_local,
                                                      time_hit_global);
 
