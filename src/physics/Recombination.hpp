@@ -12,6 +12,8 @@
 #ifndef ALLPIX_RECOMBINATION_MODELS_H
 #define ALLPIX_RECOMBINATION_MODELS_H
 
+#include <TFormula.h>
+
 #include "exceptions.h"
 
 #include "core/config/Configuration.hpp"
@@ -175,7 +177,7 @@ namespace allpix {
      * @ingroup Models
      * @brief Custom recombination model for charge carriers
      */
-    class CustomRecombination : public RecombinationModel {
+    class CustomRecombination : virtual public RecombinationModel {
     public:
         CustomRecombination(const Configuration& config, bool doping) {
             electron_lifetime_ = configure_lifetime(config, CarrierType::ELECTRON, doping);
