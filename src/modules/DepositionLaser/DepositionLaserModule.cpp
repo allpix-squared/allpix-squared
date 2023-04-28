@@ -78,6 +78,14 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
         throw InvalidValueError(config_, "number_of_photons", "Number of photons should be a nonzero value");
     }
 
+    config_.setDefault<int>("group_photons", 1);
+    group_photons_ = config_.get<size_t>("group_photons");
+    if(group_photons_ == 0) {
+        throw InvalidValueError(config_, "group_photons", "Should be a nonzero value");
+    } else if(group_photons_ > 1) {
+        LOG(DEBUG) << "Photons generated as groups of " << group_photons_;
+    }
+
     config_.setDefault<double>("pulse_duration", 0.5);
     pulse_duration_ = config_.get<double>("pulse_duration");
     LOG(DEBUG) << "Pulse duration: " << Units::display(pulse_duration_, "ns");
