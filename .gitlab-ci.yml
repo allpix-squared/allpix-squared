@@ -38,8 +38,8 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
-.centos8:
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+.centos9:
+    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
     tags:
         - docker
     variables:
@@ -129,9 +129,9 @@ cmp:cc7-llvm:
     variables:
         COMPILER_TYPE: "llvm"
 
-cmp:cc8-gcc:
+cmp:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .compile
 
 cmp:macos-clang:
@@ -358,20 +358,20 @@ core:cc7-llvm:
           artifacts: true
 
 # CentOS 8
-mod:cc8-gcc:
+mod:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .testmod
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
-core:cc8-gcc:
+core:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .testcore
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
 # Mac OS
@@ -531,12 +531,12 @@ pkg:cc7-llvm:
     variables:
         COMPILER_TYPE: "llvm"
 
-pkg:cc8-gcc:
+pkg:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .pack
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
 pkg:macos-clang:
@@ -590,7 +590,7 @@ deploy:cvmfs:
     dependencies:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
-        - pkg:cc8-gcc
+        - pkg:cc9-gcc
         - pkg:macos-clang
     tags:
         - cvmfs-deploy
