@@ -55,6 +55,7 @@ and temporal distribution.
 
 * `number_of_photons`: number of incident photons, generated in *one* event. Defaults to 10000. The total deposited charge
   will also depend on wavelength and geometry.
+* `group_photons`: if specified, incident photons will be grouped in buckets of given size, decreasing amount of `DepositedCharge` instances (but keeping total amount of deposited charge the same), thus reducing load on the propagation module.
 * `wavelength` of the laser. If specified, it is used to retrieve sensor optical properties from the lookup table (data is available for the range of 250 -- 1450 nm). The only supported material is silicon.
 * `data_path`: Directory to read the tabulated input data for the absorption on silicon. By default, this is the standard installation path of the data files shipped with the framework.
 * `absorption_length` and `refractive_index`: if both are specified, given values are used instead of the lookup table. This also allows use of sensor materials other than silicon.

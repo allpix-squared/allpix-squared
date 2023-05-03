@@ -135,6 +135,8 @@ namespace allpix {
         double pulse_duration_;
         bool is_user_optics_{false};
 
+        size_t group_photons_;
+
         // Histograms
         bool output_plots_;
         Histogram<TH2D> h_intensity_sourceplane_{};
