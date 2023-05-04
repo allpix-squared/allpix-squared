@@ -55,7 +55,7 @@ double MeshElement::get_sub_volume(size_t index, Point& p) const {
                 vertices_[1].y, vertices_[2].y, p.y, vertices_[0].z, vertices_[1].z, vertices_[2].z, p.z;
             break;
         default:
-            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 < index < 4");
+            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 <= index <= 3");
             break;
         }
         volume = (element_matrix.determinant()) / 6;
@@ -73,7 +73,7 @@ double MeshElement::get_sub_volume(size_t index, Point& p) const {
             element_matrix << 1, 1, 1, vertices_[0].y, vertices_[1].y, p.y, vertices_[0].z, vertices_[1].z, p.z;
             break;
         default:
-            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 < index < 3");
+            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 <= index <= 2");
             break;
         }
         volume = (element_matrix.determinant()) / 2;
