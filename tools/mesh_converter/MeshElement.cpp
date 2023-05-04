@@ -10,6 +10,8 @@
 
 #include "MeshElement.hpp"
 
+#include <exception>
+
 #include "core/utils/log.h"
 
 #define MIN_VOLUME 1e-12
@@ -35,29 +37,44 @@ double MeshElement::get_sub_volume(size_t index, Point& p) const {
     double volume = 0;
     if(dimension_ == 3) {
         Eigen::Matrix4d element_matrix;
-        if(index == 0) {
+        switch(index) {
+        case 0:
             element_matrix << 1, 1, 1, 1, p.x, vertices_[1].x, vertices_[2].x, vertices_[3].x, p.y, vertices_[1].y,
                 vertices_[2].y, vertices_[3].y, p.z, vertices_[1].z, vertices_[2].z, vertices_[3].z;
-        } else if(index == 1) {
+            break;
+        case 1:
             element_matrix << 1, 1, 1, 1, vertices_[0].x, p.x, vertices_[2].x, vertices_[3].x, vertices_[0].y, p.y,
                 vertices_[2].y, vertices_[3].y, vertices_[0].z, p.z, vertices_[2].z, vertices_[3].z;
-        } else if(index == 2) {
+            break;
+        case 2:
             element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, p.x, vertices_[3].x, vertices_[0].y,
                 vertices_[1].y, p.y, vertices_[3].y, vertices_[0].z, vertices_[1].z, p.z, vertices_[3].z;
-        } else if(index == 3) {
+            break;
+        case 3:
             element_matrix << 1, 1, 1, 1, vertices_[0].x, vertices_[1].x, vertices_[2].x, p.x, vertices_[0].y,
                 vertices_[1].y, vertices_[2].y, p.y, vertices_[0].z, vertices_[1].z, vertices_[2].z, p.z;
+            break;
+        default:
+            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 <= index <= 3");
+            break;
         }
         volume = (element_matrix.determinant()) / 6;
     }
     if(dimension_ == 2) {
         Eigen::Matrix3d element_matrix;
-        if(index == 0) {
+        switch(index) {
+        case 0:
             element_matrix << 1, 1, 1, p.y, vertices_[1].y, vertices_[2].y, p.z, vertices_[1].z, vertices_[2].z;
-        } else if(index == 1) {
+            break;
+        case 1:
             element_matrix << 1, 1, 1, vertices_[0].y, p.y, vertices_[2].y, vertices_[0].z, p.z, vertices_[2].z;
-        } else if(index == 2) {
+            break;
+        case 2:
             element_matrix << 1, 1, 1, vertices_[0].y, vertices_[1].y, p.y, vertices_[0].z, vertices_[1].z, p.z;
+            break;
+        default:
+            throw std::runtime_error("MeshElement::get_sub_volume: logic error, index must be 0 <= index <= 2");
+            break;
         }
         volume = (element_matrix.determinant()) / 2;
     }
