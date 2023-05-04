@@ -24,7 +24,7 @@ individual merge request. Also try to submit individual merge request for indepe
 separately.
 
 If you have any doubt about the best way to implement new functionality or how to split it up, please open an issue with the
-discussion tag on the issue tracker \[[@ap2-issue-tracker]\]. Also please do open a incomplete merge request as
+discussion tag on the issue tracker \[[@ap2-issue-tracker]\]. Also please do open an incomplete merge request as
 soon as possible with the "Draft" label to allow for early discussion.
 
 ## Getting started
