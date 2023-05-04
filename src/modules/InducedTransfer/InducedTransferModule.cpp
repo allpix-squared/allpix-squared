@@ -55,6 +55,12 @@ void InducedTransferModule::run(Event* event) {
     std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
     for(const auto& propagated_charge : propagated_message->getData()) {
 
+        // Make sure we're not double-counting by adding induced current information to an existing pulse:
+        if(!propagated_charge.getPulses().empty()) {
+            throw ModuleError(
+                "Received pulse information - this module should not be used with transient information available");
+        }
+
         // Make sure both electrons and holes are present in the input data
         if(propagated_charge.getType() == CarrierType::ELECTRON) {
             found_electrons = true;
@@ -95,9 +101,9 @@ void InducedTransferModule::run(Event* event) {
 
     // Send an error message if this even only contained one of the two carrier types
     if(!found_electrons || !found_holes) {
-        LOG(ERROR) << "Did not find charge carriers of type \"" << (found_electrons ? "holes" : "electrons")
-                   << "\" in this event." << std::endl
-                   << "This will cause wrong calculation of induced charge";
+        LOG_ONCE(ERROR) << "Did not find charge carriers of type \"" << (found_electrons ? "holes" : "electrons")
+                        << "\" in this event." << std::endl
+                        << "This will cause wrong calculation of induced charge";
     }
 
     // Create pixel charges
