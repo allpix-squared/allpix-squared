@@ -6,7 +6,7 @@ weight: 5
 ---
 
 Allpix Squared allows to load externally generated field maps for various quantities such as the electric field or the doping
-profile of the sensor. These maps have to be provided as regularly-spaced meshes in one of the supported field file formats.
+profile of the sensor. These maps have to be provided as regularly spaced meshes in one of the supported field file formats.
 A conversion and interpolation tool to translate adaptive-mesh fields from TCAD applications to the format required by Allpix
 Squared is provided together with the framework and is described in [Section 14.2](../14_additional/mesh_converter.md).
 
@@ -137,7 +137,7 @@ the region of interest for which the induced current is calculated are shown in 
 indicated by the red dot and the weighting potential is displayed in orange, with its electrode at unit potential as small
 black square and its full extent indicated by the orange line.
 
-The weighting potential is centred with its readout electrode on unit potential on the pixel of interest for which the
+The weighting potential is centered with its readout electrode on unit potential on the pixel of interest for which the
 induced current by the charge carrier movement is to be calculated. For the subsequent pixel of interest, the position
 of the weighting potential is adjusted accordingly.
 

@@ -208,6 +208,14 @@ fmt:codespell:
         - pip install --trusted-host=pypi.org --user codespell
         - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty"
 
+fmt:proselint:
+    extends: .format
+    script:
+        - export PATH=~/.local/bin:$PATH
+        - cd ../
+        - pip install --trusted-host=pypi.org --user proselint
+        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
+
 fmt:coverity:
     extends: .format
     only:

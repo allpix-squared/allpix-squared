@@ -29,7 +29,7 @@ Additional libraries can be linked to the module using the standard CMake comman
 TARGET_LINK_LIBRARIES(${MODULE_NAME} MyExternalLibrary)
 ```
 
-A more complete CMake structure, suited to host multiple external modules, is provided in a separate repository
+A more complex CMake structure, suited to host multiple external modules, is provided in a separate repository
 \[[@ap2-external-modules]\].
 
 In order to load modules which have been compiled and installed in a different location than the ones shipped with the

@@ -24,7 +24,7 @@ called once on each worker thread after the `initialize()` and before the `final
 Allpix Squared uses ROOT histograms for collecting and storing statistics and other additional information about the
 simulation process. ROOT provides the template class `ROOT::TThreadedObject` which allows to use histograms in multithreaded
 environments but slightly alters the interface of the histogram objects. Furthermore, there have been significant changes to
-the class between minor release version of ROOT and it doesn't scale very well with a large number of predefined threads.
+the class between minor release version of ROOT and it doesn't scale well with a large number of predefined threads.
 Therefore, Allpix Squared provides its own re-implementation of this class, `allpix::ThreadedHistogram` which also restores
 the original interface of the histogram classes, i.e. it is possible to instantiate, fill and store histograms the same way
 as in a single-threaded environment.

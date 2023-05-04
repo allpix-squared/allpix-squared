@@ -8,7 +8,7 @@ weight: 7
 #### How can I produce nicely looking drift-diffusion line graphs?
 
 The GenericPropagation module offers the possibility to produce line graphs depicting the path each of the charge carrier
-groups have taken during the simulation. This is a very useful way to visualize the drift and diffusion along field lines.
+groups have taken during the simulation. This is a useful way to visualize the drift and diffusion along field lines.
 
 An optional parameter allows to reduce the lines drawn to those charge carrier groups which have reached the sensor surface
 to provide some insight into where from the collected charge carriers originate and how they reached the implants. One graph

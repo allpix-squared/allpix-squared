@@ -14,49 +14,49 @@ format. Explanations on how to use the various configuration files together with
 Throughout the framework, a simplified version of TOML \[[@tomlgit]\] is used as standard format for configuration files. The
 format is defined as follows:
 
-1.  All whitespace at the beginning or end of a line are stripped by the parser. In the rest of this format specification the
-    *line* refers to the line with this whitespace stripped.
+1. All whitespace at the beginning or end of a line are stripped by the parser. In the rest of this format specification the
+   *line* refers to the line with this whitespace stripped.
 
-2.  Empty lines are ignored.
+2. Empty lines are ignored.
 
-3.  Every non-empty line should start with either `#`, `[` or an alphanumeric character. Every other character should lead to
-    an immediate parse error.
+3. Every non-empty line should start with either `#`, `[` or an alphanumeric character. Every other character should lead to
+   an immediate parse error.
 
-4.  If the line starts with a hash character (`#`), it is interpreted as comment and all other content on the same line is
-    ignored.
+4. If the line starts with a hash character (`#`), it is interpreted as comment and all other content on the same line is
+   ignored.
 
-5.  If the line starts with an open square bracket (`[`), it indicates a section header (also known as configuration header).
-    The line should contain a string with alphanumeric characters and underscores, indicating the header name, followed by a
-    closing square bracket (`]`), to end the header. After any number of ignored whitespace characters there could be a `#`
-    character. If this is the case, the rest of the line is handled as specified in point 3. Otherwise there should not be
-    any other character (except the whitespace) on the line. Any line that does not comply to these specifications should
-    lead to an immediate parse error. Multiple section headers with the same name are allowed. All key-value pairs following
-    this section header are part of this section until a new section header is started.
+5. If the line starts with an open square bracket (`[`), it indicates a section header (also known as configuration header).
+   The line should contain a string with alphanumeric characters and underscores, indicating the header name, followed by a
+   closing square bracket (`]`), to end the header. After any number of ignored whitespace characters there could be a `#`
+   character. If this is the case, the rest of the line is handled as specified in point 3. Otherwise there should not be
+   any other character (except the whitespace) on the line. Any line that does not comply to these specifications should
+   lead to an immediate parse error. Multiple section headers with the same name are allowed. All key-value pairs following
+   this section header are part of this section until a new section header is started.
 
-6.  If the line starts with an alphanumeric character, the line should indicate a key-value pair. The beginning of the line
-    should contain a string of alphabetic characters, numbers, dots (`.`), colons (`:`) and underscores (`_`), but it may
-    only start with an alphanumeric character. This string indicates the key. After an optional number of ignored whitespace,
-    the key should be followed by an equality sign (`=`). Any text between the `=` and the first `#` character not enclosed
-    within a pair of single or double quotes (`'` or `"`) is known as the non-stripped string. Any character after the `#` is
-    handled as specified in point 3. If the line does not contain any non-enclosed `#` character, the value ends at the end
-    of the line instead. The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the
-    end stripped. The value may not be empty. Any line that does not comply to these specifications should lead to an
-    immediate parse error.
+6. If the line starts with an alphanumeric character, the line should indicate a key-value pair. The beginning of the line
+   should contain a string of alphabetic characters, numbers, dots (`.`), colons (`:`) and underscores (`_`), but it may
+   only start with an alphanumeric character. This string indicates the key. After an optional number of ignored whitespace,
+   the key should be followed by an equality sign (`=`). Any text between the `=` and the first `#` character not enclosed
+   within a pair of single or double quotes (`'` or `"`) is known as the non-stripped string. Any character after the `#` is
+   handled as specified in point 3. If the line does not contain any non-enclosed `#` character, the value ends at the end
+   of the line instead. The 'value' of the key-value pair is the non-stripped string with all whitespace in front and at the
+   end stripped. The value may not be empty. Any line that does not comply to these specifications should lead to an
+   immediate parse error.
 
-7.  The value may consist of multiple nested dimensions which are grouped by pairs of square brackets (`[` and `]`). The
-    number of square brackets should be properly balanced, otherwise an error is raised. Square brackets which should not be
-    used for grouping should be enclosed in quotation marks. Every dimension is split at every whitespace sequence and comma
-    character (`,`) not enclosed in quotation marks. Implicit square brackets are added to the begin and end of the value, if
-    these are not explicitly added. A few situations require explicit addition of outer brackets such as matrices with only
-    one column element, i.e. with dimension 1xN.
+7. The value may consist of multiple nested dimensions which are grouped by pairs of square brackets (`[` and `]`). The
+   number of square brackets should be properly balanced, otherwise an error is raised. Square brackets which should not be
+   used for grouping should be enclosed in quotation marks. Every dimension is split at every whitespace sequence and comma
+   character (`,`) not enclosed in quotation marks. Implicit square brackets are added to the begin and end of the value, if
+   these are not explicitly added. A few situations require explicit addition of outer brackets such as matrices with only
+   one column element, i.e. with dimension 1xN.
 
-8.  The sections of the value which are interpreted as separate entities are named elements. For a single value the element
-    is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension. Elements can be
-    forced by using quotation marks, either single or double quotes (`'` or `"`). The number of both types of quotation marks
-    should be properly balanced, otherwise an error is raised. The conversion to the elements to the actual type is performed
-    when accessing the value.
+8. The sections of the value which are interpreted as separate entities are named elements. For a single value the element
+   is on the zeroth dimension, for arrays on the first dimension and for matrices on the second dimension. Elements can be
+   forced by using quotation marks, either single or double quotes (`'` or `"`). The number of both types of quotation marks
+   should be properly balanced, otherwise an error is raised. The conversion to the elements to the actual type is performed
+   when accessing the value.
 
-9.  All key-value pairs defined before the first section header are part of a zero-length empty section header.
+9. All key-value pairs defined before the first section header are part of a zero-length empty section header.
 
 ## Accessing parameters
 

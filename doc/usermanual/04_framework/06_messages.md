@@ -15,17 +15,17 @@ The dispatching module can specify an optional name for the messages, but module
 directly. If the name is not given (or equal to `-`) the `output` parameter of the module is used to determine the name of
 the message, defaulting to an empty string. Dispatching messages to their receivers is then performed following these rules:
 
-1.  The receiving module will *only* receive a message if it has the exact same type as the message dispatched (thus carrying
-    the same objects). If the receiver is however listening to the `BaseMessage` type which does not specify the type of
-    objects it is carrying, it will instead receive all dispatched messages.
+1. The receiving module will *only* receive a message if it has the same type as the message dispatched (thus carrying
+   the same objects). If the receiver is however listening to the `BaseMessage` type which does not specify the type of
+   objects it is carrying, it will instead receive all dispatched messages.
 
-2.  The receiving module will *only* receive messages with the exact name it is listening for. The module uses the `input`
-    parameter to determine which message names it should listen for; if the `input` parameter is equal to `*` the module will
-    listen to all messages. Each module by default listens to messages with no name specified (thus receiving the messages of
-    dispatching modules without output name specified).
+2. The receiving module will *only* receive messages with the exact name it is listening for. The module uses the `input`
+   parameter to determine which message names it should listen for; if the `input` parameter is equal to `*` the module will
+   listen to all messages. Each module by default listens to messages with no name specified (thus receiving the messages of
+   dispatching modules without output name specified).
 
-3.  If the receiving module is a detector module, it will *only* receive messages bound to that specific detector *or*
-    messages that are not bound to any detector.
+3. If the receiving module is a detector module, it will *only* receive messages bound to that specific detector *or*
+   messages that are not bound to any detector.
 
 An example of how to dispatch a message containing an array of `Object` types bound to a detector named `dut` is provided
 below. As usual, the message is dispatched at the end of the `run()` function of the module.
@@ -48,50 +48,50 @@ void run(Event* event) {
 The message system has multiple methods to process received messages. The first two are the most common methods and the third
 should be avoided in almost every instance.
 
-1.  Bind a **single message** to the input of this module. This should usually be the preferred method, where a module
-    expects only a single message to arrive per event containing the list of all relevant objects. The following example
-    binds to a message containing an array of objects and is placed in the constructor of a detector-type `TestModule`:
+1. Bind a **single message** to the input of this module. This should usually be the preferred method, where a module
+   expects only a single message to arrive per event containing the list of all relevant objects. The following example
+   binds to a message containing an array of objects and is placed in the constructor of a detector-type `TestModule`:
 
-    ```cpp
-    TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
-        // Subscribe to a single message, with no special messenger flags
-        messenger->bindSingle<ExampleMessage>(this, MsgFlags::NONE);
-    }
-    ```
+   ```cpp
+   TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
+       // Subscribe to a single message, with no special messenger flags
+       messenger->bindSingle<ExampleMessage>(this, MsgFlags::NONE);
+   }
+   ```
 
-2.  Bind a **set of messages** to the input of the module. This method should be used if the module can (and expects to)
-    receive the same message multiple times (possibly because it wants to receive the same type of message for all
-    detectors). An example to bind multiple messages containing an array of objects in the constructor of a unique-type
-    `TestModule` would be:
+2. Bind a **set of messages** to the input of the module. This method should be used if the module can (and expects to)
+   receive the same message multiple times (possibly because it wants to receive the same type of message for all
+   detectors). An example to bind multiple messages containing an array of objects in the constructor of a unique-type
+   `TestModule` would be:
 
-    ```cpp
-    TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
-        // Subscribe to multiple messages, with no special messenger flags
-        messenger->bindMulti<Message<Object>>(this, MsgFlags::NONE);
-    }
-    ```
+   ```cpp
+   TestModule(Configuration&, Messenger* messenger, GeometryManager* geo_manager) {
+       // Subscribe to multiple messages, with no special messenger flags
+       messenger->bindMulti<Message<Object>>(this, MsgFlags::NONE);
+   }
+   ```
 
-3.  Listen to a particular message type and execute a **filter function** as soon as an object is received. This can be used
-    for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible. The
-    listening module should *not* do any heavy work in the filtering function as this is supposed to take place in the module
-    `run` method instead. The filter function should return a boolean, indicating whether the message is wanted or not. Using
-    a filter function can lead to unexpected behavior because the function is executed during the run method of the
-    dispatching module. This means that logging is performed at the level of the dispatching module and that the filter
-    method can be accessed from multiple threads if the dispatching module is parallelized. Listening to a message containing
-    an array of objects in a detector-specific `TestModule` could be performed as follows:
+3. Listen to a particular message type and execute a **filter function** as soon as an object is received. This can be used
+   for more advanced strategies of retrieving messages, but the other methods should be preferred whenever possible. The
+   listening module should *not* do any heavy work in the filtering function as this is supposed to take place in the module
+   `run` method instead. The filter function should return a boolean, indicating whether the message is wanted or not. Using
+   a filter function can lead to unexpected behavior because the function is executed during the run method of the
+   dispatching module. This means that logging is performed at the level of the dispatching module and that the filter
+   method can be accessed from multiple threads if the dispatching module is parallelized. Listening to a message containing
+   an array of objects in a detector-specific `TestModule` could be performed as follows:
 
-    ```cpp
-    TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
-        messenger->registerFilter(this,
-                                  /* Pointer to the filter method */
-                                  &TestModule::filter,
-                                  /* No special message flags */
-                                  MsgFlags::NONE);
-    }
-    bool filter(std::shared_ptr<Message<Object>> message) const {
-        // Decide if the message is wanted ...
-    }
-    ```
+   ```cpp
+   TestModule(Configuration&, Messenger* messenger, std::shared_ptr<Detector>) {
+       messenger->registerFilter(this,
+                                 /* Pointer to the filter method */
+                                 &TestModule::filter,
+                                 /* No special message flags */
+                                 MsgFlags::NONE);
+   }
+   bool filter(std::shared_ptr<Message<Object>> message) const {
+       // Decide if the message is wanted ...
+   }
+   ```
 
 It should be noted that the `registerFilter` function by default adds the `IGNORE_NAME` message flag to receive all available
 messages if called without the message flag parameter:

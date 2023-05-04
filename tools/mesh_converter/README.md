@@ -88,8 +88,8 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 ### Parameters
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `parser`: Parser class to interpret input data in. Currently, only **DF-ISE** is supported and used as default.
-* `region`: Region name or list of region names to be meshed, such as for example `bulk` or `"bulk","epi"` (No default value; required parameter).
-* `observable`: Observable to be interpolated, such as for example `ElectricField` (No default value; required parameter).
+* `region`: Region name or list of region names to be meshed, such as `bulk` or `"bulk","epi"` (No default value; required parameter).
+* `observable`: Observable to be interpolated, such as `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
 * `interpolate`: Boolean switch to select either the barycentric interpolation method or the closest-neighbor method. Defaults to `true`, i.e. using the interpolation method.
 * `initial_radius`: Initial node neighbors search radius in micro meters. Defaults to the minimal cell dimension of the final interpolated mesh.

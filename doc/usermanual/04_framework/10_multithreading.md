@@ -50,7 +50,7 @@ the correct sequence and decide whether to execute it immediately or to request 
 the thread pool if it is out of order.
 
 Using the `SequentialModule` is suitable for I/O modules which read or write to the file system and do not allow random read
-or write access to events. This enables output modules to produce the exact same output file for the same simulation inputs
+or write access to events. This enables output modules to produce the same output file for the same simulation inputs
 without sacrificing the benefits of using multithreading for other modules.
 
 Since random number generators are thread-local and shared between events processed on the same thread, their state is stored
@@ -79,7 +79,7 @@ have to share this mutex and will consequently be subject to significant waiting
 and more `TRef` relations over the course of a simulation will increase the size of the central reference table. This table is 
 initialized with a fixed size, and once the number of `TRef` objects outgrows this pre-allocated space, new memory has to be 
 acquired, leading to a reallocation of memory for the entire new size of the table. With potentially millions of entries, this 
-very quickly becomes a very computationally very expensive operation, slowing down the simulation significantly.
+quickly becomes a computationally expensive operation, slowing down the simulation significantly.
 
 Allpix Squared solves these limitations by wrapping the `TRef` objects into a class called `PointerWrapper`. It contains both 
 a direct, but transitional C pointer and a `TRef` to the referenced object. The latter, however, is only generated when 

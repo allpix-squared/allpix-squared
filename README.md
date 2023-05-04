@@ -110,8 +110,8 @@ See [AUTHORS.md](./AUTHORS.md)
 
 ## Contributing to Allpix<sup>2</sup>
 
-All types of contributions, being it minor and major, are very welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
-Before adding changes it is very much recommended to carefully read through the documentation in the User Manual first.
+All types of contributions, being it minor and major, are welcome. Please refer to our [contribution guidelines](CONTRIBUTING.md) for a description on how to get started.
+Before adding changes it is highly recommended to carefully read through the documentation in the User Manual first.
 
 
 ## Licenses

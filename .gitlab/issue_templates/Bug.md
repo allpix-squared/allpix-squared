@@ -29,7 +29,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 (Please provide the logging output of your simulation with one single event and the logging level set to `DEBUG`. If your issue only concerns one single module, consider switching the logging level only for the module in question.)
 
-(Please use code blocks (```) to format console output, logs, and code as it's very hard to read otherwise.)
+(Please use code blocks (```) to format console output, logs, and code as it is hard to read otherwise.)
 
 #### Build environment information
 
