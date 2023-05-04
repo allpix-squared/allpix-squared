@@ -3,7 +3,7 @@
 
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
-    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v3"
+    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v4"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
@@ -38,8 +38,8 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
-.centos8:
-    image: gitlab-registry.cern.ch/sft/docker/centos8:latest
+.centos9:
+    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
     tags:
         - docker
     variables:
@@ -129,9 +129,9 @@ cmp:cc7-llvm:
     variables:
         COMPILER_TYPE: "llvm"
 
-cmp:cc8-gcc:
+cmp:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .compile
 
 cmp:macos-clang:
@@ -193,6 +193,7 @@ fmt:coverage:
         COMPILER_TYPE: "gcc"
     script:
         - export PATH=$PATH:~/.local/bin
+        - export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
         - pip install --trusted-host=pypi.org --user gcovr==5.0
         - export CCACHE_DIR=`pwd`/ccache
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON ..
@@ -358,20 +359,20 @@ core:cc7-llvm:
           artifacts: true
 
 # CentOS 8
-mod:cc8-gcc:
+mod:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .testmod
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
-core:cc8-gcc:
+core:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .testcore
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
 # Mac OS
@@ -461,7 +462,6 @@ docs:doxygen:
     extends: .doc
     image: $DOCKER_DEPS_IMAGE
     script:
-        - apt install -y unzip doxygen
         - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
         - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
         - cmake -DBUILD_DOCS_ONLY=ON ..
@@ -531,12 +531,12 @@ pkg:cc7-llvm:
     variables:
         COMPILER_TYPE: "llvm"
 
-pkg:cc8-gcc:
+pkg:cc9-gcc:
     extends:
-        - .centos8
+        - .centos9
         - .pack
     needs:
-        - job: cmp:cc8-gcc
+        - job: cmp:cc9-gcc
           artifacts: true
 
 pkg:macos-clang:
@@ -590,7 +590,7 @@ deploy:cvmfs:
     dependencies:
         - pkg:cc7-gcc
         - pkg:cc7-llvm
-        - pkg:cc8-gcc
+        - pkg:cc9-gcc
         - pkg:macos-clang
     tags:
         - cvmfs-deploy

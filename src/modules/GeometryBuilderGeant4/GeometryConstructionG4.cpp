@@ -166,7 +166,7 @@ void GeometryConstructionG4::verify_transforms() const {
         // Loop through children and check where we belong
         auto* current = tree->GetTopVolume()->GetLogicalVolume();
         for(size_t i = 0; i < current->GetNoDaughters(); ++i) {
-            auto* daughter = current->GetDaughter(static_cast<int>(i));
+            auto* daughter = current->GetDaughter(i);
             if(daughter == volume || daughter->GetLogicalVolume()->IsAncestor(volume)) {
                 tree->NewLevel(daughter);
                 return get_world_transform(volume);

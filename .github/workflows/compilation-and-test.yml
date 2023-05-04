@@ -6,12 +6,12 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_102
+  LCG_VERSION: LCG_103
 jobs:
   compile-centos7:
     strategy:
       matrix:
-        compiler: [gcc11, clang12]
+        compiler: [gcc12, clang12]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         whichtest: [test_core, test_modules, examples]
-        compiler: [gcc11, clang12]
+        compiler: [gcc12, clang12]
     steps:
     - uses: actions/checkout@v2
       with:
@@ -72,7 +72,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang120-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac11-clang120-opt"
         run: |
           mkdir build
           cd build
@@ -106,7 +106,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v2
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac1015-clang120-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-mac11-clang120-opt"
         run: |
           chmod -R a+x .github
           source .ci/init_x86_64.sh

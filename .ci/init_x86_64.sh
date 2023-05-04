@@ -58,7 +58,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_102"
+DEFAULT_LCG="LCG_103"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -76,7 +76,7 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} = "gcc" ]; then
-    COMPILER_VERSION="gcc11"
+    COMPILER_VERSION="gcc12"
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} = "llvm" ]; then

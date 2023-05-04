@@ -7,13 +7,13 @@ MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
 SHELL ["/bin/bash", "-c"]
 
 # Install basic build requirements
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils unzip doxygen
 
 # Install LCIO dependencies
 RUN apt-get install -y zlib1g-dev
 
 # Add layer for LCIO
-ENV LCIO_VERSION 02-16-01
+ENV LCIO_VERSION 02-19-01
 
 ENV LCIODIR="/opt/lcio"
 ENV PATH="$LCIODIR/bin:$PATH"
@@ -42,7 +42,7 @@ RUN pip3 install --upgrade pip && \
     pip3 install numpy matplotlib scipy pandas
 
 # Add layer for ROOT6
-ENV ROOT6_VERSION 6.26.04
+ENV ROOT6_VERSION 6.26.10
 
 ENV ROOTSYS="/opt/root6"
 ENV PATH="$ROOTSYS/bin:$PATH"
@@ -90,22 +90,22 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
 RUN apt-get install -y libxerces-c-dev
 
 # Add layer for Geant4
-ENV GEANT4_VERSION 11.0.2
+ENV GEANT4_VERSION 11.1.1
 
 ENV GEANT4DIR="/opt/geant4"
 ENV PATH="$GEANT4DIR/bin:$PATH"
 ENV LD_LIBRARY_PATH="$GEANT4DIR/lib:$LD_LIBRARY_PATH"
-ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4NDL4.6"
-ENV G4LEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4EMLOW8.0"
-ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/PhotonEvaporation5.7"
-ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/RadioactiveDecay5.6"
-ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4PARTICLEXS4.0"
-ENV G4PIIDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4PII1.3"
-ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/RealSurface2.2"
-ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4SAIDDATA2.0"
-ENV G4ABLADATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4ABLA3.1"
-ENV G4INCLDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4INCL1.0"
-ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4-${GEANT4_VERSION}/data/G4ENSDFSTATE2.3"
+ENV G4NEUTRONHPDATA="$GEANT4DIR/share/Geant4/data/G4NDL4.7"
+ENV G4LEDATA="$GEANT4DIR/share/Geant4/data/G4EMLOW8.2"
+ENV G4LEVELGAMMADATA="$GEANT4DIR/share/Geant4/data/PhotonEvaporation5.7"
+ENV G4RADIOACTIVEDATA="$GEANT4DIR/share/Geant4/data/RadioactiveDecay5.6"
+ENV G4PARTICLEXSDATA="$GEANT4DIR/share/Geant4/data/G4PARTICLEXS4.0"
+ENV G4PIIDATA="$GEANT4DIR/share/Geant4/data/G4PII1.3"
+ENV G4REALSURFACEDATA="$GEANT4DIR/share/Geant4/data/RealSurface2.2"
+ENV G4SAIDXSDATA="$GEANT4DIR/share/Geant4/data/G4SAIDDATA2.0"
+ENV G4ABLADATA="$GEANT4DIR/share/Geant4/data/G4ABLA3.1"
+ENV G4INCLDATA="$GEANT4DIR/share/Geant4/data/G4INCL1.0"
+ENV G4ENSDFSTATEDATA="$GEANT4DIR/share/Geant4/data/G4ENSDFSTATE2.3"
 
 RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     curl -o ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz \
@@ -119,6 +119,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
           -DGEANT4_BUILD_MULTITHREADED=ON \
           -DCMAKE_INSTALL_PREFIX=../ \
           -DGEANT4_BUILD_CXXSTD=17 \
+          -DGEANT4_BUILD_BUILTIN_BACKTRACE=OFF \
           ../src/geant4-v${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
@@ -126,7 +127,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     rm -rf ${GEANT4DIR}/share/Geant4-${GEANT4_VERSION_PATH}/examples
 
 # Add layer for HepMC3
-ENV HEPMC3_VERSION 3.2.5
+ENV HEPMC3_VERSION 3.2.6
 
 ENV HEPMC3DIR="/opt/hepmc3"
 ENV PATH="$HEPMC3DIR/bin:$PATH"
