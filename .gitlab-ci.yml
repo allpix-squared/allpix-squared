@@ -558,10 +558,8 @@ deploy:documentation:
     stage: deployment
     only:
         - tags@allpix-squared/allpix-squared
-        - master  # FIXME: remove when finally deployed
     trigger:
         project: allpix-squared/allpix-squared-website
-        branch: test  # FIXME: remove when finally deployed
         strategy: depend
 
 deploy:eos:
