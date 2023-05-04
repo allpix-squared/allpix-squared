@@ -44,7 +44,7 @@ namespace allpix {
         virtual ~ImpactIonizationModel() = default;
 
         /**
-         * Function call operator to obtain mobility value for the given carrier type and electric field magnitude
+         * Function call operator to obtain gain value for the given carrier type and electric field magnitude
          * @param type Type of charge carrier (electron or hole)
          * @param efield_mag Magnitude of the electric field
          * @param step Length of the current step
@@ -294,7 +294,7 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief Custom mobility model for charge carriers
+     * @brief Custom gain model for charge carriers
      */
     class CustomGain : public ImpactIonizationModel {
     public:
@@ -347,9 +347,9 @@ namespace allpix {
     /**
      * @brief Wrapper class and factory for impact ionization models.
      *
-     * This class allows to store mobility objects independently of the model chosen and simplifies access to the function
-     * call operator. The constructor acts as factory, generating model objects from the model name provided, e.g. from a
-     * configuration file.
+     * This class allows to store impact ionization objects independently of the model chosen and simplifies access to the
+     * function call operator. The constructor acts as factory, generating model objects from the model name provided, e.g.
+     * from a configuration file.
      */
     class ImpactIonization {
     public:
