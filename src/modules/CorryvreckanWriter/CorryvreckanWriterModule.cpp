@@ -157,6 +157,14 @@ void CorryvreckanWriterModule::run(Event* event) {
                 continue;
             }
 
+            // Calculate coordinate system offset
+            // Corryvreckan coordinates originate at the center of the matrix
+
+            auto detector_model = message->getDetector()->getModel();
+            auto pixel_size = detector_model->getPixelSize();
+            ROOT::Math::XYZVector offset(pixel_size.X() / 2, pixel_size.Y() / 2, 0);
+            offset -= detector_model->getMatrixSize() / 2;
+
             // Get all associated particles
             auto mcp = apx_pixel.getMCParticles();
             LOG(DEBUG) << "Received " << mcp.size() << " Monte Carlo particles from pixel hit";
@@ -164,8 +172,8 @@ void CorryvreckanWriterModule::run(Event* event) {
                 auto* mcParticle = new corryvreckan::MCParticle(
                     detector_name,
                     particle->getParticleID(),
-                    particle->getLocalStartPoint(),
-                    particle->getLocalEndPoint(),
+                    particle->getLocalStartPoint() + offset,
+                    particle->getLocalEndPoint() + offset,
                     (timing_global_ ? event_->start() + particle->getGlobalTime() : particle->getLocalTime()));
                 write_list_mcp_[detector_name]->push_back(mcParticle);
             }
