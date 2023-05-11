@@ -106,6 +106,14 @@ void CorryvreckanWriterModule::run(Event* event) {
     for(auto& message : pixel_messages) {
 
         auto detector_name = message->getDetector()->getName();
+
+        // Calculate coordinate system offset for MC truth storage
+        // Corryvreckan coordinates originate at the center of the matrix
+        auto detector_model = message->getDetector()->getModel();
+        auto pixel_size = detector_model->getPixelSize();
+        ROOT::Math::XYZVector offset(pixel_size.X() / 2, pixel_size.Y() / 2, 0);
+        offset -= detector_model->getMatrixSize() / 2;
+
         LOG(DEBUG) << "Received " << message->getData().size() << " pixel hits from detector " << detector_name;
 
         if(write_list_px_.find(detector_name) == write_list_px_.end()) {
@@ -156,14 +164,6 @@ void CorryvreckanWriterModule::run(Event* event) {
             if(!output_mc_truth_) {
                 continue;
             }
-
-            // Calculate coordinate system offset
-            // Corryvreckan coordinates originate at the center of the matrix
-
-            auto detector_model = message->getDetector()->getModel();
-            auto pixel_size = detector_model->getPixelSize();
-            ROOT::Math::XYZVector offset(pixel_size.X() / 2, pixel_size.Y() / 2, 0);
-            offset -= detector_model->getMatrixSize() / 2;
 
             // Get all associated particles
             auto mcp = apx_pixel.getMCParticles();
