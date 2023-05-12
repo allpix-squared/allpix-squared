@@ -218,6 +218,7 @@ fmt:proselint:
         - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
 
 fmt:coverity:
+    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
     extends: .format
     only:
         - schedules
