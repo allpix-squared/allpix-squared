@@ -226,7 +226,7 @@ fmt:coverity:
         COMPILER_TYPE: "gcc"
         SCHEDULE_TAG: "coverity"
     script:
-        - wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
+        - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
         - tar xfz /tmp/cov-analysis-linux64.tgz
         - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
