@@ -33,7 +33,7 @@ The number of secondary charge carriers generated from impact ionization is calc
 
 This algorithm results in a mean number of secondaries generated equal to
 ```math
-<n_{total}> = \exp\left(\int_{x_0}^{x_n}\alpha(x)dx \right)
+\langle n_{total}\rangle = \exp\left(\int_{x_0}^{x_n}\alpha(x)dx \right)
 ```
 for sufficiently low step sizes.
 
@@ -187,7 +187,7 @@ $`T_0 = 300 \,\text{K}`$ as:
 \end{aligned}
 ```
 
-## Original publication
+### Original publication
 
 The parameter values implemented in Allpix Squared are taken from Table 1 of \[[@okuto]\], using the values for silicon, as:
 

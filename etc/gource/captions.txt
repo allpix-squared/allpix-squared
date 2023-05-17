@@ -70,3 +70,54 @@
 1622904773|MR!494: Introduce Linting & Formatting for CMake
 1623131943|MR!475: Warn about Unused Configuration Keys
 1623307728|Major Release: Allpix Squared v2.0
+1627543425|MR!519: Allow Filtering for Primary MCParticles from PixelCharge
+1630417656|MR!533: Enhance Github CI
+1632840852|MR!547: Extend Version Reporting
+1633006976|MR!552: Update LCG version of CI to LCG_101
+1637142252|MR!555: New Module: DepositionCosmics
+1637149656|Stable Release: Allpix Squared 2.1
+1637665205|MR!591: PropagatedCharge: Introduce CarrierState
+1638377564|MR!565: Improve Pulse Object
+1641929846|MR!603: Improvements in Geant4 Interface
+1641994698|MR!606: Make Pixel::Index Signed
+1641997104|MR!623: Runge-Kutta Integrator: Allow to Advance Time
+1642158957|MR!604: Passive Material: Add Possibility to Read GDML Files
+1642159580|MR!626: Run Linter only on Changed Files
+1642160211|MR!622: MeshConverter: Automatically Determine Input Mesh Dimensionality
+1642423870|MR!632: Radial strip detectors
+1643380610|MR!628: Improvements to Threading Configuration
+1643626666|MR!620: Allow Specification of Custom Mobility Functions
+1644413416|MR!636: Implement REUSE specification
+1644944959|MR!675: DepositionGeant4: Enable Recording of All Tracks
+1645025311|MR!681: Recombination: add Temperature Scaling of SRH Lifetime
+1645440894|MR!680: Better Interpolation at Sensor Edges
+1646066660|Stable Release: Allpix Squared 2.2
+1646814716|MR!574: DefaultDigitizer possibility of change of the gain function
+1646818656|MR!624: Charge Carrier Trapping
+1647596502|MR!703: PulseTransfer: Speed Up Processing for Large Events by Factor > x50
+1648136179|MR!664: Sensor Materials
+1648802877|MR!707: ThreadPool: Synchronize Queue and Workers
+1652710534|Stable Release: Allpix Squared 2.3
+1654774300|MR!788: Handle large charge deposits dynamically
+1655274713|MR!759: New Object: PixelPulse
+1656570210|MR!472: Implementation Impact Ionization
+1656571491|MR!787: Introduce DetectorAssemblies
+1656582056|MR!804: Linegraphs for everyone
+1656676637|MR!539: Support for Hexagonal Pixels and Grids
+1657022728|MR!805: Trapping: Add Constant Effective Lifetime Trapping & Detrapping
+1657889737|MR!825: DepositionGeant4: Allow Selection of Geant4 Tracking Verbosity
+1660035654|MR!837: Gallium nitride & Levinshtein mobility
+1660116358|MR!706: Introduce Possibility to Abort Event
+1660308347|MR!560: DetectorField: Perform Field Lookup on Per-Pixel Basis
+1668085821|MR!885: Some Improvements on Locking
+1669197520|MR!756: New Module: DepositionGenerator
+1669996287|MR!854: DepositionLaserModule
+1673598562|Stable Release: Allpix Squared 2.4
+1674730145|MR!919: Store Total Deposited Charge by MCParticle
+1674757414|MR!672: 3D Implants, Many
+1678895523|MR!964: TransientPropagation: Gain Needs to Generate Carriers
+1680593099|MR!977: Add Optimized Impact Ionization Models
+1682603197|MR!972: Impact Ionization: add probability based algorithm
+1683192959|MR!986: Add Possibility to Define Custom Recombination Models
+1683205248|Major Release: Allpix Squared v3.0
+

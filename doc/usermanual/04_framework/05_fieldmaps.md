@@ -16,7 +16,7 @@ pixels or fractions thereof to full sensor simulations in Allpix Squared.
 ## Mapping of Fields to the Sensor Plane
 
 ![](./maps_types.png)\
-*Examples for pixel geometries in field maps. The dark spot represents the pixel center, the red extend the electric field.
+*Examples for pixel geometries in field maps. The dark spot represents the pixel center, the red extent the electric field.
 Pixel boundaries are indicated with a dotted line where applicable.*
 
 Fields are always expected to be provided as rectangular maps, irrespective of the actual pixel shape.
