@@ -27,9 +27,9 @@ composition and of vendors. The sources for the chosen default values are provid
 | Gallium Arsenide                                     | 4.2             | 0.14        | \[[@GaAs_Fano]\]                       |
 | Gallium Nitride                                      | 8.33            | 0.07        | \[[@GaN_Creation_Fano]\]               |
 | Cadmium Telluride                                    | 4.43            | 0.24        | \[[@CdTe_Creation], [@CdTe_Fano]\]     |
-| Cadmium Zinc Telluride ($`\ce{Cd_{0.8}Zn_{0.2}Te}`$) | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
+| Cadmium Zinc Telluride $`(\ce{Cd_{0.8}Zn_{0.2}Te})`$ | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
 | Diamond                                              | 13.1            | 0.382       | \[[@Diamond_Creation_Fano]\]           |
-| Silicon Carbide ($`\ce{{4H-}SiC}`$)                  | 7.6             | 0.1         | \[[@SiC_Creation], [@SiC_Fano]\]       |
+| Silicon Carbide $`(\ce{{4H-}SiC})`$                  | 7.6             | 0.1         | \[[@SiC_Creation], [@SiC_Fano]\]       |
 
 
 It should be noted that material properties such as the density and composition of materials are defined only in case of
