@@ -52,6 +52,7 @@ This geometry can be selected using `geometry = hexagon`
 ## Radial Strips
 
 Radial strip detectors feature a trapezoidal shape with curved edges and radial geometry – the strips on such a sensor are arranged in a fan-like geometry, pointing to a common focal point. Shape, size and segmentation of a radial strip detector are defined using four parameters, each passed as an array with the number of elements equal to the number of strip rows:
+
 - `number_of_strips`
 - `angular_pitch`
 - `inner_pitch`
