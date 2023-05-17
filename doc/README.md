@@ -106,8 +106,8 @@ also means that explicit backticks (like `` $` `` or `` ```math ``) can't be use
 
 You can easily test the website of the documentation with your changes yourself by running:
 ```shell
-git clone --recurse-submodules https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
-./get_artifacts.sh ref your_branch_name your_cern_user_name/allpix-squared
+git clone https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
+./get_artifacts.sh job job_number_from_your_ci your_cern_user_name/allpix-squared
 hugo server
 ```
 
