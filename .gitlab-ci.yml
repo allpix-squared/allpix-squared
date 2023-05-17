@@ -450,8 +450,8 @@ perf:cc7-gcc:
     tags:
         - docker
     before_script:
-        - mkdir -p public/usermanual
-        - mkdir build && cd build
+        - mkdir public build
+        - cd build
     artifacts:
         paths:
             - public
@@ -484,9 +484,9 @@ docs:usermanual-pdf:
     image: registry.cern.ch/docker.io/thomasweise/docker-texlive-full:latest
     script:
         - apt update && apt install -y git cmake ninja-build python3-yaml pandoc
-        - pandoc --version
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
         - ninja apsq_docs_pdf
+        - mkdir ../public/usermanual/
         - cp doc/usermanual_pdf/allpix-manual-*.pdf ../public/usermanual/
 
 
