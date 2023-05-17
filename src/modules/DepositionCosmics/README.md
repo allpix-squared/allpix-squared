@@ -58,6 +58,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ### CRY Framework Parameters
+
 * `latitude`: Latitude for which the incident particles from cosmic ray showers should be simulated. Should be between `90.0` (north pole) and `-90.0` (south pole). Defaults to `53.0` (DESY).
 * `date`: Date for the simulation to account for the 11-year cycle of solar activity and related change in cosmic ray flux. Should be given as string in the form `month-day-year` and defaults to the last day of 2020, i.e. `12-31-2020`.
 * `return_neutrons`: Boolean to select whether neutrons should be returned to Geant4. Defaults to `true`.

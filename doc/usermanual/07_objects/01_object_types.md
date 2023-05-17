@@ -23,12 +23,15 @@ global coordinates of the event, the energies (total as well as kinetic only) at
 name, and the volume it took place in. Furthermore, the particle's PDG id \[[@pdg]\] is stored.
 
 Main properties:
+
 - Global points where track came into and went out of existence
   ([`getStartPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getstartpoint),
    [`getEndPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getendpoint))
+
 - Global time when the track had its first and last appearance
   ([`getGlobalStartTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getglobalstarttime),
    [`getGlobalEndTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getglobalendtime))
+
 - Initial and final kinetic and total energy
   ([`getKineticEnergyInitial()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getkineticenergyinitial),
    [`getTotalEnergyInitial()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-gettotalenergyinitial),
@@ -56,20 +59,25 @@ is counted from the beginning of the event. Local spatial coordinates are determ
 time measurement references the entry point of the *first* MCParticle of the event into the detector.
 
 Main parameters:
+
 - Entry and exit points of the particle in the sensor in local and global coordinates
   ([`getLocalStartPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getlocalstartpoint),
    [`getGlobalStartPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getglobalstartpoint),
    [`getLocalEndPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getlocalendpoint),
    [`getGlobalEndPoint()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getglobalendpoint))
+
 - The arrival time of the particle in the sensor in local and global coordinates
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getglobaltime))
+
 - PDG id for this particle type
   ([`getParticleID()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getparticleid))
+
 - If the particle is a primary particle or has a parent particle
   ([`isPrimary()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getprimary)),
   and the parent particle, if any
   ([`getParent()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-getparent))
+
 - The track the particle is related to, if any
   ([`getTrack()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mcparticle/#function-gettrack))
 
@@ -81,16 +89,20 @@ This is a meta class for a set of charges within a sensor. The properties of thi
 [DepositedCharge](#depositedcharge) and [PropagatedCharge](#propagatedcharge) objects.
 
 Main parameters:
+
 - The position of the set of charges in the sensor in local and global coordinates
   ([`getLocalPosition()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getlocalposition),
    [`getGlobalPosition()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getglobalposition))
+
 - The associated time of the set of charges in local and global coordinates
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getglobaltime))
+
 - The sign of the charge carries
   ([`getSign()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getsign))
   and the amount of charges in the set
   ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-getcharge))
+
 - The carrier type to check if the charge carriers are electrons or holes
   ([`getType()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1sensorcharge/#function-gettype))
 
@@ -104,7 +116,9 @@ addition, the time (in *ns* as the internal framework unit) of the deposition af
 carrier (electron or hole) is stored.
 
 Main parameters:
+
 - Everything from [SensorCharge](#sensorcharge)
+
 - The [MCParticle](#mcparticle) that created the deposited charge
   ([`getMCParticle()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1depositedcharge/#function-getmcparticle))
 
@@ -119,25 +133,34 @@ another process. Timing information giving the total time to arrive at the final
 also be stored.
 
 Main parameters:
+
 - Everything from [SensorCharge](#sensorcharge)
+
 - The associated [DepositedCharge](#depositedcharge) object
   ([`getDepositedCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getdepositedcharge))
+
 - The associated induced [pulses](#pulse), if any
   ([`getPulses()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getpulses))
+
 - The carrier state of the charge carriers described below
   ([`getState()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/#function-getstate))
 
 The following values for the carrier state are possible:
+
 - `CarrierState::UNKNOWN`:
   The final state of the charge carrier is unknown, for example because it might not have been provided by the used
   propagation algorithm
+
 - `CarrierState::MOTION`:
   The charge carrier was still in motion when the propagation routine finished, for example when the configured integration
   time was reached
+
 - `CarrierState::RECOMBINED`:
   The charge carrier has recombined with the silicon lattice at the given position
+
 - `CarrierState::TRAPPED`:
   The charge carrier has been trapped by a lattice defect at the given position
+
 - `CarrierState::HALTED`:
   The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface
 
@@ -150,18 +173,23 @@ from zero for the first pixel. Only the total number of charges at the pixel is 
 the individual charges can be retrieved from the related [PropagatedCharge](#propagatedcharge) objects.
 
 Main parameters:
+
 - The pixel corresponding to the charge
   ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getpixel))
   and its index
   ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getindex))
+
 - The charge collected in the pixel
   ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getcharge),
    [`getAbsoluteCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getabsolutecharge))
+
 - The related [propagates charges](#propagatedcharge)
   ([`getPropagatedCharges()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getpropagatedcharges))
+
 - The associated time of the charge in local and global coordinates
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getglobaltime))
+
 - The recorded [charge pulse](#pulse), if any
   ([`getPulse()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelcharge/#function-getpulse))
 
@@ -174,8 +202,10 @@ implant, if such information is available in the simulation. A pulse object alwa
 creation of the object. It inherits from [std::vector<double>](https://en.cppreference.com/w/cpp/container/vector).
 
 Main parameters:
+
 - The total charge of the pulse
   ([`getCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pulse/#function-getcharge))
+
 - The time binning of the pulse
   ([`getBinning()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pulse/#function-getbinning))
 
@@ -192,16 +222,20 @@ The exact type of the time and signal values depends on the digitizer module use
 [module documentation](../08_modules/_index.md) is to be consulted.
 
 Main parameters:
+
 - The pixel corresponding to the hit
   ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getpixel))
   and its index
   ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getindex))
+
 - The related [PixelCharge](#pixelcharge)
   ([`getPixelCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getpixelcharge))
   and PixelPulse, if any
   ([`getPixelPulse()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getpixelpulse))
+
 - The signal of the hit
   ([`getSignal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getsignal))
+
 - The time information of the hit in local and global coordinates
   ([`getLocalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getlocaltime),
    [`getGlobalTime()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelhit/#function-getglobaltime))
@@ -214,11 +248,14 @@ If the detector's front-end electronics provide a digitized front-end pulse, thi
 information. It inherits from the [Pulse](#pulse) object.
 
 Main parameters:
+
 - Everything from [Pulse](#pulse)
+
 - The pixel corresponding to the digitized pulse
   ([`getPixel()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getpixel))
   and its index
   ([`getIndex()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getindex))
+
 - The corresponding [pixel charge](#pixelcharge)
   ([`getPixelCharge()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1pixelpulse/#function-getpixelcharge))
 
