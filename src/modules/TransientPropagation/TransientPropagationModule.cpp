@@ -353,33 +353,36 @@ void TransientPropagationModule::initialize() {
                                       200,
                                       -model_->getSensorSize().z() / 2.,
                                       model_->getSensorSize().z() / 2.);
-            gain_e_vs_x_ = CreateHistogram<TProfile>("gain_e_vs_x",
-                                                     "Gain per electron group after propagation vs x",
-                                                     100,
-                                                     -model_->getSensorSize().x() / 2.,
-                                                     model_->getSensorSize().x() / 2.);
-            gain_e_vs_y_ = CreateHistogram<TProfile>("gain_e_vs_y",
-                                                     "Gain per electron group after propagation vs y",
-                                                     100,
-                                                     -model_->getSensorSize().y() / 2.,
-                                                     model_->getSensorSize().y() / 2.);
-            gain_e_vs_z_ = CreateHistogram<TProfile>("gain_e_vs_z",
-                                                     "Gain per electron group after propagation vs z",
-                                                     100,
-                                                     -model_->getSensorSize().z() / 2.,
-                                                     model_->getSensorSize().z() / 2.);
+            gain_e_vs_x_ =
+                CreateHistogram<TProfile>("gain_e_vs_x",
+                                          "Gain per electron group after propagation vs x; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().x() / 2.,
+                                          model_->getSensorSize().x() / 2.);
+            gain_e_vs_y_ =
+                CreateHistogram<TProfile>("gain_e_vs_y",
+                                          "Gain per electron group after propagation vs y; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().y() / 2.,
+                                          model_->getSensorSize().y() / 2.);
+            gain_e_vs_z_ =
+                CreateHistogram<TProfile>("gain_e_vs_z",
+                                          "Gain per electron group after propagation vs z; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().z() / 2.,
+                                          model_->getSensorSize().z() / 2.);
             gain_h_vs_x_ = CreateHistogram<TProfile>("gain_h_vs_x",
-                                                     "Gain per hole group after propagation vs x",
+                                                     "Gain per hole group after propagation vs x; x [mm]; gain per group",
                                                      100,
                                                      -model_->getSensorSize().x() / 2.,
                                                      model_->getSensorSize().x() / 2.);
             gain_h_vs_y_ = CreateHistogram<TProfile>("gain_h_vs_y",
-                                                     "Gain per hole group after propagation vs y",
+                                                     "Gain per hole group after propagation vs y; x [mm]; gain per group",
                                                      100,
                                                      -model_->getSensorSize().y() / 2.,
                                                      model_->getSensorSize().y() / 2.);
             gain_h_vs_z_ = CreateHistogram<TProfile>("gain_h_vs_z",
-                                                     "Gain per hole group after propagation vs z",
+                                                     "Gain per hole group after propagation vs z; x [mm]; gain per group",
                                                      100,
                                                      -model_->getSensorSize().z() / 2.,
                                                      model_->getSensorSize().z() / 2.);
