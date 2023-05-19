@@ -16,6 +16,7 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
@@ -81,11 +82,22 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
 
         // Check if the requested path is an absolute path and issue a warning:
         std::filesystem::path path = pathname;
-        if(path.is_absolute() && std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end()) {
+
+	#ifdef __APPLE__ //fix xcode iterator legacy
+	  std::vector <std::string> sfile( file.begin(), file.end() );
+	  std::vector <std::string> spath( path.begin(), path.end() );
+	  if(path.is_absolute() && std::search( spath.begin(), spath.end(), sfile.begin(), sfile.end() ) == spath.end()){
             LOG(WARNING) << "Storing file at requested absolute location " << path
                          << " - this is outside the module output folder";
-        }
-
+	  }
+	#else
+	  if(path.is_absolute() && std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end()) {
+            LOG(WARNING) << "Storing file at requested absolute location " << path
+	                << " - this is outside the module output folder";
+	  }
+	#endif
+	  
+	
         // Add the file itself - this fully replaces the "file" path in case "path" is absolute:
         file /= (extension.empty() ? path : path.replace_extension(extension));
 
