@@ -16,7 +16,6 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-#include <iostream>
 
 #include "core/messenger/Messenger.hpp"
 #include "core/module/exceptions.h"
@@ -82,22 +81,20 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
 
         // Check if the requested path is an absolute path and issue a warning:
         std::filesystem::path path = pathname;
-
-	#ifdef __APPLE__ //fix xcode iterator legacy
-	  std::vector <std::string> sfile( file.begin(), file.end() );
-	  std::vector <std::string> spath( path.begin(), path.end() );
-	  if(path.is_absolute() && std::search( spath.begin(), spath.end(), sfile.begin(), sfile.end() ) == spath.end()){
-            LOG(WARNING) << "Storing file at requested absolute location " << path
-                         << " - this is outside the module output folder";
-	  }
-	#else
-	  if(path.is_absolute() && std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end()) {
-            LOG(WARNING) << "Storing file at requested absolute location " << path
-	                << " - this is outside the module output folder";
-	  }
-	#endif
-	  
-	
+	if(path.is_absolute()) {
+            #ifdef __APPLE__ //Fix compiling error caused by Xcode iterator legacy
+            auto path_it_v = std::vector<std::string>(path.begin(), path.end());
+            auto file_it_v = std::vector<std::string>(file.begin(), file.end());
+            const auto is_outside = std::search(path_it_v.begin(), path_it_v.end(), file_it_v.begin(), file_it_v.end()) == path_it_v.end();
+            #else
+            const auto is_outside = std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end(); 
+            #endif
+            if(is_outside) {
+                LOG(WARNING) << "Storing file at requested absolute location " << path
+                             << " - this is outside the module output folder";
+            }
+        }
+    
         // Add the file itself - this fully replaces the "file" path in case "path" is absolute:
         file /= (extension.empty() ? path : path.replace_extension(extension));
 
