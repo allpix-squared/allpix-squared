@@ -95,7 +95,6 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
                              << " - this is outside the module output folder";
             }
         }
-	
         // Add the file itself - this fully replaces the "file" path in case "path" is absolute:
         file /= (extension.empty() ? path : path.replace_extension(extension));
 
