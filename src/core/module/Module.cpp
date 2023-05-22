@@ -81,19 +81,21 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
 
         // Check if the requested path is an absolute path and issue a warning:
         std::filesystem::path path = pathname;
-	if(path.is_absolute()) {
-            #ifdef __APPLE__ //Fix compiling error caused by Xcode iterator legacy
+        if(path.is_absolute()) {
+#ifdef __APPLE__ // Fix compiling error caused by Xcode iterator legacy
             auto path_it_v = std::vector<std::string>(path.begin(), path.end());
             auto file_it_v = std::vector<std::string>(file.begin(), file.end());
-            const auto is_outside = std::search(path_it_v.begin(), path_it_v.end(), file_it_v.begin(), file_it_v.end()) == path_it_v.end();
-            #else
-            const auto is_outside = std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end(); 
-            #endif
+            const auto is_outside =
+                std::search(path_it_v.begin(), path_it_v.end(), file_it_v.begin(), file_it_v.end()) == path_it_v.end();
+#else
+            const auto is_outside = std::search(path.begin(), path.end(), file.begin(), file.end()) == path.end();
+#endif
             if(is_outside) {
                 LOG(WARNING) << "Storing file at requested absolute location " << path
                              << " - this is outside the module output folder";
             }
         }
+	
         // Add the file itself - this fully replaces the "file" path in case "path" is absolute:
         file /= (extension.empty() ? path : path.replace_extension(extension));
 
