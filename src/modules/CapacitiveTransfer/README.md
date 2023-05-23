@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CapacitiveTransfer"
 description: "Transfer with cross-coupling between pixels"
-module_maintainer: "Mateus Vicente (mvicente@cern.ch)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Mateus Vicente (mvicente@cern.ch)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Similar to the SimpleTransferModule, this module combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. In addition to the SimpleTransferModule, where the charge close to the implants is transferred only to the closest read-out pixel, this module also copies the propagated charge to the neighboring pixels, scaled by the respective cross-coupling (i.e. `cross_capacitance / nominal_capacitance`), in order to simulate the cross-coupling between neighboring pixels in Capacitively Coupled Pixel Detectors (CCPDs).

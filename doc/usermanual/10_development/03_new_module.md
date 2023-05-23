@@ -135,8 +135,8 @@ The `README.md` serves as the documentation for the module and should be written
 The `README.md` should follow the structure indicated in the `README.md` file of the `DummyModule` in `src/modules/Dummy`,
 and should contain at least the following sections:
 
-- A YAML header with the name of the module (`title`), a short description of the module (`description`) the maintainer
-  (`module_maintainer`) and status (`module_status`) of the module.
+- A YAML header with the name of the module (`title`), a short description of the module (`description`) the status
+  (`module_status`) and maintainers (`module_maintainers`) of the module.
 
   If the module is working and well-tested, the status of the module should be `Functional`. By default, new modules are
   given the status `Immature`. The maintainer should mention the full name of the module maintainer, with their email
@@ -145,11 +145,11 @@ and should contain at least the following sections:
   ```yaml
   title: "ModuleName"
   description: "Some short description"
-  module_maintainer: "John Doe (<john.doe@example.com>)"
   module_status: "Functional"
+  module_maintainers: ["John Doe (<john.doe@example.com>)"]
   ```
 
-  In addition, the input (`module_input`) and output (`module_output`) objects of the module should be given as well.
+  In addition, the input (`module_inputs`) and output (`module_outputs`) objects of the module should be given as well.
 
 - An H2-size section named **Description**, containing a short description of the module.
 

@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "InducedTransfer"
 description: "Transfer with induction from nearby charge carriers"
-module_maintainer: "Simon Spannagel (simon.spannagel@cern.ch)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Simon Spannagel (simon.spannagel@cern.ch)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels by calculating the total induced charge during their drift on neighboring pixels by calculating the difference in weighting potential.

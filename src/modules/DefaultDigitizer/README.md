@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DefaultDigitizer"
 description: "Digitizer that creates a signal proportional to the collected charge"
-module_maintainer: "Simon Spannagel (<simon.spannagel@desy.de>)"
 module_status: "Functional"
-module_input: "PixelCharge"
-module_output: "PixelHit"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@desy.de>)"]
+module_inputs: ["PixelCharge"]
+module_outputs: ["PixelHit"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Simple digitization module which translates the collected charges into a digitized signal proportional to the input charge. It simulates noise contributions from the readout electronics as Gaussian noise and allows for a configurable threshold. Furthermore, the linear response of an QDC as well as a TDC with configurable resolution can be simulated.

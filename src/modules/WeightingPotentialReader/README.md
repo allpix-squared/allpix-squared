@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "WeightingPotentialReader"
 description: "Weighting potential loading for a detector"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Adds a weighting potential (Ramo potential) to the detector from one of the supported sources. By default, detectors do not have a weighting potential applied.
@@ -25,13 +27,13 @@ If this behavior is desirable, or e.g. only a single row of pixels is simulated,
 A warning is printed if the size does not correspond to a multiple of the pixel size.
 While this is not a problem in general, it might hint at a wrong potential map being used.
 
-#### Generating a weighting potential using TCAD and Allpix Squared  
+#### Generating a weighting potential using TCAD and Allpix Squared
 
-The weighting potential is calculated by taking the difference of the electrostatic potentials arising from applying two slightly different bias voltages to one electrode. 
+The weighting potential is calculated by taking the difference of the electrostatic potentials arising from applying two slightly different bias voltages to one electrode.
 The steps below outline how to create a weighting potential from TCAD simulations.
 
 1. Produce two TCAD fields that differ slightly in one collection electrode bias voltage, for instance for 0.1 V or 0.01 V, with all the other electrodes grounded. Export the two resulting electrostatic potentials into separate files.
-2. Use the `mesh_converter` tool to extract the electrostatic potential from both configurations. Working with the converted files in INIT format is advisable as is human readable and this makes the process of writing a macro for the calculation simpler. 
+2. Use the `mesh_converter` tool to extract the electrostatic potential from both configurations. Working with the converted files in INIT format is advisable as is human readable and this makes the process of writing a macro for the calculation simpler.
 3. Calculate the difference between entries from both files, and divide them by the difference in collection electrode bias voltage in order to normalize them to the range `[0, 1]`.
 4. Verify that the values are within a range from 0 to 1, which is the physical range of a weighting potential.
 5. Save the resulting file with the same format and import it into Allpix Squared using the `[WeightingPotentialReader]` module and the **mesh** model.
@@ -64,12 +66,12 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
 - `model` : Type of the weighting potential model, either **mesh** or **pad**.
 - `file_name` : Location of file containing the weighting potential in one of the supported field file formats. Only used if
   the *model* parameter has the value **mesh**.
-- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `PIXEL_FULL`, 
-  indicating that the map spans the full 2D plane and the field is centered around the pixel center, `PIXEL_HALF_TOP` or 
-  `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT` 
-  indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`, `PIXEL_QUADRANT_II`, 
-  `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel 
-  plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a 
+- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `PIXEL_FULL`,
+  indicating that the map spans the full 2D plane and the field is centered around the pixel center, `PIXEL_HALF_TOP` or
+  `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT`
+  indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`, `PIXEL_QUADRANT_II`,
+  `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel
+  plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a
   pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
 - `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
   `{1, 1}` and the field is used with its physical extent stated in the field data file.

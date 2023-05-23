@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "VisualizationGeant4"
 description: "Constructs a Geant4 viewer to display the geometry"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Constructs a viewer to display the constructed Geant4 geometry. The module supports all type of viewers included in Geant4, but the default Qt visualization with the OpenGL viewer is recommended as long as the installed Geant4 version supports it.

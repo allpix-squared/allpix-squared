@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GenericPropagation"
 description: "Propagates deposited charges via piecewise integration of motion"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_input: "DepositedCharge"
-module_output: "PropagatedCharge"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_inputs: ["DepositedCharge"]
+module_outputs: ["PropagatedCharge"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Simulates the propagation of electrons and/or holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled via the `charge_per_step` parameter. The maximum number of charge groups to be propagated for a single deposit position can be controlled via the `max_charge_groups` parameter.

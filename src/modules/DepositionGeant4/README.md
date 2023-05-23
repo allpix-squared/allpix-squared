@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionGeant4"
 description: "Energy deposition with Geant4"
-module_maintainer: "Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>), Thomas Billoud (<thomas.billoud@cern.ch>)"
 module_status: "Functional"
-module_output: "DepositedCharge, MCParticle, MCTrack"
+module_maintainers: ["Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)", "Thomas Billoud (<thomas.billoud@cern.ch>)"]
+module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Module which deposits charge carriers in the active volume of all detectors.

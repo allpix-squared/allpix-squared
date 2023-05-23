@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DopingProfileReader"
 description: "Doping profile loading for a detector"
-module_maintainer: "Simon Spannagel (simon.spannagel@cern.ch)"
 module_status: "Functional"
+module_maintainers: ["Simon Spannagel (simon.spannagel@cern.ch)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Adds a doping profile to the detector from one of the supported sources. By default, detectors do not have a doping profile applied.
