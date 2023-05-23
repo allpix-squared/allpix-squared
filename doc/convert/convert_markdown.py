@@ -94,7 +94,33 @@ def hugo_front_matter_convert_pandoc(string: str) -> str:
 
         converted_front_matter = '# ' + yaml_data['title'] + '\n'
 
-        # TODO: if module append module stuff
+        # convert module data, check for `module_status` in front matter
+        if 'module_status' in yaml_data.keys():
+            # we are in a module, prepare variables for table
+            module_data = {'Status': yaml_data['module_status']}
+            max_tabentry_length = len(yaml_data['module_status'])
+            # fetch arrays
+            for key in ['module_maintainers', 'module_inputs', 'module_outputs']:
+                if key in yaml_data.keys():
+                    module_data[key[7].upper() + key[8:]] = yaml_data[key]
+                    for element in yaml_data[key]:
+                        max_tabentry_length = max(max_tabentry_length, len(element))
+            # table width formatting
+            table_enclosing_row = ('{:-<12} {:-<' + str(max_tabentry_length) + '}').format('', '')
+            table_format_string = ('{: <12} {: <' + str(max_tabentry_length) + '}')
+            # create table
+            converted_front_matter += '\n' + table_enclosing_row + '\n'
+            for key, value in module_data.items():
+                if isinstance(value, list):
+                    # if list, put entries in separate lines with key only in first line
+                    converted_front_matter += table_format_string.format(key, value[0]) + '\n'
+                    for count in range(1, len(value)):
+                        converted_front_matter += table_format_string.format('', value[count]) + '\n'
+                else:
+                    converted_front_matter += table_format_string.format(key, value) + '\n'
+            converted_front_matter += table_enclosing_row
+            # remove hugo module_io shortcode
+            string_after_yaml = re.sub(r'{{% module_io %}}\n', '', string_after_yaml)
 
         string = converted_front_matter + string_after_yaml
 
@@ -197,7 +223,7 @@ def latex_convert_href_references(string: str, file_path: str) -> str:
         ref_rel_file_path = ref[1]
         ref_full_match = ref[0] + ref[1] + ref[2]
         ref_file_path = os.path.join(os.path.dirname(file_path), ref_rel_file_path)
-        ref_replace = _get_path_relative_to_markdown_tree(ref_file_path).replace('\#', '-')
+        ref_replace = _get_path_relative_to_markdown_tree(ref_file_path).replace('\\#', '-')
         string = re.sub(re.escape(ref_full_match), rf'\\protect\\hyperlink{{{ref_replace}}}', string)
 
     return string
@@ -250,7 +276,8 @@ def pandoc2latex(string: str, file_path: str, extra_args: list[str] = None) -> s
     tmp.close()
 
     pandoc_args = [
-        'pandoc', '-f', 'markdown+escaped_line_breaks+shortcut_reference_links+autolink_bare_uris+raw_html-raw_tex',
+        'pandoc',
+        '-f', 'markdown+escaped_line_breaks+shortcut_reference_links+autolink_bare_uris+multiline_tables+raw_html-raw_tex',
         '-t', 'latex',
         '--listings', '--biblatex',
         '--lua-filter', 'pandoc-gitlab-math.lua',

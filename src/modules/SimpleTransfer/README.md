@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "SimpleTransfer"
 description: "Transfers propagated charges to the pixel front-end"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. The module does a simple direct mapping to the nearest pixel, ignoring propagated charges that are too far away from the implants or outside the pixel grid. Timing information for the pixel charges is currently not yet produced, but can be fetched from the linked propagated charges.

@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GDMLOutputWriter"
 description: "Writes the geometry to a GDML file"
-module_maintainer: "Koen van den Brandt (<kbrandt@nikhef.nl>)"
 module_status: "Functional"
+module_maintainers: ["Koen van den Brandt (<kbrandt@nikhef.nl>)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Constructs a GDML output file of the geometry if this module is added.

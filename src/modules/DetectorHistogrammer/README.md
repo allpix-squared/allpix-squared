@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DetectorHistogrammer"
 description: "Provisional simulation analysis for a detector"
-module_maintainer: "Paul Schuetze (<paul.schuetze@desy.de>), Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_output: "PixelHit, MCParticle"
+module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)", "Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_outputs: ["PixelHit", "MCParticle"]
 ---
+
+{{% module_io %}}
 
 ## Description
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.

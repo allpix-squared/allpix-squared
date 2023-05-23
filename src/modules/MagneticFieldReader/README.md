@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "MagneticFieldReader"
 description: "Magnetic field loading for a detector"
-module_maintainer: "Paul Schuetze (<paul.schuetze@desy.de>)"
 module_status: "Functional"
+module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Unique module, adds a magnetic field to the full volume, including the active sensors. By default, the magnetic field is turned off.

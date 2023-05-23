@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ROOTObjectWriter"
 description: "Writes simulation objects to a ROOT file"
-module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
-module_input: "all objects in simulation"
+module_maintainers: ["Koen Wolters (<koen.wolters@cern.ch>)"]
+module_inputs: ["all objects in simulation"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Reads all messages dispatched by the framework that contain Allpix objects. Every message contains a vector of objects, which is converted to a vector to pointers of the object base class. The first time a new type of object is received, a new tree is created bearing the class name of this object. For every combination of detector and message name, a new branch is created within this tree. A leaf is automatically created for every member of the object. The vector of objects is then written to the file for every event it is dispatched, saving an empty vector if an event does not include the specific object.
@@ -33,6 +35,5 @@ exclude = "PropagatedCharge"
 To read back a value of the configuration (here the Allpix Squared version used in the simulation), the following command can be executed on the output file, here named *data.root*:
 
 ```bash
-root -l data.root -e '(*(string*)_file0->GetDirectory("config/Allpix")->GetKey("version")->ReadObj())' 
+root -l data.root -e '(*(string*)_file0->GetDirectory("config/Allpix")->GetKey("version")->ReadObj())'
 ```
-

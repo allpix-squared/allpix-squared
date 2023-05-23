@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GeometryBuilderGeant4"
 description: "Constructs the Geant4 geometry"
-module_maintainer: "Paul Schuetze (<paul.schuetze@desy.de>)"
 module_status: "Functional"
+module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 Constructs the Geant4 geometry from the internal geometry description.

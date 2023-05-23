@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "Dummy"
 description: "A dummy module"
-module_maintainer: "John Doe (<john.doe@example.com>)"
 module_status: "Functional"
-# module_input: "Input message types (if applicable)"
-# module_output: "Output message types (if applicable)"
+module_maintainers: ["John Doe (<john.doe@example.com>)"]
+# module_inputs: ["Input message types (if applicable)"]
+# module_outputs: ["Output message types (if applicable)"]
 ---
+
+{{% module_io %}}
 
 ## Description
 *Description of this module*
