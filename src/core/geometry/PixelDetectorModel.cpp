@@ -78,6 +78,20 @@ bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
     return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 || y >= static_cast<int>(number_of_pixels_.y()));
 }
 
+/**
+ * Faster implementation of matrix lookup for local coordinate positions than going through the pixel index
+ * This is quite easy for rectangular pixels and matrices.
+ */
+bool PixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
+    if(position.x() < 0.5 * pixel_size_.x() || position.x() > (number_of_pixels_.x() - 0.5) * pixel_size_.x()) {
+        return false;
+    }
+    if(position.y() < 0.5 * pixel_size_.y() || position.y() > (number_of_pixels_.y() - 0.5) * pixel_size_.y()) {
+        return false;
+    }
+    return true;
+}
+
 ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(const int x, const int y) const {
     auto size = getPixelSize();
     auto local_x = size.x() * x;
