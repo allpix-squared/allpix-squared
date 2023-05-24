@@ -83,10 +83,10 @@ bool PixelDetectorModel::isWithinMatrix(const int x, const int y) const {
  * This is quite easy for rectangular pixels and matrices.
  */
 bool PixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
-    if(position.x() < 0.5 * pixel_size_.x() || position.x() > (number_of_pixels_.x() - 0.5) * pixel_size_.x()) {
+    if(position.x() < -0.5 * pixel_size_.x() || position.x() > (number_of_pixels_.x() - 0.5) * pixel_size_.x()) {
         return false;
     }
-    if(position.y() < 0.5 * pixel_size_.y() || position.y() > (number_of_pixels_.y() - 0.5) * pixel_size_.y()) {
+    if(position.y() < -0.5 * pixel_size_.y() || position.y() > (number_of_pixels_.y() - 0.5) * pixel_size_.y()) {
         return false;
     }
     return true;
