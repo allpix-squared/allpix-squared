@@ -288,10 +288,16 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
 
 std::optional<DetectorModel::Implant> DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
+    // Bail out if we have no implants - no need to transform coordinates:
+    auto implants = getImplants();
+    if(implants.empty()) {
+        return std::nullopt;
+    }
+
     auto [xpixel, ypixel] = getPixelIndex(local_pos);
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
 
-    for(const auto& implant : getImplants()) {
+    for(const auto& implant : implants) {
         if(implant.contains(inPixelPos)) {
             return implant;
         }
