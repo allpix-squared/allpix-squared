@@ -228,6 +228,7 @@ fmt:coverity:
     script:
         - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
         - tar xfz /tmp/cov-analysis-linux64.tgz
+        - export CCACHE_DIR=`pwd`/ccache
         - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
         - tar cfz cov-int.tar.gz cov-int
