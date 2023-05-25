@@ -87,7 +87,6 @@ namespace allpix {
         double hole_Vm_;
         double hole_Beta_;
 
-    private:
         double electron_Ec_;
         double hole_Ec_;
     };
@@ -104,6 +103,44 @@ namespace allpix {
         explicit Canali(SensorMaterial material, double temperature) : JacoboniCanali(material, temperature) {
             electron_Vm_ = Units::get(1.43e9 * std::pow(temperature, -0.87), "cm/s");
         }
+    };
+
+    /**
+     * @ingroup Models
+     * @brief Canali mobility model
+     *
+     * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
+     * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "original".
+     */
+    class CanaliFast : virtual public Canali {
+    public:
+        explicit CanaliFast(SensorMaterial material, double temperature)
+            : JacoboniCanali(material, temperature), Canali(material, temperature) {
+            LOG(WARNING) << "This mobility model uses an approximative pow implementation and might be less accurate.";
+        }
+
+        double operator()(const CarrierType& type, double efield_mag, double) const override {
+            // Compute carrier mobility from constants and electric field magnitude
+            if(type == CarrierType::ELECTRON) {
+                return electron_Vm_ / electron_Ec_ /
+                       fastPow(1. + fastPow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+            } else {
+                return hole_Vm_ / hole_Ec_ / fastPow(1. + fastPow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+            }
+        };
+
+    private:
+        // Fast approximative pow implementation from
+        // https://martin.ankerl.com/2012/01/25/optimized-approximative-pow-in-c-and-cpp/
+        inline double fastPow(double a, double b) const {
+            union {
+                double d;
+                int x[2];
+            } u = {a};
+            u.x[1] = static_cast<int>(b * (u.x[1] - 1072632447) + 1072632447);
+            u.x[0] = 0;
+            return u.d;
+        };
     };
 
     /**
@@ -557,6 +594,8 @@ namespace allpix {
                     model_ = std::make_unique<JacoboniCanali>(material, temperature);
                 } else if(model == "canali") {
                     model_ = std::make_unique<Canali>(material, temperature);
+                } else if(model == "canali_fast") {
+                    model_ = std::make_unique<CanaliFast>(material, temperature);
                 } else if(model == "hamburg") {
                     model_ = std::make_unique<Hamburg>(material, temperature);
                 } else if(model == "hamburg_highfield") {
