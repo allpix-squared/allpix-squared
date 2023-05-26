@@ -39,7 +39,7 @@ namespace allpix {
      * @brief Field quantities
      */
     enum class FieldQuantity : size_t {
-        UNKNOWN = 0, ///< Unknown fiield quantity
+        UNKNOWN = 0, ///< Unknown field quantity
         SCALAR = 1,  ///< Scalar field, i.e. one entry per field position
         VECTOR = 3,  ///< Vector field, i.e. three entries per field position
     };

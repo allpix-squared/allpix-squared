@@ -90,7 +90,7 @@ namespace allpix {
     /**
      * @brief Field instance of a detector
      *
-     * Contains the a pointer to the field dat along with the field sizes, binning and potential field distortions such as
+     * Contains the a pointer to the field data along with the field sizes, binning and potential field distortions such as
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
