@@ -35,6 +35,7 @@ namespace allpix {
         CONSTANT, ///< Constant field
         LINEAR,   ///< Linear field (linearity determined by function)
         GRID,     ///< Field supplied through a regularized grid
+        CUSTOM1D, ///< Custom field function, dependent only on z
         CUSTOM,   ///< Custom field function
     };
 

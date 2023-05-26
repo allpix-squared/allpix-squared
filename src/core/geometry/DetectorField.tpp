@@ -28,22 +28,17 @@ namespace allpix {
             return {};
         }
 
-        auto z = pos.z();
+        // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+        auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+        if(z < thickness_domain_.first || thickness_domain_.second < z) {
+            return {};
+        }
 
         if(type_ == FieldType::CONSTANT) {
-            // Constant field - return value
-            return function_(pos);
-        } else if(type_ == FieldType::LINEAR) {
-            // Linear field - return value at given depth
-
-            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-            if(extrapolate_z) {
-                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
-            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
-                return {};
-            }
-
-            // Calculate the field from the configured function:
+            // Constant field - return value:
+            return function_({});
+        } else if(type_ == FieldType::LINEAR || type_ == FieldType::CUSTOM1D) {
+            // Linear field or custom field function with z dependency only - calculate value from configured function:
             return function_(ROOT::Math::XYZPoint(0, 0, z));
         } else {
 
@@ -82,13 +77,6 @@ namespace allpix {
                 ret_val = get_field_from_grid(
                     ROOT::Math::XYZPoint(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z()), extrapolate_z);
             } else {
-                // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-                if(extrapolate_z) {
-                    z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
-                } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
-                    return {};
-                }
-
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
             }
