@@ -123,23 +123,25 @@ namespace allpix {
             double dx_;
 
         public:
-            TabulatedPow(double min, double max, double y, size_t bins) : x_min_(min), x_max_(max) {
+            TabulatedPow(double min, double max, double y, size_t bins)
+                : x_min_(min), x_max_(max), dx_((max - min) / static_cast<double>(bins - 1)) {
+                assert(bins >= 3);
+                assert(min < max);
+
                 // Generate lookup table:
                 table_.resize(bins);
-                auto x_diff = max - min;
                 for(size_t idx = 0; idx < bins; ++idx) {
-                    double x = x_diff * static_cast<double>(idx) / static_cast<double>(bins - 1) + x_min_;
+                    double x = dx_ * static_cast<double>(idx) + x_min_;
                     table_[idx] = std::pow(x, y);
                 }
-                dx_ = x_diff / static_cast<double>(table_.size() - 1);
             }
 
             double get(double x) const {
                 // Calculate position on pre-calculate table, clamping to precalculated range
-                double pos = (std::clamp(x, x_min_, x_max_) - x_min_) / dx_;
+                double pos = (x - x_min_) / dx_;
 
                 // Calculate left index by truncation to integer:
-                size_t idx = static_cast<size_t>(pos);
+                size_t idx = std::min(static_cast<size_t>(pos), table_.size() - 2);
 
                 // Linear interpolation between left and right bin
                 double tmp = pos - static_cast<double>(idx);
