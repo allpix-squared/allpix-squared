@@ -27,7 +27,6 @@ DopingProfileReaderModule::DopingProfileReaderModule(Configuration& config, Mess
 }
 
 void DopingProfileReaderModule::initialize() {
-    FieldType type = FieldType::GRID;
 
     // Check field strength
     auto field_model = config_.get<DopingProfile>("model");
@@ -80,16 +79,14 @@ void DopingProfileReaderModule::initialize() {
 
     } else if(field_model == DopingProfile::CONSTANT) {
         LOG(TRACE) << "Adding constant doping concentration";
-        type = FieldType::CONSTANT;
 
         auto concentration = config_.get<double>("doping_concentration");
         LOG(INFO) << "Set constant doping concentration of " << Units::display(concentration, {"/cm/cm/cm"});
         FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) noexcept { return concentration; };
 
-        detector_->setDopingProfileFunction(function, type);
+        detector_->setDopingProfileFunction(function, FieldType::CONSTANT);
     } else if(field_model == DopingProfile::REGIONS) {
         LOG(TRACE) << "Adding doping concentration depending on sensor region";
-        type = FieldType::CUSTOM;
 
         auto concentration = config_.getMatrix<double>("doping_concentration");
         std::map<double, double> concentration_map;
@@ -115,7 +112,7 @@ void DopingProfileReaderModule::initialize() {
             }
         };
 
-        detector_->setDopingProfileFunction(function, type);
+        detector_->setDopingProfileFunction(function, FieldType::CUSTOM1D);
     }
 
     // Produce doping_concentration_histograms if needed
