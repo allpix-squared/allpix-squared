@@ -75,7 +75,7 @@ namespace allpix {
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
                 ret_val = get_field_from_grid(
-                    ROOT::Math::XYZPoint(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z()), extrapolate_z);
+                    ROOT::Math::XYZPoint(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z()));
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
@@ -100,10 +100,15 @@ namespace allpix {
             return {};
         }
 
+        // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+        auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+        if(z < thickness_domain_.first || thickness_domain_.second < z) {
+            return {};
+        }
+
         // Calculate the coordinates relative to the reference point:
         auto x = pos.x() - ref.x() + offset_[0];
         auto y = pos.y() - ref.y() + offset_[1];
-        auto z = pos.z();
 
         T ret_val;
         if(type_ == FieldType::GRID) {
@@ -146,15 +151,11 @@ namespace allpix {
                 py += (y >= 0 ? 0. : 1.0);
             }
 
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(px, py, z), extrapolate_z, flip_x, flip_y);
-        } else {
-            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-            if(extrapolate_z) {
-                z = std::clamp(z, thickness_domain_.first, thickness_domain_.second);
-            } else if(z < thickness_domain_.first || thickness_domain_.second < z) {
-                return {};
-            }
+            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(px, py, z));
 
+            // Flip vector if necessary
+            flip_vector_components(ret_val, flip_x, flip_y);
+        } else {
             // Calculate the field from the configured function:
             ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
         }
@@ -164,11 +165,7 @@ namespace allpix {
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
-    template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist,
-                                               const bool extrapolate_z,
-                                               const bool flip_x,
-                                               const bool flip_y) const {
+    template <typename T, size_t N> T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
@@ -185,11 +182,7 @@ namespace allpix {
 
         auto z_ind = static_cast<int>(std::floor(static_cast<double>(bins_[2]) * (dist.z() - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
-
-        // Check if we need to extrapolate along the z axis:
-        if(extrapolate_z) {
-            z_ind = std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1);
-        } else if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
+        if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
             return {};
         }
 
@@ -198,10 +191,7 @@ namespace allpix {
                          static_cast<size_t>(z_ind) * N;
 
         // Retrieve field
-        auto field_vector = get_impl(tot_ind, std::make_index_sequence<N>{});
-        // Flip sign of vector components if necessary
-        flip_vector_components(field_vector, flip_x, flip_y);
-        return field_vector;
+        return get_impl(tot_ind, std::make_index_sequence<N>{});
     }
 
     /**

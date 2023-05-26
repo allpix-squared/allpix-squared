@@ -179,15 +179,9 @@ namespace allpix {
         /**
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
          * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
-         * @param extrapolate_z Switch to either extrapolate the field along z when outside the grid or return zero
-         * @param flip_x Flip vector component x of resulting field vector
-         * @param flip_y Flip vector component y of resulting field vector
          * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const ROOT::Math::XYZPoint& dist,
-                              const bool extrapolate_z = false,
-                              const bool flip_x = false,
-                              const bool flip_y = false) const;
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist) const;
 
         /**
          * Field properties
