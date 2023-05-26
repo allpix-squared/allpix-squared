@@ -27,6 +27,9 @@ namespace allpix {
      * the range of x, value of y and the binning has to be provided. The exact value of pow(x, y) is calculated for each
      * of the bin boundaries. After construction, the result of x^y can be obtained for every value of x within the defined
      * range using linear interpolation between neighboring bins.
+     *
+     * By not clamping the input value x to the pre-calculated range, but only the derived table bins, values at positions
+     * outside the defined range are extrapolated linearly from the first and last bin.
      */
     class TabulatedPow {
     private:
@@ -61,7 +64,9 @@ namespace allpix {
          * @param  x     Value of the base to calculate x^y for.
          * @return Interpolated value of x^y
          *
-         * @note The provided x has to be within the defined range provided to the constructor.
+         * @note For precise approximation of pow, the provided x has to be within the defined range provided to the
+         * constructor. For values outside the specified range, the return value will be a linear extrapolation from the
+         * closest tabulated bin.
          */
         double get(double x) const {
             // Calculate position on pre-calculate table

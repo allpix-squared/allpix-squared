@@ -117,15 +117,22 @@ namespace allpix {
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
             : JacoboniCanali(material, temperature), Canali(material, temperature) {
-            LOG(WARNING) << "This mobility model uses a tabulated pow implementation and might be less accurate";
+            LOG(INFO) << "This mobility model uses a tabulated pow implementation and might be less accurate";
 
-            pow_e_beta = std::make_unique<TabulatedPow>(0., 1.0e6 / electron_Ec_, electron_Beta_, 1000);
+            // The following boundary values and binning are chosen according to the expected range of the base.
+            // Values are tabulated up to field values of 1000kV/cm
+
+            // The lower boundary is 0 since we are looking at electric field magnitudes which are >= 0
+            // The upper boundary is set to the pow function argument: maximum field divided by critical field
+            pow_e_beta = std::make_unique<TabulatedPow>(0., Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_, 1000);
+            pow_h_beta = std::make_unique<TabulatedPow>(0., Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_, 1000);
+
+            // The lower boundary is 1 due to the offset present in the Canali formula
+            // The upper boundary is set to the pow function argument: one plus pow from maximum / critical field
             pow_e_inv_beta = std::make_unique<TabulatedPow>(
-                0., 10 * std::pow(100000. / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_, 1000);
-            pow_h_beta = std::make_unique<TabulatedPow>(0., 1000000. / hole_Ec_, hole_Beta_, 1000);
-            pow_h_inv_beta =
-                std::make_unique<TabulatedPow>(0., 10 * std::pow(100000. / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_, 1000);
-            LOG(DEBUG) << "Successfully generated pre-calculated pow tables";
+                1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_, 1000);
+            pow_h_inv_beta = std::make_unique<TabulatedPow>(
+                1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_, 1000);
         }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
