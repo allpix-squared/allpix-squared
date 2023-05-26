@@ -13,6 +13,7 @@
 #define ALLPIX_MOBILITY_MODELS_H
 
 #include <TFormula.h>
+#include <algorithm>
 
 #include "exceptions.h"
 
@@ -107,40 +108,74 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief Canali mobility model
+     * @brief Fast implementation of the Canali mobility model
      *
-     * This model differs from the Jacoboni version only by the value of the electron v_m. The difference is most likely a
-     * typo in the Jacoboni reproduction of the parametrization, so this one can be considered the "original".
+     * This model uses a pre-calculated lookup table for the required power calculations in the range relevant for
+     * the simulation. This provides a significant speedup while having a good accuracy.
      */
     class CanaliFast : virtual public Canali {
+
+        class TabulatedPow {
+        private:
+            std::vector<double> table_;
+            double x_min_;
+            double x_max_;
+            double dx_;
+
+        public:
+            TabulatedPow(double min, double max, double y, size_t bins) : x_min_(min), x_max_(max) {
+                // Generate lookup table:
+                table_.resize(bins);
+                auto x_diff = max - min;
+                for(size_t idx = 0; idx < bins; ++idx) {
+                    double x = x_diff * static_cast<double>(idx) / static_cast<double>(bins - 1) + x_min_;
+                    table_[idx] = std::pow(x, y);
+                }
+                dx_ = x_diff / static_cast<double>(table_.size() - 1);
+            }
+
+            double get(double x) const {
+                // Calculate position on pre-calculate table, clamping to precalculated range
+                double pos = (std::clamp(x, x_min_, x_max_) - x_min_) / dx_;
+
+                // Calculate left index by truncation to integer:
+                size_t idx = static_cast<size_t>(pos);
+
+                // Linear interpolation between left and right bin
+                double tmp = pos - static_cast<double>(idx);
+                return table_[idx] * (1 - tmp) + tmp * table_[idx + 1];
+            };
+        };
+
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
             : JacoboniCanali(material, temperature), Canali(material, temperature) {
-            LOG(WARNING) << "This mobility model uses an approximative pow implementation and might be less accurate.";
+            LOG(WARNING) << "This mobility model uses a tabulated pow implementation and might be less accurate";
+
+            pow_e_beta = std::make_unique<TabulatedPow>(0., 1.0e6 / electron_Ec_, electron_Beta_, 1000);
+            pow_e_inv_beta = std::make_unique<TabulatedPow>(
+                0., 10 * std::pow(100000. / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_, 1000);
+            pow_h_beta = std::make_unique<TabulatedPow>(0., 1000000. / hole_Ec_, hole_Beta_, 1000);
+            pow_h_inv_beta =
+                std::make_unique<TabulatedPow>(0., 10 * std::pow(100000. / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_, 1000);
+            LOG(DEBUG) << "Successfully generated pre-calculated pow tables";
         }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
-                return electron_Vm_ / electron_Ec_ /
-                       fastPow(1. + fastPow(efield_mag / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+                return electron_Vm_ / electron_Ec_ / pow_e_inv_beta->get(1. + pow_e_beta->get(efield_mag / electron_Ec_));
             } else {
-                return hole_Vm_ / hole_Ec_ / fastPow(1. + fastPow(efield_mag / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+                return hole_Vm_ / hole_Ec_ / pow_h_inv_beta->get(1. + pow_h_beta->get(efield_mag / hole_Ec_));
             }
         };
 
     private:
-        // Fast approximative pow implementation from
-        // https://martin.ankerl.com/2012/01/25/optimized-approximative-pow-in-c-and-cpp/
-        inline double fastPow(double a, double b) const {
-            union {
-                double d;
-                int x[2];
-            } u = {a};
-            u.x[1] = static_cast<int>(b * (u.x[1] - 1072632447) + 1072632447);
-            u.x[0] = 0;
-            return u.d;
-        };
+        std::unique_ptr<TabulatedPow> pow_e_beta;
+        std::unique_ptr<TabulatedPow> pow_e_inv_beta;
+
+        std::unique_ptr<TabulatedPow> pow_h_beta;
+        std::unique_ptr<TabulatedPow> pow_h_inv_beta;
     };
 
     /**
