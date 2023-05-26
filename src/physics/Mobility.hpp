@@ -13,7 +13,6 @@
 #define ALLPIX_MOBILITY_MODELS_H
 
 #include <TFormula.h>
-#include <algorithm>
 
 #include "exceptions.h"
 
@@ -22,6 +21,7 @@
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
+#include "tools/tabulated_pow.h"
 
 namespace allpix {
 
@@ -114,41 +114,6 @@ namespace allpix {
      * the simulation. This provides a significant speedup while having a good accuracy.
      */
     class CanaliFast : virtual public Canali {
-
-        class TabulatedPow {
-        private:
-            std::vector<double> table_;
-            double x_min_;
-            double x_max_;
-            double dx_;
-
-        public:
-            TabulatedPow(double min, double max, double y, size_t bins)
-                : x_min_(min), x_max_(max), dx_((max - min) / static_cast<double>(bins - 1)) {
-                assert(bins >= 3);
-                assert(min < max);
-
-                // Generate lookup table:
-                table_.resize(bins);
-                for(size_t idx = 0; idx < bins; ++idx) {
-                    double x = dx_ * static_cast<double>(idx) + x_min_;
-                    table_[idx] = std::pow(x, y);
-                }
-            }
-
-            double get(double x) const {
-                // Calculate position on pre-calculate table, clamping to precalculated range
-                double pos = (x - x_min_) / dx_;
-
-                // Calculate left index by truncation to integer:
-                size_t idx = std::min(static_cast<size_t>(pos), table_.size() - 2);
-
-                // Linear interpolation between left and right bin
-                double tmp = pos - static_cast<double>(idx);
-                return table_[idx] * (1 - tmp) + tmp * table_[idx + 1];
-            };
-        };
-
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
             : JacoboniCanali(material, temperature), Canali(material, temperature) {
