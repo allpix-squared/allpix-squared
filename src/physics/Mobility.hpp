@@ -116,40 +116,40 @@ namespace allpix {
     class CanaliFast : virtual public Canali {
     public:
         explicit CanaliFast(SensorMaterial material, double temperature)
-            : JacoboniCanali(material, temperature), Canali(material, temperature) {
+            : JacoboniCanali(material, temperature), Canali(material, temperature),
+              pow_e_beta(0., Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_),
+              pow_e_inv_beta(
+                  1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_),
+              pow_h_beta(0., Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_),
+              pow_h_inv_beta(1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_) {
+
             LOG(INFO) << "This mobility model uses a tabulated pow implementation and might be less accurate";
 
-            // The following boundary values and binning are chosen according to the expected range of the base.
+            // The boundary values and binning are chosen according to the expected range of the base.
             // Values are tabulated up to field values of 1000kV/cm
 
-            // The lower boundary is 0 since we are looking at electric field magnitudes which are >= 0
-            // The upper boundary is set to the pow function argument: maximum field divided by critical field
-            pow_e_beta = std::make_unique<TabulatedPow<1000>>(0., Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_);
-            pow_h_beta = std::make_unique<TabulatedPow<1000>>(0., Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_);
+            // The pow-beta lower boundary is 0 since we are looking at electric field magnitudes which are >= 0
+            // The pow-beta upper boundary is set to the pow function argument: maximum field divided by critical field
 
-            // The lower boundary is 1 due to the offset present in the Canali formula
-            // The upper boundary is set to the pow function argument: one plus pow from maximum / critical field
-            pow_e_inv_beta = std::make_unique<TabulatedPow<1000>>(
-                1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
-            pow_h_inv_beta = std::make_unique<TabulatedPow<1000>>(
-                1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
+            // The pow-inverse-beta lower boundary is 1 due to the offset present in the Canali formula
+            // The pow-inverse-beta upper boundary is set to the pow function argument: 1 plus pow from max / critical field
         }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             // Compute carrier mobility from constants and electric field magnitude
             if(type == CarrierType::ELECTRON) {
-                return electron_Vm_ / electron_Ec_ / pow_e_inv_beta->get(1. + pow_e_beta->get(efield_mag / electron_Ec_));
+                return electron_Vm_ / electron_Ec_ / pow_e_inv_beta(1. + pow_e_beta(efield_mag / electron_Ec_));
             } else {
-                return hole_Vm_ / hole_Ec_ / pow_h_inv_beta->get(1. + pow_h_beta->get(efield_mag / hole_Ec_));
+                return hole_Vm_ / hole_Ec_ / pow_h_inv_beta(1. + pow_h_beta(efield_mag / hole_Ec_));
             }
         };
 
     private:
-        std::unique_ptr<TabulatedPow<1000>> pow_e_beta;
-        std::unique_ptr<TabulatedPow<1000>> pow_e_inv_beta;
+        TabulatedPow<1000> pow_e_beta;
+        TabulatedPow<1000> pow_e_inv_beta;
 
-        std::unique_ptr<TabulatedPow<1000>> pow_h_beta;
-        std::unique_ptr<TabulatedPow<1000>> pow_h_inv_beta;
+        TabulatedPow<1000> pow_h_beta;
+        TabulatedPow<1000> pow_h_inv_beta;
     };
 
     /**

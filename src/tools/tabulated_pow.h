@@ -65,7 +65,7 @@ namespace allpix {
          * constructor. For values outside the specified range, the return value will be a linear extrapolation from the
          * closest tabulated bin.
          */
-        inline double get(double x) const noexcept {
+        inline double operator()(double x) const noexcept {
             // Calculate position on pre-calculate table
             double pos = (x - x_min_) / dx_;
 
