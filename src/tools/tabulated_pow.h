@@ -68,12 +68,12 @@ namespace allpix {
          * constructor. For values outside the specified range, the return value will be a linear extrapolation from the
          * closest tabulated bin.
          */
-        double get(double x) const {
+        inline double get(double x) const noexcept {
             // Calculate position on pre-calculate table
             double pos = (x - x_min_) / dx_;
 
             // Calculate left index by truncation to integer, clamping to pre-calculated range
-            size_t idx = std::min(static_cast<size_t>(pos), table_.size() - 2);
+            size_t idx = std::clamp(static_cast<size_t>(pos), 0ul, table_.size() - 2);
 
             // Linear interpolation between left and right bin
             double tmp = pos - static_cast<double>(idx);
