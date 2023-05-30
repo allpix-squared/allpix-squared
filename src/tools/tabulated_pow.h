@@ -15,9 +15,9 @@
 #define ALLPIX_TABULATED_POW_H
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
-#include <vector>
 
 namespace allpix {
     /**
@@ -31,10 +31,10 @@ namespace allpix {
      * By not clamping the input value x to the pre-calculated range, but only the derived table bins, values at positions
      * outside the defined range are extrapolated linearly from the first and last bin.
      */
-    class TabulatedPow {
+    template <size_t S> class TabulatedPow {
     private:
         // Tabulated pow values
-        std::vector<double> table_;
+        std::array<double, S> table_;
         double x_min_;
         double dx_;
 
@@ -44,16 +44,13 @@ namespace allpix {
          * @param  min   The minimum value for the base
          * @param  max   The maximum value for the base
          * @param  y     Fixed value of the exponent
-         * @param  bins  Number of bins to be calculated and cached
          */
-        TabulatedPow(double min, double max, double y, size_t bins)
-            : x_min_(min), dx_((max - min) / static_cast<double>(bins - 1)) {
-            assert(bins >= 3);
+        TabulatedPow(double min, double max, double y) : x_min_(min), dx_((max - min) / static_cast<double>(S - 1)) {
+            static_assert(S >= 3, "Lookup table needs at least three bins");
             assert(min < max);
 
             // Generate lookup table:
-            table_.resize(bins);
-            for(size_t idx = 0; idx < bins; ++idx) {
+            for(size_t idx = 0; idx < S; ++idx) {
                 double x = dx_ * static_cast<double>(idx) + x_min_;
                 table_[idx] = std::pow(x, y);
             }
@@ -73,7 +70,7 @@ namespace allpix {
             double pos = (x - x_min_) / dx_;
 
             // Calculate left index by truncation to integer, clamping to pre-calculated range
-            size_t idx = std::clamp(static_cast<size_t>(pos), 0ul, table_.size() - 2);
+            size_t idx = std::clamp(static_cast<size_t>(pos), 0ul, S - 2);
 
             // Linear interpolation between left and right bin
             double tmp = pos - static_cast<double>(idx);

@@ -124,15 +124,15 @@ namespace allpix {
 
             // The lower boundary is 0 since we are looking at electric field magnitudes which are >= 0
             // The upper boundary is set to the pow function argument: maximum field divided by critical field
-            pow_e_beta = std::make_unique<TabulatedPow>(0., Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_, 1000);
-            pow_h_beta = std::make_unique<TabulatedPow>(0., Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_, 1000);
+            pow_e_beta = std::make_unique<TabulatedPow<1000>>(0., Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_);
+            pow_h_beta = std::make_unique<TabulatedPow<1000>>(0., Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_);
 
             // The lower boundary is 1 due to the offset present in the Canali formula
             // The upper boundary is set to the pow function argument: one plus pow from maximum / critical field
-            pow_e_inv_beta = std::make_unique<TabulatedPow>(
-                1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_, 1000);
-            pow_h_inv_beta = std::make_unique<TabulatedPow>(
-                1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_, 1000);
+            pow_e_inv_beta = std::make_unique<TabulatedPow<1000>>(
+                1., 1. + std::pow(Units::get(1000., "kV/cm") / electron_Ec_, electron_Beta_), 1.0 / electron_Beta_);
+            pow_h_inv_beta = std::make_unique<TabulatedPow<1000>>(
+                1., 1 + std::pow(Units::get(1000., "kV/cm") / hole_Ec_, hole_Beta_), 1.0 / hole_Beta_);
         }
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
@@ -145,11 +145,11 @@ namespace allpix {
         };
 
     private:
-        std::unique_ptr<TabulatedPow> pow_e_beta;
-        std::unique_ptr<TabulatedPow> pow_e_inv_beta;
+        std::unique_ptr<TabulatedPow<1000>> pow_e_beta;
+        std::unique_ptr<TabulatedPow<1000>> pow_e_inv_beta;
 
-        std::unique_ptr<TabulatedPow> pow_h_beta;
-        std::unique_ptr<TabulatedPow> pow_h_inv_beta;
+        std::unique_ptr<TabulatedPow<1000>> pow_h_beta;
+        std::unique_ptr<TabulatedPow<1000>> pow_h_inv_beta;
     };
 
     /**
