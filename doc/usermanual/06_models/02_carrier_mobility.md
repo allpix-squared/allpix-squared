@@ -65,6 +65,38 @@ parameter value, especially at very high values of the electric field.
 
 This model can be selected in the configuration file via the parameter `mobility_model = "canali"`.
 
+## CanaliFast Model
+
+The CanaliFast model is an alternative implementation of the Canali model described above. Instead of calculating the powers
+$`x^\beta`$ and $`y^{1 / \beta}`$ directly for every requested mobility value, it uses pre-calculated lookup tables with
+fixed binning and interpolates between the nearest bins. Depending on the simulation settings, this can provide a speed-up
+of more than 30%.
+
+The boundary values and the binning are chosen according to the expected range of the base. For the Canali model, values from
+zero up to a field strength of 1000kV/cm are tabulated in 1000 bins. Separate lookup tables are built for the two power
+calculations for electrons and holes, respectively.
+
+For the calculation of $`x^\beta`$, the lower boundary is set to 0 since the electric field strength is positive. The upper
+boundary is set to the argument of the Canali model formula, i.e. the maximum field strength divided by the
+critical field strength provided by the model.
+
+For the calculation of $`y^{1 / \beta}`$, the lower boundary is set to 1 owing to the offset present in the Canali formula.
+The upper boundary is again set to the formula argument, i.e. $`1 + (E / E_C)^\beta`$ with $`E`$ being the maximum tabulated
+field strength.
+
+For field strengths outside the range, the first and last bin are extrapolated linearly, respectively.
+
+The following plots show a comparison of the mobility and velocity of electrons and holes as calculated from the Canali and
+the CanaliFast models. The maximum relative difference occurs at very low electric field strengths and is less than 0.004.
+
+![](./canali_fast_mobility.png)\
+*Comparison of the electron and hole mobilities calculated using the Canali and CanaliFast models as a function of the
+electric field strength.*
+
+![](./canali_fast_velocity.png)\
+*Comparison of the electron and hole velocities calculated using the Canali and CanaliFast models as a function of the
+electric field strength.*
+
 ## Hamburg Model
 
 The Hamburg model \[[@hamburg]\] presents an empirical parametrization of electron and hole mobility as a function of the
