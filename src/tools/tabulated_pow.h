@@ -57,7 +57,7 @@ namespace allpix {
         }
 
         /**
-         * @brief  Gets the specified x.
+         * @brief  Gets the interpolated value of x^y.
          * @param  x     Value of the base to calculate x^y for.
          * @return Interpolated value of x^y
          *
