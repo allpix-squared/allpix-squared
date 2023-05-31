@@ -74,8 +74,7 @@ namespace allpix {
             T ret_val;
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
-                ret_val = get_field_from_grid(
-                    ROOT::Math::XYZPoint(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z()));
+                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z());
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
@@ -151,7 +150,7 @@ namespace allpix {
                 py += (y >= 0 ? 0. : 1.0);
             }
 
-            ret_val = get_field_from_grid(ROOT::Math::XYZPoint(px, py, z));
+            ret_val = get_field_from_grid(px, py, z);
 
             // Flip vector if necessary
             flip_vector_components(ret_val, flip_x, flip_y);
@@ -166,22 +165,22 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const noexcept {
+    T DetectorField<T, N>::get_field_from_grid(const double x, const double y, const double z) const noexcept {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(dist.x() * static_cast<double>(bins_[0]))));
+        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(bins_[0]))));
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
             return {};
         }
 
-        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(dist.y() * static_cast<double>(bins_[1]))));
+        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(bins_[1]))));
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
 
-        auto z_ind = static_cast<int>(std::floor(static_cast<double>(bins_[2]) * (dist.z() - thickness_domain_.first) /
+        auto z_ind = static_cast<int>(std::floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
                                                  (thickness_domain_.second - thickness_domain_.first)));
         if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
             return {};
