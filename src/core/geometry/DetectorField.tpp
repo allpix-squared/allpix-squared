@@ -165,7 +165,8 @@ namespace allpix {
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
-    template <typename T, size_t N> T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const {
+    template <typename T, size_t N>
+    T DetectorField<T, N>::get_field_from_grid(const ROOT::Math::XYZPoint& dist) const noexcept {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
@@ -201,7 +202,7 @@ namespace allpix {
      */
     template <typename T, size_t N>
     template <std::size_t... I>
-    auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const {
+    auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const noexcept {
         return T{(*field_)[offset + I]...};
     }
 

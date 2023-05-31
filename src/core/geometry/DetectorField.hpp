@@ -174,14 +174,14 @@ namespace allpix {
          * @param offset The calculated global index to start from
          * @note The index sequence is expanded to the number of elements requested, depending on the template instance
          */
-        template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
+        template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...>) const noexcept;
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
          * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
          * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const ROOT::Math::XYZPoint& dist) const;
+        T get_field_from_grid(const ROOT::Math::XYZPoint& dist) const noexcept;
 
         /**
          * Field properties
