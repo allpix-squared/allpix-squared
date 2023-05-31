@@ -170,18 +170,18 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        auto x_ind = (bins_[0] == 1 ? 0 : static_cast<int>(std::floor(x * static_cast<double>(bins_[0]))));
+        auto x_ind = (bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
             return {};
         }
 
-        auto y_ind = (bins_[1] == 1 ? 0 : static_cast<int>(std::floor(y * static_cast<double>(bins_[1]))));
+        auto y_ind = (bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
 
-        auto z_ind = static_cast<int>(std::floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
-                                                 (thickness_domain_.second - thickness_domain_.first)));
+        auto z_ind = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
+                               (thickness_domain_.second - thickness_domain_.first));
         if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
             return {};
         }

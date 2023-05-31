@@ -184,6 +184,16 @@ namespace allpix {
         T get_field_from_grid(const double x, const double y, const double z) const noexcept;
 
         /**
+         * @brief Fast floor-to-int implementation without overflow protection as std::floor
+         * @param Double-precision floating point value
+         * @return Integer floored towards negative infinity
+         * */
+        static inline int int_floor(double x) noexcept {
+            auto i = static_cast<int>(x);
+            return i - (static_cast<double>(i) > x);
+        };
+
+        /**
          * Field properties
          * * bins of the field map (bins in x, y, z)
          * * Mapping of the field onto the pixel cell
