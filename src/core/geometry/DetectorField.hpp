@@ -178,19 +178,21 @@ namespace allpix {
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
-         * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
+         * @param x Distance in local-coordinate x from the center of the field to obtain the values for
+         * @param y Distance in local-coordinate y from the center of the field to obtain the values for
+         * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @return Value(s) of the field at the queried point
          */
         T get_field_from_grid(const double x, const double y, const double z) const noexcept;
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
-         * @param Double-precision floating point value
+         * @param x Double-precision floating point value
          * @return Integer floored towards negative infinity
          * */
         static inline int int_floor(double x) noexcept {
             auto i = static_cast<int>(x);
-            return i - (static_cast<double>(i) > x);
+            return i - static_cast<int>(static_cast<double>(i) > x);
         };
 
         /**
