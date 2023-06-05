@@ -52,6 +52,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<double>("surface_reflectivity", 0.0);
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
@@ -80,6 +81,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
+    surface_reflectivity_ = config_.get<double>("surface_reflectivity");
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
 
@@ -636,8 +638,12 @@ TransientPropagationModule::propagate(Event* event,
 
         // Check for overshooting outside the sensor and correct for it:
         if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            state = CarrierState::HALTED;
+            // Reflect off the sensor surface with a certain probability, otherwise halt motion:
+            if(uniform_distribution(event->getRandomEngine()) > surface_reflectivity_) {
+                LOG(TRACE) << "Carrier outside sensor: "
+                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+                state = CarrierState::HALTED;
+            }
 
             auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
                                                         static_cast<ROOT::Math::XYZPoint>(position));

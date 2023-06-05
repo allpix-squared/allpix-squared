@@ -128,6 +128,9 @@ namespace allpix {
         double electron_Hall_;
         double hole_Hall_;
 
+        // Reflectivity of sensor surface (outside implants)
+        double surface_reflectivity_{0};
+
         // Magnetic field
         bool has_magnetic_field_{};
 
