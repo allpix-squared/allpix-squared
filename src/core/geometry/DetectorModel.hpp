@@ -52,6 +52,14 @@ namespace allpix {
     };
 
     /**
+     * @brief Type of dopant
+     */
+    enum class Dopant {
+        PHOSPHOROUS = 0,
+        ARSENIC,
+    };
+
+    /**
      * @ingroup DetectorModels
      * @brief Base of all detector models
      *

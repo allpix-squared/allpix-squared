@@ -49,14 +49,6 @@ namespace allpix {
          * @return Mobility of the charge carrier
          */
         virtual double operator()(const CarrierType& type, double efield_mag, double doping) const = 0;
-
-        /**
-         * @brief Type of dopant
-         */
-        enum class Dopant {
-            PHOSPHOROUS = 0,
-            ARSENIC,
-        };
     };
 
     /**
@@ -236,7 +228,7 @@ namespace allpix {
      */
     class Masetti : virtual public MobilityModel {
     public:
-        Masetti(SensorMaterial material, double temperature, bool doping, MobilityModel::Dopant dopant_n)
+        Masetti(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)
             : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
               electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
               electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_alpha_(0.711),
@@ -248,7 +240,7 @@ namespace allpix {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
-            if(dopant_n == MobilityModel::Dopant::ARSENIC) {
+            if(dopant_n == Dopant::ARSENIC) {
                 LOG(INFO) << "Selected arsenic as n-dopant.";
                 electron_mu0_ = Units::get(52.2, "cm*cm/V/s");
                 electron_mumax_ = Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5);
@@ -630,16 +622,10 @@ namespace allpix {
                     model_ = std::make_unique<HamburgHighField>(material, temperature);
                 } else if(model == "masetti") {
                     model_ = std::make_unique<Masetti>(
-                        material,
-                        temperature,
-                        doping,
-                        config.get<MobilityModel::Dopant>("dopant_n", MobilityModel::Dopant::PHOSPHOROUS));
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHOROUS));
                 } else if(model == "masetti_canali") {
                     model_ = std::make_unique<MasettiCanali>(
-                        material,
-                        temperature,
-                        doping,
-                        config.get<MobilityModel::Dopant>("dopant_n", MobilityModel::Dopant::PHOSPHOROUS));
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHOROUS));
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(material, temperature, doping);
                 } else if(model == "ruch_kino") {
