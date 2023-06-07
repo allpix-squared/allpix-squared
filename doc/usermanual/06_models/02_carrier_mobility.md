@@ -235,7 +235,7 @@ C_{s,e}     &= 3.43\times 10^{20} \,\text{cm}^{-3} \\
 ```
 
 This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`, and the n-dopant can be 
-selected via the parameter `n_dopant`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous being 
+selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous being 
 the default.
 
 ## Arora Model
@@ -293,7 +293,7 @@ where $`\mu_{m}(N)`$ is the mobility from the [Masetti model](#masetti-model) an
 parameters from the [Canali model](#jacoboni-canali-model).
 
 This model can be selected in the configuration file via the parameter `mobility_model = "masetti_canali"`, and the n-dopant 
-can be selected via the parameter `n_dopant`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous 
+can be selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous 
 being the default.
 
 ## Ruch-Kino Model
