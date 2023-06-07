@@ -220,7 +220,21 @@ P_{c}       &= 9.23\times 10^{16} \,\text{cm}^{-3}
 
 for electrons and holes, respectively.
 
-This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`.
+For arsenic as n-dopant, the electron mobility values differ and are taken from the same table as
+
+```math
+\begin{aligned}
+\mu_{0,e}   &= 52.2 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+\mu_{max,e} &= 1417 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \cdot \left(T\ /\ 300 \,\text{K}\right)^{-2.5} \\
+C_{r,e}     &= 9.68\times 10^{16} \,\text{cm}^{-3} \\
+\alpha_{e}  &= 0.68 \\
+\mu_{1,e}   &= 43.4 \,\text{cm}^2\,\text{V}^{-1}\,\text{s}^{-1} \\
+C_{s,e}     &= 3.43\times 10^{20} \,\text{cm}^{-3} \\
+\beta_{e}   &= 2.0 \\
+\end{aligned}
+```
+
+This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`, and the n-dopant can be selected via the parameter `n_dopant`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous being the default.
 
 ## Arora Model
 
@@ -276,7 +290,7 @@ The mobility is then parametrized using the two models as
 where $`\mu_{m}(N)`$ is the mobility from the [Masetti model](#masetti-model) and $`v_m`$, $`\beta`$ are the respective
 parameters from the [Canali model](#jacoboni-canali-model).
 
-This model can be selected in the configuration file via the parameter `mobility_model = "masetti_canali"`.
+This model can be selected in the configuration file via the parameter `mobility_model = "masetti_canali"`, and the n-dopant can be selected via the parameter `n_dopant`. Possible values for the n-dopant are arsenic and phoshorous, with phosphorous being the default.
 
 ## Ruch-Kino Model
 

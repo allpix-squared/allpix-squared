@@ -248,8 +248,8 @@ namespace allpix {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
-            if(n_dopant == MobilityModel::Dopant::PHOSPHOROUS) {
-                LOG(WARNING) << "Phosphorous is used as n-dopant.";
+            if(n_dopant == MobilityModel::Dopant::ARSENIC) {
+                LOG(INFO) << "Selected arsenic as n-dopant.";
                 electron_mu0_ = Units::get(52.2, "cm*cm/V/s");
                 electron_mumax_ = Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5);
                 electron_cr_ = Units::get(9.68e16, "/cm/cm/cm");
@@ -613,7 +613,6 @@ namespace allpix {
          * @param config    Configuration of the calling module
          * @param material  Material of the sensor in question
          * @param doping    Boolean to indicate presence of doping profile information
-         * @param n_dopant  Enum to indicate the n-type dopant, defaults to phosphorus
          */
         explicit Mobility(const Configuration& config, SensorMaterial material, bool doping = false) {
             try {
@@ -634,13 +633,13 @@ namespace allpix {
                         material,
                         temperature,
                         doping,
-                        config.get<MobilityModel::Dopant>("n_dopant", MobilityModel::Dopant::ARSENIC));
+                        config.get<MobilityModel::Dopant>("n_dopant", MobilityModel::Dopant::PHOSPHOROUS));
                 } else if(model == "masetti_canali") {
                     model_ = std::make_unique<MasettiCanali>(
                         material,
                         temperature,
                         doping,
-                        config.get<MobilityModel::Dopant>("n_dopant", MobilityModel::Dopant::ARSENIC));
+                        config.get<MobilityModel::Dopant>("n_dopant", MobilityModel::Dopant::PHOSPHOROUS));
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(material, temperature, doping);
                 } else if(model == "ruch_kino") {
