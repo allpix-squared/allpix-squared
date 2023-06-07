@@ -622,10 +622,10 @@ namespace allpix {
                     model_ = std::make_unique<HamburgHighField>(material, temperature);
                 } else if(model == "masetti") {
                     model_ = std::make_unique<Masetti>(
-                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHOROUS));
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHORUS));
                 } else if(model == "masetti_canali") {
                     model_ = std::make_unique<MasettiCanali>(
-                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHOROUS));
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHORUS));
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(material, temperature, doping);
                 } else if(model == "ruch_kino") {

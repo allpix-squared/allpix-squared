@@ -51,7 +51,7 @@ This module requires an installation of Eigen3.
 
 ## Parameters
 * `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
-* `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation. If the `masetti` or `masetti_canali` is used, the `dopant_n` parameter can be used to set the n-dopant to either phosphorous (default) or arsenic.
+* `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation. If the `masetti` or `masetti_canali` is used, the `dopant_n` parameter can be used to set the n-dopant to either phosphorus (default) or arsenic.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
 * `trapping_model`: Model for simulating charge carrier trapping from radiation-induced damage. Defaults to `none`, a list of available models can be found in the documentation. All models require explicitly setting a fluence parameter.
 * `fluence`: 1MeV-neutron equivalent fluence the sensor has been exposed to.

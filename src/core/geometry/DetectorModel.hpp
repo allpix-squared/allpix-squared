@@ -55,7 +55,7 @@ namespace allpix {
      * @brief Type of dopant
      */
     enum class Dopant {
-        PHOSPHOROUS = 0,
+        PHOSPHORUS = 0,
         ARSENIC,
     };
 
