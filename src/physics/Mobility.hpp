@@ -228,7 +228,7 @@ namespace allpix {
      */
     class Masetti : virtual public MobilityModel {
     public:
-        Masetti(SensorMaterial material, double temperature, bool doping)
+        Masetti(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)
             : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
               electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
               electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_alpha_(0.711),
@@ -239,6 +239,16 @@ namespace allpix {
               hole_cs_(Units::get(6.1e20, "/cm/cm/cm")), hole_beta_(2.0) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
+            }
+            if(dopant_n == Dopant::ARSENIC) {
+                LOG(INFO) << "Selected arsenic as n-dopant.";
+                electron_mu0_ = Units::get(52.2, "cm*cm/V/s");
+                electron_mumax_ = Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5);
+                electron_cr_ = Units::get(9.68e16, "/cm/cm/cm");
+                electron_alpha_ = 0.68;
+                electron_mu1_ = Units::get(43.4, "cm*cm/V/s");
+                electron_cs_ = Units::get(3.43e20, "/cm/cm/cm");
+                electron_beta_ = 2.0;
             }
             if(material != SensorMaterial::SILICON) {
                 LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
@@ -284,8 +294,9 @@ namespace allpix {
      */
     class MasettiCanali : public Canali, public Masetti {
     public:
-        MasettiCanali(SensorMaterial material, double temperature, bool doping)
-            : JacoboniCanali(material, temperature), Canali(material, temperature), Masetti(material, temperature, doping) {}
+        MasettiCanali(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)
+            : JacoboniCanali(material, temperature), Canali(material, temperature),
+              Masetti(material, temperature, doping, dopant_n) {}
 
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
             double masetti = Masetti::operator()(type, efield_mag, doping);
@@ -610,9 +621,11 @@ namespace allpix {
                 } else if(model == "hamburg_highfield") {
                     model_ = std::make_unique<HamburgHighField>(material, temperature);
                 } else if(model == "masetti") {
-                    model_ = std::make_unique<Masetti>(material, temperature, doping);
+                    model_ = std::make_unique<Masetti>(
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHORUS));
                 } else if(model == "masetti_canali") {
-                    model_ = std::make_unique<MasettiCanali>(material, temperature, doping);
+                    model_ = std::make_unique<MasettiCanali>(
+                        material, temperature, doping, config.get<Dopant>("dopant_n", Dopant::PHOSPHORUS));
                 } else if(model == "arora") {
                     model_ = std::make_unique<Arora>(material, temperature, doping);
                 } else if(model == "ruch_kino") {
