@@ -326,7 +326,17 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
     // Shift position to implant coordinate system and apply rotation around z axis!
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Use Liang-Barsky line clipping method:
-        return LiangBarsky::closestIntersection(orientation_(direction), orientation_(position - offset_), size_);
+        auto intercept = LiangBarsky::closestIntersection(orientation_(direction), orientation_(position - offset_), size_);
+        if(intercept.has_value()){
+	    // first correct for the orientation
+	    intercept = orientation_.Inverse()(intercept.value());
+            // then for the translation
+	    if(intercept.has_value()){
+                auto transl = ROOT::Math::Translation3D(offset_);
+                intercept = transl(intercept.value());
+            }
+        }
+        return intercept;
     } else if(shape_ == Implant::Shape::ELLIPSE) {
         // Translate so the ellipse is centered at the origin.
         auto pos = orientation_(position - offset_);
