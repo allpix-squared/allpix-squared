@@ -44,7 +44,6 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
         config_.setDefault<double>("gain", 1.0);
     }
 
-    config_.setDefault<int>("threshold", Units::get(600, "e"));
     config_.setDefault<int>("threshold_smearing", Units::get(30, "e"));
 
     // QDC configuration

@@ -55,6 +55,8 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 
 ## Parameters
+* `threshold` : Threshold for considering the collected charge as a hit (No default value; required parameter).
+* `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.
 * `gain` : Gain factor the input charge is multiplied with, defaults to 1.0 (no gain) if no gain function is supplied. `gain` and `gain_function` are mutually exclusive.
 * `gain_function` : Formula describing the gain as a function of the input charge. `gain` and `gain_function` are mutually exclusive.
@@ -62,8 +64,6 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `saturation`: Enable front-end saturation simulation. Defaults to `false`.
 * `saturation_mean`: Mean of the simulated front-end saturation charge, defaults to `190ke`. Only used if `saturation` is `true.`
 * `saturation_width`: Width of the Gaussian distribution used to calculate the new charge value of the simulated front-end saturation, defaults to `20ke`. Only used if `saturation` is `true.`
-* `threshold` : Threshold for considering the collected charge as a hit. Defaults to 600 electrons.
-* `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `qdc_resolution` : Resolution of the QDC in units of bits. Thus, a value of 8 would translate to a QDC range of 0 -- 255. A value of 0bit switches off the QDC simulation and returns the actual charge in electrons. Defaults to 0.
 * `qdc_smearing` : Standard deviation of the Gaussian noise in the ADC conversion (after applying the threshold). Defaults to 300 electrons.
 * `qdc_slope` : Slope of the QDC calibration in electrons per ADC unit (unit: "e"). Defaults to 10e.
