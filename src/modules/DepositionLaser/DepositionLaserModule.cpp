@@ -450,8 +450,10 @@ std::pair<ROOT::Math::XYZPoint, ROOT::Math::XYZVector> DepositionLaserModule::ge
     // Lambda to generate a smearing vector
     auto beam_pos_smearing = [&](auto size) {
         auto [v1, v2] = orthogonal_pair(beam_direction_);
-        double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-        double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+
+        // Beam waist is equal to 2*sigma
+        double dx = allpix::normal_distribution<double>(0, size / 2.)(event->getRandomEngine());
+        double dy = allpix::normal_distribution<double>(0, size / 2.)(event->getRandomEngine());
         return v1 * dx + v2 * dy;
     };
 

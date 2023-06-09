@@ -63,7 +63,7 @@ and temporal distribution.
 * `source_position`: a 3D position vector.
 * `beam_direction`: a 3D direction vector.
 * `beam_geometry`: either `cylindrical` or `converging`
-* `beam_waist`: standard deviation of transversal beam intensity distribution at focus. Defaults to 20 um.
+* `beam_waist`: the beam waist $w_0$ is a measure of the width of the transversal beam intensity distribution. It is defined as the minimal beam width. The beam width in turn is defined as the distance between the point of maximum intensity and the point where the intensity drops to $\frac{1}{e^2}$, see [https://en.wikipedia.org/wiki/Gaussian_beam]. For a Gaussian-distributed intensity, the intensity drops to $\frac{1}{e^2}$, if $x=2\sigma$, see the probability distribution function of the normal distribution, e.g. [https://en.wikipedia.org/wiki/Normal_distribution]. The beam waist therefore equals $2\sigma$. Defaults to 20 um.
 * `focal_distance`: needs to be specified for `converging` beam. This distance is *as it would be in air*. In silicon, beam
   shape will effectively stretch along its direction due to refraction and the actual focus will be further away from the
   source.
