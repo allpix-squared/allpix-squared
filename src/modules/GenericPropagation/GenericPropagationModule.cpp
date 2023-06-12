@@ -266,6 +266,39 @@ void GenericPropagationModule::initialize() {
                                       200,
                                       -model_->getSensorSize().z() / 2.,
                                       model_->getSensorSize().z() / 2.);
+            gain_e_vs_x_ =
+                CreateHistogram<TProfile>("gain_e_vs_x",
+                                          "Gain per electron group after propagation vs x; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().x() / 2.,
+                                          model_->getSensorSize().x() / 2.);
+            gain_e_vs_y_ =
+                CreateHistogram<TProfile>("gain_e_vs_y",
+                                          "Gain per electron group after propagation vs y; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().y() / 2.,
+                                          model_->getSensorSize().y() / 2.);
+            gain_e_vs_z_ =
+                CreateHistogram<TProfile>("gain_e_vs_z",
+                                          "Gain per electron group after propagation vs z; x [mm]; gain per group",
+                                          100,
+                                          -model_->getSensorSize().z() / 2.,
+                                          model_->getSensorSize().z() / 2.);
+            gain_h_vs_x_ = CreateHistogram<TProfile>("gain_h_vs_x",
+                                                     "Gain per hole group after propagation vs x; x [mm]; gain per group",
+                                                     100,
+                                                     -model_->getSensorSize().x() / 2.,
+                                                     model_->getSensorSize().x() / 2.);
+            gain_h_vs_y_ = CreateHistogram<TProfile>("gain_h_vs_y",
+                                                     "Gain per hole group after propagation vs y; x [mm]; gain per group",
+                                                     100,
+                                                     -model_->getSensorSize().y() / 2.,
+                                                     model_->getSensorSize().y() / 2.);
+            gain_h_vs_z_ = CreateHistogram<TProfile>("gain_h_vs_z",
+                                                     "Gain per hole group after propagation vs z; x [mm]; gain per group",
+                                                     100,
+                                                     -model_->getSensorSize().z() / 2.,
+                                                     model_->getSensorSize().z() / 2.);
         }
     }
 
@@ -719,6 +752,15 @@ GenericPropagationModule::propagate(Event* event,
                 gain_h_histo_->Fill(gain, initial_charge);
             }
         }
+        if(type == CarrierType::ELECTRON) {
+            gain_e_vs_x_->Fill(pos.x(), gain);
+            gain_e_vs_y_->Fill(pos.y(), gain);
+            gain_e_vs_z_->Fill(pos.z(), gain);
+        } else {
+            gain_h_vs_x_->Fill(pos.x(), gain);
+            gain_h_vs_y_->Fill(pos.y(), gain);
+            gain_h_vs_z_->Fill(pos.z(), gain);
+        }
         gain_all_histo_->Fill(gain, initial_charge);
 
         multiplication_level_histo_->Fill(level, initial_charge);
@@ -794,6 +836,12 @@ void GenericPropagationModule::finalize() {
             gain_h_histo_->Write();
             multiplication_level_histo_->Write();
             multiplication_depth_histo_->Write();
+            gain_e_vs_x_->Write();
+            gain_e_vs_y_->Write();
+            gain_e_vs_z_->Write();
+            gain_h_vs_x_->Write();
+            gain_h_vs_y_->Write();
+            gain_h_vs_z_->Write();
         }
     }
 
