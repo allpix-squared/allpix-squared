@@ -51,8 +51,28 @@ The following models for the doping profile can be used:
 * `output_plots_single_pixel`: Determines if the whole sensor has to be plotted or only a single pixel. Defaults to true (plotting a single pixel).
 
 ## Usage
+
+In the following example a doping profile map in APF format is loaded:
+
 ```ini
 [DopingProfileReader]
 model = "mesh"
 file_name = "example_doping_profile.apf"
+field_mapping = PIXEL_FULL
+```
+
+In the next example two regions with constant doping are used. Down to a depth of `25um` the doping concentration is $`6\times 10^{11} \,\text{cm}^{-3}`$, while below it the doping is set to $`5\times 10^{18} \,\text{cm}^{-3}`$:
+
+```ini
+[DopingProfileReader]
+model = "regions"
+doping_concentration = [[25um,6e11/cm/cm/cm],[50um,5e18/cm/cm/cm]]
+```
+
+Finally, a constant doping of $`-2.13\times 10^{15} \,\text{cm}^{-3}`$ is set for the entire sensor:
+
+```ini
+[DopingProfileReader]
+model = "constant"
+doping_concentration = -2.13e+15/cm/cm/cm
 ```
