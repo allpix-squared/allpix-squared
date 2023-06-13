@@ -310,7 +310,8 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         auto time = time_of_arrival(pixel_charge, threshold);
-        LOG(DEBUG) << "Local time of arrival: " << Units::display(time, {"ns", "ps"});
+        LOG(DEBUG) << "Time of arrival: " << Units::display(time, {"ns", "ps"}) << " (local), "
+                   << Units::display(pixel_charge.getGlobalTime() + time, {"ns", "ps"}) << " (global)";
         if(output_plots_) {
             h_px_toa->Fill(time);
         }
