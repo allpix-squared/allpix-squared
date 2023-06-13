@@ -24,6 +24,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Manuel Alejandro Del Rio Viera, DESY, [mdelriov](https://gitlab.cern.ch/mdelriov)
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
+* Yajun He, DESY, [yajun](https://gitlab.cern.ch/yajun)
 * Lennart Huth, DESY, [lhuth](https://gitlab.cern.ch/lhuth)
 * Daniel Hynds, University of Oxford, [dhynds](https://gitlab.cern.ch/dhynds)
 * Francisco-Jose Iguaz-Gutierrez, Synchrotron SOLEIL, [iguaz-gutierrez](https://github.com/iguaz-gutierrez)
