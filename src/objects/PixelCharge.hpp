@@ -136,8 +136,8 @@ namespace allpix {
         long charge_{};
         Pulse pulse_{};
 
-        double local_time_{};
-        double global_time_{};
+        double local_time_{std::numeric_limits<double>::infinity()};
+        double global_time_{std::numeric_limits<double>::infinity()};
 
         std::vector<PointerWrapper<PropagatedCharge>> propagated_charges_;
         std::vector<PointerWrapper<MCParticle>> mc_particles_;

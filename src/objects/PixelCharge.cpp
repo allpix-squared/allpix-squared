@@ -36,6 +36,14 @@ PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const Propa
         mc_particles_.emplace_back(mc_particle);
     }
 
+    // If no appropriate reference time has been found, set them to zero:
+    if(local_time_ > std::numeric_limits<double>::max()) {
+        local_time_ = 0.;
+    }
+    if(global_time_ > std::numeric_limits<double>::max()) {
+        global_time_ = 0.;
+    }
+
     // No pulse provided, set full charge in first bin:
     pulse_.addCharge(static_cast<double>(charge), 0);
 }
