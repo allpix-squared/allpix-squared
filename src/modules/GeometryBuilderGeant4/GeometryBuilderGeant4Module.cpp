@@ -17,6 +17,7 @@
 #include <utility>
 
 #include <G4GlobalConfig.hh>
+#include <G4StateManager.hh>
 #include <G4UImanager.hh>
 #include <G4UIterminal.hh>
 #include <G4Version.hh>
@@ -35,6 +36,7 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/utils/log.h"
+#include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
@@ -44,6 +46,9 @@ using namespace ROOT;
 
 GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+
+    // Register an exception handler for Geant4:
+    G4StateManager::GetStateManager()->SetExceptionHandler(new G4ExceptionHandler());
 
 // Enable multithreading for Geant4 if it has been built with support for it:
 #ifdef G4MULTITHREADED
