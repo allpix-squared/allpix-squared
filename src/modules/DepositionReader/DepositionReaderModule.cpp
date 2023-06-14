@@ -286,7 +286,8 @@ void DepositionReaderModule::run(Event* event) {
 
         LOG(DEBUG) << "Found deposition of " << charge << " e/h pairs inside sensor at "
                    << Units::display(local_position, {"mm", "um"}) << " in detector " << detector->getName() << ", global "
-                   << Units::display(global_position, {"mm", "um"}) << ", particleID " << pdg_code;
+                   << Units::display(global_position, {"mm", "um"}) << ", particleID " << pdg_code << ", time "
+                   << Units::display(time, {"ns", "us"});
 
         // Store information about deposited charge carriers
         deposit_position[detector].push_back(global_position);
