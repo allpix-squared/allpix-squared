@@ -121,7 +121,6 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         }
 
         auto material = support_config.get<std::string>("material", "g10");
-        std::transform(material.begin(), material.end(), material.begin(), ::tolower);
         auto hole_type = support_config.get<std::string>("hole_type", "rectangular");
         std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
