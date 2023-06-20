@@ -9,8 +9,6 @@ module_inputs: ["PropagatedCharge"]
 module_outputs: ["PixelCharge"]
 ---
 
-{{% module_io %}}
-
 ## Description
 This module combines propagated charges into pulses at individual pixel implants.
 It works in two different modes.

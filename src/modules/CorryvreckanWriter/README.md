@@ -8,8 +8,6 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)", "Daniel Hynd
 module_inputs: ["PixelHit"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Takes all digitised pixel hits and converts them into Corryvreckan pixel format. These are then written to an output file in the expected format to be read in by the reconstruction software. Will optionally write out the MC Truth information, storing the MC particle class from Corryvreckan. It is noted that the time resolution is hard-coded as `5ns` for all detectors due to time structure of written out events: events of length `5ns`, with a gap of `10ns` in between events.
 

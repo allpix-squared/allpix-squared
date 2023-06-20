@@ -8,8 +8,6 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Module which deposits a defined number of charge carriers at a specific point within the active volume the detector.
 The number of charge carriers to be deposited can be specified in the configuration.

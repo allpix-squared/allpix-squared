@@ -7,8 +7,6 @@ module_status: "Functional"
 module_maintainers: ["Koen van den Brandt (<kbrandt@nikhef.nl>)"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Constructs a GDML output file of the geometry if this module is added.
 This feature is to be considered experimental as the GDML implementation of Geant4 is incomplete.

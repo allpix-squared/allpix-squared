@@ -7,8 +7,6 @@ module_status: "Functional"
 module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Constructs the Geant4 geometry from the internal geometry description.
 First, the world frame with a configurable margin and material is constructed.

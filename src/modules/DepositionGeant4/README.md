@@ -8,8 +8,6 @@ module_maintainers: ["Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)", "
 module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.

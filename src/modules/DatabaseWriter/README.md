@@ -8,8 +8,6 @@ module_maintainers: ["Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>)"
 module_inputs: ["all objects in simulation"]
 ---
 
-{{% module_io %}}
-
 ## Description
 This module enables writing the simulation output into a postgreSQL database.
 This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).

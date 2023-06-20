@@ -9,8 +9,6 @@ module_inputs: ["PixelCharge"]
 module_outputs: ["PixelHit"]
 ---
 
-{{% module_io %}}
-
 ## Description
 
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.

@@ -8,8 +8,6 @@ module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)", "Simon Spannagel
 module_outputs: ["PixelHit", "MCParticle"]
 ---
 
-{{% module_io %}}
-
 ## Description
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.

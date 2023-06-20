@@ -7,8 +7,6 @@ module_status: "Functional"
 module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Adds a weighting potential (Ramo potential) to the detector from one of the supported sources. By default, detectors do not have a weighting potential applied.
 This module support two types of weighting potentials.
