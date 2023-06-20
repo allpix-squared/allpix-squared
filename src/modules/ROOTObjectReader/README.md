@@ -8,8 +8,6 @@ module_maintainers: ["Koen Wolters (<koen.wolters@cern.ch>)"]
 module_outputs: ["all objects in input file"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Converts all object data stored in the ROOT data file produced by the ROOTObjectWriter module back in to messages (see the description of ROOTObjectWriter for more information about the format). Reads all trees defined in the data file that contain Allpix objects. Creates a message from the objects in the tree for every event.
 

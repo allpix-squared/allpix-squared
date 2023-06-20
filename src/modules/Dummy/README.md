@@ -9,8 +9,6 @@ module_maintainers: ["John Doe (<john.doe@example.com>)"]
 # module_outputs: ["Output message types (if applicable)"]
 ---
 
-{{% module_io %}}
-
 ## Description
 *Description of this module*
 

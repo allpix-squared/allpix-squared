@@ -8,8 +8,6 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
 
-{{% module_io %}}
-
 ## Description
 
 This module simulates cosmic ray particle shower distributions and their energy deposition in all sensors of the setup.

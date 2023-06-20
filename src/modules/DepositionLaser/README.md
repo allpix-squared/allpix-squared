@@ -8,8 +8,6 @@ module_maintainers: ["Daniil Rastorguev (<daniil.rastorguev@desy.de>)"]
 module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
-{{% module_io %}}
-
 ## Description
 
 This deposition generator is mostly intended for simulations of laser-TCT experiments.

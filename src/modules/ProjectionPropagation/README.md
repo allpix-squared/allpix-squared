@@ -9,8 +9,6 @@ module_inputs: ["DepositedCharge"]
 module_outputs: ["PropagatedCharge"]
 ---
 
-{{% module_io %}}
-
 ## Description
 The module projects the deposited electrons (or holes) to the sensor surface and applies a randomized, simplified diffusion. It can be used to save computing time at the cost of precision.
 

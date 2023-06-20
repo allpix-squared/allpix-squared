@@ -8,8 +8,6 @@ module_maintainers: ["Andreas Nurnberg (<andreas.nurnberg@cern.ch>)", "Simon Spa
 module_inputs: ["PixelHit"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Writes pixel hit data to LCIO file, compatible with the EUTelescope analysis framework \[[@eutelescope]\].
 

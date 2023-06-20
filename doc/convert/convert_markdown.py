@@ -119,8 +119,6 @@ def hugo_front_matter_convert_pandoc(string: str) -> str:
                 else:
                     converted_front_matter += table_format_string.format(key, value) + '\n'
             converted_front_matter += table_enclosing_row
-            # remove hugo module_io shortcode
-            string_after_yaml = re.sub(r'{{% module_io %}}\n', '', string_after_yaml)
 
         string = converted_front_matter + string_after_yaml
 

@@ -8,8 +8,6 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 module_inputs: ["all objects in simulation"]
 ---
 
-{{% module_io %}}
-
 ## Description
 This module allows to write any object from the simulation to a plain ASCII text file. It reads all messages dispatched by the framework containing Allpix objects. The data content of each message is printed into the text file, while events are separated by an event header:
 

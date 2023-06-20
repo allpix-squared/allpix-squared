@@ -8,8 +8,6 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
 
-{{% module_io %}}
-
 ## Description
 
 This module allows to read primary particles produced by Monte Carlo event generators from files in different data formats, and to emit them to a Geant4 `ParticleGun`.

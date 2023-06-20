@@ -9,8 +9,6 @@ module_inputs: ["PropagatedCharge"]
 module_outputs: ["PixelCharge"]
 ---
 
-{{% module_io %}}
-
 ## Description
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels by calculating the total induced charge during their drift on neighboring pixels by calculating the difference in weighting potential.
 This module requires a propagation of both electrons and holes in order to produce sensible results and only works in the presence of a weighting potential.
