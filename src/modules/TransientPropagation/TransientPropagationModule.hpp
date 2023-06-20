@@ -14,6 +14,7 @@
 #include <Math/DisplacementVector2D.h>
 #include <Math/Point3D.h>
 #include <TH1D.h>
+#include <TProfile.h>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -150,6 +151,8 @@ namespace allpix {
         Histogram<TH1D> gain_h_histo_;
         Histogram<TH1D> multiplication_level_histo_;
         Histogram<TH1D> multiplication_depth_histo_;
+        Histogram<TProfile> gain_e_vs_x_, gain_e_vs_y_, gain_e_vs_z_;
+        Histogram<TProfile> gain_h_vs_x_, gain_h_vs_y_, gain_h_vs_z_;
         Histogram<TH1D> induced_charge_primary_histo_, induced_charge_primary_e_histo_, induced_charge_primary_h_histo_;
         Histogram<TH1D> induced_charge_secondary_histo_, induced_charge_secondary_e_histo_,
             induced_charge_secondary_h_histo_;
