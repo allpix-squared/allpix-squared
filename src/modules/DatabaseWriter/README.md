@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DatabaseWriter"
 description: "Writes simulation objects to a PostgreSQL database"
-module_maintainer: "Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_input: "all objects in simulation"
+module_maintainers: ["Enrico Junior Schioppa (<enrico.junior.schioppa@cern.ch>)", "Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_inputs: ["all objects in simulation"]
 ---
 
 ## Description

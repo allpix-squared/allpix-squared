@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionPointCharge"
 description: "Energy deposition at deterministic positions"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_output: "DepositedCharge, MCParticle"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
 ## Description

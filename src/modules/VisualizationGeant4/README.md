@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "VisualizationGeant4"
 description: "Constructs a Geant4 viewer to display the geometry"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
 ## Description

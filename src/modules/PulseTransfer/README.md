@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "PulseTransfer"
 description: "Transfer of pulse information to the electronics"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
 
 ## Description

@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CapacitiveTransfer"
 description: "Transfer with cross-coupling between pixels"
-module_maintainer: "Mateus Vicente (mvicente@cern.ch)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Mateus Vicente (mvicente@cern.ch)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
 
 ## Description

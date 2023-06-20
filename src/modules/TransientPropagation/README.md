@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "TransientPropagation"
 description: "Propagation of deposited charges via Shockley-Ramo induction"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_input: "DepositedCharge"
-module_ouput: "PropagatedCharge"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_inputs: ["DepositedCharge"]
+module_outputs: ["PropagatedCharge"]
 ---
 
 ## Description
