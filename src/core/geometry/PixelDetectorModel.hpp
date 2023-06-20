@@ -81,6 +81,13 @@ namespace allpix {
         bool isWithinMatrix(const int x, const int y) const override;
 
         /**
+         * @brief Returns if a position is within the grid of pixels defined for the device
+         * @param position Position in local coordinates of the detector model
+         * @return True if position within the pixel grid, false otherwise
+         */
+        bool isWithinMatrix(const ROOT::Math::XYZPoint& position) const override;
+
+        /**
          * @brief Returns a pixel center in local coordinates
          * @param x X- (or column-) coordinate of the pixel
          * @param y Y- (or row-) coordinate of the pixel

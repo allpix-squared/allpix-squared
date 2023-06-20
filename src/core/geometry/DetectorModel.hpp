@@ -399,8 +399,10 @@ namespace allpix {
          * @brief Returns if a position is within the grid of pixels defined for the device
          * @param position Position in local coordinates of the detector model
          * @return True if position within the pixel grid, false otherwise
+         *
+         * @note This method is virtual and can be implemented by detector models for faster calculations
          */
-        bool isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
+        virtual bool isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
             auto [index_x, index_y] = getPixelIndex(position);
             return isWithinMatrix(index_x, index_y);
         }
