@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "LCIOWriter"
 description: "Writes pixel hits to a LCIO file"
-module_maintainer: "Andreas Nurnberg (<andreas.nurnberg@cern.ch>), Simon Spannagel (<simon.spannagel@cern.ch>), Tobias Bisanz(<tobias.bisanz@phys.uni-goettingen.de>)"
 module_status: "Functional"
-module_input: "PixelHit"
+module_maintainers: ["Andreas Nurnberg (<andreas.nurnberg@cern.ch>)", "Simon Spannagel (<simon.spannagel@cern.ch>)", "Tobias Bisanz (<tobias.bisanz@phys.uni-goettingen.de>)"]
+module_inputs: ["PixelHit"]
 ---
 
 ## Description

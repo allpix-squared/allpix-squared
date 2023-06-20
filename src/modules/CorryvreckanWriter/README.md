@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CorryvreckanWriter"
 description: "Writes pixel hits in the Corryvreckan format"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>), Daniel Hynds (<daniel.hynds@cern.ch>)"
 module_status: "Functional"
-module_input: "PixelHit"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)", "Daniel Hynds (<daniel.hynds@cern.ch>)"]
+module_inputs: ["PixelHit"]
 ---
 
 ## Description

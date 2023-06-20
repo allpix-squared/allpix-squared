@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "InducedTransfer"
 description: "Transfer with induction from nearby charge carriers"
-module_maintainer: "Simon Spannagel (simon.spannagel@cern.ch)"
 module_status: "Functional"
-module_input: "PropagatedCharge"
-module_output: "PixelCharge"
+module_maintainers: ["Simon Spannagel (simon.spannagel@cern.ch)"]
+module_inputs: ["PropagatedCharge"]
+module_outputs: ["PixelCharge"]
 ---
 
 ## Description

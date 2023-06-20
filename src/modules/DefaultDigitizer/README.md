@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DefaultDigitizer"
 description: "Digitizer that creates a signal proportional to the collected charge"
-module_maintainer: "Simon Spannagel (<simon.spannagel@desy.de>)"
 module_status: "Functional"
-module_input: "PixelCharge"
-module_output: "PixelHit"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@desy.de>)"]
+module_inputs: ["PixelCharge"]
+module_outputs: ["PixelHit"]
 ---
 
 ## Description

@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ElectricFieldReader"
 description: "Electric field loading for a detector"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
 ## Description

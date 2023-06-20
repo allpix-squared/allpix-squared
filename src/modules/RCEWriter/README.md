@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "RCEWriter"
 description: "Writes pixel hits in the RCE format"
-module_maintainer: "Salman Maqbool (<salman.maqbool@cern.ch>), Moritz Kiehn (<msmk@cern.ch>)"
 module_status: "Functional"
-module_input: "Pixel Hit"
+module_maintainers: ["Salman Maqbool (<salman.maqbool@cern.ch>)", "Moritz Kiehn (<msmk@cern.ch>)"]
+module_inputs: ["Pixel Hit"]
 ---
 
 ## Description

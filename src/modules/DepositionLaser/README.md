@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionLaser"
 description: "A simplistic deposition generator for charge injection with a laser"
-module_maintainer: "Daniil Rastorguev (<daniil.rastorguev@desy.de>)"
 module_status: "Functional"
-module_output: "DepositedCharge, MCParticle"
+module_maintainers: ["Daniil Rastorguev (<daniil.rastorguev@desy.de>)"]
+module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
 ## Description

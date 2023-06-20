@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ProjectionPropagation"
 description: "Propagates deposited charges via projection to the sensor surface"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>), Paul Schuetze (<paul.schuetze@desy.de>)"
 module_status: "Functional"
-module_input: "DepositedCharge"
-module_output: "PropagatedCharge"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)", "Paul Schuetze (<paul.schuetze@desy.de>)"]
+module_inputs: ["DepositedCharge"]
+module_outputs: ["PropagatedCharge"]
 ---
 
 ## Description

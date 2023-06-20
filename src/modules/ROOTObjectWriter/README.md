@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "ROOTObjectWriter"
 description: "Writes simulation objects to a ROOT file"
-module_maintainer: "Koen Wolters (<koen.wolters@cern.ch>)"
 module_status: "Functional"
-module_input: "all objects in simulation"
+module_maintainers: ["Koen Wolters (<koen.wolters@cern.ch>)"]
+module_inputs: ["all objects in simulation"]
 ---
 
 ## Description
@@ -33,6 +33,5 @@ exclude = "PropagatedCharge"
 To read back a value of the configuration (here the Allpix Squared version used in the simulation), the following command can be executed on the output file, here named *data.root*:
 
 ```bash
-root -l data.root -e '(*(string*)_file0->GetDirectory("config/Allpix")->GetKey("version")->ReadObj())' 
+root -l data.root -e '(*(string*)_file0->GetDirectory("config/Allpix")->GetKey("version")->ReadObj())'
 ```
-

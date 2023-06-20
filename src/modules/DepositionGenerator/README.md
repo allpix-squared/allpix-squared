@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionGenerator"
 description: "Energy deposition with data read from MC Generator Data Files"
-module_maintainer: "Simon Spannagel (<simon.spannagel@cern.ch>)"
 module_status: "Functional"
-module_output: "DepositedCharge, MCParticle, MCTrack"
+module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
+module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
 
 ## Description
