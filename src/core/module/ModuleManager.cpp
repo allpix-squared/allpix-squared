@@ -345,7 +345,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
     // Build module
     Module* module = module_generator(instance_config, messenger, geo_manager);
     // Reset log
-    set_module_after(old_settings);
+    set_module_after(std::move(old_settings));
     // Update execution time
     auto end = std::chrono::steady_clock::now();
     module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -458,7 +458,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
         // Build module
         Module* module = module_generator(instance_config, messenger, instance.first);
         // Reset logging
-        set_module_after(old_settings);
+        set_module_after(std::move(old_settings));
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -660,7 +660,7 @@ void ModuleManager::initialize() {
         // Init module
         module->initialize();
         // Reset logging
-        set_module_after(old_settings);
+        set_module_after(std::move(old_settings));
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -707,7 +707,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 module->initializeThread();
 
                 // Reset logging
-                ModuleManager::set_module_after(old_settings);
+                ModuleManager::set_module_after(std::move(old_settings));
             }
         };
 
@@ -722,7 +722,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
             module->finalizeThread();
 
             // Reset logging
-            ModuleManager::set_module_after(old_settings);
+            ModuleManager::set_module_after(std::move(old_settings));
         }
     };
 
@@ -826,7 +826,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 }
 
                 // Reset logging
-                ModuleManager::set_module_after(old_settings);
+                ModuleManager::set_module_after(std::move(old_settings));
 
                 // Update execution time
                 auto end = std::chrono::steady_clock::now();
@@ -956,7 +956,7 @@ void ModuleManager::finalize() {
         module->set_ROOT_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
-        set_module_after(old_settings);
+        set_module_after(std::move(old_settings));
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();

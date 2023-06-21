@@ -28,7 +28,7 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
-    setPixelSize(pixel_size);
+    setPixelSize(std::move(pixel_size));
 }
 
 void PixelDetectorModel::validate() {

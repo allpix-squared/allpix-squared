@@ -69,7 +69,7 @@ void TrackInfoManager::dispatchMessage(Module* module, Messenger* messenger, Eve
         }
     }
     auto mc_track_message = std::make_shared<MCTrackMessage>(std::move(stored_tracks_));
-    messenger->dispatchMessage(module, mc_track_message, event);
+    messenger->dispatchMessage(module, std::move(mc_track_message), event);
 }
 
 MCTrack const* TrackInfoManager::findMCTrack(int track_id) const {

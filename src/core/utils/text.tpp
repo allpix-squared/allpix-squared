@@ -26,7 +26,7 @@ namespace allpix {
      */
     template <typename T> T from_string(std::string str) {
         // Use tag dispatch to select the correct helper function
-        return from_string_impl(str, type_tag<T>());
+        return from_string_impl(std::move(str), type_tag<T>());
     }
 
     /**

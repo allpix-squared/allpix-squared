@@ -73,7 +73,8 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 
         // Create the detector and add it without model
         // NOTE: cannot use make_shared here due to the private constructor
-        auto detector = std::shared_ptr<Detector>(new Detector(geometry_section.getName(), position, orientation));
+        auto detector =
+            std::shared_ptr<Detector>(new Detector(geometry_section.getName(), std::move(position), orientation));
         addDetector(detector);
 
         // Add a link to the detector to add the model later

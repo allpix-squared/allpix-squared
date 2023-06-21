@@ -84,7 +84,7 @@ void DopingProfileReaderModule::initialize() {
         LOG(INFO) << "Set constant doping concentration of " << Units::display(concentration, {"/cm/cm/cm"});
         FieldFunction<double> function = [concentration](const ROOT::Math::XYZPoint&) noexcept { return concentration; };
 
-        detector_->setDopingProfileFunction(function, FieldType::CONSTANT);
+        detector_->setDopingProfileFunction(std::move(function), FieldType::CONSTANT);
     } else if(field_model == DopingProfile::REGIONS) {
         LOG(TRACE) << "Adding doping concentration depending on sensor region";
 
@@ -112,7 +112,7 @@ void DopingProfileReaderModule::initialize() {
             }
         };
 
-        detector_->setDopingProfileFunction(function, FieldType::CUSTOM1D);
+        detector_->setDopingProfileFunction(std::move(function), FieldType::CUSTOM1D);
     }
 
     // Produce doping_concentration_histograms if needed
