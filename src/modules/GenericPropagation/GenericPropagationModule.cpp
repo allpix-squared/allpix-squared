@@ -590,6 +590,8 @@ GenericPropagationModule::propagate(Event* event,
             state = CarrierState::HALTED;
         }
 
+        // Physics effects:
+
         // Check if charge carrier is still alive:
         if(state == CarrierState::MOTION &&
            recombination_(type,

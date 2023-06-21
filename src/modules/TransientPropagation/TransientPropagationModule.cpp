@@ -604,7 +604,7 @@ TransientPropagationModule::propagate(Event* event,
         last_position = position;
         last_efield = efield;
 
-        // Get electric field at current position and fall back to empty field if it does not exist
+        // Get electric field at current (pre-step) position
         efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
