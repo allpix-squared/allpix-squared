@@ -620,10 +620,7 @@ TransientPropagationModule::propagate(Event* event,
         runge_kutta.setValue(position);
 
         // Check if charge carrier is still alive:
-        if(recombination_(type,
-                          detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          uniform_distribution(event->getRandomEngine()),
-                          timestep_)) {
+        if(recombination_(type, doping, uniform_distribution(event->getRandomEngine()), timestep_)) {
             state = CarrierState::RECOMBINED;
         }
 
