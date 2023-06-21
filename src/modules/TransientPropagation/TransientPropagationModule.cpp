@@ -604,15 +604,15 @@ TransientPropagationModule::propagate(Event* event,
         last_position = position;
         last_efield = efield;
 
+        // Get electric field at current position and fall back to empty field if it does not exist
+        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
+
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result
         position = runge_kutta.getValue();
-
-        // Get electric field at current position and fall back to empty field if it does not exist
-        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_);
