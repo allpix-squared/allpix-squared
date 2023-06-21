@@ -591,7 +591,8 @@ GenericPropagationModule::propagate(Event* event,
         }
 
         // Check if charge carrier is still alive:
-        if(recombination_(type,
+        if(state == CarrierState::MOTION &&
+           recombination_(type,
                           detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
                           uniform_distribution(event->getRandomEngine()),
                           timestep)) {
@@ -599,7 +600,8 @@ GenericPropagationModule::propagate(Event* event,
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()))) {
+        if(state == CarrierState::MOTION &&
+           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
