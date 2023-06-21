@@ -566,6 +566,10 @@ GenericPropagationModule::propagate(Event* event,
         last_time = runge_kutta.getTime();
         last_efield = efield;
 
+        // Get electric field at current (pre-step) position
+        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
+
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
 
@@ -574,10 +578,6 @@ GenericPropagationModule::propagate(Event* event,
         position = runge_kutta.getValue();
         LOG(TRACE) << "Step from " << Units::display(static_cast<ROOT::Math::XYZPoint>(last_position), {"um"}) << " to "
                    << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um"});
-
-        // Get electric field at current position and fall back to empty field if it does not exist
-        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep);
