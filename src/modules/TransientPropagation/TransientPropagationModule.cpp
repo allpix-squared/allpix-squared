@@ -648,12 +648,14 @@ TransientPropagationModule::propagate(Event* event,
         // Physics effects:
 
         // Check if charge carrier is still alive:
-        if(recombination_(type, doping, uniform_distribution(event->getRandomEngine()), timestep_)) {
+        if(state == CarrierState::MOTION &&
+           recombination_(type, doping, uniform_distribution(event->getRandomEngine()), timestep_)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+        if(state == CarrierState::MOTION &&
+           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
