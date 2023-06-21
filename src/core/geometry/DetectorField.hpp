@@ -35,6 +35,7 @@ namespace allpix {
         CONSTANT, ///< Constant field
         LINEAR,   ///< Linear field (linearity determined by function)
         GRID,     ///< Field supplied through a regularized grid
+        CUSTOM1D, ///< Custom field function, dependent only on z
         CUSTOM,   ///< Custom field function
     };
 
@@ -90,7 +91,7 @@ namespace allpix {
     /**
      * @brief Field instance of a detector
      *
-     * Contains the a pointer to the field dat along with the field sizes, binning and potential field distortions such as
+     * Contains the a pointer to the field data along with the field sizes, binning and potential field distortions such as
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
@@ -173,20 +174,26 @@ namespace allpix {
          * @param offset The calculated global index to start from
          * @note The index sequence is expanded to the number of elements requested, depending on the template instance
          */
-        template <std::size_t... I> auto get_impl(size_t offset, std::index_sequence<I...>) const;
+        template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...>) const noexcept;
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center and to return the values
-         * @param dist Distance from the center of the field to obtain the values for, given in local coordinates
-         * @param extrapolate_z Switch to either extrapolate the field along z when outside the grid or return zero
-         * @param flip_x Flip vector component x of resulting field vector
-         * @param flip_y Flip vector component y of resulting field vector
+         * @param x Distance in local-coordinate x from the center of the field to obtain the values for
+         * @param y Distance in local-coordinate y from the center of the field to obtain the values for
+         * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const ROOT::Math::XYZPoint& dist,
-                              const bool extrapolate_z = false,
-                              const bool flip_x = false,
-                              const bool flip_y = false) const;
+        T get_field_from_grid(const double x, const double y, const double z) const noexcept;
+
+        /**
+         * @brief Fast floor-to-int implementation without overflow protection as std::floor
+         * @param x Double-precision floating point value
+         * @return Integer floored towards negative infinity
+         * */
+        static inline int int_floor(double x) noexcept {
+            auto i = static_cast<int>(x);
+            return i - static_cast<int>(static_cast<double>(i) > x);
+        };
 
         /**
          * Field properties

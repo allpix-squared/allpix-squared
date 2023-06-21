@@ -128,10 +128,11 @@ void ElectricFieldReaderModule::initialize() {
                   << Units::display(config_.get<double>("minimum_position"), {"um", "mm"}) << " and maximum field "
                   << Units::display(config_.get<double>("maximum_field"), "V/cm") << " at electrode";
         detector_->setElectricFieldFunction(
-            get_parabolic_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM);
+            get_parabolic_field_function(thickness_domain), thickness_domain, FieldType::CUSTOM1D);
     } else if(field_model == ElectricField::CUSTOM) {
         LOG(TRACE) << "Adding custom electric field";
-        detector_->setElectricFieldFunction(get_custom_field_function(), thickness_domain, FieldType::CUSTOM);
+        auto [field_function, field_type] = get_custom_field_function();
+        detector_->setElectricFieldFunction(field_function, thickness_domain, field_type);
     }
 
     // Produce histograms if needed
@@ -195,7 +196,7 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
     };
 }
 
-FieldFunction<ROOT::Math::XYZVector> ElectricFieldReaderModule::get_custom_field_function() {
+std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> ElectricFieldReaderModule::get_custom_field_function() {
 
     auto field_functions = config_.getArray<std::string>("field_function");
     auto field_parameters = config_.getArray<double>("field_parameters");
@@ -219,9 +220,10 @@ FieldFunction<ROOT::Math::XYZVector> ElectricFieldReaderModule::get_custom_field
         }
 
         LOG(DEBUG) << "Value of custom field at pixel center: " << Units::display(z->Eval(0., 0., 0.), "V/cm");
-        return [z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
-            return ROOT::Math::XYZVector(0, 0, z->Eval(pos.x(), pos.y(), pos.z()));
-        };
+        return {[z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
+                    return ROOT::Math::XYZVector(0, 0, z->Eval(pos.x(), pos.y(), pos.z()));
+                },
+                FieldType::CUSTOM1D};
     } else if(field_functions.size() == 3) {
         LOG(DEBUG) << "Found definition of 3D custom field, applying to three Cartesian axes";
         auto x = std::make_shared<TFormula>("ex", field_functions.at(0).c_str(), false);
@@ -250,10 +252,12 @@ FieldFunction<ROOT::Math::XYZVector> ElectricFieldReaderModule::get_custom_field
         LOG(DEBUG) << "Value of custom field at pixel center: "
                    << Units::display(ROOT::Math::XYZVector(x->Eval(0., 0., 0.), y->Eval(0., 0., 0.), z->Eval(0., 0., 0.)),
                                      {"V/cm"});
-        return [x = std::move(x), y = std::move(y), z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
-            return ROOT::Math::XYZVector(
-                x->Eval(pos.x(), pos.y(), pos.z()), y->Eval(pos.x(), pos.y(), pos.z()), z->Eval(pos.x(), pos.y(), pos.z()));
-        };
+        return {[x = std::move(x), y = std::move(y), z = std::move(z)](const ROOT::Math::XYZPoint& pos) {
+                    return ROOT::Math::XYZVector(x->Eval(pos.x(), pos.y(), pos.z()),
+                                                 y->Eval(pos.x(), pos.y(), pos.z()),
+                                                 z->Eval(pos.x(), pos.y(), pos.z()));
+                },
+                FieldType::CUSTOM};
     } else {
         throw InvalidValueError(config_,
                                 "field_function",
