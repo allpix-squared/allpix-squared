@@ -60,8 +60,8 @@ namespace allpix {
 
             // Compute corresponding field replica coordinates:
             // WARNING This relies on the origin of the local coordinate system
-            auto replica_x = static_cast<int>(std::floor((x + 0.5 * pitch.x()) * normalization_[0]));
-            auto replica_y = static_cast<int>(std::floor((y + 0.5 * pitch.y()) * normalization_[1]));
+            auto replica_x = int_floor((x + 0.5 * pitch.x()) * normalization_[0]);
+            auto replica_y = int_floor((y + 0.5 * pitch.y()) * normalization_[1]);
 
             // Convert to the replica frame:
             x -= (replica_x + 0.5) / normalization_[0] - 0.5 * pitch.x();
