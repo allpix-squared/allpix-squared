@@ -12,6 +12,7 @@
 #ifndef ALLPIX_GEOMETRY_MANAGER_H
 #define ALLPIX_GEOMETRY_MANAGER_H
 
+#include <filesystem>
 #include <memory>
 #include <regex>
 #include <set>
@@ -264,6 +265,12 @@ namespace allpix {
          * @brief Load all standard framework models (automatically done when the geometry is closed)
          */
         void load_models();
+
+        /**
+         * @brief Read a model file, check if the model is required and call \ref GeometryManager::addModel in that case
+         * @param path Path to the model file
+         */
+        void read_model_file(std::filesystem::path path);
 
         /**
          * @brief Get the orientation of an object
