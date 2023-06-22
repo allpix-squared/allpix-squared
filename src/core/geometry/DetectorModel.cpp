@@ -327,9 +327,9 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
     if(shape_ == Implant::Shape::RECTANGLE) {
         // Use Liang-Barsky line clipping method:
         auto intercept = LiangBarsky::closestIntersection(orientation_(direction), orientation_(position - offset_), size_);
-        if(intercept.has_value()){
-	    // Translate back into local coordinates of the sensor:
-	    intercept = orientation_.Inverse()(intercept.value()) + offset_;
+        if(intercept.has_value()) {
+            // Translate back into local coordinates of the sensor:
+            intercept = orientation_.Inverse()(intercept.value()) + offset_;
         }
         return intercept;
     } else if(shape_ == Implant::Shape::ELLIPSE) {
