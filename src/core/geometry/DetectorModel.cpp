@@ -328,13 +328,8 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
         // Use Liang-Barsky line clipping method:
         auto intercept = LiangBarsky::closestIntersection(orientation_(direction), orientation_(position - offset_), size_);
         if(intercept.has_value()){
-	    // first correct for the orientation
-	    intercept = orientation_.Inverse()(intercept.value());
-            // then for the translation
-	    if(intercept.has_value()){
-                auto transl = ROOT::Math::Translation3D(offset_);
-                intercept = transl(intercept.value());
-            }
+	    // Translate back into local coordinates of the sensor:
+	    intercept = orientation_.Inverse()(intercept.value()) + offset_;
         }
         return intercept;
     } else if(shape_ == Implant::Shape::ELLIPSE) {
