@@ -77,6 +77,85 @@ auto step = runge_kutta.step();
 The `getValue()` and `setValue()` methods allow to retrieve, alter and update the position, e.g. to include additional
 displacements from diffusion processes.
 
+Furthermore, the `advanceTime()` method can be used to advance the time of the Runge-Kutta solver by the given amount. This
+is used for example in situations where the motion is temporarily halted by trapping, and continued when released from the
+trap.
+
+### Tableaus
+
+The following Butcher tableaus are implemented and available.
+In order to make use of adaptive step size changes, a tableau with error estimation should be chosen.
+
+
+#### Third-Order Kutta Method (RK3)
+
+This tableau implements a simple and fast third-order Kutta integration which only requires the calculation of three terms.
+```math
+\begin{array}
+{c|ccc}
+0                   \\
+0 & 1/2             \\
+0 &  -1 &   2       \\
+\hline
+  & 1/6 & 2/3 & 1/6 \\
+\end{array}
+```
+
+#### Fourth-Order Runge-Kutta Method (RK4)
+
+This tableau implements the classical fourth-order Runge-Kutta integration.
+```math
+\begin{array}
+{c|cccc}
+  0                 \\
+1/2 & 1/2           \\
+1/2 &   0 & 1/2     \\
+  1 &   0 &   0 & 1 \\
+\hline
+    & 1/6 & 1/3 & 1/3 & 1/6
+\end{array}
+```
+
+#### Fourth-Order Runge-Kutta-Fehlberg Method with Error Estimation (RK5)
+
+This tableau implements a fourth-order RKF method with fifth-order error estimation \[[@fehlberg], [@fehlberg2]\].
+
+```math
+\begin{array}
+{c|cccccc}
+    0                                                                     \\
+  1/4 &      1/4                                                          \\
+  3/8 &      3/32 &       9/32                                            \\
+12/13 & 1932/2197 & -7200/2197 &  7296/2197                               \\
+    1 &   439/216 &         -8 &   3680/513 &   -845/4104                 \\
+  1/2 &     -8/27 &          2 & -3544/2565 &   1859/4104 & -11/40        \\
+\hline
+      &    16/135 &          0 & 6656/12825 & 28561/56430 &  -9/50 & 2/55 \\
+      &    25/216 &          0 &  1408/2565 &   2197/4104 &   -1/5 &    0 \\
+\end{array}
+```
+
+#### Fourth-Order Runge-Kutta-Cash-Karp Method with Error Estimation (RKCK)
+
+This tableau implements a fourth-order Cash-Karp method with fifth-order error estimation \[[@cashkarp]\].
+
+```math
+\begin{array}
+{c|cccccc}
+   0                                                                            \\
+ 1/5 &        1/5                                                               \\
+3/10 &       3/40 &    9/40                                                     \\
+ 3/5 &       3/10 &   -9/10 &         6/5                                       \\
+   1 &     -11/54 &     5/2 &      -70/27 &        35/27                        \\
+ 7/8 & 1631/55296 & 175/512 &   575/13824 & 44275/110592 &  253/4096            \\
+\hline
+     &     37/378 &       0 &     250/621 &      125/594 &         0 & 512/1771 \\
+     & 2825/27648 &       0 & 18575/48384 &  13525/55296 & 277/14336 &      1/4 \\
+
+\end{array}
+```
+
+
 ## Field Data Parser
 
 A field parser tool is provided, which parses files stored in the INIT or APF file formats and returns field data on a
@@ -116,3 +195,5 @@ file to be binary and parses the field as APF data.
 
 [@eigen3]: http://eigen.tuxfamily.org
 [@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
+[@fehlberg2]: https://doi.org/10.1007%2FBF02234758
+[@cashkarp]: https://doi.org/10.1145/79505.79507
