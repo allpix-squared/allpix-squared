@@ -270,7 +270,7 @@ namespace allpix {
          * @brief Read a model file, check if the model is required and call \ref GeometryManager::addModel in that case
          * @param path Path to the model file
          */
-        void read_model_file(std::filesystem::path path);
+        void read_model_file(const std::filesystem::path& path);
 
         /**
          * @brief Get the orientation of an object
