@@ -382,17 +382,24 @@ void GeometryManager::load_models() {
                 }
 
                 // Add the sub directory path to the reader
-                LOG(TRACE) << "Reading model " << sub_path;
+                LOG(TRACE) << "Reading model file " << sub_path;
                 std::ifstream file(sub_path);
 
-                ConfigReader reader(file, sub_path);
-                readers.emplace_back(sub_path.stem(), reader);
+                // Check for ConfigParseError, might be an unrelated .conf file
+                // For example, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
+                try {
+                    ConfigReader reader(file, sub_path);
+                    readers.emplace_back(sub_path.stem(), reader);
+                } catch(const ConfigParseError& e) {
+                    LOG(DEBUG) << "Skipping invalid model file " << sub_path << ":" << std::endl << e.what();
+                }
             }
         } else {
             // Always a file because paths are already checked
-            LOG(TRACE) << "Reading model " << path;
+            LOG(TRACE) << "Reading model file " << path;
             std::ifstream file(path);
 
+            // Do not check for ConfigParseError as above because explicit file was given
             ConfigReader reader(file, path);
             readers.emplace_back(std::filesystem::path(path).stem(), reader);
         }
