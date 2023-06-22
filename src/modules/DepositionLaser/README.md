@@ -38,7 +38,7 @@ For a `cylindrical` beam, all tracks are parallel to the set beam direction.
 For a `converging` beam, track directions would have isotropic distribution (but with a limit on a max angle between the
 track and the set beam direction).
 
-The transversal width of the Gaussian beam is defined by the beam waist $w_0$, which describes the minimal beam width. The beam width in turn is defined as the distance between the point of maximum intensity and the point where the intensity drops to $\frac{1}{e^2}$. For a Gaussian-distributed intensity, the intensity drops to $\frac{1}{e^2}$, if $x=2\sigma$, see the probability distribution function of the normal distribution. The beam waist therefore equals $2\sigma$.
+The transversal width of the Gaussian beam is defined by the beam waist $`w_0`$, which describes the minimal beam width. The beam width in turn is defined as the distance between the point of maximum intensity and the point where the intensity drops to $`\frac{1}{e^2}`$. For a Gaussian-distributed intensity, the intensity drops to $`\frac{1}{e^2}`$, if $`x=2\sigma`$, see the probability distribution function of the normal distribution. The beam waist therefore equals $`2\sigma`$.
 
 **NB**: convention on global time zero for this module contradicts the general convention of the Allpix Squared.
 For this module, global t=0 is chosen in such a way that the mean value of temporal distribution is *always* positioned at
@@ -65,7 +65,7 @@ and temporal distribution.
 * `source_position`: a 3D position vector.
 * `beam_direction`: a 3D direction vector.
 * `beam_geometry`: either `cylindrical` or `converging`
-* `beam_waist`: parametrises the transversal width of the beam by the beam waist $w_0=2\sigma$ described above. Defaults to 20 um.
+* `beam_waist`: parametrises the transversal width of the beam by the beam waist $`w_0=2\sigma`$ described above. Defaults to 20 um.
 * `focal_distance`: needs to be specified for `converging` beam. This distance is *as it would be in air*. In silicon, beam
   shape will effectively stretch along its direction due to refraction and the actual focus will be further away from the
   source.
