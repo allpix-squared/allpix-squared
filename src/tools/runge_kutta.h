@@ -193,6 +193,7 @@ namespace allpix {
             0, 0, 0, 0).finished());
         /**
          * @brief Runge-Kutta-Fehlberg method
+         * Values from https://ntrs.nasa.gov/citations/19680027281, p.13, Table III
          */
         static const auto RK5((Eigen::Matrix<double, 8, 6>() <<
             0, 0, 0, 0, 0, 0,
