@@ -581,9 +581,9 @@ TransientPropagationModule::propagate(Event* event,
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    // Create the runge kutta solver with an RKF5 tableau
+    // Create the runge kutta solver with an RK4 tableau, no error estimation required since we're not adapting step size
     auto runge_kutta = make_runge_kutta(
-        tableau::RK5, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_, position);
+        tableau::RK4, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_, position);
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
