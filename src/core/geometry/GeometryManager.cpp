@@ -381,16 +381,16 @@ void GeometryManager::load_models() {
                 }
 
                 // Read model file and add model to list
-                read_model_file(std::move(sub_path));
+                read_model_file(sub_path);
             }
         } else {
             // Always a file because paths are already checked
-            read_model_file(std::filesystem::path(path));
+            read_model_file(path);
         }
     }
 }
 
-void GeometryManager::read_model_file(std::filesystem::path path) {
+void GeometryManager::read_model_file(const std::filesystem::path& path) {
     auto model_name = path.stem();
     LOG(TRACE) << "Reading model " << model_name << " in path " << path;
 
