@@ -362,7 +362,6 @@ void GeometryManager::load_models() {
     // Get paths to read models from
     std::vector<std::string> paths = getModelsPath();
 
-    std::vector<std::pair<std::string, ConfigReader>> readers;
     LOG(TRACE) << "Reading model files";
     // Add all the paths to the reader
     for(auto& path : paths) {
@@ -414,7 +413,7 @@ void GeometryManager::read_model_file(const std::filesystem::path& path) {
 
     } catch(const ConfigParseError& e) {
         // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
-        LOG(ERROR) << "Skipping invalid model file " << path << ":" << std::endl << e.what();
+        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << std::endl << e.what();
     }
 }
 
