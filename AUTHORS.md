@@ -16,6 +16,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Thomas Billoud, Université de Montréal, [tbilloud](https://gitlab.cern.ch/tbilloud)
 * Tobias Bisanz, CERN, [tbisanz](https://gitlab.cern.ch/tbisanz)
 * Bogdan-Mihail Blidaru, Heidelberg University, [mblidaru](https://gitlab.cern.ch/mblidaru)
+* Sebbe Blokhuizen, Stockholm University, Sioux Technologies, [SBlokhuizen](https://github.com/SBlokhuizen)
 * Marco Bomben, Université de Paris, [mbomben](https://gitlab.cern.ch/mbomben)
 * Koen van den Brandt, Nikhef, [kvandenb](https://gitlab.cern.ch/kvandenb)
 * Ben Bruers, DESY, [bbrueers](https://gitlab.cern.ch/bbrueers)

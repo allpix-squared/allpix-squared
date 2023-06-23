@@ -80,7 +80,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // excitations via the Fano factor. We assume Gaussian statistics here.
     auto mean_charge = edep / charge_creation_energy_;
     allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-    auto charge = static_cast<unsigned int>(std::max(charge_fluctuation(random_generator_), 0.));
+    auto charge = static_cast<unsigned int>(std::max(charge_fluctuation(random_generator_), 0.) + 0.5);
 
     const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(track->GetUserInformation());
     if(userTrackInfo == nullptr) {
