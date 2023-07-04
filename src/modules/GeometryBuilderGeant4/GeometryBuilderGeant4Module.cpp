@@ -93,7 +93,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
  * @throws ModuleError If a certain Geant4 dataset is not set or not available
  */
 static void check_dataset_g4(const std::string& env_name) {
-    const char* file_name = std::getenv(env_name.c_str());
+    const char* file_name = G4FindDataDir(env_name.c_str());
     if(file_name == nullptr) {
         throw ModuleError("Geant4 environment variable " + env_name +
                           " is not set, make sure to source a Geant4 "
