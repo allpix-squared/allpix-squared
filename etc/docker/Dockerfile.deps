@@ -39,6 +39,7 @@ RUN pip3 install --upgrade pip && \
 
 # Add layer for ROOT6
 ENV ROOT6_VERSION 6.28.00
+ENV PYTHONPATH="/usr/local/lib:$PYTHONPATH"
 
 ENV ROOTSYS="/tmp/root6"
 RUN mkdir -p ${ROOTSYS}/{src,build} && \
