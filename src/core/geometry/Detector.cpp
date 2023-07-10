@@ -225,7 +225,7 @@ void Detector::check_field_match(std::array<double, 3> size,
     // Check field dimension in z versus the requested thickness domain:
     auto eff_thickness = thickness_domain.second - thickness_domain.first;
     if(std::fabs(size[2] - eff_thickness) > std::numeric_limits<double>::epsilon()) {
-        LOG(WARNING) << "Thickness of field is " << Units::display(size[2], "um") << " but the depleted region is "
+        LOG(WARNING) << "Thickness of field is " << Units::display(size[2], "um") << " but the requested field depth is "
                      << Units::display(eff_thickness, "um");
     }
 
