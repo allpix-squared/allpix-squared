@@ -24,7 +24,8 @@ and rise time constant
 ```math
 \tau_r = \frac{C_{det} \cdot C_{out}}{g_m \cdot C_f}
 ```
-The impulse response function of this transfer function is convoluted with the charge pulse. In the time domain, the impulse response function can be written
+The impulse response function of this transfer function is convoluted with the charge pulse. In the time domain, the impulse response function can be written as
+
 ```math
 \mathcal{L}^{-1}(H) = R_f \left( \frac{e^{-t/\tau_f}}{\tau_f - \tau_r} - \frac{e^{-t/\tau_r}}{\tau_f - \tau_r} \right).
 ```
