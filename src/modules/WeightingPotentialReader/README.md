@@ -73,10 +73,9 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
   pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
 - `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
   `{1, 1}` and the field is used with its physical extent stated in the field data file.
-- `field_offset`: Offset of the field in x- and y-direction. With this parameter and the mapping mode `SENSOR`, the field can
-  be shifted e.g. by half a pixel pitch to accommodate for fields which have been simulated starting from the pixel center.
-  The shift is applied in positive direction of the respective coordinate. Only used if the *model* parameter has the value
-  **mesh**.
+- `potential_depth` : Thickness of the weighting potential region. The weighting potential is set to zero in the region below the
+  `potential_depth`. Defaults to the full sensor thickness. Only used if the *model* parameter has the value **mesh**.
+  If the parameter is smaller than the field from an imported mesh, the field will be compressed in the z-direction.
 - `ignore_field_dimensions`: If set to true, a wrong dimensionality of the input field is ignored, otherwise an exception is
   thrown. Defaults to false.
 - `output_plots`:  Determines if output plots should be generated. Disabled by default.

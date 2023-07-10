@@ -74,17 +74,8 @@ void WeightingPotentialReaderModule::initialize() {
             field_scale = {{scales.x(), scales.y()}};
         }
 
-        // Get the field offset in fractions of the field size, default is 0.0x0.0, i.e. no offset
-        auto offset = config_.get<ROOT::Math::XYVector>("field_offset", {0.0, 0.0});
-        if(offset.x() > 1.0 || offset.y() > 1.0) {
-            throw InvalidValueError(config_,
-                                    "field_offset",
-                                    "shifting weighting potential by more than one pixel (offset > 1.0) is not allowed");
-        }
-        if(offset.x() < 0.0 || offset.y() < 0.0) {
-            throw InvalidValueError(config_, "field_offset", "offsets for the weighting potential have to be positive");
-        }
-        LOG(DEBUG) << "Weighting potential has offset of " << offset << " fractions of the field size";
+        // Set the field offset to zero; weighting potential needs to be centered around electrode
+        std::array<double, 2> field_offset{{0.0, 0.0}};
 
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
@@ -92,7 +83,7 @@ void WeightingPotentialReaderModule::initialize() {
                                              field_data.getSize(),
                                              field_mapping,
                                              field_scale,
-                                             {{offset.x(), offset.y()}},
+                                             field_offset,
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
