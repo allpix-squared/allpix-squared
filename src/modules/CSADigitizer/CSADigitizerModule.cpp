@@ -275,9 +275,7 @@ void CSADigitizerModule::run(Event* event) {
             // -> no point to start i at 0, start from jmin:
             size_t jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
-                if((k - i) < pulse.size()) {
-                    outsum += pulse.at(k - i) * impulse_response_function_.at(i);
-                }
+                outsum += pulse.at(k - i) * impulse_response_function_.at(i);
             }
             amplified_pulse.addCharge(outsum, timestep * static_cast<double>(k));
         }
