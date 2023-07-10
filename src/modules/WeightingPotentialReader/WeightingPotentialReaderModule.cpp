@@ -43,8 +43,13 @@ void WeightingPotentialReaderModule::initialize() {
 
     // Calculate thickness domain
     auto model = detector_->getModel();
+    auto potential_depth = config_.get<double>("potential_depth", model->getSensorSize().z());
+    if(potential_depth - model->getSensorSize().z() > std::numeric_limits<double>::epsilon()) {
+        throw InvalidValueError(
+            config_, "potential_depth", "Weighting potential depth can not be larger than the sensor thickness");
+    }
     auto sensor_max_z = model->getSensorCenter().z() + model->getSensorSize().z() / 2.0;
-    auto thickness_domain = std::make_pair(sensor_max_z - model->getSensorSize().z(), sensor_max_z);
+    auto thickness_domain = std::make_pair(sensor_max_z - potential_depth, sensor_max_z);
 
     // Calculate the potential depending on the configuration
     if(field_model == WeightingPotential::MESH) {
