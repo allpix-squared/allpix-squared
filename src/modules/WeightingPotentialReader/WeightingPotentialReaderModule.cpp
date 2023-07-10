@@ -74,16 +74,13 @@ void WeightingPotentialReaderModule::initialize() {
             field_scale = {{scales.x(), scales.y()}};
         }
 
-        // Set the field offset to zero; weighting potential needs to be centered around electrode
-        std::array<double, 2> field_offset{{0.0, 0.0}};
-
         // Set the field grid, provide scale factors as fraction of the pixel pitch for correct scaling:
         detector_->setWeightingPotentialGrid(field_data.getData(),
                                              field_data.getDimensions(),
                                              field_data.getSize(),
                                              field_mapping,
                                              field_scale,
-                                             field_offset,
+                                             {0.0, 0.0},
                                              thickness_domain);
     } else if(field_model == WeightingPotential::PAD) {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
