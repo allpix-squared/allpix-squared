@@ -75,7 +75,6 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
   `{1, 1}` and the field is used with its physical extent stated in the field data file.
 - `potential_depth` : Thickness of the weighting potential region. The weighting potential is set to zero in the region below the
   `potential_depth`. Defaults to the full sensor thickness. Only used if the *model* parameter has the value **mesh**.
-  If the parameter is smaller than the field from an imported mesh, the field will be compressed in the z-direction.
 - `ignore_field_dimensions`: If set to true, a wrong dimensionality of the input field is ignored, otherwise an exception is
   thrown. Defaults to false.
 - `output_plots`:  Determines if output plots should be generated. Disabled by default.
