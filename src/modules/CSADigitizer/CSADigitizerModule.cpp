@@ -56,7 +56,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         // and for the "advanced" csa
         config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
         config_.setDefault<double>("krummenacher_current", Units::get(20e-9, "C/s"));
-        config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
+        config_.setDefault<double>("input_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
         config_.setDefault<double>("weak_inversion_slope_factor", 1.5);
@@ -102,7 +102,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                 config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
         }
 
-        auto capacitance_detector = config_.get<double>("detector_capacitance");
+        auto capacitance_input = config_.get<double>("input_capacitance"); // C_input = C_detector + C_feedback + C_parasitics
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
@@ -117,7 +117,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto transconductance_feedback = ikrum / (2.0 * n_wi * boltzmann_kT);
         auto resistance_feedback = 2. / transconductance_feedback; // feedback resistor
         auto tauF = resistance_feedback * capacitance_feedback;
-        auto tauR = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+        auto tauR = (capacitance_input * capacitance_output) / (gm * capacitance_feedback);
 
         calculate_impulse_response_ =
             std::make_unique<TFormula>("response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])");
@@ -125,7 +125,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
         LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback, "V*s/C")
                    << ", capacitance_feedback = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
-                   << ", capacitance_detector = " << Units::display(capacitance_detector, {"C/V", "fC/mV"})
+                   << ", capacitance_input = " << Units::display(capacitance_input, {"C/V", "fC/mV"})
                    << ", capacitance_output = " << Units::display(capacitance_output, {"C/V", "fC/mV"})
                    << ", gm = " << Units::display(gm, "C/s/V")
                    << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
