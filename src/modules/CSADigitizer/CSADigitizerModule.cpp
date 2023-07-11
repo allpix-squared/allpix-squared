@@ -59,7 +59,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("input_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
-        config_.setDefault<double>("weak_inversion_slope_factor", 1.5);
+        config_.setDefault<double>("weak_inversion_slope", 1.5);
         config_.setDefault<double>("temperature", 293.15);
     }
 
@@ -107,7 +107,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
-        auto n_wi = config_.get<double>("weak_inversion_slope_factor");
+        auto n_wi = config_.get<double>("weak_inversion_slope");
         auto boltzmann_kT = Units::get(8.6173333e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
@@ -130,8 +130,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << ", capacitance_output = " << Units::display(capacitance_output, {"C/V", "fC/mV"})
                    << ", gm = " << Units::display(gm, "C/s/V")
                    << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
-                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"})
-                   << ", weak_inversion_slope_factor = " << n_wi
+                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"}) << ", weak_inversion_slope = " << n_wi
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     } else if(model_ == DigitizerType::CUSTOM) {
         calculate_impulse_response_ =
