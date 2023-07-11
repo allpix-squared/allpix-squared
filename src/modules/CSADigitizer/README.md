@@ -61,9 +61,10 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 * `feedback_capacitance`: The feedback capacity to the amplifier circuit. Defaults to 5e-15 F.
 * `krummenacher_current`: The feedback current setting of the CSA. Defaults to 20 nA.
-* `detector_capacitance`: The detector capacitance. Defaults to 100 e-15 F.
+* `input_capacitance`: The input capacitance which comprises the capacitance of the detector, the capacitance of the feedback circuit, and any additional capacitance caused by parasitic effects. Defaults to 100 e-15 F.
 * `amp_output_capacitance`: The capacitance at the amplifier output. Defaults to 20 e-15 F.
-* `transconductance`: The transconductance of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
+* `transconductance`: The transconductance of the first transistor of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
+* `weak_inversion_slope_factor`: The weak inversion slope factor. Defaults to 1.5.
 * `temperature`: Defaults to 293.15K.
 
 ### Parameters for the custom model
@@ -89,6 +90,7 @@ detector_capacitance = 100e-15C/V
 krummenacher_current = 25e-9C/s
 amp_output_capacitance = 15e-15C/V
 transconductance = 50e-6C/s/V
+weak_inversion_slope_factor = 1.15
 temperature = 298
 integration_time = 0.5e-6s
 threshold = 10e-3V
