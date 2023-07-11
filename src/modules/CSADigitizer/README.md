@@ -86,7 +86,7 @@ Example how to use the `csa` model in this module:
 [CSADigitizer]
 model = "csa"
 feedback_capacitance = 10e-15C/V
-detector_capacitance = 100e-15C/V
+input_capacitance = 100e-15C/V
 krummenacher_current = 25e-9C/s
 amp_output_capacitance = 15e-15C/V
 transconductance = 50e-6C/s/V
