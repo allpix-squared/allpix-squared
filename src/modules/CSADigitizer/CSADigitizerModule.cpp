@@ -102,7 +102,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                 config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
         }
 
-        auto capacitance_input = config_.get<double>("input_capacitance"); // C_input = C_detector + C_feedback + C_parasitics
+        auto capacitance_input =
+            config_.get<double>("input_capacitance"); // C_input = C_detector + C_feedback + C_parasitics
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
@@ -113,7 +114,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
         // collector current) and it is process specific
-        //n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
+        // n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
         auto transconductance_feedback = ikrum / (2.0 * n_wi * boltzmann_kT);
         auto resistance_feedback = 2. / transconductance_feedback; // feedback resistor
         auto tauF = resistance_feedback * capacitance_feedback;
