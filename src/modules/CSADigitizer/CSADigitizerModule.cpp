@@ -59,6 +59,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
+        config_.setDefault<double>("weak_inversion_slope_factor", 1.5);
         config_.setDefault<double>("temperature", 293.15);
     }
 
@@ -105,13 +106,15 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
+        auto n_wi = config_.get<double>("weak_inversion_slope_factor");
         auto boltzmann_kT = Units::get(8.6173333e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
-        // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        auto transconductance_feedback = ikrum / (2.0 * 1.5 * boltzmann_kT);
+        // collector current) and it is process specific
+        //n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
+        auto transconductance_feedback = ikrum / (2.0 * n_wi * boltzmann_kT);
         auto resistance_feedback = 2. / transconductance_feedback; // feedback resistor
         auto tauF = resistance_feedback * capacitance_feedback;
         auto tauR = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
@@ -127,6 +130,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                    << ", gm = " << Units::display(gm, "C/s/V")
                    << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
                    << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"})
+                   << ", weak_inversion_slope_factor = " << n_wi
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     } else if(model_ == DigitizerType::CUSTOM) {
         calculate_impulse_response_ =
