@@ -35,6 +35,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Read model
     model_ = config_.get<DigitizerType>("model");
 
+    // Allow to use detector_capacitance as input_capacitance
+    config_.setAlias("input_capacitance", "detector_capacitance");
+
     // Set defaults for config variables
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
