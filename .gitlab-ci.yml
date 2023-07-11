@@ -609,7 +609,7 @@ deploy:cvmfs:
 .deploy-docker:
     stage: deployment
     image:
-        name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
+        name: gcr.io/kaniko-project/executor:debug
         entrypoint: [""]
     dependencies: []
     script:
