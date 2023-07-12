@@ -181,9 +181,10 @@ namespace allpix {
          * @param x Distance in local-coordinate x from the center of the field to obtain the values for
          * @param y Distance in local-coordinate y from the center of the field to obtain the values for
          * @param z Distance in local-coordinate z from the center of the field to obtain the values for
+         * @param extrapolate_z Flag whether we should extrapolate
          * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const double x, const double y, const double z) const noexcept;
+        T get_field_from_grid(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor

@@ -74,7 +74,7 @@ namespace allpix {
             T ret_val;
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
-                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z);
+                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z);
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
@@ -150,7 +150,7 @@ namespace allpix {
                 py += (y >= 0 ? 0. : 1.0);
             }
 
-            ret_val = get_field_from_grid(px, py, z);
+            ret_val = get_field_from_grid(px, py, z, extrapolate_z);
 
             // Flip vector if necessary
             flip_vector_components(ret_val, flip_x, flip_y);
@@ -165,7 +165,10 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const double x, const double y, const double z) const noexcept {
+    T DetectorField<T, N>::get_field_from_grid(const double x,
+                                               const double y,
+                                               const double z,
+                                               const bool extrapolate_z) const noexcept {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
@@ -182,6 +185,8 @@ namespace allpix {
 
         auto z_ind = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
                                (thickness_domain_.second - thickness_domain_.first));
+        // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding:
+        z_ind = (extrapolate_z ? std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1) : z_ind);
         if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
             return {};
         }
