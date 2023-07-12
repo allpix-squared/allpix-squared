@@ -63,7 +63,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `krummenacher_current`: The feedback current setting of the CSA. Defaults to 20 nA.
 * `input_capacitance`: The input capacitance which comprises the capacitance of the detector, the capacitance of the feedback circuit, and any additional capacitance caused by parasitic effects. Defaults to 100 e-15 F.
 * `amp_output_capacitance`: The capacitance at the amplifier output. Defaults to 20 e-15 F.
-* `transconductance`: The transconductance of the first transistor of the CSA feedback circuit. Defaults to 50e-6 C/s/V.
+* `transconductance`: The transconductance of the input transistor of the CSA core amplifier. Defaults to 50e-6 C/s/V.
 * `weak_inversion_slope`: The weak inversion slope. Defaults to 1.5.
 * `temperature`: Defaults to 293.15K.
 
