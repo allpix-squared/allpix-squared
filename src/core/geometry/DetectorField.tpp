@@ -74,7 +74,7 @@ namespace allpix {
             T ret_val;
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
-                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, pos.z());
+                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z);
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
