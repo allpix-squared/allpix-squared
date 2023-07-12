@@ -35,6 +35,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     // Read model
     model_ = config_.get<DigitizerType>("model");
 
+    // Allow to use detector_capacitance as input_capacitance
+    config_.setAlias("input_capacitance", "detector_capacitance", true);
+
     // Set defaults for config variables
     config_.setDefault<double>("integration_time", Units::get(500, "ns"));
     config_.setDefault<double>("threshold", Units::get(10e-3, "V"));
@@ -56,9 +59,10 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         // and for the "advanced" csa
         config_.setDefault<double>("feedback_capacitance", Units::get(5e-15, "C/V"));
         config_.setDefault<double>("krummenacher_current", Units::get(20e-9, "C/s"));
-        config_.setDefault<double>("detector_capacitance", Units::get(100e-15, "C/V"));
+        config_.setDefault<double>("input_capacitance", Units::get(100e-15, "C/V"));
         config_.setDefault<double>("amp_output_capacitance", Units::get(20e-15, "C/V"));
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
+        config_.setDefault<double>("weak_inversion_slope", 1.5);
         config_.setDefault<double>("temperature", 293.15);
     }
 
@@ -101,20 +105,23 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
                 config_, "krummenacher_current", "The Krummenacher feedback current has to be positive definite.");
         }
 
-        auto capacitance_detector = config_.get<double>("detector_capacitance");
+        auto capacitance_input =
+            config_.get<double>("input_capacitance"); // C_input = C_detector + C_feedback + C_parasitics
         auto capacitance_feedback = config_.get<double>("feedback_capacitance");
         auto capacitance_output = config_.get<double>("amp_output_capacitance");
         auto gm = config_.get<double>("transconductance");
+        auto n_wi = config_.get<double>("weak_inversion_slope");
         auto boltzmann_kT = Units::get(8.6173333e-5, "eV/K") * config_.get<double>("temperature");
 
         // helper variables: transconductance and resistance in the feedback loop
         // weak inversion: gf = I/(n V_t) (e.g. Binkley "Tradeoff and Optimisation in Analog CMOS design")
         // n is the weak inversion slope factor (degradation of exponential MOS drain current compared to bipolar transistor
-        // collector current) n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
-        auto transconductance_feedback = ikrum / (2.0 * 1.5 * boltzmann_kT);
+        // collector current) and it is process specific
+        // n_wi typically 1.5, for circuit described in  Kleczek 2016 JINST11 C12001: I->I_krumm/2
+        auto transconductance_feedback = ikrum / (2.0 * n_wi * boltzmann_kT);
         auto resistance_feedback = 2. / transconductance_feedback; // feedback resistor
         auto tauF = resistance_feedback * capacitance_feedback;
-        auto tauR = (capacitance_detector * capacitance_output) / (gm * capacitance_feedback);
+        auto tauR = (capacitance_input * capacitance_output) / (gm * capacitance_feedback);
 
         calculate_impulse_response_ =
             std::make_unique<TFormula>("response_function", "[0]*(TMath::Exp(-x/[1])-TMath::Exp(-x/[2]))/([1]-[2])");
@@ -122,11 +129,11 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
         LOG(DEBUG) << "Parameters: rf = " << Units::display(resistance_feedback, "V*s/C")
                    << ", capacitance_feedback = " << Units::display(capacitance_feedback, {"C/V", "fC/mV"})
-                   << ", capacitance_detector = " << Units::display(capacitance_detector, {"C/V", "fC/mV"})
+                   << ", capacitance_input = " << Units::display(capacitance_input, {"C/V", "fC/mV"})
                    << ", capacitance_output = " << Units::display(capacitance_output, {"C/V", "fC/mV"})
                    << ", gm = " << Units::display(gm, "C/s/V")
                    << ", tauF = " << Units::display(tauF, {"ns", "us", "ms", "s"})
-                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"})
+                   << ", tauR = " << Units::display(tauR, {"ns", "us", "ms", "s"}) << ", weak_inversion_slope = " << n_wi
                    << ", temperature = " << Units::display(config_.get<double>("temperature"), "K");
     } else if(model_ == DigitizerType::CUSTOM) {
         calculate_impulse_response_ =

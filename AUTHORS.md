@@ -47,6 +47,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Sabita Rao, GSDocs2020 Student, [srao](https://gitlab.cern.ch/srao)
 * Daniil Rastorguev, DESY, [drastorg](https://gitlab.cern.ch/drastorg)
 * Edoardo Rossi, DESY, [edrossi](https://gitlab.cern.ch/edrossi)
+* Sara Ruiz Daza, DESY, [ruizdaza](https://gitlab.cern.ch/ruizdaza)
 * Jihad Saidi, Université de Genève, [jisaidi](https://gitlab.cern.ch/jisaidi)
 * Andre Sailer, CERN, [sailer](https://gitlab.cern.ch/sailer)
 * Tasneem Saleem, Synchrotron SOLEIL, [TasneemSaleem](https://github.com/TasneemSaleem)
