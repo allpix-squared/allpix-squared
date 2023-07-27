@@ -13,6 +13,7 @@ ALLPIX_MODULE_SOURCES(
     TrackInfoG4.cpp
     TrackInfoManager.cpp
     SetTrackInfoUserHookG4.cpp
+    StepInfoUserHookG4.cpp
     SDAndFieldConstruction.cpp)
 
 # Allpix Geant4 interface is required for this module

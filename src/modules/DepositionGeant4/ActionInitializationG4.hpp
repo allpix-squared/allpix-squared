@@ -17,6 +17,7 @@
 #include "core/config/Configuration.hpp"
 
 #include "SetTrackInfoUserHookG4.hpp"
+#include "StepInfoUserHookG4.hpp"
 
 namespace allpix {
     /**
@@ -36,6 +37,9 @@ namespace allpix {
 
             // tracker hook
             SetUserAction(new SetTrackInfoUserHookG4());
+
+            // step hook
+            SetUserAction(new StepInfoUserHookG4());
         };
 
         /**
