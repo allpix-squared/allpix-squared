@@ -21,7 +21,7 @@ void StepInfoUserHookG4::UserSteppingAction(const G4Step* aStep) {
     if(aStep->GetStepLength() < 0) {
         LOG(WARNING) << "Negative step length found; aborting event.";
 
-        // Load the G4 run manager (which is owned by the geometry builder), and call AbortEvent()
-        G4RunManager::GetRunManager()->AbortEvent();
+        // Load the G4 run manager (which is owned by the geometry builder), and call AbortRun() to abort the current event
+        G4RunManager::GetRunManager()->AbortRun();
     }
 }
