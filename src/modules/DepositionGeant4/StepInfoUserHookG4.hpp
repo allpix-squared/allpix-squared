@@ -3,10 +3,11 @@
  * @brief Defines a user hook for Geant4 to assign custom track information via TrackInfoG4 objects. This includes custom
  * (unique) track ids.
  *
- * @copyright Copyright (c) 2018-2020 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef StepInfoUserHookG4_H
