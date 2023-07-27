@@ -17,7 +17,7 @@
 using namespace allpix;
 
 void StepInfoUserHookG4::UserSteppingAction(const G4Step* aStep) {
-    LOG(DEBUG) << "Step length: " << aStep->GetStepLength();
+    LOG(DEBUG) << "Step number " << aStep->GetTrack()->GetCurrentStepNumber() << ", step length: " << aStep->GetStepLength();
     if(aStep->GetStepLength() < 0) {
         LOG(WARNING) << "Negative step length found; aborting event.";
 
