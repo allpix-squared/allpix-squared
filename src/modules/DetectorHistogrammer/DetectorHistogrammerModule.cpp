@@ -83,7 +83,7 @@ void DetectorHistogrammerModule::initialize() {
 
     std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x [mm];y [mm];hits";
     hit_map_global = CreateHistogram<TH2D>("hit_map_global",
-                                           hit_map_title.c_str(),
+                                           hit_map_global_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
                                            -model->getSensorSize().x() / 2,
                                            model->getSensorSize().x() / 2,
@@ -623,7 +623,7 @@ void DetectorHistogrammerModule::finalize() {
 
     // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
-    auto hit_map_global_histogram = hit_map_local->Merge();
+    auto hit_map_global_histogram = hit_map_global->Merge();
     auto hit_map_local_histogram = hit_map_local->Merge();
     auto hit_map_local_mc_histogram = hit_map_local_mc->Merge();
     auto charge_map_histogram = charge_map->Merge();
