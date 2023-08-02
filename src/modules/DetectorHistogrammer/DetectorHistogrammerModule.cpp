@@ -85,9 +85,9 @@ void DetectorHistogrammerModule::initialize() {
     auto global_ll = detector_->getGlobalPosition(model->getSensorCenter() - model->getSensorSize() / 2);
     auto global_ur = detector_->getGlobalPosition(model->getSensorCenter() + model->getSensorSize() / 2);
     auto global_lr = detector_->getGlobalPosition(
-        (model->getSensorCenter() - ROOT::Math::XYZVector(model->getSensorSize().x(), -model->getSensorSize().y(), 0) / 2));
+        (model->getSensorCenter() + ROOT::Math::XYZVector(model->getSensorSize().x(), -model->getSensorSize().y(), 0) / 2));
     auto global_ul = detector_->getGlobalPosition(
-        (model->getSensorCenter() - ROOT::Math::XYZVector(-model->getSensorSize().x(), model->getSensorSize().y(), 0) / 2));
+        (model->getSensorCenter() + ROOT::Math::XYZVector(-model->getSensorSize().x(), model->getSensorSize().y(), 0) / 2));
     hit_map_global = CreateHistogram<TH2D>("hit_map_global",
                                            hit_map_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
