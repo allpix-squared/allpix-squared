@@ -82,14 +82,20 @@ void DetectorHistogrammerModule::initialize() {
         CreateHistogram<TH2D>("hit_map", hit_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     std::string hit_map_global_title = "Hitmap (" + detector_->getName() + ")  in global coord.;x [mm];y [mm];hits";
+    auto global_ll = detector_->getGlobalPosition(model->getSensorCenter() - model->getSensorSize() / 2);
+    auto global_ur = detector_->getGlobalPosition(model->getSensorCenter() + model->getSensorSize() / 2);
+    auto global_lr = detector_->getGlobalPosition(
+        (model->getSensorCenter() - ROOT::Math::XYZVector(model->getSensorSize().x(), -model->getSensorSize().y(), 0) / 2));
+    auto global_ul = detector_->getGlobalPosition(
+        (model->getSensorCenter() - ROOT::Math::XYZVector(-model->getSensorSize().x(), model->getSensorSize().y(), 0) / 2));
     hit_map_global = CreateHistogram<TH2D>("hit_map_global",
                                            hit_map_global_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
-                                           model->getSensorCenter().x() - model->getSensorSize().x() / 2,
-                                           model->getSensorCenter().x() + model->getSensorSize().x() / 2,
+                                           std::min({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
+                                           std::max({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
                                            static_cast<int>(model->getSensorSize().y()) * 10,
-                                           model->getSensorCenter().y() - model->getSensorSize().y() / 2,
-                                           model->getSensorCenter().y() + model->getSensorSize().y() / 2);
+                                           std::min({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}),
+                                           std::max({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}));
 
     std::string hit_map_local_title = "Hitmap (" + detector_->getName() + ") in local coord.;x (mm);y (mm);hits";
     hit_map_local = CreateHistogram<TH2D>("hit_map_local",
