@@ -7,31 +7,23 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TSystem.h>
 #include <TTree.h>
 #include <vector>
 
 #include <memory>
 
-//#include "../../src/modules/DetectorHistogrammer/Cluster.hpp"
-//#include "../../src/objects/MCParticle.hpp"
-//#include "../../src/objects/PixelCharge.hpp"
-//#include "../../src/objects/PixelHit.hpp"
-//#include "../../src/objects/PropagatedCharge.hpp"
-//#include "../../src/core/utils/unit.h"
-
-#include "/home/hawk/apVersions/ap2p4p0/src/objects/MCParticle.hpp"
-#include "/home/hawk/apVersions/ap2p4p0/src/objects/PixelCharge.hpp"
-#include "/home/hawk/apVersions/ap2p4p0/src/objects/PixelHit.hpp"
-#include "/home/hawk/apVersions/ap2p4p0/src/objects/PropagatedCharge.hpp"
-
-#include "/home/hawk/apVersions/ap2p4p0/src/modules/DetectorHistogrammer/Cluster.hpp"
-
-#include "/home/hawk/apVersions/ap2p4p0/src/tools/units.h"
+#include "../../src/core/utils/unit.h"
+#include "../../src/modules/DetectorHistogrammer/Cluster.hpp"
+#include "../../src/objects/MCParticle.hpp"
+#include "../../src/objects/PixelCharge.hpp"
+#include "../../src/objects/PixelHit.hpp"
+#include "../../src/objects/PropagatedCharge.hpp"
 
 // Global things, for simplicity
-auto pitch_x = 25 / 1000.0;
-auto pitch_y = 25 / 1000.0;
+auto pitch_x = 35 / 1000.0;
+auto pitch_y = 35 / 1000.0;
 
 // Initialise histograms
 std::string mod_axes_x = "in-2pixel x_{cluster} [mm];in-2pixel x_{track} [mm];";
@@ -84,8 +76,8 @@ std::vector<allpix::Cluster> doClustering(const std::vector<allpix::PixelHit*>& 
         // Create new cluster
         allpix::Cluster cluster(pixel_hit);
         usedPixel[pixel_hit] = true;
-        // std::cout << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex().X() << ", " <<
-        // pixel_hit->getPixel().getIndex().Y() << std::endl;
+        std::cout << "Creating new cluster with seed: " << pixel_hit->getPixel().getIndex().X() << ", "
+                  << pixel_hit->getPixel().getIndex().Y() << std::endl;
 
         auto touching = [&](const allpix::PixelHit* pixel) {
             auto pxi1 = pixel->getIndex();
@@ -111,8 +103,8 @@ std::vector<allpix::Cluster> doClustering(const std::vector<allpix::PixelHit*>& 
             }
 
             cluster.addPixelHit(neighbour);
-            // std::cout << "Adding pixel: " << neighbour->getPixel().getIndex().X() << ", " <<
-            // neighbour->getPixel().getIndex().Y() << std::endl;
+            std::cout << "Adding pixel: " << neighbour->getPixel().getIndex().X() << ", "
+                      << neighbour->getPixel().getIndex().Y() << std::endl;
             usedPixel[neighbour] = true;
             other_pixel = pixel_it;
         }
@@ -143,10 +135,11 @@ void calculate_eta(const allpix::MCParticle* track, allpix::Cluster* cluster) {
         // std::cout << "Cluster size 1, skipping" << std::endl;
         return;
     }
-    // std::cout << "Cluster size larger than 1, doing eta correction" << std::endl;
+    std::cout << "Cluster size larger than 1, doing eta correction" << std::endl;
 
     auto localIntercept = track->getLocalReferencePoint();
     auto [size_x, size_y] = cluster->getSizeXY();
+    std::cout << "Size x: " << size_x << ", size y: " << size_y << std::endl;
 
     if(size_x == 2) {
         // std::cout << "Size in X is 2" << std::endl;
@@ -311,12 +304,12 @@ void etaCorrectionResiduals(std::string fileName, std::string detector) {
                                 noOfResBinsXY,
                                 -resHalfRange * 1000,
                                 resHalfRange * 1000);
-    TH1D* residual_x_corrected = new TH1D("residual_x",
+    TH1D* residual_x_corrected = new TH1D("residual_x_corrected",
                                           "Residual x, corrected; x_{MC} - x_{cluster} [#mum]; hits",
                                           noOfResBinsXY,
                                           -resHalfRange * 1000,
                                           resHalfRange * 1000);
-    TH1D* residual_y_corrected = new TH1D("residual_y",
+    TH1D* residual_y_corrected = new TH1D("residual_y_corrected",
                                           "Residual y, corrected; y_{MC} - y_{cluster} [#mum]; hits",
                                           noOfResBinsXY,
                                           -resHalfRange * 1000,
@@ -386,6 +379,10 @@ void etaCorrectionResiduals(std::string fileName, std::string detector) {
         pixel_hit_tree->GetEntry(i);
         mc_particle_tree->GetEntry(i);
 
+        if(input_hits.size() > 1) {
+            std::cout << "Pixel index: " << input_hits[1]->getPixel().getIndex().x() << ", "
+                      << input_hits[0]->getPixel().getIndex().y() << std::endl;
+        }
         // Perform clustering
         std::vector<allpix::Cluster> clusters = doClustering(input_hits);
 
