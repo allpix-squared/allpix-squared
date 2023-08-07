@@ -29,6 +29,16 @@ Usage:
 * Build the macro with `.L path/to/analysisExample.C++`
 * Run the macro with `analysisExample(_file0, "name_of_detector")`
 
+## Eta correction of residuals example
+Analysis example demonstrating how to perform an "eta correction" for rectangular pixels. Builds on from `Analysis example` above. This macro performs clustering using the method implemented in the `DetectorHistogrammer` module, and loops over all events twice; once to generate and fit the eta function (a fifth-order polynomial is used in this case), and once to apply the correction given by the fit. Produces graph of residuals before and after application of the correction. The pixel size used should be edited to match the simulated pixel size in the data to be analysed.
+
+Usage:
+* Open root with the data file attached like `root -l /path/to/data.root`
+* Load the current library of objects with `.L path/to/libAllpixObjects.so`
+* Load the Cluster object definition from the `DetectorHistogrammer` module with `.L path/to/libAllpixModuleDetectorHistogrammer.so`
+* Build the macro with `.L path/to/etaCorrectionResiduals.C++`
+* Run the macro with `etaCorrectionResiduals(_file0, "name_of_detector")`
+
 ## Remake project
 Simple macro to show the possibility to recreate source files for legacy objects stored in ROOT data files from older versions of the framework. Can be used if the corresponding dynamic library for that particular version is not accessible anymore. It is however not possible to recreate methods of the objects and it is therefore not easily possible to reconstruct the stored history.
 
