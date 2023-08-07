@@ -191,8 +191,9 @@ TF1* fitEta(const std::string& fname, double minRange, double maxRange, TProfile
     auto function = new TF1(fname.c_str(), formula, minRange, maxRange);
 
     // Get the eta distribution profiles and fit them to extract the correction parameters
-    profile->Fit(function, "q R");
+    profile->Fit(function, "q R 0");
     TF1* fitResult = profile->GetFunction(fname.c_str());
+    fitResult->ResetBit(TF1::kNotDraw); // Make sure it gets drawn later (the 0 in Fit() prevents drawing now)
 
     return fitResult;
 }
@@ -296,16 +297,6 @@ void etaCorrectionResiduals(TFile* file, std::string detector) {
         "residual_x", "Residual x; x_{MC} - x_{cluster} [#mum]; hits", noOfResBinsXY, -resHalfRangeX, resHalfRangeX);
     TH1D* residual_y = new TH1D(
         "residual_y", "Residual y; y_{MC} - y_{cluster} [#mum]; hits", noOfResBinsXY, -resHalfRangeY, resHalfRangeY);
-    TH1D* residual_x_corrected = new TH1D("residual_x_corrected",
-                                          "Residual x, corrected; x_{MC} - x_{cluster} [#mum]; hits",
-                                          noOfResBinsXY,
-                                          -resHalfRangeX,
-                                          resHalfRangeX);
-    TH1D* residual_y_corrected = new TH1D("residual_y_corrected",
-                                          "Residual y, corrected; y_{MC} - y_{cluster} [#mum]; hits",
-                                          noOfResBinsXY,
-                                          -resHalfRangeY,
-                                          resHalfRangeY);
     // Mean absolute deviation, i.e. absolute value of residual, vs pixel position.
     TProfile* residual_x_vs_x =
         new TProfile("residual_x_vs_x",
@@ -354,6 +345,69 @@ void etaCorrectionResiduals(TFile* file, std::string detector) {
     TProfile2D* residual_map_y =
         new TProfile2D("residual_map_y",
                        "Mean absolute deviation in y vs particle hit position; x [#mum]; y [#mum]; MAD_y [#mum]",
+                       noOfResBinsXY,
+                       0,
+                       pitch_x,
+                       noOfResBinsXY,
+                       0,
+                       pitch_y);
+    // After correction
+    TH1D* residual_x_corrected = new TH1D("residual_x_corrected",
+                                          "Residual x, corrected; x_{MC} - x_{cluster} [#mum]; hits",
+                                          noOfResBinsXY,
+                                          -resHalfRangeX,
+                                          resHalfRangeX);
+    TH1D* residual_y_corrected = new TH1D("residual_y_corrected",
+                                          "Residual y, corrected; y_{MC} - y_{cluster} [#mum]; hits",
+                                          noOfResBinsXY,
+                                          -resHalfRangeY,
+                                          resHalfRangeY);
+    TProfile* residual_x_vs_x_corrected = new TProfile(
+        "residual_x_vs_x_corrected",
+        "Corrected mean absolute deviation in x, vs in-pixel position in x; x [#mum]; |x_{MC} - x_{cluster}| [#mum]",
+        noOfResBinsXY,
+        0,
+        pitch_x);
+    TProfile* residual_y_vs_y_corrected = new TProfile(
+        "residual_y_vs_y_corrected",
+        "Corrected mean absolute deviation in y, vs in-pixel position in y; y [#mum]; |y_{MC} - y_{cluster}| [#mum]",
+        noOfResBinsXY,
+        0,
+        pitch_y);
+    // Mean absolute deviation, i.e. absolute value of residual, vs pixel position.
+    TProfile* residual_x_vs_y_corrected = new TProfile(
+        "residual_x_vs_y_corrected",
+        "Corrected mean absolute deviation in x, vs in-pixel position in y; y [#mum]; |x_{MC} - x_{cluster}| [#mum]",
+        noOfResBinsXY,
+        0,
+        pitch_y);
+    TProfile* residual_y_vs_x_corrected = new TProfile(
+        "residual_y_vs_x_corrected",
+        "Corrected mean absolute deviation in y, vs in-pixel position in x; x [#mum]; |y_{MC} - y_{cluster}| [#mum]",
+        noOfResBinsXY,
+        0,
+        pitch_x);
+    TProfile2D* residual_map_full_corrected =
+        new TProfile2D("residual_map_full_corrected",
+                       "Corrected mean 2D residual vs particle hit position; x [#mum]; y [#mum]; Residual [#mum]",
+                       noOfResBinsXY,
+                       0,
+                       pitch_x,
+                       noOfResBinsXY,
+                       0,
+                       pitch_y);
+    TProfile2D* residual_map_x_corrected =
+        new TProfile2D("residual_map_x_corrected",
+                       "Corrected mean absolute deviation in x vs particle hit position; x [#mum]; y [#mum]; MAD_x [#mum]",
+                       noOfResBinsXY,
+                       0,
+                       pitch_x,
+                       noOfResBinsXY,
+                       0,
+                       pitch_y);
+    TProfile2D* residual_map_y_corrected =
+        new TProfile2D("residual_map_y_corrected",
+                       "Corrected m absolute deviation in y vs particle hit position; x [#mum]; y [#mum]; MAD_y [#mum]",
                        noOfResBinsXY,
                        0,
                        pitch_x,
@@ -429,8 +483,8 @@ void etaCorrectionResiduals(TFile* file, std::string detector) {
                                                                  // sensor plane, in local coords
 
             // In um, in pixel coordinate system
-            auto inPixelPos = ROOT::Math::XYVector(std::fmod(truthParticlePosition.x() + pitch_x / 2, pitch_x) * 1000,
-                                                   std::fmod(truthParticlePosition.y() + pitch_y / 2, pitch_y) * 1000);
+            auto inPixelPos = ROOT::Math::XYVector(std::fmod(truthParticlePosition.x() * 1000 + pitch_x / 2, pitch_x),
+                                                   std::fmod(truthParticlePosition.y() * 1000 + pitch_y / 2, pitch_y));
 
             // Units? Cluster position is now in local coordinates, in mm.
             // Then let's also do the whole thing in um. So, another factor of 1000.
@@ -455,8 +509,19 @@ void etaCorrectionResiduals(TFile* file, std::string detector) {
             auto updatedClusterPosition = applyEtaCorrection(cluster, eta_corrector_x, eta_corrector_y);
             double residualXClustering_corrected = (truthParticlePosition.x() - updatedClusterPosition.x()) * 1000;
             double residualYClustering_corrected = (truthParticlePosition.y() - updatedClusterPosition.y()) * 1000;
+            // Fill histograms with corrected position/residual
             residual_x_corrected->Fill(residualXClustering_corrected);
             residual_y_corrected->Fill(residualYClustering_corrected);
+            residual_x_vs_x_corrected->Fill(inPixelPos.x(), fabs(residualXClustering_corrected));
+            residual_y_vs_y_corrected->Fill(inPixelPos.y(), fabs(residualYClustering_corrected));
+            residual_x_vs_y_corrected->Fill(inPixelPos.y(), fabs(residualXClustering_corrected));
+            residual_y_vs_x_corrected->Fill(inPixelPos.x(), fabs(residualYClustering_corrected));
+            residual_map_full_corrected->Fill(inPixelPos.x(),
+                                              inPixelPos.y(),
+                                              sqrt(residualXClustering_corrected * residualXClustering_corrected +
+                                                   residualYClustering_corrected * residualYClustering_corrected));
+            residual_map_x_corrected->Fill(inPixelPos.x(), inPixelPos.y(), fabs(residualXClustering_corrected));
+            residual_map_y_corrected->Fill(inPixelPos.x(), inPixelPos.y(), fabs(residualYClustering_corrected));
         }
     }
 
@@ -482,4 +547,59 @@ void etaCorrectionResiduals(TFile* file, std::string detector) {
     residual_y->Draw();
     residualsCanvas->cd(4);
     residual_y_corrected->Draw();
+
+    TCanvas* residualsXvsCanvas = new TCanvas("residualsXvsCanvas", "Mean absolute deviation in x", 1200, 800);
+    residualsXvsCanvas->Divide(2, 2);
+    residualsXvsCanvas->cd(1);
+    residual_x_vs_x->GetYaxis()->SetRangeUser(0, pitch_x / 2);
+    residual_x_vs_x->Draw();
+    residualsXvsCanvas->cd(2);
+    residual_x_vs_x_corrected->GetYaxis()->SetRangeUser(0, pitch_x / 2);
+    residual_x_vs_x_corrected->Draw();
+    residualsXvsCanvas->cd(3);
+    residual_x_vs_y->GetYaxis()->SetRangeUser(0, pitch_x / 2);
+    residual_x_vs_y->Draw();
+    residualsXvsCanvas->cd(4);
+    residual_x_vs_y_corrected->GetYaxis()->SetRangeUser(0, pitch_x / 2);
+    residual_x_vs_y_corrected->Draw();
+
+    TCanvas* residualsYvsCanvas = new TCanvas("residualsYvsCanvas", "Mean absolute deviation in y", 1200, 800);
+    residualsYvsCanvas->Divide(2, 2);
+    residualsYvsCanvas->cd(1);
+    residual_y_vs_y->GetYaxis()->SetRangeUser(0, pitch_y / 2);
+    residual_y_vs_y->Draw();
+    residualsYvsCanvas->cd(2);
+    residual_y_vs_y_corrected->GetYaxis()->SetRangeUser(0, pitch_y / 2);
+    residual_y_vs_y_corrected->Draw();
+    residualsYvsCanvas->cd(3);
+    residual_y_vs_x->GetYaxis()->SetRangeUser(0, pitch_y / 2);
+    residual_y_vs_x->Draw();
+    residualsYvsCanvas->cd(4);
+    residual_y_vs_x_corrected->GetYaxis()->SetRangeUser(0, pitch_y / 2);
+    residual_y_vs_x_corrected->Draw();
+
+    TCanvas* residualsMapFullcanvas =
+        new TCanvas("residualsMapFullcanvas", "2D residual vs particle hit position", 1600, 800);
+    residualsMapFullcanvas->Divide(2, 1);
+    residualsMapFullcanvas->cd(1);
+    residual_map_full->SetMaximum(sqrt(pitch_x * pitch_x / 4 + pitch_y * pitch_y / 4));
+    residual_map_full->Draw("colz");
+    residualsMapFullcanvas->cd(2);
+    residual_map_full_corrected->SetMaximum(sqrt(pitch_x * pitch_x / 4 + pitch_y * pitch_y / 4));
+    residual_map_full_corrected->Draw("colz");
+
+    TCanvas* residualsMapXYcanvas = new TCanvas("residualsMapXYcanvas", "Mean absolute deviation in y", 1200, 800);
+    residualsMapXYcanvas->Divide(2, 2);
+    residualsMapXYcanvas->cd(1);
+    residual_map_x->SetMaximum(pitch_x / 2);
+    residual_map_x->Draw("colz");
+    residualsMapXYcanvas->cd(2);
+    residual_map_x_corrected->SetMaximum(pitch_x / 2);
+    residual_map_x_corrected->Draw("colz");
+    residualsMapXYcanvas->cd(3);
+    residual_map_y->SetMaximum(pitch_y / 2);
+    residual_map_y->Draw("colz");
+    residualsMapXYcanvas->cd(4);
+    residual_map_y_corrected->SetMaximum(pitch_y / 2);
+    residual_map_y_corrected->Draw("colz");
 }
