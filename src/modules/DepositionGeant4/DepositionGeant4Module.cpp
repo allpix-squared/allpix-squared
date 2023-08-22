@@ -167,8 +167,9 @@ void DepositionGeant4Module::initialize() {
     }
 
     // Find the physics list
+    auto physics_list = config_.get<std::string>("physics_list");
     G4PhysListFactory physListFactory;
-    G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(config_.get<std::string>("physics_list"));
+    G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(physics_list);
     if(physicsList == nullptr) {
         std::string message = "specified physics list does not exists";
         std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
@@ -192,13 +193,17 @@ void DepositionGeant4Module::initialize() {
 
         throw InvalidValueError(config_, "physics_list", message);
     } else {
-        LOG(INFO) << "Using G4 physics list \"" << config_.get<std::string>("physics_list") << "\"";
+        LOG(INFO) << "Using G4 physics list \"" << physics_list << "\"";
     }
     // Register a step limiter (uses the user limits defined earlier)
+    LOG(DEBUG) << "Registering Geant4 step limiter physics list";
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
-    // Register radioactive decay physics lists
-    physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
+    // Register radioactive decay physics lists unless we are using a _HP list which include this already:
+    if(physics_list.find("_HP") == std::string::npos) {
+        LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
+        physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
+    }
 
     // Set the range-cut off threshold for secondary production:
     double production_cut = NAN;
