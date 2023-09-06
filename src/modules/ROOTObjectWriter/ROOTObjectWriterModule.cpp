@@ -59,6 +59,14 @@ void ROOTObjectWriterModule::initialize() {
     trees_["Event"]->Branch("ID", &current_event_);
     trees_["Event"]->Branch("seed", &current_seed_);
 
+    auto check_objects = [](const std::set<std::string>& arr, const std::string& object, bool inclusive) {
+        auto contained = std::find(arr.begin(), arr.end(), object);
+        if((!inclusive && contained == std::end(arr)) || (inclusive && contained != std::end(arr))) {
+            LOG(WARNING) << object << (inclusive ? " included" : " not excluded")
+                         << ", this will lead to large output files and possible performance penalties";
+        }
+    };
+
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
@@ -66,9 +74,15 @@ void ROOTObjectWriterModule::initialize() {
     } else if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
+
+        check_objects(exclude_, "DepositedCharge", true);
+        check_objects(exclude_, "PropagatedCharge", true);
     } else if(config_.has("exclude")) {
         auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
+
+        check_objects(exclude_, "DepositedCharge", false);
+        check_objects(exclude_, "PropagatedCharge", false);
     }
 }
 
