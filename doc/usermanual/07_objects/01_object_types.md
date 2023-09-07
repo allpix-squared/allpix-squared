@@ -122,6 +122,11 @@ Main parameters:
 - The [MCParticle](#mcparticle) that created the deposited charge
   ([`getMCParticle()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1depositedcharge/#function-getmcparticle))
 
+{{% alert title="Warning" color="warning" %}}
+It should be noted that in most cases, storage of DepositedCharge objects is not required. Since individual objects are
+generated for every electron and hole in the event, storing them will lead to large output files and possible performance penalties.
+{{% /alert %}}
+
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1depositedcharge/).
 
 ## PropagatedCharge
@@ -163,6 +168,11 @@ The following values for the carrier state are possible:
 
 - `CarrierState::HALTED`:
   The motion of the charge carrier has stopped, for example because it has reached an implant or the sensor surface
+
+{{% alert title="Warning" color="warning" %}}
+It should be noted that in most cases, storage of PropagatedCharge objects is not required. Since individual objects are
+generated for every electron and hole in the event, storing them will lead to large output files and possible performance penalties.
+{{% /alert %}}
 
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1propagatedcharge/).
 
