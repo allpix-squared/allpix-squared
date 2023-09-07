@@ -110,7 +110,7 @@ void ElectricFieldReaderModule::initialize() {
         FieldFunction<ROOT::Math::XYZVector> function = [field_z](const ROOT::Math::XYZPoint&) {
             return ROOT::Math::XYZVector(0, 0, field_z);
         };
-        detector_->setElectricFieldFunction(function, thickness_domain, FieldType::CONSTANT);
+        detector_->setElectricFieldFunction(std::move(function), thickness_domain, FieldType::CONSTANT);
     } else if(field_model == ElectricField::LINEAR) {
         LOG(TRACE) << "Adding linear electric field";
 

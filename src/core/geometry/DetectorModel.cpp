@@ -125,7 +125,14 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
-        addSupportLayer(size, thickness, offset, material, hole_type, location, hole_size, hole_offset);
+        addSupportLayer(size,
+                        thickness,
+                        std::move(offset),
+                        std::move(material),
+                        std::move(hole_type),
+                        std::move(location),
+                        hole_size,
+                        std::move(hole_offset));
     }
 }
 

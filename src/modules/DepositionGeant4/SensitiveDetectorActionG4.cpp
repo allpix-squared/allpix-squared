@@ -106,8 +106,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     }
 
     // Update current end point with the current last step
-    auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStep->GetPosition()));
-    track_end_[trackID] = end_position;
+    track_end_[trackID] = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStep->GetPosition()));
     track_charge_[trackID] += charge;
 
     // Add new deposit if the charge is more than zero
@@ -260,7 +259,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto deposit_message = std::make_shared<DepositedChargeMessage>(std::move(deposits), detector_);
 
         // Dispatch the message
-        messenger->dispatchMessage(module, deposit_message, event);
+        messenger->dispatchMessage(module, std::move(deposit_message), event);
     }
     // Store the number of charge carriers:
     deposited_charge_ = charges;

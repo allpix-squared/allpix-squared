@@ -131,7 +131,7 @@ DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* m
                 }
 
                 auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
-                for(auto data_dir : data_dirs) {
+                for(auto& data_dir : data_dirs) {
                     data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / "data";
                     if(std::filesystem::is_directory(data_dir)) {
                         config_.set<std::string>("data_path", data_dir);
@@ -404,12 +404,12 @@ void DepositionLaserModule::run(Event* event) {
     for(auto& [detector, data] : mc_particles) {
         LOG(INFO) << "    " << detector->getName() << ": " << data.size() << " hits";
         auto mcparticle_message = std::make_shared<MCParticleMessage>(std::move(data), detector);
-        messenger_->dispatchMessage(this, mcparticle_message, event);
+        messenger_->dispatchMessage(this, std::move(mcparticle_message), event);
     }
 
     for(auto& [detector, data] : deposited_charges) {
         auto charge_message = std::make_shared<DepositedChargeMessage>(std::move(data), detector);
-        messenger_->dispatchMessage(this, charge_message, event);
+        messenger_->dispatchMessage(this, std::move(charge_message), event);
     }
 }
 

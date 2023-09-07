@@ -438,7 +438,7 @@ void ProjectionPropagationModule::run(Event* event) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message, event);
+    messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);
 }
 
 void ProjectionPropagationModule::finalize() {

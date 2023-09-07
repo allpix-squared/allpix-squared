@@ -444,7 +444,7 @@ void GenericPropagationModule::run(Event* event) {
     auto propagated_charge_message = std::make_shared<PropagatedChargeMessage>(std::move(propagated_charges), detector_);
 
     // Dispatch the message with propagated charges
-    messenger_->dispatchMessage(this, propagated_charge_message, event);
+    messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);
 }
 
 /**
@@ -686,10 +686,10 @@ GenericPropagationModule::propagate(Event* event,
                            << Units::display(carrier_pos, {"mm", "um"});
             }
 
-            if((charge + n_secondaries) / initial_charge > 50.) {
-                LOG(WARNING) << "Detected gain of " << (charge + n_secondaries) / initial_charge
-                             << ", local electric field of " << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
-                             << ", diode seems to be in breakdown";
+            auto gain = static_cast<double>(charge + n_secondaries) / initial_charge;
+            if(gain > 50.) {
+                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
+                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
             }
         }
 

@@ -242,7 +242,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                    -model->getMatrixSize().x() / 2.0,
                                                    -model->getMatrixSize().y() / 2.0,
                                                    0);
-        geo_manager_->setExternalObject(name, "pixel_param", pixel_param);
+        geo_manager_->setExternalObject(name, "pixel_param", std::move(pixel_param));
         // WARNING: do not place the actual parameterization, only use it if we need it
 
         /**
@@ -435,7 +435,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                                                   model->getNPixels().x() * model->getNPixels().y(),
                                                   bumps_param.get(),
                                                   false);
-            geo_manager_->setExternalObject(name, "bumps_param_phys", bumps_param_phys);
+            geo_manager_->setExternalObject(name, "bumps_param_phys", std::move(bumps_param_phys));
         }
 
         // Store the total material budget:
