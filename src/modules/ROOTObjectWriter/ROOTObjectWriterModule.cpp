@@ -75,8 +75,8 @@ void ROOTObjectWriterModule::initialize() {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
 
-        check_objects(exclude_, "DepositedCharge", true);
-        check_objects(exclude_, "PropagatedCharge", true);
+        check_objects(include_, "DepositedCharge", true);
+        check_objects(include_, "PropagatedCharge", true);
     } else if(config_.has("exclude")) {
         auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
