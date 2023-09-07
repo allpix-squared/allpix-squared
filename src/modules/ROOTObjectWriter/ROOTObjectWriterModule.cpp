@@ -59,7 +59,8 @@ void ROOTObjectWriterModule::initialize() {
     trees_["Event"]->Branch("ID", &current_event_);
     trees_["Event"]->Branch("seed", &current_seed_);
 
-    auto check_objects = [](const std::set<std::string>& arr, const std::string& object, bool inclusive) {
+    // Check if the given type of object is contained in the inclusion or exclusion filter rules:
+    auto check_object_filter = [](const std::string& object, const std::set<std::string>& arr, bool inclusive) {
         auto contained = std::find(arr.begin(), arr.end(), object);
         if((!inclusive && contained == std::end(arr)) || (inclusive && contained != std::end(arr))) {
             LOG(WARNING) << object << (inclusive ? " included" : " not excluded")
@@ -75,14 +76,14 @@ void ROOTObjectWriterModule::initialize() {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
 
-        check_objects(include_, "DepositedCharge", true);
-        check_objects(include_, "PropagatedCharge", true);
+        check_object_filter("DepositedCharge", include_, true);
+        check_object_filter("PropagatedCharge", include_, true);
     } else if(config_.has("exclude")) {
         auto exc_arr = config_.getArray<std::string>("exclude");
         exclude_.insert(exc_arr.begin(), exc_arr.end());
 
-        check_objects(exclude_, "DepositedCharge", false);
-        check_objects(exclude_, "PropagatedCharge", false);
+        check_object_filter("DepositedCharge", exclude_, false);
+        check_object_filter("PropagatedCharge", exclude_, false);
     }
 
     if(include_.empty() && exclude_.empty()) {
