@@ -84,6 +84,13 @@ void ROOTObjectWriterModule::initialize() {
         check_objects(exclude_, "DepositedCharge", false);
         check_objects(exclude_, "PropagatedCharge", false);
     }
+
+    if(include_.empty() && exclude_.empty()) {
+        LOG(WARNING) << "Writing all simulation objects to file, this will lead to large output files and possible "
+                        "performance penalties."
+                     << std::endl
+                     << "It is advised to use the include and exclude parameters to select object types specifically.";
+    }
 }
 
 bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
