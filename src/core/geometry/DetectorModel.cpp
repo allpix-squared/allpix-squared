@@ -106,14 +106,10 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
     for(auto& support_config : reader_.getConfigurations("support")) {
         auto thickness = support_config.get<double>("thickness");
         auto size = support_config.get<XYVector>("size");
-        auto location = support_config.get<std::string>("location", "chip");
-        std::transform(location.begin(), location.end(), location.begin(), ::tolower);
-        if(location != "sensor" && location != "chip" && location != "absolute") {
-            throw InvalidValueError(
-                support_config, "location", "location of the support should be 'chip', 'sensor' or 'absolute'");
-        }
+        auto location = support_config.get<SupportLayer::Location>("location", SupportLayer::Location::CHIP);
+
         XYZVector offset;
-        if(location == "absolute") {
+        if(location == SupportLayer::Location::ABSOLUTE) {
             offset = support_config.get<XYZVector>("offset");
         } else {
             auto xy_offset = support_config.get<XYVector>("offset", {0, 0});
@@ -278,10 +274,10 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + assembly_->getChipOffset().z();
     for(auto& layer : ret_layers) {
         ROOT::Math::XYZVector offset = layer.offset_;
-        if(layer.location_ == "sensor") {
+        if(layer.location_ == SupportLayer::Location::SENSOR) {
             offset.SetZ(sensor_offset - layer.size_.z() / 2.0);
             sensor_offset -= layer.size_.z();
-        } else if(layer.location_ == "chip") {
+        } else if(layer.location_ == SupportLayer::Location::CHIP) {
             offset.SetZ(chip_offset + layer.size_.z() / 2.0);
             chip_offset += layer.size_.z();
         }

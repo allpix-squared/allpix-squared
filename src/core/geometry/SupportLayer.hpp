@@ -25,6 +25,12 @@ namespace allpix {
         friend class DetectorModel;
 
     public:
+        enum class Location {
+            SENSOR,  ///< Support layer is located on the sensor side of the assembly
+            CHIP,    ///< Support layer is located on the chip side of the assembly
+            ABSOLUTE ///< Support layer location provided as absolute position
+        };
+
         /**
          * @brief Get the center of the support layer
          * @return Center of the support layer
@@ -67,7 +73,7 @@ namespace allpix {
         /**
          * @brief Get the location of the support layer
          */
-        const std::string& getLocation() const { return location_; }
+        const Location& getLocation() const { return location_; }
 
     private:
         /**
@@ -84,7 +90,7 @@ namespace allpix {
                      ROOT::Math::XYZVector offset,
                      std::string material,
                      std::string type,
-                     std::string location,
+                     const Location location,
                      ROOT::Math::XYZVector hole_size,
                      ROOT::Math::XYVector hole_offset)
             : size_(std::move(size)), material_(std::move(material)), type_(std::move(type)),
@@ -101,7 +107,7 @@ namespace allpix {
         // Internal parameters to calculate return parameters
         ROOT::Math::XYZVector offset_;
         ROOT::Math::XYVector hole_offset_;
-        std::string location_;
+        Location location_;
     };
 } // namespace allpix
 

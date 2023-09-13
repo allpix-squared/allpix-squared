@@ -552,13 +552,12 @@ namespace allpix {
          * @param hole_size Size of the optional hole in the support
          * @param hole_offset Offset of the hole from its default position
          */
-        // FIXME: Location (and material) should probably be an enum instead
         void addSupportLayer(const ROOT::Math::XYVector& size,
                              double thickness,
                              ROOT::Math::XYZVector offset,
                              std::string material,
                              std::string type,
-                             std::string location,
+                             const SupportLayer::Location location,
                              const ROOT::Math::XYVector& hole_size,
                              ROOT::Math::XYVector hole_offset) {
             ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
