@@ -8,6 +8,7 @@ Allpix Squared is developed and maintained by
 
 * Paul Schütze, DESY, [pschutze](https://gitlab.cern.ch/pschutze)
 * Simon Spannagel, DESY, [simonspa](https://gitlab.cern.ch/simonspa)
+* Håkan Wennlöf, DESY, [hwennlof](https://gitlab.cern.ch/hwennlof)
 
 The following authors, in alphabetical order, have developed or contributed to Allpix Squared:
 
@@ -63,7 +64,6 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Ondrej Theiner, Charles University, [otheiner](https://gitlab.cern.ch/otheiner)
 * Annika Vauth, University of Hamburg, [avauth](https://gitlab.cern.ch/avauth)
 * Mateus Vicente Barreto Pinto, CERN, [mvicente](https://gitlab.cern.ch/mvicente)
-* Håkan Wennlöf, DESY, [hwennlof](https://gitlab.cern.ch/hwennlof)
 * Andy Wharton, Lancaster University, [awharton](https://gitlab.cern.ch/awharton)
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
