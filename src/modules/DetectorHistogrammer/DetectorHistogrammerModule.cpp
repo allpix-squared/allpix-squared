@@ -89,7 +89,7 @@ void DetectorHistogrammerModule::initialize() {
     auto global_ul = detector_->getGlobalPosition(
         (model->getSensorCenter() + ROOT::Math::XYZVector(-model->getSensorSize().x(), model->getSensorSize().y(), 0) / 2));
     hit_map_global = CreateHistogram<TH2D>("hit_map_global",
-                                           hit_map_title.c_str(),
+                                           hit_map_global_title.c_str(),
                                            static_cast<int>(model->getSensorSize().x()) * 10,
                                            std::min({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
                                            std::max({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
