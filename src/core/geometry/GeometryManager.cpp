@@ -9,7 +9,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -363,7 +362,6 @@ void GeometryManager::load_models() {
     // Get paths to read models from
     std::vector<std::string> paths = getModelsPath();
 
-    std::vector<std::pair<std::string, ConfigReader>> readers;
     LOG(TRACE) << "Reading model files";
     // Add all the paths to the reader
     for(auto& path : paths) {
@@ -381,41 +379,41 @@ void GeometryManager::load_models() {
                     continue;
                 }
 
-                // Add the sub directory path to the reader
-                LOG(TRACE) << "Reading model " << sub_path;
-                std::ifstream file(sub_path);
-
-                ConfigReader reader(file, sub_path);
-                readers.emplace_back(sub_path.stem(), reader);
+                // Read model file and add model to list
+                read_model_file(sub_path);
             }
         } else {
             // Always a file because paths are already checked
-            LOG(TRACE) << "Reading model " << path;
-            std::ifstream file(path);
-
-            ConfigReader reader(file, path);
-            readers.emplace_back(std::filesystem::path(path).stem(), reader);
+            read_model_file(path);
         }
     }
+}
 
-    // Loop through all configurations and parse them
-    LOG(TRACE) << "Parsing models";
-    for(auto& [name, reader] : readers) {
-        if(hasModel(name)) {
-            // Skip models that we already loaded earlier higher in the chain
-            LOG(DEBUG) << "Skipping overwritten model " + name << " in path "
-                       << reader.getHeaderConfiguration().getFilePath();
-            continue;
-        }
-        if(!needsModel(name)) {
-            // Also skip models that are not needed
-            LOG(TRACE) << "Skipping not required model " + name << " in path "
-                       << reader.getHeaderConfiguration().getFilePath();
-            continue;
-        }
+void GeometryManager::read_model_file(const std::filesystem::path& path) {
+    auto model_name = path.stem();
+    LOG(TRACE) << "Reading model " << model_name << " in path " << path;
+
+    // Check if we need to look at file at all
+    if(hasModel(model_name)) {
+        LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
+        return;
+    }
+    if(!needsModel(model_name)) {
+        LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
+        return;
+    }
+
+    try {
+        // Try to parse as config file
+        std::ifstream file(path);
+        ConfigReader reader(file, path);
 
         // Parse configuration and add model to the config
-        addModel(DetectorModel::factory(name, reader));
+        addModel(DetectorModel::factory(model_name, reader));
+
+    } catch(const ConfigParseError& e) {
+        // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
+        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << std::endl << e.what();
     }
 }
 
