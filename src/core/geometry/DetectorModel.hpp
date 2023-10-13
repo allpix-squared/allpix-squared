@@ -308,7 +308,7 @@ namespace allpix {
          * @brief Get center of the chip in local coordinates
          * @return Center of the chip
          *
-         * Center of the chip calculcated from chip excess and sensor offset
+         * Center of the chip calculated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
             ROOT::Math::XYZVector offset(assembly_->getChipOffset().x() / 2.0,
