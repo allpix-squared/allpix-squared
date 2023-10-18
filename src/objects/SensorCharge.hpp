@@ -19,7 +19,7 @@
 namespace allpix {
     /**
      * @ingroup Objects
-     * @brief Flags to distinguish between eletron and hole charge carriers
+     * @brief Flags to distinguish between electron and hole charge carriers
      */
     enum class CarrierType : int8_t { ELECTRON = -1, HOLE = 1 };
 

@@ -8,7 +8,7 @@ weight: 3
 Owing to its modular structure, the functionality of the Allpix Squared can easily be extended by adding additional modules
 which can be placed in the simulation chain. Since the framework serves a wide community, modules should be as generic as
 possible, i.e. not only serve the simulation of a single detector prototype but implement the necessary algorithms such that
-they are re-usable for other applications. Furthermore, it may be beneficial to split up modules to support the modular
+they are reusable for other applications. Furthermore, it may be beneficial to split up modules to support the modular
 design of Allpix Squared.
 
 Before starting the development of a new module, it is essential to carefully read the documentation of the framework module
