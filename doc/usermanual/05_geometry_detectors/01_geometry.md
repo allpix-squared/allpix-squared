@@ -78,9 +78,9 @@ This simplifies calculations in the local coordinate system as all positions can
 numbers or in fractions of the pixel pitch.
 
 A sketch of the actual coordinate transformations performed, including the order of transformations, is given below. The
-global coordinate system used for tracking of particles through detector setup is shown on the left side, while the local
+global coordinate system used for tracking of particles through the detector setup is shown on the left side, while the local
 coordinate system used to describe the individual sensors is located at the right. Both local and global coordinate systems are aligned by default.
-Therefore, without any rotation, the sensor’s backplane (opposite to the plane where the readout is performed) is turned to the negative side of the z-axis.
+Therefore, without any rotation, the sensor backplane (opposite to the plane where the readout is performed) is turned to the negative side of the z-axis.
 
 ![](./transformations.png)\
 *Coordinate transformations from global to local and reverse. The first row shows the detector positions in the respective
