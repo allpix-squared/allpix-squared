@@ -19,15 +19,15 @@ using namespace allpix;
 
 PixelDetectorModel::PixelDetectorModel(std::string type,
                                        const std::shared_ptr<DetectorAssembly>& assembly,
-                                       const ConfigReader& reader)
-    : DetectorModel(std::move(type), assembly, reader) {
+                                       const ConfigReader& reader,
+                                       Configuration& header_config)
+    : DetectorModel(std::move(type), assembly, reader, header_config) {
     using namespace ROOT::Math;
-    auto config = reader.getHeaderConfiguration();
 
     // Number of pixels
-    setNPixels(config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
+    setNPixels(header_config.get<DisplacementVector2D<Cartesian2D<unsigned int>>>("number_of_pixels"));
     // Size of the pixels
-    auto pixel_size = config.get<XYVector>("pixel_size");
+    auto pixel_size = header_config.get<XYVector>("pixel_size");
     setPixelSize(std::move(pixel_size));
 }
 

@@ -33,7 +33,8 @@ namespace allpix {
          */
         explicit HexagonalPixelDetectorModel(std::string type,
                                              const std::shared_ptr<DetectorAssembly>& assembly,
-                                             const ConfigReader& reader);
+                                             const ConfigReader& reader,
+                                             Configuration& header_config);
 
         /**
          * @brief Essential virtual destructor

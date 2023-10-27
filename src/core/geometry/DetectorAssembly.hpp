@@ -31,11 +31,10 @@ namespace allpix {
          * Detector assembly constructor
          * @param reader  ConfigReader holding the full detector model configuration
          */
-        explicit DetectorAssembly(const ConfigReader& reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit DetectorAssembly(Configuration& header_config) {
 
             // Chip thickness
-            thickness_ = config.get<double>("chip_thickness", 0);
+            thickness_ = header_config.get<double>("chip_thickness", 0);
         }
 
         ///@{
@@ -84,25 +83,25 @@ namespace allpix {
          * Constructor for hybrid assemblies
          * @param reader  ConfigReader holding the full detector model configuration
          */
-        explicit HybridAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit HybridAssembly(Configuration& header_config) : DetectorAssembly(header_config) {
 
             // Excess around the chip from the pixel grid
-            auto default_assembly_excess = config.get<double>("chip_excess", 0);
-            excess_.at(0) = config.get<double>("chip_excess_top", default_assembly_excess);
-            excess_.at(1) = config.get<double>("chip_excess_right", default_assembly_excess);
-            excess_.at(2) = config.get<double>("chip_excess_bottom", default_assembly_excess);
-            excess_.at(3) = config.get<double>("chip_excess_left", default_assembly_excess);
+            auto default_assembly_excess = header_config.get<double>("chip_excess", 0);
+            excess_.at(0) = header_config.get<double>("chip_excess_top", default_assembly_excess);
+            excess_.at(1) = header_config.get<double>("chip_excess_right", default_assembly_excess);
+            excess_.at(2) = header_config.get<double>("chip_excess_bottom", default_assembly_excess);
+            excess_.at(3) = header_config.get<double>("chip_excess_left", default_assembly_excess);
 
             // Set bump parameters
-            bump_cylinder_radius_ = config.get<double>("bump_cylinder_radius");
-            bump_height_ = config.get<double>("bump_height");
-            bump_sphere_radius_ = config.get<double>("bump_sphere_radius", 0);
+            bump_cylinder_radius_ = header_config.get<double>("bump_cylinder_radius");
+            bump_height_ = header_config.get<double>("bump_height");
+            bump_sphere_radius_ = header_config.get<double>("bump_sphere_radius", 0);
 
-            auto pitch = config.get<ROOT::Math::XYVector>("pixel_size");
-            bump_offset_ = config.get<ROOT::Math::XYVector>("bump_offset", {0, 0});
+            auto pitch = header_config.get<ROOT::Math::XYVector>("pixel_size");
+            bump_offset_ = header_config.get<ROOT::Math::XYVector>("bump_offset", {0, 0});
             if(std::fabs(bump_offset_.x()) > pitch.x() / 2.0 || std::fabs(bump_offset_.y()) > pitch.y() / 2.0) {
-                throw InvalidValueError(config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
+                throw InvalidValueError(
+                    header_config, "bump_offset", "bump bond offset cannot be larger than half pixel pitch");
             }
         }
 
@@ -155,15 +154,14 @@ namespace allpix {
          * Constructor for monolithic assemblies
          * @param reader  ConfigReader holding the full detector model configuration
          */
-        explicit MonolithicAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit MonolithicAssembly(Configuration& header_config) : DetectorAssembly(header_config) {
 
             // Excess around the chip is copied from sensor size
-            auto default_assembly_excess = config.get<double>("sensor_excess", 0);
-            excess_.at(0) = config.get<double>("sensor_excess_top", default_assembly_excess);
-            excess_.at(1) = config.get<double>("sensor_excess_right", default_assembly_excess);
-            excess_.at(2) = config.get<double>("sensor_excess_bottom", default_assembly_excess);
-            excess_.at(3) = config.get<double>("sensor_excess_left", default_assembly_excess);
+            auto default_assembly_excess = header_config.get<double>("sensor_excess", 0);
+            excess_.at(0) = header_config.get<double>("sensor_excess_top", default_assembly_excess);
+            excess_.at(1) = header_config.get<double>("sensor_excess_right", default_assembly_excess);
+            excess_.at(2) = header_config.get<double>("sensor_excess_bottom", default_assembly_excess);
+            excess_.at(3) = header_config.get<double>("sensor_excess_left", default_assembly_excess);
         }
     };
 } // namespace allpix

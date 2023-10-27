@@ -66,7 +66,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
             throw InvalidValueError(geometry_section, "role", "unknown role");
         }
 
-        LOG(DEBUG) << "Detector " << geometry_section.getName() << ":";
+        LOG(ERROR) << "Detector " << geometry_section.getName() << ":";
         // Get the position and orientation of the detector
         auto [position, orientation] = calculate_orientation(geometry_section);
 
@@ -438,6 +438,9 @@ void GeometryManager::close_geometry() {
             // Get the configuration of the model
             Configuration new_config("");
             auto model_configs = model->getConfigurations();
+            for(auto& conf : model_configs) {
+                LOG(ERROR) << "Name in GeometryManager.cpp: " << conf.getName();
+            }
 
             // Add all non internal parameters to the config for a specialized model
             for(auto& [key, value] : config.getAll()) {

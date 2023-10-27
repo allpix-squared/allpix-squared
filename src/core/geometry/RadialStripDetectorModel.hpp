@@ -43,7 +43,8 @@ namespace allpix {
          */
         explicit RadialStripDetectorModel(std::string type,
                                           const std::shared_ptr<DetectorAssembly>& assembly,
-                                          const ConfigReader& reader);
+                                          const ConfigReader& reader,
+                                          Configuration& header_config);
 
         /**
          * @brief Get the number of strips in a given strip row
