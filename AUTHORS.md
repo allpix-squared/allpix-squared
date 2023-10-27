@@ -12,6 +12,7 @@ Allpix Squared is developed and maintained by
 
 The following authors, in alphabetical order, have developed or contributed to Allpix Squared:
 
+* Babar Ali, Czech Technical University in Prague, [bali](https://gitlab.cern.ch/bali)
 * Mohamed Moanis Ali, GSOC2019 Student, [mmoanis](https://github.com/mmoanis)
 * Mathieu Benoit, BNL, [mbenoit](https://gitlab.cern.ch/mbenoit)
 * Thomas Billoud, Université de Montréal, [tbilloud](https://gitlab.cern.ch/tbilloud)
@@ -35,6 +36,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Moritz Kiehn, Université de Genève, [msmk](https://gitlab.cern.ch/msmk)
 * Rafaella Eleni Kotitsa, CERN, [rkotitsa](https://gitlab.cern.ch/rkotitsa)
 * Stephan Lachnit, DESY, [slachnit](https://gitlab.cern.ch/slachnit)
+* Hugo Natal da Luz, Czech Technical University in Prague, [ferrepe2](https://git.utef.cvut.cz/ferrepe2)
 * Salman Maqbool, CERN Summer Student, [smaqbool](https://gitlab.cern.ch/smaqbool)
 * Stefano Mersi, CERN, [mersi](https://gitlab.cern.ch/mersi)
 * Ryuji Moriya, CERN Summer Student, University of Glasgow, [rmoriya](https://gitlab.cern.ch/rmoriya)
