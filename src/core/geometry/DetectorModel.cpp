@@ -84,7 +84,6 @@ DetectorModel::DetectorModel(std::string type,
                              Configuration& header_config)
     : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
     using namespace ROOT::Math;
-    LOG(ERROR) << "Address of header_config DetectorModel constructor: " << &header_config;
 
     // Sensor thickness
     setSensorThickness(header_config.get<double>("sensor_thickness"));

@@ -80,13 +80,7 @@ void ConfigManager::parse_detectors() {
 
     std::ifstream detector_file(detector_file_name);
     ConfigReader detector_reader(detector_file, detector_file_name);
-    auto detector_configs =
-        detector_reader
-            .getConfigurations(); // Holds all the sub-configs of the detector geometry file definition. Like [implant]
-    LOG(ERROR) << "Number of sub-headers: " << detector_configs.size();
-    for(auto& conf : detector_configs) {
-        LOG(ERROR) << "Name: " << conf.getName();
-    }
+    auto detector_configs = detector_reader.getConfigurations();
     detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 

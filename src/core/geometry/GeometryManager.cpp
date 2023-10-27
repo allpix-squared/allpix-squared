@@ -66,7 +66,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
             throw InvalidValueError(geometry_section, "role", "unknown role");
         }
 
-        LOG(ERROR) << "Detector " << geometry_section.getName() << ":";
+        LOG(DEBUG) << "Detector " << geometry_section.getName() << ":";
         // Get the position and orientation of the detector
         auto [position, orientation] = calculate_orientation(geometry_section);
 
@@ -438,8 +438,12 @@ void GeometryManager::close_geometry() {
             // Get the configuration of the model
             Configuration new_config("");
             auto model_configs = model->getConfigurations();
+            std::vector<std::string> valid_sections = {"", "implant", "support"};
             for(auto& conf : model_configs) {
-                LOG(ERROR) << "Name in GeometryManager.cpp: " << conf.getName();
+                auto section_name = allpix::transform(conf.getName(), ::tolower);
+                if(std::find(valid_sections.begin(), valid_sections.end(), section_name) == valid_sections.end()) {
+                    LOG(WARNING) << "Section [" << section_name << "] is not valid in sensor geometry definition.";
+                }
             }
 
             // Add all non internal parameters to the config for a specialized model
