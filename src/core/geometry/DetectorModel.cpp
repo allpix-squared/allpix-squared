@@ -127,6 +127,7 @@ DetectorModel::DetectorModel(std::string type,
     }
 
     // Read support layers
+    LOG(DEBUG) << "Number of [support] sections: " << reader_.getConfigurations("support").size();
     for(auto& support_config : reader_.getConfigurations("support")) {
         auto thickness = support_config.get<double>("thickness");
         auto size = support_config.get<XYVector>("size");
