@@ -67,21 +67,23 @@ The detector configuration is provided in the detector configuration file as exp
 
 ## Coordinate systems
 
-Local coordinate systems for each detector and a global frame ofreference for the full setup are defined. The global
+Local coordinate systems for each detector and a global frame of reference for the full setup are defined. The global
 coordinate system is chosen as a right-handed Cartesian system, and the rotations of individual devices are performed around
 the geometric center of their sensor.
 
 Local coordinate systems for the detectors are also right-handed Cartesian systems, with the x- and y-axes defining the
 sensor plane. The origin of this coordinate system is the center of the lower left pixel in the grid, i.e. the pixel with
-indices (0,0). This simplifies calculations in the local coordinate system as all positions can either be stated in absolute
+indices (0,0), whereas the z-axis pointing towards the readout connected to the sensor.
+This simplifies calculations in the local coordinate system as all positions can either be stated in absolute
 numbers or in fractions of the pixel pitch.
 
 A sketch of the actual coordinate transformations performed, including the order of transformations, is given below. The
-global coordinate system used for tracking of particles through detetector setup is shown on the left side, while the local
-coordinate system used to describe the individual sensors is located at the right.
+global coordinate system used for tracking of particles through the detector setup is shown on the left side, while the local
+coordinate system used to describe the individual sensors is located at the right. Both local and global coordinate systems are aligned by default.
+Therefore, without any rotation, the sensor backplane (opposite to the plane where the readout is performed) is turned to the negative side of the z-axis.
 
 ![](./transformations.png)\
-*Coordinate transformations from global to local and revers. The first row shows the detector positions in the respective
+*Coordinate transformations from global to local and reverse. The first row shows the detector positions in the respective
 coordinate systems in top view, the second row in side view.*
 
 The global reference for time measurements is the beginning of the event, i.e. the start of the particle tracking through the
