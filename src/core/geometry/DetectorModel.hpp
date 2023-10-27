@@ -180,7 +180,7 @@ namespace allpix {
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
-         * @param reader Configuration holding the empty section of the configuration file
+         * @param header_config Configuration holding the empty section of the configuration file
          */
         explicit DetectorModel(std::string type,
                                std::shared_ptr<DetectorAssembly> assembly,
