@@ -29,7 +29,7 @@ namespace allpix {
     public:
         /**
          * Detector assembly constructor
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param header_config Configuration reference holding the unnamed section fo detector configuration
          */
         explicit DetectorAssembly(Configuration& header_config) {
 
@@ -81,7 +81,7 @@ namespace allpix {
     public:
         /**
          * Constructor for hybrid assemblies
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param header_config  Configuration reference holding the unnamed section fo detector configuration
          */
         explicit HybridAssembly(Configuration& header_config) : DetectorAssembly(header_config) {
 
@@ -152,7 +152,7 @@ namespace allpix {
     public:
         /**
          * Constructor for monolithic assemblies
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param header_config Configuration reference holding the unnamed section fo detector configuration
          */
         explicit MonolithicAssembly(Configuration& header_config) : DetectorAssembly(header_config) {
 
