@@ -17,15 +17,14 @@ using namespace allpix;
 HexagonalPixelDetectorModel::HexagonalPixelDetectorModel(std::string type,
                                                          const std::shared_ptr<DetectorAssembly>& assembly,
                                                          const ConfigReader& reader,
-                                                         Configuration& header_config)
-    : PixelDetectorModel(std::move(type), assembly, reader, header_config) {
+                                                         Configuration& config)
+    : PixelDetectorModel(std::move(type), assembly, reader, config) {
 
     // Select shape orientation
-    pixel_type_ = header_config.get<Pixel::Type>("pixel_type");
+    pixel_type_ = config.get<Pixel::Type>("pixel_type");
     if(pixel_type_ != Pixel::Type::HEXAGON_FLAT && pixel_type_ != Pixel::Type::HEXAGON_POINTY) {
-        throw InvalidValueError(header_config,
-                                "pixel_type",
-                                "for this model, only pixel types 'hexagon_pointy' and 'hexagon_flat' are available");
+        throw InvalidValueError(
+            config, "pixel_type", "for this model, only pixel types 'hexagon_pointy' and 'hexagon_flat' are available");
     }
 }
 

@@ -19,27 +19,26 @@ using namespace allpix;
 RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
                                                    const std::shared_ptr<DetectorAssembly>& assembly,
                                                    const ConfigReader& reader,
-                                                   Configuration& header_config)
-    : DetectorModel(std::move(type), assembly, reader, header_config) {
+                                                   Configuration& config)
+    : DetectorModel(std::move(type), assembly, reader, config) {
 
     if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {
-        throw InvalidCombinationError(
-            header_config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
+        throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
     }
 
     // Set geometry parameters from config file
-    setNumberOfStrips(header_config.getArray<unsigned int>("number_of_strips"));
-    setStripLength(header_config.getArray<double>("strip_length"));
-    setAngularPitch(header_config.getArray<double>("angular_pitch"));
-    setInnerPitch(header_config.getArray<double>("inner_pitch"));
-    setStereoAngle(header_config.get<double>("stereo_angle", 0));
+    setNumberOfStrips(config.getArray<unsigned int>("number_of_strips"));
+    setStripLength(config.getArray<double>("strip_length"));
+    setAngularPitch(config.getArray<double>("angular_pitch"));
+    setInnerPitch(config.getArray<double>("inner_pitch"));
+    setStereoAngle(config.get<double>("stereo_angle", 0));
 
     // Get the number of strip rows
     auto strip_rows = static_cast<unsigned int>(number_of_strips_.size());
 
     // Check if parameters are defined for each strip row
     if(strip_length_.size() != strip_rows || angular_pitch_.size() != strip_rows || inner_pitch_.size() != strip_rows) {
-        throw InvalidCombinationError(header_config,
+        throw InvalidCombinationError(config,
                                       {"number_of_strips", "strip_length", "angular_pitch", "inner_pitch"},
                                       "The number of parameter values does not match the number of strip rows.");
     }
@@ -49,12 +48,12 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
         // Check if strip pitch is smaller than the length
         if(inner_pitch_.at(row) > strip_length_.at(row)) {
             throw InvalidValueError(
-                header_config, "inner_pitch", "Inner pitch in row " + std::to_string(row) + " is larger than strip length.");
+                config, "inner_pitch", "Inner pitch in row " + std::to_string(row) + " is larger than strip length.");
         }
         // Check that sensor segment doesn't subtend too large an angle,
         auto angle = angular_pitch_.at(row) * number_of_strips_.at(row);
         if(angle > TMath::Pi() / 2) {
-            throw InvalidValueError(header_config, "angular_pitch", "Wafer cannot subtend a larger angle than pi/2.");
+            throw InvalidValueError(config, "angular_pitch", "Wafer cannot subtend a larger angle than pi/2.");
         }
         row_angle_.push_back(angle);
     }

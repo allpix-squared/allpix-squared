@@ -40,12 +40,12 @@ namespace allpix {
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
-         * @param header_config Configuration reference holding the unnamed section fo detector configuration
+         * @param config Configuration reference holding the unnamed section of detector configuration
          */
         explicit PixelDetectorModel(std::string type,
                                     const std::shared_ptr<DetectorAssembly>& assembly,
                                     const ConfigReader& reader,
-                                    Configuration& header_config);
+                                    Configuration& config);
 
         /**
          * @brief Returns if a local position is within the sensitive device

@@ -22,50 +22,49 @@
 using namespace allpix;
 
 std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigReader& reader) {
-    Configuration header_config = reader.getHeaderConfiguration();
+    Configuration config = reader.getHeaderConfiguration();
 
     // Sensor geometry
     // FIXME we might want to deprecate this default at some point?
-    if(!header_config.has("geometry")) {
-        LOG(WARNING) << "Model file " << header_config.getFilePath()
-                     << " does not provide a geometry parameter, using default";
+    if(!config.has("geometry")) {
+        LOG(WARNING) << "Model file " << config.getFilePath() << " does not provide a geometry parameter, using default";
     }
-    auto geometry = header_config.get<std::string>("geometry", "pixel");
+    auto geometry = config.get<std::string>("geometry", "pixel");
 
     // Assembly type
-    if(!header_config.has("type")) {
-        LOG(FATAL) << "Model file " << header_config.getFilePath() << " does not provide a type parameter";
+    if(!config.has("type")) {
+        LOG(FATAL) << "Model file " << config.getFilePath() << " does not provide a type parameter";
     }
-    auto type = header_config.get<std::string>("type");
+    auto type = config.get<std::string>("type");
 
     std::shared_ptr<DetectorAssembly> assembly;
     if(type == "hybrid") {
-        assembly = std::make_shared<HybridAssembly>(header_config);
+        assembly = std::make_shared<HybridAssembly>(config);
     } else if(type == "monolithic") {
-        assembly = std::make_shared<MonolithicAssembly>(header_config);
+        assembly = std::make_shared<MonolithicAssembly>(config);
     } else {
-        LOG(FATAL) << "Model file " << header_config.getFilePath() << " type parameter is not valid";
-        throw InvalidValueError(header_config, "type", "model type is not supported");
+        LOG(FATAL) << "Model file " << config.getFilePath() << " type parameter is not valid";
+        throw InvalidValueError(config, "type", "model type is not supported");
     }
 
     // Instantiate the correct detector model
     std::shared_ptr<DetectorModel> model;
     if(geometry == "pixel") {
-        model = std::make_shared<PixelDetectorModel>(name, assembly, reader, header_config);
+        model = std::make_shared<PixelDetectorModel>(name, assembly, reader, config);
     } else if(geometry == "radial_strip") {
-        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader, header_config);
+        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader, config);
     } else if(geometry == "hexagonal") {
-        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader, header_config);
+        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader, config);
     } else {
-        LOG(FATAL) << "Model file " << header_config.getFilePath() << " geometry parameter is not valid";
+        LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
-        throw InvalidValueError(header_config, "geometry", "model geometry is not supported");
+        throw InvalidValueError(config, "geometry", "model geometry is not supported");
     }
 
     // Validate the detector model - we call this here because validation might depend on derived class properties:
     model->validate();
 
-    auto unused_keys = header_config.getUnusedKeys();
+    auto unused_keys = config.getUnusedKeys();
     if(!unused_keys.empty()) {
         std::stringstream st;
         st << "Unused configuration keys in global section in sensor geometry definition:";
@@ -81,27 +80,26 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
                              ConfigReader reader,
-                             Configuration& header_config)
+                             Configuration& config)
     : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
     using namespace ROOT::Math;
 
     // Sensor thickness
-    setSensorThickness(header_config.get<double>("sensor_thickness"));
+    setSensorThickness(config.get<double>("sensor_thickness"));
 
     // Excess around the sensor from the pixel grid
-    auto default_sensor_excess = header_config.get<double>("sensor_excess", 0);
-    setSensorExcessTop(header_config.get<double>("sensor_excess_top", default_sensor_excess));
-    setSensorExcessBottom(header_config.get<double>("sensor_excess_bottom", default_sensor_excess));
-    setSensorExcessLeft(header_config.get<double>("sensor_excess_left", default_sensor_excess));
-    setSensorExcessRight(header_config.get<double>("sensor_excess_right", default_sensor_excess));
+    auto default_sensor_excess = config.get<double>("sensor_excess", 0);
+    setSensorExcessTop(config.get<double>("sensor_excess_top", default_sensor_excess));
+    setSensorExcessBottom(config.get<double>("sensor_excess_bottom", default_sensor_excess));
+    setSensorExcessLeft(config.get<double>("sensor_excess_left", default_sensor_excess));
+    setSensorExcessRight(config.get<double>("sensor_excess_right", default_sensor_excess));
 
     // Sensor material:
-    sensor_material_ = header_config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
+    sensor_material_ = config.get<SensorMaterial>("sensor_material", SensorMaterial::SILICON);
 
     // Issue a warning for pre-3.0 implant definitions:
-    if(header_config.has("implant_size")) {
-        LOG(WARNING) << "Parameter \"implant_size\" of model " << header_config.getFilePath() << " not supported,"
-                     << std::endl
+    if(config.has("implant_size")) {
+        LOG(WARNING) << "Parameter \"implant_size\" of model " << config.getFilePath() << " not supported," << std::endl
                      << "Individual [implant] sections must be used for implant definitions";
     }
 
