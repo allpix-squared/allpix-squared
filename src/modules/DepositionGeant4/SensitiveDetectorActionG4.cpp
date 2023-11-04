@@ -104,6 +104,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
         track_time_.emplace(trackID, step_time);
         track_pdg_.emplace(trackID, track->GetDynamicParticle()->GetPDGcode());
         track_total_energy_arrival_.emplace(trackID, track->GetTotalEnergy());
+        track_kinetic_energy_arrival_.emplace(trackID, track->GetKineticEnergy());
     }
 
     // Update current end point with the current last step
@@ -155,6 +156,7 @@ void SensitiveDetectorActionG4::clearEventInfo() {
     track_time_.clear();
     track_charge_.clear();
     track_total_energy_arrival_.clear();
+    track_kinetic_energy_arrival_.clear();
 
     deposit_position_.clear();
     deposit_charge_.clear();
@@ -193,6 +195,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         mc_particles.back().setTotalDepositedCharge(2 * charge);
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         mc_particles.back().setTotalEnergyArrival(track_total_energy_arrival_.at(track_id));
+        mc_particles.back().setKineticEnergyArrival(track_kinetic_energy_arrival_.at(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector " << detector_->getName() << " from "

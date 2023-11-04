@@ -68,6 +68,14 @@ void MCParticle::setTotalEnergyArrival(double total_energy) {
     total_energy_arrival_ = total_energy;
 }
 
+double MCParticle::getKineticEnergyArrival() const {
+    return kinetic_energy_arrival_;
+}
+
+void MCParticle::setKineticEnergyArrival(double kinetic_energy) {
+    kinetic_energy_arrival_ = kinetic_energy;
+}
+
 unsigned int MCParticle::getTotalDepositedCharge() const {
     return deposited_charge_;
 }

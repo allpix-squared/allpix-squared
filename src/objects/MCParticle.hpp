@@ -108,6 +108,18 @@ namespace allpix {
         double getTotalEnergyArrival() const;
 
         /**
+         * @brief Set the kinetic energy of this particle as it arrives at the respective sensor
+         * @param kinetic_energy Kinetic energy of this particle at arrival
+         */
+        void setKineticEnergyArrival(double kinetic_energy);
+
+        /**
+         * @brief Return the kinetic energy of this particle as it arrives at the respective sensor
+         * @return Kinetic energy of this particle at arrival
+         */
+        double getKineticEnergyArrival() const;
+
+        /**
          * @brief Set the total number of charge carriers produced by this particle
          * @param total_charge Total charge deposited by this particle
          */
@@ -183,6 +195,7 @@ namespace allpix {
         double global_time_{};
         unsigned int deposited_charge_{};
         double total_energy_arrival_{};
+        double kinetic_energy_arrival_{};
 
         PointerWrapper<MCParticle> parent_;
         PointerWrapper<MCTrack> track_;
