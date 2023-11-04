@@ -142,6 +142,8 @@ namespace allpix {
         std::map<int, double> track_time_;
         // Total charge by track
         std::map<int, unsigned int> track_charge_;
+        // Total energy by track at arrival to sensor
+        std::map<int, double> track_total_energy_arrival_;
 
         // Map from deposit index to track id
         std::vector<int> deposit_to_id_;

@@ -96,6 +96,18 @@ namespace allpix {
         double getLocalTime() const;
 
         /**
+         * @brief Set the total energy of this particle as it arrives at the respective sensor
+         * @param total_energy Total energy of this particle at arrival
+         */
+        void setTotalEnergyArrival(double total_energy);
+
+        /**
+         * @brief Return the total energy of this particle as it arrives at the respective sensor
+         * @return Total energy of this particle at arrival
+         */
+        double getTotalEnergyArrival() const;
+
+        /**
          * @brief Set the total number of charge carriers produced by this particle
          * @param total_charge Total charge deposited by this particle
          */
@@ -170,6 +182,7 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
         unsigned int deposited_charge_{};
+        double total_energy_arrival_{};
 
         PointerWrapper<MCParticle> parent_;
         PointerWrapper<MCTrack> track_;

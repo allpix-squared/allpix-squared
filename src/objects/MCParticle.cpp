@@ -60,6 +60,14 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     }
 }
 
+double MCParticle::getTotalEnergyArrival() const {
+    return total_energy_arrival_;
+}
+
+void MCParticle::setTotalEnergyArrival(double total_energy) {
+    total_energy_arrival_ = total_energy;
+}
+
 unsigned int MCParticle::getTotalDepositedCharge() const {
     return deposited_charge_;
 }
