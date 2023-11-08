@@ -469,6 +469,8 @@ docs:doxygen:
 docs:usermanual-hugo:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    tags:
+        - cvmfs
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
