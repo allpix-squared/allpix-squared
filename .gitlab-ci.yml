@@ -30,8 +30,6 @@ stages:
 
 .centos7:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    tags:
-        - docker
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -40,8 +38,6 @@ stages:
 
 .centos9:
     image: gitlab-registry.cern.ch/sft/docker/centos9:latest
-    tags:
-        - docker
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -50,15 +46,11 @@ stages:
 
 .docker:
     image: $DOCKER_DEPS_IMAGE
-    tags:
-        - docker
     before_script:
         - mkdir -p build/ && cd build/
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    tags:
-        - docker
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -238,8 +230,6 @@ fmt:reuse:
     image:
         name: registry.cern.ch/docker.io/fsfe/reuse:latest
         entrypoint: [""]
-    tags:
-      - docker
     stage: formatting
     needs: []
     dependencies: []
@@ -450,8 +440,6 @@ perf:cc7-gcc:
     stage: documentation
     needs: []
     dependencies: []
-    tags:
-        - docker
     before_script:
         - mkdir public build
         - cd build
@@ -567,8 +555,6 @@ deploy:documentation:
 
 deploy:eos:
     stage: deployment
-    tags:
-      - docker
     variables:
         GIT_STRATEGY: none
     # Only run on new tags for releases and on schedules for nightlies:
