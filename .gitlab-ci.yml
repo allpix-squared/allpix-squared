@@ -30,6 +30,8 @@ stages:
 
 .centos7:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    tags:
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -38,6 +40,8 @@ stages:
 
 .centos9:
     image: gitlab-registry.cern.ch/sft/docker/centos9:latest
+    tags:
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -51,6 +55,8 @@ stages:
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    tags:
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
