@@ -67,7 +67,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     auto unused_keys = config.getUnusedKeys();
     if(!unused_keys.empty()) {
         std::stringstream st;
-        st << "Unused configuration keys in global section in sensor geometry definition:";
+        st << "Unused configuration keys in global section of sensor geometry definition:";
         for(auto& key : unused_keys) {
             st << std::endl << key;
         }
@@ -116,7 +116,7 @@ DetectorModel::DetectorModel(std::string type,
         auto unused_keys = implant_config.getUnusedKeys();
         if(!unused_keys.empty()) {
             std::stringstream st;
-            st << "Unused configuration keys in [implant] section in sensor geometry definition:";
+            st << "Unused configuration keys in [implant] section of sensor geometry definition:";
             for(auto& key : unused_keys) {
                 st << std::endl << key;
             }
@@ -156,7 +156,7 @@ DetectorModel::DetectorModel(std::string type,
         auto unused_keys = support_config.getUnusedKeys();
         if(!unused_keys.empty()) {
             std::stringstream st;
-            st << "Unused configuration keys in [support] section in sensor geometry definition:";
+            st << "Unused configuration keys in [support] section of sensor geometry definition:";
             for(auto& key : unused_keys) {
                 st << std::endl << key;
             }
