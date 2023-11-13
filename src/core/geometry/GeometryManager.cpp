@@ -63,22 +63,9 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
             // Calculate the orientations of passive elements
             passive_orientations_[geometry_section.getName()] = calculate_orientation(geometry_section);
 
-            // Check for mandatory but hitherto unused keys:
-            auto check_key = [&](const Configuration& cfg, const std::string& key) {
-                if(!cfg.has(key)) {
-                    throw MissingKeyError(key, cfg.getName());
-                }
-            };
-
-            // Check type keyword
-            check_key(geometry_section, "type");
-
             // Check material unless it's a GDML file placement
             auto type = geometry_section.get<std::string>("type");
             std::transform(type.begin(), type.end(), type.begin(), ::tolower);
-            if(type != "gdml") {
-                check_key(geometry_section, "material");
-            }
 
             passive_elements_.push_back(geometry_section);
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
