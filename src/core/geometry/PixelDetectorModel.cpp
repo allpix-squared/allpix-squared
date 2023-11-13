@@ -20,7 +20,7 @@ using namespace allpix;
 PixelDetectorModel::PixelDetectorModel(std::string type,
                                        const std::shared_ptr<DetectorAssembly>& assembly,
                                        const ConfigReader& reader,
-                                       Configuration& config)
+                                       const Configuration& config)
     : DetectorModel(std::move(type), assembly, reader, config) {
     using namespace ROOT::Math;
 

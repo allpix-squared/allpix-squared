@@ -31,7 +31,7 @@ namespace allpix {
          * Detector assembly constructor
          * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit DetectorAssembly(Configuration& config) {
+        explicit DetectorAssembly(const Configuration& config) {
 
             // Chip thickness
             thickness_ = config.get<double>("chip_thickness", 0);
@@ -83,7 +83,7 @@ namespace allpix {
          * Constructor for hybrid assemblies
          * @param config  Configuration reference holding the unnamed section of detector configuration
          */
-        explicit HybridAssembly(Configuration& config) : DetectorAssembly(config) {
+        explicit HybridAssembly(const Configuration& config) : DetectorAssembly(config) {
 
             // Excess around the chip from the pixel grid
             auto default_assembly_excess = config.get<double>("chip_excess", 0);
@@ -153,7 +153,7 @@ namespace allpix {
          * Constructor for monolithic assemblies
          * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit MonolithicAssembly(Configuration& config) : DetectorAssembly(config) {
+        explicit MonolithicAssembly(const Configuration& config) : DetectorAssembly(config) {
 
             // Excess around the chip is copied from sensor size
             auto default_assembly_excess = config.get<double>("sensor_excess", 0);

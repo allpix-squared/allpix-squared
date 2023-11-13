@@ -184,8 +184,8 @@ namespace allpix {
          */
         explicit DetectorModel(std::string type,
                                std::shared_ptr<DetectorAssembly> assembly,
-                               ConfigReader reader,
-                               Configuration& config);
+                               const ConfigReader reader,
+                               const Configuration& config);
 
         /**
          * @brief Essential virtual destructor
@@ -543,7 +543,7 @@ namespace allpix {
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
                         double orientation,
-                        Configuration config);
+                        const Configuration config);
 
         /**
          * @brief Add a new layer of support

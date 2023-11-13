@@ -90,7 +90,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
     }
 
     // Load the list of standard model paths
-    Configuration& global_config = conf_manager->getGlobalConfiguration();
+    const Configuration& global_config = conf_manager->getGlobalConfiguration();
     if(global_config.has("model_paths")) {
         auto extra_paths = global_config.getPathArray("model_paths", true);
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());

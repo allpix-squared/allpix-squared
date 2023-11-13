@@ -19,7 +19,7 @@ using namespace allpix;
 RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
                                                    const std::shared_ptr<DetectorAssembly>& assembly,
                                                    const ConfigReader& reader,
-                                                   Configuration& config)
+                                                   const Configuration& config)
     : DetectorModel(std::move(type), assembly, reader, config) {
 
     if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {

@@ -45,7 +45,7 @@ namespace allpix {
         explicit PixelDetectorModel(std::string type,
                                     const std::shared_ptr<DetectorAssembly>& assembly,
                                     const ConfigReader& reader,
-                                    Configuration& config);
+                                    const Configuration& config);
 
         /**
          * @brief Returns if a local position is within the sensitive device
