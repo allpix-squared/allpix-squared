@@ -34,7 +34,7 @@
 using namespace allpix;
 using namespace ROOT::Math;
 
-std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(Configuration& config,
+std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(const Configuration& config,
                                                                             GeometryManager* geo_manager) {
     auto type = config.get<std::string>("type");
     if(type == "box") {
@@ -57,7 +57,7 @@ std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(Conf
     }
 }
 
-PassiveMaterialModel::PassiveMaterialModel(Configuration& config, GeometryManager* geo_manager)
+PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager)
     : config_(std::move(config)), geo_manager_(geo_manager) {
     name_ = config_.getName();
     mother_volume_ = config_.get<std::string>("mother_volume", "");

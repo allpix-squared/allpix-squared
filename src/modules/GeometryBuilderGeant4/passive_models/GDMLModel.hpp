@@ -39,7 +39,8 @@ namespace allpix {
          * @param config Configuration with description of the model
          * @param geo_manager Pointer to the global geometry manager
          */
-        explicit GDMLModel(Configuration& config, GeometryManager* geo_manager) : PassiveMaterialModel(config, geo_manager) {
+        explicit GDMLModel(const Configuration& config, GeometryManager* geo_manager)
+            : PassiveMaterialModel(config, geo_manager) {
 
             auto gdml_file = config_.getPath("file_name");
             parser_.ReadModule(gdml_file.string(), false);

@@ -44,7 +44,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
-    // Gets me a list of detector configurations. The sections for each detector in the geometry config file.
+    // Gets a list of detector configurations. The sections for each detector in the geometry config file.
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
         // Read role of this section and default to "active" (i.e. detector)
