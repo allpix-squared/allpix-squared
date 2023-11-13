@@ -60,9 +60,30 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
                 throw PassiveElementExistsError(geometry_section.getName());
             }
 
+            // Calculate the orientations of passive elements
+            passive_orientations_[geometry_section.getName()] = calculate_orientation(geometry_section);
+
+            // Check for mandatory but hitherto unused keys:
+            auto check_key = [&](const Configuration& cfg, const std::string& key) {
+                if(!cfg.has(key)) {
+                    throw MissingKeyError(key, cfg.getName());
+                }
+            };
+
+            // Check type keyword
+            check_key(geometry_section, "type");
+
+            // Check material unless it's a GDML file placement
+            auto type = geometry_section.get<std::string>("type");
+            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+            if(type != "gdml") {
+                check_key(geometry_section, "material");
+            }
+
             passive_elements_.push_back(geometry_section);
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
             continue;
+
         } else if(role != "active") {
             throw InvalidValueError(geometry_section, "role", "unknown role");
         }
@@ -79,28 +100,6 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 
         // Add a link to the detector to add the model later
         nonresolved_models_[geometry_section.get<std::string>("type")].emplace_back(geometry_section, detector.get());
-    }
-
-    // Calculate the orientations of passive elements
-    for(auto& passive_element : passive_elements_) {
-        passive_orientations_[passive_element.getName()] = calculate_orientation(passive_element);
-
-        // Check for mandatory but hitherto unused keys:
-        auto check_key = [&](const Configuration& cfg, const std::string& key) {
-            if(!cfg.has(key)) {
-                throw MissingKeyError(key, cfg.getName());
-            }
-        };
-
-        // Check type keyword
-        check_key(passive_element, "type");
-
-        // Check material unless it's a GDML file placement
-        auto type = passive_element.get<std::string>("type");
-        std::transform(type.begin(), type.end(), type.begin(), ::tolower);
-        if(type != "gdml") {
-            check_key(passive_element, "material");
-        }
     }
 
     // Load the list of standard model paths
