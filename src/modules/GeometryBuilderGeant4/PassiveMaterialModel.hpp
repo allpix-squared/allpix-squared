@@ -40,7 +40,6 @@ namespace allpix {
     public:
         /**
          * @brief Factory to dynamically create track objects
-         * @param type The name of the track model which should be used
          * @param config Configuration with description of the model
          * @param geo_manager Pointer to the global geometry manager
          * @return By param trackModel assigned track model to be used
