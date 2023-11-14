@@ -184,7 +184,7 @@ namespace allpix {
          */
         explicit DetectorModel(std::string type,
                                std::shared_ptr<DetectorAssembly> assembly,
-                               const ConfigReader reader,
+                               const ConfigReader& reader,
                                const Configuration& config);
 
         /**
@@ -543,7 +543,7 @@ namespace allpix {
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
                         double orientation,
-                        const Configuration config);
+                        const Configuration& config);
 
         /**
          * @brief Add a new layer of support

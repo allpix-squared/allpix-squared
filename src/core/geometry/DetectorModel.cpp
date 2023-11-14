@@ -79,7 +79,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
 DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
-                             const ConfigReader reader,
+                             const ConfigReader& reader,
                              const Configuration& config)
     : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
     using namespace ROOT::Math;
@@ -170,7 +170,7 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
                                double orientation,
-                               const Configuration config) {
+                               const Configuration& config) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
