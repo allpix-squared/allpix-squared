@@ -40,10 +40,12 @@ namespace allpix {
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
+         * @param config Configuration reference holding the unnamed section of detector configuration
          */
         explicit RadialStripDetectorModel(std::string type,
                                           const std::shared_ptr<DetectorAssembly>& assembly,
-                                          const ConfigReader& reader);
+                                          const ConfigReader& reader,
+                                          const Configuration& config);
 
         /**
          * @brief Get the number of strips in a given strip row

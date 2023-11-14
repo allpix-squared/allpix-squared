@@ -29,10 +29,9 @@ namespace allpix {
     public:
         /**
          * Detector assembly constructor
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit DetectorAssembly(const ConfigReader& reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit DetectorAssembly(const Configuration& config) {
 
             // Chip thickness
             thickness_ = config.get<double>("chip_thickness", 0);
@@ -82,10 +81,9 @@ namespace allpix {
     public:
         /**
          * Constructor for hybrid assemblies
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param config  Configuration reference holding the unnamed section of detector configuration
          */
-        explicit HybridAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit HybridAssembly(const Configuration& config) : DetectorAssembly(config) {
 
             // Excess around the chip from the pixel grid
             auto default_assembly_excess = config.get<double>("chip_excess", 0);
@@ -153,10 +151,9 @@ namespace allpix {
     public:
         /**
          * Constructor for monolithic assemblies
-         * @param reader  ConfigReader holding the full detector model configuration
+         * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit MonolithicAssembly(const ConfigReader& reader) : DetectorAssembly(reader) {
-            auto config = reader.getHeaderConfiguration();
+        explicit MonolithicAssembly(const Configuration& config) : DetectorAssembly(config) {
 
             // Excess around the chip is copied from sensor size
             auto default_assembly_excess = config.get<double>("sensor_excess", 0);

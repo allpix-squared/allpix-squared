@@ -34,8 +34,9 @@
 using namespace allpix;
 using namespace ROOT::Math;
 
-std::shared_ptr<PassiveMaterialModel>
-allpix::PassiveMaterialModel::factory(const std::string& type, const Configuration& config, GeometryManager* geo_manager) {
+std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(const Configuration& config,
+                                                                            GeometryManager* geo_manager) {
+    auto type = config.get<std::string>("type");
     if(type == "box") {
         return std::make_shared<BoxModel>(config, geo_manager);
     } else if(type == "cylinder") {
@@ -56,9 +57,8 @@ allpix::PassiveMaterialModel::factory(const std::string& type, const Configurati
     }
 }
 
-PassiveMaterialModel::PassiveMaterialModel(Configuration config, GeometryManager* geo_manager)
+PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager)
     : config_(std::move(config)), geo_manager_(geo_manager) {
-
     name_ = config_.getName();
     mother_volume_ = config_.get<std::string>("mother_volume", "");
 
@@ -122,6 +122,17 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     auto phys_volume = make_shared_no_delete<G4PVPlacement>(
         transform_phys, log_volume.get(), getName() + "_phys", mother_log_volume, false, 0, true);
     geo_manager_->setExternalObject(getName(), "passive_material_phys", phys_volume);
+
+    auto unused_keys = config_.getUnusedKeys();
+    if(!unused_keys.empty()) {
+        std::stringstream st;
+        st << "Unused configuration keys in passive material definition:";
+        for(auto& key : unused_keys) {
+            st << std::endl << key;
+        }
+        LOG(WARNING) << st.str();
+    }
+
     LOG(TRACE) << " Constructed passive material " << getName() << " successfully";
 }
 

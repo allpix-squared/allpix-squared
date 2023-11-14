@@ -40,7 +40,7 @@ ConfigReader& ConfigReader::operator=(const ConfigReader& other) {
 void ConfigReader::copy_init_map() {
     conf_map_.clear();
     for(auto iter = conf_array_.begin(); iter != conf_array_.end(); ++iter) {
-        conf_map_[iter->getName()].push_back(iter);
+        conf_map_[allpix::transform(iter->getName(), ::tolower)].push_back(iter);
     }
 }
 

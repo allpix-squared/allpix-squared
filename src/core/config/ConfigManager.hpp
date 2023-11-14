@@ -97,7 +97,7 @@ namespace allpix {
          * is guaranteed to have a configuration value 'identifier' that contains an unique identifier for every same config
          * name.
          */
-        std::list<Configuration>& getInstanceConfigurations() { return instance_configs_; }
+        const std::list<Configuration>& getInstanceConfigurations() const { return instance_configs_; }
 
         /**
          * @brief Drops an instance configuration from instance configuration storage

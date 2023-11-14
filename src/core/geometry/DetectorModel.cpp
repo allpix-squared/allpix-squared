@@ -39,9 +39,9 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
     std::shared_ptr<DetectorAssembly> assembly;
     if(type == "hybrid") {
-        assembly = std::make_shared<HybridAssembly>(reader);
+        assembly = std::make_shared<HybridAssembly>(config);
     } else if(type == "monolithic") {
-        assembly = std::make_shared<MonolithicAssembly>(reader);
+        assembly = std::make_shared<MonolithicAssembly>(config);
     } else {
         LOG(FATAL) << "Model file " << config.getFilePath() << " type parameter is not valid";
         throw InvalidValueError(config, "type", "model type is not supported");
@@ -50,11 +50,11 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     // Instantiate the correct detector model
     std::shared_ptr<DetectorModel> model;
     if(geometry == "pixel") {
-        model = std::make_shared<PixelDetectorModel>(name, assembly, reader);
+        model = std::make_shared<PixelDetectorModel>(name, assembly, reader, config);
     } else if(geometry == "radial_strip") {
-        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader);
+        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader, config);
     } else if(geometry == "hexagonal") {
-        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader);
+        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader, config);
     } else {
         LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
@@ -64,13 +64,25 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     // Validate the detector model - we call this here because validation might depend on derived class properties:
     model->validate();
 
+    auto unused_keys = config.getUnusedKeys();
+    if(!unused_keys.empty()) {
+        std::stringstream st;
+        st << "Unused configuration keys in global section of sensor geometry definition:";
+        for(auto& key : unused_keys) {
+            st << std::endl << key;
+        }
+        LOG(WARNING) << st.str();
+    }
+
     return model;
 }
 
-DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader)
+DetectorModel::DetectorModel(std::string type,
+                             std::shared_ptr<DetectorAssembly> assembly,
+                             const ConfigReader& reader,
+                             const Configuration& config)
     : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
     using namespace ROOT::Math;
-    auto config = reader_.getHeaderConfiguration();
 
     // Sensor thickness
     setSensorThickness(config.get<double>("sensor_thickness"));
@@ -100,9 +112,20 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         auto orientation = implant_config.get<double>("orientation", 0.);
 
         addImplant(imtype, shape, size, offset, orientation, implant_config);
+
+        auto unused_keys = implant_config.getUnusedKeys();
+        if(!unused_keys.empty()) {
+            std::stringstream st;
+            st << "Unused configuration keys in [implant] section of sensor geometry definition:";
+            for(auto& key : unused_keys) {
+                st << std::endl << key;
+            }
+            LOG(WARNING) << st.str();
+        }
     }
 
     // Read support layers
+    LOG(DEBUG) << "Number of [support] sections: " << reader_.getConfigurations("support").size();
     for(auto& support_config : reader_.getConfigurations("support")) {
         auto thickness = support_config.get<double>("thickness");
         auto size = support_config.get<XYVector>("size");
@@ -129,6 +152,16 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
                         std::move(location),
                         hole_size,
                         std::move(hole_offset));
+
+        auto unused_keys = support_config.getUnusedKeys();
+        if(!unused_keys.empty()) {
+            std::stringstream st;
+            st << "Unused configuration keys in [support] section of sensor geometry definition:";
+            for(auto& key : unused_keys) {
+                st << std::endl << key;
+            }
+            LOG(WARNING) << st.str();
+        }
     }
 }
 
@@ -137,7 +170,7 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
                                double orientation,
-                               Configuration config) {
+                               const Configuration& config) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
