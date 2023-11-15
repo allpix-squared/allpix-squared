@@ -23,9 +23,16 @@
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
 #include <core/module/exceptions.h>
+#include <Math/Point2D.h>
+#include <Math/Vector2D.h>
+#include <Math/Translation3D.h>
+
+
+#include "TMath.h"
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
 
 using namespace allpix;
@@ -127,12 +134,32 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
-            auto beam_size = config.get<double>("beam_size", 0);
-            if(config.get<bool>("flat_beam", false) == true) {
-                single_source->GetPosDist()->SetPosDisShape("Circle");
-                single_source->GetPosDist()->SetRadius(beam_size);
+
+            // Get beam_size parameter(s) from config file
+            ROOT::Math::XYVector beam_size{}; 
+            try{
+                beam_size = config_.get<ROOT::Math::XYVector>("beam_size");   
+            } catch(InvalidKeyError &) {
+                auto vector_size = config_.get<double>("beam_size", 0);   
+                beam_size = {vector_size, vector_size};  
+            }
+
+            if(config_.get<bool>("flat_beam", false) == true) {
+                if(config_.get<std::string>("beam_shape", "Circle") == "Rectangle") {
+                    single_source->GetPosDist()->SetPosDisType("Plane"); //?
+                    single_source->GetPosDist()->SetPosDisShape("Rectangle");
+                    single_source->GetPosDist()->SetHalfX((beam_size.x()) / 2);
+                    single_source->GetPosDist()->SetHalfY((beam_size.y()) / 2);
+                } else {
+                    single_source->GetPosDist()->SetPosDisShape("Circle");
+                    single_source->GetPosDist()->SetRadius(beam_size.x());
+                }
             } else {
-                single_source->GetPosDist()->SetBeamSigmaInR(beam_size);
+                if(config_.get<std::string>("beam_shape", "Circle") == "Ellipse"){
+                    single_source->GetPosDist()->SetBeamSigmaInX((beam_size.x()) / 2);
+                    single_source->GetPosDist()->SetBeamSigmaInY((beam_size.y()) / 2); 
+                }
+                single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
             }
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);

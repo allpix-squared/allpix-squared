@@ -73,6 +73,11 @@ namespace allpix {
         double getDepositedEnergy() const;
 
         /**
+         * @brief Get the position of the incident particle tracks for this event.
+         */
+        std::vector<ROOT::Math::XYZPoint> getIncidentPosition() const;
+
+        /**
          * @brief Clears depopsition information vectors in preparation for the next event.
          */
         void clearEventInfo();
@@ -126,6 +131,8 @@ namespace allpix {
 
         // List of positions for deposits
         std::vector<ROOT::Math::XYZPoint> deposit_position_;
+        std::vector<ROOT::Math::XYZPoint> incident_track_position_;
+
         std::vector<unsigned int> deposit_charge_;
         std::vector<double> deposit_energy_;
         std::vector<double> deposit_time_;

@@ -30,6 +30,7 @@
 #include "tools/ROOT.h"
 
 #include <TH1D.h>
+#include <TH2D.h>
 
 class G4UserLimits;
 class G4RunManager;
@@ -122,6 +123,7 @@ namespace allpix {
         // Vector of histogram pointers for debugging plots
         std::map<std::string, Histogram<TH1D>> charge_per_event_;
         std::map<std::string, Histogram<TH1D>> energy_per_event_;
+        std::map<std::string, Histogram<TH2D>> incident_track_position_;
 
         // Total deposited charges
         std::atomic_uint total_charges_{0};

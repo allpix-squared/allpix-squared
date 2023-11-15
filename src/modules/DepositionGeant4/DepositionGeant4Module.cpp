@@ -407,6 +407,10 @@ void DepositionGeant4Module::run(Event* event) {
 
                 double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
+                
+                for(auto track_position : sensor->getIncidentPosition()){
+                    incident_track_position_[sensor->getName()]->Fill(track_position.x(), track_position.y());
+                }
             }
         }
     } catch(AbortEventException& e) {
@@ -430,6 +434,9 @@ void DepositionGeant4Module::finalize() {
             histogram.second->Write();
         }
         for(auto& histogram : energy_per_event_) {
+            histogram.second->Write();
+        }
+        for(auto& histogram : incident_track_position_) {
             histogram.second->Write();
         }
     }
@@ -559,6 +566,20 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                                               nbins,
                                               0,
                                               maximum_energy);
+                }
+
+                plot_name = "incident_track_position_" + sensitive_detector_action->getName();
+
+                if(incident_track_position_.find(sensitive_detector_action->getName()) == incident_track_position_.end()) {
+                    incident_track_position_[sensitive_detector_action->getName()] =
+                        CreateHistogram<TH2D>(plot_name.c_str(),
+                                              "incident track position;X [mm];Y [mm];Z",
+                                              2000, 
+                                              -50, 
+                                              50, 
+                                              6000, 
+                                              -30, 
+                                              30);
                 }
             }
         }
