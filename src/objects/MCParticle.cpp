@@ -60,20 +60,20 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     }
 }
 
-double MCParticle::getTotalEnergyArrival() const {
-    return total_energy_arrival_;
+double MCParticle::getTotalEnergyStart() const {
+    return total_energy_start_;
 }
 
-void MCParticle::setTotalEnergyArrival(double total_energy) {
-    total_energy_arrival_ = total_energy;
+void MCParticle::setTotalEnergyStart(double total_energy) {
+    total_energy_start_ = total_energy;
 }
 
-double MCParticle::getKineticEnergyArrival() const {
-    return kinetic_energy_arrival_;
+double MCParticle::getKineticEnergyStart() const {
+    return kinetic_energy_start_;
 }
 
-void MCParticle::setKineticEnergyArrival(double kinetic_energy) {
-    kinetic_energy_arrival_ = kinetic_energy;
+void MCParticle::setKineticEnergyStart(double kinetic_energy) {
+    kinetic_energy_start_ = kinetic_energy;
 }
 
 unsigned int MCParticle::getTotalDepositedCharge() const {

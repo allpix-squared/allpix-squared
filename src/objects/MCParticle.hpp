@@ -96,28 +96,28 @@ namespace allpix {
         double getLocalTime() const;
 
         /**
-         * @brief Set the total energy of this particle as it arrives at the respective sensor
-         * @param total_energy Total energy of this particle at arrival
+         * @brief Set the starting total energy of this particle in the respective sensor
+         * @param total_energy Total energy of this particle at its start point
          */
-        void setTotalEnergyArrival(double total_energy);
+        void setTotalEnergyStart(double total_energy);
 
         /**
-         * @brief Return the total energy of this particle as it arrives at the respective sensor
-         * @return Total energy of this particle at arrival
+         * @brief Return the starting total energy of this particle in the respective sensor
+         * @return Total energy of this particle at its start point
          */
-        double getTotalEnergyArrival() const;
+        double getTotalEnergyStart() const;
 
         /**
-         * @brief Set the kinetic energy of this particle as it arrives at the respective sensor
-         * @param kinetic_energy Kinetic energy of this particle at arrival
+         * @brief Set the starting kinetic energy of this particle in the respective sensor
+         * @param kinetic_energy Kinetic energy of this particle at its start point
          */
-        void setKineticEnergyArrival(double kinetic_energy);
+        void setKineticEnergyStart(double kinetic_energy);
 
         /**
-         * @brief Return the kinetic energy of this particle as it arrives at the respective sensor
-         * @return Kinetic energy of this particle at arrival
+         * @brief Return the starting kinetic energy of this particle in the respective sensor
+         * @return Kinetic energy of this particle at its start point
          */
-        double getKineticEnergyArrival() const;
+        double getKineticEnergyStart() const;
 
         /**
          * @brief Set the total number of charge carriers produced by this particle
@@ -194,8 +194,8 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
         unsigned int deposited_charge_{};
-        double total_energy_arrival_{};
-        double kinetic_energy_arrival_{};
+        double total_energy_start_{};
+        double kinetic_energy_start_{};
 
         PointerWrapper<MCParticle> parent_;
         PointerWrapper<MCTrack> track_;
