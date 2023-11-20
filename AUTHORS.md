@@ -69,3 +69,4 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Andy Wharton, Lancaster University, [awharton](https://gitlab.cern.ch/awharton)
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
+* Samuel Wood, University of Oxford, [sam-sw](https://github.com/sam-sw)
