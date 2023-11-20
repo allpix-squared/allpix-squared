@@ -18,9 +18,9 @@ using namespace allpix;
 
 RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
                                                    const std::shared_ptr<DetectorAssembly>& assembly,
-                                                   const ConfigReader& reader)
-    : DetectorModel(std::move(type), assembly, reader) {
-    auto config = reader.getHeaderConfiguration();
+                                                   const ConfigReader& reader,
+                                                   const Configuration& config)
+    : DetectorModel(std::move(type), assembly, reader, config) {
 
     if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {
         throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");

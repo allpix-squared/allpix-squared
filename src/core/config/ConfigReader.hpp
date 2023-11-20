@@ -98,7 +98,7 @@ namespace allpix {
         unsigned int countConfigurations(std::string name) const;
 
         /**
-         * @brief Get cmobined configuration of all empty sections (usually the header)
+         * @brief Get combined configuration of all empty sections (usually the header)
          * @note Typically this is only the section at the top of the file
          * @return Configuration object for the empty section
          */

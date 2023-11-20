@@ -44,6 +44,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
 
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
+    // Gets a list of detector configurations. The sections for each detector in the geometry config file.
     for(auto& geometry_section : conf_manager->getDetectorConfigurations()) {
 
         // Read role of this section and default to "active" (i.e. detector)
@@ -59,9 +60,17 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
                 throw PassiveElementExistsError(geometry_section.getName());
             }
 
+            // Calculate the orientations of passive elements
+            passive_orientations_[geometry_section.getName()] = calculate_orientation(geometry_section);
+
+            // Check material unless it's a GDML file placement
+            auto type = geometry_section.get<std::string>("type");
+            std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+
             passive_elements_.push_back(geometry_section);
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
             continue;
+
         } else if(role != "active") {
             throw InvalidValueError(geometry_section, "role", "unknown role");
         }
@@ -80,30 +89,8 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         nonresolved_models_[geometry_section.get<std::string>("type")].emplace_back(geometry_section, detector.get());
     }
 
-    // Calculate the orientations of passive elements
-    for(auto& passive_element : passive_elements_) {
-        passive_orientations_[passive_element.getName()] = calculate_orientation(passive_element);
-
-        // Check for mandatory but hitherto unused keys:
-        auto check_key = [&](const Configuration& cfg, const std::string& key) {
-            if(!cfg.has(key)) {
-                throw MissingKeyError(key, cfg.getName());
-            }
-        };
-
-        // Check type keyword
-        check_key(passive_element, "type");
-
-        // Check material unless it's a GDML file placement
-        auto type = passive_element.get<std::string>("type");
-        std::transform(type.begin(), type.end(), type.begin(), ::tolower);
-        if(type != "gdml") {
-            check_key(passive_element, "material");
-        }
-    }
-
     // Load the list of standard model paths
-    Configuration& global_config = conf_manager->getGlobalConfiguration();
+    const Configuration& global_config = conf_manager->getGlobalConfiguration();
     if(global_config.has("model_paths")) {
         auto extra_paths = global_config.getPathArray("model_paths", true);
         model_paths_.insert(model_paths_.end(), extra_paths.begin(), extra_paths.end());
@@ -438,11 +425,19 @@ void GeometryManager::close_geometry() {
             // Get the configuration of the model
             Configuration new_config("");
             auto model_configs = model->getConfigurations();
+            std::vector<std::string> valid_sections = {"", "implant", "support"};
+            for(auto& conf : model_configs) {
+                auto section_name = allpix::transform(conf.getName(), ::tolower);
+                if(std::find(valid_sections.begin(), valid_sections.end(), section_name) == valid_sections.end()) {
+                    LOG(WARNING) << "Section [" << section_name << "] is not valid in sensor geometry definition.";
+                }
+            }
 
             // Add all non internal parameters to the config for a specialized model
             for(auto& [key, value] : config.getAll()) {
                 // Skip all internal parameters
-                if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation") {
+                if(key == "type" || key == "position" || key == "orientation_mode" || key == "orientation" ||
+                   key == "alignment_precision_position" || key == "alignment_precision_orientation" || key == "role") {
                     continue;
                 }
                 // Add the extra parameter to the new overwritten config

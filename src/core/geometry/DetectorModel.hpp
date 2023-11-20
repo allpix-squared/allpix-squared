@@ -180,8 +180,12 @@ namespace allpix {
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
          * @param reader Configuration reader with description of the model
+         * @param config Configuration holding the empty section of the configuration file
          */
-        explicit DetectorModel(std::string type, std::shared_ptr<DetectorAssembly> assembly, ConfigReader reader);
+        explicit DetectorModel(std::string type,
+                               std::shared_ptr<DetectorAssembly> assembly,
+                               const ConfigReader& reader,
+                               const Configuration& config);
 
         /**
          * @brief Essential virtual destructor
@@ -539,7 +543,7 @@ namespace allpix {
                         ROOT::Math::XYZVector size,
                         const ROOT::Math::XYVector& offset,
                         double orientation,
-                        Configuration config);
+                        const Configuration& config);
 
         /**
          * @brief Add a new layer of support
