@@ -284,7 +284,7 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
         node->value = str.substr(beg, end - beg);
     } else {
         // Not an array, handle as value instead
-        node->value = str;
+        node->value = std::move(str);
     }
 
     // Handle zero level where brackets where explicitly added

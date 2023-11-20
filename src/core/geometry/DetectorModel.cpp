@@ -111,7 +111,7 @@ DetectorModel::DetectorModel(std::string type,
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto orientation = implant_config.get<double>("orientation", 0.);
 
-        addImplant(imtype, shape, size, offset, orientation, implant_config);
+        addImplant(imtype, shape, std::move(size), offset, orientation, implant_config);
 
         auto unused_keys = implant_config.getUnusedKeys();
         if(!unused_keys.empty()) {
@@ -174,8 +174,8 @@ void DetectorModel::addImplant(const Implant::Type& type,
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(
-        Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(config)));
+    implants_.push_back(Implant(
+        type, shape, std::move(size), std::move(full_offset), ROOT::Math::RotationZ(orientation), std::move(config)));
 }
 
 void DetectorModel::validate() {
@@ -270,8 +270,8 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     }
 
     for(auto& support_layer : getSupportLayers()) {
-        auto size = support_layer.getSize();
-        auto center = support_layer.getCenter();
+        const auto& size = support_layer.getSize();
+        const auto& center = support_layer.getCenter();
         max.SetX(std::max(max.x(), (center + size / 2.0).x()));
         max.SetY(std::max(max.y(), (center + size / 2.0).y()));
         max.SetZ(std::max(max.z(), (center + size / 2.0).z()));

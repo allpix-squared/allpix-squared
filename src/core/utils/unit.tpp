@@ -55,7 +55,7 @@ namespace allpix {
 
     // Display function for vectors
     template <typename T> std::string Units::display(T inp, std::initializer_list<std::string> units) {
-        auto split = allpix::split<Units::UnitType>(allpix::to_string(inp));
+        auto split = allpix::split<Units::UnitType>(allpix::to_string(std::move(inp)));
 
         std::string ret_str;
         if(split.size() > 1) {

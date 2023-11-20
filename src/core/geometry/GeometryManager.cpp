@@ -457,7 +457,7 @@ void GeometryManager::close_geometry() {
                 model = DetectorModel::factory(name, reader);
             }
 
-            detector->set_model(model);
+            detector->set_model(std::move(model));
         }
     }
 

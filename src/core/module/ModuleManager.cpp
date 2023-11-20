@@ -314,7 +314,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
         }
         identifier_str += config.get<std::string>("output");
     }
-    ModuleIdentifier identifier(module_name, identifier_str, 0);
+    ModuleIdentifier identifier(module_name, std::move(identifier_str), 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -667,8 +667,8 @@ void ModuleManager::initialize() {
 
         // Book per-module performance plots
         if(global_config.get<bool>("performance_plots")) {
-            auto identifier = module->get_identifier().getIdentifier();
-            auto name = (identifier.empty() ? module->get_configuration().getName() : identifier);
+            const auto& identifier = module->get_identifier().getIdentifier();
+            const auto& name = (identifier.empty() ? module->get_configuration().getName() : identifier);
             auto title = module->get_configuration().getName() + " event processing time " +
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
             module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
@@ -976,7 +976,7 @@ void ModuleManager::finalize() {
         buffer_fill_level_->Write();
 
         for(auto& module : modules_) {
-            auto module_name = module->get_configuration().getName();
+            const auto& module_name = module->get_configuration().getName();
             auto* mod_dir = perf_dir->GetDirectory(module_name.c_str());
             if(mod_dir == nullptr) {
                 mod_dir = perf_dir->mkdir(module_name.c_str());
