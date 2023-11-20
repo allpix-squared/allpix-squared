@@ -50,6 +50,8 @@ stages:
 
 .docker:
     image: $DOCKER_DEPS_IMAGE
+    tags:
+        - k8s-default
     before_script:
         - mkdir -p build/ && cd build/
 
