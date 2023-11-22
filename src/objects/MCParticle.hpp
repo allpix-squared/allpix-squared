@@ -96,6 +96,30 @@ namespace allpix {
         double getLocalTime() const;
 
         /**
+         * @brief Set the starting total energy of this particle in the respective sensor
+         * @param total_energy Total energy of this particle at its start point
+         */
+        void setTotalEnergyStart(double total_energy);
+
+        /**
+         * @brief Return the starting total energy of this particle in the respective sensor
+         * @return Total energy of this particle at its start point
+         */
+        double getTotalEnergyStart() const;
+
+        /**
+         * @brief Set the starting kinetic energy of this particle in the respective sensor
+         * @param kinetic_energy Kinetic energy of this particle at its start point
+         */
+        void setKineticEnergyStart(double kinetic_energy);
+
+        /**
+         * @brief Return the starting kinetic energy of this particle in the respective sensor
+         * @return Kinetic energy of this particle at its start point
+         */
+        double getKineticEnergyStart() const;
+
+        /**
          * @brief Set the total number of charge carriers produced by this particle
          * @param total_charge Total charge deposited by this particle
          */
@@ -170,6 +194,8 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
         unsigned int deposited_charge_{};
+        double total_energy_start_{};
+        double kinetic_energy_start_{};
 
         PointerWrapper<MCParticle> parent_;
         PointerWrapper<MCTrack> track_;

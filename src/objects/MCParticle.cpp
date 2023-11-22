@@ -60,6 +60,22 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     }
 }
 
+double MCParticle::getTotalEnergyStart() const {
+    return total_energy_start_;
+}
+
+void MCParticle::setTotalEnergyStart(double total_energy) {
+    total_energy_start_ = total_energy;
+}
+
+double MCParticle::getKineticEnergyStart() const {
+    return kinetic_energy_start_;
+}
+
+void MCParticle::setKineticEnergyStart(double kinetic_energy) {
+    kinetic_energy_start_ = kinetic_energy;
+}
+
 unsigned int MCParticle::getTotalDepositedCharge() const {
     return deposited_charge_;
 }
