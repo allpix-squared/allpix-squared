@@ -565,6 +565,8 @@ deploy:documentation:
 
 deploy:eos:
     stage: deployment
+    extends:
+        - .docker
     variables:
         GIT_STRATEGY: none
     # Only run on new tags for releases and on schedules for nightlies:
@@ -604,6 +606,9 @@ deploy:cvmfs:
 
 .deploy-docker:
     stage: deployment
+    extends:
+        - .docker
+    before_script: []
     image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint: [""]
