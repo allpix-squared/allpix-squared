@@ -93,9 +93,48 @@ void DepositionPointChargeModule::initialize() {
         // Get the config manager and retrieve total number of events:
         ConfigManager* conf_manager = getConfigManager();
         auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
+        auto scan_coordinates_ = config_.getArray<std::string>("scan_coordinates", {"x", "y", "z"});
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
-        if(type_ == SourceType::MIP) {
+        if(scan_coordinates_.size() == 1) {
+            root_ = events;
+            // Calculate voxel size:
+            if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end()) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z());
+            } else if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end()) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z());
+            } else if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end()) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z() / root_);
+            } else {
+                throw InvalidValueError(config_, "scan_coordinates", "The coordinate must be x, y, or z.");
+            }
+        } else if(scan_coordinates_.size() == 2) {
+            // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
+            bool has_x = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end();
+            bool has_y = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
+            bool has_z = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
+            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
+            if(events != root_ * root_) {
+                LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
+                             << "Closest square is " << root_ * root_;
+            }
+            if(has_x && has_y) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
+            } else if(has_x && has_z) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z() / root_);
+            } else if(has_y && has_z) {
+                voxel_ = ROOT::Math::XYZVector(
+                    model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
+            } else {
+                throw InvalidValueError(config_, "scan_coordinates", "The coordinates must be x, y, or z.");
+            }
+
+        } else if(scan_coordinates_.size() == 3 && type_ == SourceType::MIP) {
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
@@ -114,7 +153,7 @@ void DepositionPointChargeModule::initialize() {
             voxel_ = ROOT::Math::XYZVector(
                 model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
         }
-        LOG(INFO) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
+        LOG(WARNING) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
     }
 }
 
@@ -137,6 +176,7 @@ void DepositionPointChargeModule::run(Event* event) {
                                         voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
                                         voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
                    ref;
+        LOG(DEBUG) << "In-pixel deposition position: " << Units::display(position - ref, {"um", "mm"});
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
