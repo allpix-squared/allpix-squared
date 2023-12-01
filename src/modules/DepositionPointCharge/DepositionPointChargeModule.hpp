@@ -83,5 +83,10 @@ namespace allpix {
         double step_size_z_{};
         unsigned int root_{}, carriers_{};
         ROOT::Math::XYZVector position_{};
+        std::vector<std::string> scan_coordinates_{};
+
+        bool scan_x_;
+        bool scan_y_;
+        bool scan_z_;
     };
 } // namespace allpix

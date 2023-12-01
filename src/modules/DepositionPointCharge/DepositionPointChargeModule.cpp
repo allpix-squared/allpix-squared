@@ -93,19 +93,23 @@ void DepositionPointChargeModule::initialize() {
         // Get the config manager and retrieve total number of events:
         ConfigManager* conf_manager = getConfigManager();
         auto events = conf_manager->getGlobalConfiguration().get<unsigned int>("number_of_events");
-        auto scan_coordinates_ = config_.getArray<std::string>("scan_coordinates", {"x", "y", "z"});
+        scan_coordinates_ = config_.getArray<std::string>("scan_coordinates", {"x", "y", "z"});
+
+        scan_x_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end();
+        scan_y_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
+        scan_z_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         if(scan_coordinates_.size() == 1) {
             root_ = events;
             // Calculate voxel size:
-            if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end()) {
+            if(scan_x_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z());
-            } else if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end()) {
+            } else if(scan_y_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z());
-            } else if(std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end()) {
+            } else if(scan_z_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z() / root_);
             } else {
@@ -113,21 +117,18 @@ void DepositionPointChargeModule::initialize() {
             }
         } else if(scan_coordinates_.size() == 2) {
             // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
-            bool has_x = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "x") != scan_coordinates_.end();
-            bool has_y = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
-            bool has_z = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
             }
-            if(has_x && has_y) {
+            if(scan_x_ && scan_y_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
-            } else if(has_x && has_z) {
+            } else if(scan_x_ && scan_z_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z() / root_);
-            } else if(has_y && has_z) {
+            } else if(scan_y_ && scan_z_) {
                 voxel_ = ROOT::Math::XYZVector(
                     model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
             } else {
@@ -172,11 +173,31 @@ void DepositionPointChargeModule::run(Event* event) {
                    ROOT::Math::XYZVector(
                        model->getPixelSize().x() / 2.0, model->getPixelSize().y() / 2.0, model->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << Units::display(ref, {"um", "mm"});
-        position = ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
-                                        voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
-                                        voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
-                   ref;
-        LOG(DEBUG) << "In-pixel deposition position: " << Units::display(position - ref, {"um", "mm"});
+        if(scan_coordinates_.size() == 3) {
+            position =
+                ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
+                                     voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
+                                     voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
+                ref;
+        } else {
+            position = ref;
+            if(scan_x_) {
+                position.SetX(voxel_.x() * static_cast<double>((event->number - 1) % root_) + ref.x());
+                if(scan_y_) {
+                    position.SetY(voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.y());
+                } else if(scan_z_) {
+                    position.SetZ(voxel_.z() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.z());
+                }
+            } else if(scan_y_) {
+                position.SetY(voxel_.y() * static_cast<double>((event->number - 1) % root_) + ref.y());
+                if(scan_z_) {
+                    position.SetZ(voxel_.z() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.z());
+                }
+            } else {
+                position.SetZ(voxel_.z() * static_cast<double>((event->number - 1) % root_) + ref.z());
+            }
+        }
+        LOG(WARNING) << "Deposition position in local coordinates: " << Units::display(position, {"um", "mm"});
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
