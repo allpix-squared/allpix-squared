@@ -38,6 +38,10 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
     config_.setDefault("position", ROOT::Math::XYZPoint(0., 0., 0.));
     config_.setDefault("source_type", SourceType::POINT);
 
+    // Plotting parameters
+    config_.setDefault<bool>("output_plots", false);
+    config_.setDefault<int>("output_plots_bins_per_um", 1);
+
     // Read type and model:
     type_ = config_.get<SourceType>("source_type");
     model_ = config_.get<DepositionModel>("model");
@@ -59,6 +63,8 @@ DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
 void DepositionPointChargeModule::initialize() {
 
     auto model = detector_->getModel();
+    output_plots_ = config_.get<bool>("output_plots");
+    output_plots_bins_per_um_ = config_.get<int>("output_plots_bins_per_um");
 
     // Set up the different source types
     if(type_ == SourceType::MIP) {
@@ -154,7 +160,40 @@ void DepositionPointChargeModule::initialize() {
             voxel_ = ROOT::Math::XYZVector(
                 model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
         }
-        LOG(WARNING) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
+        LOG(INFO) << "Voxel size for scan of pixel volume: " << Units::display(voxel_, {"um", "mm"});
+    }
+
+    if(output_plots_) {
+        auto bins_x = static_cast<int>(output_plots_bins_per_um_ * Units::convert(model->getPixelSize().x(), "um"));
+        auto bins_y = static_cast<int>(output_plots_bins_per_um_ * Units::convert(model->getPixelSize().y(), "um"));
+        auto bins_z = static_cast<int>(output_plots_bins_per_um_ * Units::convert(model->getSensorSize().z(), "um"));
+        deposition_position_xy =
+            CreateHistogram<TH2D>("deposition_position_xy",
+                                  "Deposition position, x-y plane;x [#mum];y [#mum]",
+                                  bins_x,
+                                  -static_cast<double>(Units::convert(model->getPixelSize().x() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getPixelSize().x() / 2, "um")),
+                                  bins_y,
+                                  -static_cast<double>(Units::convert(model->getPixelSize().y() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getPixelSize().y() / 2, "um")));
+        deposition_position_xz =
+            CreateHistogram<TH2D>("deposition_position_xz",
+                                  "Deposition position, x-z plane;x [#mum];z [#mum]",
+                                  bins_x,
+                                  -static_cast<double>(Units::convert(model->getPixelSize().x() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getPixelSize().x() / 2, "um")),
+                                  bins_z,
+                                  -static_cast<double>(Units::convert(model->getSensorSize().z() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getSensorSize().z() / 2, "um")));
+        deposition_position_yz =
+            CreateHistogram<TH2D>("deposition_position_yz",
+                                  "Deposition position, y-z plane;y [#mum];z [#mum]",
+                                  bins_y,
+                                  -static_cast<double>(Units::convert(model->getPixelSize().y() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getPixelSize().y() / 2, "um")),
+                                  bins_z,
+                                  -static_cast<double>(Units::convert(model->getSensorSize().z() / 2, "um")),
+                                  static_cast<double>(Units::convert(model->getSensorSize().z() / 2, "um")));
     }
 }
 
@@ -197,7 +236,7 @@ void DepositionPointChargeModule::run(Event* event) {
                 position.SetZ(voxel_.z() * static_cast<double>((event->number - 1) % root_) + ref.z());
             }
         }
-        LOG(WARNING) << "Deposition position in local coordinates: " << Units::display(position, {"um", "mm"});
+        LOG(DEBUG) << "Deposition position in local coordinates: " << Units::display(position, {"um", "mm"});
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
@@ -216,6 +255,29 @@ void DepositionPointChargeModule::run(Event* event) {
         DepositLine(event, position);
     } else {
         DepositPoint(event, position);
+    }
+
+    if(output_plots_) {
+        auto [xpixel, ypixel] = model->getPixelIndex(position);
+        auto inPixelPos = position - model->getPixelCenter(xpixel, ypixel);
+        auto in_pixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
+        auto in_pixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
+        auto in_pixel_um_z = static_cast<double>(Units::convert(position.z(), "um"));
+        deposition_position_xy->Fill(in_pixel_um_x, in_pixel_um_y);
+        deposition_position_xz->Fill(in_pixel_um_x, in_pixel_um_z);
+        deposition_position_yz->Fill(in_pixel_um_y, in_pixel_um_z);
+    }
+}
+
+void DepositionPointChargeModule::finalize() {
+    if(output_plots_) {
+        deposition_position_xy->Get()->SetOption("colz");
+        deposition_position_xz->Get()->SetOption("colz");
+        deposition_position_yz->Get()->SetOption("colz");
+
+        deposition_position_xy->Write();
+        deposition_position_xz->Write();
+        deposition_position_yz->Write();
     }
 }
 

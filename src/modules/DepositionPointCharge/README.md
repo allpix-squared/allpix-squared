@@ -35,6 +35,11 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 * `spot_size`: Width of the Gaussian distribution used to smear the position in the `spot` model. Only one value is taken and used for all three dimensions.
 * `scan_coordinates`: Coordinates to scan over, a combiantion of x, y, z. Defaults to `x y z`, i.e. all three spatial coordinates. The `position`parameter is used to determine the value of the coordiantes that are not scanned over if a partial scan is requested, and the start offset of the scan for the other coordinates.
 
+### Plotting parameters
+
+- `output_plots` : Determines if output plots should be generated. Disabled by default.
+- `output_plots_bins_per_um` : Number of bins per micrometer in all directions in the 2D histograms used to plot deposition position. Only used if `output_plots` is enabled.
+
 ## Usage
 
 Example configuration for a point source at a defined position around which 100 charge carriers are deposited with a Gaussian distribution:
@@ -48,7 +53,7 @@ spot_size = 3um
 number_of_charges = 100
 ```
 
-Example configuration for a point source scanned over the x and y cooridantes, with a fixed z coordinate of 10 micrometers from the sensor middle:
+Example configuration for a point source scanned over the x and y cooridantes, with a fixed z coordinate of 10 micrometers (with the sensor centre at 0):
 
 ```ini
 [DepositionPointCharge]

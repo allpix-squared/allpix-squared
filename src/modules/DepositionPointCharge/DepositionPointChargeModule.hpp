@@ -11,6 +11,8 @@
 
 #include <string>
 
+#include <TH2D.h>
+
 #include "core/module/Module.hpp"
 
 namespace allpix {
@@ -57,6 +59,11 @@ namespace allpix {
          */
         void run(Event*) override;
 
+        /**
+         * @brief Write output plots
+         */
+        void finalize() override;
+
     private:
         /**
          * @brief Helper function to deposit charges at a single point
@@ -88,5 +95,13 @@ namespace allpix {
         bool scan_x_;
         bool scan_y_;
         bool scan_z_;
+
+        // Output plot parameters
+        bool output_plots_{};
+        int output_plots_bins_per_um_{};
+
+        Histogram<TH2D> deposition_position_xy;
+        Histogram<TH2D> deposition_position_xz;
+        Histogram<TH2D> deposition_position_yz;
     };
 } // namespace allpix
