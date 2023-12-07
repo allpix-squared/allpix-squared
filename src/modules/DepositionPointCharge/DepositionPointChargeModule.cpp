@@ -105,21 +105,22 @@ void DepositionPointChargeModule::initialize() {
         scan_y_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
         scan_z_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
 
+        if(scan_coordinates_.size() > 3 || (scan_coordinates_.size() == 3 && !(scan_x_ && scan_y_ && scan_z_))) {
+            throw InvalidValueError(
+                config_,
+                "scan_coordinates",
+                "The coordinates must be a combination of x, y, and z, and the number of coordinates cannot exceed 3.");
+        }
+
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         if(scan_coordinates_.size() == 1) {
             root_ = events;
             // Calculate voxel size:
-            if(scan_x_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z());
-            } else if(scan_y_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z());
-            } else if(scan_z_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z() / root_);
-            } else {
-                throw InvalidValueError(config_, "scan_coordinates", "The coordinate must be x, y, or z.");
+            voxel_ = ROOT::Math::XYZVector(model->getPixelSize().x() / (scan_x_ ? root_ : 1.0),
+                                           model->getPixelSize().y() / (scan_y_ ? root_ : 1.0),
+                                           model->getSensorSize().z() / (scan_z_ ? root_ : 1.0));
+            if(!(scan_x_ || scan_y_ || scan_z_)) {
+                throw InvalidValueError(config_, "scan_coordinates", "The coordinates must be x, y, or z.");
             }
         } else if(scan_coordinates_.size() == 2) {
             // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
@@ -128,19 +129,14 @@ void DepositionPointChargeModule::initialize() {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
             }
-            if(scan_x_ && scan_y_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
-            } else if(scan_x_ && scan_z_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x() / root_, model->getPixelSize().y(), model->getSensorSize().z() / root_);
-            } else if(scan_y_ && scan_z_) {
-                voxel_ = ROOT::Math::XYZVector(
-                    model->getPixelSize().x(), model->getPixelSize().y() / root_, model->getSensorSize().z() / root_);
-            } else {
-                throw InvalidValueError(config_, "scan_coordinates", "The coordinates must be x, y, or z.");
+            voxel_ = ROOT::Math::XYZVector(model->getPixelSize().x() / (scan_x_ ? root_ : 1.0),
+                                           model->getPixelSize().y() / (scan_y_ ? root_ : 1.0),
+                                           model->getSensorSize().z() / (scan_z_ ? root_ : 1.0));
+            if(!((scan_x_ && scan_y_) || (scan_x_ && scan_z_) || (scan_y_ && scan_z_))) {
+                throw InvalidValueError(config_,
+                                        "scan_coordinates",
+                                        "The coordinates must be x, y, or z, and a coordinate must not be repeated");
             }
-
         } else if(scan_coordinates_.size() == 3 && type_ == SourceType::MIP) {
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
