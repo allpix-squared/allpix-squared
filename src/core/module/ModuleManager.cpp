@@ -667,7 +667,8 @@ void ModuleManager::initialize() {
 
         // Book per-module performance plots
         if(global_config.get<bool>("performance_plots")) {
-            const auto& identifier = module->get_identifier().getIdentifier();
+            const auto& module_identifier = module->get_identifier();
+            const auto& identifier = module_identifier.getIdentifier();
             const auto& name = (identifier.empty() ? module->get_configuration().getName() : identifier);
             auto title = module->get_configuration().getName() + " event processing time " +
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
