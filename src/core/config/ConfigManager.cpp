@@ -40,7 +40,7 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     LOG(TRACE) << "Reading main configuration";
 
     // Read the file
-    ConfigReader reader(file, file_name);
+    ConfigReader reader(file, std::move(file_name));
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };

@@ -24,7 +24,7 @@ using namespace allpix;
  */
 void OptionParser::parseOption(std::string line) {
     line = allpix::trim(line);
-    auto [key, value] = ConfigReader::parseKeyValue(line);
+    auto [key, value] = ConfigReader::parseKeyValue(std::move(line));
 
     auto dot_pos = key.find('.');
     if(dot_pos == std::string::npos) {

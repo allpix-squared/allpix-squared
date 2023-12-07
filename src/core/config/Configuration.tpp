@@ -54,7 +54,7 @@ namespace allpix {
             used_keys_.markUsed(key);
 
             std::vector<T> array;
-            auto node = parse_value(str);
+            auto node = parse_value(std::move(str));
             for(auto& child : node->children) {
                 try {
                     array.push_back(allpix::from_string<T>(child->value));
@@ -93,7 +93,7 @@ namespace allpix {
             used_keys_.markUsed(key);
 
             Matrix<T> matrix;
-            auto node = parse_value(str);
+            auto node = parse_value(std::move(str));
             for(auto& child : node->children) {
                 if(child->children.empty()) {
                     throw std::invalid_argument("matrix has less than two dimensions, enclosing brackets might be missing");
@@ -161,7 +161,7 @@ namespace allpix {
             str += ",";
         }
         str.pop_back();
-        config_[key] = str;
+        config_[key] = std::move(str);
         used_keys_.registerMarker(key);
         if(mark_used) {
             used_keys_.markUsed(key);

@@ -55,7 +55,7 @@ std::string allpix::from_string_impl(std::string str, type_tag<std::string>) {
         return str.substr(1, str.size() - 2);
     }
     // Otherwise read a single string
-    return from_string_helper(str);
+    return from_string_helper(std::move(str));
 }
 
 /**

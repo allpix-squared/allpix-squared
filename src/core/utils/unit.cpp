@@ -98,9 +98,9 @@ allpix::Units::UnitType Units::get(const std::string& str) {
 
     // Apply last unit
     if(lst == '*') {
-        ret_value = getSingle(ret_value, unit);
+        ret_value = getSingle(ret_value, std::move(unit));
     } else if(lst == '/') {
-        ret_value = getSingleInverse(ret_value, unit);
+        ret_value = getSingleInverse(ret_value, std::move(unit));
     }
     return ret_value;
 }
@@ -128,9 +128,9 @@ allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
     }
     // Handle last unit
     if(lst == '*') {
-        input = getSingleInverse(input, unit);
+        input = getSingleInverse(input, std::move(unit));
     } else if(lst == '/') {
-        input = getSingle(input, unit);
+        input = getSingle(input, std::move(unit));
     }
     return input;
 }
