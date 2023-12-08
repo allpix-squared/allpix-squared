@@ -86,7 +86,7 @@ FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-     EXEC_PROGRAM(
+    EXEC_PROGRAM(
         ${CLANG_TIDY} ${CMAKE_CURRENT_SOURCE_DIR}
         ARGS --version
         OUTPUT_VARIABLE CTIDY_VERSION)
