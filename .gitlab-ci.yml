@@ -31,7 +31,7 @@ stages:
 .centos7:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     tags:
-        - docker
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -41,7 +41,7 @@ stages:
 .centos9:
     image: gitlab-registry.cern.ch/sft/docker/centos9:latest
     tags:
-        - docker
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -51,14 +51,14 @@ stages:
 .docker:
     image: $DOCKER_DEPS_IMAGE
     tags:
-        - docker
+        - k8s-default
     before_script:
         - mkdir -p build/ && cd build/
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
     tags:
-        - docker
+        - cvmfs
     variables:
         COMPILER_TYPE: "gcc"
     before_script:
@@ -238,8 +238,6 @@ fmt:reuse:
     image:
         name: registry.cern.ch/docker.io/fsfe/reuse:latest
         entrypoint: [""]
-    tags:
-      - docker
     stage: formatting
     needs: []
     dependencies: []
@@ -450,8 +448,6 @@ perf:cc7-gcc:
     stage: documentation
     needs: []
     dependencies: []
-    tags:
-        - docker
     before_script:
         - mkdir -p public/usermanual
         - mkdir build && cd build
@@ -475,6 +471,8 @@ docs:doxygen:
 docs:usermanual-hugo:
     extends: .doc
     image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    tags:
+        - cvmfs
     script:
         - source ../.ci/init_x86_64.sh
         - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
@@ -567,8 +565,8 @@ deploy:documentation:
 
 deploy:eos:
     stage: deployment
-    tags:
-      - docker
+    extends:
+        - .docker
     variables:
         GIT_STRATEGY: none
     # Only run on new tags for releases and on schedules for nightlies:
@@ -608,6 +606,9 @@ deploy:cvmfs:
 
 .deploy-docker:
     stage: deployment
+    extends:
+        - .docker
+    before_script: []
     image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint: [""]
