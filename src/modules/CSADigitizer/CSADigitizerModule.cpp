@@ -375,7 +375,7 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
     double arrival_time = 0;
 
     // Lambda for threshold calculation:
-    auto is_above_threshold = [=](double bin) {
+    auto is_above_threshold = [=, this](double bin) {
         if(ignore_polarity_) {
             return (std::fabs(bin) > std::fabs(threshold_));
         } else {
@@ -402,7 +402,7 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     unsigned int tot_clock_cycles = 0;
 
     // Lambda for threshold calculation:
-    auto is_below_threshold = [=](double bin) {
+    auto is_below_threshold = [=, this](double bin) {
         if(ignore_polarity_) {
             return (std::fabs(bin) < std::fabs(threshold_));
         } else {
