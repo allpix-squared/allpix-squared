@@ -228,6 +228,7 @@ ENDIF()
 
 # Require C++17
 CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
+CHECK_CXX_COMPILER_FLAG(-std=c++20 SUPPORT_STD_CXX20)
 IF(NOT SUPPORT_STD_CXX17)
     MESSAGE(FATAL_ERROR "Compiler does not support required standard C++17")
 ENDIF()
@@ -300,7 +301,11 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Downgrade to C++14 if ROOT is not build with C++17 support
-IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
+IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+2[0a].*")
+    IF(NOT SUPPORT_STD_CXX20)
+        MESSAGE(FATAL_ERROR "ROOT was built with C++20 support but current compiler doesn't support it")
+    ENDIF()
+ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
     IF(NOT SUPPORT_STD_CXX17)
         MESSAGE(FATAL_ERROR "ROOT was built with C++17 support but current compiler doesn't support it")
     ENDIF()
