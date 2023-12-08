@@ -54,33 +54,19 @@ PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, const std::vector<const Propa
     pulse_ = std::move(pulse);
 }
 
-const Pixel& PixelCharge::getPixel() const {
-    return pixel_;
-}
+const Pixel& PixelCharge::getPixel() const { return pixel_; }
 
-Pixel::Index PixelCharge::getIndex() const {
-    return getPixel().getIndex();
-}
+Pixel::Index PixelCharge::getIndex() const { return getPixel().getIndex(); }
 
-long PixelCharge::getCharge() const {
-    return charge_;
-}
+long PixelCharge::getCharge() const { return charge_; }
 
-unsigned long PixelCharge::getAbsoluteCharge() const {
-    return static_cast<unsigned long>(std::abs(charge_));
-}
+unsigned long PixelCharge::getAbsoluteCharge() const { return static_cast<unsigned long>(std::abs(charge_)); }
 
-const Pulse& PixelCharge::getPulse() const {
-    return pulse_;
-}
+const Pulse& PixelCharge::getPulse() const { return pulse_; }
 
-double PixelCharge::getGlobalTime() const {
-    return global_time_;
-}
+double PixelCharge::getGlobalTime() const { return global_time_; }
 
-double PixelCharge::getLocalTime() const {
-    return local_time_;
-}
+double PixelCharge::getLocalTime() const { return local_time_; }
 
 /**
  * @throws MissingReferenceException If the pointed object is not in scope

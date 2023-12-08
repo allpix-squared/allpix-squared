@@ -38,8 +38,8 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
-.centos9:
-    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
+.alma9:
+    image: gitlab-registry.cern.ch/sft/docker/alma9:latest
     tags:
         - cvmfs
     variables:
@@ -56,7 +56,7 @@ stages:
         - mkdir -p build/ && cd build/
 
 .lxplus:
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    image: gitlab-registry.cern.ch/sft/docker/alma9:latest
     tags:
         - cvmfs
     variables:
@@ -104,6 +104,7 @@ cmp:lxplus-gcc:
         - .lxplus
         - .compile
     script:
+        - export CCACHE_DIR=`pwd`/ccache
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja -k0
         - ninja install
@@ -122,16 +123,16 @@ cmp:cc7-gcc:
         - .centos7
         - .compile
 
-cmp:cc7-llvm:
+cmp:el9-llvm:
     extends:
-        - .centos7
+        - .alma9
         - .compile
     variables:
         COMPILER_TYPE: "llvm"
 
-cmp:cc9-gcc:
+cmp:el9-gcc:
     extends:
-        - .centos9
+        - .alma9
         - .compile
 
 cmp:macos-clang:
@@ -153,17 +154,17 @@ cmp:macos-clang:
     stage: formatting
     needs: []
     dependencies: []
-    extends: .centos7
+    extends: .alma9
     variables:
         COMPILER_TYPE: "llvm"
 
-fmt:cc7-llvm-format:
+fmt:clang-format:
     extends: .format
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja check-format
 
-fmt:cc7-llvm-lint:
+fmt:clang-lint:
     extends: .format
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
@@ -172,7 +173,7 @@ fmt:cc7-llvm-lint:
         - schedules
         - tags
 
-fmt:cc7-llvm-lint-diff:
+fmt:clang-lint-diff:
     extends: .format
     script:
         - git remote add upstream $REPOSITORY && git fetch upstream
@@ -218,7 +219,6 @@ fmt:proselint:
         - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
 
 fmt:coverity:
-    image: gitlab-registry.cern.ch/sft/docker/centos9:latest
     extends: .format
     only:
         - schedules
@@ -339,41 +339,41 @@ core:cc7-gcc:
         - job: cmp:cc7-gcc
           artifacts: true
 
-mod:cc7-llvm:
+# AlmaLinux 9
+mod:el9-gcc:
     extends:
-        - .centos7
+        - .alma9
+        - .testmod
+    needs:
+        - job: cmp:el9-gcc
+          artifacts: true
+
+core:el9-gcc:
+    extends:
+        - .alma9
+        - .testcore
+    needs:
+        - job: cmp:el9-gcc
+          artifacts: true
+          
+mod:el9-llvm:
+    extends:
+        - .alma9
         - .testmod
     variables:
         COMPILER_TYPE: "llvm"
     needs:
-        - job: cmp:cc7-llvm
+        - job: cmp:el9-llvm
           artifacts: true
 
-core:cc7-llvm:
+core:el9-llvm:
     extends:
-        - .centos7
+        - .alma9
         - .testcore
     variables:
         COMPILER_TYPE: "llvm"
     needs:
-        - job: cmp:cc7-llvm
-          artifacts: true
-
-# CentOS 8
-mod:cc9-gcc:
-    extends:
-        - .centos9
-        - .testmod
-    needs:
-        - job: cmp:cc9-gcc
-          artifacts: true
-
-core:cc9-gcc:
-    extends:
-        - .centos9
-        - .testcore
-    needs:
-        - job: cmp:cc9-gcc
+        - job: cmp:el9-llvm
           artifacts: true
 
 # Mac OS
@@ -418,17 +418,6 @@ perf:cc7-gcc:
         - job: cmp:cc7-gcc
           artifacts: true
 
-# Temporarily hide LLVM job, have to find out why this is so slow.
-.perf:cc7-llvm:
-    extends:
-        - .centos7
-        - .testperf
-    variables:
-        COMPILER_TYPE: "llvm"
-    needs:
-        - job: cmp:cc7-llvm
-          artifacts: true
-
 # Mac OS
 # Temporarily disable Mac OS X performance until tests are adapted to actual performance
 .perf:macos-clang:
@@ -470,7 +459,7 @@ docs:doxygen:
 # Create file tree for hugo
 docs:usermanual-hugo:
     extends: .doc
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    image: gitlab-registry.cern.ch/sft/docker/alma9:latest
     tags:
         - cvmfs
     script:
@@ -522,22 +511,22 @@ pkg:cc7-gcc:
         - job: cmp:cc7-gcc
           artifacts: true
 
-pkg:cc7-llvm:
+pkg:el9-llvm:
     extends:
-        - .centos7
+        - .alma9
         - .pack
     needs:
-        - job: cmp:cc7-llvm
+        - job: cmp:el9-llvm
           artifacts: true
     variables:
         COMPILER_TYPE: "llvm"
 
-pkg:cc9-gcc:
+pkg:el9-gcc:
     extends:
-        - .centos9
+        - .alma9
         - .pack
     needs:
-        - job: cmp:cc9-gcc
+        - job: cmp:el9-gcc
           artifacts: true
 
 pkg:macos-clang:
@@ -588,8 +577,8 @@ deploy:cvmfs:
     stage: deployment
     dependencies:
         - pkg:cc7-gcc
-        - pkg:cc7-llvm
-        - pkg:cc9-gcc
+        - pkg:el9-llvm
+        - pkg:el9-gcc
         - pkg:macos-clang
     tags:
         - cvmfs-deploy

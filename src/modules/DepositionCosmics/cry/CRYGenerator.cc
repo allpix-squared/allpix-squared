@@ -236,15 +236,11 @@ CRYGenerator::CRYGenerator(CRYSetup* setup) {
     // Need to create a PDF out of others to determine the
     // fraction of time in each primary bin that there are >0 particles
     //
-    double primaryRate = 0.;
-    double averageMult = 0.;
     std::vector<double> fractionWithParticles;
 
     for(unsigned int i = 0; i < primaryPartialRates.size(); i++) {
         if(averageMultInBox[i] > 0.) {
             // primaries per m2 per sec * secondaries per primary / (secondaries per box/ m2 per box)
-            primaryRate += primaryPartialRates[i];
-            averageMult += primaryPartialRates[i] * averageMultInBox[i];
             fractionWithParticles.push_back(secondariesPerShower[i] / averageMultInBox[i]);
         } else {
             fractionWithParticles.push_back(0.);

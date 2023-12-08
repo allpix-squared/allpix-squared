@@ -28,9 +28,7 @@ ConfigReader::ConfigReader(std::istream& stream, std::filesystem::path file_name
     add(stream, std::move(file_name));
 }
 
-ConfigReader::ConfigReader(const ConfigReader& other) : conf_array_(other.conf_array_) {
-    copy_init_map();
-}
+ConfigReader::ConfigReader(const ConfigReader& other) : conf_array_(other.conf_array_) { copy_init_map(); }
 ConfigReader& ConfigReader::operator=(const ConfigReader& other) {
     conf_array_ = other.conf_array_;
     copy_init_map();

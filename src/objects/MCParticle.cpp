@@ -30,19 +30,11 @@ MCParticle::MCParticle(ROOT::Math::XYZPoint local_start_point,
     setTrack(nullptr);
 }
 
-ROOT::Math::XYZPoint MCParticle::getLocalStartPoint() const {
-    return local_start_point_;
-}
-ROOT::Math::XYZPoint MCParticle::getGlobalStartPoint() const {
-    return global_start_point_;
-}
+ROOT::Math::XYZPoint MCParticle::getLocalStartPoint() const { return local_start_point_; }
+ROOT::Math::XYZPoint MCParticle::getGlobalStartPoint() const { return global_start_point_; }
 
-ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const {
-    return local_end_point_;
-}
-ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const {
-    return global_end_point_;
-}
+ROOT::Math::XYZPoint MCParticle::getLocalEndPoint() const { return local_end_point_; }
+ROOT::Math::XYZPoint MCParticle::getGlobalEndPoint() const { return global_end_point_; }
 
 ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     // Direction for parametric equation of line through start/end points
@@ -60,59 +52,35 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
     }
 }
 
-double MCParticle::getTotalEnergyStart() const {
-    return total_energy_start_;
-}
+double MCParticle::getTotalEnergyStart() const { return total_energy_start_; }
 
-void MCParticle::setTotalEnergyStart(double total_energy) {
-    total_energy_start_ = total_energy;
-}
+void MCParticle::setTotalEnergyStart(double total_energy) { total_energy_start_ = total_energy; }
 
-double MCParticle::getKineticEnergyStart() const {
-    return kinetic_energy_start_;
-}
+double MCParticle::getKineticEnergyStart() const { return kinetic_energy_start_; }
 
-void MCParticle::setKineticEnergyStart(double kinetic_energy) {
-    kinetic_energy_start_ = kinetic_energy;
-}
+void MCParticle::setKineticEnergyStart(double kinetic_energy) { kinetic_energy_start_ = kinetic_energy; }
 
-unsigned int MCParticle::getTotalDepositedCharge() const {
-    return deposited_charge_;
-}
+unsigned int MCParticle::getTotalDepositedCharge() const { return deposited_charge_; }
 
-void MCParticle::setTotalDepositedCharge(unsigned int total_charge) {
-    deposited_charge_ = total_charge;
-}
+void MCParticle::setTotalDepositedCharge(unsigned int total_charge) { deposited_charge_ = total_charge; }
 
-int MCParticle::getParticleID() const {
-    return particle_id_;
-}
+int MCParticle::getParticleID() const { return particle_id_; }
 
-double MCParticle::getGlobalTime() const {
-    return global_time_;
-}
+double MCParticle::getGlobalTime() const { return global_time_; }
 
-double MCParticle::getLocalTime() const {
-    return local_time_;
-}
+double MCParticle::getLocalTime() const { return local_time_; }
 
-void MCParticle::setParent(const MCParticle* mc_particle) {
-    parent_ = PointerWrapper<MCParticle>(mc_particle);
-}
+void MCParticle::setParent(const MCParticle* mc_particle) { parent_ = PointerWrapper<MCParticle>(mc_particle); }
 
 /**
  * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
-const MCParticle* MCParticle::getParent() const {
-    return parent_.get();
-}
+const MCParticle* MCParticle::getParent() const { return parent_.get(); }
 
 /**
  * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
-bool MCParticle::isPrimary() const {
-    return (parent_.get() == nullptr);
-}
+bool MCParticle::isPrimary() const { return (parent_.get() == nullptr); }
 
 /**
  * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
@@ -122,16 +90,12 @@ const MCParticle* MCParticle::getPrimary() const { // NOLINT
     return (parent == nullptr ? this : parent->getPrimary());
 }
 
-void MCParticle::setTrack(const MCTrack* mc_track) {
-    track_ = PointerWrapper<MCTrack>(mc_track);
-}
+void MCParticle::setTrack(const MCTrack* mc_track) { track_ = PointerWrapper<MCTrack>(mc_track); }
 
 /**
  * Object is stored as \ref allpix::Object::PointerWrapper and can only be accessed if pointed object is in scope
  */
-const MCTrack* MCParticle::getTrack() const {
-    return track_.get();
-}
+const MCTrack* MCParticle::getTrack() const { return track_.get(); }
 
 void MCParticle::print(std::ostream& out) const {
     static const size_t big_gap = 25;

@@ -10,7 +10,7 @@ AccessModifierOffset: -4
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AllowShortIfStatementsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: All
 BinPackParameters: false
 BinPackArguments: false
 ColumnLimit: 125

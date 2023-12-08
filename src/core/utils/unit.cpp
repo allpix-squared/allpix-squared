@@ -168,6 +168,4 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     stream << best_unit;
     return stream.str();
 }
-std::string Units::display(UnitType input, std::string unit) {
-    return display(input, {std::move(unit)});
-}
+std::string Units::display(UnitType input, std::string unit) { return display(input, {std::move(unit)}); }

@@ -13,33 +13,19 @@
 
 using namespace corryvreckan;
 
-double Event::start() const {
-    return timestamp();
-}
+double Event::start() const { return timestamp(); }
 
-double Event::end() const {
-    return end_;
-}
+double Event::end() const { return end_; }
 
-double Event::duration() const {
-    return (end_ - timestamp());
-}
+double Event::duration() const { return (end_ - timestamp()); }
 
-void Event::addTrigger(uint32_t trigger_id, double trigger_ts) {
-    trigger_list_.emplace(trigger_id, trigger_ts);
-}
+void Event::addTrigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
 
-bool Event::hasTriggerID(uint32_t trigger_id) const {
-    return (trigger_list_.find(trigger_id) != trigger_list_.end());
-}
+bool Event::hasTriggerID(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
 
-double Event::getTriggerTime(uint32_t trigger_id) const {
-    return trigger_list_.find(trigger_id)->second;
-}
+double Event::getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
-std::map<uint32_t, double> Event::triggerList() const {
-    return trigger_list_;
-}
+std::map<uint32_t, double> Event::triggerList() const { return trigger_list_; }
 
 Event::Position Event::getTimestampPosition(double timestamp) const {
     if(timestamp < start()) {

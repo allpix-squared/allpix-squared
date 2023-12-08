@@ -44,13 +44,13 @@ IF(CLANG_FORMAT)
     STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
     # Let's treat macOS differently because they don't have up-to-date versions
-    IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED APPLE)
+    IF(${CLANG_MAJOR_VERSION} GREATER_EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED APPLE)
         # On macOS we might have the right version - or not..
-        IF(NOT ${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION})
+        IF(NOT ${CLANG_MAJOR_VERSION} GREATER_EQUAL ${CLANG_FORMAT_VERSION})
             MESSAGE(
                 WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
-            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")
+            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, adding formatting targets")
         ENDIF()
 
         ADD_CUSTOM_TARGET(
@@ -85,7 +85,13 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+
+    EXEC_PROGRAM(
+        ${CLANG_TIDY} ${CMAKE_CURRENT_SOURCE_DIR}
+        ARGS --version
+        OUTPUT_VARIABLE CTIDY_VERSION)
+    STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_TIDY_MAJOR_VERSION ${CTIDY_VERSION})
+    MESSAGE(STATUS "Found ${CLANG_TIDY} version ${CLANG_TIDY_MAJOR_VERSION}")
 
     # If debug build enabled do automatic clang tidy
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -111,7 +117,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     GET_FILENAME_COMPONENT(CLANG_DIR ${CLANG_TIDY} DIRECTORY)
     FIND_PROGRAM(
         RUN_CLANG_TIDY
-        NAMES "run-clang-tidy.py" "run-clang-tidy-${CLANG_TIDY_VERSION}.py"
+        NAMES "run-clang-tidy" "run-clang-tidy.py" "run-clang-tidy-${CLANG_TIDY_MAJOR_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         MESSAGE(STATUS "Found ${RUN_CLANG_TIDY}, adding full-code linting targets")
@@ -136,7 +142,7 @@ IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     FIND_PROGRAM(
         CLANG_TIDY_DIFF
-        NAMES "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_VERSION}.py"
+        NAMES "clang-tidy-diff" "clang-tidy-diff.py" "clang-tidy-diff-${CLANG_TIDY_MAJOR_VERSION}.py"
         HINTS /usr/share/clang/ ${CLANG_DIR}/../share/clang/ /usr/bin/)
     IF(RUN_CLANG_TIDY)
         # Set target branch and remote to perform the diff against

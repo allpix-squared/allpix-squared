@@ -126,25 +126,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     return true;
 }
 
-std::string SensitiveDetectorActionG4::getName() const {
-    return detector_->getName();
-}
+std::string SensitiveDetectorActionG4::getName() const { return detector_->getName(); }
 
-unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() const {
-    return total_deposited_charge_;
-}
+unsigned int SensitiveDetectorActionG4::getTotalDepositedCharge() const { return total_deposited_charge_; }
 
-unsigned int SensitiveDetectorActionG4::getDepositedCharge() const {
-    return deposited_charge_;
-}
+unsigned int SensitiveDetectorActionG4::getDepositedCharge() const { return deposited_charge_; }
 
-double SensitiveDetectorActionG4::getTotalDepositedEnergy() const {
-    return total_deposited_energy_;
-}
+double SensitiveDetectorActionG4::getTotalDepositedEnergy() const { return total_deposited_energy_; }
 
-double SensitiveDetectorActionG4::getDepositedEnergy() const {
-    return deposited_energy_;
-}
+double SensitiveDetectorActionG4::getDepositedEnergy() const { return deposited_energy_; }
 
 void SensitiveDetectorActionG4::clearEventInfo() {
     LOG(DEBUG) << "Clearing track and deposit vectors";
