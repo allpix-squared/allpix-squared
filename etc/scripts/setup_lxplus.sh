@@ -10,7 +10,7 @@ fi
 ABSOLUTE_PATH=`dirname $(readlink -f ${BASH_SOURCE[0]})`
 
 # Set the compiler type to LLVM to also load clang-format and clang-tidy
-if [ "$( cat /etc/*-release | grep "CentOS Stream release 9" )" ]; then
+if [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ] || [ "$( cat /etc/*-release | grep "AlmaLinux 9" )" ]; then
     export COMPILER_TYPE="llvm"
 else
     export COMPILER_TYPE="gcc"
