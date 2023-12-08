@@ -17,6 +17,9 @@ if [ "$(uname)" = "Linux" ]; then
     elif [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ]; then
         echo "Detected Red Hat Enterprise Linux 9"
         OS=el9
+    elif [ "$( cat /etc/*-release | grep "AlmaLinux 9" )" ]; then
+        echo "Detected AlmaLinux 9"
+        OS=el9
     else
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
