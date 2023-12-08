@@ -50,7 +50,7 @@ IF(CLANG_FORMAT)
             MESSAGE(
                 WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
-            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_FORMAT_VERSION}, adding formatting targets")
+            MESSAGE(STATUS "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, adding formatting targets")
         ENDIF()
 
         ADD_CUSTOM_TARGET(
@@ -85,7 +85,7 @@ ENDIF()
 FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    MESSAGE(STATUS "Found ${CLANG_TIDY}, adding linting targets")
+    MESSAGE(STATUS "Found ${CLANG_TIDY}")
 
     # If debug build enabled do automatic clang tidy
     IF(CMAKE_BUILD_TYPE MATCHES Debug)
