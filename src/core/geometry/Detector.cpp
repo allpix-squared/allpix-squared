@@ -180,9 +180,7 @@ void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
 /**
  * The magnetic field is evaluated for any sensor position.
  */
-ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint&) const {
-    return magnetic_field_;
-}
+ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint&) const { return magnetic_field_; }
 
 /**
  * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this

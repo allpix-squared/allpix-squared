@@ -40,21 +40,13 @@ PixelPulse::PixelPulse(Pixel pixel, const Pulse& pulse, const PixelCharge* pixel
     }
 }
 
-const Pixel& PixelPulse::getPixel() const {
-    return pixel_;
-}
+const Pixel& PixelPulse::getPixel() const { return pixel_; }
 
-Pixel::Index PixelPulse::getIndex() const {
-    return getPixel().getIndex();
-}
+Pixel::Index PixelPulse::getIndex() const { return getPixel().getIndex(); }
 
-double PixelPulse::getGlobalTime() const {
-    return global_time_;
-}
+double PixelPulse::getGlobalTime() const { return global_time_; }
 
-double PixelPulse::getLocalTime() const {
-    return local_time_;
-}
+double PixelPulse::getLocalTime() const { return local_time_; }
 
 /**
  * @throws MissingReferenceException If the pointed object is not in scope

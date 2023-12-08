@@ -49,13 +49,9 @@ int Pulse::getCharge() const {
     return static_cast<int>(std::lround(charge));
 }
 
-double Pulse::getBinning() const {
-    return bin_;
-}
+double Pulse::getBinning() const { return bin_; }
 
-bool Pulse::isInitialized() const {
-    return initialized_;
-}
+bool Pulse::isInitialized() const { return initialized_; }
 
 Pulse& Pulse::operator+=(const Pulse& rhs) {
     // Allow to initialize uninitialized pulse

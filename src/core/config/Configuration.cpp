@@ -44,9 +44,7 @@ void Configuration::AccessMarker::registerMarker(const std::string& key) {
 Configuration::Configuration(std::string name, std::filesystem::path path)
     : name_(std::move(name)), path_(std::move(path)) {}
 
-bool Configuration::has(const std::string& key) const {
-    return config_.find(key) != config_.cend();
-}
+bool Configuration::has(const std::string& key) const { return config_.find(key) != config_.cend(); }
 
 unsigned int Configuration::count(std::initializer_list<std::string> keys) const {
     if(keys.size() == 0) {
