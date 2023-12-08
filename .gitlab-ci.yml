@@ -104,6 +104,7 @@ cmp:lxplus-gcc:
         - .lxplus
         - .compile
     script:
+        - export CCACHE_DIR=`pwd`/ccache
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja -k0
         - ninja install
