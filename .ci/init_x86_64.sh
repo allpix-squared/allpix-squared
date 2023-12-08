@@ -8,12 +8,6 @@ if [ "$(uname)" = "Linux" ]; then
     if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
         echo "Detected CentOS Linux 7"
         OS=centos7
-    elif [ "$( cat /etc/*-release | grep "CentOS Linux 8" )" ] || [ "$( cat /etc/*-release | grep "CentOS Stream release 8" )" ]; then
-        echo "Detected CentOS Linux 8"
-        OS=centos8
-    elif [ "$( cat /etc/*-release | grep "CentOS Stream release 9" )" ]; then
-        echo "Detected CentOS Linux 9"
-        OS=centos9
     elif [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ]; then
         echo "Detected Red Hat Enterprise Linux 9"
         OS=el9
