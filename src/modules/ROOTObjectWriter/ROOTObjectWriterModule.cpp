@@ -61,7 +61,7 @@ void ROOTObjectWriterModule::initialize() {
 
     // Check if the given type of object is contained in the inclusion or exclusion filter rules:
     auto check_object_filter = [](const std::string& object, const std::set<std::string>& arr, bool inclusive) {
-        auto contained = std::find(arr.begin(), arr.end(), object);
+        auto contained = arr.find(object);
         if((!inclusive && contained == std::end(arr)) || (inclusive && contained != std::end(arr))) {
             LOG(WARNING) << object << (inclusive ? " included" : " not excluded")
                          << ", this will lead to large output files and possible performance penalties";
