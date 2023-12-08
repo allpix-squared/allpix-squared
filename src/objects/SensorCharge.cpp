@@ -22,33 +22,19 @@ SensorCharge::SensorCharge(ROOT::Math::XYZPoint local_position,
     : local_position_(std::move(local_position)), global_position_(std::move(global_position)), local_time_(local_time),
       global_time_(global_time), type_(type), charge_(charge) {}
 
-ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const {
-    return local_position_;
-}
+ROOT::Math::XYZPoint SensorCharge::getLocalPosition() const { return local_position_; }
 
-ROOT::Math::XYZPoint SensorCharge::getGlobalPosition() const {
-    return global_position_;
-}
+ROOT::Math::XYZPoint SensorCharge::getGlobalPosition() const { return global_position_; }
 
-CarrierType SensorCharge::getType() const {
-    return type_;
-}
+CarrierType SensorCharge::getType() const { return type_; }
 
-unsigned int SensorCharge::getCharge() const {
-    return charge_;
-}
+unsigned int SensorCharge::getCharge() const { return charge_; }
 
-long SensorCharge::getSign() const {
-    return static_cast<std::underlying_type<CarrierType>::type>(type_);
-}
+long SensorCharge::getSign() const { return static_cast<std::underlying_type<CarrierType>::type>(type_); }
 
-double SensorCharge::getGlobalTime() const {
-    return global_time_;
-}
+double SensorCharge::getGlobalTime() const { return global_time_; }
 
-double SensorCharge::getLocalTime() const {
-    return local_time_;
-}
+double SensorCharge::getLocalTime() const { return local_time_; }
 
 void SensorCharge::print(std::ostream& out) const {
     out << "Type: " << (type_ == CarrierType::ELECTRON ? "\"e\"" : "\"h\"") << "\nCharge: " << charge_ << " e"

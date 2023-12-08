@@ -29,20 +29,10 @@ Pixel::Pixel(Pixel::Index index,
     : index_(std::move(index)), type_(type), local_center_(std::move(local_center)),
       global_center_(std::move(global_center)), size_(std::move(size)) {}
 
-Pixel::Index Pixel::getIndex() const {
-    return index_;
-}
+Pixel::Index Pixel::getIndex() const { return index_; }
 
-Pixel::Type Pixel::getType() const {
-    return type_;
-}
+Pixel::Type Pixel::getType() const { return type_; }
 
-ROOT::Math::XYZPoint Pixel::getLocalCenter() const {
-    return local_center_;
-}
-ROOT::Math::XYZPoint Pixel::getGlobalCenter() const {
-    return global_center_;
-}
-ROOT::Math::XYVector Pixel::getSize() const {
-    return size_;
-}
+ROOT::Math::XYZPoint Pixel::getLocalCenter() const { return local_center_; }
+ROOT::Math::XYZPoint Pixel::getGlobalCenter() const { return global_center_; }
+ROOT::Math::XYVector Pixel::getSize() const { return size_; }

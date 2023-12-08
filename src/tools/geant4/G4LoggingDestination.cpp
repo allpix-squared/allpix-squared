@@ -17,21 +17,13 @@ G4LoggingDestination* G4LoggingDestination::instance = nullptr;
 allpix::LogLevel G4LoggingDestination::reporting_level_g4cout = allpix::LogLevel::TRACE;
 allpix::LogLevel G4LoggingDestination::reporting_level_g4cerr = allpix::LogLevel::WARNING;
 
-void G4LoggingDestination::setG4coutReportingLevel(LogLevel level) {
-    G4LoggingDestination::reporting_level_g4cout = level;
-}
+void G4LoggingDestination::setG4coutReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cout = level; }
 
-void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) {
-    G4LoggingDestination::reporting_level_g4cerr = level;
-}
+void G4LoggingDestination::setG4cerrReportingLevel(LogLevel level) { G4LoggingDestination::reporting_level_g4cerr = level; }
 
-LogLevel G4LoggingDestination::getG4coutReportingLevel() {
-    return G4LoggingDestination::reporting_level_g4cout;
-}
+LogLevel G4LoggingDestination::getG4coutReportingLevel() { return G4LoggingDestination::reporting_level_g4cout; }
 
-LogLevel G4LoggingDestination::getG4cerrReportingLevel() {
-    return G4LoggingDestination::reporting_level_g4cerr;
-}
+LogLevel G4LoggingDestination::getG4cerrReportingLevel() { return G4LoggingDestination::reporting_level_g4cerr; }
 
 void G4LoggingDestination::process_message(LogLevel level, std::string& msg) const {
     if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {

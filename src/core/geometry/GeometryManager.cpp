@@ -249,9 +249,7 @@ void GeometryManager::addModel(std::shared_ptr<DetectorModel> model) {
 bool GeometryManager::needsModel(const std::string& name) const {
     return nonresolved_models_.find(name) != nonresolved_models_.end();
 }
-bool GeometryManager::hasModel(const std::string& name) const {
-    return model_names_.find(name) != model_names_.end();
-}
+bool GeometryManager::hasModel(const std::string& name) const { return model_names_.find(name) != model_names_.end(); }
 
 /**
  * @throws InvalidDetectorError If a model with this name does not exist
@@ -509,18 +507,14 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
     return std::pair<XYZPoint, Rotation3D>(position, orientation);
 }
 
-bool GeometryManager::hasMagneticField() const {
-    return (magnetic_field_type_ != MagneticFieldType::NONE);
-}
+bool GeometryManager::hasMagneticField() const { return (magnetic_field_type_ != MagneticFieldType::NONE); }
 
 void GeometryManager::setMagneticFieldFunction(MagneticFieldFunction function, MagneticFieldType type) {
     magnetic_field_function_ = std::move(function);
     magnetic_field_type_ = type;
 }
 
-MagneticFieldType GeometryManager::getMagneticFieldType() const {
-    return magnetic_field_type_;
-}
+MagneticFieldType GeometryManager::getMagneticFieldType() const { return magnetic_field_type_; }
 
 ROOT::Math::XYZVector GeometryManager::getMagneticField(const ROOT::Math::XYZPoint& position) const {
     return magnetic_field_function_(position);

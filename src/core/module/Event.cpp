@@ -57,6 +57,4 @@ void Event::restore_random_engine_state() {
     }
 }
 
-LocalMessenger* Event::get_local_messenger() const {
-    return local_messenger_.get();
-}
+LocalMessenger* Event::get_local_messenger() const { return local_messenger_.get(); }

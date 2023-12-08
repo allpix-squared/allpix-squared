@@ -35,69 +35,38 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
     setParent(nullptr);
 }
 
-ROOT::Math::XYZPoint MCTrack::getStartPoint() const {
-    return start_point_;
-}
+ROOT::Math::XYZPoint MCTrack::getStartPoint() const { return start_point_; }
 
-ROOT::Math::XYZPoint MCTrack::getEndPoint() const {
-    return end_point_;
-}
+ROOT::Math::XYZPoint MCTrack::getEndPoint() const { return end_point_; }
 
-int MCTrack::getParticleID() const {
-    return particle_id_;
-}
+int MCTrack::getParticleID() const { return particle_id_; }
 
-double MCTrack::getGlobalStartTime() const {
-    return global_start_time_;
-}
+double MCTrack::getGlobalStartTime() const { return global_start_time_; }
 
-double MCTrack::getGlobalEndTime() const {
-    return global_end_time_;
-}
+double MCTrack::getGlobalEndTime() const { return global_end_time_; }
 
-int MCTrack::getCreationProcessType() const {
-    return origin_g4_process_type_;
-}
+int MCTrack::getCreationProcessType() const { return origin_g4_process_type_; }
 
-double MCTrack::getKineticEnergyInitial() const {
+double MCTrack::getKineticEnergyInitial() const { return initial_kin_E_; }
 
-    return initial_kin_E_;
-}
+double MCTrack::getTotalEnergyInitial() const { return initial_tot_E_; }
 
-double MCTrack::getTotalEnergyInitial() const {
-    return initial_tot_E_;
-}
+double MCTrack::getKineticEnergyFinal() const { return final_kin_E_; }
 
-double MCTrack::getKineticEnergyFinal() const {
-    return final_kin_E_;
-}
+double MCTrack::getTotalEnergyFinal() const { return final_tot_E_; }
 
-double MCTrack::getTotalEnergyFinal() const {
-    return final_tot_E_;
-}
+std::string MCTrack::getOriginatingVolumeName() const { return start_g4_vol_name_; }
 
-std::string MCTrack::getOriginatingVolumeName() const {
-    return start_g4_vol_name_;
-}
+std::string MCTrack::getTerminatingVolumeName() const { return end_g4_vol_name_; }
 
-std::string MCTrack::getTerminatingVolumeName() const {
-    return end_g4_vol_name_;
-}
-
-std::string MCTrack::getCreationProcessName() const {
-    return origin_g4_process_name_;
-}
+std::string MCTrack::getCreationProcessName() const { return origin_g4_process_name_; }
 
 /**
  * Object is stored as TRef and can only be accessed if pointed object is in scope
  */
-const MCTrack* MCTrack::getParent() const {
-    return parent_.get();
-}
+const MCTrack* MCTrack::getParent() const { return parent_.get(); }
 
-void MCTrack::setParent(const MCTrack* mc_track) {
-    parent_ = PointerWrapper<MCTrack>(mc_track);
-}
+void MCTrack::setParent(const MCTrack* mc_track) { parent_ = PointerWrapper<MCTrack>(mc_track); }
 
 void MCTrack::print(std::ostream& out) const {
     static const size_t big_gap = 25;
@@ -144,9 +113,5 @@ void MCTrack::print(std::ostream& out) const {
     out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
 }
 
-void MCTrack::loadHistory() {
-    parent_.get();
-}
-void MCTrack::petrifyHistory() {
-    parent_.store();
-}
+void MCTrack::loadHistory() { parent_.get(); }
+void MCTrack::petrifyHistory() { parent_.store(); }
