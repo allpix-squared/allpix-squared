@@ -9,7 +9,7 @@ weight: 1
 
 Allpix Squared is designed to run without issues on either a recent Linux distribution or Mac OS X. Furthermore, the
 continuous integration of the project ensures correct building and functioning of the software framework on CentOS 7 (with
-GCC and LLVM), CentOS 8 (with GCC only), Ubuntu 20.04 LTS (Docker, GCC) and Mac OS Catalina 10.15 (AppleClang 12.0).
+GCC), AlmaLinux 9 and Red Hat Enterprise Linux 9 (with GCC and LLVM), Ubuntu 22.04 LTS (Docker, GCC) and Mac OS Catalina 10.15 (AppleClang 12.0).
 
 ## Compilers
 
