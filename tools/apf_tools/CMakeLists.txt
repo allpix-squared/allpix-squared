@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # CMake file for the allpix2 framework
-CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6.3 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
     CMAKE_POLICY(SET CMP0048 NEW) # set project version
