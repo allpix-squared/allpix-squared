@@ -44,9 +44,9 @@ IF(CLANG_FORMAT)
     STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
     # Let's treat macOS differently because they don't have up-to-date versions
-    IF(${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED APPLE)
+    IF(${CLANG_MAJOR_VERSION} GREATER_EQUAL ${CLANG_FORMAT_VERSION} OR DEFINED APPLE)
         # On macOS we might have the right version - or not..
-        IF(NOT ${CLANG_MAJOR_VERSION} EQUAL ${CLANG_FORMAT_VERSION})
+        IF(NOT ${CLANG_MAJOR_VERSION} GREATER_EQUAL ${CLANG_FORMAT_VERSION})
             MESSAGE(
                 WARNING "Found ${CLANG_FORMAT} version ${CLANG_MAJOR_VERSION}, this might lead to incompatible formatting")
         ELSE()
