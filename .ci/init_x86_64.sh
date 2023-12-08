@@ -14,6 +14,9 @@ if [ "$(uname)" = "Linux" ]; then
     elif [ "$( cat /etc/*-release | grep "CentOS Stream release 9" )" ]; then
         echo "Detected CentOS Linux 9"
         OS=centos9
+    elif [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ]; then
+        echo "Detected Red Hat Enterprise Linux 9"
+        OS=el9
     else
         echo "Cannot detect OS, falling back to CentOS7"
         OS=centos7
@@ -58,7 +61,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_103"
+DEFAULT_LCG="LCG_104"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -83,7 +86,7 @@ if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
         COMPILER_VERSION="clang120"
     else
-        COMPILER_VERSION="clang12"
+        COMPILER_VERSION="clang16"
     fi
     echo "Compiler type set to LLVM, version ${COMPILER_VERSION}."
 fi
