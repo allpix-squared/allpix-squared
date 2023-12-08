@@ -392,7 +392,7 @@ void GeometryManager::read_model_file(const std::filesystem::path& path) {
     try {
         // Try to parse as config file
         std::ifstream file(path);
-        ConfigReader reader(file, path);
+        const ConfigReader reader(file, path);
 
         // Parse configuration and add model to the config
         addModel(DetectorModel::factory(model_name, reader));
