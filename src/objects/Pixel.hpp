@@ -17,12 +17,10 @@
 #include <Math/Vector2D.h>
 #include <TObject.h>
 
-namespace ROOT {
-    namespace Math { // NOLINT
-        bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
-                       const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs);
-    }
-} // namespace ROOT
+namespace ROOT::Math { // NOLINT
+    bool operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
+                   const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs);
+} // namespace ROOT::Math
 
 namespace allpix {
     /**
