@@ -169,9 +169,6 @@ fmt:clang-lint:
     script:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja check-lint 2> /dev/null
-    only:
-        - schedules
-        - tags
 
 fmt:clang-lint-diff:
     extends: .format
