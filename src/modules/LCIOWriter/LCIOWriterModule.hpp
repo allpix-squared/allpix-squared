@@ -40,7 +40,7 @@ namespace allpix {
          */
         LCIOWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
-        ~LCIOWriterModule(){};
+        ~LCIOWriterModule() = default;
 
         /**
          * @brief Initialize LCIO and GEAR output files

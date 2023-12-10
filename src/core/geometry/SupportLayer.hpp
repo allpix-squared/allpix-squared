@@ -89,7 +89,7 @@ namespace allpix {
                      ROOT::Math::XYVector hole_offset)
             : size_(std::move(size)), material_(std::move(material)), type_(std::move(type)),
               hole_size_(std::move(hole_size)), offset_(std::move(offset)), hole_offset_(std::move(hole_offset)),
-              location_(std::move(location)) {}
+              location_(location) {}
 
         // Actual parameters returned
         ROOT::Math::XYZPoint center_;

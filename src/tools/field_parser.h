@@ -139,21 +139,19 @@ namespace allpix {
 } // namespace allpix
 
 // Enable versioning for the FieldData class template
-namespace cereal {
-    namespace detail {
-        template <class T> struct Version<allpix::FieldData<T>> {
-            static const std::uint32_t version;
-            static std::uint32_t registerVersion() {
-                ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
-                    std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
-                return 3;
-            }
-            static void unused() { (void)version; } // NOLINT
-        };                                          /* end Version */
-        template <class T>
-        const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
-    } // namespace detail
-} // namespace cereal
+namespace cereal::detail {
+    template <class T> struct Version<allpix::FieldData<T>> {
+        static const std::uint32_t version;
+        static std::uint32_t registerVersion() {
+            ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
+                std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
+            return 3;
+        }
+        static void unused() { (void)version; } // NOLINT
+    };                                          /* end Version */
+    template <class T>
+    const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
+} // namespace cereal::detail
 
 namespace allpix {
 
@@ -171,10 +169,8 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        explicit FieldParser(const FieldQuantity quantity) {
-            // Store quantity: vector or scalar field:
-            N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
-        };
+        explicit FieldParser(const FieldQuantity quantity)
+            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)){};
         ~FieldParser() = default;
 
         /**
@@ -399,10 +395,8 @@ namespace allpix {
          * @param quantity Quantity of individual field points, vector (three values per point) or scalar (one value per
          * point)
          */
-        explicit FieldWriter(const FieldQuantity quantity) {
-            // Store quantity: vector or scalar field:
-            N_ = static_cast<std::underlying_type<FieldQuantity>::type>(quantity);
-        };
+        explicit FieldWriter(const FieldQuantity quantity)
+            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)){};
         ~FieldWriter() = default;
 
         /**

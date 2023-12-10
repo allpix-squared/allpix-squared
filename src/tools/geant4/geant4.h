@@ -44,7 +44,7 @@ namespace allpix {
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
         }
-        return G4ThreeVector(vec_split[0], vec_split[1], vec_split[2]);
+        return {vec_split[0], vec_split[1], vec_split[2]};
     }
     /**
      * @ingroup StringConversions
@@ -70,7 +70,7 @@ namespace allpix {
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
         }
-        return G4TwoVector(vec_split[0], vec_split[1]);
+        return {vec_split[0], vec_split[1]};
     }
     /**
      * @ingroup StringConversions
