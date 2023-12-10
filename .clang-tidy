@@ -11,7 +11,7 @@ Checks : '-*,
           modernize-*,-modernize-raw-string-literal,-modernize-use-nodiscard,-modernize-use-trailing-return-type,-modernize-avoid-bind,
           cppcoreguidelines-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-special-member-functions,-cppcoreguidelines-pro-type-static-cast-downcast,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-owning-memory,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-non-const-global-variables,
           cert-*,-cert-err58-cpp,-cert-err34-c,-cert-msc51-cpp,-cert-msc32-c,-cert-dcl16-c,-cert-oop54-cpp,
-          misc-*,-misc-noexcept-move-constructor,-misc-non-private-member-variables-in-classes,-misc-no-recursion,
+          misc-*,-misc-noexcept-move-constructor,-misc-non-private-member-variables-in-classes,-misc-no-recursion,-misc-const-correctness,
           clang-analyzer-*,-clang-analyzer-alpha*,-clang-analyzer-core*,-clang-analyzer-cplusplus*,-clang-analyzer-optin*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '*.h *.hpp'
