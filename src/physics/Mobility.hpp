@@ -231,12 +231,12 @@ namespace allpix {
         Masetti(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)
             : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
               electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
-              electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_alpha_(0.711),
-              electron_mu1_(Units::get(56.1, "cm*cm/V/s")), electron_cs_(Units::get(3.41e20, "/cm/cm/cm")),
-              electron_beta_(1.98), hole_mu0_(Units::get(44.9, "cm*cm/V/s")), hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
+              electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_mu1_(Units::get(56.1, "cm*cm/V/s")),
+              electron_cs_(Units::get(3.41e20, "/cm/cm/cm")), hole_mu0_(Units::get(44.9, "cm*cm/V/s")),
+              hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
               hole_mumax_(Units::get(470.5, "cm*cm/V/s") * std::pow(temperature / 300, -2.2)),
-              hole_cr_(Units::get(2.23e17, "/cm/cm/cm")), hole_alpha_(0.719), hole_mu1_(Units::get(29.0, "cm*cm/V/s")),
-              hole_cs_(Units::get(6.1e20, "/cm/cm/cm")), hole_beta_(2.0) {
+              hole_cr_(Units::get(2.23e17, "/cm/cm/cm")), hole_mu1_(Units::get(29.0, "cm*cm/V/s")),
+              hole_cs_(Units::get(6.1e20, "/cm/cm/cm")) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
@@ -272,18 +272,18 @@ namespace allpix {
         double electron_mu0_;
         double electron_mumax_;
         double electron_cr_;
-        double electron_alpha_;
+        double electron_alpha_{0.711};
         double electron_mu1_;
         double electron_cs_;
-        double electron_beta_;
+        double electron_beta_{1.98};
         double hole_mu0_;
         double hole_pc_;
         double hole_mumax_;
         double hole_cr_;
-        double hole_alpha_;
+        double hole_alpha_{0.719};
         double hole_mu1_;
         double hole_cs_;
-        double hole_beta_;
+        double hole_beta_{2.0};
     };
 
     /**
@@ -474,9 +474,9 @@ namespace allpix {
         Levinshtein(SensorMaterial material, double temperature, bool doping)
             : electron_mumin_(Units::get(55, "cm*cm/V/s")), electron_mumax_(Units::get(1000, "cm*cm/V/s")),
               electron_nref_(Units::get(2e17, "/cm/cm/cm")), electron_t_alpha_(std::pow(temperature / 300, 2.)),
-              electron_t_beta_(std::pow(temperature / 300, 0.7)), electron_gamma_(1.),
-              hole_mumin_(Units::get(3, "cm*cm/V/s")), hole_mumax_(Units::get(170, "cm*cm/V/s")),
-              hole_nref_(Units::get(3e17, "/cm/cm/cm")), hole_t_alpha_(std::pow(temperature / 300, 5.)), hole_gamma_(2.) {
+              electron_t_beta_(std::pow(temperature / 300, 0.7)), hole_mumin_(Units::get(3, "cm*cm/V/s")),
+              hole_mumax_(Units::get(170, "cm*cm/V/s")), hole_nref_(Units::get(3e17, "/cm/cm/cm")),
+              hole_t_alpha_(std::pow(temperature / 300, 5.)) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");
             }
@@ -504,12 +504,12 @@ namespace allpix {
         double electron_nref_;
         double electron_t_alpha_;
         double electron_t_beta_;
-        double electron_gamma_;
+        double electron_gamma_{1.};
         double hole_mumin_;
         double hole_mumax_;
         double hole_nref_;
         double hole_t_alpha_;
-        double hole_gamma_;
+        double hole_gamma_{2.};
     };
 
     /**
