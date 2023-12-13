@@ -199,7 +199,7 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
     // half thickness)
     auto center =
         ((element_first.first - element_first.second / 2.0) + (element_last.first + element_last.second / 2.0)) / 2.0;
-    return ROOT::Math::XYZPoint(getMatrixCenter().x(), getMatrixCenter().y(), center);
+    return {getMatrixCenter().x(), getMatrixCenter().y(), center};
 }
 
 std::vector<Configuration> DetectorModel::getConfigurations() const {
