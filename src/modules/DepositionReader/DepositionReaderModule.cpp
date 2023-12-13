@@ -502,7 +502,7 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
                                       int& parent_id) {
 
     std::string line, tmp;
-    do {
+    do { // NOLINT
         // Read input file line-by-line and trim whitespaces at beginning and end:
         std::getline(*input_file_, line);
         line = allpix::trim(line);
