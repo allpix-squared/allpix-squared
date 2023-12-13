@@ -10,7 +10,7 @@ used to run Allpix Squared without building it beforehand. Compared to the Docke
 [Section 2.7](./07_docker_images.md), which can run on any operating system, binary releases are tied to a specific operating
 system.
 
-Binaries for Allpix Squared are currently provided for CentOS 7 (both in a GCC and LLVM variant), CentOS 8 (GCC) and MacOS.
+Binaries for Allpix Squared are currently provided for CentOS 7 (GCC only), AlmaLinux 9/Red Hat Enterprise Linux 9/EL9 (both in a GCC and LLVM variant) and MacOS.
 Details on the deployment process are given in [Setcion 11.4](../11_devtools/04_deployment.md).
 
 To use Allpix Squared from CVMFS, run:

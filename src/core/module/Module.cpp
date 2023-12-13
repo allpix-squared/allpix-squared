@@ -148,9 +148,7 @@ TDirectory* Module::getROOTDirectory() const {
 
     return directory_;
 }
-void Module::set_ROOT_directory(TDirectory* directory) {
-    directory_ = directory;
-}
+void Module::set_ROOT_directory(TDirectory* directory) { directory_ = directory; }
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor
@@ -162,13 +160,9 @@ ConfigManager* Module::getConfigManager() const {
     };
     return conf_manager_;
 }
-void Module::set_config_manager(ConfigManager* conf_manager) {
-    conf_manager_ = conf_manager;
-}
+void Module::set_config_manager(ConfigManager* conf_manager) { conf_manager_ = conf_manager; }
 
-void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
-    delegates_.emplace_back(messenger, delegate);
-}
+void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) { delegates_.emplace_back(messenger, delegate); }
 bool Module::check_delegates(Messenger* messenger, Event* event) {
     // Return false if any delegate is not satisfied
     return std::all_of(delegates_.cbegin(), delegates_.cend(), [messenger, event](auto& delegate) {
@@ -176,6 +170,4 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
     });
 }
 
-void SequentialModule::waive_sequence_requirement(bool waive) {
-    sequence_required_ = !waive;
-}
+void SequentialModule::waive_sequence_requirement(bool waive) { sequence_required_ = !waive; }

@@ -14,6 +14,4 @@
 
 using namespace allpix;
 
-void SDAndFieldConstruction::ConstructSDandField() {
-    module_->construct_sensitive_detectors_and_fields();
-}
+void SDAndFieldConstruction::ConstructSDandField() { module_->construct_sensitive_detectors_and_fields(); }

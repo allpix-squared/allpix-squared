@@ -28,9 +28,7 @@ Messenger::Messenger() = default;
 #ifdef NDEBUG
 Messenger::~Messenger() = default;
 #else
-Messenger::~Messenger() {
-    assert(delegate_to_iterator_.empty());
-}
+Messenger::~Messenger() { assert(delegate_to_iterator_.empty()); }
 #endif
 
 // Check if the detectors match for the message and the delegate and that we don't have self-dispatch

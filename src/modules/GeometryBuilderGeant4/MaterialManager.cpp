@@ -53,9 +53,7 @@ G4Material* Materials::get(const std::string& material) const {
     throw ModuleError("Could not find material with name \"" + material + "\"");
 }
 
-void Materials::set(const std::string& name, G4Material* material) {
-    materials_.insert(std::make_pair(name, material));
-}
+void Materials::set(const std::string& name, G4Material* material) { materials_.insert(std::make_pair(name, material)); }
 
 /**
  * Initializes all the internal materials. The following materials are supported by this module:
