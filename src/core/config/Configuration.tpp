@@ -79,7 +79,7 @@ namespace allpix {
         if(has(key)) {
             return getArray<T>(key);
         }
-        return def;
+        return std::move(def);
     }
 
     /**
