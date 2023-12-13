@@ -320,42 +320,42 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 
     // Wrapper
-    G4VisAttributes wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
+    auto wrapperVisAtt = G4VisAttributes(G4Color(1, 0, 0, 0.1)); // Red
     wrapperVisAtt.SetVisibility(false);
 
     // Support
     auto supportColor = G4Color(0.36, 0.66, 0.055, alpha); // Greenish
-    G4VisAttributes supportVisAtt = G4VisAttributes(supportColor);
+    auto supportVisAtt = G4VisAttributes(supportColor);
     supportVisAtt.SetLineWidth(1);
     supportVisAtt.SetForceSolid(false);
 
     // Chip
     auto chipColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
-    G4VisAttributes ChipVisAtt = G4VisAttributes(chipColor);
+    auto ChipVisAtt = G4VisAttributes(chipColor);
     ChipVisAtt.SetForceSolid(false);
 
     // Bumps
     auto bumpColor = G4Color(0.5, 0.5, 0.5, alpha); // Grey
-    G4VisAttributes BumpVisAtt = G4VisAttributes(bumpColor);
+    auto BumpVisAtt = G4VisAttributes(bumpColor);
     BumpVisAtt.SetForceSolid(false);
 
     // The logical volume holding all the bumps
-    G4VisAttributes BumpBoxVisAtt = G4VisAttributes(bumpColor);
+    auto BumpBoxVisAtt = G4VisAttributes(bumpColor);
     BumpBoxVisAtt.SetForceSolid(false);
 
     // Sensors, ie pixels
     auto sensorColor = G4Color(0.18, 0.2, 0.21, alpha); // Blackish
-    G4VisAttributes SensorVisAtt = G4VisAttributes(sensorColor);
+    auto SensorVisAtt = G4VisAttributes(sensorColor);
     SensorVisAtt.SetForceSolid(false);
 
     // Passive Materials
     auto passivematerialColor = G4Color(0., 0., 1, alpha); // Blue
-    G4VisAttributes PassiveMaterialVisAtt = G4VisAttributes(passivematerialColor);
+    auto PassiveMaterialVisAtt = G4VisAttributes(passivematerialColor);
     PassiveMaterialVisAtt.SetLineWidth(1);
     PassiveMaterialVisAtt.SetForceSolid(false);
 
     // The box holding all the pixels
-    G4VisAttributes BoxVisAtt = G4VisAttributes(sensorColor);
+    auto BoxVisAtt = G4VisAttributes(sensorColor);
     BoxVisAtt.SetForceSolid(false);
 
     // In default simple view mode, pixels and bumps are set to invisible, not to be displayed.

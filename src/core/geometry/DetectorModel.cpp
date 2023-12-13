@@ -81,7 +81,7 @@ DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
                              const ConfigReader& reader,
                              const Configuration& config)
-    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
+    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(reader) {
     using namespace ROOT::Math;
 
     // Sensor thickness
@@ -149,7 +149,7 @@ DetectorModel::DetectorModel(std::string type,
                         std::move(offset),
                         std::move(material),
                         std::move(hole_type),
-                        std::move(location),
+                        location,
                         hole_size,
                         std::move(hole_offset));
 

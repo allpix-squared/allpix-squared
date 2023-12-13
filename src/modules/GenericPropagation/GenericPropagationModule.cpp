@@ -500,7 +500,7 @@ GenericPropagationModule::propagate(Event* event,
         auto x = gauss_distribution(event->getRandomEngine());
         auto y = gauss_distribution(event->getRandomEngine());
         auto z = gauss_distribution(event->getRandomEngine());
-        return Eigen::Vector3d(x, y, z);
+        return {x, y, z};
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step

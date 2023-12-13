@@ -23,7 +23,7 @@ std::string allpix::trim(const std::string& str, const std::string& delims) {
     if(b == std::string::npos || e == std::string::npos) {
         return "";
     }
-    return std::string(str, b, e - b + 1);
+    return {str, b, e - b + 1};
 }
 
 std::string allpix::from_string_helper(std::string str) {

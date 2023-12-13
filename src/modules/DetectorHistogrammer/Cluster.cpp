@@ -20,9 +20,9 @@
 
 using namespace allpix;
 
-Cluster::Cluster(const PixelHit* seed_pixel_hit) : seed_pixel_hit_(seed_pixel_hit) {
+Cluster::Cluster(const PixelHit* seed_pixel_hit)
+    : seed_pixel_hit_(seed_pixel_hit), cluster_charge_(seed_pixel_hit->getSignal()) {
     pixel_hits_.insert(seed_pixel_hit);
-    cluster_charge_ = seed_pixel_hit->getSignal();
 
     minX_ = seed_pixel_hit->getPixel().getIndex().x();
     maxX_ = minX_; // NOLINT

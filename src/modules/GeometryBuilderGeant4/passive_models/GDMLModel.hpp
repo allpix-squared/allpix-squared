@@ -167,10 +167,10 @@ namespace allpix {
             }
 
             // If no valid color code was specified, return white
-            return G4Colour(static_cast<double>(r) / 256,
-                            static_cast<double>(g) / 256,
-                            static_cast<double>(b) / 256,
-                            static_cast<double>(a) / 256);
+            return {static_cast<double>(r) / 256,
+                    static_cast<double>(g) / 256,
+                    static_cast<double>(b) / 256,
+                    static_cast<double>(a) / 256};
         };
     };
 } // namespace allpix

@@ -59,7 +59,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     }
 }
 
-void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> connection) {
+void DatabaseWriterModule::prepare_statements(const std::shared_ptr<pqxx::connection>& connection) {
     LOG(DEBUG) << "Preparing database statements";
     connection->prepare("add_run", "INSERT INTO Run (run_id) VALUES ($1) RETURNING run_nr;");
 
