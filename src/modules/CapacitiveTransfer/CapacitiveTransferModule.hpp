@@ -89,7 +89,7 @@ namespace allpix {
         bool cross_coupling_{};
 
         void getCapacitanceScan(TFile* root_file);
-        TGraph* capacitances_[9]{};
+        std::array<TGraph*, 9> capacitances_{};
 
         Eigen::Hyperplane<double, 3> plane_;
 

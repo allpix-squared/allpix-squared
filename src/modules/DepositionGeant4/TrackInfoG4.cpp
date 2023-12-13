@@ -15,16 +15,14 @@
 using namespace allpix;
 
 TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track* const aTrack)
-    : custom_track_id_(custom_track_id), parent_track_id_(parent_track_id) {
+    : custom_track_id_(custom_track_id), parent_track_id_(parent_track_id), start_time_(aTrack->GetGlobalTime()),
+      initial_g4_vol_name_(aTrack->GetVolume()->GetName()), initial_kin_E_(aTrack->GetKineticEnergy()),
+      initial_tot_E_(aTrack->GetTotalEnergy()) {
     const auto* G4Process = aTrack->GetCreatorProcess();
     origin_g4_process_type_ = (G4Process != nullptr) ? G4Process->GetProcessType() : -1;
     particle_id_ = aTrack->GetDynamicParticle()->GetPDGcode();
     start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
-    start_time_ = aTrack->GetGlobalTime();
-    initial_g4_vol_name_ = aTrack->GetVolume()->GetName();
     origin_g4_process_name_ = (G4Process != nullptr) ? static_cast<std::string>(G4Process->GetProcessName()) : "none";
-    initial_kin_E_ = aTrack->GetKineticEnergy();
-    initial_tot_E_ = aTrack->GetTotalEnergy();
 }
 
 void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {

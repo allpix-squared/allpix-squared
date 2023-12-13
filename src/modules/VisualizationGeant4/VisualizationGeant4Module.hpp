@@ -96,7 +96,7 @@ namespace allpix {
         void add_visualization_volumes();
 
         // Check if we did run successfully, used to apply workaround in destructor if needed
-        bool has_run_;
+        bool has_run_{false};
 
         ViewingMode mode_;
 
@@ -105,7 +105,7 @@ namespace allpix {
 
         // Hold information about the session
         std::string session_param_;
-        char* session_param_ptr_;
+        char* session_param_ptr_{nullptr};
         std::unique_ptr<G4UIsession> gui_session_;
     };
 } // namespace allpix

@@ -77,7 +77,7 @@ int main(int argc, const char* argv[]) {
             } else if(strcmp(argv[i], "--units") == 0 && (i + 1 < argc)) {
                 units = std::string(argv[++i]);
             } else {
-                file_names.emplace_back(std::string(argv[i]));
+                file_names.emplace_back(argv[i]);
             }
         }
 

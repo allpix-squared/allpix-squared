@@ -293,7 +293,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
                                                                           Messenger* messenger,
                                                                           GeometryManager* geo_manager) {
     // Make the vector to return
-    std::string module_name = config.getName();
+    const std::string& module_name = config.getName();
 
     // Return error if user tried to specialize the unique module:
     if(config.has("name")) {
@@ -367,7 +367,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
                                                                                          Configuration& config,
                                                                                          Messenger* messenger,
                                                                                          GeometryManager* geo_manager) {
-    std::string module_name = config.getName();
+    const std::string& module_name = config.getName();
     LOG(DEBUG) << "Creating instantions for detector module " << module_name;
 
     // Create the basic identifier
@@ -1010,7 +1010,7 @@ void ModuleManager::finalize() {
         }
         LOG(WARNING) << st.str();
     }
-    for(auto& config : conf_manager_->getInstanceConfigurations()) {
+    for(const auto& config : conf_manager_->getInstanceConfigurations()) {
         auto unique_name = config.getName();
         auto identifier = config.get<std::string>("identifier");
         if(!identifier.empty()) {

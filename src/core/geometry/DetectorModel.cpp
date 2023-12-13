@@ -125,7 +125,14 @@ DetectorModel::DetectorModel(std::string type, std::shared_ptr<DetectorAssembly>
         std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
-        addSupportLayer(size, thickness, offset, material, hole_type, location, hole_size, hole_offset);
+        addSupportLayer(size,
+                        thickness,
+                        std::move(offset),
+                        std::move(material),
+                        std::move(hole_type),
+                        std::move(location),
+                        hole_size,
+                        std::move(hole_offset));
     }
 }
 
@@ -134,12 +141,12 @@ void DetectorModel::addImplant(const Implant::Type& type,
                                ROOT::Math::XYZVector size,
                                const ROOT::Math::XYVector& offset,
                                double orientation,
-                               Configuration config) {
+                               const Configuration& config) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(
-        Implant(type, shape, std::move(size), full_offset, ROOT::Math::RotationZ(orientation), std::move(config)));
+    implants_.push_back(Implant(
+        type, shape, std::move(size), std::move(full_offset), ROOT::Math::RotationZ(orientation), std::move(config)));
 }
 
 void DetectorModel::validate() {
@@ -234,8 +241,8 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
     }
 
     for(auto& support_layer : getSupportLayers()) {
-        auto size = support_layer.getSize();
-        auto center = support_layer.getCenter();
+        const auto& size = support_layer.getSize();
+        const auto& center = support_layer.getCenter();
         max.SetX(std::max(max.x(), (center + size / 2.0).x()));
         max.SetY(std::max(max.y(), (center + size / 2.0).y()));
         max.SetZ(std::max(max.z(), (center + size / 2.0).z()));
@@ -288,15 +295,14 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
 std::optional<DetectorModel::Implant> DetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
 
     // Bail out if we have no implants - no need to transform coordinates:
-    auto implants = getImplants();
-    if(implants.empty()) {
+    if(implants_.empty()) {
         return std::nullopt;
     }
 
     auto [xpixel, ypixel] = getPixelIndex(local_pos);
     auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
 
-    for(const auto& implant : implants) {
+    for(const auto& implant : implants_) {
         if(implant.contains(inPixelPos)) {
             return implant;
         }

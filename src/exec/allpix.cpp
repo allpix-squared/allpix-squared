@@ -172,7 +172,7 @@ int main(int argc, const char* argv[]) {
         } else if(arg == "-l" && (i + 1 < argc)) {
             log_file_name = std::string(argv[++i]);
         } else if(arg == "-o" && (i + 1 < argc)) {
-            module_options.emplace_back(std::string(argv[++i]));
+            module_options.emplace_back(argv[++i]);
         } else if(arg.find("-j") == 0) {
             module_options.emplace_back("multithreading=true");
             if(arg == "-j" && (i + 1 < argc)) {
@@ -181,7 +181,7 @@ int main(int argc, const char* argv[]) {
                 module_options.emplace_back("workers=" + arg.substr(2));
             }
         } else if(arg == "-g" && (i + 1 < argc)) {
-            detector_options.emplace_back(std::string(argv[++i]));
+            detector_options.emplace_back(argv[++i]);
         } else {
             LOG(ERROR) << "Unrecognized command line argument \"" << argv[i] << "\"";
             print_help = true;

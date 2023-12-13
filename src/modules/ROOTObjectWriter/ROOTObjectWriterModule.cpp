@@ -269,7 +269,7 @@ void ROOTObjectWriterModule::finalize() {
     }
 
     // Save the instance configuration to the output file
-    for(auto& config : conf_manager->getInstanceConfigurations()) {
+    for(const auto& config : conf_manager->getInstanceConfigurations()) {
         // Create a new directory per section, using the unique module name
         auto unique_name = config.getName();
         auto identifier = config.get<std::string>("identifier");
