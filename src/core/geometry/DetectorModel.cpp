@@ -79,7 +79,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
 DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
-                             const ConfigReader& reader,
+                             const ConfigReader& reader, // NOLINT
                              const Configuration& config)
     : type_(std::move(type)), assembly_(std::move(assembly)), reader_(reader) {
     using namespace ROOT::Math;
