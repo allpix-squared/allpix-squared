@@ -59,7 +59,7 @@ DefaultLogger::~DefaultLogger() {
     if(start_pos != std::string::npos) {
         std::string spcs(indent_count_ + 1, ' ');
         spcs[0] = '\n';
-        do {
+        do { // NOLINT
             out.replace(start_pos, 1, spcs);
             start_pos += spcs.length();
         } while((start_pos = out.find('\n', start_pos)) != std::string::npos);

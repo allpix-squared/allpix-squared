@@ -117,7 +117,7 @@ namespace allpix {
 
                 // Check if there was color information in the configuration:
                 if(config_.has("color") && !color_from_gdml) {
-                    set_visualization_attributes(gdml_daughter_log, mother_log_volume);
+                    set_visualization_attributes(gdml_daughter_log, mother_log_volume); // NOLINT
                 }
 
                 // Add the physical daughter volume to the mother volume and configure logical mother volume

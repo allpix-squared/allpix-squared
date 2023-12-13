@@ -286,7 +286,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
                               .c_str());
     getROOTDirectory()->WriteTObject(pulse_graph, name.c_str());
 
-    std::vector<double> abs_vec = pulse;
+    auto abs_vec = pulse;
     std::for_each(abs_vec.begin(), abs_vec.end(), [](auto& bin) { bin = std::fabs(bin); });
     name = "pulse_abs_ev" + std::to_string(event_num) + "_px" + std::to_string(index.x()) + "-" + std::to_string(index.y());
     auto* pulse_abs_graph = new TGraph(static_cast<int>(abs_vec.size()), time.data(), abs_vec.data());
@@ -299,7 +299,7 @@ void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::In
                                   .c_str());
     getROOTDirectory()->WriteTObject(pulse_abs_graph, name.c_str());
 
-    std::vector<double> current_vec = pulse;
+    auto current_vec = pulse;
     // Convert charge bins to current in uA
     std::for_each(current_vec.begin(), current_vec.end(), [step](auto& bin) {
         bin = static_cast<double>(Units::convert(bin, "fC") / Units::convert(step, "ns"));
