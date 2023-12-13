@@ -32,7 +32,7 @@ Detector::Detector(std::string name,
                    ROOT::Math::XYZPoint position,
                    const ROOT::Math::Rotation3D& orientation)
     : Detector(std::move(name), std::move(position), orientation) {
-    model_ = std::move(model);
+    model_ = std::move(model); // NOLINT
     // Check if valid model is supplied
     if(model_ == nullptr) {
         throw InvalidModuleActionException("Detector model cannot be a null pointer");

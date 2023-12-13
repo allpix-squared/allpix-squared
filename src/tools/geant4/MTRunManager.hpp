@@ -97,7 +97,7 @@ namespace allpix {
          * @brief Overriding G4RunManager::AbortRun so as to reset the state to G4State_Idle in order to allow the next event
          * to run BeamOn
          */
-        void AbortRun(G4bool softAbort = false) override; // NOLINT
+        void AbortRun(G4bool softAbort) override; // NOLINT
 
     protected:
         /**

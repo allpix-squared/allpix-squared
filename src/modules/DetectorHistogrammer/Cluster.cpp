@@ -25,9 +25,9 @@ Cluster::Cluster(const PixelHit* seed_pixel_hit) : seed_pixel_hit_(seed_pixel_hi
     cluster_charge_ = seed_pixel_hit->getSignal();
 
     minX_ = seed_pixel_hit->getPixel().getIndex().x();
-    maxX_ = minX_;
+    maxX_ = minX_; // NOLINT
     minY_ = seed_pixel_hit->getPixel().getIndex().y();
-    maxY_ = minY_;
+    maxY_ = minY_; // NOLINT
 
     for(const auto* mc_particle : seed_pixel_hit->getMCParticles()) {
         mc_particles_.insert(mc_particle);

@@ -257,8 +257,8 @@ void DatabaseWriterModule::run(Event* event) {
                                                                   run_nr_,
                                                                   event_nr,
                                                                   detectorName,
-                                                                  reinterpret_cast<uintptr_t>(&object),
-                                                                  reinterpret_cast<uintptr_t>(track.getParent()),
+                                                                  reinterpret_cast<uintptr_t>(&object),           // NOLINT
+                                                                  reinterpret_cast<uintptr_t>(track.getParent()), // NOLINT
                                                                   track.getParticleID(),
                                                                   track.getCreationProcessName(),
                                                                   track.getOriginatingVolumeName(),
@@ -298,9 +298,9 @@ void DatabaseWriterModule::run(Event* event) {
                                                               event_nr,
                                                               mctrack_nr,
                                                               detectorName,
-                                                              reinterpret_cast<uintptr_t>(&object),
-                                                              reinterpret_cast<uintptr_t>(particle.getParent()),
-                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                              reinterpret_cast<uintptr_t>(&object),              // NOLINT
+                                                              reinterpret_cast<uintptr_t>(particle.getParent()), // NOLINT
+                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),  // NOLINT
                                                               particle.getParticleID(),
                                                               particle.getLocalStartPoint().X(),
                                                               particle.getLocalStartPoint().Y(),
