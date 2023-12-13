@@ -145,8 +145,8 @@ void DetectorModel::addImplant(const Implant::Type& type,
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
-    implants_.push_back(Implant(
-        type, shape, std::move(size), std::move(full_offset), ROOT::Math::RotationZ(orientation), std::move(config)));
+    implants_.push_back(
+        Implant(type, shape, std::move(size), std::move(full_offset), ROOT::Math::RotationZ(orientation), config));
 }
 
 void DetectorModel::validate() {
