@@ -235,6 +235,4 @@ std::vector<Configuration> ConfigReader::getConfigurations(std::string name) con
     return result;
 }
 
-std::vector<Configuration> ConfigReader::getConfigurations() const {
-    return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());
-}
+std::vector<Configuration> ConfigReader::getConfigurations() const { return {conf_array_.begin(), conf_array_.end()}; }

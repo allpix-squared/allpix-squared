@@ -294,8 +294,7 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
                                                                      0);
 
         // Extend size unless it's already large enough to cover shifted bump bond grid:
-        return ROOT::Math::XYZVector(
-            std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
+        return {std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z())};
     }
     return size;
 }
