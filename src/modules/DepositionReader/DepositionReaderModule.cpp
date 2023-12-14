@@ -230,7 +230,7 @@ void DepositionReaderModule::run(Event* event) {
     bool end_of_run = false;
     std::string eof_message;
 
-    do {
+    while(true) {
         bool read_status = false;
         ROOT::Math::XYZPoint global_position;
         std::string volume;
@@ -318,7 +318,7 @@ void DepositionReaderModule::run(Event* event) {
         }
 
         particles_to_deposits[detector].push_back(track_id);
-    } while(true);
+    };
 
     LOG(INFO) << "Finished reading event " << event;
 
@@ -502,7 +502,7 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
                                       int& parent_id) {
 
     std::string line, tmp;
-    do {
+    do { // NOLINT
         // Read input file line-by-line and trim whitespaces at beginning and end:
         std::getline(*input_file_, line);
         line = allpix::trim(line);

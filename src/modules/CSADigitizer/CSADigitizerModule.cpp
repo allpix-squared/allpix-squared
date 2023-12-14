@@ -252,7 +252,7 @@ void CSADigitizerModule::run(Event* event) {
                 // clang-format on
 
                 auto* response_graph = new TGraph(
-                    static_cast<int>(impulse_response_function_.size()), &time[0], &impulse_response_function_[0]);
+                    static_cast<int>(impulse_response_function_.size()), time.data(), impulse_response_function_.data());
                 response_graph->GetXaxis()->SetTitle("t [ns]");
                 response_graph->GetYaxis()->SetTitle("amp. response");
                 response_graph->SetTitle("Amplifier response function");
@@ -437,7 +437,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
         plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
     std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
-    auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), &amptime[0], &pulse_in_mV[0]);
+    auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());
     csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
     csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");
     csa_pulse_graph->SetTitle((s_title + " in pixel (" + s_pixel_index + ")").c_str());

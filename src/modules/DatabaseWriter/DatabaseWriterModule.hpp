@@ -74,7 +74,7 @@ namespace allpix {
          * @brief Submit "prepared statements" to the database connection(s)
          * @param connection  Database connection to be used
          */
-        static void prepare_statements(std::shared_ptr<pqxx::connection> connection);
+        static void prepare_statements(const std::shared_ptr<pqxx::connection>& connection);
 
         // Object names to include or exclude from writing
         std::set<std::string> include_;

@@ -117,7 +117,7 @@ namespace allpix {
 
                 // Check if there was color information in the configuration:
                 if(config_.has("color") && !color_from_gdml) {
-                    set_visualization_attributes(gdml_daughter_log, mother_log_volume);
+                    set_visualization_attributes(gdml_daughter_log, mother_log_volume); // NOLINT
                 }
 
                 // Add the physical daughter volume to the mother volume and configure logical mother volume
@@ -167,10 +167,10 @@ namespace allpix {
             }
 
             // If no valid color code was specified, return white
-            return G4Colour(static_cast<double>(r) / 256,
-                            static_cast<double>(g) / 256,
-                            static_cast<double>(b) / 256,
-                            static_cast<double>(a) / 256);
+            return {static_cast<double>(r) / 256,
+                    static_cast<double>(g) / 256,
+                    static_cast<double>(b) / 256,
+                    static_cast<double>(a) / 256};
         };
     };
 } // namespace allpix

@@ -72,11 +72,11 @@ namespace allpix {
             static constexpr int kMaxHits = (1 << 14);
             TTree* tree; // no unique_ptr, ROOT takes ownership
             Int_t nhits_;
-            Int_t pix_x_[kMaxHits];
-            Int_t pix_y_[kMaxHits];
-            Int_t value_[kMaxHits];
-            Int_t timing_[kMaxHits];
-            Int_t hit_in_cluster_[kMaxHits];
+            std::array<Int_t, kMaxHits> pix_x_;
+            std::array<Int_t, kMaxHits> pix_y_;
+            std::array<Int_t, kMaxHits> value_;
+            std::array<Int_t, kMaxHits> timing_;
+            std::array<Int_t, kMaxHits> hit_in_cluster_;
         };
         // The map from detector names to the respective sensor_data struct
         std::map<std::string, sensor_data> sensors_;

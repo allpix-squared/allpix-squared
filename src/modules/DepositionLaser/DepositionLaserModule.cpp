@@ -547,7 +547,7 @@ std::optional<DepositionLaserModule::PhotonHit> DepositionLaserModule::track(con
         }
         auto intersection = intersect_with_sensor(detector, position, direction);
         if(intersection) {
-            intersection_segments.emplace_back(std::make_pair(detector, intersection.value()));
+            intersection_segments.emplace_back(detector, intersection.value());
         }
     }
 

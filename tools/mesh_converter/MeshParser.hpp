@@ -58,7 +58,7 @@ namespace mesh_converter {
          * @param  observable Optionally the observable of interest, required by some parsers
          * @return           Map with all fields for the different regions
          */
-        virtual FieldMap read_fields(const std::string& file_name, const std::string& observable = "") = 0;
+        virtual FieldMap read_fields(const std::string& file_name, const std::string& observable) = 0;
 
     private:
         // Cache of parsed meshes for all regions

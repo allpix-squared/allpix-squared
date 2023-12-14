@@ -53,7 +53,7 @@ namespace allpix {
          * @param config Configuration with description of the model
          * @param geo_manager Pointer to the global geometry manager
          */
-        PassiveMaterialModel(Configuration config, GeometryManager* geo_manager);
+        PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager);
 
         /**
          * @brief Essential virtual destructor
