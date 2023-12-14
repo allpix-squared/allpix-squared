@@ -393,14 +393,14 @@ void RCEWriterModule::run(Event* event) {
             }
 
             // Fill the tree with received messages
-            auto i = sensor.nhits_;
-            sensor.pix_x_[i] = hit.getPixel().getIndex().x();       // NOLINT
-            sensor.pix_y_[i] = hit.getPixel().getIndex().y();       // NOLINT
-            sensor.value_[i] = static_cast<Int_t>(hit.getSignal()); // NOLINT
+            auto i = static_cast<size_t>(sensor.nhits_);
+            sensor.pix_x_[i] = hit.getPixel().getIndex().x();
+            sensor.pix_y_[i] = hit.getPixel().getIndex().y();
+            sensor.value_[i] = static_cast<Int_t>(hit.getSignal());
             // Assumes that time is correctly digitized
-            sensor.timing_[i] = static_cast<Int_t>(hit.getLocalTime()); // NOLINT
+            sensor.timing_[i] = static_cast<Int_t>(hit.getLocalTime());
             // This contains no useful information but it expected to be present
-            sensor.hit_in_cluster_[i] = 0; // NOLINT
+            sensor.hit_in_cluster_[i] = 0;
             sensor.nhits_ += 1;
 
             LOG(TRACE) << detector_name << " x=" << hit.getPixel().getIndex().x() << " y=" << hit.getPixel().getIndex().y()

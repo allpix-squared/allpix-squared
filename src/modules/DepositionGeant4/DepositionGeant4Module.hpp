@@ -87,7 +87,7 @@ namespace allpix {
         GeometryManager* geo_manager_;
 
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)
-        G4RunManager* run_manager_g4_;
+        G4RunManager* run_manager_g4_{nullptr};
 
         virtual void initialize_g4_action();
 

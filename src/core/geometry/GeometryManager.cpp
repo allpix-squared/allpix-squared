@@ -504,7 +504,7 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
     } else {
         throw InvalidValueError(config, "orientation_mode", "orientation_mode should be either 'zyx', xyz' or 'zxz'");
     }
-    return std::pair<XYZPoint, Rotation3D>(position, orientation);
+    return {position, orientation};
 }
 
 bool GeometryManager::hasMagneticField() const { return (magnetic_field_type_ != MagneticFieldType::NONE); }

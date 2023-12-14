@@ -570,7 +570,7 @@ namespace allpix {
                                                    std::move(offset),
                                                    std::move(material),
                                                    std::move(type),
-                                                   std::move(location),
+                                                   location,
                                                    std::move(full_hole_size),
                                                    std::move(hole_offset)));
         }

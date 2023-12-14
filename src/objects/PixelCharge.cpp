@@ -51,7 +51,7 @@ PixelCharge::PixelCharge(Pixel pixel, long charge, const std::vector<const Propa
 // WARNING PixelCharge always returns a positive "collected" charge...
 PixelCharge::PixelCharge(Pixel pixel, Pulse pulse, const std::vector<const PropagatedCharge*>& propagated_charges)
     : PixelCharge(std::move(pixel), static_cast<long>(pulse.getCharge()), propagated_charges) {
-    pulse_ = std::move(pulse);
+    pulse_ = std::move(pulse); // NOLINT
 }
 
 const Pixel& PixelCharge::getPixel() const { return pixel_; }

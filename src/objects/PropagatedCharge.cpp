@@ -55,7 +55,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                        global_time,
                        state,
                        deposited_charge) {
-    pulses_ = std::move(pulses);
+    pulses_ = std::move(pulses); // NOLINT
 }
 
 /**

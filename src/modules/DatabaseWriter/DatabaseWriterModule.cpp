@@ -59,7 +59,7 @@ DatabaseWriterModule::DatabaseWriterModule(Configuration& config, Messenger* mes
     }
 }
 
-void DatabaseWriterModule::prepare_statements(std::shared_ptr<pqxx::connection> connection) {
+void DatabaseWriterModule::prepare_statements(const std::shared_ptr<pqxx::connection>& connection) {
     LOG(DEBUG) << "Preparing database statements";
     connection->prepare("add_run", "INSERT INTO Run (run_id) VALUES ($1) RETURNING run_nr;");
 
@@ -257,8 +257,8 @@ void DatabaseWriterModule::run(Event* event) {
                                                                   run_nr_,
                                                                   event_nr,
                                                                   detectorName,
-                                                                  reinterpret_cast<uintptr_t>(&object),
-                                                                  reinterpret_cast<uintptr_t>(track.getParent()),
+                                                                  reinterpret_cast<uintptr_t>(&object),           // NOLINT
+                                                                  reinterpret_cast<uintptr_t>(track.getParent()), // NOLINT
                                                                   track.getParticleID(),
                                                                   track.getCreationProcessName(),
                                                                   track.getOriginatingVolumeName(),
@@ -298,9 +298,9 @@ void DatabaseWriterModule::run(Event* event) {
                                                               event_nr,
                                                               mctrack_nr,
                                                               detectorName,
-                                                              reinterpret_cast<uintptr_t>(&object),
-                                                              reinterpret_cast<uintptr_t>(particle.getParent()),
-                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),
+                                                              reinterpret_cast<uintptr_t>(&object),              // NOLINT
+                                                              reinterpret_cast<uintptr_t>(particle.getParent()), // NOLINT
+                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),  // NOLINT
                                                               particle.getParticleID(),
                                                               particle.getLocalStartPoint().X(),
                                                               particle.getLocalStartPoint().Y(),

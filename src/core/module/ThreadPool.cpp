@@ -29,7 +29,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
                        const std::function<void()>& worker_init_function,
                        const std::function<void()>& worker_finalize_function)
     : ThreadPool(num_threads, max_queue_size, 0, worker_init_function, worker_finalize_function) {
-    with_buffered_ = false;
+    with_buffered_ = false; // NOLINT
 }
 
 ThreadPool::ThreadPool(unsigned int num_threads,

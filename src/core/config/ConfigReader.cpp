@@ -225,7 +225,7 @@ Configuration ConfigReader::getHeaderConfiguration() const {
 std::vector<Configuration> ConfigReader::getConfigurations(std::string name) const {
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     if(!hasConfiguration(name)) {
-        return std::vector<Configuration>();
+        return {};
     }
 
     std::vector<Configuration> result;
@@ -235,6 +235,4 @@ std::vector<Configuration> ConfigReader::getConfigurations(std::string name) con
     return result;
 }
 
-std::vector<Configuration> ConfigReader::getConfigurations() const {
-    return std::vector<Configuration>(conf_array_.begin(), conf_array_.end());
-}
+std::vector<Configuration> ConfigReader::getConfigurations() const { return {conf_array_.begin(), conf_array_.end()}; }

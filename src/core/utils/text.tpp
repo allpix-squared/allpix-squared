@@ -126,7 +126,7 @@ namespace allpix {
             prev = pos + 1;
         }
         if(prev < str.length()) {
-            elems.push_back(from_string<T>(str.substr(prev, std::string::npos)));
+            elems.push_back(from_string<T>(str.substr(prev, std::string::npos))); // NOLINT
         }
 
         return elems;

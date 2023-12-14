@@ -34,7 +34,7 @@ void OptionParser::parseOption(std::string line) {
         // Other identifier bound option is passed
         auto identifier = key.substr(0, dot_pos);
         key = key.substr(dot_pos + 1);
-        identifier_options_[identifier].push_back(std::make_pair(key, value));
+        identifier_options_[identifier].emplace_back(key, value);
     }
 }
 

@@ -79,9 +79,9 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
 DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
-                             const ConfigReader& reader,
+                             const ConfigReader& reader, // NOLINT
                              const Configuration& config)
-    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(std::move(reader)) {
+    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(reader) {
     using namespace ROOT::Math;
 
     // Sensor thickness
@@ -149,7 +149,7 @@ DetectorModel::DetectorModel(std::string type,
                         std::move(offset),
                         std::move(material),
                         std::move(hole_type),
-                        std::move(location),
+                        location,
                         hole_size,
                         std::move(hole_offset));
 
@@ -228,7 +228,7 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
     // half thickness)
     auto center =
         ((element_first.first - element_first.second / 2.0) + (element_last.first + element_last.second / 2.0)) / 2.0;
-    return ROOT::Math::XYZPoint(getMatrixCenter().x(), getMatrixCenter().y(), center);
+    return {getMatrixCenter().x(), getMatrixCenter().y(), center};
 }
 
 std::vector<Configuration> DetectorModel::getConfigurations() const {
@@ -294,8 +294,7 @@ ROOT::Math::XYZVector DetectorModel::getSize() const {
                                                                      0);
 
         // Extend size unless it's already large enough to cover shifted bump bond grid:
-        return ROOT::Math::XYZVector(
-            std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z()));
+        return {std::max(size.x(), bump_grid.x()), std::max(size.y(), bump_grid.y()), std::max(size.z(), bump_grid.z())};
     }
     return size;
 }
