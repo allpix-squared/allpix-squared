@@ -169,17 +169,24 @@ void DepositionGeant4Module::initialize() {
     // Find the physics list
     auto physics_list = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
     G4PhysListFactory physListFactory;
-    G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(physics_list);
-    if(physicsList == nullptr) {
+    G4VModularPhysicsList* physicsList{nullptr};
+    try {
+        // Geant4 throws an exception if the list is not found
+        physicsList = physListFactory.GetReferencePhysList(physics_list);
+        // ...but older versions of it don't, so let's do this ourselves:
+        if(physicsList == nullptr) {
+            throw ModuleError("");
+        }
+    } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
         std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
-        message += " (available base lists are ";
+        message += "\nAvailable base lists are: ";
         for(auto& base_list : base_lists) {
             message += base_list;
             message += ", ";
         }
         message = message.substr(0, message.size() - 2);
-        message += " with optional suffixes for electromagnetic lists ";
+        message += "\nwith optional suffixes for electromagnetic lists: ";
         std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
         for(auto& em_list : em_lists) {
             if(em_list.empty()) {
@@ -189,12 +196,11 @@ void DepositionGeant4Module::initialize() {
             message += ", ";
         }
         message = message.substr(0, message.size() - 2);
-        message += ")";
-
         throw InvalidValueError(config_, "physics_list", message);
-    } else {
-        LOG(INFO) << "Using G4 physics list \"" << physics_list << "\"";
     }
+
+    LOG(INFO) << "Using G4 physics list \"" << physics_list << "\"";
+
     // Register a step limiter (uses the user limits defined earlier)
     LOG(DEBUG) << "Registering Geant4 step limiter physics list";
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
