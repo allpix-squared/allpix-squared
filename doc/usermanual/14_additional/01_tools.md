@@ -94,8 +94,8 @@ This tableau implements a simple and fast third-order Kutta integration which on
 \begin{array}
 {c|ccc}
 0                   \\
-0 & 1/2             \\
-0 &  -1 &   2       \\
+1/2 & 1/2             \\
+1 &  -1 &   2       \\
 \hline
   & 1/6 & 2/3 & 1/6 \\
 \end{array}
