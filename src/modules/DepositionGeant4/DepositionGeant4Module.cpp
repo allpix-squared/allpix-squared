@@ -175,7 +175,7 @@ void DepositionGeant4Module::initialize() {
 
     try {
         // Check if present in AdditionalPhysicsLists
-        physicsList = AdditionalPhysicsLists::getList(physics_list);
+        physicsList = physicslists::getList(physics_list);
 
         // Otherwise, attempt to get the physics list from the factory
         if(physicsList == nullptr) {
