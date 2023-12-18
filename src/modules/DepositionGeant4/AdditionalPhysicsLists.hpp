@@ -29,7 +29,7 @@ namespace allpix::physicslists {
      */
     inline G4VModularPhysicsList* getList(const std::string& list_name) {
 
-        if(list_name == "microelec-sionly") {
+        if(list_name == "MICROELEC-SIONLY") {
             // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
             return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
         }
