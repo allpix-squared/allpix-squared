@@ -604,31 +604,58 @@ TransientPropagationModule::propagate(Event* event,
         last_position = position;
         last_efield = efield;
 
+        // Get electric field at current (pre-step) position
+        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
+        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
+
         // Execute a Runge Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result
         position = runge_kutta.getValue();
 
-        // Get electric field at current position and fall back to empty field if it does not exist
-        efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
-        auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
-
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_);
         position += diffusion;
         runge_kutta.setValue(position);
 
+        // Update step length histogram
+        if(output_plots_) {
+            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+        }
+
+        // If charge carrier reaches implant, interpolate surface position for higher accuracy:
+        if(auto implant = model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            auto new_position = model_->getImplantIntercept(implant.value(),
+                                                            static_cast<ROOT::Math::XYZPoint>(last_position),
+                                                            static_cast<ROOT::Math::XYZPoint>(position));
+            position = Eigen::Vector3d(new_position.x(), new_position.y(), new_position.z());
+            state = CarrierState::HALTED;
+        }
+
+        // Check for overshooting outside the sensor and correct for it:
+        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+            LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+            state = CarrierState::HALTED;
+
+            auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
+                                                        static_cast<ROOT::Math::XYZPoint>(position));
+            position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
+            LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+        }
+
+        // Physics effects:
+
         // Check if charge carrier is still alive:
-        if(recombination_(type,
-                          detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position)),
-                          uniform_distribution(event->getRandomEngine()),
-                          timestep_)) {
+        if(state == CarrierState::MOTION &&
+           recombination_(type, doping, uniform_distribution(event->getRandomEngine()), timestep_)) {
             state = CarrierState::RECOMBINED;
         }
 
         // Check if the charge carrier has been trapped:
-        if(trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+        if(state == CarrierState::MOTION &&
+           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
             if(output_plots_) {
                 trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
@@ -708,31 +735,7 @@ TransientPropagationModule::propagate(Event* event,
             }
         }
 
-        // Update step length histogram
-        if(output_plots_) {
-            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
-        }
-
-        // If charge carrier reaches implant, interpolate surface position for higher accuracy:
-        if(auto implant = model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier in implant: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            auto new_position = model_->getImplantIntercept(implant.value(),
-                                                            static_cast<ROOT::Math::XYZPoint>(last_position),
-                                                            static_cast<ROOT::Math::XYZPoint>(position));
-            position = Eigen::Vector3d(new_position.x(), new_position.y(), new_position.z());
-            state = CarrierState::HALTED;
-        }
-
-        // Check for overshooting outside the sensor and correct for it:
-        if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            state = CarrierState::HALTED;
-
-            auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
-                                                        static_cast<ROOT::Math::XYZPoint>(position));
-            position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
-            LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-        }
+        // Signal calculation:
 
         // Find the nearest pixel - before and after the step
         auto [xpixel, ypixel] = model_->getPixelIndex(static_cast<ROOT::Math::XYZPoint>(position));
