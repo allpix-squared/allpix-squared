@@ -16,7 +16,7 @@ The propagation consists of a combination of drift and diffusion simulation. The
 This module implements charge multiplication by impact ionization. The multiplication model can be chosen using the `multiplication_model` parameter, the list of available models can be found in the user manual. By default, the model defaults to `none` and impact ionization is switched off, generating unity gain.
 To simulate impact ionization, the number of newly generated electron-hole pairs is calculated for every propagation step and every charge carrier in the group, based on drawing a random number from a geometric distribution. This represents a stepwise approach to the avalanche generation process. The charge of a charge group is increased by the number of impact ionization processes per step and opposite-type charge carriers are generated at the end of the step.
 
-A fourth-order Runge-Kutta-Fehlberg method \[[@fehlberg]\] is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
+A classic fourth-order Runge-Kutta method is used to integrate the particle motion through the electric and magnetic fields. After every Runge-Kutta step, the diffusion is accounted for by applying an offset drawn from a Gaussian distribution calculated from the Einstein relation
 
 $`\sigma = \sqrt{\frac{2k_b T}{e}\mu t}`$
 
@@ -93,6 +93,5 @@ output_plots = true
 timestep = 0.02ns
 ```
 
-[@fehlberg]: https://ntrs.nasa.gov/search.jsp?R=19690021375
 [@shockley]: https://doi.org/10.1063/1.1710367
 [@ramo]: https://doi.org/10.1109/JRPROC.1939.228757
