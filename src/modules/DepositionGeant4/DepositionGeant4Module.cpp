@@ -167,7 +167,7 @@ void DepositionGeant4Module::initialize() {
     }
 
     // Find the physics list
-    auto physics_list = config_.get<std::string>("physics_list");
+    auto physics_list = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList = physListFactory.GetReferencePhysList(physics_list);
     if(physicsList == nullptr) {
