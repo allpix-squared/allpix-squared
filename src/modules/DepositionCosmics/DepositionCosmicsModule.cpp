@@ -16,6 +16,9 @@
 #include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
 
+#include <G4Box.hh>
+#include <G4LogicalVolume.hh>
+
 #include "../DepositionGeant4/ActionInitializationG4.hpp"
 
 #include <filesystem>
@@ -110,6 +113,14 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     cry_config << " nParticlesMin " << config_.get<unsigned int>("min_particles") << " nParticlesMax "
                << config_.get<unsigned int>("max_particles");
 
+    // Get G4 world size to check the subbox size
+    double min_world_size_meters{0};
+    auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
+    if(world_log_volume != nullptr) {
+        auto* world_box = static_cast<G4Box*>(world_log_volume->GetSolid());
+        min_world_size_meters = 2e-1 * std::min(world_box->GetXHalfLength(), world_box->GetYHalfLength());
+    }
+
     if(!config_.has("area")) {
         // Calculate subbox length required from the maximum coordinates of the setup:
         // Use maximum coordinate instead of setup size to make sure that off-center setups are fully covered
@@ -117,15 +128,21 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
         auto min = geo_manager_->getMinimumCoordinate();
         auto max = geo_manager_->getMaximumCoordinate();
         std::vector<double> max_candidates = {max.x(), max.y(), min.x(), min.y()};
-        auto size = *std::max_element(
+        auto max_abs_coord = *std::max_element(
             begin(max_candidates), end(max_candidates), [](double a, double b) { return std::fabs(a) < std::fabs(b); });
 
         // Round margins up to 10 cm
-        auto size_meters = static_cast<double>(std::ceil(Units::convert(2 * size, "m") * 10.0)) / 10.0;
+        auto size_meters = static_cast<double>(std::ceil(Units::convert(2 * max_abs_coord, "m") * 10.0)) / 10.0;
         if(size_meters > 300) {
             throw ModuleError("Size of the setup too large, tabulated data only available for areas up to 300m");
         }
-        LOG(DEBUG) << "Maximum absolute coordinate (in x,y): " << Units::display(size, {"mm", "cm", "m"})
+
+        if(min_world_size_meters < size_meters) {
+            LOG(WARNING) << "Calculated subbox size does not fit in Geant4 world; undefined behaviour possible for "
+                            "primaries generated outside the world box";
+        }
+
+        LOG(DEBUG) << "Maximum absolute coordinate (in x,y): " << Units::display(max_abs_coord, {"mm", "cm", "m"})
                    << ", selecting subbox of size " << size_meters << "m";
         cry_config << " subboxLength " << size_meters;
     } else {
@@ -134,6 +151,10 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
             throw InvalidValueError(config_, "area", "only areas with side lengths of up to 300m are supported");
         }
         LOG(DEBUG) << "Configuring subbox of size " << area << "m from configuration parameter";
+        if(min_world_size_meters < area) {
+            LOG(WARNING) << "User-defined subbox size does not fit in Geant4 world; undefined behaviour possible for "
+                            "primaries generated outside the world box";
+        }
         cry_config << " subboxLength " << area;
     }
 
