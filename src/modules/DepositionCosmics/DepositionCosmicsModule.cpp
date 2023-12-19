@@ -112,16 +112,20 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
 
     if(!config_.has("area")) {
         // Calculate subbox length required from the maximum coordinates of the setup:
+        // Use maximum coordinate instead of setup size to make sure that off-center setups are fully covered
         LOG(DEBUG) << "Calculating subbox length from setup size";
         auto min = geo_manager_->getMinimumCoordinate();
         auto max = geo_manager_->getMaximumCoordinate();
-        auto size = std::max(max.x() - min.x(), max.y() - min.y());
-        // Round calculated value up to 10 cm
-        auto size_meters = static_cast<double>(std::ceil(Units::convert(size, "m") * 10.0)) / 10.0;
+        std::vector<double> max_candidates = {max.x(), max.y(), min.x(), min.y()};
+        auto size = *std::max_element(
+            begin(max_candidates), end(max_candidates), [](double a, double b) { return std::fabs(a) < std::fabs(b); });
+
+        // Round margins up to 10 cm
+        auto size_meters = static_cast<double>(std::ceil(Units::convert(2 * size, "m") * 10.0)) / 10.0;
         if(size_meters > 300) {
             throw ModuleError("Size of the setup too large, tabulated data only available for areas up to 300m");
         }
-        LOG(DEBUG) << "Maximum side length (in x,y): " << Units::display(size, {"mm", "cm", "m"})
+        LOG(DEBUG) << "Maximum absolute coordinate (in x,y): " << Units::display(size, {"mm", "cm", "m"})
                    << ", selecting subbox of size " << size_meters << "m";
         cry_config << " subboxLength " << size_meters;
     } else {
