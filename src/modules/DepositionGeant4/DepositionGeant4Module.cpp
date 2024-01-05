@@ -45,6 +45,8 @@
 #include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
 
+#include "AdditionalPhysicsLists.hpp"
+
 #include "ActionInitializationG4.hpp"
 #include "GeneratorActionG4.hpp"
 #include "SDAndFieldConstruction.hpp"
@@ -170,12 +172,19 @@ void DepositionGeant4Module::initialize() {
     auto physics_list = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList{nullptr};
+
     try {
-        // Geant4 throws an exception if the list is not found
-        physicsList = physListFactory.GetReferencePhysList(physics_list);
-        // ...but older versions of it don't, so let's do this ourselves:
+        // Check if present in AdditionalPhysicsLists
+        physicsList = physicslists::getList(physics_list);
+
+        // Otherwise, attempt to get the physics list from the factory
         if(physicsList == nullptr) {
-            throw ModuleError("");
+            // Geant4 throws an exception if the list is not found
+            physicsList = physListFactory.GetReferencePhysList(physics_list);
+            // ...but older versions of it don't, so let's do this ourselves:
+            if(physicsList == nullptr) {
+                throw ModuleError("");
+            }
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
@@ -209,6 +218,30 @@ void DepositionGeant4Module::initialize() {
     if(physics_list.find("_HP") == std::string::npos) {
         LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
         physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
+    }
+
+    // If the specified physics list is one of the microelec variations, apply a target region to the volumes with silicon
+    // materials
+    if(physics_list == "MICROELEC" || physics_list == "MICROELEC-SIONLY") {
+        // Create target region
+        auto* region = new G4Region("Target");
+
+        for(auto& detector : geo_manager_->getDetectors()) {
+            // Get the logical volume
+            auto logical_volume = geo_manager_->getExternalObject<G4LogicalVolume>(detector->getName(), "sensor_log");
+            if(logical_volume == nullptr) {
+                throw ModuleError("Detector " + detector->getName() + " has no sensitive device (broken Geant4 geometry)");
+            }
+
+            // Assign region to target if silicon
+            if(logical_volume->GetMaterial()->GetName() == "G4_Si") {
+                region->AddRootLogicalVolume(logical_volume.get());
+
+                LOG(DEBUG) << "Added " << logical_volume->GetName() << " to region " << region->GetName()
+                           << " for MicroElec physics"
+                           << "\n";
+            }
+        }
     }
 
     // Set the range-cut off threshold for secondary production:
