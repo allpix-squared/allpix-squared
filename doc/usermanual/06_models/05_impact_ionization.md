@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2021-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2021-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Impact Ionization"
 weight: 5

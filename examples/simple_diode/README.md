@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2019-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2019-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Simple Diode"
 description: "Am241 source measurement with a paper collimator over a diode"

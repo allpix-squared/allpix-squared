@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 VAR=""

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2016-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2016-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 FIND_PACKAGE(Python COMPONENTS Interpreter)

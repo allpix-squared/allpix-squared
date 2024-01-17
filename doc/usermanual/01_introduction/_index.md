@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Introduction"
 description: "A brief introduction to the Allpix Squared framework and its goals."

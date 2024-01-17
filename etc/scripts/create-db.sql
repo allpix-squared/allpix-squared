@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: 2020-2023 CERN and the Allpix Squared authors
+-- SPDX-FileCopyrightText: 2020-2024 CERN and the Allpix Squared authors
 -- SPDX-License-Identifier: MIT
 
 DROP TABLE IF EXISTS MCTrack;
