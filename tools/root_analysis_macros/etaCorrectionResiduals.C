@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021-2023 CERN and the Allpix Squared authors
+// SPDX-FileCopyrightText: 2023-2024 CERN and the Allpix Squared authors
 // SPDX-License-Identifier: MIT
 
 #include <TCanvas.h>

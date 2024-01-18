@@ -1,6 +1,6 @@
 # Create Plots to visualize MC Data from Allpix Squared
 
-# SPDX-FileCopyrightText: 2019-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2019-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # ===TO DO== #

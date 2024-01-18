@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Source Measurement"
 description: "Iron-55 source measurement with shielding"

@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Passing Objects using Messages"
 weight: 6

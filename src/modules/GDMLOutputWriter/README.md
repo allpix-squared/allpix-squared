@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2019-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2019-2024 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GDMLOutputWriter"
 description: "Writes the geometry to a GDML file"
