@@ -79,9 +79,16 @@ namespace allpix {
          */
         void DepositLine(Event*, const ROOT::Math::XYZPoint& position);
 
+        /**
+         * @brief Finds and returns the points where a line with mip_direction through a given point intersects the sensor
+         * @param line_origin Point the line goes through
+         */
+        std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint> SensorIntersection(const ROOT::Math::XYZPoint& line_origin);
+
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
+        std::shared_ptr<allpix::DetectorModel> detector_model_;
 
         DepositionModel model_;
         SourceType type_;
@@ -90,6 +97,7 @@ namespace allpix {
         double step_size_z_{};
         unsigned int root_{}, carriers_{};
         ROOT::Math::XYZVector position_{};
+        ROOT::Math::XYZVector mip_direction_{};
         std::vector<std::string> scan_coordinates_{};
 
         bool scan_x_;

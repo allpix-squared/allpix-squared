@@ -34,6 +34,7 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 * `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. When using source type `mip`, providing a 2D position is sufficient since it only uses the x and y coordinates. If used in scan mode, it allows you to shift the origin of each deposited charge by adding this value. If the scan is only performed in one or two dimensions, the remaining coordinate will constantly have the value given by `position`.
 * `spot_size`: Width of the Gaussian distribution used to smear the position in the `spot` model. Only one value is taken and used for all three dimensions.
 * `scan_coordinates`: Coordinates to scan over, a combination of x, y, z. Defaults to `x y z`, i.e. all three spatial coordinates. The `position` parameter is used to determine the value of the coordinates that are not scanned over if a partial scan is requested, and the start offset of the scan for the other coordinates.
+* `MIP_direction`: Unit vector giving the direction of the line along which deposits are made when the `mip` source type is used. Defaults to `0 0 1`, i.e. along the z-axis. The `position` keyword gives a point that the line will cross through with this direction.
 
 ### Plotting parameters
 
