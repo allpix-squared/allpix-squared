@@ -94,11 +94,12 @@ namespace allpix {
         SourceType type_;
         double spot_size_{};
         ROOT::Math::XYZVector voxel_;
-        double step_size_z_{};
+        double step_size_{};
         unsigned int root_{}, carriers_{};
         ROOT::Math::XYZVector position_{};
         ROOT::Math::XYZVector mip_direction_{};
         std::vector<std::string> scan_coordinates_{};
+        size_t no_of_coordinates_;
 
         bool scan_x_;
         bool scan_y_;

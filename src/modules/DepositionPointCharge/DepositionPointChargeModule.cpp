@@ -71,18 +71,24 @@ void DepositionPointChargeModule::initialize() {
         config_.setDefault("number_of_steps", 100);
         config_.setDefault("number_of_charges", 80000);
 
+        mip_direction_ = config_.get<ROOT::Math::XYZVector>("mip_direction", ROOT::Math::XYZVector(0.0, 0.0, 1.0)).Unit();
+        LOG(DEBUG) << "Normalised MIP direction: " << mip_direction_;
+
         // Calculate voxel size and ensure granularity is not zero:
         auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
-        step_size_z_ = detector_model_->getSensorSize().z() / granularity;
-        // NOTE: probably want to change this. To go along the axis we deposit along... But how?
+        // To get the step size, look at the intersection points along the MIP direction starting from the centre of the
+        // sensor
+        auto centre_position =
+            detector_model_->getMatrixSize() / 2.0 +
+            ROOT::Math::XYZPoint(detector_model_->getPixelSize().x() / 2.0, detector_model_->getPixelSize().y() / 2.0, 0.0);
+        auto [start_local, end_local] = SensorIntersection(centre_position);
+        step_size_ = sqrt((end_local - start_local).Mag2()) / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
         auto eh_per_um = config_.get<unsigned int>("number_of_charges");
-        carriers_ = static_cast<unsigned int>(eh_per_um * step_size_z_);
-        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
+        carriers_ = static_cast<unsigned int>(eh_per_um * step_size_);
+        LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
-
-        mip_direction_ = config_.get<ROOT::Math::XYZVector>("mip_direction", ROOT::Math::XYZVector(0.0, 0.0, 1.0)).Unit();
 
         // Check if the number of charge carriers is larger than zero
         if(carriers_ == 0) {
@@ -108,32 +114,32 @@ void DepositionPointChargeModule::initialize() {
         scan_y_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "y") != scan_coordinates_.end();
         scan_z_ = std::find(scan_coordinates_.begin(), scan_coordinates_.end(), "z") != scan_coordinates_.end();
 
-        size_t no_of_coordinates = scan_coordinates_.size();
+        no_of_coordinates_ = scan_coordinates_.size();
 
         // If MIP, and along one of the cardinal directions: don't do a scan in that direction, as the MIP goes along it
         // anyway
         if(scan_x_ && mip_direction_ == ROOT::Math::XYZVector(1.0, 0.0, 0.0)) {
             scan_x_ = false;
-            no_of_coordinates--;
+            no_of_coordinates_--;
             LOG(WARNING) << "MIP shot in the x-direction; don't scan in x";
         }
         if(scan_y_ && mip_direction_ == ROOT::Math::XYZVector(0.0, 1.0, 0.0)) {
             scan_y_ = false;
-            no_of_coordinates--;
+            no_of_coordinates_--;
             LOG(WARNING) << "MIP shot in the y-direction; don't scan in y";
         }
         if(scan_z_ && mip_direction_ == ROOT::Math::XYZVector(0.0, 0.0, 1.0)) {
             scan_z_ = false;
-            no_of_coordinates--;
+            no_of_coordinates_--;
             LOG(WARNING) << "MIP shot in the z-direction; don't scan in z";
         }
 
-        if(no_of_coordinates < 1) {
-            LOG(WARNING) << "A scan will not be performed, but all MIPs will be along the same line.";
+        if(no_of_coordinates_ < 1) {
+            LOG(WARNING) << "A scan will not be performed; all MIPs will be along the same line.";
         }
 
-        if(no_of_coordinates > 3 || !(scan_x_ || scan_y_ || scan_z_) ||
-           (no_of_coordinates == 3 && !(scan_x_ && scan_y_ && scan_z_))) {
+        if(no_of_coordinates_ > 3 || !(scan_x_ || scan_y_ || scan_z_) ||
+           (no_of_coordinates_ == 3 && !(scan_x_ && scan_y_ && scan_z_))) {
             throw InvalidValueError(
                 config_,
                 "scan_coordinates",
@@ -142,7 +148,7 @@ void DepositionPointChargeModule::initialize() {
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         root_ = events;
-        if(no_of_coordinates == 2) {
+        if(no_of_coordinates_ == 2) {
             // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
@@ -154,7 +160,7 @@ void DepositionPointChargeModule::initialize() {
                                         "scan_coordinates",
                                         "The coordinates must be x, y, or z, and a coordinate must not be repeated");
             }
-        } else if(no_of_coordinates == 3) {
+        } else if(no_of_coordinates_ == 3) {
             root_ = static_cast<unsigned int>(std::lround(std::cbrt(events)));
             if(events != root_ * root_ * root_) {
                 LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
@@ -220,7 +226,7 @@ void DepositionPointChargeModule::run(Event* event) {
                                          detector_model_->getPixelSize().y() / 2.0,
                                          detector_model_->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << Units::display(ref, {"um", "mm"});
-        if(scan_coordinates_.size() == 3) {
+        if(no_of_coordinates_ == 3) {
             position =
                 ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
                                      voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
@@ -334,25 +340,27 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     }
 
     // Start and end position of MCParticle:
-    // End point? It's the intersection along the line to the box. Start position is also that, but int he other direction.
+    // End point is the intersection along the line to the box. Start position is also that, but in the other direction.
     // The given position is a point the line intersects. Need to extrapolate to surfaces using this
     auto [start_local, end_local] = SensorIntersection(position);
     ROOT::Math::XYZPoint start_global = detector_->getGlobalPosition(start_local);
     ROOT::Math::XYZPoint end_global = detector_->getGlobalPosition(end_local);
 
     // Total number of carriers will be:
-    auto charge = static_cast<unsigned int>(carriers_ * (end_local.z() - start_local.z()) / step_size_z_);
+    auto charge = static_cast<unsigned int>(carriers_ * sqrt((end_local - start_local).Mag2()) / step_size_);
     // Create MCParticle:
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
                << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
     // Count electrons and holes:
     mcparticles.back().setTotalDepositedCharge(2 * charge);
+    LOG(DEBUG) << "Total charge of " << 2 * charge << " deposited over a line length of "
+               << Units::display(sqrt((end_local - start_local).Mag2()), {"um", "mm"});
 
     // Deposit the charge carriers:
     auto position_local = start_local;
-    while(position_local.z() < end_local.z()) {
-        position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
+    while(position_local.x() <= end_local.x() && position_local.y() <= end_local.y() &&
+          position_local.z() <= end_local.z()) {
         auto position_global = detector_->getGlobalPosition(position_local);
 
         charges.emplace_back(
@@ -366,11 +374,13 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
             auto inPixelPos = position_local - detector_model_->getPixelCenter(xpixel, ypixel);
             auto in_pixel_um_x = static_cast<double>(Units::convert(inPixelPos.x(), "um"));
             auto in_pixel_um_y = static_cast<double>(Units::convert(inPixelPos.y(), "um"));
-            auto in_pixel_um_z = static_cast<double>(Units::convert(position.z(), "um"));
+            auto in_pixel_um_z = static_cast<double>(Units::convert(position_local.z(), "um"));
             deposition_position_xy->Fill(in_pixel_um_x, in_pixel_um_y);
             deposition_position_xz->Fill(in_pixel_um_x, in_pixel_um_z);
             deposition_position_yz->Fill(in_pixel_um_y, in_pixel_um_z);
         }
+
+        position_local += step_size_ * mip_direction_;
     }
 
     // Dispatch the messages to the framework
@@ -384,12 +394,12 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
 std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
 DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line_origin) {
 
-    double sensorLowerEdges[3] = {-detector_model_->getSensorSize().x() / 2.0,
-                                  -detector_model_->getSensorSize().y() / 2.0,
-                                  -detector_model_->getSensorSize().z() / 2.0};
-    double sensorUpperEdges[3] = {detector_model_->getSensorSize().x() / 2.0,
-                                  detector_model_->getSensorSize().y() / 2.0,
-                                  detector_model_->getSensorSize().z() / 2.0};
+    double sensorLowerEdges[3] = {detector_model_->getSensorCenter().x() - detector_model_->getSensorSize().x() / 2.0,
+                                  detector_model_->getSensorCenter().y() - detector_model_->getSensorSize().y() / 2.0,
+                                  detector_model_->getSensorCenter().z() - detector_model_->getSensorSize().z() / 2.0};
+    double sensorUpperEdges[3] = {detector_model_->getSensorCenter().x() + detector_model_->getSensorSize().x() / 2.0,
+                                  detector_model_->getSensorCenter().y() + detector_model_->getSensorSize().y() / 2.0,
+                                  detector_model_->getSensorCenter().z() + detector_model_->getSensorSize().z() / 2.0};
     double lineOriginPoint[3] = {line_origin.x(), line_origin.y(), line_origin.z()};
     double lineDirection[3] = {mip_direction_.x(), mip_direction_.y(), mip_direction_.z()};
 
@@ -404,10 +414,13 @@ DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line
         tMax = std::min(tMax, std::max(t1, t2));
     }
 
+    if(tMin > tMax) {
+        LOG(ERROR) << "The requested line does not intersect with the sensor.";
+    }
+
     ROOT::Math::XYZPoint lowerIntersectPos = line_origin + tMin * mip_direction_;
     ROOT::Math::XYZPoint upperIntersectPos = line_origin + tMax * mip_direction_;
-    LOG(WARNING) << "lowerIntersectPos: " << lowerIntersectPos << ", upperIntersectPos: " << upperIntersectPos;
-    LOG(WARNING) << "MIP direction: " << mip_direction_;
+    LOG(DEBUG) << "Lower intersect position: " << lowerIntersectPos << ", upper intersect position: " << upperIntersectPos;
 
     return {lowerIntersectPos, upperIntersectPos};
 }
