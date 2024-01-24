@@ -121,21 +121,21 @@ void DepositionPointChargeModule::initialize() {
         if(scan_x_ && mip_direction_ == ROOT::Math::XYZVector(1.0, 0.0, 0.0)) {
             scan_x_ = false;
             no_of_coordinates_--;
-            LOG(WARNING) << "MIP shot in the x-direction; don't scan in x";
+            LOG(WARNING) << "MIP shot in the x-direction; scan not performed along x.";
         }
         if(scan_y_ && mip_direction_ == ROOT::Math::XYZVector(0.0, 1.0, 0.0)) {
             scan_y_ = false;
             no_of_coordinates_--;
-            LOG(WARNING) << "MIP shot in the y-direction; don't scan in y";
+            LOG(WARNING) << "MIP shot in the y-direction; scan not performed along y.";
         }
         if(scan_z_ && mip_direction_ == ROOT::Math::XYZVector(0.0, 0.0, 1.0)) {
             scan_z_ = false;
             no_of_coordinates_--;
-            LOG(WARNING) << "MIP shot in the z-direction; don't scan in z";
+            LOG(WARNING) << "MIP shot in the z-direction; scan not performed along z.";
         }
 
         if(no_of_coordinates_ < 1) {
-            LOG(WARNING) << "A scan will not be performed; all MIPs will be along the same line.";
+            LOG(WARNING) << "A scan will not be performed; requested scan is only along the MIP direction.";
         }
 
         if(no_of_coordinates_ > 3 || !(scan_x_ || scan_y_ || scan_z_) ||
