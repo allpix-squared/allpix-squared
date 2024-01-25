@@ -149,12 +149,12 @@ void DepositionPointChargeModule::initialize() {
         // Check that the scan setup is correct
         root_ = events;
         if(no_of_coordinates_ == 2) {
-            // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
             }
+            // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
             if(!((scan_x_ && scan_y_) || (scan_x_ && scan_z_) || (scan_y_ && scan_z_))) {
                 throw InvalidValueError(config_,
                                         "scan_coordinates",
