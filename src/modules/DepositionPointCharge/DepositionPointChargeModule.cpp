@@ -135,7 +135,7 @@ void DepositionPointChargeModule::initialize() {
         }
 
         if(no_of_coordinates_ < 1) {
-            LOG(WARNING) << "A scan will not be performed; requested scan is only along the MIP direction.";
+            LOG(WARNING) << "A scan will not be performed; requested scan is only along the given MIP direction.";
         }
 
         if(no_of_coordinates_ > 3 || !(scan_x_ || scan_y_ || scan_z_) ||
@@ -143,10 +143,10 @@ void DepositionPointChargeModule::initialize() {
             throw InvalidValueError(
                 config_,
                 "scan_coordinates",
-                "The coordinates must be a combination of x, y, and z, and the number of coordinates cannot exceed 3.");
+                "The scan coordinates must be a combination of x, y, and z, and the number of coordinates cannot exceed 3.");
         }
 
-        // Scan with points required 3D scanning, scan with MIPs only 2D:
+        // Check that the scan setup is correct
         root_ = events;
         if(no_of_coordinates_ == 2) {
             // Throw if we don't have a valid combination. Need 2 valid entries; x y, x z, or y z
@@ -183,7 +183,7 @@ void DepositionPointChargeModule::initialize() {
             static_cast<int>(output_plots_bins_per_um_ * Units::convert(detector_model_->getSensorSize().z(), "um"));
         deposition_position_xy =
             CreateHistogram<TH2D>("deposition_position_xy",
-                                  "Deposition position, x-y plane;x [#mum];y [#mum]",
+                                  "In-pixel deposition position, x-y plane;x [#mum];y [#mum]",
                                   bins_x,
                                   -static_cast<double>(Units::convert(detector_model_->getPixelSize().x() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getPixelSize().x() / 2, "um")),
@@ -192,7 +192,7 @@ void DepositionPointChargeModule::initialize() {
                                   static_cast<double>(Units::convert(detector_model_->getPixelSize().y() / 2, "um")));
         deposition_position_xz =
             CreateHistogram<TH2D>("deposition_position_xz",
-                                  "Deposition position, x-z plane;x [#mum];z [#mum]",
+                                  "In-pixel deposition position, x-z plane;x [#mum];z [#mum]",
                                   bins_x,
                                   -static_cast<double>(Units::convert(detector_model_->getPixelSize().x() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getPixelSize().x() / 2, "um")),
@@ -201,7 +201,7 @@ void DepositionPointChargeModule::initialize() {
                                   static_cast<double>(Units::convert(detector_model_->getSensorSize().z() / 2, "um")));
         deposition_position_yz =
             CreateHistogram<TH2D>("deposition_position_yz",
-                                  "Deposition position, y-z plane;y [#mum];z [#mum]",
+                                  "In-pixel deposition position, y-z plane;y [#mum];z [#mum]",
                                   bins_y,
                                   -static_cast<double>(Units::convert(detector_model_->getPixelSize().y() / 2, "um")),
                                   static_cast<double>(Units::convert(detector_model_->getPixelSize().y() / 2, "um")),
@@ -394,24 +394,28 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
 std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
 DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line_origin) {
 
-    double sensorLowerEdges[3] = {detector_model_->getSensorCenter().x() - detector_model_->getSensorSize().x() / 2.0,
-                                  detector_model_->getSensorCenter().y() - detector_model_->getSensorSize().y() / 2.0,
-                                  detector_model_->getSensorCenter().z() - detector_model_->getSensorSize().z() / 2.0};
-    double sensorUpperEdges[3] = {detector_model_->getSensorCenter().x() + detector_model_->getSensorSize().x() / 2.0,
-                                  detector_model_->getSensorCenter().y() + detector_model_->getSensorSize().y() / 2.0,
-                                  detector_model_->getSensorCenter().z() + detector_model_->getSensorSize().z() / 2.0};
-    double lineOriginPoint[3] = {line_origin.x(), line_origin.y(), line_origin.z()};
-    double lineDirection[3] = {mip_direction_.x(), mip_direction_.y(), mip_direction_.z()};
+    std::array<double, 3> sensorLowerEdges = {
+        detector_model_->getSensorCenter().x() - detector_model_->getSensorSize().x() / 2.0,
+        detector_model_->getSensorCenter().y() - detector_model_->getSensorSize().y() / 2.0,
+        detector_model_->getSensorCenter().z() - detector_model_->getSensorSize().z() / 2.0};
+    std::array<double, 3> sensorUpperEdges = {
+        detector_model_->getSensorCenter().x() + detector_model_->getSensorSize().x() / 2.0,
+        detector_model_->getSensorCenter().y() + detector_model_->getSensorSize().y() / 2.0,
+        detector_model_->getSensorCenter().z() + detector_model_->getSensorSize().z() / 2.0};
+    std::array<double, 3> lineOriginPoint = {line_origin.x(), line_origin.y(), line_origin.z()};
+    std::array<double, 3> lineDirection = {mip_direction_.x(), mip_direction_.y(), mip_direction_.z()};
 
-    double tMin = -INFINITY;
-    double tMax = INFINITY;
+    double tMin = -DBL_MAX;
+    double tMax = DBL_MAX;
     // Loop over the three coordinates
-    for(int i = 0; i < 3; i++) {
-        double t1 = (sensorLowerEdges[i] - lineOriginPoint[i]) / lineDirection[i];
-        double t2 = (sensorUpperEdges[i] - lineOriginPoint[i]) / lineDirection[i];
+    for(size_t i = 0; i < 3; i++) {
+        double t1 = (sensorLowerEdges.at(i) - lineOriginPoint.at(i)) / lineDirection.at(i);
+        double t2 = (sensorUpperEdges.at(i) - lineOriginPoint.at(i)) / lineDirection.at(i);
 
+        LOG(TRACE) << "Intersection t1: " << t1 << ", t2: " << t2;
         tMin = std::max(tMin, std::min(t1, t2));
         tMax = std::min(tMax, std::max(t1, t2));
+        LOG(TRACE) << "Intersection tMin: " << tMin << ", tMax: " << tMax;
     }
 
     if(tMin > tMax) {
