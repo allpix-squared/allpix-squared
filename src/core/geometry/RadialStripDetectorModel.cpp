@@ -112,6 +112,24 @@ bool RadialStripDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_
     return false;
 }
 
+bool RadialStripDetectorModel::isOnSensorBoundary(const ROOT::Math::XYZPoint& local_pos) const {
+    // Convert local position to polar coordinates
+    auto polar_pos = getPositionPolar(local_pos);
+    // Check if radial coordinate is on the sensor edge
+    if(2 * std::fabs(local_pos.z()) == getSensorSize().z() ||
+       (polar_pos.r() == row_radius_.back() || polar_pos.r() == row_radius_.front())) {
+        return true;
+    }
+    // Find which strip row the position belongs to
+    for(unsigned int row = 0; row < getNPixels().y(); row++) {
+        if(polar_pos.r() > row_radius_.at(row) && polar_pos.r() <= row_radius_.at(row + 1)) {
+            // Check if the angular coordinate is on the edge of strip row
+            return (std::fabs(polar_pos.phi() + stereo_angle_) == angular_pitch_.at(row) * number_of_strips_.at(row) / 2);
+        }
+    }
+    return false;
+}
+
 bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) const {
     return !(strip_index.y() < 0 || strip_index.y() >= static_cast<int>(getNPixels().y()) || strip_index.x() < 0 ||
              strip_index.x() >= static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y()))));

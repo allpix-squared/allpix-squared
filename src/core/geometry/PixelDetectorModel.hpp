@@ -55,6 +55,13 @@ namespace allpix {
         bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const override;
 
         /**
+         * @brief Returns if a local position is on the sensor boundary
+         * @param local_pos Position in local coordinates of the detector model
+         * @return True if a local position is on the sensor boundary, false otherwise
+         */
+        bool isOnSensorBoundary(const ROOT::Math::XYZPoint& local_pos) const override;
+
+        /**
          * @brief Calculate exit point of step outside sensor volume from one point inside the sensor (before step) and one
          * point outside (after step).
          * @throws std::invalid_argument if no intersection of track segment with sensor volume can be found

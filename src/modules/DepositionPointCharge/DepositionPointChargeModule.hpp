@@ -82,8 +82,12 @@ namespace allpix {
         /**
          * @brief Finds and returns the points where a line with mip_direction through a given point intersects the sensor
          * @param line_origin Point the line goes through
+         * @return Intersection points of the sensor in local coordinates
+         *
+         * @note This method uses the Liang-Barsky clipping of a line segment with a box
          */
-        std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint> SensorIntersection(const ROOT::Math::XYZPoint& line_origin);
+        std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
+        SensorIntersection(const ROOT::Math::XYZPoint& line_origin) const;
 
         Messenger* messenger_;
 

@@ -21,6 +21,7 @@
 #include "core/utils/log.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
+#include "tools/liang_barsky.h"
 
 using namespace allpix;
 
@@ -77,10 +78,8 @@ void DepositionPointChargeModule::initialize() {
         // Calculate voxel size and ensure granularity is not zero:
         auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
         // To get the step size, look at the intersection points along the MIP direction starting from the centre of the
-        // sensor
-        auto centre_position =
-            detector_model_->getMatrixSize() / 2.0 +
-            ROOT::Math::XYZPoint(detector_model_->getPixelSize().x() / 2.0, detector_model_->getPixelSize().y() / 2.0, 0.0);
+        // sensitive region
+        auto centre_position = detector_model_->getMatrixCenter();
         auto [start_local, end_local] = SensorIntersection(centre_position);
         step_size_ = sqrt((end_local - start_local).Mag2()) / granularity;
 
@@ -392,39 +391,33 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
 }
 
 std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
-DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line_origin) {
+DepositionPointChargeModule::SensorIntersection(const ROOT::Math::XYZPoint& line_origin) const {
+    // We have to be centered around the sensor box. This means we need to shift by the matrix center
+    auto translation_local =
+        ROOT::Math::Translation3D(static_cast<ROOT::Math::XYZVector>(detector_model_->getMatrixCenter()));
+    // Get intersections from Liang-Barsky line clipping. One point going in negative MIP direction, and the other in
+    // positive
+    auto intersection_start_point = LiangBarsky::closestIntersection(
+        -mip_direction_, translation_local.Inverse()(line_origin), detector_model_->getSensorSize());
+    auto intersection_end_point = LiangBarsky::closestIntersection(
+        mip_direction_, translation_local.Inverse()(line_origin), detector_model_->getSensorSize());
 
-    std::array<double, 3> sensorLowerEdges = {
-        detector_model_->getSensorCenter().x() - detector_model_->getSensorSize().x() / 2.0,
-        detector_model_->getSensorCenter().y() - detector_model_->getSensorSize().y() / 2.0,
-        detector_model_->getSensorCenter().z() - detector_model_->getSensorSize().z() / 2.0};
-    std::array<double, 3> sensorUpperEdges = {
-        detector_model_->getSensorCenter().x() + detector_model_->getSensorSize().x() / 2.0,
-        detector_model_->getSensorCenter().y() + detector_model_->getSensorSize().y() / 2.0,
-        detector_model_->getSensorCenter().z() + detector_model_->getSensorSize().z() / 2.0};
-    std::array<double, 3> lineOriginPoint = {line_origin.x(), line_origin.y(), line_origin.z()};
-    std::array<double, 3> lineDirection = {mip_direction_.x(), mip_direction_.y(), mip_direction_.z()};
-
-    double tMin = -DBL_MAX;
-    double tMax = DBL_MAX;
-    // Loop over the three coordinates
-    for(size_t i = 0; i < 3; i++) {
-        double t1 = (sensorLowerEdges.at(i) - lineOriginPoint.at(i)) / lineDirection.at(i);
-        double t2 = (sensorUpperEdges.at(i) - lineOriginPoint.at(i)) / lineDirection.at(i);
-
-        LOG(TRACE) << "Intersection t1: " << t1 << ", t2: " << t2;
-        tMin = std::max(tMin, std::min(t1, t2));
-        tMax = std::min(tMax, std::max(t1, t2));
-        LOG(TRACE) << "Intersection tMin: " << tMin << ", tMax: " << tMax;
+    // Check whether we are on the edge of the sensor. If so, we don't get an intersect point from Liang-Barsky, but it
+    // should be set to the position
+    if(detector_model_->isOnSensorBoundary(line_origin)) {
+        LOG(DEBUG) << "Intersect check position is on sensor boundary";
+        intersection_start_point =
+            intersection_start_point ? intersection_start_point : translation_local.Inverse()(line_origin);
+        intersection_end_point = intersection_end_point ? intersection_end_point : translation_local.Inverse()(line_origin);
     }
 
-    if(tMin > tMax) {
-        LOG(ERROR) << "The requested line does not intersect with the sensor.";
+    if(!intersection_start_point || !intersection_end_point || (intersection_start_point == intersection_end_point)) {
+        LOG(ERROR) << "The requested line with origin " << line_origin << " and direction " << mip_direction_
+                   << " does not intersect with the sensor.";
     }
+    LOG(DEBUG) << "Lower intersect position: " << Units::display(intersection_start_point.value(), {"um", "mm"})
+               << ", upper intersect position: " << Units::display(intersection_end_point.value(), {"um", "mm"});
 
-    ROOT::Math::XYZPoint lowerIntersectPos = line_origin + tMin * mip_direction_;
-    ROOT::Math::XYZPoint upperIntersectPos = line_origin + tMax * mip_direction_;
-    LOG(DEBUG) << "Lower intersect position: " << lowerIntersectPos << ", upper intersect position: " << upperIntersectPos;
-
-    return {lowerIntersectPos, upperIntersectPos};
+    // Re-transform to local coordinates:
+    return {translation_local(intersection_start_point.value()), translation_local(intersection_end_point.value())};
 }
