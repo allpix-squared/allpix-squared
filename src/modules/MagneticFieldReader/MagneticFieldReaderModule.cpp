@@ -64,6 +64,8 @@ void MagneticFieldReaderModule::initialize() {
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
     } else if(field_model == MagneticField::MESH) {
         type = MagneticFieldType::CUSTOM;
+
+        auto fallback_field = config_.get<ROOT::Math::XYZVector>("magnetic_field_fallback", ROOT::Math::XYZVector());
         auto field_data = read_field();
 
         auto dims = field_data.getDimensionality(); // Vector dimensionality of the field (should be 3 for B-field)
@@ -79,28 +81,30 @@ void MagneticFieldReaderModule::initialize() {
             throw std::invalid_argument("B-field does not span the given dimensions");
         }
 
-        MagneticFieldFunction function = [field_mesh, cellsize, ncells, dims](const ROOT::Math::XYZPoint& coord) {
-            // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centred about the origin)
-            auto xind = std::round((coord.X() / cellsize[0]) + (static_cast<double>(ncells[0]) / 2.));
-            auto yind = std::round((coord.Y() / cellsize[1]) + (static_cast<double>(ncells[1]) / 2.));
-            auto zind = std::round((coord.Z() / cellsize[2]) + (static_cast<double>(ncells[2]) / 2.));
+        MagneticFieldFunction function =
+            [fallback_field, field_mesh, cellsize, ncells, dims](const ROOT::Math::XYZPoint& coord) {
+                // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centred about the
+                // origin)
+                auto xind = std::round((coord.X() / cellsize[0]) + (static_cast<double>(ncells[0]) / 2.));
+                auto yind = std::round((coord.Y() / cellsize[1]) + (static_cast<double>(ncells[1]) / 2.));
+                auto zind = std::round((coord.Z() / cellsize[2]) + (static_cast<double>(ncells[2]) / 2.));
 
-            if(xind < 0 || xind >= static_cast<double>(ncells[0]) || yind < 0 || yind >= static_cast<double>(ncells[1]) ||
-               zind < 0 || zind >= static_cast<double>(ncells[2])) {
-                return ROOT::Math::XYZVector(0, 0, 0); // Default to no field if mesh doesn't cover input coordinate
-            } else {
-                auto field = field_mesh.get();
+                if(xind < 0 || xind >= static_cast<double>(ncells[0]) || yind < 0 ||
+                   yind >= static_cast<double>(ncells[1]) || zind < 0 || zind >= static_cast<double>(ncells[2])) {
+                    return fallback_field;
+                } else {
+                    auto field = field_mesh.get();
 
-                long unsigned int ix = static_cast<long unsigned int>(xind);
-                long unsigned int iy = static_cast<long unsigned int>(yind);
-                long unsigned int iz = static_cast<long unsigned int>(zind);
+                    long unsigned int ix = static_cast<long unsigned int>(xind);
+                    long unsigned int iy = static_cast<long unsigned int>(yind);
+                    long unsigned int iz = static_cast<long unsigned int>(zind);
 
-                auto bfieldx = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims);
-                auto bfieldy = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 1);
-                auto bfieldz = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 2);
-                return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
-            }
-        };
+                    auto bfieldx = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims);
+                    auto bfieldy = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 1);
+                    auto bfieldz = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 2);
+                    return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
+                }
+            };
 
         geometryManager_->setMagneticFieldFunction(function, type);
         auto detectors = geometryManager_->getDetectors();
