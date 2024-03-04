@@ -18,6 +18,8 @@
 
 #include <G4UserLimits.hh>
 
+#include "G4MagneticField.hh"
+
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -132,6 +134,16 @@ namespace allpix {
 
         // Mutex used for the construction of histograms
         std::mutex histogram_mutex_;
+    };
+
+    class MagFieldG4 : public G4MagneticField {
+    protected:
+        GeometryManager* gm_;
+
+    public:
+        MagFieldG4(GeometryManager* gm);
+        ~MagFieldG4();
+        virtual void GetFieldValue(const double Point[4], double* Bfield) const;
     };
 } // namespace allpix
 
