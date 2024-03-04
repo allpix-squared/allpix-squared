@@ -17,6 +17,7 @@
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "tools/field_parser.h"
 
 #include "core/module/Module.hpp"
 
@@ -34,6 +35,7 @@ namespace allpix {
          */
         enum class MagneticField {
             CONSTANT, ///< Constant magnetic field
+            MESH,     ///< Magnetic field defined by a mesh
         };
 
     public:
@@ -52,5 +54,12 @@ namespace allpix {
 
     private:
         GeometryManager* geometryManager_;
+
+        /**
+         * @brief Read field from a file in init or apf format
+         * @return Data of the field read from file
+         */
+        FieldData<double> read_field();
+        static FieldParser<double> field_parser_;
     };
 } // namespace allpix
