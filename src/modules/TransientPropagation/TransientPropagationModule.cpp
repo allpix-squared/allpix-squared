@@ -646,15 +646,14 @@ TransientPropagationModule::propagate(Event* event,
                 position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
             } else {
                 // geom. reflection on x-y plane at upper sensor boundary (we have an implant on the lower edge)
-                ROOT::Math::XYZPoint reflected_position(position.x(), position.y(), 2. * intercept.z() - position.z());
-                position = Eigen::Vector3d(reflected_position.x(), reflected_position.y(), reflected_position.z());
-                LOG(TRACE) << "Carrier was reflected on the top boundary of the sensor to: "
-                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+                position = Eigen::Vector3d(position.x(), position.y(), 2. * intercept.z() - position.z());
+                LOG(TRACE) << "Carrier was reflected on the sensor surface to "
+                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "nm"});
             }
             LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
         }
 
-        // update position according to reflection etc.
+        // Update final position after applying corrections from surface intercepts
         runge_kutta.setValue(position);
 
         // Update step length histogram
