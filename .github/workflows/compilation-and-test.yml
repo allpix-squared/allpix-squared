@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_103
+  LCG_VERSION: LCG_104
 jobs:
   compile-centos7:
     strategy:
@@ -14,11 +14,11 @@ jobs:
         compiler: [gcc12, clang12]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
         release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
@@ -28,7 +28,7 @@ jobs:
           cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
           ninja -k0
           ninja install
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: allpix-artifacts-centos7-${{matrix.compiler}}
         path: |
@@ -44,14 +44,14 @@ jobs:
         whichtest: [test_core, test_modules, examples]
         compiler: [gcc12, clang12]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: actions/download-artifact@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: actions/download-artifact@v4
       with:
         name: allpix-artifacts-centos7-${{matrix.compiler}}
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
         release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
