@@ -8,10 +8,10 @@ on:
 env:
   LCG_VERSION: LCG_104
 jobs:
-  compile-centos7:
+  compile-alma9:
     strategy:
       matrix:
-        compiler: [gcc12, clang12]
+        compiler: [gcc12, clang16]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-${{matrix.compiler}}-opt"
         run: |
           mkdir build
           cd build
@@ -30,19 +30,19 @@ jobs:
           ninja install
     - uses: actions/upload-artifact@v4
       with:
-        name: allpix-artifacts-centos7-${{matrix.compiler}}
+        name: allpix-artifacts-el9-${{matrix.compiler}}
         path: |
           build/
           bin/
           lib/
 
-  test-centos7:
-    needs: compile-centos7
+  test-alma9:
+    needs: compile-alma9
     runs-on: ubuntu-latest
     strategy:
       matrix:
         whichtest: [test_core, test_modules, examples]
-        compiler: [gcc12, clang12]
+        compiler: [gcc12, clang16]
     steps:
     - uses: actions/checkout@v4
       with:
@@ -50,11 +50,11 @@ jobs:
     - uses: cvmfs-contrib/github-action-cvmfs@v4
     - uses: actions/download-artifact@v4
       with:
-        name: allpix-artifacts-centos7-${{matrix.compiler}}
+        name: allpix-artifacts-el9-${{matrix.compiler}}
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-${{matrix.compiler}}-opt"
         run: |
           chmod a+x bin/allpix
           cd build

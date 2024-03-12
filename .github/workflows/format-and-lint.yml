@@ -19,7 +19,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build
@@ -36,7 +36,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build
@@ -53,7 +53,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build
