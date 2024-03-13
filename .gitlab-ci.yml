@@ -65,15 +65,6 @@ stages:
         - source etc/scripts/setup_lxplus.sh
         - mkdir -p build/ && cd build/
 
-.macos:
-    tags:
-        - mac
-    variables:
-        COMPILER_TYPE: "llvm"
-    before_script:
-        - source .ci/init_x86_64.sh
-        - mkdir -p build/ && cd build/
-
 
 #######################
 # Compilation targets #
@@ -134,15 +125,6 @@ cmp:el9-gcc:
     extends:
         - .alma9
         - .compile
-
-cmp:macos-clang:
-    extends:
-        - .macos
-        - .compile
-    script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_USE_RELATIVE_PATHS=TRUE ..
-        - ninja -k0
-        - ninja install
 
 
 ############################
@@ -376,23 +358,6 @@ core:el9-llvm:
         - job: cmp:el9-llvm
           artifacts: true
 
-# Mac OS
-mod:macos-clang:
-    extends:
-        - .macos
-        - .testmod
-    needs:
-        - job: cmp:macos-clang
-          artifacts: true
-
-core:macos-clang:
-    extends:
-        - .macos
-        - .testcore
-    needs:
-        - job: cmp:macos-clang
-          artifacts: true
-
 
 #####################
 # Performance tests #
@@ -410,22 +375,13 @@ core:macos-clang:
     retry: 1
 
 # CentOS7
-perf:cc7-gcc:
+# Deactivated due to lack of runners
+.perf:cc7-gcc:
     extends:
         - .centos7
         - .testperf
     needs:
         - job: cmp:cc7-gcc
-          artifacts: true
-
-# Mac OS
-# Temporarily disable Mac OS X performance until tests are adapted to actual performance
-.perf:macos-clang:
-    extends:
-        - .macos
-        - .testperf
-    needs:
-        - job: cmp:macos-clang
           artifacts: true
 
 
@@ -529,14 +485,6 @@ pkg:el9-gcc:
         - job: cmp:el9-gcc
           artifacts: true
 
-pkg:macos-clang:
-    extends:
-        - .macos
-        - .pack
-    needs:
-        - job: cmp:macos-clang
-          artifacts: true
-
 
 ############################
 # Documentation Deployment #
@@ -579,7 +527,6 @@ deploy:cvmfs:
         - pkg:cc7-gcc
         - pkg:el9-llvm
         - pkg:el9-gcc
-        - pkg:macos-clang
     tags:
         - cvmfs-deploy
     only:
