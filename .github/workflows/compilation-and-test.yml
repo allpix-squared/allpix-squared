@@ -6,110 +6,56 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_103
+  LCG_VERSION: LCG_104
 jobs:
-  compile-centos7:
+  compile-alma9:
     strategy:
       matrix:
-        compiler: [gcc12, clang12]
+        compiler: [gcc12, clang16]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-${{matrix.compiler}}-opt"
         run: |
           mkdir build
           cd build
           cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
           ninja -k0
           ninja install
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
-        name: allpix-artifacts-centos7-${{matrix.compiler}}
+        name: allpix-artifacts-el9-${{matrix.compiler}}
         path: |
           build/
           bin/
           lib/
 
-  test-centos7:
-    needs: compile-centos7
+  test-alma9:
+    needs: compile-alma9
     runs-on: ubuntu-latest
     strategy:
       matrix:
         whichtest: [test_core, test_modules, examples]
-        compiler: [gcc12, clang12]
+        compiler: [gcc12, clang16]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: actions/download-artifact@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: actions/download-artifact@v4
       with:
-        name: allpix-artifacts-centos7-${{matrix.compiler}}
-    - uses: aidasoft/run-lcg-view@v2
-      with:
-        run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-${{matrix.compiler}}-opt"
-        run: |
-          chmod a+x bin/allpix
-          cd build
-          ctest -R ${{matrix.whichtest}} --output-on-failure -j4
-
-  compile-mac:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-      with:
-        cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
-    - uses: aidasoft/run-lcg-view@v2
+        name: allpix-artifacts-el9-${{matrix.compiler}}
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac11-clang120-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-${{matrix.compiler}}-opt"
         run: |
-          mkdir build
-          cd build
-          cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_LCIOWriter=ON -DCMAKE_BUILD_TYPE=RELEASE -DROOT_DIR=$ROOTSYS -DEigen3_DIR=$Eigen3_DIR -DLCIO_DIR=$LCIO_DIR ..
-          ninja -k0
-          ninja install
-    - uses: actions/upload-artifact@v2
-      with:
-        name: allpix-artifacts-mac
-        path: |
-          build/
-          bin/
-          lib/
-
-  test-mac:
-    needs: compile-mac
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        whichtest: [test_core, test_modules, examples]
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-      with:
-        cvmfs_repositories: "sft.cern.ch,geant4.cern.ch"
-    - uses: actions/download-artifact@v2
-      with:
-        name: allpix-artifacts-mac
-    - uses: aidasoft/run-lcg-view@v2
-      with:
-        run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-mac11-clang120-opt"
-        run: |
-          chmod -R a+x .github
-          source .ci/init_x86_64.sh
           chmod a+x bin/allpix
           cd build
           ctest -R ${{matrix.whichtest}} --output-on-failure -j4
