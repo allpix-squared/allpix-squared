@@ -31,12 +31,19 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 * `number_of_charges`: Number of charges deposited. This refers to the total number of charge carriers for the source type `point` and defaults to 1. For the `mip` source type, this value is interpreted as charge carriers per length deposited in the sensor and defaults to `80/um`. It should be noted that without units specified, this value will be interpreted in the framework base units, in this case `/mm`.
 * `number_of_steps`: Number of steps over the full sensor thickness at which charge carriers are deposited. Only used for `mip` source type. Defaults to 100.
 * `source_type`: Modeled source type for the deposition of charge carriers. For `point`, charge carriers are deposited at the position given by the `position` parameter. For `mip`, charge carriers are deposited along a line through the full sensor thickness. Defaults to `point`.
-* `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. Only used for the `fixed` and model. When using source type `mip`, providing a 2D position is sufficient since it only uses the x and y coordinates. If used in scan mode, it allows you to shift the origin of each deposited charge by adding this value.
+* `position`: Position in local coordinates of the sensor, where charge carriers should be deposited. Expects three values for local-x, local-y and local-z position in the sensor volume and defaults to `0um 0um 0um`, i.e. the center of first (lower left) pixel. When using source type `mip`, providing a 2D position is sufficient since it only uses the x and y coordinates. If used in scan mode, it allows you to shift the origin of each deposited charge by adding this value. If the scan is only performed in one or two dimensions, the remaining coordinate will constantly have the value given by `position`.
 * `spot_size`: Width of the Gaussian distribution used to smear the position in the `spot` model. Only one value is taken and used for all three dimensions.
+* `scan_coordinates`: Coordinates to scan over, a combination of x, y, z. Only used for the `scan` model. Defaults to `x y z`, i.e. all three spatial coordinates. The `position` parameter is used to determine the value of the coordinates that are not scanned over if a partial scan is requested, and the start offset of the scan for the other coordinates.
+* `mip_direction`: Vector giving the direction of the line along which deposits are made when the `mip` source type is used. Defaults to `0 0 1`, i.e. along the z-axis. The `position` keyword gives a point that the line of depositions will cross through with this direction.
+
+### Plotting parameters
+
+- `output_plots` : Determines if output plots should be generated. Disabled by default.
+- `output_plots_bins_per_um` : Number of bins per micrometer in all directions in the 2D histograms used to plot deposition position. Only used if `output_plots` is enabled.
 
 ## Usage
 
-Example configuration for a point source at a defined position around which charge carriers are deposited with a Gaussian distribution:
+Example configuration for a point source at a defined position around which 100 charge carriers are deposited with a Gaussian distribution:
 
 ```ini
 [DepositionPointCharge]
@@ -44,7 +51,18 @@ source_type = "point"
 model = "spot"
 position = -10um 10um 0um
 spot_size = 3um
-number_of_steps = 100
+number_of_charges = 100
+```
+
+Example configuration for a point source scanned over the x and y cooridantes, with a fixed z coordinate of 10 micrometers (with the sensor center at 0):
+
+```ini
+[DepositionPointCharge]
+source_type = "point"
+model = "scan"
+scan_coordinates = x y
+position = 0um 0um 10um
+number_of_charges = 100
 ```
 
 Example configuration for a MIP-like energy deposition along a line at a fixed position, with 63 electron-hole pairs deposited per micrometer of sensor material:

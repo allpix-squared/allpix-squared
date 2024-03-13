@@ -11,6 +11,8 @@
 
 #include <string>
 
+#include <TH2D.h>
+
 #include "core/module/Module.hpp"
 
 namespace allpix {
@@ -57,6 +59,11 @@ namespace allpix {
          */
         void run(Event*) override;
 
+        /**
+         * @brief Write output plots
+         */
+        void finalize() override;
+
     private:
         /**
          * @brief Helper function to deposit charges at a single point
@@ -72,16 +79,42 @@ namespace allpix {
          */
         void DepositLine(Event*, const ROOT::Math::XYZPoint& position);
 
+        /**
+         * @brief Finds and returns the points where a line with mip_direction through a given point intersects the sensor
+         * @param line_origin Point the line goes through
+         * @return Intersection points of the sensor in local coordinates
+         *
+         * @note This method uses the Liang-Barsky clipping of a line segment with a box
+         */
+        std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
+        SensorIntersection(const ROOT::Math::XYZPoint& line_origin) const;
+
         Messenger* messenger_;
 
         std::shared_ptr<Detector> detector_;
+        std::shared_ptr<allpix::DetectorModel> detector_model_;
 
         DepositionModel model_;
         SourceType type_;
         double spot_size_{};
         ROOT::Math::XYZVector voxel_;
-        double step_size_z_{};
+        double step_size_{};
         unsigned int root_{}, carriers_{};
         ROOT::Math::XYZVector position_{};
+        ROOT::Math::XYZVector mip_direction_{};
+        std::vector<std::string> scan_coordinates_{};
+        size_t no_of_coordinates_;
+
+        bool scan_x_;
+        bool scan_y_;
+        bool scan_z_;
+
+        // Output plot parameters
+        bool output_plots_{};
+        int output_plots_bins_per_um_{};
+
+        Histogram<TH2D> deposition_position_xy;
+        Histogram<TH2D> deposition_position_xz;
+        Histogram<TH2D> deposition_position_yz;
     };
 } // namespace allpix
