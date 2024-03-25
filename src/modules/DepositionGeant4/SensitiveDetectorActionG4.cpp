@@ -136,7 +136,7 @@ double SensitiveDetectorActionG4::getTotalDepositedEnergy() const { return total
 
 double SensitiveDetectorActionG4::getDepositedEnergy() const { return deposited_energy_; }
 
-std::vector<ROOT::Math::XYZPoint> SensitiveDetectorActionG4::getIncidentPosition() const {    
+std::vector<ROOT::Math::XYZPoint> SensitiveDetectorActionG4::getIncidentPositions() const {
     return incident_track_position_;
 }
 
@@ -192,7 +192,8 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         mc_particles.back().setKineticEnergyStart(track_kinetic_energy_start_.at(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
-        incident_track_position_.push_back(local_begin);
+        // incident_track_position_.emplace_back(local_begin);
+        incident_track_position_.emplace_back(global_begin);
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector " << detector_->getName() << " from "
                    << Units::display(local_begin, {"mm", "um"}) << " to " << Units::display(local_end, {"mm", "um"})

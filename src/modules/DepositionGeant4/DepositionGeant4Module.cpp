@@ -407,8 +407,8 @@ void DepositionGeant4Module::run(Event* event) {
 
                 double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
-                
-                for(auto track_position : sensor->getIncidentPosition()){
+
+                for(auto track_position : sensor->getIncidentPositions()){
                     incident_track_position_[sensor->getName()]->Fill(track_position.x(), track_position.y());
                 }
             }
@@ -543,6 +543,9 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                 (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
             int nbins = 5 * maximum_charge;
 
+            // Get detector model size
+            auto sensor_size = detector->getModel()->getSensorSize();
+
             // Create histograms if needed
             {
                 std::lock_guard<std::mutex> lock(histogram_mutex_);
@@ -573,13 +576,13 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                 if(incident_track_position_.find(sensitive_detector_action->getName()) == incident_track_position_.end()) {
                     incident_track_position_[sensitive_detector_action->getName()] =
                         CreateHistogram<TH2D>(plot_name.c_str(),
-                                              "incident track position;X [mm];Y [mm];Z",
-                                              2000, 
-                                              -50, 
-                                              50, 
-                                              6000, 
-                                              -30, 
-                                              30);
+                                             "incident track position;X [mm];Y [mm];Z",
+                                             500,
+                                             -sensor_size.X() / 2,
+                                             sensor_size.X() / 2,
+                                             500,
+                                             -sensor_size.Y() / 2,
+                                             sensor_size.Y() / 2);
                 }
             }
         }
