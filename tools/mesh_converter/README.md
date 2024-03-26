@@ -28,8 +28,14 @@ search, the tool uses the Octree `radiusNeighbors` neighbor search algorithm \[[
 
 ### Input Data
 
-Currently, this tool supports the TCAD DF-ISE data format and requires the `.grd` and `.dat` files as input.
+Currently, this tool supports the TCAD DF-ISE data format as well as output generated from Silvaco TCAD. The respective
+parser has to be chosen using the `parser` configuration parameter.
+
+For the DF-ISE format, the mesh converter requires the `.grd` and `.dat` files as input alongside the parameter `parser = df-ise`.
 Here, the `.grd` file contains the vertex coordinates (3D or 2D) of each mesh node and the `.dat` file contains the value of each electric field vector component for each mesh node, grouped by model regions (such as silicon bulk or metal contacts). The regions are defined in the `.grd` file by grouping vertices into edges, faces and, consecutively, volumes or elements.
+
+For Silvaco TCAD, the data has to be extracted from the TCAD data, and `parser = silvaco` has to be selected.
+
 
 ### Output Data
 
@@ -87,7 +93,7 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 
 ### Parameters
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
-* `parser`: Parser class to interpret input data in. Currently, only **DF-ISE** is supported and used as default.
+* `parser`: Parser class to interpret input data in. Supported values are **DF-ISE** (default) and **Silvaco**.
 * `region`: Region name or list of region names to be meshed, such as `bulk` or `"bulk","epi"` (No default value; required parameter).
 * `observable`: Observable to be interpolated, such as `ElectricField` (No default value; required parameter).
 * `observable_units`: Units in which the observable is stored in the input file (No default value; required parameter).
