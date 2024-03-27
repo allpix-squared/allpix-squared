@@ -6,20 +6,20 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_103
+  LCG_VERSION: LCG_104
 jobs:
 
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build
@@ -29,14 +29,14 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build
@@ -46,14 +46,14 @@ jobs:
   cmake-lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: cvmfs-contrib/github-action-cvmfs@v2
-    - uses: aidasoft/run-lcg-view@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v4
+    - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-centos7-clang12-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
         run: |
           mkdir build
           cd build

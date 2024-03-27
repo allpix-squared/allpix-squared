@@ -64,6 +64,15 @@ bool PixelDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) c
 }
 
 /**
+ * The definition of the sensor boundary is determined by the detector model
+ */
+bool PixelDetectorModel::isOnSensorBoundary(const ROOT::Math::XYZPoint& local_pos) const {
+    auto sensor_size = getSensorSize();
+    return (2 * std::fabs(local_pos.z()) == sensor_size.z()) || (2 * std::fabs(local_pos.y()) == sensor_size.y()) ||
+           (2 * std::fabs(local_pos.x()) == sensor_size.x());
+}
+
+/**
  * The definition of the pixel grid size is determined by the detector model
  */
 bool PixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
