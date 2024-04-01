@@ -68,18 +68,10 @@ void MagneticFieldReaderModule::initialize() {
         auto fallback_field = config_.get<ROOT::Math::XYZVector>("magnetic_field_fallback", ROOT::Math::XYZVector());
         auto field_data = read_field();
 
-        auto dims = field_data.getDimensionality(); // Vector dimensionality of the field (should be 3 for B-field)
-        if(dims != 3) {
-            throw std::invalid_argument("B-field vectors were not three dimensional.");
-        }
-
-        auto cellsize = field_data.getSize();     // Physical dimensions for each cell in the field mesh
-        auto ncells = field_data.getDimensions(); // Number of cells in each direction of the field mesh
-        auto field_mesh = field_data.getData();   // The field mesh B-field data as a flattened array
-
-        if(ncells[0] * ncells[1] * ncells[2] * dims != field_mesh->size()) {
-            throw std::invalid_argument("B-field does not span the given dimensions");
-        }
+        auto dims = field_data.getDimensionality(); // Vector dimensionality of the field (will be 3 for B-field)
+        auto cellsize = field_data.getSize();       // Physical dimensions for each cell in the field mesh
+        auto ncells = field_data.getDimensions();   // Number of cells in each direction of the field mesh
+        auto field_mesh = field_data.getData();     // The field mesh B-field data as a flattened array
 
         MagneticFieldFunction function =
             [fallback_field, field_mesh, cellsize, ncells, dims](const ROOT::Math::XYZPoint& coord) {
