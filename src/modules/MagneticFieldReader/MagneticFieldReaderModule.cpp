@@ -87,9 +87,9 @@ void MagneticFieldReaderModule::initialize() {
                 } else {
                     auto field = field_mesh.get();
 
-                    long unsigned int ix = static_cast<long unsigned int>(xind);
-                    long unsigned int iy = static_cast<long unsigned int>(yind);
-                    long unsigned int iz = static_cast<long unsigned int>(zind);
+                    auto ix = static_cast<uint64_t>(xind);
+                    auto iy = static_cast<uint64_t>(yind);
+                    auto iz = static_cast<uint64_t>(zind);
 
                     auto bfieldx = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims);
                     auto bfieldy = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 1);
