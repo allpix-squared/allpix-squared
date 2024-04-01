@@ -135,13 +135,13 @@ namespace allpix {
         std::mutex histogram_mutex_;
     };
 
-    class MagFieldG4 : public G4MagneticField {
+    class MagneticField : public G4MagneticField {
     protected:
-        GeometryManager* gm_;
+        GeometryManager* geometry_manager_;
 
     public:
-        MagFieldG4(GeometryManager* gm);
-        ~MagFieldG4();
+        MagneticField(GeometryManager* geometry_manager);
+        ~MagneticField() = default;
         virtual void GetFieldValue(const double Point[4], double* Bfield) const;
     };
 } // namespace allpix
