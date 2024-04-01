@@ -468,10 +468,10 @@ void DepositionGeant4Module::finalizeThread() {
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     if(geo_manager_->hasMagneticField()) {
-        G4MagneticField* magField = new MagFieldG4(geo_manager_);
+        G4MagneticField* magneticField = new MagneticField(geo_manager_);
         G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-        globalFieldMgr->SetDetectorField(magField);
-        globalFieldMgr->CreateChordFinder(magField);
+        globalFieldMgr->SetDetectorField(magneticField);
+        globalFieldMgr->CreateChordFinder(magneticField);
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
@@ -605,13 +605,12 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-MagFieldG4::MagFieldG4(GeometryManager* gm) { gm_ = gm; }
+MagneticField::MagneticField(GeometryManager* geometry_manager) { geometry_manager_ = geometry_manager; }
 
-MagFieldG4::~MagFieldG4(){};
-
-void MagFieldG4::GetFieldValue(const double Point[4], double* Bfield) const {
-    G4cout << "Getting mag field from gm" << G4endl;
-    ROOT::Math::XYZVector bfield_vector = gm_->getMagneticField(ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]));
+void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const {
+    G4cout << "Getting magnetic field from geometry manager" << G4endl;
+    ROOT::Math::XYZVector bfield_vector =
+        geometry_manager_->getMagneticField(ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]));
     G4cout << bfield_vector << G4endl;
     Bfield[0] = bfield_vector.x();
     Bfield[1] = bfield_vector.y();
