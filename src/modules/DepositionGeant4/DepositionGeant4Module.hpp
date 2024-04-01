@@ -16,9 +16,8 @@
 #include <memory>
 #include <string>
 
+#include <G4MagneticField.hh>
 #include <G4UserLimits.hh>
-
-#include "G4MagneticField.hh"
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/GeometryManager.hpp"
