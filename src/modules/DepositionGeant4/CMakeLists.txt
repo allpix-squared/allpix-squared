@@ -22,7 +22,8 @@ ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE(${MODULE_NAME} REQUIRED)
 # If available, add additional physics lists form Geant4:
 IF(DEFINED ENV{GEANT4_DATA_DIR})
     # Set variable to microelectronics example folder
-    SET(GEANT4_EXAMPLES_DIR $ENV{GEANT4_DATA_DIR}/../examples)
+    SET(G4_EXAMPLES "$ENV{GEANT4_DATA_DIR}/../examples")
+    CMAKE_PATH(ABSOLUTE_PATH G4_EXAMPLES NORMALIZE OUTPUT_VARIABLE GEANT4_EXAMPLES_DIR)
 ELSE()
     FIND_PROGRAM(G4CONFIG "geant4-config")
     IF(G4CONFIG)
@@ -36,7 +37,7 @@ ELSE()
     ENDIF()
 ENDIF()
 
-IF(DEFINED GEANT4_EXAMPLES_DIR)
+IF(EXISTS ${GEANT4_EXAMPLES_DIR})
     MESSAGE(STATUS "  Found Geant4 Examples, building add. physics lists")
     CONFIGURE_FILE(
         ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
@@ -51,6 +52,8 @@ IF(DEFINED GEANT4_EXAMPLES_DIR)
         ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
     # Add includes from the microelectronics example
     TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/include)
+
+    TARGET_COMPILE_DEFINITIONS(${MODULE_NAME} PRIVATE ALLPIX_PHYSICSLIST_MICROELEC)
 ENDIF()
 
 # Register module tests
