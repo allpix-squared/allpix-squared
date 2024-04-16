@@ -11,7 +11,7 @@ of the framework and its modules.
 
 {{% alert title="Note" color="info" %}}
 Since different Geant4 versions may result in different events, a specific Geant4 version needs to be chosen for the
-test suite. All tests in the repository are written for Geant4 11.1 / LCG103.
+test suite. All tests in the repository are written for Geant4 11.2 / LCG105.
 {{% /alert %}}
 
 The tests can also be manually invoked from the build directory of Allpix Squared with:
