@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_104
+  LCG_VERSION: LCG_105
 jobs:
   compile-alma9:
     strategy:
