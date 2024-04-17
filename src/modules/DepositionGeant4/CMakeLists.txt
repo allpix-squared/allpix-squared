@@ -39,21 +39,25 @@ ENDIF()
 
 IF(EXISTS ${GEANT4_EXAMPLES_DIR})
     MESSAGE(STATUS "  Found Geant4 Examples, building add. physics lists")
-    CONFIGURE_FILE(
-        ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
-    CONFIGURE_FILE(
-        ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/ElectronCapture.cc ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
 
-    TARGET_SOURCES(${MODULE_NAME} PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}/MicroElecSiPhysics.cc
-        ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc)
+    IF(EXISTS ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc
+       AND EXISTS ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/ElectronCapture.cc)
+        MESSAGE(STATUS "  Found MicroElectronics physics lists")
+        CONFIGURE_FILE(${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/MicroElecSiPhysics.cc
+                       ${CMAKE_CURRENT_BINARY_DIR}/ COPYONLY)
+        CONFIGURE_FILE(${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/src/ElectronCapture.cc ${CMAKE_CURRENT_BINARY_DIR}/
+                       COPYONLY)
 
-    SET_SOURCE_FILES_PROPERTIES(
-        ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
-    # Add includes from the microelectronics example
-    TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/include)
+        TARGET_SOURCES(${MODULE_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/MicroElecSiPhysics.cc
+                                              ${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc)
 
-    TARGET_COMPILE_DEFINITIONS(${MODULE_NAME} PRIVATE ALLPIX_PHYSICSLIST_MICROELEC)
+        SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/ElectronCapture.cc
+                                    PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
+        # Add includes from the microelectronics example
+        TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${GEANT4_EXAMPLES_DIR}/advanced/microelectronics/include)
+
+        TARGET_COMPILE_DEFINITIONS(${MODULE_NAME} PRIVATE ALLPIX_PHYSICSLIST_MICROELEC)
+    ENDIF()
 ENDIF()
 
 # Register module tests
