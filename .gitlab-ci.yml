@@ -3,7 +3,7 @@
 
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
-    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v5"
+    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v6"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
