@@ -14,7 +14,9 @@
 
 #include <G4VModularPhysicsList.hh>
 
-#include "MicroElecSiPhysics.hh"
+#ifdef ALLPIX_PHYSICSLIST_MICROELEC
+#include <MicroElecSiPhysics.hh>
+#endif
 
 /**
  * @brief Handler namespace for implementing additional PhysicsLists included in AllPix2 but not in the
@@ -29,10 +31,12 @@ namespace allpix::physicslists {
      */
     inline G4VModularPhysicsList* getList(const std::string& list_name) {
 
+#ifdef ALLPIX_PHYSICSLIST_MICROELEC
         if(list_name == "MICROELEC-SIONLY") {
             // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
             return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
         }
+#endif
 
         return nullptr;
     }
