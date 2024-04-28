@@ -136,7 +136,7 @@ double SensitiveDetectorActionG4::getTotalDepositedEnergy() const { return total
 
 double SensitiveDetectorActionG4::getDepositedEnergy() const { return deposited_energy_; }
 
-std::vector<ROOT::Math::XYZPoint> SensitiveDetectorActionG4::getIncidentPositions() const {
+std::vector<ROOT::Math::XYZPoint> SensitiveDetectorActionG4::getTrackIncidentPositions() const {
     return incident_track_position_;
 }
 
@@ -163,6 +163,11 @@ void SensitiveDetectorActionG4::clearEventInfo() {
 
 void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* messenger, Event* event) {
 
+    // Clear previous event's track_begin cache and reserve number of elements to be stored:
+    incident_track_position_.clear();
+    incident_track_position_.reserve(track_begin_.size());
+
+    // Calculate time reference:
     auto time_reference = std::min_element(track_time_.begin(), track_time_.end(), [](const auto& l, const auto& r) {
                               return l.second < r.second;
                           })->second;
@@ -192,8 +197,8 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         mc_particles.back().setKineticEnergyStart(track_kinetic_energy_start_.at(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 
-        // incident_track_position_.emplace_back(local_begin);
-        incident_track_position_.emplace_back(global_begin);
+        // Cache local track_begin for plotting
+        incident_track_position_.emplace_back(local_begin);
 
         LOG(DEBUG) << "Found MC particle " << pdg_code << " crossing detector " << detector_->getName() << " from "
                    << Units::display(local_begin, {"mm", "um"}) << " to " << Units::display(local_end, {"mm", "um"})

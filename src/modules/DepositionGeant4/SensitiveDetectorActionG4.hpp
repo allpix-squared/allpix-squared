@@ -74,11 +74,13 @@ namespace allpix {
 
         /**
          * @brief Get the position of the incident particle tracks for this event.
+         * @warning The current track positions are only available after dispatching the message, before the function
+         * returns the track positions of the previous event.
          */
-        std::vector<ROOT::Math::XYZPoint> getIncidentPosition() const;
+        std::vector<ROOT::Math::XYZPoint> getTrackIncidentPositions() const;
 
         /**
-         * @brief Clears depopsition information vectors in preparation for the next event.
+         * @brief Clears deposition information vectors in preparation for the next event.
          */
         void clearEventInfo();
 
