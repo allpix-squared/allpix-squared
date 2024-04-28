@@ -408,7 +408,7 @@ void DepositionGeant4Module::run(Event* event) {
                 double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
 
-                for(auto track_position : sensor->getIncidentPositions()){
+                for(auto track_position : sensor->getTrackIncidentPositions()){
                     incident_track_position_[sensor->getName()]->Fill(track_position.x(), track_position.y());
                 }
             }
