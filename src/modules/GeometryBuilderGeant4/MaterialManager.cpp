@@ -217,16 +217,6 @@ void Materials::init_materials() {
     B10->AddElement(elB10, 1);
     materials_["b10"] = B10;
 
-    // Peek chemical formula (C19H12O3)
-    // C 114/150 = 76
-    // H 12/150 = 8
-    // O 24/150 = 16
-    G4Material *Peek = new G4Material("Peek", 1.31*CLHEP::g/CLHEP::cm3, 3);
-    Peek->AddMaterial(nistman->FindOrBuildMaterial("G4_C"), 76*CLHEP::perCent);
-    Peek->AddMaterial(nistman->FindOrBuildMaterial("G4_H"), 8*CLHEP::perCent);
-    Peek->AddMaterial(nistman->FindOrBuildMaterial("G4_O"), 16*CLHEP::perCent);
-    materials_["peek"] = Peek;
-
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
 }
