@@ -171,7 +171,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);
 
-            if (source_type == SourceType::BEAM){
+            if (config_.has("beam_divergence")){
               // Set angle distribution parameters
               // NOTE beam2d will always fire in the -z direction of the system
               single_source->GetAngDist()->SetAngDistType("beam2d");
