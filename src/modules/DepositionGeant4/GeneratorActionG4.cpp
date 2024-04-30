@@ -109,7 +109,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->GetPosDist()->SetCentreCoords(config_.get<G4ThreeVector>("source_position"));
 
         // Set position and direction parameters according to shape
-        if(source_type == SourceType::BEAM || source_type == SourceType::FOCUSED) {
+        if(source_type == SourceType::BEAM) {
 
             // Align the -z axis of the system with the direction vector
             auto direction = config_.get<G4ThreeVector>("beam_direction");
