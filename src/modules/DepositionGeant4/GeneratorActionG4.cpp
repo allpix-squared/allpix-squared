@@ -109,7 +109,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
         single_source->GetPosDist()->SetCentreCoords(config_.get<G4ThreeVector>("source_position"));
 
         // Set position and direction parameters according to shape
-        if(source_type == SourceType::BEAM) {
+        if(source_type == SourceType::BEAM || source_type == SourceType::FOCUSED) {
 
             // Align the -z axis of the system with the direction vector
             auto direction = config_.get<G4ThreeVector>("beam_direction");
@@ -171,48 +171,22 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);
 
-            // Set angle distribution parameters
-            // NOTE beam2d will always fire in the -z direction of the system
-            single_source->GetAngDist()->SetAngDistType("beam2d");
-            single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
-            single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
-            auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
-            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
-            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
-
-        } else if(source_type == SourceType::FOCUSED){
-
-            // Align the -z axis of the system with the direction vector
-            auto direction = config_.get<G4ThreeVector>("beam_direction");
-            if(fabs(direction.mag() - 1.0) > std::numeric_limits<double>::epsilon()) {
-                LOG(WARNING) << "Momentum direction is not a unit vector: magnitude is ignored";
+            if (source_type == SourceType::BEAM){
+              // Set angle distribution parameters
+              // NOTE beam2d will always fire in the -z direction of the system
+              single_source->GetAngDist()->SetAngDistType("beam2d");
+              single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
+              single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
+              auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+              single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
+              single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
             }
-            auto min_element = std::min(std::abs(direction.x()), std::min(std::abs(direction.y()), std::abs(direction.z())));
-            G4ThreeVector angref1;
-            if(min_element == std::abs(direction.x())) {
-                angref1 = direction.cross({1, 0, 0});
-            } else if(min_element == std::abs(direction.y())) {
-                angref1 = direction.cross({0, 1, 0});
-            } else if(min_element == std::abs((direction.z()))) {
-                angref1 = direction.cross({0, 0, 1});
+            else {
+              // Set beam to focus
+              single_source->GetAngDist()->SetAngDistType("focused");
+              auto focus_point = config_.get<G4ThreeVector>("focus_point", G4ThreeVector(0., 0., 0.));
+              single_source->GetAngDist()->SetFocusPoint(focus_point);
             }
-            G4ThreeVector angref2 = angref1.cross(direction);
-
-            // Set position parameters
-            single_source->GetPosDist()->SetPosDisType("Beam");
-            auto beam_size = config.get<double>("beam_size", 0);
-            if(config.get<bool>("flat_beam", false) == true) {
-                single_source->GetPosDist()->SetPosDisShape("Circle");
-                single_source->GetPosDist()->SetRadius(beam_size);
-            } else {
-                single_source->GetPosDist()->SetBeamSigmaInR(beam_size);
-            }
-
-            // Set beam to focus
-            // NOTE Do not set both beam convergence and divergence at once
-            single_source->GetAngDist()->SetAngDistType("focused");
-            auto focus_point = config_.get<G4ThreeVector>("focus_point", G4ThreeVector(0., 0., 0.));
-            single_source->GetAngDist()->SetFocusPoint(focus_point);
 
         } else if(source_type == SourceType::SPHERE) {
 
