@@ -184,7 +184,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             else if (config_.has("focus_point")) {
               // Set beam to focus
               single_source->GetAngDist()->SetAngDistType("focused");
-              auto focus_point = config_.get<G4ThreeVector>("focus_point", G4ThreeVector(0., 0., 0.));
+              auto focus_point = config_.get<G4ThreeVector>("focus_point");
               single_source->GetAngDist()->SetFocusPoint(focus_point);
             }
 
