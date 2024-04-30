@@ -181,7 +181,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
               single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
               single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
             }
-            else {
+            else if (config_.has("focus_point")) {
               // Set beam to focus
               single_source->GetAngDist()->SetAngDistType("focused");
               auto focus_point = config_.get<G4ThreeVector>("focus_point", G4ThreeVector(0., 0., 0.));
