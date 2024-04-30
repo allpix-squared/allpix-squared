@@ -177,7 +177,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
               single_source->GetAngDist()->SetAngDistType("beam2d");
               single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
               single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
-              auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+              auto divergence = config_.get<G4TwoVector>("beam_divergence");
               single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
               single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
             }
