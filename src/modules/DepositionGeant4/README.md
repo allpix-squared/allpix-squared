@@ -19,10 +19,11 @@ These can be overwritten by specifying the parameters `charge_creation_energy` a
 ### Source Shapes
 
 The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
-Pre-defined shapes are point, beam, square or sphere.
+Pre-defined shapes are point, beam, square, sphere or focused.
 For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
 By default, the particle directions for the square are random, as would be for a squared radioactive source.
 For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 \[[@g4gps]\] and the field inside the sphere is hence isotropic.
+For focused, the beam is focused to a point in X,Y,Z directions. Note that you cannot use `beam_divergence` with `source_type="focused"`. 
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website \[[@g4gps]\].
@@ -103,6 +104,11 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `beam_direction` : Direction of the beam as a unit vector.
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
+### Parameters for source `focused`
+* `beam_size` : Width of the Gaussian beam profile.
+* `focus_point` : Focus point of the focused beam source. If not specified, the focus point is at the origin. 
+* `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
+
 ### Parameters for source `square`
 * `square_side` : Length of the square side.
 * `square_angle` : Cone opening angle defining the maximum submission angle. Defaults to `180deg`, i.e. emission into one full hemisphere.
@@ -110,6 +116,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 ### Parameters for source `sphere`
 * `sphere_radius` : Radius of the sphere source (particles start only from the surface).
 * `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
+
 
 ### Parameters for source `macro`
 * `file_name` : Path to the Geant4 source macro file.
