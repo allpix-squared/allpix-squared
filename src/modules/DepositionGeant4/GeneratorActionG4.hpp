@@ -41,6 +41,15 @@ namespace allpix {
         };
 
         /**
+         * @brief Different shapes of particle beams
+         */
+        enum class BeamShape {
+            CIRCLE,    ///< Circular beam
+            ELLIPSE,   ///< Elliptical beam
+            RECTANGLE, ///< Rectangular beam
+        };
+
+        /**
          * @brief Constructs the generator action
          * @param config Configuration of the \ref DepositionGeant4Module module
          */

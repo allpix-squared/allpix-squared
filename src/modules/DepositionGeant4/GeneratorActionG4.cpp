@@ -139,23 +139,30 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 beam_size = {size, size};
             }
 
-            if(config_.get<bool>("flat_beam", false) == true) {
-                if(config_.get<std::string>("beam_shape", "Circle") == "Rectangle") {
+            auto beam_shape = config_.get<BeamShape>("beam_shape", BeamShape::CIRCLE);
+            if(config_.get<bool>("flat_beam", false)) {
+                if(beam_shape == BeamShape::RECTANGLE) {
                     single_source->GetPosDist()->SetPosDisType("Plane"); //?
                     single_source->GetPosDist()->SetPosDisShape("Rectangle");
                     single_source->GetPosDist()->SetHalfX((beam_size.x()) / 2);
                     single_source->GetPosDist()->SetHalfY((beam_size.y()) / 2);
-                } else {
+                } else if(beam_shape == BeamShape::CIRCLE) {
                     single_source->GetPosDist()->SetPosDisShape("Circle");
                     single_source->GetPosDist()->SetRadius(beam_size.x());
+                } else {
+                    throw InvalidValueError(config_, "beam_shape", "Cannot use this beam shape with flat beams");
                 }
             } else {
-                if(config_.get<std::string>("beam_shape", "Circle") == "Ellipse"){
+                if(beam_shape == BeamShape::CIRCLE) {
+                    single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
+                } else if(beam_shape == BeamShape::ELLIPSE){
                     single_source->GetPosDist()->SetBeamSigmaInX((beam_size.x()) / 2);
                     single_source->GetPosDist()->SetBeamSigmaInY((beam_size.y()) / 2);
+                }  else {
+                    throw InvalidValueError(config_, "beam_shape", "This beam shape can only be used with flat beams");
                 }
-                single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
             }
+
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);
 
