@@ -133,7 +133,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             // Get beam_size parameter(s) from config file
             ROOT::Math::XYVector beam_size{};
             try {
-                beam_size = config_.get<ROOT::Math::XYVector>("beam_size");
+                beam_size = config_.get<ROOT::Math::XYVector>("beam_size", {0, 0});
             } catch(InvalidKeyError&) {
                 const auto size = config_.get<double>("beam_size", 0);
                 beam_size = {size, size};
