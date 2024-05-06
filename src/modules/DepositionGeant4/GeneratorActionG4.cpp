@@ -22,8 +22,8 @@
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
-#include <core/module/exceptions.h>
 #include <Math/Vector2D.h>
+#include <core/module/exceptions.h>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
@@ -132,9 +132,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Get beam_size parameter(s) from config file
             ROOT::Math::XYVector beam_size{};
-            try{
+            try {
                 beam_size = config_.get<ROOT::Math::XYVector>("beam_size");
-            } catch(InvalidKeyError &) {
+            } catch(InvalidKeyError&) {
                 auto size = config_.get<double>("beam_size", 0);
                 beam_size = {size, size};
             }
@@ -155,10 +155,10 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             } else {
                 if(beam_shape == BeamShape::CIRCLE) {
                     single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
-                } else if(beam_shape == BeamShape::ELLIPSE){
+                } else if(beam_shape == BeamShape::ELLIPSE) {
                     single_source->GetPosDist()->SetBeamSigmaInX((beam_size.x()) / 2);
                     single_source->GetPosDist()->SetBeamSigmaInY((beam_size.y()) / 2);
-                }  else {
+                } else {
                     throw InvalidValueError(config_, "beam_shape", "This beam shape can only be used with flat beams");
                 }
             }
