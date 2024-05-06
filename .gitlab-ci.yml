@@ -395,6 +395,8 @@ core:el9-llvm:
     stage: documentation
     needs: []
     dependencies: []
+    tags:
+        - k8s-default
     before_script:
         - mkdir public build
         - cd build
