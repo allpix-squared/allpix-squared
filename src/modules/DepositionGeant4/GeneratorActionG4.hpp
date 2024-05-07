@@ -38,7 +38,6 @@ namespace allpix {
             SPHERE, ///< Spherical particle source
             SQUARE, ///< Square particle source
             POINT,  ///< Point source
-            FOCUSED, ///< Focused beam 
         };
 
         /**

@@ -19,11 +19,10 @@ These can be overwritten by specifying the parameters `charge_creation_energy` a
 ### Source Shapes
 
 The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
-Pre-defined shapes are point, beam, square, sphere or focused.
+Pre-defined shapes are point, beam, square or sphere.
 For the square and sphere, the particle starting points are distributed homogeneously over the surfaces.
 By default, the particle directions for the square are random, as would be for a squared radioactive source.
 For the sphere, unless a focus point is set, the particle directions follow the cosine-law defined by Geant4 \[[@g4gps]\] and the field inside the sphere is hence isotropic.
-For focused, the beam is focused to a point in X,Y,Z directions. Note that you cannot use `beam_divergence` with `source_type="focused"`. 
 
 To define more complex sources or angular distributions, the user can create a macro file with Geant4 commands.
 These commands are those defined for the GPS source and are explained in the Geant4 website \[[@g4gps]\].
@@ -101,6 +100,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `beam_shape` : Shape of the beam, can be either `circle`, `ellipse` or `rectangle`. Defaults to `circle`
 * `beam_size` : Width of the Gaussian beam profile. With `beam_shape = ellipse` or `beam_shape = rectangle`, this requires two values for the width in x and y.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
+* `focus_point` : Focus point of the beam. This parameter is mutually exclusive with `beam_divergence`.
 * `beam_direction` : Direction of the beam as a unit vector.
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
@@ -116,7 +116,6 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 ### Parameters for source `sphere`
 * `sphere_radius` : Radius of the sphere source (particles start only from the surface).
 * `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
-
 
 ### Parameters for source `macro`
 * `file_name` : Path to the Geant4 source macro file.
