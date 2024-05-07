@@ -22,10 +22,12 @@
 #include <G4ParticleTable.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
+#include <Math/Vector2D.h>
 #include <core/module/exceptions.h>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
 
 using namespace allpix;
@@ -127,13 +129,45 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
-            auto beam_size = config.get<double>("beam_size", 0);
-            if(config.get<bool>("flat_beam", false) == true) {
-                single_source->GetPosDist()->SetPosDisShape("Circle");
-                single_source->GetPosDist()->SetRadius(beam_size);
-            } else {
-                single_source->GetPosDist()->SetBeamSigmaInR(beam_size);
+
+            // Get beam_size parameter(s) from config file
+            ROOT::Math::XYVector beam_size{};
+            try {
+                beam_size = config_.get<ROOT::Math::XYVector>("beam_size", {0, 0});
+            } catch(InvalidKeyError&) {
+                const auto size = config_.get<double>("beam_size", 0);
+                beam_size = {size, size};
             }
+
+            auto beam_shape = config_.get<BeamShape>("beam_shape", BeamShape::CIRCLE);
+            if(config_.get<bool>("flat_beam", false)) {
+                // Note: G4 definition of rectangle swaps x and y wrt our global coordinate system
+                single_source->GetPosDist()->SetPosDisType("Plane");
+                if(beam_shape == BeamShape::RECTANGLE) {
+                    single_source->GetPosDist()->SetPosDisShape("Rectangle");
+                    single_source->GetPosDist()->SetHalfX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfY((beam_size.x()) / 2);
+                } else if(beam_shape == BeamShape::CIRCLE) {
+                    single_source->GetPosDist()->SetPosDisShape("Circle");
+                    single_source->GetPosDist()->SetRadius(beam_size.x());
+                } else if(beam_shape == BeamShape::ELLIPSE) {
+                    single_source->GetPosDist()->SetPosDisShape("Ellipse");
+                    single_source->GetPosDist()->SetHalfX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfY((beam_size.x()) / 2);
+                } else {
+                    throw InvalidValueError(config_, "beam_shape", "Cannot use this beam shape with flat beams");
+                }
+            } else {
+                if(beam_shape == BeamShape::CIRCLE) {
+                    single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
+                } else if(beam_shape == BeamShape::ELLIPSE || beam_shape == BeamShape::RECTANGLE) {
+                    single_source->GetPosDist()->SetBeamSigmaInX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetBeamSigmaInY((beam_size.x()) / 2);
+                } else {
+                    throw InvalidValueError(config_, "beam_shape", "This beam shape can only be used with flat beams");
+                }
+            }
+
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);
 

@@ -26,6 +26,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Carsten Daniel Burgard, DESY, [cburgard](https://gitlab.cern.ch/cburgard)
 * Maximilian Felix Caspar, DESY, [mcaspar](https://gitlab.cern.ch/mcaspar)
 * Liejian Chen, Institute of High Energy Physics Beijing, [chenlj](https://github.com/chenlj)
+* Naomi Davis, DESY, [naomi](https://gitlab.cern.ch/naomi)
 * Manuel Alejandro Del Rio Viera, DESY, [mdelriov](https://gitlab.cern.ch/mdelriov)
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)

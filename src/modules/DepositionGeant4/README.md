@@ -97,7 +97,8 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ### Parameters for source `beam`
-* `beam_size` : Width of the Gaussian beam profile.
+* `beam_shape` : Shape of the beam, can be either `circle`, `ellipse` or `rectangle`. Defaults to `circle`
+* `beam_size` : Width of the Gaussian beam profile. With `beam_shape = ellipse` or `beam_shape = rectangle`, this requires two values for the width in x and y.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
 * `beam_direction` : Direction of the beam as a unit vector.
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
