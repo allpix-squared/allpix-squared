@@ -28,6 +28,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Liejian Chen, Institute of High Energy Physics Beijing, [chenlj](https://github.com/chenlj)
 * Naomi Davis, DESY, [naomi](https://gitlab.cern.ch/naomi)
 * Manuel Alejandro Del Rio Viera, DESY, [mdelriov](https://gitlab.cern.ch/mdelriov)
+* Malinda de Silva, DESY, [ldesilva](https://gitlab.cern.ch/ldesilva)
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
 * Yajun He, DESY, [yajun](https://gitlab.cern.ch/yajun)
