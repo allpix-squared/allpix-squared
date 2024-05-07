@@ -141,18 +141,19 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
 
             auto beam_shape = config_.get<BeamShape>("beam_shape", BeamShape::CIRCLE);
             if(config_.get<bool>("flat_beam", false)) {
+                // Note: G4 definition of rectangle swaps x and y wrt our global coordinate system
+                single_source->GetPosDist()->SetPosDisType("Plane");
                 if(beam_shape == BeamShape::RECTANGLE) {
-                    single_source->GetPosDist()->SetPosDisType("Plane"); //?
                     single_source->GetPosDist()->SetPosDisShape("Rectangle");
-                    single_source->GetPosDist()->SetHalfX((beam_size.x()) / 2);
-                    single_source->GetPosDist()->SetHalfY((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfY((beam_size.x()) / 2);
                 } else if(beam_shape == BeamShape::CIRCLE) {
                     single_source->GetPosDist()->SetPosDisShape("Circle");
                     single_source->GetPosDist()->SetRadius(beam_size.x());
                 } else if(beam_shape == BeamShape::ELLIPSE) {
                     single_source->GetPosDist()->SetPosDisShape("Ellipse");
-                    single_source->GetPosDist()->SetHalfX((beam_size.x()) / 2);
-                    single_source->GetPosDist()->SetHalfY((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetHalfY((beam_size.x()) / 2);
                 } else {
                     throw InvalidValueError(config_, "beam_shape", "Cannot use this beam shape with flat beams");
                 }
@@ -160,8 +161,8 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
                 if(beam_shape == BeamShape::CIRCLE) {
                     single_source->GetPosDist()->SetBeamSigmaInR(beam_size.x());
                 } else if(beam_shape == BeamShape::ELLIPSE || beam_shape == BeamShape::RECTANGLE) {
-                    single_source->GetPosDist()->SetBeamSigmaInX((beam_size.x()) / 2);
-                    single_source->GetPosDist()->SetBeamSigmaInY((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetBeamSigmaInX((beam_size.y()) / 2);
+                    single_source->GetPosDist()->SetBeamSigmaInY((beam_size.x()) / 2);
                 } else {
                     throw InvalidValueError(config_, "beam_shape", "This beam shape can only be used with flat beams");
                 }
