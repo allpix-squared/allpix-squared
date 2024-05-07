@@ -545,6 +545,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
 
             // Get detector model size
             auto sensor_size = detector->getModel()->getSensorSize();
+            auto pixel_size = detector->getModel()->getPixelSize();
 
             // Create histograms if needed
             {
@@ -577,12 +578,12 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                     incident_track_position_[sensitive_detector_action->getName()] =
                         CreateHistogram<TH2D>(plot_name.c_str(),
                                               "incident track position;X [mm];Y [mm];Z",
-                                              500,
-                                              -sensor_size.X() / 2,
-                                              sensor_size.X() / 2,
-                                              500,
-                                              -sensor_size.Y() / 2,
-                                              sensor_size.Y() / 2);
+                                              5000,
+                                              -pixel_size.X() / 2,
+                                              sensor_size.X() - pixel_size.X() / 2,
+                                              5000,
+                                              -pixel_size.Y() / 2,
+                                              sensor_size.Y() - pixel_size.Y() / 2);
                 }
             }
         }
