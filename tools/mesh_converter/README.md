@@ -34,7 +34,7 @@ parser has to be chosen using the `parser` configuration parameter.
 For the DF-ISE format, the mesh converter requires the `.grd` and `.dat` files as input alongside the parameter `parser = df-ise`.
 Here, the `.grd` file contains the vertex coordinates (3D or 2D) of each mesh node and the `.dat` file contains the value of each electric field vector component for each mesh node, grouped by model regions (such as silicon bulk or metal contacts). The regions are defined in the `.grd` file by grouping vertices into edges, faces and, consecutively, volumes or elements.
 
-For Silvaco TCAD, the data has to be extracted from the TCAD data, and `parser = silvaco` has to be selected.
+For Silvaco TCAD, the data has to be extracted from the TCAD data, and `parser = silvaco` has to be selected. The required input files are a `.grd` file containing the list of mesh points and `.dat` file holding the corresponding values.
 
 
 ### Output Data
