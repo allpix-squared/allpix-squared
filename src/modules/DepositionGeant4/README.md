@@ -104,11 +104,6 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `beam_direction` : Direction of the beam as a unit vector.
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
-### Parameters for source `focused`
-* `beam_size` : Width of the Gaussian beam profile.
-* `focus_point` : Focus point of the focused beam source. If not specified, the focus point is at the origin. 
-* `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
-
 ### Parameters for source `square`
 * `square_side` : Length of the square side.
 * `square_angle` : Cone opening angle defining the maximum submission angle. Defaults to `180deg`, i.e. emission into one full hemisphere.
