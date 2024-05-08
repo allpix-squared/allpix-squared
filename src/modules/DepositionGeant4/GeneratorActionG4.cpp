@@ -171,14 +171,27 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->GetPosDist()->SetPosRot1(angref1);
             single_source->GetPosDist()->SetPosRot2(angref2);
 
-            // Set angle distribution parameters
-            // NOTE beam2d will always fire in the -z direction of the system
-            single_source->GetAngDist()->SetAngDistType("beam2d");
-            single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
-            single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
-            auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
-            single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
-            single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
+            if(config_.count({"beam_divergence", "focus_point"}) > 1) {
+                throw InvalidCombinationError(config_,
+                                              {"beam_divergence", "focus_point"},
+                                              "Beam divergence and beam focus point are mutually exclusive!");
+            }
+
+            if(config_.has("focus_point")) {
+                // Set beam to focus
+                single_source->GetAngDist()->SetAngDistType("focused");
+                auto focus_point = config_.get<G4ThreeVector>("focus_point");
+                single_source->GetAngDist()->SetFocusPoint(focus_point);
+            } else {
+                // Set angle distribution parameters
+                // NOTE beam2d will always fire in the -z direction of the system
+                single_source->GetAngDist()->SetAngDistType("beam2d");
+                single_source->GetAngDist()->DefineAngRefAxes("angref1", angref1);
+                single_source->GetAngDist()->DefineAngRefAxes("angref2", angref2);
+                auto divergence = config_.get<G4TwoVector>("beam_divergence", G4TwoVector(0., 0.));
+                single_source->GetAngDist()->SetBeamSigmaInAngX(divergence.x());
+                single_source->GetAngDist()->SetBeamSigmaInAngY(divergence.y());
+            }
 
         } else if(source_type == SourceType::SPHERE) {
 
