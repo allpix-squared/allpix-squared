@@ -32,6 +32,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
 * Yajun He, DESY, [yajun](https://gitlab.cern.ch/yajun)
+* Ryan Heller, LBNL, [heller3](https://github.com/heller3)
 * Lennart Huth, DESY, [lhuth](https://gitlab.cern.ch/lhuth)
 * Daniel Hynds, University of Oxford, [dhynds](https://gitlab.cern.ch/dhynds)
 * Francisco-Jose Iguaz-Gutierrez, Synchrotron SOLEIL, [iguaz-gutierrez](https://github.com/iguaz-gutierrez)
