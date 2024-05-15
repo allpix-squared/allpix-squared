@@ -57,7 +57,7 @@ The necessary module errors and warnings have been included to make sure the use
 
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
-#### Cons:
+#### Cone:
 A cone or partly made cone with an inner and outer radius at the (- half-length , + half-length)
  outer_radius_mDz : at - half-length the outer radius
                 outer_radius_pDz : at + half-length the outer radius
