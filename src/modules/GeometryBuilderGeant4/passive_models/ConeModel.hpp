@@ -65,7 +65,8 @@ namespace allpix {
                                                    arc_length_);
 
             // Get the maximum of the size parameters
-            max_size_ = std::max(2 * inner_radius_end, length_);
+            max_size_ = std::max(2 * outer_radius_begin_, 2 * outer_radius_end_);
+            max_size_ = std::max(max_size_, length_);
 
             LOG(DEBUG) << "Adding points for volume";
             add_points();
