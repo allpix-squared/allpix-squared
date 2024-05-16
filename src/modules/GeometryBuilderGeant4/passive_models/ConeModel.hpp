@@ -32,45 +32,40 @@ namespace allpix {
             // Set the CONE specifications
             /*
             must-fill :
-                outer_radius_mDz : at - half-length the outer radius
-                outer_radius_pDz : at + half-length the outer radius
-                inner_radius_mDz : at - half-length the inner radius (must be smaller than outer_radius_mDz)
-                inner_radius_pDz : at + half-length the inner radius (must be smaller than outer_radius_mDz)
+                outer_radius_begin : outer radius at the begin (negative z) of the cone
+                outer_radius_end : outer radius at the end (positive z) of the cone
+                inner_radius_begin : inner radius at the begin (negative z) of the cone
+                inner_radius_end : inner radius at the end (positive z) of the cone
                 starting_angle   : start-angle ( default 0)
                 arc_length       : length-of the arc (360 deg default)
             */
-            setOuterRadius(config_.get<double>("outer_radius_mDz"), config_.get<double>("outer_radius_pDz"));
-            setInnerRadius(config_.get<double>("inner_radius_mDz"), config_.get<double>("inner_radius_pDz"));
+            setOuterRadius(config_.get<double>("outer_radius_begin"), config_.get<double>("outer_radius_end"));
+            setInnerRadius(config_.get<double>("inner_radius_begin"), config_.get<double>("inner_radius_end"));
             setLength(config_.get<double>("length"));
             setStartingAngle(config_.get<double>("starting_angle", 0));
             setArcLength(config_.get<double>("arc_length", 360 * CLHEP::deg));
             std::string name = config_.getName();
             // Limit the values that can be given
-            if(inner_radius_mDz >= outer_radius_mDz)
+            if(inner_radius_begin >= outer_radius_begin)
                 throw InvalidValueError(
-                    config_,
-                    "inner_radius_mDz",
-                    "inner_radius (-half Legth)  cannot be larger than the outer_radius (+ half Length)");
-            if(inner_radius_pDz >= outer_radius_pDz)
-                throw InvalidValueError(
-                    config_,
-                    "inner_radius_pDz",
-                    "inner_radius (+half Length) cannot be larger than the outer_raidus (+ half Length)");
+                    config_, "inner_radius_begin", "inner radius cannot be larger than the outer radius");
+            if(inner_radius_end >= outer_radius_end)
+                throw InvalidValueError(config_, "inner_radius_end", "inner radius cannot be larger than the outer radius");
             if(arc_length_ > 360 * CLHEP::deg) {
                 throw InvalidValueError(config_, "arc_length", "arc_length exceeds the maximum value of 360 degrees");
             }
 
             solid_ = make_shared_no_delete<G4Cons>(name + "_volume",
-                                                   inner_radius_mDz,
-                                                   outer_radius_mDz,
-                                                   inner_radius_pDz,
-                                                   outer_radius_pDz,
+                                                   inner_radius_begin,
+                                                   outer_radius_begin,
+                                                   inner_radius_end,
+                                                   outer_radius_end,
                                                    length_ / 2.,
                                                    starting_angle_,
                                                    arc_length_);
 
             // Get the maximum of the size parameters
-            max_size_ = std::max(2 * inner_radius_pDz, length_);
+            max_size_ = std::max(2 * inner_radius_end, length_);
 
             LOG(DEBUG) << "Adding points for volume";
             add_points();
@@ -86,10 +81,10 @@ namespace allpix {
         std::shared_ptr<G4VSolid> solid_;
 
         // G4VSolid specifications
-        double inner_radius_pDz;
-        double outer_radius_pDz;
-        double inner_radius_mDz;
-        double outer_radius_mDz;
+        double inner_radius_end;
+        double outer_radius_end;
+        double inner_radius_begin;
+        double outer_radius_begin;
 
         double length_;
         double starting_angle_;
@@ -99,17 +94,17 @@ namespace allpix {
          * @brief Set the inner radius of the CONE in the XY-plane at -halfLenght and +halfLength
          * @param val Inner radius of the CONE
          */
-        void setInnerRadius(double val_mDz, double val_pDz) {
-            inner_radius_mDz = val_mDz;
-            inner_radius_pDz = val_pDz;
+        void setInnerRadius(double val_begin, double val_end) {
+            inner_radius_begin = val_begin;
+            inner_radius_end = val_end;
         }
         /**
          * @brief Set the outer radius of the CONE in the XY-plane at -halfLenght and +halfLength
          * @param val Outer radius of the CONE
          */
-        void setOuterRadius(double val_mDz, double val_pDz) {
-            outer_radius_mDz = val_mDz;
-            outer_radius_pDz = val_pDz;
+        void setOuterRadius(double val_begin, double val_end) {
+            outer_radius_begin = val_begin;
+            outer_radius_end = val_end;
         }
         /**
          * @brief Set the length of the CONE in the Z-directior
