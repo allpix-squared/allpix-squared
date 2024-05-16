@@ -58,17 +58,13 @@ The necessary module errors and warnings have been included to make sure the use
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
 #### Cone:
-A cone or partly made cone with an inner and outer radius at the (- half-length , + half-length)
- outer_radius_begin : at - half-length the outer radius
-                outer_radius_end : at + half-length the outer radius
-                inner_radius_begin : at - half-length the inner radius (must be smaller than outer_radius_begin)
-                inner_radius_end : at + half-length the inner radius (must be smaller than outer_radius_end)
+A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
                 starting_angle   : start-angle ( default 0)
                 arc_length       : length-of the arc (360 deg default)
-* The `outer_radius_end` of the cone is the radius of the cone at the + half-lenght position
-* The `outer_radius_begin` of the cone is the radius of the cone at the - half-lenght position
-* The `inner_radius_end` of the cone is the radius of the cone at the + half-lenght position
-* The `inner_radius_begin` of the cone is the radius of the cone at the - half-lenght position
+* The `outer_radius_begin` of the cone is the outer radius at the begin (negative z) of the cone
+* (Optional) The `inner_radius_begin` of the cone is the inner radius at the begin (negative z) of the cone
+* The `outer_radius_end` of the cone is the outer radius at the end (positive z) of the cone
+* (Optional) The `inner_radius_end` of the cone is the inner radius at the end (positive z) of the cone
 * The `length`  of the cone is the total length of the cone
 * (Optional) The `starting_angle` of the cone is the azimuthal angle at which circumference of the cone will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
 * (Optional) The `arc_length` of the cone is the arc-length of the cone that will be drawn
