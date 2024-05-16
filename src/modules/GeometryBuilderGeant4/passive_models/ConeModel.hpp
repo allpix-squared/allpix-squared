@@ -40,10 +40,10 @@ namespace allpix {
                 arc_length       : length-of the arc (360 deg default)
             */
 
-            inner_radius_begin_ = config_.get<double>("inner_radius_begin");
             outer_radius_begin_ = config_.get<double>("outer_radius_begin");
-            inner_radius_end_ = config_.get<double>("inner_radius_end");
+            inner_radius_begin_ = config_.get<double>("inner_radius_begin", 0);
             outer_radius_end_ = config_.get<double>("outer_radius_end");
+            inner_radius_end_ = config_.get<double>("inner_radius_end", 0);
 
             length_ = config_.get<double>("length");
             starting_angle_ = config_.get<double>("starting_angle", 0);
