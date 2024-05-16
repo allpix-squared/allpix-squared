@@ -67,7 +67,7 @@ A cone or partly made cone with an inner and an outer radius defined at the begi
 * (Optional) The `inner_radius_end` of the cone is the inner radius at the end (positive z) of the cone. Defaults to 0mm.
 * The `length`  of the cone is the total length of the cone
 * (Optional) The `starting_angle` of the cone is the azimuthal angle at which circumference of the cone will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
-* (Optional) The `arc_length` of the cone is the arc-length of the cone that will be drawn
+* (Optional) The `arc_length` of the cone is the arc-length of the cone that will be created
 Note that `arc_length` works the same as the `arc_length` from the cylinder
 
 #### GDML:
