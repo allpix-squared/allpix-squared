@@ -39,27 +39,33 @@ namespace allpix {
                 starting_angle   : start-angle ( default 0)
                 arc_length       : length-of the arc (360 deg default)
             */
-            setOuterRadius(config_.get<double>("outer_radius_begin"), config_.get<double>("outer_radius_end"));
-            setInnerRadius(config_.get<double>("inner_radius_begin"), config_.get<double>("inner_radius_end"));
-            setLength(config_.get<double>("length"));
-            setStartingAngle(config_.get<double>("starting_angle", 0));
-            setArcLength(config_.get<double>("arc_length", 360 * CLHEP::deg));
+
+            inner_radius_begin_ = config_.get<double>("inner_radius_begin");
+            outer_radius_begin_ = config_.get<double>("outer_radius_begin");
+            inner_radius_end_ = config_.get<double>("inner_radius_end");
+            outer_radius_end_ = config_.get<double>("outer_radius_end");
+
+            length_ = config_.get<double>("length");
+            starting_angle_ = config_.get<double>("starting_angle", 0);
+            arc_length_ = config_.get<double>("arc_length", 360 * CLHEP::deg);
+
             std::string name = config_.getName();
+
             // Limit the values that can be given
-            if(inner_radius_begin >= outer_radius_begin)
+            if(inner_radius_begin_ >= outer_radius_begin_)
                 throw InvalidValueError(
                     config_, "inner_radius_begin", "inner radius cannot be larger than the outer radius");
-            if(inner_radius_end >= outer_radius_end)
+            if(inner_radius_end_ >= outer_radius_end_)
                 throw InvalidValueError(config_, "inner_radius_end", "inner radius cannot be larger than the outer radius");
             if(arc_length_ > 360 * CLHEP::deg) {
                 throw InvalidValueError(config_, "arc_length", "arc_length exceeds the maximum value of 360 degrees");
             }
 
             solid_ = make_shared_no_delete<G4Cons>(name + "_volume",
-                                                   inner_radius_begin,
-                                                   outer_radius_begin,
-                                                   inner_radius_end,
-                                                   outer_radius_end,
+                                                   inner_radius_begin_,
+                                                   outer_radius_begin_,
+                                                   inner_radius_end_,
+                                                   outer_radius_end_,
                                                    length_ / 2.,
                                                    starting_angle_,
                                                    arc_length_);
@@ -82,46 +88,14 @@ namespace allpix {
         std::shared_ptr<G4VSolid> solid_;
 
         // G4VSolid specifications
-        double inner_radius_end;
-        double outer_radius_end;
-        double inner_radius_begin;
-        double outer_radius_begin;
+        double inner_radius_end_;
+        double outer_radius_end_;
+        double inner_radius_begin_;
+        double outer_radius_begin_;
 
         double length_;
         double starting_angle_;
         double arc_length_;
-
-        /**
-         * @brief Set the inner radius of the CONE in the XY-plane at -halfLenght and +halfLength
-         * @param val Inner radius of the CONE
-         */
-        void setInnerRadius(double val_begin, double val_end) {
-            inner_radius_begin = val_begin;
-            inner_radius_end = val_end;
-        }
-        /**
-         * @brief Set the outer radius of the CONE in the XY-plane at -halfLenght and +halfLength
-         * @param val Outer radius of the CONE
-         */
-        void setOuterRadius(double val_begin, double val_end) {
-            outer_radius_begin = val_begin;
-            outer_radius_end = val_end;
-        }
-        /**
-         * @brief Set the length of the CONE in the Z-directior
-         * @param val Offset from the pixel grid center
-         */
-        void setLength(double val) { length_ = val; }
-        /**
-         * @brief Set starting angle of the circumference of the CONE in degrees
-         * @param val Starting angle of the CONE
-         */
-        void setStartingAngle(double val) { starting_angle_ = val; }
-        /**
-         * @brief Set arc length of the circumference in degrees
-         * @param val Arc length of the CONE
-         */
-        void setArcLength(double val) { arc_length_ = val; }
     };
 } // namespace allpix
 
