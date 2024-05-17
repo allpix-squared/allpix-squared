@@ -52,6 +52,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
+    config_.setDefault<double>("surface_reflectivity", 0.0);
 
     // Set defaults for charge carrier multiplication
     config_.setDefault<double>("multiplication_threshold", 1e-2);
@@ -80,6 +81,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
+    surface_reflectivity_ = config_.get<double>("surface_reflectivity");
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
 
@@ -617,12 +619,6 @@ TransientPropagationModule::propagate(Event* event,
         // Apply diffusion step
         auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_);
         position += diffusion;
-        runge_kutta.setValue(position);
-
-        // Update step length histogram
-        if(output_plots_) {
-            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
-        }
 
         // If charge carrier reaches implant, interpolate surface position for higher accuracy:
         if(auto implant = model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
@@ -636,13 +632,45 @@ TransientPropagationModule::propagate(Event* event,
 
         // Check for overshooting outside the sensor and correct for it:
         if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
-            LOG(TRACE) << "Carrier outside sensor: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
-            state = CarrierState::HALTED;
+            // Reflect off the sensor surface with a certain probability, otherwise halt motion:
+            if(uniform_distribution(event->getRandomEngine()) > surface_reflectivity_) {
+                LOG(TRACE) << "Carrier outside sensor: "
+                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+                state = CarrierState::HALTED;
+            }
 
             auto intercept = model_->getSensorIntercept(static_cast<ROOT::Math::XYZPoint>(last_position),
                                                         static_cast<ROOT::Math::XYZPoint>(position));
-            position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
+
+            if(state == CarrierState::HALTED) {
+                position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
+            } else {
+                // geom. reflection on x-y plane at upper sensor boundary (we have an implant on the lower edge)
+                position = Eigen::Vector3d(position.x(), position.y(), 2. * intercept.z() - position.z());
+                LOG(TRACE) << "Carrier was reflected on the sensor surface to "
+                           << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "nm"});
+
+                // Re-check if we ended in an implant - corner case.
+                if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+                    LOG(TRACE) << "Ended in implant after reflection - halting";
+                    state = CarrierState::HALTED;
+                }
+
+                // Re-check if we are within the sensor - reflection at sensor side walls:
+                if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+                    position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
+                    state = CarrierState::HALTED;
+                }
+            }
             LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
+        }
+
+        // Update final position after applying corrections from surface intercepts
+        runge_kutta.setValue(position);
+
+        // Update step length histogram
+        if(output_plots_) {
+            step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
         }
 
         // Physics effects:
