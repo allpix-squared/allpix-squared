@@ -53,11 +53,13 @@ namespace allpix {
             std::string name = config_.getName();
 
             // Limit the values that can be given
-            if(inner_radius_begin_ >= outer_radius_begin_)
+            if(inner_radius_begin_ >= outer_radius_begin_) {
                 throw InvalidValueError(
                     config_, "inner_radius_begin", "inner radius cannot be larger than the outer radius");
-            if(inner_radius_end_ >= outer_radius_end_)
+            }
+            if(inner_radius_end_ >= outer_radius_end_) {
                 throw InvalidValueError(config_, "inner_radius_end", "inner radius cannot be larger than the outer radius");
+            }
             if(arc_length_ > 360 * CLHEP::deg) {
                 throw InvalidValueError(config_, "arc_length", "arc_length exceeds the maximum value of 360 degrees");
             }
