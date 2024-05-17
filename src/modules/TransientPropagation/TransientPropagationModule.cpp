@@ -649,6 +649,18 @@ TransientPropagationModule::propagate(Event* event,
                 position = Eigen::Vector3d(position.x(), position.y(), 2. * intercept.z() - position.z());
                 LOG(TRACE) << "Carrier was reflected on the sensor surface to "
                            << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "nm"});
+
+                // Re-check if we ended in an implant - corner case.
+                if(model_->isWithinImplant(static_cast<ROOT::Math::XYZPoint>(position))) {
+                    LOG(TRACE) << "Ended in implant after reflection - halting";
+                    state = CarrierState::HALTED;
+                }
+
+                // Re-check if we are within the sensor - reflection at sensor side walls:
+                if(!model_->isWithinSensor(static_cast<ROOT::Math::XYZPoint>(position))) {
+                    position = Eigen::Vector3d(intercept.x(), intercept.y(), intercept.z());
+                    state = CarrierState::HALTED;
+                }
             }
             LOG(TRACE) << "Moved carrier to: " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"nm"});
         }
