@@ -30,16 +30,17 @@ namespace allpix {
         explicit ConeModel(const Configuration& config, GeometryManager* geo_manager)
             : PassiveMaterialModel(config, geo_manager) {
 
-            // Set the CONE specifications
-            /*
-            must-fill :
-                outer_radius_begin : outer radius at the begin (negative z) of the cone
-                outer_radius_end : outer radius at the end (positive z) of the cone
-                inner_radius_begin : inner radius at the begin (negative z) of the cone
-                inner_radius_end : inner radius at the end (positive z) of the cone
-                starting_angle   : start-angle ( default 0)
-                arc_length       : length-of the arc (360 deg default)
-            */
+            /**
+             * Set the CONE specifications
+             *
+             * Required parameters
+             *  outer_radius_begin : outer radius at the begin (negative z) of the cone
+             *  outer_radius_end : outer radius at the end (positive z) of the cone
+             *  inner_radius_begin : inner radius at the begin (negative z) of the cone
+             *  inner_radius_end : inner radius at the end (positive z) of the cone
+             *  starting_angle   : start-angle ( default 0)
+             *  arc_length       : length-of the arc (360 deg default)
+             */
 
             outer_radius_begin_ = config_.get<double>("outer_radius_begin");
             inner_radius_begin_ = config_.get<double>("inner_radius_begin", 0);

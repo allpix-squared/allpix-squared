@@ -61,6 +61,8 @@ Note: If the VisualizationGeant4 module is used in conjunction with and `arc_len
 A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
                 starting_angle   : start-angle ( default 0)
                 arc_length       : length-of the arc (360 deg default)
+A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
+
 * The `outer_radius_begin` of the cone is the outer radius at the begin (negative z) of the cone
 * (Optional) The `inner_radius_begin` of the cone is the inner radius at the begin (negative z) of the cone. Defaults to 0mm.
 * The `outer_radius_end` of the cone is the outer radius at the end (positive z) of the cone
