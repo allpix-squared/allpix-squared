@@ -118,7 +118,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
         auto* world_box = static_cast<G4Box*>(world_log_volume->GetSolid());
-        min_world_size_meters = 2e-1 * std::min(world_box->GetXHalfLength(), world_box->GetYHalfLength());
+        min_world_size_meters = 2e-3 * std::min(world_box->GetXHalfLength(), world_box->GetYHalfLength());
     }
 
     if(!config_.has("area")) {
