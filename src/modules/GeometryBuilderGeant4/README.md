@@ -57,6 +57,21 @@ The necessary module errors and warnings have been included to make sure the use
 
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
+#### Cone:
+A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
+                starting_angle   : start-angle ( default 0)
+                arc_length       : length-of the arc (360 deg default)
+A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
+
+* The `outer_radius_begin` of the cone is the outer radius at the begin (negative z) of the cone
+* (Optional) The `inner_radius_begin` of the cone is the inner radius at the begin (negative z) of the cone. Defaults to 0mm.
+* The `outer_radius_end` of the cone is the outer radius at the end (positive z) of the cone
+* (Optional) The `inner_radius_end` of the cone is the inner radius at the end (positive z) of the cone. Defaults to 0mm.
+* The `length`  of the cone is the total length of the cone
+* (Optional) The `starting_angle` of the cone is the azimuthal angle at which circumference of the cone will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
+* (Optional) The `arc_length` of the cone is the arc-length of the cone that will be created
+Note that `arc_length` works the same as the `arc_length` from the cylinder
+
 #### GDML:
 This model allows to load arbitrary GDML files \[[@gdml]\] as passive materials. All volumes from the GDML file which are contained within the world volume are processed and added to the geometry of the simulation.
 The only parameter specific to this model is `file_name` which should provide the path to the GDML file to be read.

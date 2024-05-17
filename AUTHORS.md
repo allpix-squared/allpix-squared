@@ -50,6 +50,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Marko Petric, CERN, [mpetric](https://gitlab.cern.ch/mpetric)
 * Florian Michael Pitters, HEPHY, [fpipper](https://gitlab.cern.ch/fpipper)
 * Radek Privara, Palacky University Olomouc, [rprivara](https://gitlab.cern.ch/rprivara)
+* Renato Quagliani, CERN, [rquaglia](https://gitlab.cern.ch/rquaglia)
 * Nashad Rahman, The Ohio State University, [nashadroid](https://github.com/nashadroid)
 * Sabita Rao, GSDocs2020 Student, [srao](https://gitlab.cern.ch/srao)
 * Daniil Rastorguev, DESY, [drastorg](https://gitlab.cern.ch/drastorg)

@@ -27,6 +27,7 @@
 #include "MaterialManager.hpp"
 #include "PassiveMaterialModel.hpp"
 #include "passive_models/BoxModel.hpp"
+#include "passive_models/ConeModel.hpp"
 #include "passive_models/CylinderModel.hpp"
 #include "passive_models/GDMLModel.hpp"
 #include "passive_models/SphereModel.hpp"
@@ -43,6 +44,8 @@ std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(cons
         return std::make_shared<CylinderModel>(config, geo_manager);
     } else if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
+    } else if(type == "cone") {
+        return std::make_shared<ConeModel>(config, geo_manager);
     } else if(type == "gdml") {
 #ifdef Geant4_GDML
         return std::make_shared<GDMLModel>(config, geo_manager);
