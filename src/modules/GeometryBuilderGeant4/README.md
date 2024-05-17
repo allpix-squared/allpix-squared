@@ -59,9 +59,6 @@ Note: If the VisualizationGeant4 module is used in conjunction with and `arc_len
 
 #### Cone:
 A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
-                starting_angle   : start-angle ( default 0)
-                arc_length       : length-of the arc (360 deg default)
-A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
 
 * The `outer_radius_begin` of the cone is the outer radius at the begin (negative z) of the cone
 * (Optional) The `inner_radius_begin` of the cone is the inner radius at the begin (negative z) of the cone. Defaults to 0mm.
@@ -70,6 +67,7 @@ A cone or partly made cone with an inner and an outer radius defined at the begi
 * The `length`  of the cone is the total length of the cone
 * (Optional) The `starting_angle` of the cone is the azimuthal angle at which circumference of the cone will start in the XY-plane. 0 degrees refers to the point along the positive x-axis and the angle moves counter clockwise. Defaults to 0deg.
 * (Optional) The `arc_length` of the cone is the arc-length of the cone that will be created
+
 Note that `arc_length` works the same as the `arc_length` from the cylinder
 
 #### GDML:
