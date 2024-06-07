@@ -93,7 +93,7 @@ void WeightingPotentialReaderModule::initialize() {
 
         auto implant = (implants.empty() ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0)
                                          : implants.front().getSize());
-        // This module currently only works with pad definition, i.e. 2D implant deinition:
+        // This module currently only works with pad definition, i.e. 2D implant definition:
         if(implant.z() > std::numeric_limits<double>::epsilon()) {
             throw InvalidValueError(
                 config_, "model", "model 'pad' can only be used with 2D implants, but non-zero thickness found");
