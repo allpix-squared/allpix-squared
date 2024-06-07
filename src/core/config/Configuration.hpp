@@ -41,7 +41,7 @@ namespace allpix {
          * @brief Helper class to keep track of key access
          *
          * This class holds all configuration keys in a map together with an atomic boolean marking whether they have been
-         * accessed already. This allows to find out whick keys have not been accessed at all. This wrapper allows to use
+         * accessed already. This allows to find out which keys have not been accessed at all. This wrapper allows to use
          * atomics for non-locking access but requires to register all keys beforehand.
          */
         class AccessMarker {
