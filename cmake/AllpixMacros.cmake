@@ -385,6 +385,13 @@ MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
                             "$ source YOUR_GEANT4_DIR/bin/geant4.sh")
     ENDIF()
 
+    FOREACH(component ${GEANT_COMPONENTS})
+        IF(NOT ${Geant4_${component}_FOUND})
+            MESSAGE(FATAL_ERROR "Could not find Geant4 component ${component}, make sure the installed Geant4 version"
+                                "has this component available or switch off building this module")
+        ENDIF()
+    ENDFOREACH()
+
     # Add "geant4.sh" as runtime dependency for setup.sh file:
     ADD_RUNTIME_DEP(geant4.sh)
 
