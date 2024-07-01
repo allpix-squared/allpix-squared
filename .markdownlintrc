@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2024 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC0-1.0
+
+default = true
+line-length = false
+blanks-around-headings = false
+link-fragments = false
+
+[no-multiple-blanks]
+maximum = 2
+
+[blanks-around-headings]
+lines_above = 1
