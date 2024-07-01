@@ -5,26 +5,16 @@
 
 # Check if the git hooks are installed and upt-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-    SET(HOOK_MISSING OFF)
-    SET(HOOK_OUTDATED OFF)
-    FOREACH(hook pre-commit-clang-format pre-push-tag-version)
-        SET(HOOK_SRC "${CMAKE_SOURCE_DIR}/etc/git-hooks/${hook}-hook")
-        SET(HOOK_DST "${CMAKE_SOURCE_DIR}/.git/hooks/${hook}")
-        IF(NOT EXISTS ${HOOK_DST})
-            SET(HOOK_MISSING ON)
+    IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit")
+        IF(EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
+            MESSAGE(WARNING "Git hooks are outdated - this project has moved to the pre-commit framework. Install via "
+                    "pre-commit install -f")
         ELSE()
-            EXECUTE_PROCESS(COMMAND "cmake" "-E" "compare_files" ${HOOK_SRC} ${HOOK_DST} RESULT_VARIABLE HOOKS_DIFFER)
-            IF(${HOOKS_DIFFER})
-                SET(HOOK_OUTDATED ON)
-            ENDIF()
+            MESSAGE(WARNING "Git hooks are not installed - install via "
+                    "pre-commit install")
         ENDIF()
-    ENDFOREACH()
-    IF(${HOOK_MISSING})
-        MESSAGE(WARNING "Git hooks are not installed - consider installing them via "
-                        "${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
-    ELSEIF(${HOOK_OUTDATED})
-        MESSAGE(WARNING "Git hooks are outdated - consider updating them via "
-                        "${CMAKE_SOURCE_DIR}/etc/git-hooks/install-hooks.sh")
+    ELSE()
+        MESSAGE(STATUS "Found pre-commit hooks installed.")
     ENDIF()
 ENDIF()
 

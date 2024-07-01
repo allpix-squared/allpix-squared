@@ -45,7 +45,7 @@ fork the [GitHub repository](https://github.com/allpix-squared/allpix-squared) a
 
 Now you can start making changes and adding new functionality to the code.
 
-1. Run `etc/git-hooks/install-hooks.sh` from the repository top folder to install the git-hook that automatically updates
+1. Run `pre-commit install -f` from the repository top folder to install the git hooks that automatically update
    the format of the code to comply with the coding style.
 2. Create a new branch from master with a description of the change using `git checkout -b my-new-branch-name`.
 3. Read the relevant sections in the User's manual before starting to make changes.

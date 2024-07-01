@@ -53,16 +53,15 @@ code, just to adhere to the formatting. There are several options to integrate t
 * A build target called `make format` is provided if the `clang-format` tool is installed. Running this command before
   committing code will ensure correct formatting.
 
-* This can be further simplified by installing the *git hook* provided in the directory `/etc/git-hooks/`. A hook is a
-  script called by `git` before a certain action. In this case, it is a pre-commit hook which automatically runs
-  `clang-format` in the background and offers to update the formatting of the code to be committed. It can be installed
-  by calling
+* This can be further simplified by installing the *pre-commit git hooks*. A hook is a script called by `git` before a
+  certain action. This reprository uses the [pre-commit framework](https://pre-commit.com/) to manage, update and run these
+  hooks. The pre-commit framework can be activated by calling
 
   ```shell
-  ./etc/git-hooks/install-hooks.sh
+  pre-commit install
   ```
 
-  once.
+  once. If the previous manual git hooks were installed, a `-f` should be appended to force replacement of the old hooks.
 
 The formatting rules are defined in the `.clang-format` file in the repository in machine-readable form (for `clang-format`,
 that is) but can be summarized as follows:
