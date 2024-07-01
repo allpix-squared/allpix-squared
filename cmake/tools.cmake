@@ -15,27 +15,28 @@ FUNCTION(get_version project_version)
         # Get the version from last git tag plus number of additional commits:
         FIND_PACKAGE(Git QUIET)
         IF(GIT_FOUND)
-            EXEC_PROGRAM(
-                git ${CMAKE_CURRENT_SOURCE_DIR}
-                ARGS describe --tags HEAD
+            EXECUTE_PROCESS(
+                COMMAND git describe --tags HEAD
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 OUTPUT_VARIABLE version
-                RETURN_VALUE status)
+                RESULT_VARIABLE status
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
             IF(status AND NOT status EQUAL 0)
                 MESSAGE(STATUS "Git repository present, but could not find any tags.")
                 SET(${project_version} "${${project_version}}-unknown")
             ELSE()
                 STRING(REGEX REPLACE "^release-" "" version ${version})
                 STRING(REGEX REPLACE "([v0-9.]+)-([0-9]+)-([A-Za-z0-9]+)" "\\1-\\2-\\3" ${project_version} ${version})
-                EXEC_PROGRAM(
-                    git ARGS
-                    status --porcelain ${CMAKE_CURRENT_SOURCE_DIR}
+                EXECUTE_PROCESS(
+                    COMMAND git status --porcelain
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                     OUTPUT_VARIABLE PROJECT_STATUS)
                 IF(PROJECT_STATUS STREQUAL "")
                     MESSAGE(STATUS "Git project directory is clean.")
-                ELSE(PROJECT_STATUS STREQUAL "")
+                ELSE()
                     MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
                     SET(${project_version} "${${project_version}}-dirty")
-                ENDIF(PROJECT_STATUS STREQUAL "")
+                ENDIF()
 
                 # Check if commit flag has been set by the CI:
                 IF(DEFINED ENV{CI_COMMIT_TAG})
