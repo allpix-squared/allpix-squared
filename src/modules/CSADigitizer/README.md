@@ -13,22 +13,29 @@ module_outputs: ["PixelHit"]
 
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
 For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from \[[@kleczek]\]:
+
 ```math
 H(s) = \frac{R_f}{(1 + \tau_f s) \cdot (1 + \tau_r s)},
 ```
+
 with fall time constant
+
 ```math
 \tau_f = R_f C_f
 ```
+
 and rise time constant
+
 ```math
 \tau_r = \frac{C_{det} \cdot C_{out}}{g_m \cdot C_f}
 ```
+
 The impulse response function of this transfer function is convoluted with the charge pulse. In the time domain, the impulse response function can be written as
 
 ```math
 \mathcal{L}^{-1}(H) = R_f \left( \frac{e^{-t/\tau_f}}{\tau_f - \tau_r} - \frac{e^{-t/\tau_r}}{\tau_f - \tau_r} \right).
 ```
+
 This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrization providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. \[[@binkley]\] for calculation of transconductance).
 
@@ -82,6 +89,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 ## Usage
 
 Example how to use the `csa` model in this module:
+
 ```ini
 [CSADigitizer]
 model = "csa"
@@ -98,6 +106,7 @@ sigma_noise = 0.1e-3V
 ```
 
 Example for the `simple` model:
+
 ```ini
 [CSADigitizer]
 model = "simple"
@@ -111,6 +120,7 @@ clock_bin_tot = 25.0ns
 ```
 
 Example for the `custom` model:
+
 ```ini
 [CSADigitizer]
 model = "custom"

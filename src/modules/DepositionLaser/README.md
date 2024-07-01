@@ -74,6 +74,7 @@ and temporal distribution.
 
 
 ## Usage
+
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
 `PulseTransfer`.
 Usually it is enough to run just a single event (or a few).

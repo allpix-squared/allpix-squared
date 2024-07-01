@@ -10,6 +10,7 @@ module_outputs: ["PixelCharge"]
 ---
 
 ## Description
+
 Combines individual sets of propagated charges together to a set of charges on the sensor pixels by calculating the total induced charge during their drift on neighboring pixels by calculating the difference in weighting potential.
 This module requires a propagation of both electrons and holes in order to produce sensible results and only works in the presence of a weighting potential.
 
@@ -23,9 +24,11 @@ Q_n^{ind} = \int_{t_{initial}}^{t_{final}} I_n^{ind} = q \left( \phi (x_{final})
 The resulting induced charge is summed for all propagated charge carriers and returned as a `PixelCharge` object. The number of neighboring pixels taken into account can be configured using the `distance` parameter.
 
 ## Parameters
+
 * `distance`: Maximum distance of pixels to be considered for current induction, calculated from the pixel the charge carrier under investigation is below. A distance of `1` for example means that the induced current for the closest pixel plus all neighbors is calculated. It should be noted that the time required for simulating a single event depends almost linearly on the number of pixels the induced charge is calculated for. Usually, for Cartesian sensors a 3x3 grid (9 pixels, distance 1) should suffice since the weighting potential at a distance of more than one pixel pitch often is small enough to be neglected while the simulation time is almost tripled for `distance = 2` (5x5 grid, 25 pixels). To just calculate the induced current in the one pixel the charge carrier is below, `distance = 0` can be used. Defaults to `1`.
 
 ## Usage
+
 ```ini
 [InducedTransfer]
 distance = 1
