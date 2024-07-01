@@ -34,7 +34,7 @@ FUNCTION(get_version project_version)
                 IF(PROJECT_STATUS STREQUAL "")
                     MESSAGE(STATUS "Git project directory is clean.")
                 ELSE()
-                    MESSAGE(STATUS "Git project directory is dirty:\n ${PROJECT_STATUS}.")
+                    MESSAGE(STATUS "Git project directory is dirty:\n${PROJECT_STATUS}.")
                     SET(${project_version} "${${project_version}}-dirty")
                 ENDIF()
 
