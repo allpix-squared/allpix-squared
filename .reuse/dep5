@@ -16,7 +16,7 @@ Copyright: Howard Hinnant 2005-2011
 License: BSL-1.0
 
 Files: 3rdparty/octree/*
-Copyright: 2015 Jens Behley, Unversity of Bonn
+Copyright: 2015 Jens Behley, University of Bonn
 License: MIT
 
 Files: cmake/CodeCoverage.cmake

@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2023 DESY and the Constellation authors
+# SPDX-License-Identifier: CC0-1.0
+
+[codespell]
+quiet-level = 2
+# Directories to skip
+skip = ./.git,./.gitlab,./cmake,./3rdparty,AUTHORS.md
+# Words to be ignored, put one word per line and sort alphabetically
+ignore-words-list =
+ asai,
+ hist,
+ globaly,
+ localy,
+ skelton,
+ synopsys,
+ te,
+ yse,
