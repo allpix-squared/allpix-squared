@@ -10,7 +10,7 @@ profile of the sensor. These maps have to be provided as regularly spaced meshes
 A conversion and interpolation tool to translate adaptive-mesh fields from TCAD applications to the format required by Allpix
 Squared is provided together with the framework and is described in [Section 14.2](../14_additional/mesh_converter.md).
 
-This section of the manual provides an overview of the different field types and possibilities of mapping field of single 
+This section of the manual provides an overview of the different field types and possibilities of mapping field of single
 pixels or fractions thereof to full sensor simulations in Allpix Squared.
 
 ## Mapping of Fields to the Sensor Plane
@@ -109,10 +109,10 @@ a size of `100um x 50um` will shift the respective field by `50um` along `x` and
 
 ## Weighting Potential Maps & Induction
 
-Induced currents in Allpix Squared are calculated following the Shockley-Ramo theorem \[[@shockley],[@ramo]\]. 
+Induced currents in Allpix Squared are calculated following the Shockley-Ramo theorem \[[@shockley],[@ramo]\].
 The induced current of a moving charge carrier requires the knowledge of the weighting potential in addition to the electric
-field of the sensor. The weighting potential for a given sensor geometry can be calculated analytically or by means of a 
-finite-element simulation by setting the electrode of the pixel under consideration to unit potential, and all other 
+field of the sensor. The weighting potential for a given sensor geometry can be calculated analytically or by means of a
+finite-element simulation by setting the electrode of the pixel under consideration to unit potential, and all other
 electrodes to ground \[[@planecondenser]\].
 
 The Shockley-Ramo theorem then states that the charge $`Q_n^{ind}`$ induced by the motion of a charge carrier is equivalent
@@ -128,7 +128,7 @@ Here, $`q`$ is the charge of the carrier, $`\phi(\vec{x})`$ the weighting potent
 $`I_n^{ind}`$ the induced current in the particular time step. A detailed description of the procedure is provided in
 \[[@apsq_transient]\] along with examples of application.
 
-Since this procedure requires a realignment of the weighting potential for every pixel or electrode in question, the 
+Since this procedure requires a realignment of the weighting potential for every pixel or electrode in question, the
 `SENSOR` mapping geometry is not a viable option. The weighting potential map needs to be centered around the electrode
 on unit potential.
 

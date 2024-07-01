@@ -339,7 +339,7 @@ core:el9-gcc:
     needs:
         - job: cmp:el9-gcc
           artifacts: true
-          
+
 mod:el9-llvm:
     extends:
         - .alma9
