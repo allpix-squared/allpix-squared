@@ -37,10 +37,11 @@ ENDIF()
 # Adding clang-format check and formatter if found
 FIND_PROGRAM(CLANG_FORMAT NAMES "clang-format-${CLANG_FORMAT_VERSION}" "clang-format")
 IF(CLANG_FORMAT)
-    EXEC_PROGRAM(
-        ${CLANG_FORMAT} ${CMAKE_CURRENT_SOURCE_DIR}
-        ARGS --version
-        OUTPUT_VARIABLE CLANG_VERSION)
+    EXECUTE_PROCESS(
+        COMMAND ${CLANG_FORMAT} --version
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE CLANG_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
     STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION})
 
     # Let's treat macOS differently because they don't have up-to-date versions
@@ -86,10 +87,11 @@ FIND_PROGRAM(CLANG_TIDY NAMES "clang-tidy-${CLANG_TIDY_VERSION}" "clang-tidy")
 # Enable clang tidy only if using a clang compiler
 IF(CLANG_TIDY AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    EXEC_PROGRAM(
-        ${CLANG_TIDY} ${CMAKE_CURRENT_SOURCE_DIR}
-        ARGS --version
-        OUTPUT_VARIABLE CTIDY_VERSION)
+    EXECUTE_PROCESS(
+        COMMAND ${CLANG_TIDY} --version
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE CTIDY_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
     STRING(REGEX REPLACE ".* ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" CLANG_TIDY_MAJOR_VERSION ${CTIDY_VERSION})
     MESSAGE(STATUS "Found ${CLANG_TIDY} version ${CLANG_TIDY_MAJOR_VERSION}")
 
