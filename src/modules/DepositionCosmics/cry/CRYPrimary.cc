@@ -159,7 +159,7 @@ double CRYPrimary::totalRate() {
         double retValt = 0.;
         retValt += (1.0 - _cycle) * _solarMin->value(kine) + _cycle * _solarMax->value(kine);
         retVal += retValt * (pow(10.0, minl10 + (i + 1.0) * 0.0001 * (maxl10 - minl10)) -
-                             pow(10.0, minl10 + (i)*0.0001 * (maxl10 - minl10)));
+                             pow(10.0, minl10 + (i) * 0.0001 * (maxl10 - minl10)));
     }
     return retVal;
 }
@@ -217,7 +217,7 @@ void CRYPrimary::calcMaxPDF() {
 
     for(int i = 0; i < Nbins; i++) {
         double kine = pow(10.0, minl10 + (i + 0.5) * 1. / Nbins * (maxl10 - minl10));
-        double kineMin = pow(10.0, minl10 + (i)*1. / Nbins * (maxl10 - minl10));
+        double kineMin = pow(10.0, minl10 + (i) * 1. / Nbins * (maxl10 - minl10));
         double kineMax = pow(10.0, minl10 + (i + 1.0) * 1. / Nbins * (maxl10 - minl10));
         double retValt = 0.;
         retValt += (1.0 - _cycle) * _solarMin->value(kine) + _cycle * _solarMax->value(kine);

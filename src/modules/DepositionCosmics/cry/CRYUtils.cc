@@ -58,9 +58,7 @@ std::string CRYUtils::removeTrailingSpaces(std::string input) {
 }
 
 // until we get one from the transport coders
-double CRYUtils::randomFlat(double min, double max) {
-    return min + (max - min) * rngdptr();
-}
+double CRYUtils::randomFlat(double min, double max) { return min + (max - min) * rngdptr(); }
 
 double CRYUtils::tmpRandom() {
     static unsigned long int next = 1;

@@ -46,6 +46,4 @@ CRYCosLatitudeFunction::CRYCosLatitudeFunction(std::string name, std::string dat
 
 // Evaluate the function given an input or vector of inputs
 // These are defined in the derived classes
-double CRYCosLatitudeFunction::value(double x) {
-    return (*_params)[0] * pow(cos((M_PI / 180.0) * x), (*_params)[1]);
-}
+double CRYCosLatitudeFunction::value(double x) { return (*_params)[0] * pow(cos((M_PI / 180.0) * x), (*_params)[1]); }
