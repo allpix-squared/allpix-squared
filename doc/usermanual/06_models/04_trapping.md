@@ -255,9 +255,6 @@ detrapping_time_electron = 10ns
 detrapping_time_hole = 10ns
 ```
 
-
-
-
 [@niel]: https://rd48.web.cern.ch/technical-notes/rosetn972.ps
 [@kramberger]: https://doi.org/10.1016/S0168-9002(01)01263-3
 [@dortmundTrapping]: https://doi.org/10.1109/TNS.2004.839096

@@ -5,6 +5,12 @@ default = true
 line-length = false
 blanks-around-headings = false
 link-fragments = false
+no-duplicate-heading = false
+no-inline-html = false
+first-line-heading = false
+heading-increment = false
+no-bare-urls = false
+emphasis-style = false
 
 [no-multiple-blanks]
 maximum = 2

@@ -63,7 +63,7 @@ This model can be selected in the configuration file via the parameter `recombin
 
 ## Auger Recombination
 
-At high doping levels exceeding $`5\times 10^{18} \,\text{cm}^{-3}`$ \[[@fossum-lee]\], the Auger recombination model becomes
+At high doping levels exceeding $`5\times 10^{18} \,\text{cm}^{-3}`$ \[[@fossum-lee2]\], the Auger recombination model becomes
 increasingly important. It assumes that the excess energy created by electron-hole recombinations is transferred to another
 electron (*e-e-h process*) or another hole (*e-h-h process*). The total recombination rate is then given by \[[@kerr]\]:
 
@@ -170,6 +170,6 @@ all corresponding features, mathematical expressions and constants.
 [@hall]: https://doi.org/10.1103/PhysRev.87.387
 [@fossum-lee]: https://doi.org/10.1016/0038-1101(82)90203-9
 [@schenk]: https://doi.org/10.1016/0038-1101(92)90184-E
-[@fossum-lee]: https://doi.org/10.1016/0038-1101(83)90173-9
+[@fossum-lee2]: https://doi.org/10.1016/0038-1101(83)90173-9
 [@kerr]: https://doi.org/10.1063/1.1432476
 [@dziewior]: https://doi.org/10.1063/1.89694

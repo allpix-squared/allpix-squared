@@ -10,6 +10,7 @@ module_outputs: ["PropagatedCharge"]
 ---
 
 ## Description
+
 Simulates the transport of electrons and holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled via the `charge_per_step` parameter. The maximum number of charge groups to be propagated for a single deposit position can be controlled via the `max_charge_groups` parameter.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual. If the `masetti` or `masetti_canali` is used, the `dopant_n` parameter can be used to set the n-dopant to either phosphorus (default) or arsenic.
@@ -49,6 +50,7 @@ In addition, a 3D GIF animation for the drift of all individual sets of charges 
 It should be noted that generating the animations is time-consuming and should be switched off even when investigating drift behavior.
 
 ## Parameters
+
 * `temperature`: Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
@@ -67,6 +69,7 @@ It should be noted that generating the animations is time-consuming and should b
 * `surface_reflectivity`: Reflectivity of the sensor surface for charge carriers. Used to calculate a probability that charge carriers are not absorbed at the interface but reflected back into the sensor volume. Defaults to `0.0`, i.e. no reflectivity, and a value of `1.0` corresponds to total reflection.
 
 ## Plotting parameters
+
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_linegraphs` : Determines if line graphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_linegraphs_collected` : Determine whether to also generate line graphs *only* for charge carriers that have reached the implant side within the allotted integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
@@ -85,6 +88,7 @@ It should be noted that generating the animations is time-consuming and should b
 * `output_animations_color_markers`: Determines if colors should be for the markers in the animations, defaults to false.
 
 ## Usage
+
 ```ini
 [TransientPropagation]
 temperature = 293K

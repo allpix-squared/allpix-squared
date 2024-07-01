@@ -89,11 +89,11 @@ For field strengths outside the range, the first and last bin are extrapolated l
 The following plots show a comparison of the mobility and velocity of electrons and holes as calculated from the Canali and
 the CanaliFast models. The maximum relative difference occurs at very low electric field strengths and is less than 0.004.
 
-![](./canali_fast_mobility.png)\
+![Canali Mobility Comparison](./canali_fast_mobility.png)\
 *Comparison of the electron and hole mobilities calculated using the Canali and CanaliFast models as a function of the
 electric field strength.*
 
-![](./canali_fast_velocity.png)\
+![Canali Velocity Comparison](./canali_fast_velocity.png)\
 *Comparison of the electron and hole velocities calculated using the Canali and CanaliFast models as a function of the
 electric field strength.*
 

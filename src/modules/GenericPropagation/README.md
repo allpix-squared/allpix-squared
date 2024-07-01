@@ -10,6 +10,7 @@ module_outputs: ["PropagatedCharge"]
 ---
 
 ## Description
+
 Simulates the propagation of electrons and/or holes through the sensitive sensor volume of the detector. It allows to propagate sets of charge carriers together in order to speed up the simulation while maintaining the required accuracy. The propagation process for these sets is fully independent and no interaction is simulated. The maximum size of the set of propagated charges and thus the accuracy of the propagation can be controlled via the `charge_per_step` parameter. The maximum number of charge groups to be propagated for a single deposit position can be controlled via the `max_charge_groups` parameter.
 
 The propagation consists of a combination of drift and diffusion simulation. The drift is calculated using the charge carrier velocity derived from the charge carrier mobility and the magnetic field via a calculation of the Lorentz drift. The correct mobility for either electrons or holes is automatically chosen, based on the type of the charge carrier under consideration. Thus, also input with both electrons and holes is treated properly. The mobility model can be chosen using the `mobility_model` parameter, and a list of available models can be found in the user manual.
@@ -50,6 +51,7 @@ It should be noted that generating the animations is time-consuming and should b
 This module requires an installation of Eigen3.
 
 ## Parameters
+
 * `temperature` : Temperature of the sensitive device, used to estimate the diffusion constant and therefore the strength of the diffusion. Defaults to room temperature (293.15K).
 * `mobility_model`: Charge carrier mobility model to be used for the propagation. Defaults to `jacoboni`, a list of available models can be found in the documentation. If the `masetti` or `masetti_canali` is used, the `dopant_n` parameter can be used to set the n-dopant to either phosphorus (default) or arsenic.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
@@ -71,6 +73,7 @@ This module requires an installation of Eigen3.
 * `max_multiplication_level`: Maximum level depth of the generated impact ionization charge multiplication shower after which the generation of further multiplication charge carrier levels is prohibited. This number represents the maximum number of daughter charge carrier groups that can be produced by one initial charge carrier group. This does not concern the size of the charge group itself but solely the level of generation. If a group generates a secondary group through impact ionization, the depth is `1`. If this secondary group again creates charge carriers when propagating, the level is `2` and so on. The default value is `5`.
 
 ## Plotting parameters
+
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_linegraphs` : Determines if line graphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_linegraphs_collected` : Determine whether to also generate line graphs *only* for charge carriers that have reached the implant side within the allotted integration time. Defaults to `false`. This requires `output_linegraphs` to be active.
@@ -89,6 +92,7 @@ This module requires an installation of Eigen3.
 * `output_animations_color_markers`: Determines if colors should be for the markers in the animations, defaults to false.
 
 ## Usage
+
 A example of generic propagation for all sensors of type _Timepix_ at room temperature using packets of 25 charges is the following:
 
 ```ini

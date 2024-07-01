@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2018-2024 CERN and the Allpix Squared authors
 SPDX-License-Identifier: CC-BY-4.0
 -->
 
-# Create Development Visualization with Gource:
+# Create Development Visualization with Gource
 
 * Captions with UNIX timestamps are located in `captions.txt`
 * To add new captions, check the git log using `git log --date=raw` for their UNIX epoch timestamps

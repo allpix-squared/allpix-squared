@@ -10,6 +10,7 @@ module_outputs: ["PropagatedCharge"]
 ---
 
 ## Description
+
 The module projects the deposited electrons (or holes) to the sensor surface and applies a randomized, simplified diffusion. It can be used to save computing time at the cost of precision.
 
 The diffusion of the charge carriers is realized by placing sets of a configurable number of electrons in positions drawn as a random number from a two-dimensional Gaussian distribution around the projected position at the sensor surface. The diffusion width is based on an approximation of the drift time, using an analytical approximation for the integral of the mobility in a linear electric field. Here, the charge carrier mobility parametrization of Jacoboni \[[@jacoboni]\] is used. The integral is calculated as follows, with $` \mu_0 = V_m/E_c `$:
@@ -45,6 +46,7 @@ Charge carriers which would recombine before reaching the surface are removed fr
 Lorentz drift in a magnetic field is not supported. Hence, in order to use this module with a magnetic field present, the parameter `ignore_magnetic_field` can be set.
 
 ## Parameters
+
 * `temperature`: Temperature in the sensitive device, used to estimate the diffusion constant and therefore the width of the diffusion distribution.
 * `recombination_model`: Charge carrier lifetime model to be used for the propagation. Defaults to `none`, a list of available models can be found in the documentation. This feature requires a doping concentration to be present for the detector.
 * `charge_per_step`: Maximum number of electrons placed for which the randomized diffusion is calculated together, i.e. they are placed at the same position. Defaults to 10.
@@ -55,6 +57,7 @@ Lorentz drift in a magnetic field is not supported. Hence, in order to use this 
 * `diffuse_deposit`: Enables a diffusion prior to the propagation for charge carriers deposited in a region without electric field. Defaults to `false`.
 
 ## Plotting parameters
+
 * `output_plots` : Determines if simple output plots should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_linegraphs` : Determines if line graphs should be generated for every event. This causes a significant slow down of the simulation, it is not recommended to enable this option for runs with more than a couple of events. Disabled by default.
 * `output_plots_theta` : Viewpoint angle of the 3D animation and the 3D line graph around the world X-axis. Defaults to zero.
@@ -64,7 +67,8 @@ Lorentz drift in a magnetic field is not supported. Hence, in order to use this 
 * `output_plots_align_pixels` : Determines if the plot should be aligned on pixels, defaults to false. If enabled the start and the end of the axis will be at the split point between pixels.
 
 ## Usage
-```
+
+```ini
 [ProjectionPropagation]
 temperature = 293K
 charge_per_step = 10

@@ -8,6 +8,7 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
 ## Description
+
 Adds a weighting potential (Ramo potential) to the detector from one of the supported sources. By default, detectors do not have a weighting potential applied.
 This module support two types of weighting potentials.
 
@@ -61,32 +62,34 @@ with $`x_{1,2} = x \pm \frac{w_x}{2} \qquad y_{1,2} = y \pm \frac{w_y}{2}`$. The
 
 
 ## Parameters
-- `model` : Type of the weighting potential model, either **mesh** or **pad**.
-- `file_name` : Location of file containing the weighting potential in one of the supported field file formats. Only used if
+
+* `model` : Type of the weighting potential model, either **mesh** or **pad**.
+* `file_name` : Location of file containing the weighting potential in one of the supported field file formats. Only used if
   the *model* parameter has the value **mesh**.
-- `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `PIXEL_FULL`,
+* `field_mapping`: Description of the mapping of the field onto the sensor or pixel cell. Possible values are `PIXEL_FULL`,
   indicating that the map spans the full 2D plane and the field is centered around the pixel center, `PIXEL_HALF_TOP` or
   `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`, `HALF_LEFT` or `HALF_RIGHT`
   indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`, `PIXEL_QUADRANT_II`,
   `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant of the 2D pixel
   plane. In addition, the `PIXEL_FULL_INVERSE` mode allows loading full-plane field maps which are not centered around a
   pixel cell but the corner between pixels. Only used if the *model* parameter has the value **mesh**.
-- `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
+* `field_scale`:  Scaling factor of the weighting potential in x- and y-direction. By default, the scaling factors are set to
   `{1, 1}` and the field is used with its physical extent stated in the field data file.
-- `potential_depth` : Thickness of the weighting potential region. The weighting potential is set to zero in the region below the
+* `potential_depth` : Thickness of the weighting potential region. The weighting potential is set to zero in the region below the
   `potential_depth`. Defaults to the full sensor thickness. Only used if the *model* parameter has the value **mesh**.
-- `ignore_field_dimensions`: If set to true, a wrong dimensionality of the input field is ignored, otherwise an exception is
+* `ignore_field_dimensions`: If set to true, a wrong dimensionality of the input field is ignored, otherwise an exception is
   thrown. Defaults to false.
-- `output_plots`:  Determines if output plots should be generated. Disabled by default.
-- `output_plots_steps` : Number of bins along the z-direction for which the weighting potential is evaluated. Defaults to
+* `output_plots`:  Determines if output plots should be generated. Disabled by default.
+* `output_plots_steps` : Number of bins along the z-direction for which the weighting potential is evaluated. Defaults to
   500 bins and is only used if `output_plots` is enabled.
-- `output_plots_position`: 2D Position in x and y at which the weighting potential is evaluated along the z-axis. By default,
+* `output_plots_position`: 2D Position in x and y at which the weighting potential is evaluated along the z-axis. By default,
   the potential is plotted for the position in the pixel center, i.e. (0, 0). This parameter only affects the 1D weighting
   potential histogram. Only used if `output_plots` is enabled.
-- `output_plots_zcut`: Position along the sensor `z` axis at which the 2D `x`-`y` weighting potential profile is evaluated.
+* `output_plots_zcut`: Position along the sensor `z` axis at which the 2D `x`-`y` weighting potential profile is evaluated.
   Defaults to `0um`, i.e. the center plane of the sensor.
 
 ## Usage
+
 An example to add a weighting potential form a field data file to the detector called "dut" is given below.
 
 ```ini

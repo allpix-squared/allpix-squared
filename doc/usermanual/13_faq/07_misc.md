@@ -40,7 +40,7 @@ With these settings, a graph of similar precision to the one presented in the fi
 stepping size and number of output plot steps varies greatly with the sensor and its applied electric field. The number of
 charge carriers per group can be used to vary the density of lines drawn. Larger groups result in fewer lines.
 
-![](./linegraph_hrcmos_collected.png)\
+![Linegraph](./linegraph_hrcmos_collected.png)\
 *Drift and diffusion visualization of charge carrier groups being transported through a high-resistivity CMOS silicon sensor.
 The plot shows the situation after an integration time of 20 nanoseconds, only charge carrier groups which reached the
 implant side of the sensor are drawn.*
@@ -48,7 +48,8 @@ implant side of the sensor are drawn.*
 #### Why does GeometryBuilderGeant4 warn me about reduced performance with disabled multithreading?
 
 You might have see this log message:
-```
+
+```shell
 Using Geant4 modules without multithreading might reduce performance when using complex geometries, please check the documentation for details
 ```
 
