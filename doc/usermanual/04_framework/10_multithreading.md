@@ -125,5 +125,3 @@ for(auto& object : objects) {
 For single-threaded applications such as ROOT analysis macros, this step is not necessary and the reference will be lazy-loaded
 when accessed, i.e. the `TRef` reference will be converted to a direct raw pointer only when actually used. Since events are
 processed sequentially and memory is freed between events, no mixing of IDs occurs.
-
-

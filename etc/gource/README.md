@@ -20,4 +20,3 @@ SPDX-License-Identifier: CC-BY-4.0
     ```shell
     ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i gource_visualization.ppm -vcodec libvpx -b 10000K gource.webm
     ```
-
