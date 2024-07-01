@@ -36,8 +36,7 @@ namespace allpix {
     typename std::enable_if_t<std::is_enum<T>::value, T> from_string_impl(std::string str, type_tag<T>) {
         str = from_string_impl(str, type_tag<std::string>());
 
-        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-        auto val = magic_enum::enum_cast<T>(str);
+        auto val = magic_enum::enum_cast<T>(str, magic_enum::case_insensitive);
         if(val.has_value()) {
             return val.value();
         }
