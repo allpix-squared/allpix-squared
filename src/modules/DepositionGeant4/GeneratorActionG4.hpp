@@ -70,6 +70,10 @@ namespace allpix {
         std::string particle_type_;
 
         bool initialize_ion_as_particle_{false};
+
+        double time_{0.0};
+        double time_window_{0.0};
+        
     };
 
     /**
