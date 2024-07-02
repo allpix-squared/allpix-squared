@@ -11,6 +11,8 @@
 
 #include "text.h"
 
+#include <cmath>
+
 namespace allpix {
     /**
      * @throws std::overflow_error If the converted unit overflows the requested type
@@ -24,6 +26,9 @@ namespace allpix {
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
+        if constexpr(std::is_integral_v<T>) {
+            out = std::round(out);
+        }
         return static_cast<T>(out);
     }
 
@@ -34,6 +39,9 @@ namespace allpix {
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
+        if constexpr(std::is_integral_v<T>) {
+            out = std::round(out);
+        }
         return static_cast<T>(out);
     }
     template <typename T> T Units::getSingleInverse(T inp, std::string str) {
@@ -42,6 +50,9 @@ namespace allpix {
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
+        if constexpr(std::is_integral_v<T>) {
+            out = std::round(out);
+        }
         return static_cast<T>(out);
     }
     template <typename T> T Units::getInverse(T inp, const std::string& str) {
@@ -49,6 +60,9 @@ namespace allpix {
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
+        }
+        if constexpr(std::is_integral_v<T>) {
+            out = std::round(out);
         }
         return static_cast<T>(out);
     }
