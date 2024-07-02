@@ -50,6 +50,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
     config_.setDefault<bool>("sync_sim_time", false);
+    config_.setDefault<double>("tdc_offset", Units::get(0.0, "ns"));
 
     if(model_ == DigitizerType::SIMPLE) {
         // defaults for the "simple" parametrisation
@@ -86,6 +87,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
     // Synchronize the clock binning to global simulation time
     sync_sim_time_ = config_.get<bool>("sync_sim_time");
+    tdc_offset_    = config_.get<double>("tdc_offset");
 
     sigmaNoise_ = config_.get<double>("sigma_noise");
     threshold_ = config_.get<double>("threshold");
@@ -340,9 +342,9 @@ void CSADigitizerModule::run(Event* event) {
         // Store amplified pulse fir dispatch
         pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
 
-        double time_offset = 0.0;
+        double time_offset = tdc_offset_;
         if(sync_sim_time_) {
-            time_offset = pixel_charge.getGlobalTime();
+            time_offset += pixel_charge.getGlobalTime();
         }
 
         // Find threshold crossing - if any:
@@ -412,7 +414,7 @@ std::tuple<bool, unsigned int, double> CSADigitizerModule::get_toa(double timest
 
     // Find the point where the signal crosses the threshold, latch ToA
     while(arrival_time < integration_time_+time_offset) {
-        auto bin = pulse.at(static_cast<size_t>(std::floor(arrival_time / timestep)));
+        auto bin = pulse.at(static_cast<size_t>(std::floor((arrival_time-time_offset) / timestep)));
         if(is_above_threshold(bin)) {
             threshold_crossed = true;
             break;

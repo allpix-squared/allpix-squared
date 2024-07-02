@@ -89,7 +89,7 @@ namespace allpix {
         double graph_amplitude_unit_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
-        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
+        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{}, tdc_offset_{};
 
         // Helper variables for transfer function
         double integration_time_{};
