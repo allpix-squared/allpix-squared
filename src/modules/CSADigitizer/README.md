@@ -50,6 +50,8 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `ignore_polarity`: Select whether polarity of the threshold is ignored, i.e. the absolute values are compared, or if polarity is taken into account. Defaults to `false`.
 * `clock_bin_toa`: Duration of a clock cycle for the time-of-arrival (ToA) clock. If set, the output timestamp is delivered in units of ToA clock cycles, otherwise in nanoseconds.
 * `clock_bin_tot`: Duration of a clock cycle for the time-over-threshold (ToT) clock. If set, the output charge is delivered as time over threshold in units of ToT clock cycles, otherwise the pulse integral is stored instead.
+* `sync_sim_time`: Aligns the clock cycle with global 0 time. Defaults to false.
+* `tdc_offset`: Adds an offset to the global time for this digitizer. Defaults to 0ns.
 
 ### Parameters for the simplified model
 
