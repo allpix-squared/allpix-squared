@@ -352,8 +352,9 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
     // Set the time of the particle source within the time window
     if(time_window_ > 0) {
+        auto* single_source = particle_source_->GetCurrentSource();
         double event_time = time_ + G4UniformRand() * time_window_;
-        particle_source_->SetParticleTime(event_time);
+        single_source->SetParticleTime(event_time);
     }
 
     particle_source_->GeneratePrimaryVertex(event);
