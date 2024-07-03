@@ -73,7 +73,6 @@ namespace allpix {
 
         double time_{0.0};
         double time_window_{0.0};
-        
     };
 
     /**

@@ -272,11 +272,11 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->SetNumberOfParticles(1);
             single_source->SetParticleDefinition(particle);
             // Set the primary track's start time in for the current event to zero:
-            time_        = config_.get<double>("source_time",        Units::get(0.0, "ns"));
+            time_ = config_.get<double>("source_time", Units::get(0.0, "ns"));
             time_window_ = config_.get<double>("source_time_window", Units::get(0.0, "ns"));
             single_source->SetParticleTime(time_);
         }
-        
+
         // Set energy parameters
         single_source->GetEneDist()->SetEnergyDisType("Gauss");
         single_source->GetEneDist()->SetMonoEnergy(config_.get<double>("source_energy"));
