@@ -75,7 +75,7 @@ namespace allpix {
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};
-        bool store_tot_{false}, store_toa_{false}, sync_sim_time_{false}, ignore_polarity_{};
+        bool store_tot_{false}, store_toa_{false}, sync_event_time_{false}, ignore_polarity_{};
         Messenger* messenger_;
         DigitizerType model_;
 
