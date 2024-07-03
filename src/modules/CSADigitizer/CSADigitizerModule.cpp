@@ -83,7 +83,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     }
 
     // Synchronize the clock binning to global simulation time
-    sync_sim_time_ = config_.get<bool>("sync_sim_time");
+    sync_event_time_ = config_.get<bool>("sync_event_time");
     tdc_offset_ = config_.get<double>("tdc_offset");
 
     sigmaNoise_ = config_.get<double>("sigma_noise");
@@ -325,7 +325,7 @@ void CSADigitizerModule::run(Event* event) {
         pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
 
         double time_offset = tdc_offset_;
-        if(sync_sim_time_) {
+        if(sync_event_time_) {
             time_offset += pixel_charge.getGlobalTime();
         }
 
