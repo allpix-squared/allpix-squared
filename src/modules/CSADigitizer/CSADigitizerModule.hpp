@@ -99,7 +99,8 @@ namespace allpix {
          * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
          *         of ToA clock cycles before crossing) and double (time of crossing)
          */
-        std::tuple<bool, unsigned int, double> get_toa(double timestep, const std::vector<double>& pulse, double time_offset) const;
+        std::tuple<bool, unsigned int, double>
+        get_toa(double timestep, const std::vector<double>& pulse, double time_offset) const;
 
         /**
          * @brief Calculate time-over-threshold
