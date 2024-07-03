@@ -49,7 +49,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     config_.setDefault<bool>("output_plots", config_.get<bool>("output_pulsegraphs"));
     config_.setDefault<int>("output_plots_scale", Units::get(30, "ke"));
     config_.setDefault<int>("output_plots_bins", 100);
-    config_.setDefault<bool>("sync_sim_time", false);
+    config_.setDefault<bool>("sync_event_time", false);
     config_.setDefault<double>("tdc_offset", Units::get(0.0, "ns"));
 
     if(model_ == DigitizerType::SIMPLE) {
