@@ -31,6 +31,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Malinda de Silva, DESY, [ldesilva](https://gitlab.cern.ch/ldesilva)
 * Mauricio Donatti, Brazilian Synchrotron Light Laboratory, [mmdonatti](https://github.com/mmdonatti)
 * Katharina Dort, University of Gießen, [kdort](https://gitlab.cern.ch/kdort)
+* Simon Gardner, University of Glasgow, [simonge](https://github.com/simonge)
 * Neal Gauvin, Université de Genève, [ngauvin](https://gitlab.cern.ch/ngauvin)
 * Yajun He, DESY, [yajun](https://gitlab.cern.ch/yajun)
 * Ryan Heller, LBNL, [heller3](https://github.com/heller3)

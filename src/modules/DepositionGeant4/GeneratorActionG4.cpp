@@ -272,7 +272,9 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             single_source->SetNumberOfParticles(1);
             single_source->SetParticleDefinition(particle);
             // Set the primary track's start time in for the current event to zero:
-            single_source->SetParticleTime(0.0);
+            time_ = config_.get<double>("source_time", Units::get(0.0, "ns"));
+            time_window_ = config_.get<double>("source_time_window", Units::get(0.0, "ns"));
+            single_source->SetParticleTime(time_);
         }
 
         // Set energy parameters
@@ -337,8 +339,6 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
             // Set global parameters of the source
             single_source->SetNumberOfParticles(1);
             single_source->SetParticleDefinition(particle);
-            // Set the primary track's start time in for the current event to zero:
-            single_source->SetParticleTime(0.0);
 
             // mark the initialization done
             initialize_ion_as_particle_ = false;
@@ -348,6 +348,13 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
         } else {
             throw InvalidValueError(config_, "particle_type", "failed to fetch or create ion.");
         }
+    }
+
+    // Set the time of the particle source within the time window
+    if(time_window_ > 0) {
+        auto* single_source = particle_source_->GetCurrentSource();
+        double event_time = time_ + G4UniformRand() * time_window_;
+        single_source->SetParticleTime(event_time);
     }
 
     particle_source_->GeneratePrimaryVertex(event);
