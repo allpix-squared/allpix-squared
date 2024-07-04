@@ -401,7 +401,7 @@ CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse, d
 
     LOG(TRACE) << "Calculating time-of-arrival";
     bool threshold_crossed = false;
-    unsigned int comparator_cycles = static_cast<unsigned int>(std::floor(time_offset / clockToA_));
+    auto comparator_cycles = static_cast<unsigned int>(std::floor(time_offset / clockToA_));
     double arrival_time = time_offset;
 
     // Lambda for threshold calculation:
