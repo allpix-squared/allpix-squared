@@ -104,6 +104,7 @@ namespace allpix {
          * @brief Calculate time of first threshold crossing
          * @param timestep Step size of the input pulse
          * @param pulse    Pulse after amplification and electronics noise
+         * @param time_offset Time offset with respect to the beginning of the event
          * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
          *         of ToA clock cycles before crossing) and double (time of crossing)
          */
