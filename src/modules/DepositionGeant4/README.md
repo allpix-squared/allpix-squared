@@ -85,6 +85,8 @@ This module requires an installation Geant4.
 * `source_energy` : Mean kinetic energy of the generated particles.
 * `source_energy_spread` : Energy spread of the source.
 * `source_position` : Position of the particle source in the world geometry.
+* `source_time` : Offset from 0 to start the Geant4 particles. Default 0ns.
+* `source_time_window` : Range of particle start times starting from the offset (`source_time`). Individual particle start times are randomly drawn from a uniform distribution within [`source_time`, `source_time+source_time_window`]. Default 0ns (off).
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
 Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
