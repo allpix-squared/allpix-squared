@@ -1,6 +1,6 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
-# SPDX-License-Identifier: CC-BY-4.0
+#SPDX - FileCopyrightText : 2022 - 2024 CERN and the Allpix Squared authors
+#SPDX - License - Identifier : CC - BY - 4.0
 title: "Trapping and Detrapping of Charge Carriers"
 weight: 4
 ---
@@ -219,6 +219,8 @@ The parameters for electrons are taken from \[[@Mandic]\], for measurements at a
 }
 `$, and the results extrapolated to $`T = -30 \,\text {°C }`$. 
 
+Note that an erratum has been made in the model.
+
 A scaling from electrons to holes was performed based on the default values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
@@ -259,11 +261,12 @@ are denoted with squared brackets and a parameter number, for example `[0]` for 
 specified separately from the formula can contain units which will be interpreted automatically.
 
 {
-    { % alert title = "Note" color = "info" % }}
-Both fluence and temperature are not inherently available in the custom trapping model, but need to be provided as additional
-parameters as described above.
-{
-    { % / alert % }}
+    { % alert title = "Note" color = "info" % }
+}
+Both fluence and temperature are not inherently available in the custom trapping model,
+    but need to be provided as additional parameters as described above.{
+    { % / alert % }
+}
 
 The following configuration parameters replicate the [Ljubljana model](#ljubljana) using a custom trapping model.
 
@@ -320,5 +323,4 @@ detrapping_time_hole = 10ns
 [@dortmundTrapping]: https://doi.org/10.1109/TNS.2004.839096
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
-[@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001
 [@weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
