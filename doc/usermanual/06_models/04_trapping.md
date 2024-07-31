@@ -320,5 +320,4 @@ detrapping_time_hole = 10ns
 [@dortmundTrapping]: https://doi.org/10.1109/TNS.2004.839096
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
-[@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001
 [@weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
