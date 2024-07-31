@@ -148,7 +148,7 @@ with the parameters
 
 ```math
 \begin{aligned}
-c_e      &= 0.054 \,\text{ns}\,\text{cm}^{-2} \\
+c_e      &= 0.54 \,\text{ns}\,\text{cm}^{-2} \\
 \kappa_e &= -0.62 \\
 \\
 c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \\
@@ -159,8 +159,8 @@ c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \\
 for electrons and holes, respectively.
 
 The parameters for electrons are taken from \[[@Mandic]\], for measurements at a temperature of $`T = -20 \,\text{°C}`$, and
-the results extrapolated to $`T = -30 \,\text{°C}`$. A scaling from electrons to holes was performed based on the default
-values in Weightfield2 \[[@weightfield2]\].
+the results extrapolated to $`T = -30 \,\text{°C}`$. Note that an erratum has been made (see https://iopscience.iop.org/article/10.1088/1748-0221/16/03/E03001), c_e should be 0.54ns instead of 0.054ns.
+A scaling from electrons to holes was performed based on the default values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
 
