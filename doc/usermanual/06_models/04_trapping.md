@@ -218,7 +218,7 @@ The parameters for electrons are taken from \[[@Mandic]\], for measurements at a
     °C
 }
 `$, and the results extrapolated to $`T = -30 \,\text {°C }`$. 
-Note that an erratum has been made, see \[[@MandicErratum]\], the c_e should be 0.54ns instead of 0.054ns.
+
 A scaling from electrons to holes was performed based on the default values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
