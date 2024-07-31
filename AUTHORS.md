@@ -1,6 +1,6 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
-# SPDX-License-Identifier: CC-BY-4.0
+#SPDX - FileCopyrightText : 2022 - 2024 CERN and the Allpix Squared authors
+#SPDX - License - Identifier : CC - BY - 4.0
 title: "Authors and Acknowledgments"
 ---
 
@@ -73,4 +73,3 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Morag Williams, University of Glasgow, [williamm](https://gitlab.cern.ch/williamm)
 * Koen Wolters, [kwolters](https://gitlab.cern.ch/kwolters)
 * Samuel Wood, University of Oxford, [sam-sw](https://github.com/sam-sw)
-* Jixing Ye, University of Trento, [jiye](https://gitlab.cern.ch/jiye)
