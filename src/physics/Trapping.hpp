@@ -131,7 +131,7 @@ namespace allpix {
      * @brief Mandic effective trapping model
      *
      * Parametrization taken from https://doi.org/10.1088/1748-0221/15/11/P11018, section 5.
-     * Update c_e to 0.54ns, see [@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001.
+     * Update c_e to 0.54ns, see the erratum: https://doi.org/10.1088/1748-0221/16/03/E03001.
      * Scaling from electrons to holes taken from default beta values in Weightfield2
      */
     class Mandic : virtual public TrappingModel {
