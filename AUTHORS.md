@@ -1,6 +1,6 @@
 ---
-#SPDX - FileCopyrightText : 2022 - 2024 CERN and the Allpix Squared authors
-#SPDX - License - Identifier : CC - BY - 4.0
+# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
 title: "Authors and Acknowledgments"
 ---
 
