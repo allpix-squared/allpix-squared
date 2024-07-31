@@ -218,7 +218,7 @@ The parameters for electrons are taken from \[[@Mandic]\], for measurements at a
     °C
 }
 `$, and the results extrapolated to $`T = -30 \,\text {°C }`$. 
-Note that an erratum has been made, see \[[@MandicErratum]\]: https://doi.org/10.1088/1748-0221/16/03/E03001, the c_e should be 0.54ns instead of 0.054ns.
+Note that an erratum has been made, see \[[@MandicErratum]\], the c_e should be 0.54ns instead of 0.054ns.
 A scaling from electrons to holes was performed based on the default values in Weightfield2 \[[@weightfield2]\].
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
@@ -320,4 +320,5 @@ detrapping_time_hole = 10ns
 [@dortmundTrapping]: https://doi.org/10.1109/TNS.2004.839096
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
+[@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001
 [@weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
