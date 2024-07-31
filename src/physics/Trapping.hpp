@@ -136,7 +136,7 @@ namespace allpix {
     class Mandic : virtual public TrappingModel {
     public:
         explicit Mandic(double fluence) {
-            tau_eff_electron_ = 0.54 * pow(fluence / Units::get(1e16, "/cm/cm"), -0.62);
+            tau_eff_electron_ = 0.054 * pow(fluence / Units::get(1e16, "/cm/cm"), -0.62);
             tau_eff_hole_ = tau_eff_electron_ * (4.9 / 6.2);
         }
     };
