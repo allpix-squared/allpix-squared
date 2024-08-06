@@ -4,9 +4,9 @@
 # Retrieve the allpix version string from git describe
 FUNCTION(get_version project_version)
     # Check if this is a source tarball build
-    IF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+    IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
         SET(source_package 1)
-    ENDIF(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+    ENDIF(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
 
     # Set package version
     IF(NOT source_package)
