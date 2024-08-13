@@ -52,6 +52,8 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 
 void CapacitiveTransferModule::initialize() {
 
+    LOG(DEBUG) << "Max depth distance: " << max_depth_distance_;
+
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(
             config_, {"coupling_matrix", "coupling_file", "coupling_scan_file"}, "More than one coupling input defined");
@@ -84,7 +86,7 @@ void CapacitiveTransferModule::initialize() {
             }
         }
 
-        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix imported from config file";
+        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix read from config file";
 
     } else if(config_.has("coupling_file")) {
         LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("coupling_file");
