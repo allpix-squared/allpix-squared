@@ -40,7 +40,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
     config_.setDefault("nominal_gap", 0.0);
-    config_.setDefault("max_depth_distance", Units::get(5, "um"));
+    config_.setDefault("max_depth_distance", Units::get<double>(5, "um"));
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
@@ -51,6 +51,8 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 }
 
 void CapacitiveTransferModule::initialize() {
+
+    LOG(DEBUG) << "Max depth distance: " << max_depth_distance_;
 
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(
@@ -84,7 +86,7 @@ void CapacitiveTransferModule::initialize() {
             }
         }
 
-        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix imported from config file";
+        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix read from config file";
 
     } else if(config_.has("coupling_file")) {
         LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("coupling_file");
