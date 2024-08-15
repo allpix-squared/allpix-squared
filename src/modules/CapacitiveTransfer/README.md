@@ -36,7 +36,8 @@ This module requires an installation of Eigen3.
 * `cross_coupling`: Enables cross-coupling between pixels. Defaults to `true` (enabled).
 * `coupling_file`: Path to the file containing the cross-coupling matrix. The file must contain the relative capacitance to the central pixel.
 * `coupling_matrix`: Cross-coupling matrix with relative capacitances.
-* `max_depth_distance`: Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account. Defaults to 5um.
+* `max_depth_distance`: Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account in case the detector has no implants defined or `collect_from_implant` is set to `false`. Defaults to `5um`.
+* `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Should only be used with non-linear electric fields and defaults to `false`.
 * `output_plots`: Saves the output plots for this module. Defaults to 1 (enabled).
 
 The cross-coupling matrix, to be parsed via the matrix file or via the configuration file, must be organized in Row vs Col, such as:
