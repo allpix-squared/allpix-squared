@@ -86,6 +86,7 @@ namespace allpix {
 
         double normalization_{};
         double max_depth_distance_{};
+        bool collect_from_implant_{};
         bool cross_coupling_{};
 
         void getCapacitanceScan(TFile* root_file);
