@@ -54,7 +54,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 }
 
 void CapacitiveTransferModule::initialize() {
-    
+
     auto model = detector_->getModel();
     if(collect_from_implant_) {
         if(model->getImplants().empty()) {
@@ -67,8 +67,10 @@ void CapacitiveTransferModule::initialize() {
         }
         LOG(INFO) << "Collecting charges from implants";
     } else if(!model->getImplants().empty()) {
-        LOG(WARNING) << "Detector " << detector_->getName() << " of type " << model->getType()
-                     << " has implants defined but collecting charge carriers from full sensor surface, with a max depth distance of " << max_depth_distance_;
+        LOG(WARNING)
+            << "Detector " << detector_->getName() << " of type " << model->getType()
+            << " has implants defined but collecting charge carriers from full sensor surface, with a max depth distance of "
+            << max_depth_distance_;
     } else {
         LOG(DEBUG) << "Collecting from sensor surface with a max depth distance of " << max_depth_distance_;
     }
@@ -290,7 +292,7 @@ void CapacitiveTransferModule::run(Event* event) {
     std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
     for(const auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
-        
+
         if(collect_from_implant_) {
             // Ignore if outside the implant region:
             auto implant = model_->isWithinImplant(position);
