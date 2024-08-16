@@ -40,17 +40,40 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
     config_.setDefault("nominal_gap", 0.0);
-    config_.setDefault("max_depth_distance", Units::get(5, "um"));
+    config_.setDefault("max_depth_distance", Units::get<double>(5, "um"));
+    // By default, collect from the full sensor surface, not the implant region
+    config_.setDefault("collect_from_implant", false);
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
     max_depth_distance_ = config_.get<double>("max_depth_distance");
+    collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
     // Require propagated deposits for single detector
     messenger_->bindSingle<PropagatedChargeMessage>(this, MsgFlags::REQUIRED);
 }
 
 void CapacitiveTransferModule::initialize() {
+
+    auto model = detector_->getModel();
+    if(collect_from_implant_) {
+        if(model->getImplants().empty()) {
+            throw InvalidValueError(config_,
+                                    "collect_from_implant",
+                                    "Detector model does not have implants defined, but collection requested from implants");
+        }
+        if(detector_->getElectricFieldType() == FieldType::LINEAR) {
+            throw ModuleError("Charge collection from implant region should not be used with linear electric fields.");
+        }
+        LOG(INFO) << "Collecting charges from implants";
+    } else if(!model->getImplants().empty()) {
+        LOG(WARNING)
+            << "Detector " << detector_->getName() << " of type " << model->getType()
+            << " has implants defined but collecting charge carriers from full sensor surface, with a max depth distance of "
+            << max_depth_distance_;
+    } else {
+        LOG(DEBUG) << "Collecting from sensor surface with a max depth distance of " << max_depth_distance_;
+    }
 
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(
@@ -84,7 +107,7 @@ void CapacitiveTransferModule::initialize() {
             }
         }
 
-        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix imported from config file";
+        LOG(STATUS) << max_col_ << "x" << max_row_ << " coupling matrix read from config file";
 
     } else if(config_.has("coupling_file")) {
         LOG(TRACE) << "Reading cross-coupling matrix file " << config_.get<std::string>("coupling_file");
@@ -269,11 +292,28 @@ void CapacitiveTransferModule::run(Event* event) {
     std::map<Pixel::Index, std::pair<double, std::vector<const PropagatedCharge*>>> pixel_map;
     for(const auto& propagated_charge : propagated_message->getData()) {
         auto position = propagated_charge.getLocalPosition();
-        // Ignore if outside depth range of implant
-        if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
-           max_depth_distance_) {
-            LOG(DEBUG) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
-                       << propagated_charge.getLocalPosition() << " because their local position is not in implant range";
+
+        if(collect_from_implant_) {
+            // Ignore if outside the implant region:
+            auto implant = model_->isWithinImplant(position);
+            if(!implant.has_value()) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because their local position is outside the pixel implant";
+                continue;
+            }
+            if(implant->getType() != DetectorModel::Implant::Type::FRONTSIDE) {
+                LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                           << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                           << " because the pixel implant is located at " << allpix::to_string(implant->getType());
+                continue;
+            }
+        } else if(std::fabs(position.z() - (model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0)) >
+                  max_depth_distance_) {
+            // Ignore if not close to the sensor surface:
+            LOG(TRACE) << "Skipping set of " << propagated_charge.getCharge() << " propagated charges at "
+                       << Units::display(propagated_charge.getLocalPosition(), {"mm", "um"})
+                       << " because their local position is not near sensor surface";
             continue;
         }
 
@@ -336,7 +376,7 @@ void CapacitiveTransferModule::run(Event* event) {
                            << col << "," << row << " pixel " << pixel_index << "with cross-coupling of " << ccpd_factor * 100
                            << "%";
 
-                // Add the pixel the list of hit pixels
+                // Add the pixel to the list of hit pixels
                 pixel_map[pixel_index].first += neighbour_charge;
                 pixel_map[pixel_index].second.emplace_back(&propagated_charge);
             }
