@@ -55,7 +55,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
     // TDC configuration
     config_.setDefault<int>("tdc_resolution", 0);
-    config_.setDefault<int>("tdc_smearing", Units::get(50, "ps"));
+    config_.setDefault<double>("tdc_smearing", Units::get(50.0, "ps"));
     config_.setDefault<double>("tdc_offset", Units::get(0, "ns"));
     config_.setDefault<double>("tdc_slope", Units::get(10, "ns"));
     config_.setDefault<bool>("allow_zero_tdc", false);
@@ -118,7 +118,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     allow_zero_qdc_ = config_.get<bool>("allow_zero_qdc");
 
     tdc_resolution_ = config_.get<int>("tdc_resolution");
-    tdc_smearing_ = config_.get<unsigned int>("tdc_smearing");
+    tdc_smearing_ = config_.get<double>("tdc_smearing");
     tdc_offset_ = config_.get<double>("tdc_offset");
     tdc_slope_ = config_.get<double>("tdc_slope");
     allow_zero_tdc_ = config_.get<bool>("allow_zero_tdc");

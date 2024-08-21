@@ -12,12 +12,11 @@
 #include "text.h"
 
 #include <cmath>
-#include <iostream>
 
 namespace allpix {
     /**
      * @throws std::overflow_error If the converted unit overflows the requested type
-     * @throws std::invalid_argument If the resulting product of value and unit is not an integral value
+     * @throws std::invalid_argument If the resulting product of an input integer value and unit is not an integral value
      *
      * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
      * checked for overflow problems before the type is converted back to the original type.
@@ -29,13 +28,10 @@ namespace allpix {
             throw std::overflow_error("unit conversion overflows the type");
         }
         if constexpr(!std::is_integral_v<T>) {
-            std::cout << "--- Regular one used! Input: " << inp << std::endl;
-            std::cout << "--- Regular one used! Value: " << out << std::endl;
             return static_cast<T>(out);
         } else {
+            // If the input is an integral value: check so that it doesn't have decimals after applying the unit
             if constexpr(std::is_integral_v<T>) {
-                std::cout << "--- INteger one used! Input: " << inp << std::endl;
-                std::cout << "--- INteger one used! Value: " << out << std::endl;
                 if(out != static_cast<T>(out)) {
                     throw std::invalid_argument("Cannot use integer value with non-integer internal unit; the combination " +
                                                 std::to_string(inp) + " " + str + " is invalid.");
