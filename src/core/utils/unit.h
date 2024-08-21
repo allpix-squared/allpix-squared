@@ -88,7 +88,8 @@ namespace allpix {
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        template <typename T> static T get(T inp, const std::string& str);
+        template <typename T, std::enable_if_t<!std::is_integral_v<T>, bool> = true> static T get(T inp, const std::string& str);
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true> static T get(T inp, const std::string& str);
         /**
          * @brief Get input parameter in the inverse of the base units
          * @param inp Value in a particular unit

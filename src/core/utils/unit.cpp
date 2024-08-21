@@ -19,6 +19,8 @@
 #include <string>
 #include <type_traits>
 
+#include <iostream>
+
 #include "text.h"
 
 using namespace allpix;
@@ -102,6 +104,7 @@ allpix::Units::UnitType Units::get(const std::string& str) {
     } else if(lst == '/') {
         ret_value = getSingleInverse(ret_value, std::move(unit));
     }
+    std::cout << "Return value from Units: " << ret_value << std::endl;
     return ret_value;
 }
 

@@ -12,6 +12,7 @@
 #include "text.h"
 
 #include <cmath>
+#include <iostream>
 
 namespace allpix {
     /**
@@ -20,15 +21,37 @@ namespace allpix {
      * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
      * checked for overflow problems before the type is converted back to the original type.
      */
-    template <typename T> T Units::get(T inp, const std::string& str) {
+    //std::enable_if<std::is_integral_v<T>>
+    template <typename T, std::enable_if_t<!std::is_integral_v<T>, bool> = true> T Units::get(T inp, const std::string& str) {
+        std::cout << "Input value: " << inp << std::endl;
         UnitType out = static_cast<UnitType>(inp) * get(str);
+        std::cout << "Middle value: " << out << std::endl;
         if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
            out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
             throw std::overflow_error("unit conversion overflows the type");
         }
-        if constexpr(std::is_integral_v<T>) {
-            out = std::round(out);
+        std::cout << "Output value 1: " << out << std::endl;
+        std::cout << "Output value final: " << static_cast<T>(out) << std::endl;
+        return static_cast<T>(out);
+        //return out;
+    }
+    
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true> T Units::get(T inp, const std::string& str) {
+        std::cout << "Input value int: " << inp << std::endl;
+        UnitType out = static_cast<UnitType>(inp) * get(str);
+        std::cout << "Middle value int: " << out << std::endl;
+        if(out > static_cast<UnitType>(std::numeric_limits<T>::max()) ||
+           out < static_cast<UnitType>(std::numeric_limits<T>::lowest())) {
+            throw std::overflow_error("unit conversion overflows the type");
         }
+        std::cout << "--------------- Output value assert: " << out << ", " << static_cast<T>(out) << std::endl;
+        if(out != static_cast<T>(out)) {
+            throw std::invalid_argument("Cannot use integer value with non-integer internal unit; the combination " + std::to_string(inp) + " " + str + " is invalid.");
+        }
+        assert(out == static_cast<T>(out));
+        //std::cout << "--------------- Output value assert: " << out << ", " << static_cast<T>(out) << std::endl;
+        std::cout << "Output value 1 int: " << out << std::endl;
+        std::cout << "Output value final int: " << static_cast<T>(out) << std::endl;
         return static_cast<T>(out);
     }
 
