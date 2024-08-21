@@ -92,7 +92,7 @@ namespace allpix {
         bool allow_zero_qdc_{};
 
         int tdc_resolution_{};
-        unsigned int tdc_smearing_{};
+        double tdc_smearing_{};
         double tdc_offset_{};
         double tdc_slope_{};
         bool allow_zero_tdc_{};
