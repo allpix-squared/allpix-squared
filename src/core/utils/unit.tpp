@@ -33,10 +33,8 @@ namespace allpix {
                 throw LogicError("Cannot use integer value with non-integer internal unit; the combination " +
                                  std::to_string(inp) + " " + str + " is invalid.");
             }
-            return static_cast<T>(out);
-        } else {
-            return static_cast<T>(out);
         }
+        return static_cast<T>(out);
     }
 
     // Getters for single and inverse units
