@@ -16,7 +16,7 @@
 namespace allpix {
     /**
      * @throws std::overflow_error If the converted unit overflows the requested type
-     * @throws std::invalid_argument If the resulting product of an input integer value and unit is not an integral value
+     * @throws allpix::LogicError If the resulting product of an input integer value and unit is not an integral value
      *
      * The unit type is internally converted to the type \ref Units::UnitType. After multiplying the unit, the output is
      * checked for overflow problems before the type is converted back to the original type.
