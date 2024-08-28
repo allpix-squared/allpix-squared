@@ -33,8 +33,8 @@ namespace allpix {
             // If the input is an integral value: check so that it doesn't have decimals after applying the unit
             if constexpr(std::is_integral_v<T>) {
                 if(out != static_cast<T>(out)) {
-                    throw std::invalid_argument("Cannot use integer value with non-integer internal unit; the combination " +
-                                                std::to_string(inp) + " " + str + " is invalid.");
+                    throw LogicError("Cannot use integer value with non-integer internal unit; the combination " +
+                                     std::to_string(inp) + " " + str + " is invalid.");
                 }
                 return static_cast<T>(out);
             }
