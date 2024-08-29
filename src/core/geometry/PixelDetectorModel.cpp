@@ -114,6 +114,16 @@ std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint
     return {pixel_x, pixel_y};
 }
 
+std::set<Pixel::Index> PixelDetectorModel::getPixels() const {
+    std::set<Pixel::Index> pixels;
+    for(int x = 0; x < static_cast<int>(number_of_pixels_.x()); x++) {
+        for(int y = 0; y < static_cast<int>(number_of_pixels_.y()); y++) {
+            pixels.insert({x, y});
+        }
+    }
+    return pixels;
+}
+
 std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 

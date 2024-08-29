@@ -449,6 +449,14 @@ namespace allpix {
         virtual std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const = 0;
 
         /**
+         * @brief Return a set containing all pixels of the matrix
+         * @return Set of all pixel indices of the matrix
+         *
+         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
+         */
+        virtual std::set<Pixel::Index> getPixels() const = 0;
+
+        /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
          * @param idx       Index of the pixel in question
          * @param distance  Distance for pixels to be considered neighbors

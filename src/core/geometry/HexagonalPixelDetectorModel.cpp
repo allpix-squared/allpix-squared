@@ -105,6 +105,19 @@ ROOT::Math::XYZVector HexagonalPixelDetectorModel::getMatrixSize() const {
     return {limit_right - corner_offset_left, limit_top - corner_offset_bottom, 0};
 }
 
+std::set<Pixel::Index> HexagonalPixelDetectorModel::getPixels() const {
+    std::set<Pixel::Index> pixels;
+
+    for(int x = -static_cast<int>(number_of_pixels_.x()); x < static_cast<int>(number_of_pixels_.x()); x++) {
+        for(int y = -static_cast<int>(number_of_pixels_.y()); y < static_cast<int>(number_of_pixels_.y()); y++) {
+            if(isWithinMatrix(x, y)) {
+                pixels.insert({x, y});
+            }
+        }
+    }
+    return pixels;
+}
+
 std::set<Pixel::Index> HexagonalPixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
