@@ -217,9 +217,16 @@ void DefaultDigitizerModule::initialize() {
 void DefaultDigitizerModule::run(Event* event) {
     auto pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
-    // Loop through all pixels with charges
     std::vector<PixelHit> hits;
-    for(const auto& pixel_charge : pixel_message->getData()) {
+    const auto& pixel_charges = pixel_message->getData();
+
+    // Loop through all pixels of the matrix
+    for(const auto& index : getDetector()->getModel()->getPixels()) {
+
+        const auto it = std::find_if(
+            pixel_charges.begin(), pixel_charges.end(), [index](const auto& px) { return px.getIndex() == index; });
+        const auto& pixel_charge = (it == pixel_charges.end() ? PixelCharge(getDetector()->getPixel(index), 0.) : *it);
+
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
