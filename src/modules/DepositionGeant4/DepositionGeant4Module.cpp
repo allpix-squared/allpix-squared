@@ -17,6 +17,7 @@
 #include <utility>
 
 #include <G4Box.hh>
+#include <G4BuilderType.hh>
 #include <G4EmParameters.hh>
 #include <G4HadronicParameters.hh>
 #include <G4HadronicProcessStore.hh>
@@ -220,8 +221,8 @@ void DepositionGeant4Module::initialize() {
     LOG(DEBUG) << "Registering Geant4 step limiter physics list";
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
-    // Register radioactive decay physics lists unless we are using a _HP list which include this already:
-    if(physics_list.find("_HP") == std::string::npos) {
+    // Register radioactive decay physics lists unless the list already has it registered - check with its type:
+    if(physicsList->GetPhysicsWithType(G4BuilderType::bDecay) == nullptr) {
         LOG(DEBUG) << "Registering Geant4 radioactive decay physics list";
         physicsList->RegisterPhysics(new G4RadioactiveDecayPhysics());
     }
