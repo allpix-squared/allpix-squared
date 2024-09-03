@@ -169,7 +169,8 @@ void DepositionGeant4Module::initialize() {
     }
 
     // Find the physics list
-    auto physics_list = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
+    auto physics_list_up = allpix::transform(config_.get<std::string>("physics_list"), ::toupper);
+    auto physics_list = config_.get<std::string>("physics_list");
     G4PhysListFactory physListFactory;
     G4VModularPhysicsList* physicsList{nullptr};
 
@@ -181,10 +182,15 @@ void DepositionGeant4Module::initialize() {
         if(physicsList == nullptr) {
             // Geant4 throws an exception if the list is not found
             physicsList = physListFactory.GetReferencePhysList(physics_list);
-            // ...but older versions of it don't, so let's do this ourselves:
-            if(physicsList == nullptr) {
-                throw ModuleError("");
-            }
+        }
+
+        // Upper-case version of config
+        if(physicsList == nullptr) {
+            physicsList = physListFactory.GetReferencePhysList(physics_list_up);
+        }
+
+        if(physicsList == nullptr) {
+            throw ModuleError("");
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
