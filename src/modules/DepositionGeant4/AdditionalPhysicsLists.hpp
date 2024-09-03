@@ -12,6 +12,8 @@
 #ifndef ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 #define ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 
+#include "core/utils/text.h"
+
 #include <G4VModularPhysicsList.hh>
 
 #ifdef ALLPIX_PHYSICSLIST_MICROELEC
