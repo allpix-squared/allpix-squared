@@ -12,6 +12,8 @@
 #ifndef ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 #define ALLPIX_ADDITIONAL_PHYSICS_LISTS_H
 
+#include "core/utils/text.h"
+
 #include <G4VModularPhysicsList.hh>
 
 #ifdef ALLPIX_PHYSICSLIST_MICROELEC
@@ -27,12 +29,15 @@ namespace allpix::physicslists {
     /**
      * @brief Function to obtain
      * @param  list_name    Name of the additional physics list
+     *
+     * @note Name check is performed with provided case and upper-case list names
+     *
      * @return              Pointer to the G4VModularPhysicsList of the found physics list, or a nullptr if not found.
      */
     inline G4VModularPhysicsList* getList(const std::string& list_name) {
 
 #ifdef ALLPIX_PHYSICSLIST_MICROELEC
-        if(list_name == "MICROELEC-SIONLY") {
+        if(list_name == "MICROELEC-SIONLY" || allpix::transform(list_name, ::toupper) == "MICROELEC-SIONLY") {
             // Downcasting from a G4VUserPhysicsList* to a G4VModularPhysicsList
             return dynamic_cast<G4VModularPhysicsList*>(new MicroElecSiPhysics());
         }
