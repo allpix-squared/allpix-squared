@@ -695,12 +695,12 @@ ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const st
     // Apply inverse of that transformation
     auto position_local = transform_center.Inverse()(position_global);
 
-    std::vector<double> distances_to_faces = {abs(position_local.X() - sensor.X() / 2),
-                                              abs(position_local.X() + sensor.X() / 2),
-                                              abs(position_local.Y() - sensor.Y() / 2),
-                                              abs(position_local.Y() + sensor.Y() / 2),
-                                              abs(position_local.Z() - sensor.Z() / 2),
-                                              abs(position_local.Z() + sensor.Z() / 2)};
+    std::vector<double> distances_to_faces = {std::abs(position_local.X() - sensor.X() / 2),
+                                              std::abs(position_local.X() + sensor.X() / 2),
+                                              std::abs(position_local.Y() - sensor.Y() / 2),
+                                              std::abs(position_local.Y() + sensor.Y() / 2),
+                                              std::abs(position_local.Z() - sensor.Z() / 2),
+                                              std::abs(position_local.Z() + sensor.Z() / 2)};
 
     std::vector<ROOT::Math::XYZVector> normals_to_faces = {
         {1, 0, 0},
@@ -712,7 +712,7 @@ ROOT::Math::XYZVector DepositionLaserModule::intersection_normal_vector(const st
     };
 
     auto iter_min = std::min_element(begin(distances_to_faces), end(distances_to_faces));
-    size_t index_min = static_cast<size_t>(abs(iter_min - begin(distances_to_faces))); // avoid implicit conversion
+    size_t index_min = static_cast<size_t>(std::abs(iter_min - begin(distances_to_faces))); // avoid implicit conversion
 
     return rotation_center(normals_to_faces[index_min]);
 }
