@@ -80,6 +80,7 @@ namespace allpix {
      * Problems that could also have been detected at compile time by specialized software
      */
     class LogicError : public Exception {
+    public:
         /**
          * @brief Creates exception with the given logical problem
          * @param what_arg Text describing the problem

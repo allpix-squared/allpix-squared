@@ -230,7 +230,7 @@ namespace allpix {
     public:
         Masetti(SensorMaterial material, double temperature, bool doping, Dopant dopant_n)
             : electron_mu0_(Units::get(68.5, "cm*cm/V/s")),
-              electron_mumax_(Units::get(1414, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
+              electron_mumax_(Units::get(1414.0, "cm*cm/V/s") * std::pow(temperature / 300, -2.5)),
               electron_cr_(Units::get(9.20e16, "/cm/cm/cm")), electron_mu1_(Units::get(56.1, "cm*cm/V/s")),
               electron_cs_(Units::get(3.41e20, "/cm/cm/cm")), hole_mu0_(Units::get(44.9, "cm*cm/V/s")),
               hole_pc_(Units::get(9.23e16, "/cm/cm/cm")),
@@ -472,10 +472,10 @@ namespace allpix {
     class Levinshtein : public MobilityModel {
     public:
         Levinshtein(SensorMaterial material, double temperature, bool doping)
-            : electron_mumin_(Units::get(55, "cm*cm/V/s")), electron_mumax_(Units::get(1000, "cm*cm/V/s")),
+            : electron_mumin_(Units::get(55.0, "cm*cm/V/s")), electron_mumax_(Units::get(1000.0, "cm*cm/V/s")),
               electron_nref_(Units::get(2e17, "/cm/cm/cm")), electron_t_alpha_(std::pow(temperature / 300, 2.)),
-              electron_t_beta_(std::pow(temperature / 300, 0.7)), hole_mumin_(Units::get(3, "cm*cm/V/s")),
-              hole_mumax_(Units::get(170, "cm*cm/V/s")), hole_nref_(Units::get(3e17, "/cm/cm/cm")),
+              electron_t_beta_(std::pow(temperature / 300, 0.7)), hole_mumin_(Units::get(3.0, "cm*cm/V/s")),
+              hole_mumax_(Units::get(170.0, "cm*cm/V/s")), hole_nref_(Units::get(3e17, "/cm/cm/cm")),
               hole_t_alpha_(std::pow(temperature / 300, 5.)) {
             if(!doping) {
                 throw ModelUnsuitable("No doping profile available");

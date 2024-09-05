@@ -84,8 +84,8 @@ void DepositionPointChargeModule::initialize() {
         step_size_ = sqrt((end_local - start_local).Mag2()) / granularity;
 
         // We should deposit the equivalent of about 80 e/h pairs per micro meter (80`000 per mm):
-        auto eh_per_um = config_.get<unsigned int>("number_of_charges");
-        carriers_ = static_cast<unsigned int>(eh_per_um * step_size_);
+        auto eh_per_um = config_.get<double>("number_of_charges");
+        carriers_ = static_cast<unsigned int>(std::round(eh_per_um * step_size_));
         LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
 
@@ -99,7 +99,7 @@ void DepositionPointChargeModule::initialize() {
 
     } else {
         config_.setDefault("number_of_charges", 1);
-        carriers_ = config_.get<unsigned int>("number_of_charges");
+        carriers_ = static_cast<unsigned int>(std::round(config_.get<double>("number_of_charges")));
     }
 
     // Set up the different scan methods

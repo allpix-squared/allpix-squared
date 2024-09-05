@@ -40,7 +40,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
     config_.setDefault("nominal_gap", 0.0);
-    config_.setDefault("max_depth_distance", Units::get(5, "um"));
+    config_.setDefault("max_depth_distance", Units::get<double>(5, "um"));
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
