@@ -370,6 +370,8 @@ void DepositionLaserModule::run(Event* event) {
                                                 time_entry_global);
         // Count electrons and holes:
         mc_particles[hit.detector].back().setTotalDepositedCharge(2);
+        mc_particles[hit.detector].back().setTotalDepositedEnergy(
+            is_user_optics_ ? 0 : Units::get(1.2398, "eV*m") / wavelength_);
 
         // allpix::DepositedCharge for electron
         deposited_charges[hit.detector].emplace_back(hit_local,
