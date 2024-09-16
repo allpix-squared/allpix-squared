@@ -132,6 +132,18 @@ namespace allpix {
         unsigned int getTotalDepositedCharge() const;
 
         /**
+         * @brief Set the total energy deposited by this particle
+         * @param total_energy Total energy deposited by this particle
+         */
+        void setTotalDepositedEnergy(double total_energy);
+
+        /**
+         * @brief Return the total energy deposited by this particle
+         * @return Total energy deposited by this particle
+         */
+        double getTotalDepositedEnergy() const;
+
+        /**
          * @brief Set the Monte-Carlo particle
          * @param mc_particle The Monte-Carlo particle
          * @warning Special method because parent can only be set after creation, should not be replaced later.
@@ -169,7 +181,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCParticle, 10); // NOLINT
+        ClassDefOverride(MCParticle, 11); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -194,6 +206,7 @@ namespace allpix {
         double local_time_{};
         double global_time_{};
         unsigned int deposited_charge_{};
+        double deposited_energy_{};
         double total_energy_start_{};
         double kinetic_energy_start_{};
 

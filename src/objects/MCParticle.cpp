@@ -64,6 +64,10 @@ unsigned int MCParticle::getTotalDepositedCharge() const { return deposited_char
 
 void MCParticle::setTotalDepositedCharge(unsigned int total_charge) { deposited_charge_ = total_charge; }
 
+double MCParticle::getTotalDepositedEnergy() const { return deposited_energy_; }
+
+void MCParticle::setTotalDepositedEnergy(double total_energy) { deposited_energy_ = total_energy; }
+
 int MCParticle::getParticleID() const { return particle_id_; }
 
 double MCParticle::getGlobalTime() const { return global_time_; }
