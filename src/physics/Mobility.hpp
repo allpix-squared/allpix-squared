@@ -243,7 +243,7 @@ namespace allpix {
             if(dopant_n == Dopant::ARSENIC) {
                 LOG(INFO) << "Selected arsenic as n-dopant.";
                 electron_mu0_ = Units::get(52.2, "cm*cm/V/s");
-                electron_mumax_ = Units::get(1417, "cm*cm/V/s") * std::pow(temperature / 300, -2.5);
+                electron_mumax_ = Units::get(1417.0, "cm*cm/V/s") * std::pow(temperature / 300, -2.5);
                 electron_cr_ = Units::get(9.68e16, "/cm/cm/cm");
                 electron_alpha_ = 0.68;
                 electron_mu1_ = Units::get(43.4, "cm*cm/V/s");
