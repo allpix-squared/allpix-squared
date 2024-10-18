@@ -35,6 +35,9 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
+    // Set default units for interpreting input field files in:
+    config_.setDefault("file_units", "V/cm");
+
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
     // NOTE use field_depth as a synonym for depletion_depth
@@ -277,7 +280,7 @@ FieldData<double> ElectricFieldReaderModule::read_field() {
         LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "V/cm");
+        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), config_.get<std::string>("file_units"));
 
         // Warn at field values larger than 1MV/cm / 10 MV/mm. Simple lookup per vector component, not total field magnitude
         auto max_field = *std::max_element(std::begin(*field_data.getData()), std::end(*field_data.getData()));
