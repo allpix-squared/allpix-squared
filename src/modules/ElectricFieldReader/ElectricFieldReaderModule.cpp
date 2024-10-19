@@ -280,7 +280,8 @@ FieldData<double> ElectricFieldReaderModule::read_field() {
         LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), config_.get<std::string>("file_units"));
+        auto field_data =
+            field_parser_.getByFileName(config_.getPath("file_name", true), config_.get<std::string>("file_units"));
 
         // Warn at field values larger than 1MV/cm / 10 MV/mm. Simple lookup per vector component, not total field magnitude
         auto max_field = *std::max_element(std::begin(*field_data.getData()), std::end(*field_data.getData()));
