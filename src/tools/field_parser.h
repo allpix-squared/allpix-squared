@@ -148,7 +148,7 @@ namespace cereal::detail {
             return 3;
         }
         static void unused() { (void)version; } // NOLINT
-    };                                          /* end Version */
+    }; /* end Version */
     template <class T>
     const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
 } // namespace cereal::detail
