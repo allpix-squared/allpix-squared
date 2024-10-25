@@ -48,7 +48,7 @@ The reader provides the following models for electric fields:
   with the framework. Fields of different sizes can be used and mapped onto the pixel matrix using the `field_scale`
   parameter. By default, the module reads the size of the field from the file. If the field size and pixel pitch do not match,
   a warning is printed. The units in which the field itself is interpreted can be configured via the `file_units` parameter,
-  by default the field values are interpreted as representing `V/cm`.
+  by default the field values are interpreted as representing `V/cm`. This is also the unit used in the output files from the `mesh converter` tool.
 
 - The **custom** field model allows to specify arbitrary analytic field functions for a single or all three vector components
   of the electric field. For this, the `field_functions` parameter configured with either one formula which is then used for
