@@ -11,6 +11,7 @@
 
 #include "SPICENetlistWriterModule.hpp"
 
+#include <filesystem>
 #include <string>
 #include <utility>
 
@@ -34,6 +35,9 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     // Set the default target SPICE dialect
     config_.setDefault<TargetSpice>("target", TargetSpice::SPECTRE);
     target_ = config.get<TargetSpice>("target");
+
+    // Get the template netlist to modify:
+    netlist_path_ = config.getPath("netlist_template", true);
 
     node_name_ = config.get<std::string>("node_name");
     node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator")).c_str());

@@ -13,6 +13,7 @@
  * Please refer to the User Manual for more details on the different files of a module and the methods of the module class..
  */
 
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -104,6 +105,7 @@ namespace allpix {
         Messenger* messenger_;
 
         // Module parameters
+        std::filesystem::path netlist_path_;
         TargetSpice target_;
         std::string node_name_{};
         NodeType node_type_;
