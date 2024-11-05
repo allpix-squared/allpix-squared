@@ -41,6 +41,11 @@ namespace allpix {
             SPECTRE,
         };
 
+        enum class NodeType {
+            CURRENTSOURCE,
+            VOLTAGESOURCE,
+        };
+
         /**
          * @brief Constructor for this detector-specific module
          *
@@ -101,6 +106,7 @@ namespace allpix {
         // Module parameters
         TargetSpice target_;
         std::string node_name_{};
+        NodeType node_type_;
         std::unique_ptr<TFormula> node_enumerator_{};
     };
 } // namespace allpix

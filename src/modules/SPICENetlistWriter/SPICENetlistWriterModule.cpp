@@ -38,6 +38,9 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     node_name_ = config.get<std::string>("node_name");
     node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator")).c_str());
 
+    config_.setDefault<NodeType>("node_type", NodeType::CURRENTSOURCE);
+    node_type_ = config.get<NodeType>("node_type");
+
     if(!node_enumerator_->IsValid()) {
         throw InvalidValueError(config_, "node_enumerator", "Node enumerator is not a valid ROOT::TFormula expression.");
     }
