@@ -90,9 +90,10 @@ void SPICENetlistWriterModule::run(Event* event) {
             throw ModuleError("No pulse information available.");
         }
 
-        auto timestep = pulse.getBinning();
+        // auto timestep = pulse.getBinning();
 
         // FIXME write IPWL to netlist
+        *file << node_name_ << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\>";
     }
 
     // FIXME write bottom part to netlist
