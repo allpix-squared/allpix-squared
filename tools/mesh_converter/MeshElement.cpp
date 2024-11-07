@@ -125,7 +125,8 @@ std::string MeshElement::print(Point& qp) const {
     std::stringstream stream;
     for(size_t index = 0; index < dimension_ + 1; index++) {
         stream << "Tetrahedron vertex (" << vertices_[index].x << ", " << vertices_[index].y << ", " << vertices_[index].z
-               << ") - " << " Distance: " << get_distance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
+               << ") - "
+               << " Distance: " << get_distance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
                << e_field_[index].y << ", " << e_field_[index].z << ")" << std::endl;
     }
     stream << "Volume: " << volume_;
