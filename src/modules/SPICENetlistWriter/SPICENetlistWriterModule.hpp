@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <regex>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -110,5 +111,16 @@ namespace allpix {
         std::string node_name_{};
         NodeType node_type_;
         std::unique_ptr<TFormula> node_enumerator_{};
+        std::string connections_;
+        
+        // isource_line is the current source string to be modified
+        std::string isource_line;
+        int isource_line_number = 0;
+        double elementalCharge = 1.6e-19;
+        double nanoCoulomb = 1.6e-10;
+
+        // Vector of all the netlist file lines
+        std::vector<std::string> file_lines;
+        std::smatch connection_match;
     };
 } // namespace allpix

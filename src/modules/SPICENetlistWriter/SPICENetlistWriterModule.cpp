@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <string>
 #include <utility>
+#include <regex>
 
 #include "core/utils/log.h"
 
@@ -40,7 +41,9 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     netlist_path_ = config.getPath("netlist_template", true);
 
     node_name_ = config.get<std::string>("node_name");
-    node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator")).c_str());
+    auto detector_model = detector_->getModel();
+    std::string default_enumerator = "x * " + std::to_string(detector_model->getNPixels().Y()) + " + y";
+    node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator", default_enumerator)).c_str());
 
     config_.setDefault<NodeType>("node_type", NodeType::CURRENTSOURCE);
     node_type_ = config.get<NodeType>("node_type");
@@ -49,7 +52,7 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
         throw InvalidValueError(config_, "node_enumerator", "Node enumerator is not a valid ROOT::TFormula expression.");
     }
 
-    auto parameters = config_.getArray<double>("node_enumerator_parameters");
+    auto parameters = config_.getArray<double>("node_enumerator_parameters", {});
 
     // check if number of parameters match up
     if(static_cast<size_t>(node_enumerator_->GetNpar()) != parameters.size()) {
@@ -67,43 +70,103 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
 }
 
 void SPICENetlistWriterModule::initialize() {
+   
+    int line_number = 0;
+    std::ifstream netlist_file (netlist_path_);
+    std::string line;
+    std::ostringstream eof_netlist;
+    std::ostringstream header_netlist;
+    std::regex connection_regex("\\((.+)\\)");
 
-    // FIXME parse initial netlist input
+    while (getline(netlist_file, line)) {
+        // Writes the content of the netlist file to the new one
+        // Identifies the isource declaration line
+        // Identifies the isource instance nodes names
+        line_number++;
+        file_lines.push_back(line);
+
+        if(line.rfind(node_name_, 0) == 0){
+            isource_line_number = line_number;
+            if(std::regex_search(line, connection_match, connection_regex)) {
+                LOG(STATUS) << "connections: " << connection_match[0];
+                connections_ = connection_match[0];
+            } else {
+                throw ModuleError("Could not find node connections");
+            }
+            LOG(STATUS) << "Found the isource line!";
+        }
+    }
+
+    // find position of the last character to keep in the isource declaration
+    size_t p = file_lines[isource_line_number].find("[");
+
+    // only keep the isource line before the waveform
+    isource_line = file_lines[isource_line_number].substr(0, p);
+    LOG(STATUS) << "End of initialize";
 }
 
 void SPICENetlistWriterModule::run(Event* event) {
-
+    LOG(STATUS) << "Module entered the run loop";
     // Messages: Fetch the (previously registered) messages for this event from the messenger:
     auto message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
     // Prepare output file for this event:
-    const auto file_name = createOutputFile("event" + std::to_string(event->number) + ".scs");
-    auto file = std::make_unique<std::ofstream>(file_name);
+    const auto file_name = createOutputFile("test_event" + std::to_string(event->number) + ".scs");
+    auto file = std::ofstream(file_name);
+    LOG(STATUS) << "Output file(s) created";
 
-    // FIXME write top part of netlist
-    // *file << [...]
+        
+
+    for (int i=0; i < isource_line_number-1; i++){
+        file << file_lines[i] << '\n';
+    }
 
     for(const auto& pixel_charge : message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
+        std::ostringstream pulse_string;
+        
+        LOG(STATUS) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
 
-        LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
+        ///////////////////////////////////////////////
 
+        // Get pulse and timepoints
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
+
 
         // FIXME maybe some output PWL do not require a full pulse?
         if(!pulse.isInitialized()) {
             throw ModuleError("No pulse information available.");
         }
 
-        // auto timestep = pulse.getBinning();
+        double step = pulse.getBinning();
+
+        file << node_name_ << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\> ";
+        file << connections_ << " isource type=pwl wave=[";
+
+        for (auto bin = pulse.begin(); bin != pulse.end(); ++bin){
+            auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
+            double current_bin = *bin / step;
+            double current = current_bin* nanoCoulomb;
+
+            file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
+        }
+        file << "]\n";
+
+    
 
         // FIXME write IPWL to netlist
-        *file << node_name_ << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\>";
     }
 
-    // FIXME write bottom part to netlist
+    for (int i=isource_line_number; i < file_lines.size(); i++){
+        file << file_lines[i] << '\n';
+    }
+
+    file.close();
+    LOG(STATUS) << "File closed";
+
+    
 }
 
 void SPICENetlistWriterModule::finalize() {
