@@ -37,10 +37,16 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     config_.setDefault<TargetSpice>("target", TargetSpice::SPECTRE);
     target_ = config.get<TargetSpice>("target");
 
+    // Set whether the simulation nodes are saved or not in the netlist
+    config_.setDefault<bool>("save_nodes", true);
+    save_nodes_ = config_.get<bool>("save_nodes");
+    
     // Get the template netlist to modify:
     netlist_path_ = config.getPath("netlist_template", true);
 
     node_name_ = config.get<std::string>("node_name");
+    subckt_node_name_ = config.get<std::string>("subckt_name");
+
     auto detector_model = detector_->getModel();
     std::string default_enumerator = "x * " + std::to_string(detector_model->getNPixels().Y()) + " + y";
     node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator", default_enumerator)).c_str());
@@ -70,13 +76,18 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
 }
 
 void SPICENetlistWriterModule::initialize() {
-   
+
     int line_number = 0;
     std::ifstream netlist_file (netlist_path_);
     std::string line;
     std::ostringstream eof_netlist;
     std::ostringstream header_netlist;
-    std::regex connection_regex("\\((.+)\\)");
+    // regex for the isource line
+    std::regex isource_regex("\\((.+)\\)");
+    // regex for the circuit line
+    std::regex subckt_regex("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)");
+    std::smatch connection_match;
+    
 
     while (getline(netlist_file, line)) {
         // Writes the content of the netlist file to the new one
@@ -85,15 +96,44 @@ void SPICENetlistWriterModule::initialize() {
         line_number++;
         file_lines.push_back(line);
 
+        // For the isource nets
         if(line.rfind(node_name_, 0) == 0){
             isource_line_number = line_number;
-            if(std::regex_search(line, connection_match, connection_regex)) {
+            if(std::regex_search(line, connection_match, isource_regex)) {
                 LOG(STATUS) << "connections: " << connection_match[0];
-                connections_ = connection_match[0];
+                // connections_[1] instead of connections_[0], to get back the nets without the ()
+                connections_ = connection_match[1];
+
+                // the three following lines allow to have the two net names in separate variables
+                size_t space_pos = connections_.find(" ");
+                isource_net1_ = connections_.substr(0, space_pos);
+                isource_net2_ = connections_.substr(space_pos + 1);
             } else {
                 throw ModuleError("Could not find node connections");
             }
             LOG(STATUS) << "Found the isource line!";
+        }
+
+        
+        if(line.rfind(subckt_node_name_, 0) == 0){
+            // For the subckt nets
+            if(std::regex_search(line, connection_match, subckt_regex)) {
+                // connections_[1] instead of connections_[0], to get back the nets without the ()
+                connections_ = connection_match[1];
+                LOG(STATUS) << "Subckt connections: " << connections_;
+                std::istringstream iss(connection_match[2]);
+                std::string net;
+                LOG(STATUS) << "Subckt nets: " << net;
+                // Reads each word separated by a space and adds it to net_list
+                while (iss >> net) { 
+                    net_list.push_back(net);
+                }
+                subckt_name_ = connection_match[3];
+                LOG(STATUS) << "Subckt name: " << subckt_name_;
+            } else {
+                throw ModuleError("Could not find node connections of the subckt");
+            }
+            LOG(STATUS) << "Found the subckt line!";
         }
     }
 
@@ -115,7 +155,6 @@ void SPICENetlistWriterModule::run(Event* event) {
     auto file = std::ofstream(file_name);
     LOG(STATUS) << "Output file(s) created";
 
-        
 
     for (int i=0; i < isource_line_number-1; i++){
         file << file_lines[i] << '\n';
@@ -133,7 +172,7 @@ void SPICENetlistWriterModule::run(Event* event) {
 
         // Get pulse and timepoints
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
-
+        const auto idx = node_enumerator_->Eval(pixel_index.x(), pixel_index.y());
 
         // FIXME maybe some output PWL do not require a full pulse?
         if(!pulse.isInitialized()) {
@@ -142,8 +181,8 @@ void SPICENetlistWriterModule::run(Event* event) {
 
         double step = pulse.getBinning();
 
-        file << node_name_ << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\> ";
-        file << connections_ << " isource type=pwl wave=[";
+        file << node_name_ << "\\<" << idx << "\\> (";
+        file << isource_net1_ << "\\<" << idx << "\\> " << isource_net2_ << ") isource type=pwl wave=[";
 
         for (auto bin = pulse.begin(); bin != pulse.end(); ++bin){
             auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
@@ -154,9 +193,20 @@ void SPICENetlistWriterModule::run(Event* event) {
         }
         file << "]\n";
 
-    
+        // Writing the subckt instance declaration
+        file << subckt_node_name_ << "\\<" << idx << "\\> (";
 
-        // FIXME write IPWL to netlist
+        // For loop over all the possible nets the subckt instance has
+        for (auto i = net_list.begin(); i != net_list.end(); ++i) {
+            file << *i << "\\<" << idx << "\\>" << (i != net_list.end() - 1 ? " " : "");
+        }
+
+        //for (auto i = 0; i < net_list.size(); ++i) {
+        //    file << net_list[i] << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\>" << (i < net_list.end() - 1 ? " " : "");
+        //}
+
+        file << ") " << subckt_name_ << "\n";
+
     }
 
     for (int i=isource_line_number; i < file_lines.size(); i++){
@@ -166,7 +216,6 @@ void SPICENetlistWriterModule::run(Event* event) {
     file.close();
     LOG(STATUS) << "File closed";
 
-    
 }
 
 void SPICENetlistWriterModule::finalize() {

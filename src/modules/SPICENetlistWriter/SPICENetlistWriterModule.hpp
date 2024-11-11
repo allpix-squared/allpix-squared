@@ -108,10 +108,19 @@ namespace allpix {
         // Module parameters
         std::filesystem::path netlist_path_;
         TargetSpice target_;
+        // 'node' should be renamed in 'instance'
         std::string node_name_{};
+        std::string subckt_node_name_{};
         NodeType node_type_;
         std::unique_ptr<TFormula> node_enumerator_{};
         std::string connections_;
+        std::string subckt_name_;
+        bool save_nodes_{};
+
+        // those two should not be here
+        std::string isource_net1_;
+        std::string isource_net2_;
+        std::vector<std::string> net_list;
         
         // isource_line is the current source string to be modified
         std::string isource_line;
@@ -121,6 +130,5 @@ namespace allpix {
 
         // Vector of all the netlist file lines
         std::vector<std::string> file_lines;
-        std::smatch connection_match;
     };
 } // namespace allpix
