@@ -44,19 +44,28 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     // Get the template netlist to modify:
     netlist_path_ = config.getPath("netlist_template", true);
 
-    node_name_ = config.get<std::string>("node_name");
-    subckt_node_name_ = config.get<std::string>("subckt_name");
+    source_name_ = config.get<std::string>("source_name");
+    subckt_name_ = config.get<std::string>("subckt_name");
+
+    // Get the names of the common nodes of the circuit the isource is connected to (for ex. Vdd, etc.)
+    auto com_nodes = config_.getArray<std::string>("common_nodes");
+    common_nodes_.insert(com_nodes.begin(), com_nodes.end());
+
 
     auto detector_model = detector_->getModel();
     std::string default_enumerator = "x * " + std::to_string(detector_model->getNPixels().Y()) + " + y";
     node_enumerator_ = std::make_unique<TFormula>("node_enumerator", (config_.get<std::string>("node_enumerator", default_enumerator)).c_str());
-
-    config_.setDefault<NodeType>("node_type", NodeType::CURRENTSOURCE);
-    node_type_ = config.get<NodeType>("node_type");
-
+    
     if(!node_enumerator_->IsValid()) {
         throw InvalidValueError(config_, "node_enumerator", "Node enumerator is not a valid ROOT::TFormula expression.");
     }
+
+
+    config_.setDefault<SourceType>("source_type", SourceType::isource);
+    source_type_ = config.get<SourceType>("source_type");
+    config_.setDefault<double>("pixel_capacitance", Units::get(5e-15, "C/V"));
+    pixel_capacitance_ = config_.get<double>("pixel_capacitance");
+
 
     auto parameters = config_.getArray<double>("node_enumerator_parameters", {});
 
@@ -74,7 +83,7 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
 
     LOG(DEBUG) << "Node enumerator function successfully initialized with " << parameters.size() << " parameters";
 }
-
+ 
 void SPICENetlistWriterModule::initialize() {
 
     int line_number = 0;
@@ -83,7 +92,7 @@ void SPICENetlistWriterModule::initialize() {
     std::ostringstream eof_netlist;
     std::ostringstream header_netlist;
     // regex for the isource line
-    std::regex isource_regex("\\((.+)\\)");
+    std::regex source_regex("\\((.+)\\)");
     // regex for the circuit line
     std::regex subckt_regex("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)");
     std::smatch connection_match;
@@ -97,26 +106,27 @@ void SPICENetlistWriterModule::initialize() {
         file_lines.push_back(line);
 
         // For the isource nets
-        if(line.rfind(node_name_, 0) == 0){
-            isource_line_number = line_number;
-            if(std::regex_search(line, connection_match, isource_regex)) {
+        if(line.rfind(source_name_, 0) == 0){
+            source_line_number = line_number;
+            if(std::regex_search(line, connection_match, source_regex)) {
                 LOG(STATUS) << "connections: " << connection_match[0];
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
 
                 // the three following lines allow to have the two net names in separate variables
                 size_t space_pos = connections_.find(" ");
-                isource_net1_ = connections_.substr(0, space_pos);
-                isource_net2_ = connections_.substr(space_pos + 1);
+                source_net1_ = connections_.substr(0, space_pos);
+                source_net2_ = connections_.substr(space_pos + 1);
             } else {
                 throw ModuleError("Could not find node connections");
             }
-            LOG(STATUS) << "Found the isource line!";
+            LOG(STATUS) << "Found the source line!";
         }
 
-        
-        if(line.rfind(subckt_node_name_, 0) == 0){
+
+        if(line.rfind(subckt_name_, 0) == 0){
             // For the subckt nets
+            subckt_line_number = line_number;
             if(std::regex_search(line, connection_match, subckt_regex)) {
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
@@ -124,9 +134,9 @@ void SPICENetlistWriterModule::initialize() {
                 std::istringstream iss(connection_match[2]);
                 std::string net;
                 LOG(STATUS) << "Subckt nets: " << net;
-                // Reads each word separated by a space and adds it to net_list
+                // Reads each word separated by a space and adds it to node_list
                 while (iss >> net) { 
-                    net_list.push_back(net);
+                    node_list.push_back(net);
                 }
                 subckt_name_ = connection_match[3];
                 LOG(STATUS) << "Subckt name: " << subckt_name_;
@@ -138,10 +148,13 @@ void SPICENetlistWriterModule::initialize() {
     }
 
     // find position of the last character to keep in the isource declaration
-    size_t p = file_lines[isource_line_number].find("[");
+    size_t p = file_lines[source_line_number].find("[");
 
     // only keep the isource line before the waveform
-    isource_line = file_lines[isource_line_number].substr(0, p);
+    source_line = file_lines[source_line_number].substr(0, p);
+
+
+
     LOG(STATUS) << "End of initialize";
 }
 
@@ -155,15 +168,20 @@ void SPICENetlistWriterModule::run(Event* event) {
     auto file = std::ofstream(file_name);
     LOG(STATUS) << "Output file(s) created";
 
-
-    for (int i=0; i < isource_line_number-1; i++){
-        file << file_lines[i] << '\n';
+    // Write the header on the new netlist
+    size_t current_line = 0;
+    for (; current_line < std::min(source_line_number, subckt_line_number) - 1; current_line++){
+        file << file_lines[current_line] << '\n';
     }
-
+    
+    // For loop over all pixels fired
     for(const auto& pixel_charge : message->getData()) {
         auto pixel = pixel_charge.getPixel();
         auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
+        
+        // Charge value for vsource
+        //auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
         std::ostringstream pulse_string;
         
         LOG(STATUS) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
@@ -172,6 +190,8 @@ void SPICENetlistWriterModule::run(Event* event) {
 
         // Get pulse and timepoints
         const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
+
+        // Get pixel address
         const auto idx = node_enumerator_->Eval(pixel_index.x(), pixel_index.y());
 
         // FIXME maybe some output PWL do not require a full pulse?
@@ -181,36 +201,85 @@ void SPICENetlistWriterModule::run(Event* event) {
 
         double step = pulse.getBinning();
 
-        file << node_name_ << "\\<" << idx << "\\> (";
-        file << isource_net1_ << "\\<" << idx << "\\> " << isource_net2_ << ") isource type=pwl wave=[";
+        file << source_name_ << "\\<" << idx << "\\> (";
+        file << source_net1_ << "\\<" << idx << "\\> " << source_net2_;
+        
+        // ------- isource -------
 
-        for (auto bin = pulse.begin(); bin != pulse.end(); ++bin){
-            auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
-            double current_bin = *bin / step;
-            double current = current_bin* nanoCoulomb;
+        if (source_type_ == SourceType::isource) {
+        
+            file << ") isource type=pwl wave=[";
 
-            file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
+            for (auto bin = pulse.begin(); bin != pulse.end(); ++bin){
+                auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
+                double current_bin = *bin / step;
+                double current = current_bin* nanoCoulomb;
+
+                file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
+            }
+            file << "]\n";
+
+        } else if (source_type_ == SourceType::vsource) {
+            // Capacitance
+            // Calculates the voltage on the node using the charge collected by the diode and the pixel capacitance
+            v_diode = (inputcharge*elementalCharge)/pixel_capacitance_;
+            // Charge
+            file << ") vsource type=dc dc=" << std::setprecision(9) << v_diode << "\n";
         }
-        file << "]\n";
+        
 
         // Writing the subckt instance declaration
-        file << subckt_node_name_ << "\\<" << idx << "\\> (";
+        file << subckt_name_ << "\\<" << idx << "\\> (";
 
-        // For loop over all the possible nets the subckt instance has
-        for (auto i = net_list.begin(); i != net_list.end(); ++i) {
-            file << *i << "\\<" << idx << "\\>" << (i != net_list.end() - 1 ? " " : "");
+
+        ////////////////////////////////////////////////////////////
+/*
+        for (auto i = node_list.begin(); i != node_list.end(); ++i) {
+             if (common_nodes_.find(*i) != common_nodes_.end()) {
+                // must NOT be iterated !
+                file << *i << (i != node_list.end() - 1 ? " " : "");
+            } else {
+                // must be iterated !
+                file << *i << "\\<" << idx << "\\>" << " ";
+            }
         }
+        file.seekp(-1, std::ios_base::cur);
 
-        //for (auto i = 0; i < net_list.size(); ++i) {
-        //    file << net_list[i] << "\\<" << node_enumerator_->Eval(pixel_index.x(), pixel_index.y()) << "\\>" << (i < net_list.end() - 1 ? " " : "");
-        //}
+        ////////////////////////////////////////////////////////////
+
+
+
+        //////////////////// THIS WORKS ?!?! ////////////////////
+                // For loop over all the possible nets the subckt instance has
+        for (auto i = node_list.begin(); i != node_list.end(); ++i) {
+            file << *i << "\\<" << idx << "\\>" << (i != node_list.end() - 1 ? " " : "");
+        }
+        //////////////////// THIS WORKS ?!?! ////////////////////
+*/
+
+
+        for (const auto& node : node_list) {
+            if (common_nodes_.find(node) != common_nodes_.end()) {
+                // must NOT be iterated !
+                file << node << " ";
+            } else {
+                // must be iterated !
+                file << node << "\\<" << idx << "\\>" << " ";
+            }
+        }
+        file.seekp(-1, std::ios_base::cur);
+        ////////////////////////////////////////////////////////////
 
         file << ") " << subckt_name_ << "\n";
 
     }
 
-    for (int i=isource_line_number; i < file_lines.size(); i++){
-        file << file_lines[i] << '\n';
+    for (current_line++; current_line < std::max(source_line_number, subckt_line_number)-1; current_line++){
+        file << file_lines[current_line] << '\n';
+    }
+
+    for (current_line++; current_line < file_lines.size(); current_line++){
+        file << file_lines[current_line] << '\n';
     }
 
     file.close();
