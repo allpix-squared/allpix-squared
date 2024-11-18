@@ -46,6 +46,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
+    flip_odd_rows_ = config_.get<bool>("flip_odd_rows");
     max_depth_distance_ = config_.get<double>("max_depth_distance");
     collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
