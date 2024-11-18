@@ -332,18 +332,18 @@ void CapacitiveTransferModule::run(Event* event) {
                     row = static_cast<size_t>(std::floor(matrix_rows_ / 2));
                 }
 
-		// To support designs in which every other row has a mirrored crosstalk matrix:
-		// --> add a switch for this.
-		// if config parameter is true, replace e.g. "row" with "max_row_ - row - 1"
-		auto row_to_use = row;
-		if (flip_odd_rows_ == true && (ypixel%2 == 1)  ){
-		  row_to_use = max_row_ - row -1;
-		}
-		auto col_to_use = col;
-		if (flip_odd_cols_ == true && (xpixel%2 == 1)  ){
-		  col_to_use = max_col_ - col -1;
-		}
-		auto xcoord = xpixel + static_cast<int>(col_to_use - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
+                // To support designs in which every other row has a mirrored crosstalk matrix:
+                // --> add a switch for this.
+                // if config parameter is true, replace e.g. "row" with "max_row_ - row - 1"
+                auto row_to_use = row;
+                if(flip_odd_rows_ == true && (ypixel % 2 == 1)) {
+                    row_to_use = max_row_ - row - 1;
+                }
+                auto col_to_use = col;
+                if(flip_odd_cols_ == true && (xpixel % 2 == 1)) {
+                    col_to_use = max_col_ - col - 1;
+                }
+                auto xcoord = xpixel + static_cast<int>(col_to_use - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
                 auto ycoord = ypixel + static_cast<int>(row_to_use - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
