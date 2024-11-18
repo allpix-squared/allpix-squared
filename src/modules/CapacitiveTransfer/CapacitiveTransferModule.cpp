@@ -328,8 +328,14 @@ void CapacitiveTransferModule::run(Event* event) {
                     row = static_cast<size_t>(std::floor(matrix_rows_ / 2));
                 }
 
-                auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
-                auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
+		// in the CMS-IT bitten design, every other row has a mirrored crosstalk matrix
+		// --> add a switch for this. if config parameter is true, replace "row" with "max_row_ - row - 1 "
+		auto row_modified = row;
+		if (flip_odd_rows_ == true && (ypixel%2 == 1)  ){
+		  row_modified = max_row_ - row -1;
+		}
+		auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
+                auto ycoord = ypixel + static_cast<int>(row_modified - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
                 if(!detector_->getModel()->isWithinMatrix(xcoord, ycoord)) {
