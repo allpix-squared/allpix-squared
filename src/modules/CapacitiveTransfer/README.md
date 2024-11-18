@@ -38,6 +38,8 @@ This module requires an installation of Eigen3.
 * `coupling_matrix`: Cross-coupling matrix with relative capacitances.
 * `max_depth_distance`: Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account in case the detector has no implants defined or `collect_from_implant` is set to `false`. Defaults to `5um`.
 * `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Should only be used with non-linear electric fields and defaults to `false`.
+* `flipp_odd_rows`: For use with designs in which every other row has a mirrored coupling matrix. Enables flipping the matrix rows for every odd pixel row. Defaults to `false` (disabled).
+* `flipp_odd_cols`: As above, just for the columns. Enables flipping the coupling matrix columns for every odd pixel column. Defaults to `false` (disabled).
 * `output_plots`: Saves the output plots for this module. Defaults to 1 (enabled).
 
 The cross-coupling matrix, to be parsed via the matrix file or via the configuration file, must be organized in Row vs Col, such as:
