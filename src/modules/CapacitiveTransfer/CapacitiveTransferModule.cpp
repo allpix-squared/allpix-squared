@@ -39,6 +39,8 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
+    config_.setDefault("flip_odd_rows", false);
+    config_.setDefault("flip_odd_cols", false);
     config_.setDefault("nominal_gap", 0.0);
     config_.setDefault("max_depth_distance", Units::get<double>(5, "um"));
     // By default, collect from the full sensor surface, not the implant region
@@ -47,6 +49,7 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
     flip_odd_rows_ = config_.get<bool>("flip_odd_rows");
+    flip_odd_cols_ = config_.get<bool>("flip_odd_cols");
     max_depth_distance_ = config_.get<double>("max_depth_distance");
     collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
@@ -329,14 +332,19 @@ void CapacitiveTransferModule::run(Event* event) {
                     row = static_cast<size_t>(std::floor(matrix_rows_ / 2));
                 }
 
-		// in the CMS-IT bitten design, every other row has a mirrored crosstalk matrix
-		// --> add a switch for this. if config parameter is true, replace "row" with "max_row_ - row - 1 "
-		auto row_modified = row;
+		// To support designs in which every other row has a mirrored crosstalk matrix:
+		// --> add a switch for this.
+		// if config parameter is true, replace e.g. "row" with "max_row_ - row - 1"
+		auto row_to_use = row;
 		if (flip_odd_rows_ == true && (ypixel%2 == 1)  ){
-		  row_modified = max_row_ - row -1;
+		  row_to_use = max_row_ - row -1;
 		}
-		auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
-                auto ycoord = ypixel + static_cast<int>(row_modified - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
+		auto col_to_use = col;
+		if (flip_odd_cols_ == true && (xpixel%2 == 1)  ){
+		  col_to_use = max_col_ - col -1;
+		}
+		auto xcoord = xpixel + static_cast<int>(col_to_use - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
+                auto ycoord = ypixel + static_cast<int>(row_to_use - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
                 if(!detector_->getModel()->isWithinMatrix(xcoord, ycoord)) {
