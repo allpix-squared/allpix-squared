@@ -111,7 +111,7 @@ namespace allpix {
         SourceType source_type_;
         // 'node' should be renamed in 'instance'
         std::string source_name_{};
-        std::string subckt_name_{};
+        std::string subckt_instance_name_{};
 
         std::unique_ptr<TFormula> node_enumerator_{};
         std::string connections_;
@@ -126,6 +126,7 @@ namespace allpix {
         
         // isource_line is the current source string to be modified
         std::string source_line;
+        std::string subckt_name;
         int subckt_line_number = 0;
         int source_line_number = 0;
         double elementalCharge = 1.6e-19;

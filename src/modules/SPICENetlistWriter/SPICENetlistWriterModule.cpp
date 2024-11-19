@@ -45,7 +45,7 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     netlist_path_ = config.getPath("netlist_template", true);
 
     source_name_ = config.get<std::string>("source_name");
-    subckt_name_ = config.get<std::string>("subckt_name");
+    subckt_instance_name_ = config.get<std::string>("subckt_name");
 
     // Get the names of the common nodes of the circuit the isource is connected to (for ex. Vdd, etc.)
     auto com_nodes = config_.getArray<std::string>("common_nodes");
@@ -124,7 +124,7 @@ void SPICENetlistWriterModule::initialize() {
         }
 
 
-        if(line.rfind(subckt_name_, 0) == 0){
+        if(line.rfind(subckt_instance_name_, 0) == 0){
             // For the subckt nets
             subckt_line_number = line_number;
             if(std::regex_search(line, connection_match, subckt_regex)) {
@@ -138,8 +138,8 @@ void SPICENetlistWriterModule::initialize() {
                 while (iss >> net) { 
                     node_list.push_back(net);
                 }
-                subckt_name_ = connection_match[3];
-                LOG(STATUS) << "Subckt name: " << subckt_name_;
+                subckt_name = connection_match[3];
+                LOG(STATUS) << "Subckt name: " << subckt_name;
             } else {
                 throw ModuleError("Could not find node connections of the subckt");
             }
@@ -229,7 +229,7 @@ void SPICENetlistWriterModule::run(Event* event) {
         
 
         // Writing the subckt instance declaration
-        file << subckt_name_ << "\\<" << idx << "\\> (";
+        file << subckt_instance_name_ << "\\<" << idx << "\\> (";
 
 
         ////////////////////////////////////////////////////////////
@@ -270,7 +270,7 @@ void SPICENetlistWriterModule::run(Event* event) {
         file.seekp(-1, std::ios_base::cur);
         ////////////////////////////////////////////////////////////
 
-        file << ") " << subckt_name_ << "\n";
+        file << ") " << subckt_name << "\n";
 
     }
 
