@@ -332,9 +332,7 @@ void CapacitiveTransferModule::run(Event* event) {
                     row = static_cast<size_t>(std::floor(matrix_rows_ / 2));
                 }
 
-                // To support designs in which every other row has a mirrored crosstalk matrix:
-                // --> add a switch for this.
-                // if config parameter is true, replace e.g. "row" with "max_row_ - row - 1"
+                // Some designs have a mirrored crosstalk matrix which is flipped in every other row or column:
                 auto row_to_use = row;
                 if(flip_odd_rows_ == true && (ypixel % 2 == 1)) {
                     row_to_use = max_row_ - row - 1;
