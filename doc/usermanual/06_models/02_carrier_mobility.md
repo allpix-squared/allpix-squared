@@ -369,6 +369,10 @@ references are listed in the table below.
 |                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
 |                  | $`\gamma`$                                                          | $` 1.0`$            | $` 2.1`$            | \[[@LandoltBornstein]\]          |
 
+The relevant set of parameters from the above table is selected automatically based on the configured material of the sensor in question.
+
+This model can be selected in the configuration file via the parameter `mobility_model = "quay"`.
+
 ## Levinshtein Mobility
 
 The Levinshtein mobility model describes the mobility of electron and holes in Gallium Nitride. The publication \[[@Levinshtein]\] models the electron and hole mobilities as a function of doping concentration and temperature. The temperature dependent model follows the relation
