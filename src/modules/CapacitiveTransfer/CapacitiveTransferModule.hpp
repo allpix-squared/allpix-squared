@@ -88,6 +88,8 @@ namespace allpix {
         double max_depth_distance_{};
         bool collect_from_implant_{};
         bool cross_coupling_{};
+        bool flip_odd_rows_{};
+        bool flip_odd_cols_{};
 
         void getCapacitanceScan(TFile* root_file);
         std::array<TGraph*, 9> capacitances_{};
