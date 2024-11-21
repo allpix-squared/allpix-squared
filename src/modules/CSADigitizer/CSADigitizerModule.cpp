@@ -359,7 +359,7 @@ void CSADigitizerModule::run(Event* event) {
 
         // Add the hit to the hitmap
         hits.emplace_back(
-            pixel, time, pixel_charge.getGlobalTime() + std::get<2>(arrival), charge, &pixel_charge, &pulses.back());
+            pixel, time, std::get<2>(arrival)-tdc_offset_, charge, &pixel_charge, &pulses.back());
     }
 
     // Output summary and update statistics
@@ -423,9 +423,10 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     };
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
-    auto tot_time = clockToT_ * std::ceil(arrival_time / clockToT_);
-    while(tot_time < integration_time_) {
-        auto bin = pulse.at(static_cast<size_t>(std::floor(tot_time / timestep)));
+    auto tot_time0 = clockToT_ * std::ceil(arrival_time / clockToT_); 
+    auto tot_time = tot_time0;
+    while(tot_time < tot_time0+integration_time_) {
+        auto bin = pulse.at(static_cast<size_t>(std::floor((tot_time-tot_time0) / timestep)));
         if(is_below_threshold(bin)) {
             break;
         }
