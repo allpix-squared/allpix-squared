@@ -12,8 +12,8 @@
 #ifndef ALLPIX_GENERATOR_DEPOSITION_MODULE_H
 #define ALLPIX_GENERATOR_DEPOSITION_MODULE_H
 
-#include "../DepositionGeant4/DepositionGeant4Module.hpp"
 #include "PrimariesReader.hpp"
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
 
 namespace allpix {
     /**

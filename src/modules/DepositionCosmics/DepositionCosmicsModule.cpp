@@ -19,7 +19,7 @@
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 
-#include "../DepositionGeant4/ActionInitializationG4.hpp"
+#include "modules/DepositionGeant4/ActionInitializationG4.hpp"
 
 #include <filesystem>
 #include <sstream>
