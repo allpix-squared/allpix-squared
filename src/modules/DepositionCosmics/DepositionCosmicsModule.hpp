@@ -12,7 +12,7 @@
 #ifndef ALLPIX_COSMICS_DEPOSITION_MODULE_H
 #define ALLPIX_COSMICS_DEPOSITION_MODULE_H
 
-#include "../DepositionGeant4/DepositionGeant4Module.hpp"
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
 
 #include <mutex>
 
