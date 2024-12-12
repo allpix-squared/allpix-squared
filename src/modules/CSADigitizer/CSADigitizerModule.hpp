@@ -44,6 +44,7 @@ namespace allpix {
             SIMPLE, ///< Simplified parametrisation
             CSA,    ///< Enter all contributions to the transfer function as parameters
             CUSTOM, ///< Custom impulse response function using a ROOT::TFormula expression
+            GRAPH, ///< External graph in .csv format
         };
 
     public:
@@ -79,6 +80,7 @@ namespace allpix {
 
         // Function to calculate impulse response
         std::unique_ptr<TFormula> calculate_impulse_response_;
+        std::unique_ptr<TGraph> graph_impulse_response_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
