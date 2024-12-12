@@ -167,6 +167,10 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         }
 
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
+    } else if(model_ == DigitizerType::LUT) {
+    //    Take the file (type to be determined) containing normalized electronics response and establish interpolation for every timestep
+    //} excel -> csv, import, change to tgraph, add if statement for eval function
+        
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -248,7 +252,11 @@ void CSADigitizerModule::run(Event* event) {
             impulse_response_function_.reserve(ntimepoints);
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
                 impulse_response_function_.push_back(
-                    calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
+                    if(model_ != DigitizerType::LUT) {
+                        calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
+                    } else {
+                        graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint));
+                    }
             }
 
             if(output_plots_) {
