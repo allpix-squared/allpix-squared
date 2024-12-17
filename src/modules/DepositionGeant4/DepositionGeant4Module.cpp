@@ -605,7 +605,7 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-MagneticField::MagneticField(GeometryManager* geometry_manager) { geometry_manager_ = geometry_manager; }
+MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manager_(geometry_manager) {};
 
 void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const {
     G4cout << "Getting magnetic field from geometry manager" << G4endl;

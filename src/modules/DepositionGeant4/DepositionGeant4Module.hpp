@@ -140,9 +140,10 @@ namespace allpix {
         GeometryManager* geometry_manager_;
 
     public:
-        MagneticField(GeometryManager* geometry_manager);
-        ~MagneticField() = default;
-        virtual void GetFieldValue(const double Point[4], double* Bfield) const;
+        explicit MagneticField(GeometryManager* geometry_manager);
+        ~MagneticField() override = default;
+        // The Geant4 API expects a const double Point[4], not the std::array<> the linter suggests
+        virtual void GetFieldValue(const double Point[4], double* Bfield) const override; // NOLINT
     };
 } // namespace allpix
 
