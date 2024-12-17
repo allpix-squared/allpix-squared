@@ -169,7 +169,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
     } else if(model_ == DigitizerType::GRAPH) {
         auto graph_path = config_.getPath("graph_file", true);    //perhaps change auto later
-        graph_impulse_response_ = new TGraph(graph_path.c_str(), "%lg,%lg");
+        graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -250,10 +250,11 @@ void CSADigitizerModule::run(Event* event) {
             // initialize impulse response function - assume all time bins are equal
             impulse_response_function_.reserve(ntimepoints);
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
-                if(model_ != DigitizerType::LUT) {
+                if(model_ != DigitizerType::GRAPH) {
                     impulse_response_function_.push_back(calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
                 } else {
-                    impulse_response_function_.push_back(graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
+                    LOG(TRACE) << timestep * static_cast<double>(itimepoint) << ", " << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint));
+                    impulse_response_function_.push_back(graph_impulse_response_->Eval(Units::convert(timestep * static_cast<double>(itimepoint), "s")));
                 }
             }
 
@@ -270,6 +271,7 @@ void CSADigitizerModule::run(Event* event) {
                 response_graph->GetYaxis()->SetTitle("amp. response");
                 response_graph->SetTitle("Amplifier response function");
                 getROOTDirectory()->WriteTObject(response_graph, "response_function");
+                getROOTDirectory()->WriteTObject(graph_impulse_response_.get(), "graph_impulse_response");
             }
 
             LOG(INFO) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})
