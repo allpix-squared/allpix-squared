@@ -24,6 +24,7 @@
 #include <TFormula.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TGraph.h>
 
 namespace allpix {
     /**
