@@ -12,6 +12,7 @@
 #ifndef ALLPIX_WORKER_RUN_MANAGER_H
 #define ALLPIX_WORKER_RUN_MANAGER_H
 
+#include <G4Version.hh>
 #include <G4WorkerRunManager.hh>
 
 namespace allpix {
@@ -85,12 +86,21 @@ namespace allpix {
          */
         G4Event* GenerateEvent(G4int i_event) override;
 
+#if G4VERSION_NUMBER < 1130
         /**
          * @brief Previously used to merge the partial results obtained by this manager and the master.
          *
          * Merge the run results with the master results. It will now do nothing.
          */
         void MergePartialResults() override {}
+#else
+        /**
+         * @brief Previously used to merge the partial results obtained by this manager and the master.
+         *
+         * Merge the run results with the master results. It will now do nothing.
+         */
+        void MergePartialResults(G4bool) override {}
+#endif
     };
 } // namespace allpix
 
