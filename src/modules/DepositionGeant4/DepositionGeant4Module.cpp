@@ -607,7 +607,8 @@ void DepositionGeant4Module::record_module_statistics() {
 
 MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manager_(geometry_manager) {};
 
-void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const {
+// The Geant4 API expects a const double Point[4], not the std::array<> the linter suggests
+void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const { // NOLINT
     G4cout << "Getting magnetic field from geometry manager" << G4endl;
     ROOT::Math::XYZVector bfield_vector =
         geometry_manager_->getMagneticField(ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]));

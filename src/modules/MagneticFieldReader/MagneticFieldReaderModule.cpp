@@ -76,7 +76,7 @@ void MagneticFieldReaderModule::initialize() {
                    yind >= static_cast<double>(ncells[1]) || zind < 0 || zind >= static_cast<double>(ncells[2])) {
                     return fallback_field;
                 } else {
-                    auto *field = field_mesh.get();
+                    auto* field = field_mesh.get();
 
                     auto ix = static_cast<uint64_t>(xind);
                     auto iy = static_cast<uint64_t>(yind);
