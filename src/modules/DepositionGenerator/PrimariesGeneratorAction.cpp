@@ -60,7 +60,7 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
 
         auto* pdg_table = G4ParticleTable::GetParticleTable();
         particle_gun_->SetParticleDefinition(pdg_table->FindParticle(particle.pdg()));
-        particle_gun_->SetParticleEnergy(particle.energy());
+        particle_gun_->SetParticleEnergy(particle.energy() * 1000);
         particle_gun_->SetParticlePosition(particle.position());
         particle_gun_->SetParticleMomentumDirection(particle.direction());
 
