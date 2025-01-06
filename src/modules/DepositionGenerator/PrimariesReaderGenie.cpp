@@ -98,8 +98,12 @@ std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
             LOG(DEBUG) << "Skipping primary particle with PDG code " << pdg_code_->At(i);
             continue;
         }
-        particles.emplace_back(
-            pdg_code_->At(i), energy_->At(i), G4ThreeVector(px_->At(i), py_->At(i), pz_->At(i)), G4ThreeVector(0, 0, 0), 0);
+        // Nota bene: GENIE returns energy in GeV so we need to convert to MeV:
+        particles.emplace_back(pdg_code_->At(i),
+                               energy_->At(i) * 1000.,
+                               G4ThreeVector(px_->At(i), py_->At(i), pz_->At(i)),
+                               G4ThreeVector(0, 0, 0),
+                               0);
         LOG(DEBUG) << "Adding particle with ID " << particles.back().pdg() << " energy " << particles.back().energy();
     }
 
