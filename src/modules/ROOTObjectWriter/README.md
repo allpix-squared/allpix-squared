@@ -21,6 +21,7 @@ In addition to the objects, both the configuration and the geometry setup are wr
 * `file_name` : Name of the data file to create, relative to the output directory of the framework. The file extension `.root` will be appended if not present.
 * `include` : Array of object names (without `allpix::` prefix) to write to the ROOT trees, all other object names are ignored (cannot be used together simultaneously with the *exclude* parameter).
 * `exclude`: Array of object names (without `allpix::` prefix) that are not written to the ROOT trees (cannot be used together simultaneously with the *include* parameter).
+* `require_sequence`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. Defaults to `true`, writing events in the order they have been seeded. If strict adherence to the order of events is required, finished events are buffered until they can be written to file.
 
 ## Usage
 To create the default file (with the name *data.root*) containing trees for all objects except for PropagatedCharges, the following configuration can be placed at the end of the main configuration:

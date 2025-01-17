@@ -37,6 +37,12 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger*
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
+
+    // Waive sequence requirement if requested by user
+    config_.setDefault("require_sequence", true);
+    if(!config_.get<bool>("require_sequence")) {
+        waive_sequence_requirement();
+    }
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic
