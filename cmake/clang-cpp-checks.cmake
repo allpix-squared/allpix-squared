@@ -5,16 +5,17 @@
 
 # Check if the git hooks are installed and upt-to-date:
 IF(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-    IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit")
-        IF(EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
-            MESSAGE(WARNING "Git hooks are outdated - this project has moved to the pre-commit framework. Install via "
-                    "pre-commit install -f")
-        ELSE()
+    IF(EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit-clang-format")
+        MESSAGE(WARNING "Git hooks are outdated - this project has moved to the pre-commit framework. Install via "
+                "pre-commit install -f"
+                " and delete the file .git/hooks/pre-commit-clang-format")
+    ELSE()
+        IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit")
             MESSAGE(WARNING "Git hooks are not installed - install via "
                     "pre-commit install")
+        ELSE()
+            MESSAGE(STATUS "Found pre-commit hooks installed.")
         ENDIF()
-    ELSE()
-        MESSAGE(STATUS "Found pre-commit hooks installed.")
     ENDIF()
 ENDIF()
 
