@@ -209,7 +209,7 @@ For more details refer to the [code reference](https://allpix-squared.docs.cern.
 
 The pulse object is a meta class mainly used to hold the time information of a charge pulse arriving at the collection
 implant, if such information is available in the simulation. A pulse object always has a fixed time binning chosen during the
-creation of the object. It inherits from [std::vector<double>](https://en.cppreference.com/w/cpp/container/vector).
+creation of the object. It inherits from [`std::vector<double>`](https://en.cppreference.com/w/cpp/container/vector).
 
 Main parameters:
 

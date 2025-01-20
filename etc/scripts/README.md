@@ -16,13 +16,13 @@ Please make sure, the information is correct.
 
 Usage:
 
-```
+```shell
 etc/scripts/make_module.sh
 ```
 
 Example output:
 
-```
+```shell
 $ ../etc/make_module.sh
 
 Preparing code basis for a new module:
@@ -49,13 +49,13 @@ Simple tool which parses the source code of a module and prints a list of all av
 
 Example usage:
 
-```
+```shell
 etc/scripts/print_module_parameters.sh src/modules/DefaultDigitizer/
 ```
 
 Example output:
 
-```
+```shell
 Parameters for module "DefaultDigitizer":
 
 NAME                TYPE
@@ -78,12 +78,11 @@ For the explanation of the parameters, please refer to the documentation of the 
 
 Script to facilitate the compilation of allpix<sup>2</sup> on the CERN LXPLUS Linux cluster. Sourcing the script via
 
-```
+```shell
 source etc/scripts/setup_lxplus.sh
 ```
 
 will setup all required build dependencies.
-
 
 
 ## create_deposition_file.py
@@ -93,7 +92,8 @@ Python program to generate input files for the DepositionReader module. It will 
 Requirements: python3, ROOT built with python option.
 
 Usage:
-```
+
+```shell
 python create_deposition_file.py
 ```
 

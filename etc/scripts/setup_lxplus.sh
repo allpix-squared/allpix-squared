@@ -19,4 +19,3 @@ fi
 
 # Load default configuration
 source $ABSOLUTE_PATH/../../.ci/init_x86_64.sh
-

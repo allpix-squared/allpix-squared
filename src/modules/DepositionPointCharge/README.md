@@ -9,6 +9,7 @@ module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
 ## Description
+
 Module which deposits a defined number of charge carriers at a specific point within the active volume the detector.
 The number of charge carriers to be deposited can be specified in the configuration.
 
@@ -27,6 +28,7 @@ Monte Carlo particles are generated at the respective positions, bearing a parti
 All charge carriers are deposited at time zero, i.e. at the beginning of the event.
 
 ## Parameters
+
 * `model`: Model according to which charge carriers are deposited. For `fixed`, charge carriers are deposited at a specific point for every event. For `scan`, the point where charge carriers are deposited changes for every event. For `spot`, depositions are smeared around the configured position.
 * `number_of_charges`: Number of charges deposited. This refers to the total number of charge carriers for the source type `point` and defaults to 1. For the `mip` source type, this value is interpreted as charge carriers per length deposited in the sensor and defaults to `80/um`. It should be noted that without units specified, this value will be interpreted in the framework base units, in this case `/mm`.
 * `number_of_steps`: Number of steps over the full sensor thickness at which charge carriers are deposited. Only used for `mip` source type. Defaults to 100.
@@ -38,8 +40,8 @@ All charge carriers are deposited at time zero, i.e. at the beginning of the eve
 
 ### Plotting parameters
 
-- `output_plots` : Determines if output plots should be generated. Disabled by default.
-- `output_plots_bins_per_um` : Number of bins per micrometer in all directions in the 2D histograms used to plot deposition position. Only used if `output_plots` is enabled.
+* `output_plots` : Determines if output plots should be generated. Disabled by default.
+* `output_plots_bins_per_um` : Number of bins per micrometer in all directions in the 2D histograms used to plot deposition position. Only used if `output_plots` is enabled.
 
 ## Usage
 

@@ -10,6 +10,7 @@ module_outputs: ["PixelCharge"]
 ---
 
 ## Description
+
 Similar to the SimpleTransferModule, this module combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. In addition to the SimpleTransferModule, where the charge close to the implants is transferred only to the closest read-out pixel, this module also copies the propagated charge to the neighboring pixels, scaled by the respective cross-coupling (i.e. `cross_capacitance / nominal_capacitance`), in order to simulate the cross-coupling between neighboring pixels in Capacitively Coupled Pixel Detectors (CCPDs).
 
 It is also possible to simulate assemblies with tilted chips, with non-uniform coupling over the pixel matrix, by providing the tilting angles between the chips, the nominal and minimum gaps between the pixel pads, the pixel coordinates where the chips are away from each other by the minimum gap provided and a root file containing ROOT::TGraph with coupling capacitances *vs* gap between pixel pads.
@@ -28,6 +29,7 @@ This model will reproduce the results with the coupling matrices if `chip_angle 
 This module requires an installation of Eigen3.
 
 ## Parameters
+
 * `coupling_scan_file`: Root file containing a TGraph, for each pixel, with the capacitance simulated for each gap between the pixel pads. The TGraph objects in the root file should be named `Pixel_X` where `X` goes from 1 to 9.
 * `chip_angle`: Tilt angle between chips. The first angle is the rotation along the columns axis,  and second is along the row axis. It defaults to 0.0 radians (parallel chips).
 * `tilt_center`: Pixel position for the nominal coupling/distance.
@@ -54,6 +56,7 @@ The matrix center element, `cross_coupling_11` in this example, is the coupling 
 The matrix can have any size, although square 3x3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with NxM, where N and M are the respective sizes of the matrix.
 
 ## Usage
+
 This module accepts only one coupling model (`coupling_scan_file`, coupling_file or `coupling_matrix`) at each time. If more then one option is provided, the simulation will not run.
 
 ```ini

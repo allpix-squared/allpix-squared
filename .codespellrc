@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2025 CERN and the Allpix Squared Authors
+# SPDX-License-Identifier: CC0-1.0
+
+[codespell]
+skip = .git,.gitlab,cmake,3rdparty,AUTHORS.md
+quiet-level = 2
+# Words to be ignored, put one word per line and sort alphabetically
+ignore-words-list =
+ asai,
+ hist,
+ globaly,
+ localy,
+ skelton,
+ synopsys,
+ te,
+ yse,

@@ -9,6 +9,7 @@ module_outputs: ["DepositedCharge", "MCParticle"]
 ---
 
 ## Description
+
 This module allows to read in energy depositions in a sensor volume produced with a different program, e.g. with Geant4 in a standalone simulation of the respective experiment.
 The detector geometry for Allpix Squared should resemble the global positions of the detectors of interest in the original simulation.
 
@@ -68,7 +69,7 @@ Individual leafs of branches can be assigned using the dot notation, e.g. `energ
 Data in CSV-formatted text files are interpreted as follows.
 Empty lines as well as lines starting with a hash (`#`) are ignored, all other lines are interpreted either as event header if they start with `E`, or as energy deposition:
 
-```
+```shell
 Event: <N>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
 <PID>,<T>,<E>,<X>,<Y>,<Z>,<V>,<TRK>,<PRT>
@@ -91,6 +92,7 @@ If the parameters `assign_timestamps` or `create_mcparticles` are set to `false`
 The file should have its end-of-file marker (EOF) in a new line, otherwise the last entry will be ignored.
 
 ## Parameters
+
 * `model`: Format of the data file to be read, can either be `csv` or `root`.
 * `file_name`: Location of the input data file. The appropriate file extension will be appended if not present, depending on the `model` chosen either `.csv` or `.root`.
 * `tree_name`: Name of the input tree to be read from the ROOT file. Only used for the `root` model.
@@ -107,6 +109,7 @@ The file should have its end-of-file marker (EOF) in a new line, otherwise the l
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ## Usage
+
 An example for reading energy depositions from a ROOT file tree named `hitTree`, using only the first five characters of the volume name as detector identifier and meter as unit length, is the following:
 
 ```ini

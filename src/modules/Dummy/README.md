@@ -10,10 +10,13 @@ module_maintainers: ["John Doe (<john.doe@example.com>)"]
 ---
 
 ## Description
-*Description of this module*
+
+Place a *description of this module* here
 
 ## Parameters
+
 * `param`: *explanation with optional default*
 
 ## Usage
-*Example how to use this module*
+
+Include an *example how to use this module*

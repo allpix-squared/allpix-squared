@@ -9,6 +9,7 @@ module_inputs: ["PixelHit"]
 ---
 
 ## Description
+
 Writes pixel hit data to LCIO file, compatible with the EUTelescope analysis framework \[[@eutelescope]\].
 
 If the `geometry_file` parameter is set to a non-empty string, a matching GEAR XML file is created from the simulated detector geometry and written to the simulation output directory. This GEAR file can be used with EUTelescope directly to reconstruct particle trajectories.
@@ -16,6 +17,7 @@ If the `geometry_file` parameter is set to a non-empty string, a matching GEAR X
 Optionally, if `dump_mc_truth` is set to true, this module will create Monte Carlo truth collections in the output LCIO file.
 
 ## Parameters
+
 * `file_name`: name of the LCIO file to write, relative to the output directory of the framework. The extension **.slcio** should be added. Defaults to `output.slcio`.
 * `geometry_file` : name of the output GEAR file to write the EUTelescope geometry description to. Defaults to `allpix_squared_gear.xml`
 * `pixel_type`: EUtelescope pixel type to create. Options: EUTelSimpleSparsePixelDefault = 1, EUTelGenericSparsePixel = 2, EUTelTimepix3SparsePixel = 5 (Default: EUTelGenericSparsePixel)
@@ -30,6 +32,7 @@ Only one of the following options must be used, if none is specified `output_col
 If only one detector is present in the `detector_assignment`, the value has to be encapsulated in extra quotes, i.e. `[["mydetector", "zsdata_test", "123"]]`.
 
 ## Usage
+
 ```ini
 [LCIOWriter]
 file_name = "run000123-converter.slcio"

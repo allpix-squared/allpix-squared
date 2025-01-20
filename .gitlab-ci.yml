@@ -190,7 +190,7 @@ fmt:codespell:
         - export PATH=~/.local/bin:$PATH
         - cd ../
         - pip install --trusted-host=pypi.org --user codespell
-        - codespell --ignore-words .gitlab/ci/codespell_ignored_words.txt --quiet-level 2 --skip ".git,.gitlab,cmake,3rdparty,AUTHORS.md"
+        - codespell
 
 fmt:proselint:
     extends: .format
@@ -339,7 +339,7 @@ core:el9-gcc:
     needs:
         - job: cmp:el9-gcc
           artifacts: true
-          
+
 mod:el9-llvm:
     extends:
         - .alma9

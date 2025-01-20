@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
-# SPDX-License-Identifier: MIT
-
-# do the clang-format check
-sh .git/hooks/pre-commit-clang-format

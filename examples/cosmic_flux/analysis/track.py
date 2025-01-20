@@ -31,7 +31,7 @@ class Track(object):
         dotProduct = np.dot(difference, crossProduct)
 
         return np.linalg.norm(dotProduct) / np.linalg.norm(crossProduct)
-    
+
     def _zenithAngle(self, degrees = True):
         normalZ = np.array([0,0,1])
         inner = np.inner(self.direction, normalZ)
