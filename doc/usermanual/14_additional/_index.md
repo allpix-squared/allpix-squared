@@ -6,5 +6,5 @@ description: "Tools provided with Allpix Squared."
 weight: 14
 ---
 
-This chapter briefly describes tools provided with the Allpix Squared framework, which might be re-used in new modules or in
+This chapter briefly describes tools provided with the Allpix Squared framework, which might be reused in new modules or in
 standalone code.
