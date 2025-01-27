@@ -7,8 +7,9 @@ quiet-level = 2
 # Words to be ignored, put one word per line and sort alphabetically
 ignore-words-list =
  asai,
- hist,
  globaly,
+ HEP,
+ hist,
  localy,
  skelton,
  synopsys,
