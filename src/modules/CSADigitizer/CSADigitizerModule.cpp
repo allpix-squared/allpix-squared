@@ -168,8 +168,9 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
     } else if(model_ == DigitizerType::GRAPH) {
-        const auto graph_path = config_.getPath("graph_file", true); // perhaps change auto later
+        const auto graph_path = config_.getPath("graph_file", true);
         graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
+        graph_time_unit_ = config_.get<std::string>("graph_time_unit", "s");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -256,8 +257,8 @@ void CSADigitizerModule::run(Event* event) {
                 } else {
                     LOG(TRACE) << timestep * static_cast<double>(itimepoint) << ", "
                                << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint));
-                    impulse_response_function_.push_back(graph_impulse_response_->Eval(static_cast<double>(Units::convert(
-                        timestep * static_cast<double>(itimepoint), config_.get<std::string>("csv_time_unit", "s")))));
+                    impulse_response_function_.push_back(graph_impulse_response_->Eval(
+                        static_cast<double>(Units::convert(timestep * static_cast<double>(itimepoint), graph_time_unit_))));
                 }
             }
 
