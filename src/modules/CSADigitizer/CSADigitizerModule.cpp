@@ -256,8 +256,8 @@ void CSADigitizerModule::run(Event* event) {
                 } else {
                     LOG(TRACE) << timestep * static_cast<double>(itimepoint) << ", "
                                << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint));
-                    impulse_response_function_.push_back(graph_impulse_response_->Eval(Units::convert(
-                        timestep * static_cast<double>(itimepoint), config_.get<std::string>("csv_time_unit", "s"))));
+                    impulse_response_function_.push_back(graph_impulse_response_->Eval(static_cast<double>(Units::convert(
+                        timestep * static_cast<double>(itimepoint), config_.get<std::string>("csv_time_unit", "s")))));
                 }
             }
 
