@@ -168,7 +168,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
 
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
     } else if(model_ == DigitizerType::GRAPH) {
-        auto graph_path = config_.getPath("graph_file", true); // perhaps change auto later
+        const auto graph_path = config_.getPath("graph_file", true); // perhaps change auto later
         graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
     }
 
