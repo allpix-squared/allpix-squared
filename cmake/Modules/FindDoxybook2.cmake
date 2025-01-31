@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # CMake script to find the doxybook2 executable and export it as Doxybook2::doxybook2 target

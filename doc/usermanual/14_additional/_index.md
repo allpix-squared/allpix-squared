@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Additional Tools & Resources"
 description: "Tools provided with Allpix Squared."

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2020-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2020-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # General overview for compiler support of CXX language and library features:

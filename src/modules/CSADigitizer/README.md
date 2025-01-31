@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2020-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2020-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CSADigitizer"
 description: "Digitizer emulating a Charge Sensitive Amplifier"
