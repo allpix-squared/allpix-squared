@@ -82,7 +82,8 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 ### Parameters for the graph model
 
 * `graph_file`: The path to the .csv file containing the graph of the response function.
-* `graph_time_unit`: Time unit in which the time on the response function graph is expressed.
+* The file should be written in the following format: `x,y` (comma separated values), where x is the time and y the amplitude of the response function at that time point. Each pair of values should be written in a new line.
+* `graph_time_unit`: Time unit in which the time on the response function graph is expressed. Should be a double.
 
 ### Plotting parameters
 
@@ -143,7 +144,7 @@ Example for the `graph` model:
 model = "graph"
 graph_file = /path/to/response_function.csv
 integration_time = 10ns
-graph_time_unit = "s"
+graph_time_unit = 1s
 ```
 
 [@kleczek]: https://doi.org/10.1109/MIXDES.2015.7208529

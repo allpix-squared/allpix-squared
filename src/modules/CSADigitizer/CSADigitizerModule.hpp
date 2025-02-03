@@ -84,7 +84,7 @@ namespace allpix {
         // Graph to store interpolated data points as response function
         std::unique_ptr<TGraph> graph_impulse_response_;
         // Time unit on the response function graph
-        std::string graph_time_unit_;
+        double graph_time_unit_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};

@@ -64,6 +64,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
         config_.setDefault<double>("weak_inversion_slope", 1.5);
         config_.setDefault<double>("temperature", 293.15);
+    } else if(model_ == DigitizerType::GRAPH) {
+        config_.setDefault<double>("graph_time_unit_", Units::get(1, "s"));
     }
 
     // Copy some variables from configuration to avoid lookups:
@@ -170,7 +172,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
     } else if(model_ == DigitizerType::GRAPH) {
         const auto graph_path = config_.getPath("graph_file", true);
         graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
-        graph_time_unit_ = config_.get<std::string>("graph_time_unit", "s");
+        graph_time_unit_ = config_.get<double>("graph_time_unit");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -256,9 +258,10 @@ void CSADigitizerModule::run(Event* event) {
                         calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
                 } else {
                     LOG(TRACE) << timestep * static_cast<double>(itimepoint) << ", "
-                               << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint));
-                    impulse_response_function_.push_back(graph_impulse_response_->Eval(
-                        static_cast<double>(Units::convert(timestep * static_cast<double>(itimepoint), graph_time_unit_))));
+                               << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) /
+                                                                graph_time_unit_);
+                    impulse_response_function_.push_back(
+                        graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) / graph_time_unit_));
                 }
             }
 
