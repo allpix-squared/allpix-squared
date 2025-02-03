@@ -64,6 +64,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("transconductance", Units::get(50e-6, "C/s/V"));
         config_.setDefault<double>("weak_inversion_slope", 1.5);
         config_.setDefault<double>("temperature", 293.15);
+    } else if(model_ == DigitizerType::GRAPH) {
+        config_.setDefault<double>("graph_time_unit_", Units::get(1, "s"));
     }
 
     // Copy some variables from configuration to avoid lookups:
@@ -167,6 +169,10 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         }
 
         LOG(DEBUG) << "Response function successfully initialized with " << parameters.size() << " parameters";
+    } else if(model_ == DigitizerType::GRAPH) {
+        const auto graph_path = config_.getPath("graph_file", true);
+        graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
+        graph_time_unit_ = config_.get<double>("graph_time_unit");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -247,8 +253,16 @@ void CSADigitizerModule::run(Event* event) {
             // initialize impulse response function - assume all time bins are equal
             impulse_response_function_.reserve(ntimepoints);
             for(size_t itimepoint = 0; itimepoint < ntimepoints; ++itimepoint) {
-                impulse_response_function_.push_back(
-                    calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
+                if(model_ != DigitizerType::GRAPH) {
+                    impulse_response_function_.push_back(
+                        calculate_impulse_response_->Eval(timestep * static_cast<double>(itimepoint)));
+                } else {
+                    LOG(TRACE) << timestep * static_cast<double>(itimepoint) << ", "
+                               << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) /
+                                                                graph_time_unit_);
+                    impulse_response_function_.push_back(
+                        graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) / graph_time_unit_));
+                }
             }
 
             if(output_plots_) {
@@ -264,6 +278,7 @@ void CSADigitizerModule::run(Event* event) {
                 response_graph->GetYaxis()->SetTitle("amp. response");
                 response_graph->SetTitle("Amplifier response function");
                 getROOTDirectory()->WriteTObject(response_graph, "response_function");
+                getROOTDirectory()->WriteTObject(graph_impulse_response_.get(), "graph_impulse_response");
             }
 
             LOG(INFO) << "Initialized impulse response with timestep " << Units::display(timestep, {"ps", "ns", "us"})

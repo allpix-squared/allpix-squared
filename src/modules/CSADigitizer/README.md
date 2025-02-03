@@ -50,7 +50,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 ## Parameters
 
-* `model`: Choice between different CSA models. Currently implemented are two parametrizations of the circuit from \[[@kleczek]\], `simple` and `csa`, and the `custom` model for a custom impulse response.
+* `model`: Choice between different CSA models. Currently implemented are two parametrizations of the circuit from \[[@kleczek]\], `simple` and `csa`, the `custom` model for a custom impulse response, and the `graph` model, which takes a .csv file as input and reads out the graph of the transfer function.
 * `integration_time`: The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise`: Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold`: Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
@@ -78,6 +78,12 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 * `response_function`: A 1-dimensional `ROOT::TFormula` \[[@rootformula]\] expression for the impulse response function.
 * `response_parameters`: Array of the parameters in the response function. The number of parameters given need to match up with the number of parameters in the formula.
+
+### Parameters for the graph model
+
+* `graph_file`: The path to the .csv file containing the graph of the response function.
+* The file should be written in the following format: `x,y` (comma separated values), where x is the time and y the amplitude of the response function at that time point. Each pair of values should be written in a new line.
+* `graph_time_unit`: Time unit in which the time on the response function graph is expressed. Should be a double.
 
 ### Plotting parameters
 
@@ -132,6 +138,14 @@ clock_bin_toa = 8ns
 clock_bin_tot = 8ns
 ```
 
+Example for the `graph` model:
+```ini
+[CSADigitizer]
+model = "graph"
+graph_file = /path/to/response_function.csv
+integration_time = 10ns
+graph_time_unit = 1s
+```
 
 [@kleczek]: https://doi.org/10.1109/MIXDES.2015.7208529
 [@binkley]: https://doi.org/10.1002/9780470033715

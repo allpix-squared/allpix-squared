@@ -22,6 +22,7 @@
 #include "objects/PixelCharge.hpp"
 
 #include <TFormula.h>
+#include <TGraph.h>
 #include <TH1D.h>
 #include <TH2D.h>
 
@@ -44,6 +45,7 @@ namespace allpix {
             SIMPLE, ///< Simplified parametrisation
             CSA,    ///< Enter all contributions to the transfer function as parameters
             CUSTOM, ///< Custom impulse response function using a ROOT::TFormula expression
+            GRAPH,  ///< External graph in .csv format
         };
 
     public:
@@ -79,6 +81,10 @@ namespace allpix {
 
         // Function to calculate impulse response
         std::unique_ptr<TFormula> calculate_impulse_response_;
+        // Graph to store interpolated data points as response function
+        std::unique_ptr<TGraph> graph_impulse_response_;
+        // Time unit on the response function graph
+        double graph_time_unit_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
         double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
