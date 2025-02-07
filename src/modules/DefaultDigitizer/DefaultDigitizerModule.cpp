@@ -350,7 +350,11 @@ void DefaultDigitizerModule::run(Event* event) {
         }
 
         // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + original_time, charge, &pixel_charge);
+        hits.emplace_back(pixel,
+                          time,
+                          pixel_charge.getGlobalTime() + original_time,
+                          charge,
+                          (it == pixel_charges.end() ? nullptr : &pixel_charge));
     }
 
     // Output summary and update statistics
