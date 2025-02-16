@@ -6,6 +6,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TMarker.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TSystem.h>
@@ -41,20 +42,67 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
     // Define histograms
 
     // In 2D map form
-    // TProfile2D* residual_map_full =
-    //    new TProfile2D("residual_map_full",
-    //                   "Mean 2D residual vs particle hit position; x [#mum]; y [#mum]; Residual [#mum]",
-    //                   noOfResBinsXY,
-    //                   0,
-    //                   pitch_x,
-    //                   noOfResBinsXY,
-    //                   0,
-    //                   pitch_y);
+    double pitch_x = 150;
+    double pitch_y = 100;
+    double pitch_x_mm = pitch_x / 1000.0;
+    double pitch_y_mm = pitch_y / 1000.0;
+    double thickness = 285;
+    double max_time = 10000; // ps
+    TH2D* propagation_map_xz_all = new TH2D("propagation_map_xz_all",
+                                            "Propagation positions for all times; x [#mum]; z [#mum];",
+                                            1000,
+                                            0,
+                                            pitch_x,
+                                            1000,
+                                            -thickness / 2.0,
+                                            thickness / 2.0);
+    TH2D* propagation_map_yz_all = new TH2D("propagation_map_yz_all",
+                                            "Propagation positions for all times; y [#mum]; z [#mum];",
+                                            1000,
+                                            0,
+                                            pitch_y,
+                                            1000,
+                                            -thickness / 2.0,
+                                            thickness / 2.0);
+    TH2D* propagation_map_xy_all = new TH2D("propagation_map_xy_all",
+                                            "Propagation positions for all times; x [#mum]; y [#mum];",
+                                            1000,
+                                            0,
+                                            pitch_x,
+                                            1000,
+                                            0,
+                                            pitch_y);
+    TH2D* propagation_map_tz_all = new TH2D("propagation_map_tz_all",
+                                            "Propagation positions in z vs time; time [ps]; z [#mum];;",
+                                            1000,
+                                            0,
+                                            max_time,
+                                            1000,
+                                            -thickness / 2.0,
+                                            thickness / 2.0);
+    TH2D* propagation_map_tx_all = new TH2D("propagation_map_tx_all",
+                                            "Propagation positions in x vs time; time [ps]; x [#mum];;",
+                                            1000,
+                                            0,
+                                            max_time,
+                                            1000,
+                                            0,
+                                            pitch_x);
+    TH2D* propagation_map_ty_all = new TH2D("propagation_map_ty_all",
+                                            "Propagation positions in y vs time; time [ps]; y [#mum];;",
+                                            1000,
+                                            0,
+                                            max_time,
+                                            1000,
+                                            0,
+                                            pitch_y);
 
-    // Iterate over all events, for eta calculation
+    int favourite_event = 5;
+
+    // Iterate over all events
     for(int i = 0; i < propagated_charge_tree->GetEntries(); ++i) {
         if(i % 100 == 0) {
-            std::cout << "Processing event " << i << " for eta calculation" << std::endl;
+            std::cout << "Processing event " << i << std::endl;
         }
 
         // Access next event. Pushes information into input_*
@@ -62,26 +110,128 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
 
         for(auto& propagated_charge : propagated_charges) {
             std::vector<allpix::PropagatedCharge::PropagationHistory> history = propagated_charge->getPropagationHistory();
-            std::cout << "Vector size: " << history.size() << std::endl;
+            // std::cout << "Vector size: " << history.size() << std::endl;
             for(auto& [time, position] : history) {
-                std::cout << "Time: " << time << ", position: " << position << std::endl;
+                // std::cout << "Time: " << time*1000.0 << ", position: " << position << std::endl;
+
+                // In um, in pixel coordinate system
+                // std::cout << "position.y(): " << position.y() << ", pitch_y_mm: " << pitch_y_mm << ", fmod: " <<
+                // std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) << std::endl;
+                auto inPixelPos = ROOT::Math::XYVector(std::fmod(position.x() + pitch_x_mm / 2, pitch_x_mm) * 1000,
+                                                       std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) * 1000);
+                // std::cout << "In-pixel position: " << inPixelPos << std::endl;
+                propagation_map_xz_all->Fill(inPixelPos.x(), position.z() * 1000.0);
+                propagation_map_yz_all->Fill(inPixelPos.y(), position.z() * 1000.0);
+                propagation_map_xy_all->Fill(inPixelPos.x(), inPixelPos.y());
+                propagation_map_tz_all->Fill(time * 1000.0, position.z() * 1000.0);
+                propagation_map_tx_all->Fill(time * 1000.0, inPixelPos.x());
+                propagation_map_ty_all->Fill(time * 1000.0, inPixelPos.y());
             }
-            for(size_t i = 0; i < history.size(); i++) {
-                std::cout << "Time: " << std::get<0>(history[i]) << ", position: " << std::get<1>(history[i]) << std::endl;
+        }
+
+        // Animate this thing!
+        // Kind of want to flip it... So that we know all the positions at some timestep...
+        // How, though? Is it even possible? We now know the positions for all time, but the time is not the same for all
+        // charge carriers. We would like to slice it, so we say "aha, we have this time: where are you?" And then it grabs
+        // the position at the time nearest before our specified time. std::find_if can do this... Find the first element
+        // above a given time, and then I take the one below it. Maybe this is the way to go. Yeah, probably. Then I can
+        // define my own tempo, my own timestamps I want to check at. Will make it easy to use the times of a pulse as well.
+        // So, let's define a time vector... In picoseconds?
+        std::vector<double> animTimes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+        // For each of these timestamps, we want to plot *each* propagatedcharge object's position.
+
+        // Set up the drawing
+        TH2D* propagation_map_xz_animation = new TH2D("propagation_map_xz_animation",
+                                                      "Propagation positions for all times; x [#mum]; z [#mum];",
+                                                      1000,
+                                                      0,
+                                                      3 * pitch_x,
+                                                      1000,
+                                                      -thickness / 2.0,
+                                                      thickness / 2.0);
+        // Create canvas for GIF animition of process
+        auto animCanvas_xz =
+            std::make_unique<TCanvas>(("animation_" + std::to_string(favourite_event) + "_xz").c_str(),
+                                      ("Propagation of charge for event " + std::to_string(favourite_event)).c_str(),
+                                      1280,
+                                      1024);
+        animCanvas_xz->cd();
+
+        if(i == favourite_event) {
+            for(auto& ts : animTimes) {
+                int current_color = 1;
+                for(auto& propagated_charge : propagated_charges) {
+
+                    // Set the colour for this charge carrier
+                    EColor plot_color =
+                        (propagated_charge->getType() == allpix::CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+                    auto marker = std::make_unique<TMarker>();
+                    marker->SetMarkerStyle(kFullCircle);
+                    marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 1.0));
+                    marker->SetMarkerColor(current_color);
+
+                    std::vector<allpix::PropagatedCharge::PropagationHistory> history =
+                        propagated_charge->getPropagationHistory();
+                    // Get the first item that has a higher time than the timestamp
+                    auto it = find_if(
+                        history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
+                    ROOT::Math::XYZPoint markerPosition;
+                    double markerTime = 0.0;
+                    if(it != history.begin()) {
+                        markerPosition = std::get<1>(*(it - 1));
+                        markerTime = std::get<0>(*(it - 1)) * 1000.0;
+                        // In the event that the times are exactly equal:
+                        if((ts - std::get<0>(*(it)) * 1000.0) <
+                           std::numeric_limits<double>::epsilon()) { // Floaty magic... We're not so bothered for this
+                                                                     // particular thing, as it's just visualisation
+                            markerPosition = std::get<1>(*it);
+                            markerTime = std::get<0>(*it) * 1000.0;
+                        }
+                    } else {
+                        // SKip this, the begin can be silly
+                        // markerPosition = std::get<1>(*it);
+                        // markerTime = std::get<0>(*it)*1000.0;
+                    }
+                    // std::cout << "Timestamp: " << ts << ", Time: " << std::get<0>(*(it-1))*1000.0
+                    //             << ", Position: " << std::get<1>(*(it-1)) << ", Next: " << std::get<0>(*(it))*1000.0 <<
+                    //             std::endl;
+                    // std::cout << "Timestamp: " << ts << ", Time: " << markerTime
+                    //             << ", Position: " << markerPosition << std::endl;
+
+                    // In um, in pixel coordinate system (3 pixels)
+                    auto markerInPixelPos =
+                        ROOT::Math::XYVector(std::fmod(markerPosition.x() + pitch_x_mm / 2, 3 * pitch_x_mm) * 1000,
+                                             std::fmod(markerPosition.y() + pitch_y_mm / 2, 3 * pitch_y_mm) * 1000);
+                    marker->SetX(markerInPixelPos.x());
+                    marker->SetY(markerPosition.z());
+                    marker->Draw();
+                }
+                animCanvas_xz->Update();
+                animCanvas_xz->Print("anim.gif+");
             }
-            std::cout << "Position directly: " << propagated_charge->getLocalPosition() << std::endl;
         }
     }
 
     // Draw histograms
-    // TCanvas* etaCorrectionCanvas = new TCanvas("etaCorrectionCanvas", "Eta correction", 1200, 800);
-    // etaCorrectionCanvas->Divide(2, 2);
-    // etaCorrectionCanvas->cd(1);
-    // etaDistributionX->Draw("colz");
-    // etaCorrectionCanvas->cd(2);
-    // etaDistributionXprofile->Draw();
-    // etaCorrectionCanvas->cd(3);
-    // etaDistributionY->Draw("colz");
-    // etaCorrectionCanvas->cd(4);
-    // etaDistributionYprofile->Draw();
+    TCanvas* propagation_map_all_canvas = new TCanvas("propagation_map_all_canvas", "Propagation map", 1200, 800);
+    propagation_map_all_canvas->Divide(2, 2);
+    propagation_map_all_canvas->cd(1);
+    propagation_map_xz_all->Draw("colz");
+    propagation_map_all_canvas->cd(2);
+    propagation_map_yz_all->Draw("colz");
+    propagation_map_all_canvas->cd(3);
+    propagation_map_xy_all->Draw("colz");
+    propagation_map_all_canvas->cd(4);
+    propagation_map_tz_all->Draw("colz");
+
+    TCanvas* propagation_map_times_canvas =
+        new TCanvas("propagation_map_times_canvas", "Propagation maps vs time", 1200, 800);
+    propagation_map_times_canvas->Divide(2, 2);
+    propagation_map_times_canvas->cd(1);
+    propagation_map_tx_all->Draw("colz");
+    propagation_map_times_canvas->cd(2);
+    propagation_map_ty_all->Draw("colz");
+    propagation_map_times_canvas->cd(3);
+    propagation_map_tz_all->Draw("colz");
 }
