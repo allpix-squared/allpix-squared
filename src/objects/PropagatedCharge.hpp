@@ -106,6 +106,12 @@ namespace allpix {
         CarrierState getState() const;
 
         /**
+         * @brief Set the propagation history of this propagated charge
+         * @param history Vector of tuples consisting of carrier state, time, and position
+         */
+        void setPropagationHistory(std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> history);
+
+        /**
          * @brief Print an ASCII representation of PropagatedCharge to the given stream
          * @param out Stream to print to
          */
@@ -130,6 +136,10 @@ namespace allpix {
         std::map<Pixel::Index, Pulse> pulses_;
 
         CarrierState state_{CarrierState::UNKNOWN};
+
+        // Variable storing state, time, position
+        // Let's make a vector of tuples
+        std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> propagation_history_{};
     };
 
     /**

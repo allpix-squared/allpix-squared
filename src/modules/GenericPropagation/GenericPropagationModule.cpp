@@ -92,6 +92,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("output_plots_phi", 0.0F);
     config_.setDefault<unsigned int>("output_max_gain_histo", 25);
 
+    config_.setDefault<bool>("store_full_propagation_history", false);
+
     // Set defaults for charge carrier propagation:
     config_.setDefault<bool>("propagate_electrons", true);
     config_.setDefault<bool>("propagate_holes", false);
@@ -123,6 +125,7 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
     output_animations_ = config_.get<bool>("output_animations");
     output_plots_step_ = config_.get<double>("output_plots_step");
+    store_full_propagation_history_ = config_.get<bool>("store_full_propagation_history");
     propagate_electrons_ = config_.get<bool>("propagate_electrons");
     propagate_holes_ = config_.get<bool>("propagate_holes");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
@@ -486,6 +489,9 @@ GenericPropagationModule::propagate(Event* event,
         return {};
     }
 
+    // Vector holding the full history for this propagation
+    std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> propagation_history{};
+
     // Create a Runge-Kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
@@ -498,6 +504,10 @@ GenericPropagationModule::propagate(Event* event,
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
         output_plot_points.emplace_back(deposit.getGlobalTime(), charge, deposit.getType(), CarrierState::MOTION);
+    }
+    if(store_full_propagation_history_) {
+        propagation_history.emplace_back(
+            std::make_tuple(CarrierState::MOTION, deposit.getLocalTime(), deposit.getLocalPosition()));
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
@@ -645,6 +655,13 @@ GenericPropagationModule::propagate(Event* event,
                    << " to " << Units::display(static_cast<ROOT::Math::XYZPoint>(position), {"um", "mm"}) << " at "
                    << Units::display(initial_time_local + runge_kutta.getTime(), {"ps", "ns", "us"})
                    << ", state: " << allpix::to_string(state);
+
+        if(store_full_propagation_history_) {
+            LOG(ERROR) << "State: " << allpix::to_string(state) << ", time: " << initial_time_local + runge_kutta.getTime()
+                       << ", pos: " << static_cast<ROOT::Math::XYZPoint>(position);
+            propagation_history.emplace_back(std::make_tuple(
+                state, initial_time_local + runge_kutta.getTime(), static_cast<ROOT::Math::XYZPoint>(position)));
+        }
 
         // Apply multiplication step: calculate gain factor from local efield and step length; Interpolate efield values
         // The multiplication factor is not scaled by the velocity fraction parallel to the electric field, as the
@@ -830,6 +847,12 @@ GenericPropagationModule::propagate(Event* event,
                                        deposit.getGlobalTime() + time,
                                        state,
                                        &deposit);
+
+    if(store_full_propagation_history_) {
+        for(auto [stately, timely, positiony] : propagation_history) {
+            LOG(WARNING) << "State: " << allpix::to_string(stately) << ", time: " << timely << ", position: " << positiony;
+        }
+    }
 
     propagated_charges.push_back(std::move(propagated_charge));
 

@@ -102,6 +102,10 @@ const std::map<Pixel::Index, Pulse>& PropagatedCharge::getPulses() const { retur
 
 CarrierState PropagatedCharge::getState() const { return state_; }
 
+void PropagatedCharge::setPropagationHistory(std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> history) {
+    propagation_history_ = history;
+}
+
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
     out << "State: " << magic_enum::enum_name(state_) << "\n";
