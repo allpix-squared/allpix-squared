@@ -490,7 +490,7 @@ GenericPropagationModule::propagate(Event* event,
     }
 
     // Vector holding the full history for this propagation
-    std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> propagation_history{};
+    std::vector<PropagatedCharge::PropagationHistory> propagation_history{};
 
     // Create a Runge-Kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
@@ -506,8 +506,7 @@ GenericPropagationModule::propagate(Event* event,
         output_plot_points.emplace_back(deposit.getGlobalTime(), charge, deposit.getType(), CarrierState::MOTION);
     }
     if(store_full_propagation_history_) {
-        propagation_history.emplace_back(
-            std::make_tuple(CarrierState::MOTION, deposit.getLocalTime(), deposit.getLocalPosition()));
+        propagation_history.emplace_back(deposit.getLocalTime(), deposit.getLocalPosition());
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
@@ -657,8 +656,8 @@ GenericPropagationModule::propagate(Event* event,
                    << ", state: " << allpix::to_string(state);
 
         if(store_full_propagation_history_) {
-            propagation_history.emplace_back(std::make_tuple(
-                state, initial_time_local + runge_kutta.getTime(), static_cast<ROOT::Math::XYZPoint>(position)));
+            propagation_history.emplace_back(initial_time_local + runge_kutta.getTime(),
+                                             static_cast<ROOT::Math::XYZPoint>(position));
         }
 
         // Apply multiplication step: calculate gain factor from local efield and step length; Interpolate efield values
@@ -847,8 +846,7 @@ GenericPropagationModule::propagate(Event* event,
                                        &deposit);
 
     if(store_full_propagation_history_) {
-        LOG(WARNING) << "Propagation history size: " << propagation_history.size();
-        propagated_charge.setPropagationHistory(propagation_history);
+        propagated_charge.setPropagationHistory(std::move(propagation_history));
     }
 
     propagated_charges.push_back(std::move(propagated_charge));

@@ -63,16 +63,13 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
         for(auto& propagated_charge : propagated_charges) {
             std::vector<allpix::PropagatedCharge::PropagationHistory> history = propagated_charge->getPropagationHistory();
             std::cout << "Vector size: " << history.size() << std::endl;
-            for(auto [state, time, position] : history) {
+            for(auto& [time, position] : history) {
                 std::cout << "Time: " << time << ", position: " << position << std::endl;
             }
             for(size_t i = 0; i < history.size(); i++) {
-                std::cout << "Time: " << std::get<1>(history[i]) << ", position: " << std::get<2>(history[i]) << std::endl;
+                std::cout << "Time: " << std::get<0>(history[i]) << ", position: " << std::get<1>(history[i]) << std::endl;
             }
             std::cout << "Position directly: " << propagated_charge->getLocalPosition() << std::endl;
-            for(auto t : propagated_charge->getTimes()) {
-                std::cout << "Time directly: " << t << std::endl;
-            }
         }
     }
 

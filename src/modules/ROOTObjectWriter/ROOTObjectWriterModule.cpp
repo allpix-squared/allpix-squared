@@ -119,7 +119,7 @@ bool ROOTObjectWriterModule::filter(const std::shared_ptr<BaseMessage>& message,
         if(!message_name.empty()) {
             name_str = " named " + message_name;
         }
-        LOG(ERROR) << "ROOT object writer received " << allpix::demangle(typeid(*inst).name()) << name_str;
+        LOG(TRACE) << "ROOT object writer received " << allpix::demangle(typeid(*inst).name()) << name_str;
 
         // Read the object
         auto object_array = message->getObjectArray();
@@ -239,17 +239,10 @@ void ROOTObjectWriterModule::run(Event* event) {
             object.petrifyHistory();
             ++write_cnt_;
             write_list_[index_tuple]->push_back(&object);
-            std::string class_name = allpix::demangle(typeid(object).name());
-            if(class_name == "PropagatedCharge") {
-                auto pc = static_cast<allpix::PropagatedCharge*>(&object)->getPropagationHistory();
-                for(auto& pc_ : pc) {
-                    LOG(WARNING) << "TIme: " << std::get<1>(pc_) << "Position: " << std::get<2>(pc_);
-                }
-            }
         }
     }
 
-    LOG(ERROR) << "Writing new objects to tree";
+    LOG(TRACE) << "Writing new objects to tree";
     output_file_->cd();
 
     // Fill the tree with the current received messages
