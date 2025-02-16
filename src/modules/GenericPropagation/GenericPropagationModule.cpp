@@ -657,8 +657,6 @@ GenericPropagationModule::propagate(Event* event,
                    << ", state: " << allpix::to_string(state);
 
         if(store_full_propagation_history_) {
-            LOG(ERROR) << "State: " << allpix::to_string(state) << ", time: " << initial_time_local + runge_kutta.getTime()
-                       << ", pos: " << static_cast<ROOT::Math::XYZPoint>(position);
             propagation_history.emplace_back(std::make_tuple(
                 state, initial_time_local + runge_kutta.getTime(), static_cast<ROOT::Math::XYZPoint>(position)));
         }
@@ -849,9 +847,7 @@ GenericPropagationModule::propagate(Event* event,
                                        &deposit);
 
     if(store_full_propagation_history_) {
-        for(auto [stately, timely, positiony] : propagation_history) {
-            LOG(WARNING) << "State: " << allpix::to_string(stately) << ", time: " << timely << ", position: " << positiony;
-        }
+        propagated_charge.setPropagationHistory(std::move(propagation_history));
     }
 
     propagated_charges.push_back(std::move(propagated_charge));

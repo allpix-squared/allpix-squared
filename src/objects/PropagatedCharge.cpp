@@ -106,6 +106,10 @@ void PropagatedCharge::setPropagationHistory(std::vector<std::tuple<CarrierState
     propagation_history_ = history;
 }
 
+std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> PropagatedCharge::getPropagationHistory() const {
+    return propagation_history_;
+}
+
 void PropagatedCharge::print(std::ostream& out) const {
     out << "--- Propagated charge information\n";
     out << "State: " << magic_enum::enum_name(state_) << "\n";

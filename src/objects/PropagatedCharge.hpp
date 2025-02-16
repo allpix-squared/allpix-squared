@@ -112,6 +112,12 @@ namespace allpix {
         void setPropagationHistory(std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> history);
 
         /**
+         * @brief Get propagation history of this propagated charge
+         * @return Vector of tuples consisting of carrier state, time, and position, corresponding to the simulation steps
+         */
+        std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> getPropagationHistory() const;
+
+        /**
          * @brief Print an ASCII representation of PropagatedCharge to the given stream
          * @param out Stream to print to
          */
