@@ -847,7 +847,8 @@ GenericPropagationModule::propagate(Event* event,
                                        &deposit);
 
     if(store_full_propagation_history_) {
-        propagated_charge.setPropagationHistory(std::move(propagation_history));
+        LOG(WARNING) << "Propagation history size: " << propagation_history.size();
+        propagated_charge.setPropagationHistory(propagation_history);
     }
 
     propagated_charges.push_back(std::move(propagated_charge));

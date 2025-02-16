@@ -102,12 +102,22 @@ const std::map<Pixel::Index, Pulse>& PropagatedCharge::getPulses() const { retur
 
 CarrierState PropagatedCharge::getState() const { return state_; }
 
-void PropagatedCharge::setPropagationHistory(std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> history) {
+void PropagatedCharge::setPropagationHistory(std::vector<PropagatedCharge::PropagationHistory> history) {
+    std::cout << "History first element in setter: " << std::get<1>(history[0]) << std::endl;
     propagation_history_ = history;
+    for(auto& [state, time, pos] : history) {
+        times.push_back(time);
+    }
 }
 
-std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> PropagatedCharge::getPropagationHistory() const {
+std::vector<PropagatedCharge::PropagationHistory> PropagatedCharge::getPropagationHistory() const {
+    std::cout << "History first element in getter: " << std::get<1>(propagation_history_[0]) << std::endl;
     return propagation_history_;
+}
+
+std::vector<double> PropagatedCharge::getTimes() const {
+    std::cout << "History first element in getter: " << times[0] << std::endl;
+    return times;
 }
 
 void PropagatedCharge::print(std::ostream& out) const {

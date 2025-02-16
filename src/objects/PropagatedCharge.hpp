@@ -41,6 +41,7 @@ namespace allpix {
         friend class PixelCharge;
 
     public:
+        using PropagationHistory = std::tuple<CarrierState, double, ROOT::Math::XYZPoint>;
         /**
          * @brief Construct a set of propagated charges
          * @param local_position Local position of the propagated set of charges in the sensor
@@ -109,13 +110,15 @@ namespace allpix {
          * @brief Set the propagation history of this propagated charge
          * @param history Vector of tuples consisting of carrier state, time, and position
          */
-        void setPropagationHistory(std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> history);
+        void setPropagationHistory(std::vector<PropagatedCharge::PropagationHistory> history);
 
         /**
          * @brief Get propagation history of this propagated charge
          * @return Vector of tuples consisting of carrier state, time, and position, corresponding to the simulation steps
          */
-        std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> getPropagationHistory() const;
+        std::vector<PropagatedCharge::PropagationHistory> getPropagationHistory() const;
+
+        std::vector<double> getTimes() const;
 
         /**
          * @brief Print an ASCII representation of PropagatedCharge to the given stream
@@ -145,7 +148,8 @@ namespace allpix {
 
         // Variable storing state, time, position
         // Let's make a vector of tuples
-        std::vector<std::tuple<CarrierState, double, ROOT::Math::XYZPoint>> propagation_history_{};
+        std::vector<PropagationHistory> propagation_history_{};
+        std::vector<double> times;
     };
 
     /**
