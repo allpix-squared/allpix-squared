@@ -31,13 +31,14 @@ namespace allpix {
      * @brief A child of TransientPropagationModule that implements Coulomb repulsion between charges.
      *
      */
-    class InteractivePropagationModule : public TransientPropagationModule {
+    // class InteractivePropagationModule : public TransientPropagationModule {
+    class InteractivePropagationModule : public Module { // If we are implementing the constructor here, we need to extend Module (not TransientPropagationModule)
     public:
 
-        // I can't copy every from TransientPropagationModule because I need to define run here so that it has the proper scope
-	    // using TransientPropagationModule::TransientPropagationModule; 
+        // By default this class copies from TransientPropagation, but the run method is overridden to allow proper scoping
+	    //using TransientPropagationModule::TransientPropagationModule; 
 
-                /**
+        /**
          * @brief Constructor for this detector-specific module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
