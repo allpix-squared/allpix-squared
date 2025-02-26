@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # CMake script to find the lualatex executable and export it as Lualatex::lualatex target

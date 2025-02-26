@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2018-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Replay Simulation"
 description: "Example of reading data files from previous simulation"

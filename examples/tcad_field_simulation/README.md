@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "TCAD Field Simulation"
 description: "Example of a simulation with a TCAD-simulated electric field"
