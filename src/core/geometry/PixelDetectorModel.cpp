@@ -127,6 +127,8 @@ std::set<Pixel::Index> PixelDetectorModel::getPixels() const {
 std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
     for(int x = idx.x() - static_cast<int>(distance); x <= idx.x() + static_cast<int>(distance); x++) {
         for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
             if(!isWithinMatrix(x, y)) {
@@ -135,6 +137,7 @@ std::set<Pixel::Index> PixelDetectorModel::getNeighbors(const Pixel::Index& idx,
             neighbors.insert({x, y});
         }
     }
+#pragma GCC diagnostic pop
 
     return neighbors;
 }
