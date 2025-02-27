@@ -16,7 +16,8 @@
 
 #include "core/config/Configuration.hpp"
 
-#include "../DepositionGeant4/SetTrackInfoUserHookG4.hpp"
+#include "modules/DepositionGeant4/SetTrackInfoUserHookG4.hpp"
+#include "modules/DepositionGeant4/StepInfoUserHookG4.hpp"
 
 namespace allpix {
     class PrimariesReader;
@@ -43,6 +44,9 @@ namespace allpix {
 
             // tracker hook
             SetUserAction(new SetTrackInfoUserHookG4());
+
+            // step hook
+            SetUserAction(new StepInfoUserHookG4());
         };
 
     private:
