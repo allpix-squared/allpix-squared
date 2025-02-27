@@ -56,7 +56,7 @@ void MagneticFieldReaderModule::initialize() {
     } else if(field_model == MagneticField::MESH) {
         type = MagneticFieldType::CUSTOM;
 
-        auto fallback_field = config_.get<ROOT::Math::XYZVector>("magnetic_field_fallback", ROOT::Math::XYZVector());
+        auto fallback_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
         auto field_data = read_field();
 
         auto dims = field_data.getDimensionality(); // Vector dimensionality of the field (will be 3 for B-field)
