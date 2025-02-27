@@ -57,6 +57,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 ## Parameters
 
+* `sample_all_channels` : Boolean to decide whether to loop over all detector channels to sample the noise distribution and apply a threshold, or only over those that have seen a signal. If set to `true`, all detector channels are sampled, which might take significant time for detectors with high granularity. Furthermore, events without detector interaction are not skipped anymore but also sampled to provide a more realistic noise distribution. Defaults to `false`.
 * `threshold` : Threshold for considering the collected charge as a hit (No default value; required parameter).
 * `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.

@@ -75,6 +75,7 @@ namespace allpix {
         double time_of_arrival(const PixelCharge& pixel_charge, double threshold) const;
 
         // Configuration
+        bool sample_all_channels_{};
         bool output_plots_{};
 
         unsigned int electronics_noise_{};
