@@ -44,6 +44,17 @@ Usage:
 * Build the macro with `.L path/to/etaCorrectionResiduals.C++`
 * Run the macro with `etaCorrectionResiduals(_file0, "name_of_detector")`
 
+## Eta correction of residuals example
+
+Analysis example demonstrating how to plot the propagation history, and make an animation of charge carrier motion. Requires the flag `store_full_propagation_history` in the propagation module, and saving the `PropagatedCharge` object in `ROOTObjectWriter`.
+
+Usage:
+
+* Open root with the data file attached like `root -l /path/to/data.root`
+* Load the current library of objects with `.L path/to/libAllpixObjects.so`
+* Build the macro with `.L path/to/propagationHistoryPlotting.C++`
+* Run the macro with `propagationHistoryPlotting(_file0, "name_of_detector")`
+
 ## Remake project
 
 Simple macro to show the possibility to recreate source files for legacy objects stored in ROOT data files from older versions of the framework. Can be used if the corresponding dynamic library for that particular version is not accessible anymore. It is however not possible to recreate methods of the objects and it is therefore not easily possible to reconstruct the stored history.
