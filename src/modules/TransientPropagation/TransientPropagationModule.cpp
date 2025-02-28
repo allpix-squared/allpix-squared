@@ -103,6 +103,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("output_plots_phi", 0.0F);
     config_.setDefault<unsigned int>("output_max_gain_histo", 25);
 
+    config_.setDefault<bool>("store_full_propagation_history", false);
+
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_ = config_.get<double>("timestep");
@@ -122,6 +124,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
     output_plots_step_ = config_.get<double>("output_plots_step");
     output_max_gain_histo_ = config.get<unsigned int>("output_max_gain_histo");
+    store_full_propagation_history_ = config_.get<bool>("store_full_propagation_history");
 
     // Avoids wrong gain histogram inputs
     if(output_max_gain_histo_ < 2) {
@@ -552,6 +555,9 @@ TransientPropagationModule::propagate(Event* event,
         return {};
     }
 
+    // Vector holding the full history for this propagation
+    std::vector<PropagatedCharge::PropagationHistory> propagation_history{};
+
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
     std::map<Pixel::Index, Pulse> pixel_map;
 
@@ -562,6 +568,9 @@ TransientPropagationModule::propagate(Event* event,
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
         output_plot_points.emplace_back(deposit.getGlobalTime(), charge, type, CarrierState::MOTION);
+    }
+    if(store_full_propagation_history_) {
+        propagation_history.emplace_back(deposit.getLocalTime(), deposit.getLocalPosition());
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
@@ -706,6 +715,11 @@ TransientPropagationModule::propagate(Event* event,
         // Update step length histogram
         if(output_plots_) {
             step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
+        }
+
+        if(store_full_propagation_history_) {
+            propagation_history.emplace_back(initial_time_local + runge_kutta.getTime(),
+                                             static_cast<ROOT::Math::XYZPoint>(position));
         }
 
         // Physics effects:
@@ -943,6 +957,10 @@ TransientPropagationModule::propagate(Event* event,
                << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(runge_kutta.getTime(), "ns")
                << " time, induced " << Units::display(propagated_charge.getCharge(), {"e"})
                << ", final state: " << allpix::to_string(state);
+
+    if(store_full_propagation_history_) {
+        propagated_charge.setPropagationHistory(std::move(propagation_history));
+    }
 
     propagated_charges.push_back(std::move(propagated_charge));
     propagated_charges_count += charge;

@@ -106,7 +106,7 @@ namespace allpix {
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
-            output_linegraphs_trapped_{};
+            output_linegraphs_trapped_{}, store_full_propagation_history_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
