@@ -103,7 +103,7 @@ const std::map<Pixel::Index, Pulse>& PropagatedCharge::getPulses() const { retur
 CarrierState PropagatedCharge::getState() const { return state_; }
 
 void PropagatedCharge::setPropagationHistory(std::vector<PropagatedCharge::PropagationHistory> history) {
-    propagation_history_ = history;
+    propagation_history_ = std::move(history);
 }
 
 std::vector<PropagatedCharge::PropagationHistory> PropagatedCharge::getPropagationHistory() const {

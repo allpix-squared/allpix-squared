@@ -9,6 +9,8 @@
 #include <TMarker.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+#include <TROOT.h>
+#include <TStyle.h>
 #include <TSystem.h>
 #include <TTree.h>
 #include <vector>
@@ -18,10 +20,11 @@
 #include "../../src/objects/PropagatedCharge.hpp"
 
 /**
- * An example of how to perform an eta correction of residuals, by fitting of a fifth order polynomial.
- * Takes a TFile (containing MCParticle objects and PixelHit objects) and a detector name as input.
+ * An example of how to plot the full propagation history of charge carriers, and make an animation for a single event.
+ * Takes a TFile (containing MCParticle objects and PixelHit objects), a detector name, the event number to simulate, and
+ * whether or not to save the animation as a result as input. Note: saving the animations as .gif files takes a long time.
  */
-void propagationHistoryPlotting(TFile* file, std::string detector) {
+void propagationHistoryPlotting(TFile* file, std::string detector, int animEventNo, bool save_gif_output) {
 
     // Initialise reading of the PropagatedCharge TTrees
     TTree* propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
@@ -50,6 +53,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
     double pitch_x_mm = pitch_x / 1000.0;
     double pitch_y_mm = pitch_y / 1000.0;
     double thickness = 285;
+
     double max_time = 10000; // ps
     TH2D* propagation_map_xz_all = new TH2D("propagation_map_xz_all",
                                             "Propagation positions for all times; x [#mum]; z [#mum];",
@@ -100,19 +104,14 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
                                             0,
                                             pitch_y);
 
-    int favourite_event = 5;
-
-    // Animate this thing!
-    // Kind of want to flip it... So that we know all the positions at some timestep...
-    // How, though? Is it even possible? We now know the positions for all time, but the time is not the same for all
-    // charge carriers. We would like to slice it, so we say "aha, we have this time: where are you?" And then it grabs
-    // the position at the time nearest before our specified time. std::find_if can do this... Find the first element
-    // above a given time, and then I take the one below it. Maybe this is the way to go. Yeah, probably. Then I can
-    // define my own tempo, my own timestamps I want to check at. Will make it easy to use the times of a pulse as well.
-    // So, let's define a time vector... In picoseconds?
-    std::vector<double> animTimes = {0,    100,  200,  300,  400,  500,  600,  700,  800,  900,  1000,
-                                     1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100,
-                                     2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000};
+    std::vector<double> animTimes = {0.0};
+    double timeStepSize = 100; // ps
+    int numberOfSteps = 100;
+    double timeCounter = 0.0;
+    std::generate_n(std::back_inserter(animTimes), numberOfSteps, [&timeCounter, &timeStepSize]() {
+        timeCounter += timeStepSize;
+        return timeCounter;
+    });
     // For each of these timestamps, we want to plot *each* propagatedcharge object's position.
 
     // Set up the drawing, to have axes
@@ -125,13 +124,14 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
                                                   -thickness / 2.0,
                                                   thickness / 2.0);
     // Create canvas for GIF animition of process
-    TCanvas* animCanvas_xz = new TCanvas(("animation_" + std::to_string(favourite_event) + "_xz").c_str(),
-                                         ("Propagation of charge for event " + std::to_string(favourite_event)).c_str(),
+    TCanvas* animCanvas_xz = new TCanvas(("animation_" + std::to_string(animEventNo) + "_xz").c_str(),
+                                         ("Propagation of charge for event " + std::to_string(animEventNo)).c_str(),
                                          1280,
                                          1024);
     animCanvas_xz->cd();
 
     propagation_map_xz_animation->Draw();
+    gStyle->SetOptStat(false);
 
     // Iterate over all events
     for(int i = 0; i < propagated_charge_tree->GetEntries(); ++i) {
@@ -144,13 +144,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
 
         for(auto& propagated_charge : propagated_charges) {
             std::vector<allpix::PropagatedCharge::PropagationHistory> history = propagated_charge->getPropagationHistory();
-            // std::cout << "Vector size: " << history.size() << std::endl;
             for(auto& [time, position] : history) {
-                // std::cout << "Time: " << time*1000.0 << ", position: " << position << std::endl;
-
-                // In um, in pixel coordinate system
-                // std::cout << "position.y(): " << position.y() << ", pitch_y_mm: " << pitch_y_mm << ", fmod: " <<
-                // std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) << std::endl;
                 auto inPixelPos = ROOT::Math::XYVector(std::fmod(position.x() + pitch_x_mm / 2, pitch_x_mm) * 1000,
                                                        std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) * 1000);
                 // std::cout << "In-pixel position: " << inPixelPos << std::endl;
@@ -164,11 +158,13 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
         }
 
         // Animate the favourite event
-        if(i == favourite_event) {
+        if(i == animEventNo) {
             for(auto& ts : animTimes) {
 
                 animCanvas_xz->Clear();
                 animCanvas_xz->Draw();
+                propagation_map_xz_animation->SetTitle(
+                    ("Charge carrier positions in xz at time " + std::to_string(round(ts)) + " ps").c_str());
                 propagation_map_xz_animation->Draw();
 
                 int current_color = 1;
@@ -193,9 +189,8 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
                     if(it != history.begin() && it != history.end()) {
                         markerPosition = std::get<1>(*(std::prev(it)));
                         markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
-                        // std::cout << "Current time: " << std::get<0>(*(it)) * 1000.0 << std::endl;
                         // In the event that the times are exactly equal:
-                        if((ts - std::get<0>(*(it)) * 1000.0) <
+                        if((std::abs(ts - std::get<0>(*(it)) * 1000.0)) <
                            std::numeric_limits<double>::epsilon()) { // Floaty magic... We're not so bothered for this
                                                                      // particular thing, as it's just visualisation
                             markerPosition = std::get<1>(*it);
@@ -203,22 +198,14 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
                         }
                     } else {
                         // SKip this, the begin can be silly
-                        // markerPosition = std::get<1>(*it);
-                        // markerTime = std::get<0>(*it)*1000.0;
                         continue;
                     }
-                    // std::cout << "Timestamp: " << ts << ", Time: " << std::get<0>(*(it-1))*1000.0
-                    //             << ", Position: " << std::get<1>(*(it-1)) << ", Next: " << std::get<0>(*(it))*1000.0 <<
-                    //             std::endl;
-                    std::cout << "Timestamp: " << ts << ", Time: " << markerTime << ", Position: " << markerPosition
-                              << std::endl;
 
                     // In um, in pixel coordinate system (3 pixels)
                     auto markerInPixelPos =
                         ROOT::Math::XYZPoint(std::fmod(markerPosition.x() + pitch_x_mm / 2, 3 * pitch_x_mm) * 1000,
                                              std::fmod(markerPosition.y() + pitch_y_mm / 2, 3 * pitch_y_mm) * 1000,
                                              markerPosition.z() * 1000.0);
-                    std::cout << "In-pixel position: " << markerInPixelPos << std::endl;
                     marker->SetX(markerInPixelPos.x());
                     marker->SetY(markerInPixelPos.z());
                     gPad->Range(0, -140, 450, 140);
@@ -227,7 +214,10 @@ void propagationHistoryPlotting(TFile* file, std::string detector) {
                 }
                 animCanvas_xz->Modified();
                 animCanvas_xz->Update();
-                animCanvas_xz->Print("anim.gif+10");
+                // Note: takes quite a long time!
+                if(save_gif_output) {
+                    animCanvas_xz->Print("anim_xz.gif+10");
+                }
 
                 markers.clear();
             }
