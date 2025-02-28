@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <regex>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -38,13 +39,15 @@ namespace allpix {
      */
     class SPICENetlistWriterModule : public Module {
     public:
-        enum class TargetSpice {
+        enum class Target {
             SPECTRE,
+            SPICE,
         };
 
-        enum class NodeType {
-            CURRENTSOURCE,
-            VOLTAGESOURCE,
+        enum class SourceType {
+            isource,
+            vsource,
+            isource_pulse,
         };
 
         /**
@@ -106,9 +109,48 @@ namespace allpix {
 
         // Module parameters
         std::filesystem::path netlist_path_;
-        TargetSpice target_;
-        std::string node_name_{};
-        NodeType node_type_;
-        std::unique_ptr<TFormula> node_enumerator_{};
+        std::string file_name_{};
+        Target target_;
+        SourceType source_type_;
+        
+        std::string source_name_{};
+        std::string subckt_instance_name_{};
+
+        std::unique_ptr<TFormula> net_enumerator_{};
+        std::string connections_;
+        std::set<std::string> common_nets_;
+
+        std::set<std::string> waveform_to_save_;
+        // waveform to be saved
+        std::ostringstream to_be_saved;
+
+        bool run_netlist_simulation_{};
+        std::string simulator_options_{};
+        
+        // isource_pulse
+        double delay_{};
+        double rise_{};
+        double fall_{};
+        double width_{};
+        
+        std::string source_net1_;
+        std::string source_net2_;
+
+        std::vector<std::string> net_list;
+        
+        // isource_line is the current source string to be modified
+        std::string source_line;
+        std::string subckt_name;
+        int subckt_line_number = 0;
+        int source_line_number = 0;
+        double elementalCharge = 1.6e-19;
+        double nanoCoulomb = 1.6e-10;
+        double v_diode = 0;
+        double i_diode = 0;
+        
+        double electrode_capacitance_{};
+        
+        // Vector of all the netlist file lines
+        std::vector<std::string> file_lines;
     };
 } // namespace allpix
