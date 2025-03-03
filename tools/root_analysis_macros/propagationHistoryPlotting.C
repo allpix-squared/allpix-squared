@@ -21,10 +21,10 @@
 
 /**
  * An example of how to plot the full propagation history of charge carriers, and make an animation for a single event.
- * Takes a TFile (containing MCParticle objects and PixelHit objects), a detector name, the event number to simulate, and
+ * Takes a TFile (containing PropagatedCharge objects), a detector name, the event number to simulate, and
  * whether or not to save the animation as a result as input. Note: saving the animations as .gif files takes a long time.
  */
-void propagationHistoryPlotting(TFile* file, std::string detector, int animEventNo, bool save_gif_output) {
+void propagationHistoryPlotting(TFile* file, std::string detector, int animEventNo = 0, bool save_gif_output = false) {
 
     // Initialise reading of the PropagatedCharge TTrees
     TTree* propagated_charge_tree = static_cast<TTree*>(file->Get("PropagatedCharge"));
@@ -34,7 +34,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
     }
     TBranch* propagated_charge_branch = propagated_charge_tree->FindBranch(detector.c_str());
     if(!propagated_charge_branch) {
-        std::cout << "Could not find the branch on tree PixelHit for the corresponding detector, cannot continue."
+        std::cout << "Could not find the branch on tree PropagatedCharge for the corresponding detector, cannot continue."
                   << std::endl;
         return;
     }
