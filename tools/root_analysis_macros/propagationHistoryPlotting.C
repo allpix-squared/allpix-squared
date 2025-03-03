@@ -42,68 +42,20 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
     std::vector<allpix::PropagatedCharge*> propagated_charges;
     propagated_charge_branch->SetObject(&propagated_charges);
 
-    // Vector to store markers. Needed so that they aren't deleted automatically.
+    // Vector to store plot markers. Needed so that they aren't deleted automatically.
     std::vector<TMarker*> markers = {};
-
-    // Define histograms
 
     // In 2D map form
     double pitch_x = 150;
     double pitch_y = 100;
+    double thickness = 285;
     double pitch_x_mm = pitch_x / 1000.0;
     double pitch_y_mm = pitch_y / 1000.0;
-    double thickness = 285;
 
-    double max_time = 10000; // ps
-    TH2D* propagation_map_xz_all = new TH2D("propagation_map_xz_all",
-                                            "Propagation positions for all times; x [#mum]; z [#mum];",
-                                            1000,
-                                            0,
-                                            pitch_x,
-                                            1000,
-                                            -thickness / 2.0,
-                                            thickness / 2.0);
-    TH2D* propagation_map_yz_all = new TH2D("propagation_map_yz_all",
-                                            "Propagation positions for all times; y [#mum]; z [#mum];",
-                                            1000,
-                                            0,
-                                            pitch_y,
-                                            1000,
-                                            -thickness / 2.0,
-                                            thickness / 2.0);
-    TH2D* propagation_map_xy_all = new TH2D("propagation_map_xy_all",
-                                            "Propagation positions for all times; x [#mum]; y [#mum];",
-                                            1000,
-                                            0,
-                                            pitch_x,
-                                            1000,
-                                            0,
-                                            pitch_y);
-    TH2D* propagation_map_tz_all = new TH2D("propagation_map_tz_all",
-                                            "Propagation positions in z vs time; time [ps]; z [#mum];;",
-                                            1000,
-                                            0,
-                                            max_time,
-                                            1000,
-                                            -thickness / 2.0,
-                                            thickness / 2.0);
-    TH2D* propagation_map_tx_all = new TH2D("propagation_map_tx_all",
-                                            "Propagation positions in x vs time; time [ps]; x [#mum];;",
-                                            1000,
-                                            0,
-                                            max_time,
-                                            1000,
-                                            0,
-                                            pitch_x);
-    TH2D* propagation_map_ty_all = new TH2D("propagation_map_ty_all",
-                                            "Propagation positions in y vs time; time [ps]; y [#mum];;",
-                                            1000,
-                                            0,
-                                            max_time,
-                                            1000,
-                                            0,
-                                            pitch_y);
+    // Plot histograms with positions and times for all events?
+    bool plotAllEventsInHistos = false;
 
+    // Setup for animation; define the timestep size, and the number of steps
     std::vector<double> animTimes = {0.0};
     double timeStepSize = 100; // ps
     int numberOfSteps = 100;
@@ -114,7 +66,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
     });
     // For each of these timestamps, we want to plot *each* propagatedcharge object's position.
 
-    // Set up the drawing, to have axes
+    // Set up the drawing, to have axes. 3x the pixel pitch in this case
     TH2D* propagation_map_xz_animation = new TH2D("propagation_map_xz_animation",
                                                   "Propagation positions for all times; x [#mum]; z [#mum];",
                                                   1000,
@@ -133,116 +85,171 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
     propagation_map_xz_animation->Draw();
     gStyle->SetOptStat(false);
 
-    // Iterate over all events
-    for(int i = 0; i < propagated_charge_tree->GetEntries(); ++i) {
-        if(i % 100 == 0) {
-            std::cout << "Processing event " << i << std::endl;
-        }
+    // Access selected event
+    propagated_charge_tree->GetEntry(animEventNo);
 
-        // Access next event. Pushes information into input_*
-        propagated_charge_tree->GetEntry(i);
+    // Animate the requested event
+    for(auto& ts : animTimes) {
 
+        animCanvas_xz->Clear();
+        animCanvas_xz->Draw();
+        propagation_map_xz_animation->SetTitle(
+            ("Charge carrier positions in xz at time " + std::to_string(static_cast<int>(round(ts))) + " ps").c_str());
+        propagation_map_xz_animation->Draw();
+
+        int current_color = 1;
         for(auto& propagated_charge : propagated_charges) {
+
+            // Set the colour for this charge carrier
+            EColor plot_color =
+                (propagated_charge->getType() == allpix::CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+            current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+            auto marker = new TMarker();
+            marker->SetMarkerStyle(kFullCircle);
+            // Marker size dependnet on charge carrier group size
+            marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 0.1));
+            marker->SetMarkerColor(current_color);
+
+            // Retrieve the history for this PropagatedCharge object
             std::vector<allpix::PropagatedCharge::PropagationHistory> history = propagated_charge->getPropagationHistory();
-            for(auto& [time, position] : history) {
-                auto inPixelPos = ROOT::Math::XYVector(std::fmod(position.x() + pitch_x_mm / 2, pitch_x_mm) * 1000,
-                                                       std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) * 1000);
-                // std::cout << "In-pixel position: " << inPixelPos << std::endl;
-                propagation_map_xz_all->Fill(inPixelPos.x(), position.z() * 1000.0);
-                propagation_map_yz_all->Fill(inPixelPos.y(), position.z() * 1000.0);
-                propagation_map_xy_all->Fill(inPixelPos.x(), inPixelPos.y());
-                propagation_map_tz_all->Fill(time * 1000.0, position.z() * 1000.0);
-                propagation_map_tx_all->Fill(time * 1000.0, inPixelPos.x());
-                propagation_map_ty_all->Fill(time * 1000.0, inPixelPos.y());
+            // Get the first item that has a higher time than the timestamp
+            auto it = find_if(history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
+            ROOT::Math::XYZPoint markerPosition;
+            double markerTime = 0.0;
+            if(it != history.begin() && it != history.end()) {
+                markerPosition = std::get<1>(*(std::prev(it)));
+                markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
+                // In the event that the times are exactly equal:
+                if((std::abs(ts - std::get<0>(*(it)) * 1000.0)) <
+                   std::numeric_limits<double>::epsilon()) { // Floaty magic... We're not so bothered for this
+                                                             // particular thing, as it's just visualisation
+                    markerPosition = std::get<1>(*it);
+                    markerTime = std::get<0>(*it) * 1000.0;
+                }
+            } else {
+                // Skip this, the begin can be silly, and end means that we don't find a point corresponding to the time
+                continue;
             }
+
+            // In um, in pixel coordinate system (3 pixels). Note: this will just find the place within a three-pixel row
+            auto markerInPixelPos =
+                ROOT::Math::XYZPoint(std::fmod(markerPosition.x() + pitch_x_mm / 2, 3 * pitch_x_mm) * 1000,
+                                     std::fmod(markerPosition.y() + pitch_y_mm / 2, 3 * pitch_y_mm) * 1000,
+                                     markerPosition.z() * 1000.0);
+            marker->SetX(markerInPixelPos.x());
+            marker->SetY(markerInPixelPos.z());
+            gPad->Range(0, -140, 450, 140);
+            marker->Draw();
+            markers.push_back(std::move(marker)); // Push it to the vector to save it from deletion
+        }
+        animCanvas_xz->Modified();
+        animCanvas_xz->Update();
+        // Note: takes quite a long time!
+        if(save_gif_output) {
+            animCanvas_xz->Print("anim_xz.gif+10");
         }
 
-        // Animate the favourite event
-        if(i == animEventNo) {
-            for(auto& ts : animTimes) {
-
-                animCanvas_xz->Clear();
-                animCanvas_xz->Draw();
-                propagation_map_xz_animation->SetTitle(
-                    ("Charge carrier positions in xz at time " + std::to_string(round(ts)) + " ps").c_str());
-                propagation_map_xz_animation->Draw();
-
-                int current_color = 1;
-                for(auto& propagated_charge : propagated_charges) {
-
-                    // Set the colour for this charge carrier
-                    EColor plot_color =
-                        (propagated_charge->getType() == allpix::CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
-                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
-                    auto marker = new TMarker();
-                    marker->SetMarkerStyle(kFullCircle);
-                    marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 0.1));
-                    marker->SetMarkerColor(current_color);
-
-                    std::vector<allpix::PropagatedCharge::PropagationHistory> history =
-                        propagated_charge->getPropagationHistory();
-                    // Get the first item that has a higher time than the timestamp
-                    auto it = find_if(
-                        history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
-                    ROOT::Math::XYZPoint markerPosition;
-                    double markerTime = 0.0;
-                    if(it != history.begin() && it != history.end()) {
-                        markerPosition = std::get<1>(*(std::prev(it)));
-                        markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
-                        // In the event that the times are exactly equal:
-                        if((std::abs(ts - std::get<0>(*(it)) * 1000.0)) <
-                           std::numeric_limits<double>::epsilon()) { // Floaty magic... We're not so bothered for this
-                                                                     // particular thing, as it's just visualisation
-                            markerPosition = std::get<1>(*it);
-                            markerTime = std::get<0>(*it) * 1000.0;
-                        }
-                    } else {
-                        // SKip this, the begin can be silly
-                        continue;
-                    }
-
-                    // In um, in pixel coordinate system (3 pixels)
-                    auto markerInPixelPos =
-                        ROOT::Math::XYZPoint(std::fmod(markerPosition.x() + pitch_x_mm / 2, 3 * pitch_x_mm) * 1000,
-                                             std::fmod(markerPosition.y() + pitch_y_mm / 2, 3 * pitch_y_mm) * 1000,
-                                             markerPosition.z() * 1000.0);
-                    marker->SetX(markerInPixelPos.x());
-                    marker->SetY(markerInPixelPos.z());
-                    gPad->Range(0, -140, 450, 140);
-                    marker->Draw();
-                    markers.push_back(std::move(marker)); // Push it to the vector to save it from deletion
-                }
-                animCanvas_xz->Modified();
-                animCanvas_xz->Update();
-                // Note: takes quite a long time!
-                if(save_gif_output) {
-                    animCanvas_xz->Print("anim_xz.gif+10");
-                }
-
-                markers.clear();
-            }
-        }
+        markers.clear();
     }
 
-    // Draw histograms
-    TCanvas* propagation_map_all_canvas = new TCanvas("propagation_map_all_canvas", "Propagation map", 1200, 800);
-    propagation_map_all_canvas->Divide(2, 2);
-    propagation_map_all_canvas->cd(1);
-    propagation_map_xz_all->Draw("colz");
-    propagation_map_all_canvas->cd(2);
-    propagation_map_yz_all->Draw("colz");
-    propagation_map_all_canvas->cd(3);
-    propagation_map_xy_all->Draw("colz");
-    propagation_map_all_canvas->cd(4);
-    propagation_map_tz_all->Draw("colz");
+    if(plotAllEventsInHistos) {
+        // Define histograms
+        double max_time = 10000; // ps
+        TH2D* propagation_map_xz_all = new TH2D("propagation_map_xz_all",
+                                                "Propagation positions for all times; x [#mum]; z [#mum];",
+                                                1000,
+                                                0,
+                                                pitch_x,
+                                                1000,
+                                                -thickness / 2.0,
+                                                thickness / 2.0);
+        TH2D* propagation_map_yz_all = new TH2D("propagation_map_yz_all",
+                                                "Propagation positions for all times; y [#mum]; z [#mum];",
+                                                1000,
+                                                0,
+                                                pitch_y,
+                                                1000,
+                                                -thickness / 2.0,
+                                                thickness / 2.0);
+        TH2D* propagation_map_xy_all = new TH2D("propagation_map_xy_all",
+                                                "Propagation positions for all times; x [#mum]; y [#mum];",
+                                                1000,
+                                                0,
+                                                pitch_x,
+                                                1000,
+                                                0,
+                                                pitch_y);
+        TH2D* propagation_map_tz_all = new TH2D("propagation_map_tz_all",
+                                                "Propagation positions in z vs time; time [ps]; z [#mum];;",
+                                                1000,
+                                                0,
+                                                max_time,
+                                                1000,
+                                                -thickness / 2.0,
+                                                thickness / 2.0);
+        TH2D* propagation_map_tx_all = new TH2D("propagation_map_tx_all",
+                                                "Propagation positions in x vs time; time [ps]; x [#mum];;",
+                                                1000,
+                                                0,
+                                                max_time,
+                                                1000,
+                                                0,
+                                                pitch_x);
+        TH2D* propagation_map_ty_all = new TH2D("propagation_map_ty_all",
+                                                "Propagation positions in y vs time; time [ps]; y [#mum];;",
+                                                1000,
+                                                0,
+                                                max_time,
+                                                1000,
+                                                0,
+                                                pitch_y);
 
-    TCanvas* propagation_map_times_canvas =
-        new TCanvas("propagation_map_times_canvas", "Propagation maps vs time", 1200, 800);
-    propagation_map_times_canvas->Divide(2, 2);
-    propagation_map_times_canvas->cd(1);
-    propagation_map_tx_all->Draw("colz");
-    propagation_map_times_canvas->cd(2);
-    propagation_map_ty_all->Draw("colz");
-    propagation_map_times_canvas->cd(3);
-    propagation_map_tz_all->Draw("colz");
+        // Iterate over all events
+        for(int i = 0; i < propagated_charge_tree->GetEntries(); ++i) {
+            if(i % 100 == 0) {
+                std::cout << "Processing event " << i << std::endl;
+            }
+
+            // Access next event. Pushes information into input_*
+            propagated_charge_tree->GetEntry(i);
+
+            for(auto& propagated_charge : propagated_charges) {
+                std::vector<allpix::PropagatedCharge::PropagationHistory> history =
+                    propagated_charge->getPropagationHistory();
+                for(auto& [time, position] : history) {
+                    auto inPixelPos = ROOT::Math::XYVector(std::fmod(position.x() + pitch_x_mm / 2, pitch_x_mm) * 1000,
+                                                           std::fmod(position.y() + pitch_y_mm / 2, pitch_y_mm) * 1000);
+                    // std::cout << "In-pixel position: " << inPixelPos << std::endl;
+                    propagation_map_xz_all->Fill(inPixelPos.x(), position.z() * 1000.0);
+                    propagation_map_yz_all->Fill(inPixelPos.y(), position.z() * 1000.0);
+                    propagation_map_xy_all->Fill(inPixelPos.x(), inPixelPos.y());
+                    propagation_map_tz_all->Fill(time * 1000.0, position.z() * 1000.0);
+                    propagation_map_tx_all->Fill(time * 1000.0, inPixelPos.x());
+                    propagation_map_ty_all->Fill(time * 1000.0, inPixelPos.y());
+                }
+            }
+        }
+
+        // Draw histograms
+        TCanvas* propagation_map_all_canvas = new TCanvas("propagation_map_all_canvas", "Propagation map", 1200, 800);
+        propagation_map_all_canvas->Divide(2, 2);
+        propagation_map_all_canvas->cd(1);
+        propagation_map_xz_all->Draw("colz");
+        propagation_map_all_canvas->cd(2);
+        propagation_map_yz_all->Draw("colz");
+        propagation_map_all_canvas->cd(3);
+        propagation_map_xy_all->Draw("colz");
+        propagation_map_all_canvas->cd(4);
+        propagation_map_tz_all->Draw("colz");
+
+        TCanvas* propagation_map_times_canvas =
+            new TCanvas("propagation_map_times_canvas", "Propagation maps vs time", 1200, 800);
+        propagation_map_times_canvas->Divide(2, 2);
+        propagation_map_times_canvas->cd(1);
+        propagation_map_tx_all->Draw("colz");
+        propagation_map_times_canvas->cd(2);
+        propagation_map_ty_all->Draw("colz");
+        propagation_map_times_canvas->cd(3);
+        propagation_map_tz_all->Draw("colz");
+    }
 }

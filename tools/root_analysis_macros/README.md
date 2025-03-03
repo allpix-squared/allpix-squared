@@ -44,7 +44,7 @@ Usage:
 * Build the macro with `.L path/to/etaCorrectionResiduals.C++`
 * Run the macro with `etaCorrectionResiduals(_file0, "name_of_detector")`
 
-## Eta correction of residuals example
+## Propagation history animation example
 
 Analysis example demonstrating how to plot the propagation history, and make an animation of charge carrier motion. Requires the flag `store_full_propagation_history` in the propagation module, and saving the `PropagatedCharge` object in `ROOTObjectWriter`.
 
