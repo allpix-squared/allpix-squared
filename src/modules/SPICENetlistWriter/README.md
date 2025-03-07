@@ -18,7 +18,7 @@ The netlist template needs to be formated as described and illustrated (`SPECTRE
 - If necessary, other instances (for example other voltage or current sources of the front-end).
 - A current source, which will be used to replicate the electrical behavior of the collection electrode. A particular attention should be given to the polarity of the source.
 - The sub-circuit written as an instance, connected to the source.
-- The netlist footer and the simulator options. 
+- The netlist footer and the simulator options.
 
 ```
 --- netlist header ---

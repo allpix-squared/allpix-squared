@@ -17,6 +17,7 @@
 #include <fstream>
 #include <regex>
 #include <string>
+#include <regex>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
