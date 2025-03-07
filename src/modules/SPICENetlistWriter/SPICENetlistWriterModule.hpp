@@ -15,8 +15,8 @@
 
 #include <filesystem>
 #include <fstream>
-#include <string>
 #include <regex>
+#include <string>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -40,14 +40,14 @@ namespace allpix {
     class SPICENetlistWriterModule : public Module {
     public:
         enum class Target {
-            SPECTRE,
             SPICE,
+            SPECTRE,
         };
 
         enum class SourceType {
             isource,
-            vsource,
             isource_pulse,
+            //vsource_pulse,
         };
 
         /**
@@ -109,10 +109,11 @@ namespace allpix {
 
         // Module parameters
         std::filesystem::path netlist_path_;
+        std::string extension;
         std::string file_name_{};
         Target target_;
         SourceType source_type_;
-        
+
         std::string source_name_{};
         std::string subckt_instance_name_{};
 
@@ -125,19 +126,19 @@ namespace allpix {
         std::ostringstream to_be_saved;
 
         bool run_netlist_simulation_{};
-        std::string simulator_options_{};
-        
+        std::string simulator_command_{};
+
         // isource_pulse
         double delay_{};
         double rise_{};
         double fall_{};
         double width_{};
-        
+
         std::string source_net1_;
         std::string source_net2_;
 
         std::vector<std::string> net_list;
-        
+
         // isource_line is the current source string to be modified
         std::string source_line;
         std::string subckt_name;
@@ -147,9 +148,9 @@ namespace allpix {
         double nanoCoulomb = 1.6e-10;
         double v_diode = 0;
         double i_diode = 0;
-        
+
         double electrode_capacitance_{};
-        
+
         // Vector of all the netlist file lines
         std::vector<std::string> file_lines;
     };
