@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @copyright Copyright (c) 2017-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -88,6 +88,8 @@ namespace allpix {
         double max_depth_distance_{};
         bool collect_from_implant_{};
         bool cross_coupling_{};
+        bool flip_odd_rows_{};
+        bool flip_odd_cols_{};
 
         void getCapacitanceScan(TFile* root_file);
         std::array<TGraph*, 9> capacitances_{};

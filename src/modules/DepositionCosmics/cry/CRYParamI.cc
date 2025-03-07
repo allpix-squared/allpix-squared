@@ -45,6 +45,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h> // For Ubuntu Linux
 #include <string>
 
-CRYParamI::CRYParamI(std::string data) : CRYAbsParameter(data) {
-    _param = atoi(_paramStr.c_str());
-}
+CRYParamI::CRYParamI(std::string data) : CRYAbsParameter(data) { _param = atoi(_paramStr.c_str()); }

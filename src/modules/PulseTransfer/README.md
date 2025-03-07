@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2019-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2019-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "PulseTransfer"
 description: "Transfer of pulse information to the electronics"
@@ -10,6 +10,7 @@ module_outputs: ["PixelCharge"]
 ---
 
 ## Description
+
 This module combines propagated charges into pulses at individual pixel implants.
 It works in two different modes.
 
@@ -28,6 +29,7 @@ A third graph provides the absolute induced charge per time, disregarding the po
 It should be noted that generating per-pixel pulses will generate several pulse graphs per event and might result in a slow-down of the simulation process as well as a large module root file.
 
 ## Parameters
+
 * `output_plots` : Determines if simple output plots such as the total and per-pixel induced charge should be generated for a monitoring of the simulation flow. Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output histograms, defaults to 30ke.
 * `output_plots_bins` : Set the number of bins for the output histograms, defaults to 100.
@@ -37,6 +39,7 @@ It should be noted that generating per-pixel pulses will generate several pulse 
 * `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Only used if no pulse information is available for the propagated charge object. Should only be used with non-linear electric fields and defaults to `false`.
 
 ## Usage
+
 The default configuration is equal to the following:
 
 ```ini

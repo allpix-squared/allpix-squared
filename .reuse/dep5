@@ -16,7 +16,7 @@ Copyright: Howard Hinnant 2005-2011
 License: BSL-1.0
 
 Files: 3rdparty/octree/*
-Copyright: 2015 Jens Behley, Unversity of Bonn
+Copyright: 2015 Jens Behley, University of Bonn
 License: MIT
 
 Files: cmake/CodeCoverage.cmake
@@ -60,4 +60,3 @@ Comment: Taken from https://doi.org/10.1002/pip.4670030303
 Files: .proselint.json
 Copyright: 2023 CERN and the Allpix Squared authors
 License: CC0-1.0
-

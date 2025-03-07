@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Mesh Converter"
 ---
@@ -47,7 +47,7 @@ The **APF** (Allpix Squared Field) data format contains the field data in binary
 The **INIT** file is an ASCII text file with a format used by other tools such as PixelAV.
 Its header therefore contains several fields which are not used by Allpix Squared but need to be present nevertheless. The following example shows such a file header, important variables are marked with `<...>` while other fields are not interpreted and can be left untouched:
 
-```
+```ini
 <first line: some descriptive text to identify the field or field source>
 ##SEED##  ##EVENTS##
 ##TURN## ##TILT## 1.0
@@ -58,13 +58,13 @@ Its header therefore contains several fields which are not used by Allpix Square
 
 After the header part, the data follows as list of individual nodes with three indices for `x`, `y`, and `z` coordinates at the beginning and the scalar or vector field components afterwards. For a vector field, this looks like:
 
-```
+```ini
 <node.x> <node.y> <node.z> <observable.x> <observable.y> <observable.z>
 ```
 
 whereas for a scalar field such as a weighting potential, only one field component is present:
 
-```
+```ini
 <node.x> <node.y> <node.z> <observable>
 ```
 
@@ -74,6 +74,7 @@ whereas for a scalar field such as a weighting potential, only one field compone
 When compiling the Allpix Squared framework, the Mesh Converter is automatically compiled and installed in the Allpix Squared installation directory.
 
 It is also possible to compile the converter separately as stand-alone tool within this directory:
+
 ```shell
 mkdir build
 cd build
@@ -84,14 +85,16 @@ make
 It should be noted that the Mesh Converter depends on the core utilities of the Allpix Squared framework found in the directory `src/core/utils`. Thus, it is discouraged to move the converter code outside the repository as this directory would have to be copied and included in the code as well. Furthermore, updates are only distributed through the repository and new release versions of the Allpix Squared framework.
 
 ## Features
-- TCAD DF-ISE file format parser.
-- Automatic determination of the input mesh dimensionality (2D/3D).
-- Fast radius neighbor search for three-dimensional point clouds.
-- Barycentric interpolation between non-regular mesh points.
-- Several cuts available on the interpolation algorithm variables.
-- Interpolated data visualization tool.
+
+* TCAD DF-ISE file format parser.
+* Automatic determination of the input mesh dimensionality (2D/3D).
+* Fast radius neighbor search for three-dimensional point clouds.
+* Barycentric interpolation between non-regular mesh points.
+* Several cuts available on the interpolation algorithm variables.
+* Interpolated data visualization tool.
 
 ### Parameters
+
 * `model`: Field file format to use, can be **INIT** or **APF**, defaults to **APF** (binary format).
 * `parser`: Parser class to interpret input data in. Supported values are **DF-ISE** (default) and **Silvaco**.
 * `region`: Region name or list of region names to be meshed, such as `bulk` or `"bulk","epi"` (No default value; required parameter).
@@ -111,16 +114,20 @@ It should be noted that the Mesh Converter depends on the core utilities of the 
 * `log_level`: Specifies the lowest log level which should be reported. Possible values are the same as for the Allpix Squared framework.
 
 ### Usage
+
 To run the program, the following command should be executed from the installation folder:
+
 ```shell
 mesh_converter -f <file_prefix> [<options>] [<arguments>]
 ```
+
 The converter will look for a configuration file with `<file_prefix>` and `.conf` extension. This default configuration file name can be replaced with the `-c` option.
 The list with options can be accessed using the `-h` option.
 Possible options and their default values are:
-```
+
+```shell
 -f <file_prefix>       common prefix of DF-ISE grid (.grd) and data (.dat) files
--c <config_file>	   configuration file setting mesh conversion parameters
+-c <config_file>       configuration file setting mesh conversion parameters
 -h                     display this help text
 -l <file>              file to log to besides standard output (disabled by default)
 -o <init_file_prefix>  output file prefix without .init (defaults to file name of <file_prefix>)
@@ -139,11 +146,14 @@ The keyword mesh_tree can be used as a switch to enable or disable the creation 
 ## Mesh Plotter
 
 In addition to the Mesh Converter, the `mesh_plotter` tool can be used to visualize the new mesh interpolation results, from the installation folder as follows:
+
 ```shell
 mesh_plotter -f <file_name> [<options>] [<arguments>]
 ```
+
 The following command-line options are supported:
-```
+
+```shell
 -f <file_name>         name of the interpolated file in APF or INIT format
 -c <cut>               projection height index (default is mesh_pitch / 2)
 -h                     display this help text
@@ -160,6 +170,5 @@ By default, the data is interpreted as a vector field, where graphs for all thre
 Using the option `-s` enables the interpretation of a scalar field.
 The units for the field to interpreted in can be defined via the option `-u`.
 The number of mesh divisions in each dimension is automatically read from the `init`/`apf` file, by default the cut in the third dimension is done in the center but can be shifted using the `-c` option described above.
-
 
 [@octree]: http://jbehley.github.io/papers/behley2015icra.pdf

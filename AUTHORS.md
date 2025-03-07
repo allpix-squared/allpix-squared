@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Authors and Acknowledgments"
 ---
@@ -67,6 +67,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Sebastian Schmidt, FAU Erlangen, [schmidtseb](https://github.com/schmidtseb)
 * Sanchit Sharma, Kansas State University, [SanchitKratos](https://github.com/SanchitKratos)
 * Xin Shi, Institute of High Energy Physics Beijing, [xshi](https://gitlab.cern.ch/xshi)
+* Petja Skomina, Nikhef, [pskomina](https://gitlab.cern.ch/pskomina)
 * Petr Smolyanskiy, Czech Technical Univbersity Prague, [psmolyan](https://gitlab.cern.ch/psmolyan)
 * Viktor Sonesten, GSOC2018 Student, [tmplt](https://github.com/tmplt)
 * Reem Taibah, Université de Paris, [retaibah](https://gitlab.cern.ch/retaibah)

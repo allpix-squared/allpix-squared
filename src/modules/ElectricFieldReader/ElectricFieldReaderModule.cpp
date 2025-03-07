@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of module to read electric fields
  *
- * @copyright Copyright (c) 2017-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -34,6 +34,9 @@ ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Mess
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+
+    // Set default units for interpreting input field files in:
+    config_.setDefault("file_units", "V/cm");
 
     // NOTE use voltage as a synonym for bias voltage
     config_.setAlias("bias_voltage", "voltage");
@@ -277,7 +280,8 @@ FieldData<double> ElectricFieldReaderModule::read_field() {
         LOG(TRACE) << "Fetching electric field from mesh file";
 
         // Get field from file
-        auto field_data = field_parser_.getByFileName(config_.getPath("file_name", true), "V/cm");
+        auto field_data =
+            field_parser_.getByFileName(config_.getPath("file_name", true), config_.get<std::string>("file_units"));
 
         // Warn at field values larger than 1MV/cm / 10 MV/mm. Simple lookup per vector component, not total field magnitude
         auto max_field = *std::max_element(std::begin(*field_data.getData()), std::end(*field_data.getData()));

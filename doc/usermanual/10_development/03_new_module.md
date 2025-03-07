@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Implementing a New Module"
 weight: 3
@@ -30,15 +30,15 @@ hereafter referred to as `ModuleName`, are the following:
 
 Additional sources of documentation which may be useful during the development of a module include:
 
-- The framework documentation in [Chapter 4](../04_framework/_index.md) for an introduction to the different components of
+* The framework documentation in [Chapter 4](../04_framework/_index.md) for an introduction to the different components of
   the framework.
 
-- The module documentation in [Chapter 8](../08_modules/_index.md) for a description of the functionality of other modules
+* The module documentation in [Chapter 8](../08_modules/_index.md) for a description of the functionality of other modules
   already implemented, and to look for similar modules which can help during development.
 
-- The Doxygen (core) reference documentation included in the framework \[[@ap2-doxygen]\].
+* The Doxygen (core) reference documentation included in the framework \[[@ap2-doxygen]\].
 
-- The latest version of the source code of all modules and the Allpix Squared core itself.
+* The latest version of the source code of all modules and the Allpix Squared core itself.
 
 Any module potentially useful for other users should be contributed back to the main repository after is has been validated.
 It is strongly encouraged to send a merge request through the mechanism provided by the software repository \[[@ap2-repo]\].
@@ -48,21 +48,22 @@ It is strongly encouraged to send a merge request through the mechanism provided
 Every module directory should at minimum contain the following documents (with `ModuleName` replaced by the name of the
 module):
 
-- `CMakeLists.txt`:
+* `CMakeLists.txt`:
   The build script to load the dependencies and define the source files of the library.
 
-- `README.md`:
+* `README.md`:
   Full documentation of the module.
 
-- `<ModuleName>Module.hpp`:
+* `<ModuleName>Module.hpp`:
   The header file of the module.
 
-- `<ModuleName>Module.cpp`:
+* `<ModuleName>Module.cpp`:
   The implementation file of the module.
 
 These files are discussed in more detail below. By default, all modules added to the `src/modules/` directory will be built
 automatically by CMake. If a module depends on additional packages which not every user may have installed, one can consider
 adding the following line to the top of the module's `CMakeLists.txt`:
+
 ```cmake
 ALLPIX_ENABLE_DEFAULT(OFF)
 ```
@@ -135,7 +136,7 @@ The `README.md` serves as the documentation for the module and should be written
 The `README.md` should follow the structure indicated in the `README.md` file of the `DummyModule` in `src/modules/Dummy`,
 and should contain at least the following sections:
 
-- A YAML header with the name of the module (`title`), a short description of the module (`description`) the status
+* A YAML header with the name of the module (`title`), a short description of the module (`description`) the status
   (`module_status`) and maintainers (`module_maintainers`) of the module.
 
   If the module is working and well-tested, the status of the module should be `Functional`. By default, new modules are
@@ -151,12 +152,12 @@ and should contain at least the following sections:
 
   In addition, the input (`module_inputs`) and output (`module_outputs`) objects of the module should be given as well.
 
-- An H2-size section named **Description**, containing a short description of the module.
+* An H2-size section named **Description**, containing a short description of the module.
 
-- An H2-size section named **Parameters**, with all available configuration parameters of the module. The parameters should
+* An H2-size section named **Parameters**, with all available configuration parameters of the module. The parameters should
   be briefly explained in an itemised list with the name of the parameter set as an inline code block.
 
-- An H2-size section with the title **Usage** which should contain at least one simple example of a valid configuration for
+* An H2-size section with the title **Usage** which should contain at least one simple example of a valid configuration for
   the module.
 
 For advances features in GLFM such as citations and formulae, see `doc/README.md` in the project repository \[[@ap2-repo]\].
@@ -199,24 +200,24 @@ descriptions, while detector modules directly receive a link to their respective
 
 In addition to the constructor, each module can override the following methods:
 
-- `initialize()`:
+* `initialize()`:
   Called once per module from the main thread after loading and constructing all modules and before starting the event
   loop. This method can for example be used to initialize histograms.
 
-- `initializeThread()`:
+* `initializeThread()`:
   Called after global initialization but before event processing and gives the possibility to initialize worker
   thread-specific members for modules. If multithreading is used, this method is called by each worker thread separately;
   if the simulation is run single-threaded, it is called once by the main thread.
 
-- `run(Event* event)`:
+* `run(Event* event)`:
   Called for every event in the simulation, with a pointer to the current event object as parameter. An exception should be
   thrown for serious errors, otherwise a warning should be logged.
 
-- `finalizeThread()`:
+* `finalizeThread()`:
   Called for each worker thread after processing all events in the run. If multithreading is used, this method is called by
   each worker thread separately; if the simulation is run single-threaded, it is called once by the main thread.
 
-- `finalize()`:
+* `finalize()`:
   Called once per module from the main thread after processing all events in the run and before destructing the module.
   Typically used to save the output data (like histograms). Any exceptions should be thrown from here instead of the
   destructor.

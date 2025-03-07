@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Trapping and Detrapping of Charge Carriers"
 weight: 4
@@ -254,9 +254,6 @@ detrapping_model = "constant"
 detrapping_time_electron = 10ns
 detrapping_time_hole = 10ns
 ```
-
-
-
 
 [@niel]: https://rd48.web.cern.ch/technical-notes/rosetn972.ps
 [@kramberger]: https://doi.org/10.1016/S0168-9002(01)01263-3

@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2021-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2021-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "EUDET with RD53a DUT"
 description: "Simulation of the DESY testbeam setup with a EUDET telescope and RD53a modules"

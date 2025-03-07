@@ -67,6 +67,4 @@ double CRYWeightFunc::weight(double value) {
     return (*_weights)[b];
 }
 
-double CRYWeightFunc::weightBin(unsigned int b) {
-    return (*_weights)[b];
-}
+double CRYWeightFunc::weightBin(unsigned int b) { return (*_weights)[b]; }

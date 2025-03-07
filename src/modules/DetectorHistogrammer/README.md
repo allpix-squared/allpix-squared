@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DetectorHistogrammer"
 description: "Provisional simulation analysis for a detector"
@@ -9,6 +9,7 @@ module_outputs: ["PixelHit", "MCParticle"]
 ---
 
 ## Description
+
 This module provides an overview of the produced simulation data for a quick inspection and simple checks.
 For more sophisticated analyses, the output from one of the output writers should be used to make the necessary information available.
 
@@ -46,6 +47,7 @@ For technical reasons, this offset is drawn randomly from a Gaussian distributio
 * `matching_cut`: Required maximum matching distance between cluster position and particle position for the efficiency measurement. Expected two values and defaults to three times the pixel pitch in each dimension.
 
 ## Usage
+
 This module is normally bound to a specific detector to plot, for example to the 'dut':
 
 ```ini

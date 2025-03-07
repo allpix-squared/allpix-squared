@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DefaultDigitizer"
 description: "Digitizer that creates a signal proportional to the collected charge"
@@ -10,6 +10,7 @@ module_outputs: ["PixelHit"]
 ---
 
 ## Description
+
 Simple digitization module which translates the collected charges into a digitized signal proportional to the input charge. It simulates noise contributions from the readout electronics as Gaussian noise and allows for a configurable threshold. Furthermore, the linear response of an QDC as well as a TDC with configurable resolution can be simulated.
 For maximum simplicity only the absolute of the charge is used and compared to a positive threshold.
 
@@ -55,6 +56,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 
 ## Parameters
+
 * `threshold` : Threshold for considering the collected charge as a hit (No default value; required parameter).
 * `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.
@@ -81,6 +83,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 
 ## Usage
+
 The default configuration is equal to the following:
 
 ```ini

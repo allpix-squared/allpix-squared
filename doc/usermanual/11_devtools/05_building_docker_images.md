@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Building Docker Images"
 weight: 5
@@ -32,9 +32,11 @@ picked up.
 
 {{% alert title="Important" color="warning" %}}
 The Docker image containing the dependencies should not be flattened with commands like
+
 ```shell
 docker export <container id> | docker import - <tag name>
 ```
+
 because it strips any `ENV` variables set or used during the build process. They are used to set up the ROOT6 and Geant4
 environments. When flattening, their executables and data paths cannot be found in the final Allpix Squared image.
 {{% /alert %}}

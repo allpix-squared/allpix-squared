@@ -2,7 +2,7 @@
  * @file
  * @brief Implements the GENIE MC generator file reader module for primary particles
  *
- * @copyright Copyright (c) 2022-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -98,8 +98,12 @@ std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
             LOG(DEBUG) << "Skipping primary particle with PDG code " << pdg_code_->At(i);
             continue;
         }
-        particles.emplace_back(
-            pdg_code_->At(i), energy_->At(i), G4ThreeVector(px_->At(i), py_->At(i), pz_->At(i)), G4ThreeVector(0, 0, 0), 0);
+        // Nota bene: GENIE returns energy in GeV so we need to convert to MeV:
+        particles.emplace_back(pdg_code_->At(i),
+                               energy_->At(i) * 1000.,
+                               G4ThreeVector(px_->At(i), py_->At(i), pz_->At(i)),
+                               G4ThreeVector(0, 0, 0),
+                               0);
         LOG(DEBUG) << "Adding particle with ID " << particles.back().pdg() << " energy " << particles.back().energy();
     }
 

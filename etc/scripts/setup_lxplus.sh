@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 if [ ! -d "/cvmfs/sft.cern.ch" ]; then
@@ -19,4 +19,3 @@ fi
 
 # Load default configuration
 source $ABSOLUTE_PATH/../../.ci/init_x86_64.sh
-

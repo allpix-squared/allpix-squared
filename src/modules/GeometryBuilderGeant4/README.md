@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "GeometryBuilderGeant4"
 description: "Constructs the Geant4 geometry"
@@ -8,6 +8,7 @@ module_maintainers: ["Paul Schuetze (<paul.schuetze@desy.de>)"]
 ---
 
 ## Description
+
 Constructs the Geant4 geometry from the internal geometry description.
 First, the world frame with a configurable margin and material is constructed.
 Then all passive materials and detectors using their internal detector models and passive material models are created and placed within the world frame or a specified mother volume (only for passive materials), which corresponds to another passive volume.
@@ -22,14 +23,16 @@ The dimensions of the individual volumes are defined by the following parameters
 
 For each model, a set of specific size parameters need to be given, of which some are optional.
 
-#### Box:
+#### Box
+
 A rectangular box which can be massive or have an hole in the middle along the z-axis.
 
 * The `size` of the box is an XYZ vector which defines the total size of the box.
 * (Optional) The `inner_size` of the box is an XYZ vector which defines the size of the volume that will be removed at the center of the original box volume. Defaults to `0mm 0mm 0mm` (no volume removed).
 * (Optional) The `thickness` of the box is a value which defines the thickness of the walls of a box. This has a similar effect as the parameter `inner_size`, and such they can't be used together. Defaults to 0mm.
 
-#### Cylinder:
+#### Cylinder
+
 A cylindrical tube which can be massive or have an hole in the middle along the z-axis.
 
 * The `outer_radius` of the cylinder is the total radius of the cylinder (in the XY-plane).
@@ -40,7 +43,8 @@ A cylindrical tube which can be massive or have an hole in the middle along the 
 
 Note that the if the `arc_length` is set to 360 degrees, the Allpix Squared framework will always draw the full circumference, regardless of the value of `starting_angle`.
 
-#### Sphere:
+#### Sphere
+
 A full or partly made sphere with an inner- and outer radius.
 
 * The `outer_radius` of the sphere is the total radius of the sphere in all directions.
@@ -57,7 +61,8 @@ The necessary module errors and warnings have been included to make sure the use
 
 Note: If the VisualizationGeant4 module is used in conjunction with and `arc_length_theta` different from 180deg, the Visualization GUI will show an error "Inconsistency in bounding boxes for solid". The origin of this error is unknown but the error can be ignored.
 
-#### Cone:
+#### Cone
+
 A cone or partly made cone with an inner and an outer radius defined at the begin (negative z) and end (positive z) each.
 
 * The `outer_radius_begin` of the cone is the outer radius at the begin (negative z) of the cone
@@ -70,13 +75,14 @@ A cone or partly made cone with an inner and an outer radius defined at the begi
 
 Note that `arc_length` works the same as the `arc_length` from the cylinder
 
-#### GDML:
+#### GDML
+
 This model allows to load arbitrary GDML files \[[@gdml]\] as passive materials. All volumes from the GDML file which are contained within the world volume are processed and added to the geometry of the simulation.
 The only parameter specific to this model is `file_name` which should provide the path to the GDML file to be read.
 
 This functionality requires Geant4 to be built with GDML support enabled. This can be enabled via CMake when compiling Geant4 using
 
-```
+```shell
 cmake -DDGEANT4_USE_GDML=ON ..
 ```
 
@@ -94,36 +100,36 @@ The following materials are pre-defined and can directly be used for the world v
 This module can create support layers and passive volumes of the following materials:
 
 * Materials listed by Geant4:
-    * air
-    * aluminum
-    * beryllium
-    * copper
-    * kapton
-    * lead
-    * lithium
-    * plexiglass
-    * silicon
-    * germanium
-    * tungsten
-    * gallium arsenide
-    * cadmium telluride
-    * nickel
-    * gold
-    * titanium
+  * air
+  * aluminum
+  * beryllium
+  * copper
+  * kapton
+  * lead
+  * lithium
+  * plexiglass
+  * silicon
+  * germanium
+  * tungsten
+  * gallium arsenide
+  * cadmium telluride
+  * nickel
+  * gold
+  * titanium
 * Composite or custom materials:
-    * carbon fiber
-    * epoxy
-    * fused silica
-    * PCB G-10
-    * paper (cellulose)
-    * solder
-    * polystyrene
-    * ppo foam
-    * cadmium zinc telluride
-    * diamond
-    * silicon carbide
-    * titanium grade 5
-    * vacuum
+  * carbon fiber
+  * epoxy
+  * fused silica
+  * PCB G-10
+  * paper (cellulose)
+  * solder
+  * polystyrene
+  * ppo foam
+  * cadmium zinc telluride
+  * diamond
+  * silicon carbide
+  * titanium grade 5
+  * vacuum
 
 Furthermore, this module can automatically load any material defined in the Geant4 material database \[[@g4materials]\]. This comprises both simple materials and pre-defined NIST compounds.
 It should be noted that when loading a material from the Geant4 material database, the name comparison is case sensitive. Names can be provided with or without `G4_` prefix.
@@ -133,6 +139,7 @@ It should be noted that when loading a material from the Geant4 material databas
 This module requires an installation of Geant4.
 
 ## Parameters
+
 * `world_material` : Material of the world, should either be **air** or **vacuum**. Defaults to **air** if not specified.
 * `world_margin_percentage` : Percentage of the world size to add to every dimension compared to the internally calculated minimum world size. Defaults to 0.1, thus 10%.
 * `world_minimum_margin` : Minimum absolute margin to add to all sides of the internally calculated minimum world size. Defaults to zero for all axis, thus not requiring any minimum margin.
@@ -140,6 +147,7 @@ This module requires an installation of Geant4.
 * `log_level_g4cout`: Target logging level for Geant4 messages from the G4cout stream. Defaults to `TRACE`.
 
 ## Usage
+
 To create a Geant4 geometry using vacuum as world material and with always exactly one meter added to the minimum world size in every dimension, the following configuration could be used:
 
 ```ini

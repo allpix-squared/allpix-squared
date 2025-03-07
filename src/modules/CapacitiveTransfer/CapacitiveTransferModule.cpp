@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @copyright Copyright (c) 2017-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -39,6 +39,8 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     model_ = detector_->getModel();
     config_.setDefault("output_plots", 0);
     config_.setDefault("cross_coupling", true);
+    config_.setDefault("flip_odd_rows", false);
+    config_.setDefault("flip_odd_cols", false);
     config_.setDefault("nominal_gap", 0.0);
     config_.setDefault("max_depth_distance", Units::get<double>(5, "um"));
     // By default, collect from the full sensor surface, not the implant region
@@ -46,6 +48,8 @@ CapacitiveTransferModule::CapacitiveTransferModule(Configuration& config,
     config_.setDefault("minimum_gap", config_.get<double>("nominal_gap"));
 
     cross_coupling_ = config_.get<bool>("cross_coupling");
+    flip_odd_rows_ = config_.get<bool>("flip_odd_rows");
+    flip_odd_cols_ = config_.get<bool>("flip_odd_cols");
     max_depth_distance_ = config_.get<double>("max_depth_distance");
     collect_from_implant_ = config_.get<bool>("collect_from_implant");
 
@@ -328,8 +332,17 @@ void CapacitiveTransferModule::run(Event* event) {
                     row = static_cast<size_t>(std::floor(matrix_rows_ / 2));
                 }
 
-                auto xcoord = xpixel + static_cast<int>(col - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
-                auto ycoord = ypixel + static_cast<int>(row - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
+                // Some designs have a mirrored crosstalk matrix which is flipped in every other row or column:
+                auto row_to_use = row;
+                if(flip_odd_rows_ == true && (ypixel % 2 == 1)) {
+                    row_to_use = max_row_ - row - 1;
+                }
+                auto col_to_use = col;
+                if(flip_odd_cols_ == true && (xpixel % 2 == 1)) {
+                    col_to_use = max_col_ - col - 1;
+                }
+                auto xcoord = xpixel + static_cast<int>(col_to_use - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
+                auto ycoord = ypixel + static_cast<int>(row_to_use - static_cast<size_t>(std::floor(matrix_rows_ / 2)));
 
                 // Ignore if out of pixel grid
                 if(!detector_->getModel()->isWithinMatrix(xcoord, ycoord)) {

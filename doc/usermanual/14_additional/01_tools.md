@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Framework Tools"
 weight: 1
@@ -22,14 +22,14 @@ with units and a thin wrapper for thread-safe ROOT histograms.
 The framework provides an interfacing library with Geant4 that provides alternative run managers to be used by modules
 interested in using Geant4 as follows:
 
-1.  `MTRunManager`:
-    A run manager for multithreaded event processing. Internally, it creates thread-local managers to handle operations for
-    each calling thread independently. It also maintains a stable seed distribution mechanism to ensure results are the same
-    regardless of the number of threads that use the manager in parallel.
+1. `MTRunManager`:
+   A run manager for multithreaded event processing. Internally, it creates thread-local managers to handle operations for
+   each calling thread independently. It also maintains a stable seed distribution mechanism to ensure results are the same
+   regardless of the number of threads that use the manager in parallel.
 
-2.  `RunManager`:
-    A run manager for sequential event processing. It uses the same seeding mechanism as the multithreaded version so they
-    can be used interchangeably depending on whether multithreading is enabled or not, while ensuring identical results.
+2. `RunManager`:
+   A run manager for sequential event processing. It uses the same seeding mechanism as the multithreaded version so they
+   can be used interchangeably depending on whether multithreading is enabled or not, while ensuring identical results.
 
 The DepositionGeant4 module uses `MTRunManager` to be able to call the `BeamOn` method in parallel on multiple threads thus
 benefiting from the multithreading feature while the VisualizationGeant4 module uses `RunManager` to be able to visualize the
@@ -90,6 +90,7 @@ In order to make use of adaptive step size changes, a tableau with error estimat
 #### Third-Order Kutta Method (RK3)
 
 This tableau implements a simple and fast third-order Kutta integration which only requires the calculation of three terms.
+
 ```math
 \begin{array}
 {c|ccc}
@@ -104,6 +105,7 @@ This tableau implements a simple and fast third-order Kutta integration which on
 #### Fourth-Order Runge-Kutta Method (RK4)
 
 This tableau implements the classical fourth-order Runge-Kutta integration.
+
 ```math
 \begin{array}
 {c|cccc}

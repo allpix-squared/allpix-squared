@@ -120,4 +120,3 @@
 1682603197|MR!972: Impact Ionization: add probability based algorithm
 1683192959|MR!986: Add Possibility to Define Custom Recombination Models
 1683205248|Major Release: Allpix Squared v3.0
-

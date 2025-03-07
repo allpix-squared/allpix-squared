@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 ---
 
@@ -81,15 +81,15 @@ weight: 1
 
 The following notes should be taken for these fields:
 
--   `title` is always required displayed in the ToC / sidebar and as main heading of the doc page. For non-weighted markdown
-    files, the filename should be a lower-cased version of the `title` with spaces replaced by underscores.
+* `title` is always required displayed in the ToC / sidebar and as main heading of the doc page. For non-weighted markdown
+  files, the filename should be a lower-cased version of the `title` with spaces replaced by underscores.
 
--   `description` is optional and always disaplyed below the `title`. In this documentation, it should only be present for
-    chapter pages, modules and examples.
+* `description` is optional and always disaplyed below the `title`. In this documentation, it should only be present for
+  chapter pages, modules and examples.
 
--   `weight` is required for all files in the [usermanual folder](./usermanual/). Files always should have weight as
-    double-digit prefixed to their file name (see [File tree](#file-tree)). For files that are not in the usermanual folder,
-    for example module READMEs, the `weight` field must be omitted so that hugo sorts them alphabetically.
+* `weight` is required for all files in the [usermanual folder](./usermanual/). Files always should have weight as
+  double-digit prefixed to their file name (see [File tree](#file-tree)). For files that are not in the usermanual folder,
+  for example module READMEs, the `weight` field must be omitted so that hugo sorts them alphabetically.
 
 For modules, additional front matter tags have to be set, as explained in the
 [documentation](./usermanual/10_development/03_new_module.md#readmemd).
@@ -105,6 +105,7 @@ also means that explicit backticks (like `` $` `` or `` ```math ``) can't be use
 ## Testing the website
 
 You can easily test the website of the documentation with your changes yourself by running:
+
 ```shell
 git clone https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
 ./get_artifacts.sh job job_number_from_your_ci your_cern_user_name/allpix-squared

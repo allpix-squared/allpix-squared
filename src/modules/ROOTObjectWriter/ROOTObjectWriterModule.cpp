@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of ROOT data file writer module
  *
- * @copyright Copyright (c) 2017-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -37,6 +37,12 @@ ROOTObjectWriterModule::ROOTObjectWriterModule(Configuration& config, Messenger*
 
     // Bind to all messages with filter
     messenger_->registerFilter(this, &ROOTObjectWriterModule::filter);
+
+    // Waive sequence requirement if requested by user
+    config_.setDefault("require_sequence", true);
+    if(!config_.get<bool>("require_sequence")) {
+        waive_sequence_requirement();
+    }
 }
 /**
  * @note Objects cannot be stored in smart pointers due to internal ROOT logic

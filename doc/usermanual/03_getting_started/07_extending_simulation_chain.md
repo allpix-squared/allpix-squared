@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Extending the Simulation Chain"
 weight: 7
@@ -38,13 +38,14 @@ If Qt is not available, a VRML viewer can be used as an alternative, however it 
 Qt viewer included as it offers the best visualization capabilities. The following steps are necessary in order to use a VRML
 viewer:
 
-- A VRML viewer should be installed on the operating system. Good options are FreeWRL or OpenVRML.
+* A VRML viewer should be installed on the operating system. Good options are FreeWRL or OpenVRML.
 
-- Subsequently, two environmental parameters have to be exported to the shell environment to inform Geant4 about the
+* Subsequently, two environmental parameters have to be exported to the shell environment to inform Geant4 about the
   configuration: `G4VRMLFILE_VIEWER` should point to the location of the viewer executable and should
   `G4VRMLFILE_MAX_FILE_NUM` typically be set to 1 to prevent too many files from being created.
 
-- Finally, the configuration section of the visualization module should be altered as follows:
+* Finally, the configuration section of the visualization module should be altered as follows:
+
   ```ini
   [VisualizationGeant4]
   # Do not start the Qt gui

@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "VisualizationGeant4"
 description: "Constructs a Geant4 viewer to display the geometry"
@@ -8,6 +8,7 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
 ## Description
+
 Constructs a viewer to display the constructed Geant4 geometry. The module supports all type of viewers included in Geant4, but the default Qt visualization with the OpenGL viewer is recommended as long as the installed Geant4 version supports it.
 It offers the best visualization experience.
 
@@ -23,6 +24,7 @@ This module does not support multithreading and will force the simulation chain 
 This module requires an installation of Geant4.
 
 ## Parameters
+
 * `mode` : Determines the mode of visualization. Options are **gui** which starts a Qt visualization window containing the driver (as long as the chosen driver supports it), **terminal** starts both the visualization viewer and a Geant4 terminal or **none** which only starts the driver itself (and directly closes it if the driver is asynchronous). Defaults to **gui**.
 * `driver` : Geant4 driver used to visualize the geometry. All the supported options can be found online \[[@g4drivers]\] and depend on the build options of the Geant4 version used. The default **OGL** should normally be used with the **gui** option if the visualization should be accumulated, otherwise **terminal** is the better option. Other than this, only the **VRML2FILE** driver has been tested. This driver should be used with *mode* equal to **none**. Defaults to the OpenGL driver **OGL**.
 * `accumulate` : Determines if all events should be accumulated and displayed at the end, or if only the last event should be kept and directly visualized (if the driver supports it). Defaults to true, thus accumulating events and only displaying the final result.
@@ -49,6 +51,7 @@ This module requires an installation of Geant4.
 * `viewpoint_thetaphi` : Sets the theta and phi angles for the viewpoint. Defaults to -70deg 20deg.
 
 ## Usage
+
 An example configuration providing a wireframe viewing style with the same color for every particle and displaying the result after every event for 2s is provided below:
 
 ```ini

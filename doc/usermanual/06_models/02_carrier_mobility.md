@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Charge Carrier Mobility"
 weight: 2
@@ -89,11 +89,11 @@ For field strengths outside the range, the first and last bin are extrapolated l
 The following plots show a comparison of the mobility and velocity of electrons and holes as calculated from the Canali and
 the CanaliFast models. The maximum relative difference occurs at very low electric field strengths and is less than 0.004.
 
-![](./canali_fast_mobility.png)\
+![Canali Mobility Comparison](./canali_fast_mobility.png)\
 *Comparison of the electron and hole mobilities calculated using the Canali and CanaliFast models as a function of the
 electric field strength.*
 
-![](./canali_fast_velocity.png)\
+![Canali Velocity Comparison](./canali_fast_velocity.png)\
 *Comparison of the electron and hole velocities calculated using the Canali and CanaliFast models as a function of the
 electric field strength.*
 
@@ -234,8 +234,8 @@ C_{s,e}     &= 3.43\times 10^{20} \,\text{cm}^{-3} \\
 \end{aligned}
 ```
 
-This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`, and the n-dopant can be 
-selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phosphorus, with phosphorus being 
+This model can be selected in the configuration file via the parameter `mobility_model = "masetti"`, and the n-dopant can be
+selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phosphorus, with phosphorus being
 the default.
 
 ## Arora Model
@@ -292,8 +292,8 @@ The mobility is then parametrized using the two models as
 where $`\mu_{m}(N)`$ is the mobility from the [Masetti model](#masetti-model) and $`v_m`$, $`\beta`$ are the respective
 parameters from the [Canali model](#jacoboni-canali-model).
 
-This model can be selected in the configuration file via the parameter `mobility_model = "masetti_canali"`, and the n-dopant 
-can be selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phosphorus, with phosphorus 
+This model can be selected in the configuration file via the parameter `mobility_model = "masetti_canali"`, and the n-dopant
+can be selected via the parameter `dopant_n`. Possible values for the n-dopant are arsenic and phosphorus, with phosphorus
 being the default.
 
 ## Ruch-Kino Model
@@ -368,6 +368,10 @@ references are listed in the table below.
 |                  | $`A`$                                                               | $`0.44`$            | $`0.59`$            | \[[@quay]\]                      |
 |                  | $`M\ [\text{cm}^2\,\text{K}^\gamma\,\text{V}^{-1}\,\text{s}^{-1}]`$ | $` 2.5\times 10^6`$ | $` 6.3\times 10^7`$ | \[[@LandoltBornstein]\]          |
 |                  | $`\gamma`$                                                          | $` 1.0`$            | $` 2.1`$            | \[[@LandoltBornstein]\]          |
+
+The relevant set of parameters from the above table is selected automatically based on the configured material of the sensor in question.
+
+This model can be selected in the configuration file via the parameter `mobility_model = "quay"`.
 
 ## Levinshtein Mobility
 

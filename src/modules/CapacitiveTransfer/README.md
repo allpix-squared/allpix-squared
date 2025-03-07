@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CapacitiveTransfer"
 description: "Transfer with cross-coupling between pixels"
@@ -10,6 +10,7 @@ module_outputs: ["PixelCharge"]
 ---
 
 ## Description
+
 Similar to the SimpleTransferModule, this module combines individual sets of propagated charges together to a set of charges on the sensor pixels and thus prepares them for processing by the detector front-end electronics. In addition to the SimpleTransferModule, where the charge close to the implants is transferred only to the closest read-out pixel, this module also copies the propagated charge to the neighboring pixels, scaled by the respective cross-coupling (i.e. `cross_capacitance / nominal_capacitance`), in order to simulate the cross-coupling between neighboring pixels in Capacitively Coupled Pixel Detectors (CCPDs).
 
 It is also possible to simulate assemblies with tilted chips, with non-uniform coupling over the pixel matrix, by providing the tilting angles between the chips, the nominal and minimum gaps between the pixel pads, the pixel coordinates where the chips are away from each other by the minimum gap provided and a root file containing ROOT::TGraph with coupling capacitances *vs* gap between pixel pads.
@@ -28,6 +29,7 @@ This model will reproduce the results with the coupling matrices if `chip_angle 
 This module requires an installation of Eigen3.
 
 ## Parameters
+
 * `coupling_scan_file`: Root file containing a TGraph, for each pixel, with the capacitance simulated for each gap between the pixel pads. The TGraph objects in the root file should be named `Pixel_X` where `X` goes from 1 to 9.
 * `chip_angle`: Tilt angle between chips. The first angle is the rotation along the columns axis,  and second is along the row axis. It defaults to 0.0 radians (parallel chips).
 * `tilt_center`: Pixel position for the nominal coupling/distance.
@@ -38,6 +40,8 @@ This module requires an installation of Eigen3.
 * `coupling_matrix`: Cross-coupling matrix with relative capacitances.
 * `max_depth_distance`: Maximum distance in depth, i.e. normal to the sensor surface at the implant side, for a propagated charge to be taken into account in case the detector has no implants defined or `collect_from_implant` is set to `false`. Defaults to `5um`.
 * `collect_from_implant`: Only consider charge carriers within the implant region of the respective detector instead of the full surface of the sensor. Should only be used with non-linear electric fields and defaults to `false`.
+* `flip_odd_rows`: For use with designs in which every other row has a mirrored coupling matrix. Enables flipping the matrix rows for every odd pixel row. Defaults to `false` (disabled).
+* `flip_odd_cols`: As above, just for the columns. Enables flipping the coupling matrix columns for every odd pixel column. Defaults to `false` (disabled).
 * `output_plots`: Saves the output plots for this module. Defaults to 1 (enabled).
 
 The cross-coupling matrix, to be parsed via the matrix file or via the configuration file, must be organized in Row vs Col, such as:
@@ -52,6 +56,7 @@ The matrix center element, `cross_coupling_11` in this example, is the coupling 
 The matrix can have any size, although square 3x3 matrices are recommended as the coupling decreases significantly after the first neighbors and the simulation will scale with NxM, where N and M are the respective sizes of the matrix.
 
 ## Usage
+
 This module accepts only one coupling model (`coupling_scan_file`, coupling_file or `coupling_matrix`) at each time. If more then one option is provided, the simulation will not run.
 
 ```ini

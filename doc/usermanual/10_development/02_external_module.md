@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Building Modules Outside the Framework"
 weight: 2
@@ -25,6 +25,7 @@ ALLPIX_MODULE_SOURCES(${MODULE_NAME} MySimulationModule.cpp)
 All dependencies of the framework such as ROOT or Boost.Random are automatically added as CMake targets and can be used by
 the module. The required `CMAKE_CXX_STANDARD` is automatically inferred from the settings used to build the framework.
 Additional libraries can be linked to the module using the standard CMake command
+
 ```cmake
 TARGET_LINK_LIBRARIES(${MODULE_NAME} MyExternalLibrary)
 ```

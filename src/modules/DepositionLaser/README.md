@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionLaser"
 description: "A simplistic deposition generator for charge injection with a laser"
@@ -74,6 +74,7 @@ and temporal distribution.
 
 
 ## Usage
+
 A simulation pipeline to build an analog detector response would include `DepositionLaser`, `TransientPropagation` and
 `PulseTransfer`.
 Usually it is enough to run just a single event (or a few).

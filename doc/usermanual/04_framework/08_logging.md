@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Logging and other Utilities"
 weight: 8
@@ -17,7 +17,7 @@ The logging system is built to handle input/output in the same way as `std::cin`
 flexible and easy to read. The system is globally configured, thus only one logger instance exists. The following
 commands are available for sending messages to the logging system at a level of `LEVEL`:
 
-- `LOG(LEVEL)`:
+* `LOG(LEVEL)`:
   Sends a message with severity level `LOG(LEVEL)` to the logging system. Example:
 
   ```cpp
@@ -28,27 +28,29 @@ commands are available for sending messages to the logging system at a level of 
   new line commands to the stream. The logging system will automatically align every new line under the previous message
   and will leave the header space empty on new lines.
 
-- `LOG_ONCE(LEVEL)`:
+* `LOG_ONCE(LEVEL)`:
   Same as `LOG()`, but will only log this message once over the full run, even if the logging function is called multiple
   times. Example:
 
   ```cpp
       LOG_ONCE(INFO) << "This message will appear once only, even if present in every event...";
   ```
+
   This can be used to log warnings or messages e.g. from the `run()` function of a module without flooding the log output
   with the same message for every event. The message is preceded by the information that further messages will be
   suppressed.
 
-- `LOG_N(LEVEL, NUMBER)`:
+* `LOG_N(LEVEL, NUMBER)`:
   Same as `LOG_ONCE()` but allows to specify the number of times the message will be logged via the additional parameter
   `NUMBER`. Example:
 
   ```cpp
       LOG_N(INFO, 10) << "This message will appear maximally 10 times throughout the run.";
   ```
+
   The last message is preceded by the information that further messages will be suppressed.
 
-- `LOG_PROGRESS(LEVEL, IDENTIFIER)`:
+* `LOG_PROGRESS(LEVEL, IDENTIFIER)`:
   This function allows to update the message to be updated on the same line for simple progressbar-like functionality.
   Example:
 
@@ -56,7 +58,7 @@ commands are available for sending messages to the logging system at a level of 
       LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Running event " << n << " of " << number_of_events;
   ```
 
-    Here, the `IDENTIFIER` is a unique string identifying this output stream in order not to mix different progress reports.
+  Here, the `IDENTIFIER` is a unique string identifying this output stream in order not to mix different progress reports.
 
 If the output is a terminal screen the logging output will be coloured to make it easier to identify warnings and error
 messages. This is disabled automatically for all non-terminal outputs.

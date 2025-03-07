@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2021-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2021-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Impact Ionization"
 weight: 5
@@ -24,17 +24,21 @@ g (E, T) = \left\{
 The impact ionization coefficient $`\alpha`$ is calculated depending on the selected impact ionization model. The models themselves are described below.
 
 The number of additional charge carriers generated per step $`n`$ is determined via a stochastic approach by applying the following equation dependent on a random number drawn from a uniform distribution $`u(0,1)`$
+
 ```math
 n = \frac{\ln(u)}{\ln(1-1/g)} = \frac{1}{\log_u(1-1/g)}
 ```
+
 This distribution is applied e.g. in Garfield++\[[@garfieldpp]\] and represents a microscopic simulation of Yule processes.
 
 The number of secondary charge carriers generated from impact ionization is calculated for every individual charge carrier within a group of charge carriers and summed per propagation step. Additional charge carriers are then added to the group (same-type carriers) or deposited (opposite-type) at the end of the corresponding step.
 
 This algorithm results in a mean number of secondaries generated equal to
+
 ```math
 \langle n_{total}\rangle = \exp\left(\int_{x_0}^{x_n}\alpha(x)dx \right)
 ```
+
 for sufficiently low step sizes.
 
 The following impact ionization models are available:
@@ -167,7 +171,6 @@ In contrast to the original model, this publication uses a parametrization witho
 This model can be selected in the configuration file via the parameter `multiplication_model = "overstraeten_optimized"`.
 
 
-
 ## Okuto-Crowell Model
 
 The Okuto-Crowell model \[[@okuto]\] defines the impact ionization coefficient similarly to the above models but in addition
@@ -226,7 +229,6 @@ An optimized parametrization of the Okuto-Crowell model based on measurements wi
 ```
 
 This model can be selected in the configuration file via the parameter `multiplication_model = "okuto_optimized"`.
-
 
 
 ## Bologna Model

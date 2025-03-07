@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Simulation Geometry"
 weight: 1
@@ -9,38 +9,40 @@ Simulations are frequently performed for a set of different detectors (such as a
 of these individual detectors together form what Allpix Squared defines as the geometry. Each detector has a set of
 properties attached to it:
 
-- A unique detector `name` to refer to the detector in the configuration.
+* A unique detector `name` to refer to the detector in the configuration.
 
-- The `position` in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in
+* The `position` in the world frame. This is the position of the geometric center of the sensitive device (sensor) given in
   world coordinates as X, Y and Z s defined in [Section 5.1.1](#coordinate-systems) (note that any
   additional components like the chip and possible support layers are ignored when determining the geometric center).
 
-- An `orientation_mode` that determines the way that the orientation is applied. This can be either `xyz`, `zyx` or `zxz`,
+* An `orientation_mode` that determines the way that the orientation is applied. This can be either `xyz`, `zyx` or `zxz`,
   **where `xyz` is used as default if the parameter is not specified**. Three angles are expected as input, which should
   always be provided in the order in which they are applied.
 
-  - The `xyz` option uses extrinsic Euler angles to apply a rotation around the global X axis, followed by a rotation
+  * The `xyz` option uses extrinsic Euler angles to apply a rotation around the global X axis, followed by a rotation
     around the global Y axis and finally a rotation around the global Z axis.
 
-  - The `zyx` option uses the **extrinsic Z-Y-X convention** for Euler angles, also known as Pitch-Roll-Yaw or 321
+  * The `zyx` option uses the **extrinsic Z-Y-X convention** for Euler angles, also known as Pitch-Roll-Yaw or 321
     convention. The rotation is represented by three angles describing first a rotation of an angle $`\phi`$ (yaw) about
     the Z axis, followed by a rotation of an angle $`\theta`$ (pitch) about the initial Y axis, followed by a third
     rotation of an angle $`\psi`$ (roll) about the initial X axis.
 
-  - The `zxz` uses the **extrinsic Z-X-Z convention** for Euler angles instead. This option is also known as the 3-1-3 or
+  * The `zxz` uses the **extrinsic Z-X-Z convention** for Euler angles instead. This option is also known as the 3-1-3 or
     the "x-convention" and the most widely used definition of Euler angles \[[@eulerangles]\].
 
   {{% alert title="Note" color="info" %}}
   It is highly recommended to always explicitly state the orientation mode instead of relying on the default configuration.
   {{% /alert %}}
 
-- The `orientation` to specify the Euler angles in logical order (e.g. first X, then Y, then Z for the `xyz` method),
+* The `orientation` to specify the Euler angles in logical order (e.g. first X, then Y, then Z for the `xyz` method),
   interpreted using the method above (or with the `xyz` method if the `orientation_mode` is not specified). An example for
   three Euler angles would be
+
   ```ini
   orientation_mode = "zyx"
   orientation = 45deg 10deg 12deg
   ```
+
   which describes the rotation of 45° around the Z axis, followed by a 10° rotation around the initial Y axis, and finally]
   a rotation of 12° around the initial X axis.
 
@@ -49,17 +51,17 @@ properties attached to it:
   angles in configuration files should be specified in the order they will be applied.
   {{% /alert %}}
 
-- A `type` parameter describing the detector model, for example `timepix` or `mimosa26`. These models define the geometry
+* A `type` parameter describing the detector model, for example `timepix` or `mimosa26`. These models define the geometry
   and parameters of the detector. Multiple detectors can share the same model, several of which are shipped ready-to-use
   with the framework.
 
-- An `alignment_precision_position` optional parameter to specify the alignment precision along the three global axes as
+* An `alignment_precision_position` optional parameter to specify the alignment precision along the three global axes as
   described in [Section 3.3](../03_getting_started/03_detector_configuration.md).
 
-- An optional parameter `alignment_precision_orientation` for the alignment precision in the three rotation angles as
+* An optional parameter `alignment_precision_orientation` for the alignment precision in the three rotation angles as
   described in [Section 3.3](../03_getting_started/03_detector_configuration.md).
 
-- An optional **electric or magnetic field** in the sensitive device. These fields can be added to a detector by special
+* An optional **electric or magnetic field** in the sensitive device. These fields can be added to a detector by special
   modules as demonstrated in [Section 3.7](../03_getting_started/07_extending_simulation_chain.md#electric-fields).
 
 The detector configuration is provided in the detector configuration file as explained in
@@ -82,7 +84,7 @@ global coordinate system used for tracking of particles through the detector set
 coordinate system used to describe the individual sensors is located at the right. Both local and global coordinate systems are aligned by default.
 Therefore, without any rotation, the sensor backplane (opposite to the plane where the readout is performed) is turned to the negative side of the z-axis.
 
-![](./transformations.png)\
+![Coordinate transformations](./transformations.png)\
 *Coordinate transformations from global to local and reverse. The first row shows the detector positions in the respective
 coordinate systems in top view, the second row in side view.*
 

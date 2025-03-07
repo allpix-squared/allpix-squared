@@ -58,4 +58,3 @@ namespace cereal
 } // namespace cereal
 
 #endif // CEREAL_TYPES_STRING_HPP_
-

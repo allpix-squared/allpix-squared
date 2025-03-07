@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Detector Configuration"
 weight: 3
@@ -9,13 +9,13 @@ The detector configuration consists of a set of sections describing the detector
 header describing the name used to identify the detector; all names are required to be unique. Every detector has to contain
 all of the following parameters:
 
-- A string referring to the `type` of the detector model. The model should exist in the search path as described in
+* A string referring to the `type` of the detector model. The model should exist in the search path as described in
   [Section 5.2](../05_geometry_detectors/02_models.md).
 
-- The 3-dimensional `position` in the world frame in the order x, y, z. See
+* The 3-dimensional `position` in the world frame in the order x, y, z. See
   [Section 5.1](../05_geometry_detectors/01_geometry.md) for details.
 
-- The `orientation` specified as X-Y-Z extrinsic Euler angles. This means the detector is rotated first around the world's
+* The `orientation` specified as X-Y-Z extrinsic Euler angles. This means the detector is rotated first around the world's
   X-axis, then around the world's Y-axis and then around the world's Z-axis. Alternatively the orientation can be set as
   Z-Y-X or Z-X-Z extrinsic Euler angles, refer to section [Section 5.1](../05_geometry_detectors/01_geometry.md) for
   details.
@@ -26,11 +26,11 @@ reproduce misalignments, a fixed random seed for the framework core can be used 
 [Section 3.4](./04_framework_parameters.md). Misalignment can be introduced both for shifts along the three global axes and
 the three rotations angles with the following parameters:
 
-- The parameter `alignment_precision_position` allows the specification of the alignment precision along the three global
+* The parameter `alignment_precision_position` allows the specification of the alignment precision along the three global
   axes. Each value represents the Gaussian width with which the detector will be randomly misaligned along the
   corresponding axis.
 
-- The parameter `alignment_precision_orientation` allows to specify the alignment precision in the three rotation angles
+* The parameter `alignment_precision_orientation` allows to specify the alignment precision in the three rotation angles
   defined by the `orientation` parameter. The misalignments are added to the individual angles before combining them into
   the final rotation as defined by the `orientation_mode` parameter.
 
@@ -75,7 +75,7 @@ orientation = 0 0 0
 
 This configuration is used in the rest of this chapter for explaining concepts. A visualization of the setup is given below.
 
-![](./telescope.png)\
+![Telescope](./telescope.png)\
 *Visualization of a Pion passing through the telescope setup defined in the detector configuration file. A secondary particle
 is produced in the material of the detector in the center.*
 
@@ -87,17 +87,17 @@ with a header describing the name used to identify the passive material; all nam
 
 Every passive material has to contain all of the following parameters:
 
-- The `position` and `orientation` of the material as described for the detector, see
+* The `position` and `orientation` of the material as described for the detector, see
   [Section 3.3](./03_detector_configuration.md).
 
-- A string referring to the `type` of the passive material. The model should be interpreted by the module constructing the
+* A string referring to the `type` of the passive material. The model should be interpreted by the module constructing the
   passive material, for example the
   [`GeometryBuilderGeant4` module](../08_modules/geometrybuildergeant4.md#passive-volumes).
 
-- A string referring to the `material` of the passive material. The materials for the `GeometryBuilderGeant4` module are
+* A string referring to the `material` of the passive material. The materials for the `GeometryBuilderGeant4` module are
   defined in the [module documentation](../08_modules/geometrybuildergeant4.md#materials).
 
-- A set of size parameters specific for the model that is chosen. All size parameters that describe the total length of
+* A set of size parameters specific for the model that is chosen. All size parameters that describe the total length of
   something are placed such that half of this total length extends from each side of the given `position`. If a parameter
   describes the radius, this means the radius will extend from the `position` on both sides, making its total size two
   times the radius in the given direction. The size parameters for the specific models in the `GeometryBuilderGeant4`
@@ -250,7 +250,7 @@ material = "lead"
 role = "passive"
 ```
 
-![](./passive_materials.png)\
+![Passive Materials](./passive_materials.png)\
 *Visualization of the setup described in the geometry file.*
 
 

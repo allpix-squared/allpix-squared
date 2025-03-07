@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2018-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DatabaseWriter"
 description: "Writes simulation objects to a PostgreSQL database"
@@ -9,6 +9,7 @@ module_inputs: ["all objects in simulation"]
 ---
 
 ## Description
+
 This module enables writing the simulation output into a postgreSQL database.
 This is useful when fast I/O between applications is needed (e.g. real time visualization and/or analysis).
 By default, all object types (MCTrack, MCParticle, DepositedCharge, PropagatedCharge, PixelCharge, PixelHit) are written.
@@ -27,7 +28,7 @@ postgres: \i etc/scripts/create-db.sql
 
 This generates a database with the following structure:
 
-```
+```shell
  Schema |                   Name                   |   Type   |  Owner
 --------+------------------------------------------+----------+----------
  public | depositedcharge                          | table    | postgres
@@ -69,13 +70,13 @@ sudo -u postgres psql -c "ALTER USER myuser PASSWORD 'mypass';"
 
 The database is structured so that the data are referenced according to the sequence
 
-```
+```shell
 MCTrack -> MCParticle -> DepositedCharge -> PropagatedCharge -> PixelCharge -> PixelHit
 ```
 
 This allows for the full reconstruction of the MC truth when retrieving information out of the database. When one of the objects is excluded, the corresponding reference is obviously lost and the chain is broken. The only exception to this chain rule is the direct reference MCParticle -> PixelHit. By default, each module always refers to the run and event numbers. As an example, the following is the table corresponding to the PixelHit objects for a single run of four events:
 
-```
+```shell
 mydb: SELECT * FROM pixelhit;
  pixelhit_nr | run_nr | event_nr | mcparticle_nr | pixelcharge_nr | detector  | x | y | signal  | hittime
 -------------+--------+----------+---------------+----------------+-----------+---+---+---------+---------
@@ -86,6 +87,7 @@ mydb: SELECT * FROM pixelhit;
 ```
 
 ## Parameters
+
 * `host`: Host address on which the database server runs, can be an IP address or host name. Mandatory parameter.
 * `port`: Port the database server listens on. Mandatory parameter.
 * `database_name`: Name of the database to store data in. The database needs to exist and has to be created before starting the simulation. Mandatory parameter.
@@ -98,6 +100,7 @@ mydb: SELECT * FROM pixelhit;
 * `require_sequence`: Boolean flag to select whether events have to be written in sequential order or can be stored in the order of processing. Defaults to `false`, writing events immediately. If strict adherence to the order of events is required, finished events are buffered until they can be written to the database. Since in this case database access happens single-threaded, this might impact the performance of the simulation.
 
 ## Usage
+
 To write objects excluding `PropagatedCharge` and `DepositedCharge` to a PostgreSQL database running on `localhost` with user `myuser`, the following configuration can be placed at the end of the main configuration:
 
 ```ini

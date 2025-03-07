@@ -42,6 +42,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <stdlib.h> // For Ubuntu Linux
 
-CRYParameter::CRYParameter(std::string data) : CRYAbsParameter(data) {
-    _param = atof(_paramStr.c_str());
-}
+CRYParameter::CRYParameter(std::string data) : CRYAbsParameter(data) { _param = atof(_paramStr.c_str()); }

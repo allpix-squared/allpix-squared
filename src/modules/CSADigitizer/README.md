@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2020-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2020-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "CSADigitizer"
 description: "Digitizer emulating a Charge Sensitive Amplifier"
@@ -13,22 +13,29 @@ module_outputs: ["PixelHit"]
 
 Digitization module which translates the collected charges into a digitized signal, emulating a charge sensitive amplifier with Krummenacher feedback.
 For this purpose, a transfer function for a CSA with Krummenacher feedback is taken from \[[@kleczek]\]:
+
 ```math
 H(s) = \frac{R_f}{(1 + \tau_f s) \cdot (1 + \tau_r s)},
 ```
+
 with fall time constant
+
 ```math
 \tau_f = R_f C_f
 ```
+
 and rise time constant
+
 ```math
 \tau_r = \frac{C_{det} \cdot C_{out}}{g_m \cdot C_f}
 ```
+
 The impulse response function of this transfer function is convoluted with the charge pulse. In the time domain, the impulse response function can be written as
 
 ```math
 \mathcal{L}^{-1}(H) = R_f \left( \frac{e^{-t/\tau_f}}{\tau_f - \tau_r} - \frac{e^{-t/\tau_r}}{\tau_f - \tau_r} \right).
 ```
+
 This module can be steered by either providing all contributions to the transfer function as parameters within the `csa` model, or using a simplified parametrization providing rise time and feedback time.
 In the latter case, the parameters are used to derive the contributions to the transfer function (see e.g. \[[@binkley]\] for calculation of transconductance).
 
@@ -43,7 +50,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 
 ## Parameters
 
-* `model`: Choice between different CSA models. Currently implemented are two parametrizations of the circuit from \[[@kleczek]\], `simple` and `csa`, and the `custom` model for a custom impulse response.
+* `model`: Choice between different CSA models. Currently implemented are two parametrizations of the circuit from \[[@kleczek]\], `simple` and `csa`, the `custom` model for a custom impulse response, and the `graph` model, which takes a .csv file as input and reads out the graph of the transfer function.
 * `integration_time`: The length of time the amplifier output is registered. Defaults to 500 ns.
 * `sigma_noise`: Standard deviation of the Gaussian-distributed noise added to the output signal. Defaults to 0.1 mV.
 * `threshold`: Threshold for TOT/TOA logic, for considering the output signal as a hit. Defaults to 10mV.
@@ -72,6 +79,12 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 * `response_function`: A 1-dimensional `ROOT::TFormula` \[[@rootformula]\] expression for the impulse response function.
 * `response_parameters`: Array of the parameters in the response function. The number of parameters given need to match up with the number of parameters in the formula.
 
+### Parameters for the graph model
+
+* `graph_file`: The path to the .csv file containing the graph of the response function.
+* The file should be written in the following format: `x,y` (comma separated values), where x is the time and y the amplitude of the response function at that time point. Each pair of values should be written in a new line.
+* `graph_time_unit`: Time unit in which the time on the response function graph is expressed. Should be a double.
+
 ### Plotting parameters
 
 * `output_plots`: Enables simple output histograms to be generated from the data in every step (slows down simulation considerably). Disabled by default.
@@ -82,6 +95,7 @@ If this behavior is not desired, the `ignore_polarity` parameter can be set to c
 ## Usage
 
 Example how to use the `csa` model in this module:
+
 ```ini
 [CSADigitizer]
 model = "csa"
@@ -98,6 +112,7 @@ sigma_noise = 0.1e-3V
 ```
 
 Example for the `simple` model:
+
 ```ini
 [CSADigitizer]
 model = "simple"
@@ -111,6 +126,7 @@ clock_bin_tot = 25.0ns
 ```
 
 Example for the `custom` model:
+
 ```ini
 [CSADigitizer]
 model = "custom"
@@ -122,6 +138,14 @@ clock_bin_toa = 8ns
 clock_bin_tot = 8ns
 ```
 
+Example for the `graph` model:
+```ini
+[CSADigitizer]
+model = "graph"
+graph_file = /path/to/response_function.csv
+integration_time = 10ns
+graph_time_unit = 1s
+```
 
 [@kleczek]: https://doi.org/10.1109/MIXDES.2015.7208529
 [@binkley]: https://doi.org/10.1002/9780470033715

@@ -2,7 +2,7 @@
  * @file
  * @brief The WorkerRunManager class, run manager for Geant4 that works on separate thread.
  *
- * @copyright Copyright (c) 2019-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -12,6 +12,7 @@
 #ifndef ALLPIX_WORKER_RUN_MANAGER_H
 #define ALLPIX_WORKER_RUN_MANAGER_H
 
+#include <G4Version.hh>
 #include <G4WorkerRunManager.hh>
 
 namespace allpix {
@@ -85,12 +86,21 @@ namespace allpix {
          */
         G4Event* GenerateEvent(G4int i_event) override;
 
+#if G4VERSION_NUMBER < 1130
         /**
          * @brief Previously used to merge the partial results obtained by this manager and the master.
          *
          * Merge the run results with the master results. It will now do nothing.
          */
         void MergePartialResults() override {}
+#else
+        /**
+         * @brief Previously used to merge the partial results obtained by this manager and the master.
+         *
+         * Merge the run results with the master results. It will now do nothing.
+         */
+        void MergePartialResults(G4bool) override {}
+#endif
     };
 } // namespace allpix
 

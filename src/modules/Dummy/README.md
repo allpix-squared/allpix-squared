@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "Dummy"
 description: "A dummy module"
@@ -10,10 +10,13 @@ module_maintainers: ["John Doe (<john.doe@example.com>)"]
 ---
 
 ## Description
-*Description of this module*
+
+Place a *description of this module* here
 
 ## Parameters
+
 * `param`: *explanation with optional default*
 
 ## Usage
-*Example how to use this module*
+
+Include an *example how to use this module*

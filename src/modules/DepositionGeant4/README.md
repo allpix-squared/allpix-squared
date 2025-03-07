@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionGeant4"
 description: "Energy deposition with Geant4"
@@ -9,6 +9,7 @@ module_outputs: ["DepositedCharge", "MCParticle", "MCTrack"]
 ---
 
 ## Description
+
 Module which deposits charge carriers in the active volume of all detectors.
 It acts as wrapper around the Geant4 logic and depends on the global geometry constructed by the GeometryBuilderGeant4 module.
 It initializes the physical processes to simulate a particle source that will deposit charge carriers for every event simulated.
@@ -73,6 +74,7 @@ The scale of the plot axis can be adjusted using the `output_plots_scale` parame
 This module requires an installation Geant4.
 
 ## Parameters
+
 * `physics_list`: Geant4-internal list of physical processes to simulate, defaults to FTFP_BERT_LIV. More information about possible physics list and recommendations for defaults are available on the Geant4 website \[[@g4physicslists]\]. The MicroElec track structure physics list \[[@microelec]\] can also be implemented for ions and electrons, currently in only silicon by specifying **microelec-sionly**.
 * `enable_pai`: Determines if the Photoabsorption Ionization model is enabled in the sensors of all detectors. Defaults to false.
 * `pai_model`: Model can be **pai** for the normal Photoabsorption Ionization model or **paiphoton** for the photon model. Default is **pai**. Only used if *enable_pai* is set to true.
@@ -89,7 +91,7 @@ This module requires an installation Geant4.
 * `source_time_window` : Range of particle start times starting from the offset (`source_time`). Individual particle start times are randomly drawn from a uniform distribution within [`source_time`, `source_time+source_time_window`]. Default 0ns (off).
 * `source_type` : Shape of the source: **beam** (default), **point**, **square**, **sphere**, **macro**.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
-Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
+  Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
 * `record_all_tracks` : Switch to enable the recording of all Geant4 tracks in the event. By default, this parameter is set to `false` and MCTrack objects are only generated for particles interacting with sensor material, not those that never interact with any detector.
 * `geant4_tracking_verbosity` : Verbosity level for Geant4 tracking, defaults to `0`. Higher levels mean more output. It should be noted that the respective log output is redirected to the logging level set via the `log_level_g4cout` parameter in the *GeometryBuilderGeant4* module.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
@@ -99,6 +101,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
 ### Parameters for source `beam`
+
 * `beam_shape` : Shape of the beam, can be either `circle`, `ellipse` or `rectangle`. Defaults to `circle`
 * `beam_size` : Width of the Gaussian beam profile. With `beam_shape = ellipse` or `beam_shape = rectangle`, this requires two values for the width in x and y.
 * `beam_divergence` : Standard deviation of the particle angles in x and y from the particle beam
@@ -107,14 +110,17 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 * `flat_beam` : Boolean to change your Gaussian beam profile to a flat beam profile. If true, the `beam_size` gives the radius of the beam profile. Defaults to false.
 
 ### Parameters for source `square`
+
 * `square_side` : Length of the square side.
 * `square_angle` : Cone opening angle defining the maximum submission angle. Defaults to `180deg`, i.e. emission into one full hemisphere.
 
 ### Parameters for source `sphere`
+
 * `sphere_radius` : Radius of the sphere source (particles start only from the surface).
 * `sphere_focus_point` : Focus point of the sphere source. If not specified, the radiation field is isotropic inside the sphere.
 
 ### Parameters for source `macro`
+
 * `file_name` : Path to the Geant4 source macro file.
 
 ### Note for Developers
@@ -122,6 +128,7 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 This module is used as base for other deposition modules using Geant4 for particle tracking, e.g. DepositionCosmics or DepositionGenerator. Since some of these modules might have a sequence requirement for event processing, this module is a `SequentialModule` but waives the sequence requirement in its constructor. Any derived module that requires a strict sequence has to call `waive_sequence_requirement(false)` in its constructor to overwrite this setting.
 
 ## Usage
+
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:
 
 ```ini
