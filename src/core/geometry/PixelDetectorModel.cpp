@@ -43,6 +43,11 @@ void PixelDetectorModel::validate() {
                 implant.getConfiguration(), "size", "implant depth cannot be larger than sensor thickness");
         }
 
+        // Check the offset only for front-side implants, backside implants are allowed to overlap:
+        if(implant.getType() == Implant::Type::BACKSIDE) {
+            continue;
+        }
+
         // Offset of the collection diode implant from the pixel center, defaults to zero.
         if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
            std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
