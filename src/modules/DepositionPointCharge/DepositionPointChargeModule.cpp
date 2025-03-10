@@ -151,7 +151,7 @@ void DepositionPointChargeModule::initialize() {
             LOG(WARNING) << "Number of events cannot be divided into cells evenly";
         }
 
-        root_ = events / events_per_cell_;
+        root_ = static_cast<unsigned int>(std::ceil(events / static_cast<double>(events_per_cell_)));
         if(no_of_coordinates_ == 2) {
             root_ = static_cast<unsigned int>(std::lround(std::sqrt(events / events_per_cell_)));
             if(events != root_ * root_ * events_per_cell_) {
@@ -223,7 +223,8 @@ void DepositionPointChargeModule::run(Event* event) {
         // Fixed position as read from the configuration:
         position = position_;
     } else if(model_ == DepositionModel::SCAN) {
-        // Voxel iterator depends in number of events per cell:
+        // Voxel iterator depends on number of events per cell:
+        // Note: this implicitly throws away the fractional part of the number, which is desirable in this case
         const auto voxel_it = (event->number - 1) / events_per_cell_;
 
         // Center the volume to be scanned in the center of the sensor,
