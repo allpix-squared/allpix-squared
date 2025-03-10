@@ -12,7 +12,7 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ## Description
 Integrates micro-electronics simulation elements in the Allpix Squared simulation flow. Allows the user to generate netlists (input file used by an electrical simulator to simulate the behavior of the circuit) from a given netlist template. `SPECTRE` (Cadence environment) and `SPICE` syntaxes are allowed and can be selected using the `target` parameter. This module is mostly intended for analog front-end electrical simulation using the `PixelCharge` object data.
 
-The netlist template needs to be formated as described and illustrated (`SPECTRE` syntax) below:
+The netlist template needs to be formatted as described and illustrated (`SPECTRE` syntax) below:
 - The netlist header.
 - A sub-circuit describing the circuit of interest (analog front-end for example).
 - If necessary, other instances (for example other voltage or current sources of the front-end).
@@ -40,7 +40,7 @@ Instance_front_end (Pix_in Comp_vout Comp_vref SUB VDDA VSSA Vfbk) front_end
 --- netlist footer and simulator options ---
 ```
 
-One way to get a netlist already formated could be to extract it from the Cadence Virtuoso environment ('schematic' view).
+One way to get a netlist already formatted could be to extract it from the Cadence Virtuoso environment ('schematic' view).
 
 A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. It adds, for each fired pixel a pair source / circuit instance.
 
@@ -60,13 +60,13 @@ The pixel address is used to identify the fired pixels in the netlist. If we con
 The parameter `waveform_to_save` is used to write at the end of the generated netlist the waveform(s) to be saved (always using the index notation to identify the fired pixels).
 
 The electrical circuit simulation can be performed within the Allpix Squared event using the boolean parameter `run_netlist_sim` (default to `False`). If performed, the electrical simulation puts in stand-by the execution of the event.
-The simulator command to execut must be given using the parameter `simulator_command`. The generated netlist name to execut is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
+The simulator command to execute must be given using the parameter `simulator_command`. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
 
 ```ini
 spectre -f nutascii <file_name_event1.scs>
 ```
 
-This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environement to be correctly set.
+This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environment to be correctly set.
 
 
 
@@ -83,17 +83,9 @@ This electrical simulation is performed in the same terminal as the Allpix event
 * `t_width`: width of the current pulse, default to 3 ns, only works for the `isource_pulse`
 * `t_fall`: fall time of the current pulse, default to 1 ns, only works for the `isource_pulse`
 * `waveform_to_save`: Name of the waveforms to save
-* `run_netlist_sim`: Boolean flag to select whether running the circuit simulation or not, default to false. The simulator (either `SPECTRE` or `SPICE`) environement must be loaded to run the circuit simulation in the event.
+* `run_netlist_sim`: Boolean flag to select whether running the circuit simulation or not, default to false. The simulator (either `SPECTRE` or `SPICE`) environment must be loaded to run the circuit simulation in the event.
 * `simulator_command`: Command to be exuted in the terminal, the generated netlist name is appended at the end of the command
 
-<!---
-### Parameters for source type `vsource_pulse`
-* `electrode_capacitance`: the collection electrode capacitance, default value to 5 fF
-* `t_delay`: delay from 0 before the current pulse starts, default to 100 ns
-* `t_rise`: rise time of the current pulse, default to 1 ns
-* `t_width`: width of the current pulse, default to 3 ns
-* `t_fall`: fall time of the current pulse, default to 1 ns
---->
 
 ## Usage
 

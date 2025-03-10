@@ -17,7 +17,6 @@
 #include <fstream>
 #include <regex>
 #include <string>
-#include <regex>
 
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -48,7 +47,7 @@ namespace allpix {
         enum class SourceType {
             isource,
             isource_pulse,
-            //vsource_pulse,
+            // vsource_pulse,
         };
 
         /**
@@ -140,19 +139,13 @@ namespace allpix {
 
         std::vector<std::string> net_list;
 
-        // isource_line is the current source string to be modified
         std::string source_line;
         std::string subckt_name;
-        int subckt_line_number = 0;
-        int source_line_number = 0;
-        double elementalCharge = 1.6e-19;
+        size_t subckt_line_number = 0;
+        size_t source_line_number = 0;
         double nanoCoulomb = 1.6e-10;
-        double v_diode = 0;
         double i_diode = 0;
 
-        double electrode_capacitance_{};
-
-        // Vector of all the netlist file lines
         std::vector<std::string> file_lines;
     };
 } // namespace allpix
