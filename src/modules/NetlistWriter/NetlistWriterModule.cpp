@@ -246,7 +246,7 @@ void NetlistWriterModule::run(Event* event) {
                 if(!pulse.isInitialized()) {
                     throw ModuleError("No pulse information available.");
                 }
-                double step = pulse.getBinning();
+                cont auto step = pulse.getBinning();
 
                 (target_ == Target::SPECTRE) ? file << ") isource delay=" << delay_ << "n type=pwl wave=[" : file << "PWL(";
 
