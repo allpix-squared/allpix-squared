@@ -204,7 +204,7 @@ void NetlistWriterModule::run(Event* event) {
 
         if(std::fabs(inputcharge) > std::numeric_limits<double>::epsilon()) {
 
-            LOG(INFO) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
+            LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
 
             // Get pixel address
             const auto idx = net_enumerator_->Eval(pixel_index.x(), pixel_index.y());
