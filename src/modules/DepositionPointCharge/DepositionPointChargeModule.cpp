@@ -146,10 +146,15 @@ void DepositionPointChargeModule::initialize() {
         }
 
         // Check that the scan setup is correct
-        root_ = events;
+        events_per_cell_ = config_.get<unsigned int>("events_per_cell", 1);
+        if(events % events_per_cell_ != 0) {
+            LOG(WARNING) << "Number of events cannot be divided into cells evenly";
+        }
+
+        root_ = static_cast<unsigned int>(std::ceil(events / static_cast<double>(events_per_cell_)));
         if(no_of_coordinates_ == 2) {
-            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
-            if(events != root_ * root_) {
+            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events / events_per_cell_)));
+            if(events != root_ * root_ * events_per_cell_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
             }
@@ -160,8 +165,8 @@ void DepositionPointChargeModule::initialize() {
                                         "The coordinates must be x, y, or z, and a coordinate must not be repeated");
             }
         } else if(no_of_coordinates_ == 3) {
-            root_ = static_cast<unsigned int>(std::lround(std::cbrt(events)));
-            if(events != root_ * root_ * root_) {
+            root_ = static_cast<unsigned int>(std::lround(std::cbrt(events / events_per_cell_)));
+            if(events != root_ * root_ * root_ * events_per_cell_) {
                 LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
                              << "Closest cube is " << root_ * root_ * root_;
             }
@@ -218,6 +223,10 @@ void DepositionPointChargeModule::run(Event* event) {
         // Fixed position as read from the configuration:
         position = position_;
     } else if(model_ == DepositionModel::SCAN) {
+        // Voxel iterator depends on number of events per cell:
+        // Note: this implicitly throws away the fractional part of the number, which is desirable in this case
+        const auto voxel_it = (event->number - 1) / events_per_cell_;
+
         // Center the volume to be scanned in the center of the sensor,
         // reference point is lower left corner of one pixel volume
         auto ref = position_ + detector_model_->getMatrixSize() / 2.0 + voxel_ / 2.0 -
@@ -226,27 +235,26 @@ void DepositionPointChargeModule::run(Event* event) {
                                          detector_model_->getSensorSize().z() / 2.0);
         LOG(DEBUG) << "Reference: " << Units::display(ref, {"um", "mm"});
         if(no_of_coordinates_ == 3) {
-            position =
-                ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>((event->number - 1) % root_),
-                                     voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_),
-                                     voxel_.z() * static_cast<double>(((event->number - 1) / root_ / root_) % root_)) +
-                ref;
+            position = ROOT::Math::XYZPoint(voxel_.x() * static_cast<double>(voxel_it % root_),
+                                            voxel_.y() * static_cast<double>((voxel_it / root_) % root_),
+                                            voxel_.z() * static_cast<double>((voxel_it / root_ / root_) % root_)) +
+                       ref;
         } else {
             position = ref;
             if(scan_x_) {
-                position.SetX(voxel_.x() * static_cast<double>((event->number - 1) % root_) + ref.x());
+                position.SetX(voxel_.x() * static_cast<double>(voxel_it % root_) + ref.x());
                 if(scan_y_) {
-                    position.SetY(voxel_.y() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.y());
+                    position.SetY(voxel_.y() * static_cast<double>((voxel_it / root_) % root_) + ref.y());
                 } else if(scan_z_) {
-                    position.SetZ(voxel_.z() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.z());
+                    position.SetZ(voxel_.z() * static_cast<double>((voxel_it / root_) % root_) + ref.z());
                 }
             } else if(scan_y_) {
-                position.SetY(voxel_.y() * static_cast<double>((event->number - 1) % root_) + ref.y());
+                position.SetY(voxel_.y() * static_cast<double>(voxel_it % root_) + ref.y());
                 if(scan_z_) {
-                    position.SetZ(voxel_.z() * static_cast<double>(((event->number - 1) / root_) % root_) + ref.z());
+                    position.SetZ(voxel_.z() * static_cast<double>((voxel_it / root_) % root_) + ref.z());
                 }
             } else {
-                position.SetZ(voxel_.z() * static_cast<double>((event->number - 1) % root_) + ref.z());
+                position.SetZ(voxel_.z() * static_cast<double>(voxel_it % root_) + ref.z());
             }
         }
         LOG(DEBUG) << "Deposition position in local coordinates: " << Units::display(position, {"um", "mm"});

@@ -99,7 +99,7 @@ namespace allpix {
         double spot_size_{};
         ROOT::Math::XYZVector voxel_;
         double step_size_{};
-        unsigned int root_{}, carriers_{};
+        unsigned int root_{}, events_per_cell_{1}, carriers_{};
         ROOT::Math::XYZVector position_{};
         ROOT::Math::XYZVector mip_direction_{};
         std::vector<std::string> scan_coordinates_{};
