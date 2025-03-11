@@ -318,7 +318,7 @@ void NetlistWriterModule::run(Event* event) {
     to_be_saved.clear();
 
     file.close();
-    LOG(DEBUG) << "File closed";
+    LOG(DEBUG) << "Successfully written netlist to file " << file_name;
 
     // Runs the external uelec simulation, if selected in the configuration file, on the same terminal (ie. with uelec soft.
     // env variables loaded)
