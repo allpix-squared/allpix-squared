@@ -52,7 +52,6 @@ The new source written can be parameterized with the parameter `source_type`. Tw
 
 <!--
 The other possible source type is the `vsource_pulse`: using the total collected charge Q and the collecting electrode capacitance C, the voltage $U={Q}/{C}$ is written in the netlist.
--->
 
 The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for.
 
