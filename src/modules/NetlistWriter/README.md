@@ -5,8 +5,7 @@ title: "NetlistWriter"
 description: "A module to generate netlists for SPICE simulators"
 module_status: "Immature"
 module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
-# module_inputs: ["Input message types (if applicable)"]
-# module_outputs: ["Output message types (if applicable)"]
+module_inputs: ["PixelCharge"]
 ---
 
 ## Description
