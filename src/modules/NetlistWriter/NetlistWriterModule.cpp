@@ -133,7 +133,7 @@ void NetlistWriterModule::initialize() {
         if(line.rfind(source_name_, 0) == 0) {
             source_line_number = line_number;
             if(std::regex_search(line, connection_match, source_regex)) {
-                LOG(INFO) << "connections: " << connection_match[0];
+                LOG(INFO) << "Found connections in netlist template: " << connection_match[0];
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
 
