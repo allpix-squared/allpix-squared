@@ -70,7 +70,10 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     run_netlist_simulation_ = config_.get<bool>("run_netlist_sim");
 
     // Options to add the the uelec simulation command
-    simulator_command_ = config.get<std::string>("simulator_command");
+    if(config_.has("simulator_command")) {
+        run_netlist_simulation_ = true;
+        simulator_command_ = config_.get<std::string>("simulator_command");
+    }
 
     // Parameters for the isource_pulse option (pulse shape)
     // ?!?!?!? not sure of having correctly configured the units
