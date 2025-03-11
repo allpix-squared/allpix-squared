@@ -43,7 +43,6 @@ namespace allpix {
         enum class SourceType {
             isource,
             isource_pulse,
-            // vsource_pulse,
         };
 
         /**
