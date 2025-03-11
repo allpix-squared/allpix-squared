@@ -43,7 +43,7 @@ Instance_front_end (Pix_in Comp_vout Comp_vref SUB VDDA VSSA Vfbk) front_end
 
 One way to get a netlist already formatted could be to extract it from the Cadence Virtuoso environment ('schematic' view).
 
-A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. It adds, for each fired pixel a pair source / circuit instance.
+A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. For each fired pixel, a source / circuit instance pair is added to the template.
 
 The new source written can be parametered with `source_type`. Three type of sources can be used: `isource` and `isource_pulse`:
 
