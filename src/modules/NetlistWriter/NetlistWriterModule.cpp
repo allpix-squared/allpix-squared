@@ -332,7 +332,7 @@ void NetlistWriterModule::run(Event* event) {
 
             LOG(INFO) << uelec_sim_command;
 
-            std::system(uelec_sim_command.c_str());
+            std::system(uelec_sim_command.c_str()); // NOLINT
 
         } else if(target_ == Target::SPICE) {
 
