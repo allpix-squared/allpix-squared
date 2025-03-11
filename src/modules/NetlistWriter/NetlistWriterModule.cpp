@@ -156,7 +156,7 @@ void NetlistWriterModule::initialize() {
             if(std::regex_search(line, connection_match, subckt_regex)) {
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
-                LOG(INFO) << "Subckt connections: " << connections_;
+                LOG(INFO) << "Found subckt connections in netlist template: " << connections_;
                 std::istringstream iss(connection_match[2]);
                 std::string net;
                 LOG(INFO) << "Subckt nets: " << net;
