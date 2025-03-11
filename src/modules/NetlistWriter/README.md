@@ -21,7 +21,7 @@ The netlist template needs to be formatted as described and illustrated (`SPECTR
 * The sub-circuit written as an instance, connected to the source.
 * The netlist footer and the simulator options.
 
-```shell
+```ini
 --- netlist header ---
 
 subckt front_end Pix_in Comp_vout Comp_vref SUB VDDA VSSA Vfbk
@@ -45,28 +45,23 @@ One way to get a netlist already formatted could be to extract it from the Caden
 
 A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. For each fired pixel, a source / circuit instance pair is added to the template.
 
-The new source written can be parameterized with the parameter `source_type`. Two different types of sources can be used: `isource` and `isource_pulse`:
+The new source written can be parameterized with the parameter `source_type`. Two different types of sources can be used: `ISOURCE` and `ISOURCE_PULSE`:
 
-* `isource` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
-* In order to lightweight the generated netlists, the `isource_pulse` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
-
-<!--
-The other possible source type is the `vsource_pulse`: using the total collected charge Q and the collecting electrode capacitance C, the voltage $U={Q}/{C}$ is written in the netlist.
+* `ISOURCE` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
+* In order to lightweight the generated netlists, the `ISOURCE_PULSE` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
 
 The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for.
 
 The pixel address is used to identify the fired pixels in the netlist. If we consider the pixel (6,3) fired (7th column and 4th row) in a 10x10 matrix, the index 63 will be written in the netlist for this pixel (linearization of the 2D x and y indexes).
 
 The parameter `waveform_to_save` is used to write at the end of the generated netlist the waveform(s) to be saved (always using the index notation to identify the fired pixels).
-
-The electrical circuit simulation can be performed within the Allpix Squared event using the boolean parameter `run_netlist_sim` (default to `False`). If performed, the electrical simulation puts in stand-by the execution of the event.
-The simulator command to execute must be given using the parameter `simulator_command`. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
+The electrical circuit simulation can be performed within the Allpix Squared event using the parameter `simulator_command` which is used to specify the command line to execut. Not setting it switches the feature off, setting a value will enable it. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
 
 ```shell
 spectre -f nutascii <file_name_event1.scs>
 ```
 
-This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environment to be correctly set.
+If performed, the electrical simulation puts in stand-by the execution of the event. This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environment to be correctly set.
 
 
 ## Parameters
@@ -74,43 +69,41 @@ This electrical simulation is performed in the same terminal as the Allpix event
 * `target`: Syntax for the additional data to be written in the netlist, either `SPECTRE` or `SPICE`.
 * `netlist_template`: Location of file containing the netlist template of the circuit in one of the supported formats.
 * `file_name` : Generated netlist prefix name (the suffix is the event number).
-* `source_type`: Type of current source to be used, `isource` and `isource_pulse`.
+* `source_type`: Type of current source to be used, `ISOURCE` and `ISOURCE_PULSE`.
 * `source_name`: Name of the current source instance in the netlist.
 * `subckt_name`: Name of the circuit the source is connected to.
 * `common_nets`: Nets shared between the pixels.
 * `t_delay`: delay from 0 before the current pulse starts, default to 0 ns
-* `t_rise`: rise time of the current pulse, default to 1 ns, only works for the `isource_pulse`
-* `t_width`: width of the current pulse, default to 3 ns, only works for the `isource_pulse`
-* `t_fall`: fall time of the current pulse, default to 1 ns, only works for the `isource_pulse`
+* `t_rise`: rise time of the current pulse, default to 1 ns, only works for the `ISOURCE_PULSE`
+* `t_width`: width of the current pulse, default to 3 ns, only works for the `ISOURCE_PULSE`
+* `t_fall`: fall time of the current pulse, default to 1 ns, only works for the `ISOURCE_PULSE`
 * `waveform_to_save`: Name of the waveforms to save
-* `run_netlist_sim`: Boolean flag to select whether running the circuit simulation or not, default to false. The simulator (either `SPECTRE` or `SPICE`) environment must be loaded to run the circuit simulation in the event.
-* `simulator_command`: Command to be exuted in the terminal, the generated netlist name is appended at the end of the command
+* `simulator_command`: If specified, launches the electrical simulation. Command to be exuted in the terminal, the generated netlist name is appended at the end of the command.
 
 
 ## Usage
 
-A possible configuration is using a `isource` and the `SPICE` syntax, requiring the collecting electrode capacitance:
+A possible configuration is using a `ISOURCE` and the `SPICE` syntax, requiring the collecting electrode capacitance:
 
 ```ini
 [NetlistWriter]
 target = SPICE
 netlist_template = "front_end.asc"
-source_type = isource
+source_type = ISOURCE
 source_name = Instance_pulse
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
 waveform_to_save = Pix_in, CSA_out, Comp_vout
-run_netlist_sim = 1
 simulator_command = "wine 'your\path\LTSpiceXVII\XVIIx64.exe' -run"
 ```
 
-A current pulse `isource_pulse` and the `SPECTRE` syntax is used is this example:
+A current pulse `ISOURCE_PULSE` and the `SPECTRE` syntax is used is this example:
 
 ```ini
 [NetlistWriter]
 target = SPECTRE
 netlist_template = "front_end.scs"
-source_type = isource_pulse
+source_type = ISOURCE_PULSE
 t_delay = 200ns
 t_rise = 5ns
 t_width = 20ns
@@ -119,6 +112,5 @@ source_name = Instance_pulse
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
 waveform_to_save = Comp_vout
-run_netlist_sim = 1
 simulator_command = "spectre +aps -warn -info -log -debug -f nutascii"
 ```

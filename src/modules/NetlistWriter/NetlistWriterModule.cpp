@@ -40,8 +40,8 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     config_.setDefault<std::string>("file_name", "output_netlist_event_");
     file_name_ = config.get<std::string>("file_name");
 
-    // Default source type set to isource_pulse
-    config_.setDefault<SourceType>("source_type", SourceType::isource_pulse);
+    // Default source type set to ISOURCE_PULSE
+    config_.setDefault<SourceType>("source_type", SourceType::ISOURCE_PULSE);
     source_type_ = config.get<SourceType>("source_type");
 
     // Get the source name and the circuit connected to it, as defined in the netlist
@@ -56,18 +56,7 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     auto to_save = config_.getArray<std::string>("waveform_to_save");
     waveform_to_save_.insert(to_save.begin(), to_save.end());
 
-    auto detector_model = detector_->getModel();
-    std::string default_enumerator = "x * " + std::to_string(detector_model->getNPixels().Y()) + " + y";
-    net_enumerator_ = std::make_unique<TFormula>("net_enumerator",
-                                                 (config_.get<std::string>("net_enumerator", default_enumerator)).c_str());
-
-    if(!net_enumerator_->IsValid()) {
-        throw InvalidValueError(config_, "net_enumerator", "net enumerator is not a valid ROOT::TFormula expression.");
-    }
-
     // Boolean to execute or not the external uelec simulation
-    config_.setDefault<bool>("run_netlist_sim", false);
-    run_netlist_simulation_ = config_.get<bool>("run_netlist_sim");
 
     // Options to add the the uelec simulation command
     if(config_.has("simulator_command")) {
@@ -75,8 +64,7 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
         simulator_command_ = config_.get<std::string>("simulator_command");
     }
 
-    // Parameters for the isource_pulse option (pulse shape)
-    // ?!?!?!? not sure of having correctly configured the units
+    // Parameters for the ISOURCE_PULSE option (pulse shape)
     config_.setDefault<double>("t_delay", Units::get(0, "ns"));
     delay_ = config_.get<double>("t_delay");
 
@@ -88,22 +76,6 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
 
     config_.setDefault<double>("t_width", Units::get(3, "ns"));
     width_ = config_.get<double>("t_width");
-
-    auto parameters = config_.getArray<double>("net_enumerator_parameters", {});
-
-    // check if number of parameters match up
-    if(static_cast<size_t>(net_enumerator_->GetNpar()) != parameters.size()) {
-        throw InvalidValueError(
-            config_,
-            "net_enumerator_parameters",
-            "The number of function parameters does not line up with the number of parameters in the function.");
-    }
-
-    for(size_t n = 0; n < parameters.size(); ++n) {
-        net_enumerator_->SetParameter(static_cast<int>(n), parameters[n]);
-    }
-
-    LOG(DEBUG) << "Net enumerator function successfully initialized with " << parameters.size() << " parameters";
 }
 
 void NetlistWriterModule::initialize() {
@@ -117,42 +89,39 @@ void NetlistWriterModule::initialize() {
     LOG(DEBUG) << "Netlist file extension: " << extension;
 
     std::string line;
-    std::ostringstream eof_netlist;
-    std::ostringstream header_netlist;
-    // regex for the isource line
+    // regex for the ISOURCE line
     std::regex source_regex("\\((.+)\\)");
     // regex for the circuit line
     std::regex subckt_regex("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)");
     std::smatch connection_match;
 
     while(getline(netlist_file, line)) {
-        // Writes the content of the netlist file to the new one
-        // Identifies the isource declaration line
-        // Identifies the isource instance nets names
         line_number++;
+        // Writes the content of the netlist file to the new one
         file_lines.push_back(line);
 
-        // For the isource nets
+        // Identifies the ISOURCE declaration line
         if(line.rfind(source_name_, 0) == 0) {
-            source_line_number = line_number;
+            source_line_number_ = line_number;
             if(std::regex_search(line, connection_match, source_regex)) {
                 LOG(INFO) << "Found connections in netlist template: " << connection_match[0];
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
 
-                // the three following lines allow to have the two net names in separate variables
+                // Identifies the ISOURCE instance nets names, the three following lines allow to have the two net names in
+                // separate variables
                 size_t space_pos = connections_.find(' ');
                 source_net1_ = connections_.substr(0, space_pos);
                 source_net2_ = connections_.substr(space_pos + 1);
             } else {
                 throw ModuleError("Could not find net connections");
             }
-            LOG(INFO) << "Found the source line!";
+            LOG(DEBUG) << "Found the source line!";
         }
 
         if(line.rfind(subckt_instance_name_, 0) == 0) {
             // For the subckt nets
-            subckt_line_number = line_number;
+            subckt_line_number_ = line_number;
             if(std::regex_search(line, connection_match, subckt_regex)) {
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
@@ -162,42 +131,42 @@ void NetlistWriterModule::initialize() {
                 LOG(INFO) << "Subckt nets: " << net;
                 // Reads each word separated by a space and adds it to net_list
                 while(iss >> net) {
-                    net_list.push_back(net);
+                    net_list_.push_back(net);
                 }
-                subckt_name = connection_match[3];
-                LOG(INFO) << "Subckt name: " << subckt_name;
+                subckt_name_ = connection_match[3];
+                LOG(INFO) << "Subckt name: " << subckt_name_;
             } else {
                 throw ModuleError("Could not find net connections of the subckt");
             }
-            LOG(INFO) << "Found the subckt line!";
+            LOG(DEBUG) << "Found the subckt line!";
         }
     }
-
-    LOG(DEBUG) << "End of initialize";
 }
 
 void NetlistWriterModule::run(Event* event) {
-    LOG(DEBUG) << "Module entered the run loop";
 
     // Messages: Fetch the (previously registered) messages for this event from the messenger:
     auto message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
     if(message->getData().empty()) {
-        LOG(INFO) << "No pixels fired, skipping even";
+        LOG(DEBUG) << "No pixels fired, skipping even";
         return;
     }
 
     // Prepare output file for this event:
-    const auto file_name = createOutputFile(file_name_ + "_event_" + std::to_string(event->number) + extension);
+    const auto file_name = createOutputFile(file_name_ + "_event" + std::to_string(event->number) + extension);
 
     auto file = std::ofstream(file_name);
     LOG(INFO) << "Output file(s) created";
 
     // Write the header on the new netlist
     size_t current_line = 0;
-    for(; current_line < std::min(source_line_number, subckt_line_number) - 1; current_line++) {
+    for(; current_line < std::min(source_line_number_, subckt_line_number_) - 1; current_line++) {
         file << file_lines[current_line] << '\n';
     }
+
+    // waveform to be saved
+    std::ostringstream to_be_saved;
 
     // For loop over all pixels fired
     for(const auto& pixel_charge : message->getData()) {
@@ -210,7 +179,8 @@ void NetlistWriterModule::run(Event* event) {
             LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
 
             // Get pixel address
-            const auto idx = net_enumerator_->Eval(pixel_index.x(), pixel_index.y());
+            auto detector_model = detector_->getModel();
+            std::string idx = std::to_string(pixel_index.x() * static_cast<int>(detector_model->getNPixels().Y()) + pixel_index.y());
 
             if(target_ == Target::SPECTRE) {
                 file << source_name_ << "\\<" << idx << "\\> (";
@@ -224,10 +194,7 @@ void NetlistWriterModule::run(Event* event) {
                     file << source_net1_ << "\\<" << idx << "\\> " << source_net2_ << "\\<" << idx << "\\>";
                 }
             } else if(target_ == Target::SPICE) {
-                // Selection of the first character of the source instance
-                if((source_type_ == SourceType::isource) || (source_type_ == SourceType::isource_pulse)) {
-                    file << "I_" << idx << " ";
-                }
+                file << "I_" << idx << " ";
 
                 //   The source "gnd" (written "0") doesn't need to be incremented, this double "if" checks which net of the
                 //   source the gnd is connected to Also a condition if none of the 2 nets are gnd
@@ -240,48 +207,48 @@ void NetlistWriterModule::run(Event* event) {
                 }
             }
 
-            // ------- isource -------
+            // ------- ISOURCE-------
 
-            if(source_type_ == SourceType::isource) {
+            if(source_type_ == SourceType::ISOURCE) {
 
                 // Get pulse and timepoints
                 const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
                 if(!pulse.isInitialized()) {
                     throw ModuleError("No pulse information available.");
                 }
-                cont auto step = pulse.getBinning();
+                const auto step = pulse.getBinning();
 
                 (target_ == Target::SPECTRE) ? file << ") isource delay=" << delay_ << "n type=pwl wave=[" : file << "PWL(";
 
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
                     auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
                     double current_bin = *bin / step;
-                    double current = current_bin * nanoCoulomb;
+                    double current = current_bin * nanoCoulomb_;
 
                     file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
                 }
 
                 (target_ == Target::SPECTRE) ? file << "]\n" : file << ")\n";
 
-                // ------- isource_pulse -------
+                // ------- ISOURCE_PULSE -------
 
-            } else if(source_type_ == SourceType::isource_pulse) {
+            } else if(source_type_ == SourceType::ISOURCE_PULSE) {
 
-                i_diode = (inputcharge * nanoCoulomb) / (rise_ / 2 + width_ + fall_ / 2);
+                i_diode_ = (inputcharge * nanoCoulomb_) / (rise_ / 2 + width_ + fall_ / 2);
 
                 (target_ == Target::SPECTRE)
-                    ? (file << ") isource type=pulse val0=0 val1=" << i_diode << " delay=" << delay_ << "n rise=" << rise_
+                    ? (file << ") isource type=pulse val0=0 val1=" << i_diode_ << " delay=" << delay_ << "n rise=" << rise_
                             << "n fall=" << fall_ << "n width=" << width_ << "n\n")
-                    : (file << "PULSE(0 " << i_diode << " " << delay_ << "n " << rise_ << "n " << fall_ << "n " << width_
+                    : (file << "PULSE(0 " << i_diode_ << " " << delay_ << "n " << rise_ << "n " << fall_ << "n " << width_
                             << "n)\n");
             }
 
             // Writing the subckt instance declaration
             (target_ == Target::SPECTRE) ? (file << subckt_instance_name_ << "\\<" << idx << "\\> (")
-                                         : (file << subckt_instance_name_ << "_" << idx << " ");
+                                        : (file << subckt_instance_name_ << "_" << idx << " ");
 
             // Select whether the net needs to be iterated or not
-            for(const auto& net : net_list) {
+            for(const auto& net : net_list_) {
                 if(common_nets_.find(net) != common_nets_.end()) {
                     // must NOT be iterated !
                     file << net << " ";
@@ -289,23 +256,23 @@ void NetlistWriterModule::run(Event* event) {
                     // must be iterated !
                     (target_ == Target::SPECTRE) ? file << net << "\\<" << idx << "\\>"
                                                         << " "
-                                                 : file << net << "_" << idx << " ";
+                                                : file << net << "_" << idx << " ";
                 }
             }
             file.seekp(-1, std::ios_base::cur);
 
-            (target_ == Target::SPECTRE) ? file << ") " << subckt_name << "\n" : file << " " << subckt_name << "\n";
+            (target_ == Target::SPECTRE) ? file << ") " << subckt_name_ << "\n" : file << " " << subckt_name_ << "\n";
 
             // Add the increment (address of fired pixel) on each waveform to save, and concatenate a single string
             // (added later to the generated netlist)
             for(const auto& wave : waveform_to_save_) {
                 (target_ == Target::SPECTRE) ? to_be_saved << wave << "\\<" << idx << "\\> "
-                                             : to_be_saved << wave << "_" << idx << " ";
+                                            : to_be_saved << wave << "_" << idx << " ";
             }
         }
     }
 
-    for(current_line++; current_line < std::max(source_line_number, subckt_line_number) - 1; current_line++) {
+    for(current_line++; current_line < std::max(source_line_number_, subckt_line_number_) - 1; current_line++) {
         file << file_lines[current_line] << '\n';
     }
 
@@ -315,10 +282,7 @@ void NetlistWriterModule::run(Event* event) {
 
     //'save' line
     (target_ == Target::SPECTRE) ? file << "save " << to_be_saved.str() << '\n'
-                                 : file << ".save " << to_be_saved.str() << '\n';
-
-    to_be_saved.str("");
-    to_be_saved.clear();
+                                : file << ".save " << to_be_saved.str() << '\n';
 
     file.close();
     LOG(DEBUG) << "Successfully written netlist to file " << file_name;
@@ -326,32 +290,12 @@ void NetlistWriterModule::run(Event* event) {
     // Runs the external uelec simulation, if selected in the configuration file, on the same terminal (ie. with uelec soft.
     // env variables loaded)
     if(run_netlist_simulation_ == true) {
+        std::string uelec_sim_command = simulator_command_;
+        uelec_sim_command += " ";
+        uelec_sim_command += file_name;
 
-        if(target_ == Target::SPECTRE) {
+        LOG(INFO) << uelec_sim_command;
 
-            std::string uelec_sim_command = simulator_command_;
-            uelec_sim_command += " ";
-            uelec_sim_command += file_name;
-
-            LOG(INFO) << uelec_sim_command;
-
-            std::system(uelec_sim_command.c_str()); // NOLINT
-
-        } else if(target_ == Target::SPICE) {
-
-            std::string uelec_sim_command = simulator_command_;
-            uelec_sim_command += " ";
-            uelec_sim_command += file_name;
-
-            LOG(INFO) << uelec_sim_command;
-
-            std::system(uelec_sim_command.c_str()); // NOLINT
-        }
+        std::system(uelec_sim_command.c_str()); // NOLINT
     }
-}
-
-void NetlistWriterModule::finalize() {
-    // Possibly perform finalization of the module - if not, this method does not need to be implemented and can be
-    // removed!
-    LOG(INFO) << "Successfully finalized!";
 }

@@ -41,8 +41,8 @@ namespace allpix {
         };
 
         enum class SourceType {
-            isource,
-            isource_pulse,
+            ISOURCE,
+            ISOURCE_PULSE,
         };
 
         /**
@@ -64,11 +64,6 @@ namespace allpix {
          */
         void run(Event* event) override;
 
-        /**
-         * @brief Finalization method of the module
-         */
-        void finalize() override;
-
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         std::shared_ptr<Detector> detector_;
@@ -89,8 +84,6 @@ namespace allpix {
         std::set<std::string> common_nets_;
 
         std::set<std::string> waveform_to_save_;
-        // waveform to be saved
-        std::ostringstream to_be_saved;
 
         bool run_netlist_simulation_{};
         std::string simulator_command_{};
@@ -104,15 +97,16 @@ namespace allpix {
         std::string source_net1_;
         std::string source_net2_;
 
-        std::vector<std::string> net_list;
+        std::vector<std::string> net_list_;
 
-        std::string source_line;
-        std::string subckt_name;
-        size_t subckt_line_number = 0;
-        size_t source_line_number = 0;
-        double nanoCoulomb = 1.6e-10;
-        double i_diode = 0;
+        std::string source_line_;
+        std::string subckt_name_;
+        size_t subckt_line_number_ = 0;
+        size_t source_line_number_ = 0;
+        double nanoCoulomb_ = 1.6e-10;
+        double i_diode_ = 0;
 
         std::vector<std::string> file_lines;
     };
 } // namespace allpix
+ 
