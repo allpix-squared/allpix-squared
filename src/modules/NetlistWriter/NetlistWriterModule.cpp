@@ -202,7 +202,7 @@ void NetlistWriterModule::run(Event* event) {
         const auto pixel_index = pixel.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
 
-        if(inputcharge != 0) {
+        if(std::fabs(inputcharge) > std::numeric_limits<double>::epsilon()) {
 
             LOG(INFO) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
 
