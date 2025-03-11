@@ -64,7 +64,7 @@ The parameter `waveform_to_save` is used to write at the end of the generated ne
 The electrical circuit simulation can be performed within the Allpix Squared event using the boolean parameter `run_netlist_sim` (default to `False`). If performed, the electrical simulation puts in stand-by the execution of the event.
 The simulator command to execute must be given using the parameter `simulator_command`. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
 
-```ini
+```shell
 spectre -f nutascii <file_name_event1.scs>
 ```
 
