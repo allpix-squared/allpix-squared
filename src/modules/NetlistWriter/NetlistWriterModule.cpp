@@ -1,15 +1,15 @@
 /**
  * @file
- * @brief Implementation of SPICENetlistWriter module
+ * @brief Implementation of NetlistWriter module
  *
- * @copyright Copyright (c) 2017-2024 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2024-2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#include "SPICENetlistWriterModule.hpp"
+#include "NetlistWriterModule.hpp"
 
 #include <filesystem>
 #include <regex>
@@ -22,9 +22,7 @@
 
 using namespace allpix;
 
-SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
-                                                   Messenger* messenger,
-                                                   std::shared_ptr<Detector> detector)
+NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
     // Enable multithreading of this module if multithreading is enabled
@@ -105,7 +103,7 @@ SPICENetlistWriterModule::SPICENetlistWriterModule(Configuration& config,
     LOG(DEBUG) << "Net enumerator function successfully initialized with " << parameters.size() << " parameters";
 }
 
-void SPICENetlistWriterModule::initialize() {
+void NetlistWriterModule::initialize() {
 
     // Reads the template netlist specified
     size_t line_number = 0;
@@ -175,7 +173,7 @@ void SPICENetlistWriterModule::initialize() {
     LOG(DEBUG) << "End of initialize";
 }
 
-void SPICENetlistWriterModule::run(Event* event) {
+void NetlistWriterModule::run(Event* event) {
     LOG(DEBUG) << "Module entered the run loop";
 
     // Messages: Fetch the (previously registered) messages for this event from the messenger:
@@ -349,7 +347,7 @@ void SPICENetlistWriterModule::run(Event* event) {
     }
 }
 
-void SPICENetlistWriterModule::finalize() {
+void NetlistWriterModule::finalize() {
     // Possibly perform finalization of the module - if not, this method does not need to be implemented and can be
     // removed!
     LOG(INFO) << "Successfully finalized!";

@@ -1,7 +1,7 @@
 ---
-# SPDX-FileCopyrightText: 2017-2024 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2024-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
-title: "SPICENetlistWriter"
+title: "NetlistWriter"
 description: "A module to generate netlists for SPICE simulators"
 module_status: "Immature"
 module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
@@ -10,17 +10,19 @@ module_maintainers: ["Simon Spannagel (<simon.spannagel@cern.ch>)"]
 ---
 
 ## Description
+
 Integrates micro-electronics simulation elements in the Allpix Squared simulation flow. Allows the user to generate netlists (input file used by an electrical simulator to simulate the behavior of the circuit) from a given netlist template. `SPECTRE` (Cadence environment) and `SPICE` syntaxes are allowed and can be selected using the `target` parameter. This module is mostly intended for analog front-end electrical simulation using the `PixelCharge` object data.
 
 The netlist template needs to be formatted as described and illustrated (`SPECTRE` syntax) below:
-- The netlist header.
-- A sub-circuit describing the circuit of interest (analog front-end for example).
-- If necessary, other instances (for example other voltage or current sources of the front-end).
-- A current source, which will be used to replicate the electrical behavior of the collection electrode. A particular attention should be given to the polarity of the source.
-- The sub-circuit written as an instance, connected to the source.
-- The netlist footer and the simulator options.
 
-```
+* The netlist header.
+* A sub-circuit describing the circuit of interest (analog front-end for example).
+* If necessary, other instances (for example other voltage or current sources of the front-end).
+* A current source, which will be used to replicate the electrical behavior of the collection electrode. A particular attention should be given to the polarity of the source.
+* The sub-circuit written as an instance, connected to the source.
+* The netlist footer and the simulator options.
+
+```shell
 --- netlist header ---
 
 subckt front_end Pix_in Comp_vout Comp_vref SUB VDDA VSSA Vfbk
@@ -45,11 +47,11 @@ One way to get a netlist already formatted could be to extract it from the Caden
 A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. It adds, for each fired pixel a pair source / circuit instance.
 
 The new source written can be parametered with `source_type`. Three type of sources can be used: `isource` and `isource_pulse`:
-- `isource` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
 
-- In order to lightweight the generated netlists, the `isource_pulse` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
+* `isource` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
+* In order to lightweight the generated netlists, the `isource_pulse` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
 
-<!-- 
+<!--
 The other possible source type is the `vsource_pulse`: using the total collected charge Q and the collecting electrode capacitance C, the voltage $U={Q}/{C}$ is written in the netlist.
 -->
 
@@ -69,8 +71,8 @@ spectre -f nutascii <file_name_event1.scs>
 This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environment to be correctly set.
 
 
-
 ## Parameters
+
 * `target`: Syntax for the additional data to be written in the netlist, either `SPECTRE` or `SPICE`.
 * `netlist_template`: Location of file containing the netlist template of the circuit in one of the supported formats.
 * `file_name` : Generated netlist prefix name (the suffix is the event number).
@@ -92,6 +94,7 @@ This electrical simulation is performed in the same terminal as the Allpix event
 A possible configuration is using a `isource` and the `SPICE` syntax, requiring the collecting electrode capacitance:
 
 ```ini
+[NetlistWriter]
 target = SPICE
 netlist_template = "front_end.asc"
 source_type = isource
@@ -106,7 +109,8 @@ simulator_command = "wine 'your\path\LTSpiceXVII\XVIIx64.exe' -run"
 A current pulse `isource_pulse` and the `SPECTRE` syntax is used is this example:
 
 ```ini
-target = SPECTRE 
+[NetlistWriter]
+target = SPECTRE
 netlist_template = "front_end.scs"
 source_type = isource_pulse
 t_delay = 200ns
