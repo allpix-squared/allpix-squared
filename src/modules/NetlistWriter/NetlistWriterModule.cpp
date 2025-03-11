@@ -235,7 +235,7 @@ void NetlistWriterModule::run(Event* event) {
                     file << source_net1_ << " " << source_net2_ << "_" << idx << " ";
                 } else if(source_net2_ == "0") {
                     file << source_net1_ << "_" << idx << " " << source_net2_;
-                } else if(source_net1_ != "0" && source_net2_ != "0") {
+                } else {
                     file << source_net1_ << "_" << idx << " " << source_net2_ << "_" << idx << " ";
                 }
             }
