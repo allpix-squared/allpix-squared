@@ -216,7 +216,7 @@ void NetlistWriterModule::run(Event* event) {
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
                     auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
                     double current_bin = *bin / step;
-                    double current = current_bin * nanoCoulomb_;
+                    auto current = Units::convert(current_bin, "nC");
 
                     file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
                 }
@@ -227,12 +227,12 @@ void NetlistWriterModule::run(Event* event) {
 
             } else if(source_type_ == SourceType::ISOURCE_PULSE) {
 
-                i_diode_ = (inputcharge * nanoCoulomb_) / (rise_ / 2 + width_ + fall_ / 2);
+                auto i_diode = Units::convert(inputcharge, "nC") / (rise_ / 2 + width_ + fall_ / 2);
 
                 (target_ == Target::SPECTRE)
-                    ? (file << ") isource type=pulse val0=0 val1=" << i_diode_ << " delay=" << delay_ << "n rise=" << rise_
+                    ? (file << ") isource type=pulse val0=0 val1=" << i_diode << " delay=" << delay_ << "n rise=" << rise_
                             << "n fall=" << fall_ << "n width=" << width_ << "n\n")
-                    : (file << "PULSE(0 " << i_diode_ << " " << delay_ << "n " << rise_ << "n " << fall_ << "n " << width_
+                    : (file << "PULSE(0 " << i_diode << " " << delay_ << "n " << rise_ << "n " << fall_ << "n " << width_
                             << "n)\n");
             }
 

@@ -101,7 +101,5 @@ namespace allpix {
         std::string subckt_name_;
         size_t subckt_line_number_ = 0;
         size_t source_line_number_ = 0;
-        double nanoCoulomb_ = 1.6e-10;
-        double i_diode_ = 0;
     };
 } // namespace allpix

@@ -52,6 +52,7 @@ namespace allpix {
         Units::add("e", 1);
         Units::add("ke", 1e3);
         Units::add("fC", 1 / 1.602176634e-4);
+        Units::add("nC", 1 / 1.602176634e-10);
         Units::add("C", 1 / 1.602176634e-19);
 
         // VOLTAGE
