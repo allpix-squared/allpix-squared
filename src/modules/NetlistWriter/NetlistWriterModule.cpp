@@ -124,13 +124,15 @@ void NetlistWriterModule::initialize() {
                 LOG(INFO) << "Found subckt connections in netlist template: " << connections_;
                 std::istringstream iss(connection_match[2]);
                 std::string net;
-                LOG(INFO) << "Subckt nets: " << net;
                 // Reads each word separated by a space and adds it to net_list
                 while(iss >> net) {
                     net_list_.push_back(net);
                 }
                 subckt_name_ = connection_match[3];
-                LOG(INFO) << "Subckt name: " << subckt_name_;
+                LOG(DEBUG) << "Subckt name: " << subckt_name_ << ", nets: ";
+                for(const auto& n : net_list_) {
+                    LOG(DEBUG) << "\t" << n;
+                }
             } else {
                 throw ModuleError("Could not find net connections of the subckt");
             }
