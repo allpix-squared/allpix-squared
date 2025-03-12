@@ -165,7 +165,7 @@ void NetlistWriterModule::run(Event* event) {
 
     // Loop over all pixels
     for(const auto& pixel_charge : message->getData()) {
-        const auto index = pixel_charge.getPixel().getIndex();
+        const auto index = pixel_charge.getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
 
         if(std::fabs(inputcharge) > std::numeric_limits<double>::epsilon()) {
@@ -227,7 +227,7 @@ void NetlistWriterModule::run(Event* event) {
 
             } else if(source_type_ == SourceType::ISOURCE_PULSE) {
 
-                auto i_diode = Units::convert(inputcharge, "nC") / (rise_ / 2 + width_ + fall_ / 2);
+                const auto i_diode = Units::convert(inputcharge, "nC") / (rise_ / 2 + width_ + fall_ / 2);
 
                 (target_ == Target::SPECTRE)
                     ? (file << ") isource type=pulse val0=0 val1=" << i_diode << " delay=" << delay_ << "n rise=" << rise_
