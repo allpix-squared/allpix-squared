@@ -56,8 +56,6 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     auto to_save = config_.getArray<std::string>("waveform_to_save");
     waveform_to_save_.insert(to_save.begin(), to_save.end());
 
-    // Boolean to execute or not the external uelec simulation
-
     // Options to add the the uelec simulation command
     if(config_.has("simulator_command")) {
         run_netlist_simulation_ = true;
@@ -180,7 +178,8 @@ void NetlistWriterModule::run(Event* event) {
 
             // Get pixel address
             auto detector_model = detector_->getModel();
-            std::string idx = std::to_string(pixel_index.x() * static_cast<int>(detector_model->getNPixels().Y()) + pixel_index.y());
+            std::string idx =
+                std::to_string(pixel_index.x() * static_cast<int>(detector_model->getNPixels().Y()) + pixel_index.y());
 
             if(target_ == Target::SPECTRE) {
                 file << source_name_ << "\\<" << idx << "\\> (";
@@ -245,7 +244,7 @@ void NetlistWriterModule::run(Event* event) {
 
             // Writing the subckt instance declaration
             (target_ == Target::SPECTRE) ? (file << subckt_instance_name_ << "\\<" << idx << "\\> (")
-                                        : (file << subckt_instance_name_ << "_" << idx << " ");
+                                         : (file << subckt_instance_name_ << "_" << idx << " ");
 
             // Select whether the net needs to be iterated or not
             for(const auto& net : net_list_) {
@@ -256,7 +255,7 @@ void NetlistWriterModule::run(Event* event) {
                     // must be iterated !
                     (target_ == Target::SPECTRE) ? file << net << "\\<" << idx << "\\>"
                                                         << " "
-                                                : file << net << "_" << idx << " ";
+                                                 : file << net << "_" << idx << " ";
                 }
             }
             file.seekp(-1, std::ios_base::cur);
@@ -267,7 +266,7 @@ void NetlistWriterModule::run(Event* event) {
             // (added later to the generated netlist)
             for(const auto& wave : waveform_to_save_) {
                 (target_ == Target::SPECTRE) ? to_be_saved << wave << "\\<" << idx << "\\> "
-                                            : to_be_saved << wave << "_" << idx << " ";
+                                             : to_be_saved << wave << "_" << idx << " ";
             }
         }
     }
@@ -282,7 +281,7 @@ void NetlistWriterModule::run(Event* event) {
 
     //'save' line
     (target_ == Target::SPECTRE) ? file << "save " << to_be_saved.str() << '\n'
-                                : file << ".save " << to_be_saved.str() << '\n';
+                                 : file << ".save " << to_be_saved.str() << '\n';
 
     file.close();
     LOG(DEBUG) << "Successfully written netlist to file " << file_name;

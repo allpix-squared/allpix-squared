@@ -10,7 +10,7 @@ module_inputs: ["PixelCharge"]
 
 ## Description
 
-Integrates micro-electronics simulation elements in the Allpix Squared simulation flow. Allows the user to generate netlists (input file used by an electrical simulator to simulate the behavior of the circuit) from a given netlist template. `SPECTRE` (Cadence environment) and `SPICE` syntaxes are allowed and can be selected using the `target` parameter. This module is mostly intended for analog front-end electrical simulation using the `PixelCharge` object data.
+Integrates micro-electronics simulation elements in the Allpix Squared simulation flow. Allows the user to generate netlists (input file used by an electrical simulator to simulate the behavior of the circuit) from a given netlist template. `SPECTRE` (Cadence environment) and `SPICE` syntax are allowed and can be selected using the `target` parameter. This module is mostly intended for analog front-end electrical simulation using the `PixelCharge` object data.
 
 The netlist template needs to be formatted as described and illustrated (`SPECTRE` syntax) below:
 
@@ -41,7 +41,7 @@ Instance_front_end (Pix_in Comp_vout Comp_vref SUB VDDA VSSA Vfbk) front_end
 --- netlist footer and simulator options ---
 ```
 
-One way to get a netlist already formatted could be to extract it from the Cadence Virtuoso environment ('schematic' view).
+One way to get a netlist already formatted could be to extract it from the Cadence Virtuoso environment ("schematic" view).
 
 A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. For each fired pixel, a source / circuit instance pair is added to the template.
 
@@ -52,10 +52,17 @@ The new source written can be parameterized with the parameter `source_type`. Tw
 
 The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for.
 
-The pixel address is used to identify the fired pixels in the netlist. If we consider the pixel (6,3) fired (7th column and 4th row) in a 10x10 matrix, the index 63 will be written in the netlist for this pixel (linearization of the 2D x and y indexes).
+The pixel address is used to identify the fired pixels in the netlist, a linearization following
+
+```math
+i = x * N_y + y
+```
+
+is used. Here, `x` and `y` are the respective pixel coordinates and $`N_y`$ is the number of pixels along `y`.
+This means that e.g. considering pixel (6,3) fired (7th column and 4th row) in a 10x10 matrix, the index 63 will be written in the netlist for this pixel..
 
 The parameter `waveform_to_save` is used to write at the end of the generated netlist the waveform(s) to be saved (always using the index notation to identify the fired pixels).
-The electrical circuit simulation can be performed within the Allpix Squared event using the parameter `simulator_command` which is used to specify the command line to execut. Not setting it switches the feature off, setting a value will enable it. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
+The electrical circuit simulation can be performed within the Allpix Squared event using the parameter `simulator_command` which is used to specify the command line to execute. Not setting it switches the feature off, setting a value will enable it. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
 
 ```shell
 spectre -f nutascii <file_name_event1.scs>
@@ -68,17 +75,17 @@ If performed, the electrical simulation puts in stand-by the execution of the ev
 
 * `target`: Syntax for the additional data to be written in the netlist, either `SPECTRE` or `SPICE`.
 * `netlist_template`: Location of file containing the netlist template of the circuit in one of the supported formats.
-* `file_name` : Generated netlist prefix name (the suffix is the event number).
-* `source_type`: Type of current source to be used, `ISOURCE` and `ISOURCE_PULSE`.
+* `file_name` : Generated netlist prefix name to which the event number is added as suffix. Defaults to `output_netlist_event_`.
+* `source_type`: Type of current source to be used, `ISOURCE` and `ISOURCE_PULSE`. Defaults to `ISOURCE_PULSE`.
 * `source_name`: Name of the current source instance in the netlist.
 * `subckt_name`: Name of the circuit the source is connected to.
 * `common_nets`: Nets shared between the pixels.
-* `t_delay`: delay from 0 before the current pulse starts, default to 0 ns
-* `t_rise`: rise time of the current pulse, default to 1 ns, only works for the `ISOURCE_PULSE`
-* `t_width`: width of the current pulse, default to 3 ns, only works for the `ISOURCE_PULSE`
-* `t_fall`: fall time of the current pulse, default to 1 ns, only works for the `ISOURCE_PULSE`
+* `t_delay`: delay from 0 before the current pulse starts, defaults to 0 ns
+* `t_rise`: rise time of the current pulse, defaults to 1 ns, only works for the `ISOURCE_PULSE`
+* `t_width`: width of the current pulse, defaults to 3 ns, only works for the `ISOURCE_PULSE`
+* `t_fall`: fall time of the current pulse, defaults to 1 ns, only works for the `ISOURCE_PULSE`
 * `waveform_to_save`: Name of the waveforms to save
-* `simulator_command`: If specified, launches the electrical simulation. Command to be exuted in the terminal, the generated netlist name is appended at the end of the command.
+* `simulator_command`: If specified, launches the electrical simulation. Command to be executed in the terminal, the generated netlist name is appended at the end of the command.
 
 
 ## Usage
