@@ -26,8 +26,6 @@
 
 #include "objects/PixelCharge.hpp"
 
-#include <TFormula.h>
-
 namespace allpix {
     /**
      * @ingroup Modules
@@ -71,7 +69,7 @@ namespace allpix {
 
         // Module parameters
         std::filesystem::path netlist_path_;
-        std::string extension;
+        std::string extension_{};
         std::string file_name_{};
         Target target_;
         SourceType source_type_;
@@ -79,7 +77,6 @@ namespace allpix {
         std::string source_name_{};
         std::string subckt_instance_name_{};
 
-        std::unique_ptr<TFormula> net_enumerator_{};
         std::string connections_;
         std::set<std::string> common_nets_;
 
@@ -98,6 +95,7 @@ namespace allpix {
         std::string source_net2_;
 
         std::vector<std::string> net_list_;
+        std::vector<std::string> file_lines_;
 
         std::string source_line_;
         std::string subckt_name_;
@@ -105,8 +103,5 @@ namespace allpix {
         size_t source_line_number_ = 0;
         double nanoCoulomb_ = 1.6e-10;
         double i_diode_ = 0;
-
-        std::vector<std::string> file_lines;
     };
 } // namespace allpix
- 

@@ -50,7 +50,7 @@ The new source written can be parameterized with the parameter `source_type`. Tw
 * `ISOURCE` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
 * In order to lightweight the generated netlists, the `ISOURCE_PULSE` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
 
-The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for.
+The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for. The file extension is taken from the input netlist template file.
 
 The pixel address is used to identify the fired pixels in the netlist, a linearization following
 

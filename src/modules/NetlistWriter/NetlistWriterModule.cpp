@@ -79,28 +79,23 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
 void NetlistWriterModule::initialize() {
 
     // Reads the template netlist specified
-    size_t line_number = 0;
     std::ifstream netlist_file(netlist_path_);
-
-    // Gets the template netlist file extension
-    extension = netlist_path_.extension().string();
-    LOG(DEBUG) << "Netlist file extension: " << extension;
+    // Store the extension from the template netlist file
+    extension_ = netlist_path_.extension().string();
 
     std::string line;
-    // regex for the ISOURCE line
-    std::regex source_regex("\\((.+)\\)");
-    // regex for the circuit line
-    std::regex subckt_regex("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)");
-    std::smatch connection_match;
-
+    size_t line_number = 0;
     while(getline(netlist_file, line)) {
         line_number++;
         // Writes the content of the netlist file to the new one
-        file_lines.push_back(line);
+        file_lines_.push_back(line);
 
         // Identifies the ISOURCE declaration line
         if(line.rfind(source_name_, 0) == 0) {
             source_line_number_ = line_number;
+            // regex for the ISOURCE line
+            std::regex source_regex("\\((.+)\\)");
+            std::smatch connection_match;
             if(std::regex_search(line, connection_match, source_regex)) {
                 LOG(INFO) << "Found connections in netlist template: " << connection_match[0];
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
@@ -120,6 +115,9 @@ void NetlistWriterModule::initialize() {
         if(line.rfind(subckt_instance_name_, 0) == 0) {
             // For the subckt nets
             subckt_line_number_ = line_number;
+            // regex for the circuit line
+            std::regex subckt_regex("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)");
+            std::smatch connection_match;
             if(std::regex_search(line, connection_match, subckt_regex)) {
                 // connections_[1] instead of connections_[0], to get back the nets without the ()
                 connections_ = connection_match[1];
@@ -147,39 +145,35 @@ void NetlistWriterModule::run(Event* event) {
     auto message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
     if(message->getData().empty()) {
-        LOG(DEBUG) << "No pixels fired, skipping even";
+        LOG(DEBUG) << "Empty event, skipping";
         return;
     }
 
     // Prepare output file for this event:
-    const auto file_name = createOutputFile(file_name_ + "_event" + std::to_string(event->number) + extension);
-
+    const auto file_name = createOutputFile(file_name_ + "_event" + std::to_string(event->number), extension_);
     auto file = std::ofstream(file_name);
-    LOG(INFO) << "Output file(s) created";
+    LOG(INFO) << "Created output file at " << file_name;
 
     // Write the header on the new netlist
     size_t current_line = 0;
     for(; current_line < std::min(source_line_number_, subckt_line_number_) - 1; current_line++) {
-        file << file_lines[current_line] << '\n';
+        file << file_lines_[current_line] << '\n';
     }
 
     // waveform to be saved
     std::ostringstream to_be_saved;
 
-    // For loop over all pixels fired
+    // Loop over all pixels
     for(const auto& pixel_charge : message->getData()) {
-        const auto& pixel = pixel_charge.getPixel();
-        const auto pixel_index = pixel.getIndex();
+        const auto index = pixel_charge.getPixel().getIndex();
         auto inputcharge = static_cast<double>(pixel_charge.getCharge());
 
         if(std::fabs(inputcharge) > std::numeric_limits<double>::epsilon()) {
-
-            LOG(DEBUG) << "Received pixel " << pixel_index << ", charge " << Units::display(inputcharge, "e");
+            LOG(DEBUG) << "Received pixel " << index << ", charge " << Units::display(inputcharge, "e");
 
             // Get pixel address
             auto detector_model = detector_->getModel();
-            std::string idx =
-                std::to_string(pixel_index.x() * static_cast<int>(detector_model->getNPixels().Y()) + pixel_index.y());
+            auto idx = std::to_string(index.x() * static_cast<int>(detector_model->getNPixels().Y()) + index.y());
 
             if(target_ == Target::SPECTRE) {
                 file << source_name_ << "\\<" << idx << "\\> (";
@@ -272,11 +266,11 @@ void NetlistWriterModule::run(Event* event) {
     }
 
     for(current_line++; current_line < std::max(source_line_number_, subckt_line_number_) - 1; current_line++) {
-        file << file_lines[current_line] << '\n';
+        file << file_lines_[current_line] << '\n';
     }
 
-    for(current_line++; current_line < file_lines.size(); current_line++) {
-        file << file_lines[current_line] << '\n';
+    for(current_line++; current_line < file_lines_.size(); current_line++) {
+        file << file_lines_[current_line] << '\n';
     }
 
     //'save' line
