@@ -226,7 +226,9 @@ void DefaultDigitizerModule::run(Event* event) {
     } catch(const MessageNotFoundException&) {
     }
 
-    const auto& pixel_charges = (pixel_message ? pixel_message->getData() : std::vector<PixelCharge>());
+    // Ensure to not copy the data but to obtain only a reference - both returns from ternary operator must be references!
+    const std::vector<PixelCharge>& dummy = std::vector<PixelCharge>();
+    const auto& pixel_charges = (pixel_message ? pixel_message->getData() : dummy);
 
     // Select what to iterate over:
     std::set<Pixel::Index> pixels;
@@ -247,12 +249,9 @@ void DefaultDigitizerModule::run(Event* event) {
         const auto it = std::find_if(
             pixel_charges.begin(), pixel_charges.end(), [index](const auto& px) { return px.getIndex() == index; });
         const auto& pixel_charge = (it == pixel_charges.end() ? PixelCharge(getDetector()->getPixel(index), 0.) : *it);
-
-        auto pixel = pixel_charge.getPixel();
-        auto pixel_index = pixel.getIndex();
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel_index << ", (absolute) charge " << Units::display(charge, "e");
+        LOG(DEBUG) << "Received pixel " << pixel_charge.getIndex() << ", (absolute) charge " << Units::display(charge, "e");
         if(output_plots_) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -370,12 +369,13 @@ void DefaultDigitizerModule::run(Event* event) {
             h_px_tdc->Fill(time);
         }
 
-        // Add the hit to the hitmap
-        hits.emplace_back(pixel,
+        // Add the hit to the hitmap. Use the address of the iterator for PixelCharge reference instead of the object since
+        // the latter is a copy.
+        hits.emplace_back(pixel_charge.getPixel(),
                           time,
                           pixel_charge.getGlobalTime() + original_time,
                           charge,
-                          (it == pixel_charges.end() ? nullptr : &pixel_charge));
+                          (it == pixel_charges.end() ? nullptr : &(*it)));
     }
 
     // Output summary and update statistics
