@@ -43,11 +43,20 @@ void PixelDetectorModel::validate() {
                 implant.getConfiguration(), "size", "implant depth cannot be larger than sensor thickness");
         }
 
-        // Offset of the collection diode implant from the pixel center, defaults to zero.
-        if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
-           std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
-            throw InvalidValueError(
-                implant.getConfiguration(), "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+        if(implant.getType() == Implant::Type::BACKSIDE) {
+            // For backside implants, only check that the center of the implant lies within the pixel cell:
+            if(std::fabs(implant.getOffset().x()) > pixel_size_.x() / 2 ||
+               std::fabs(implant.getOffset().y()) > pixel_size_.y() / 2) {
+                throw InvalidValueError(
+                    implant.getConfiguration(), "offset", "implant offset outside cell. Reduce implant offset");
+            }
+        } else {
+            // For frontside implants, check that the implant lies within the pixel cell with its entire size
+            if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
+               std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
+                throw InvalidValueError(
+                    implant.getConfiguration(), "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+            }
         }
     }
 }
