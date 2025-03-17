@@ -167,6 +167,9 @@ void NetlistWriterModule::run(Event* event) {
     // Prepare output file for this event:
     const auto file_name = createOutputFile(file_name_ + "_event" + std::to_string(event->number), extension_);
     auto file = std::ofstream(file_name);
+    if(!file.good()) {
+        throw ModuleError("Could not create output file " + file_name);
+    }
     LOG(INFO) << "Created output file at " << file_name;
 
     // Write the header on the new netlist
