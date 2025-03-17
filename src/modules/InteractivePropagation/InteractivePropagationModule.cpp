@@ -25,6 +25,8 @@
 
 using namespace allpix;
 
+
+//This constructor is copied from TransientPropagation.cpp with a few added lines for a few useful constants
 InteractivePropagationModule::InteractivePropagationModule(Configuration& config,
     Messenger* messenger,
     std::shared_ptr<Detector> detector)
@@ -108,7 +110,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     hole_Hall_ = 0.9;
 }
 
-// Copied from TransientPropagation.cpp
+// Copied from TransientPropagation.cpp with one section added to calculate the z-positions of the electrodes
 void InteractivePropagationModule::initialize() {
 
     // Check for electric field
@@ -140,7 +142,7 @@ void InteractivePropagationModule::initialize() {
     multiplication_ = ImpactIonization(config_);
 
 
-    // TODO: Determine the distance from the model origin to electrodes in both z-directions
+    // Determine the distance from the model origin to electrodes in both z-directions
     auto model_size = model_->getSize();
     LOG(INFO) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
     
@@ -420,14 +422,11 @@ void InteractivePropagationModule::run(Event* event) {
 
     // Create vector of propagated charges to output
     std::vector<PropagatedCharge> propagated_charges;
-    // unsigned int propagated_charges_count = 0;
-    // unsigned int recombined_charges_count = 0;
-    // unsigned int trapped_charges_count = 0;
 
     // List of points to plot to plot for output plots
     LineGraph::OutputPlotPoints output_plot_points;
 
-    // Create vector of propagating charges to store each charge groups position, location, time, type, etc.
+    // Create vector of propagating charges to store each charge groups position, location, time, type, etc. at the start of propagation
     std::vector<PropagatedCharge> propagating_charges;
 
     // Loop over all deposits for propagation
@@ -444,7 +443,7 @@ void InteractivePropagationModule::run(Event* event) {
 
         total_deposits_++;
 
-        // Loop over all charges in the deposit
+        // Get the charge of each deposit and determine the size of the charge groups
         unsigned int charges_remaining = deposit.getCharge();
 
         LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
@@ -459,7 +458,9 @@ void InteractivePropagationModule::run(Event* event) {
                       << charge_per_step << " for this deposit.";
         }
     
+        // Split the deposit into charge groups
         while(charges_remaining > 0) {
+
             // Define number of charges to be propagated and remove charges of this step from the total
             if(charge_per_step > charges_remaining) {
                 charge_per_step = charges_remaining;
@@ -488,7 +489,7 @@ void InteractivePropagationModule::run(Event* event) {
 
     LOG(INFO) << "Number of charge groups: " << propagating_charges.size(); 
 
-    //Now we have a list of charges to propagate
+    //Now we have a list of charges to propagate in a single function call
     auto [recombined_charges_count, trapped_charges_count, propagated_charges_count] = propagate_together(event, propagating_charges, propagated_charges, output_plot_points);
 
     // Output plots if required
@@ -525,13 +526,13 @@ void InteractivePropagationModule::run(Event* event) {
     messenger_->dispatchMessage(this, std::move(propagated_charge_message), event);
 }
 
+// This function takes a list of propagating charges to propagate synchronously and places them in the propagated vector
 std::tuple<unsigned int, unsigned int, unsigned int>
 InteractivePropagationModule::propagate_together(Event* event,
                                                  std::vector<PropagatedCharge>& propagating_charges,
                                                  std::vector<PropagatedCharge>& propagated_charges,
                                                  LineGraph::OutputPlotPoints& output_plot_points) const {
 
-    // Set up functions and variables that should stay constant throughout time:
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
@@ -554,27 +555,21 @@ InteractivePropagationModule::propagate_together(Event* event,
     // Survival probability of this charge carrier package, evaluated at every step
     allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
-    // Create vectors that store charge information in a place that can be modified (need to be here since they are used in dynamic field, but they are set to initial states below)
-    std::vector<ROOT::Math::XYZPoint> charge_locations;
-    // std::vector<int> charge_amounts;
-    std::vector<double> charge_times;
-    std::vector<allpix::CarrierState> charge_states;
-    double_t time = 0;
-    int numSamePos = 0;
+    // Create vectors that store charge information in a place that can be modified each time step (need to be here since they are used in dynamic field, but they are set to initial states below)
+    std::vector<ROOT::Math::XYZPoint> charge_locations; // Current position of each charge 
+    std::vector<double> charge_times; // Most recent time for all of the charges (by the end of propagation they should all be aligned)
+    std::vector<allpix::CarrierState> charge_states; // The state of propagation of each charge group (whether it's propagated, trapped, or halted)
+    double_t time = 0; // The current time threshold (we only propagate charges near this time)
+    int numSamePos = 0; // For debugging the dynamic field collision detection
 
-    //Define a function to compute the e-field given a desired local point and the list of charges
-        //TODO: Implement a filter to only calculate for charge with the same time (or within a certain time range) as well as Trapped charges that have larger time
+    //A function to compute the changing component of the e-field given a desired local point and the list of charges
     auto dynamic_efield = [&](ROOT::Math::XYZPoint point) -> Eigen::Vector3d {
 
-        // for now just return nothing for the dynamic field
-        // return Eigen::Vector3d(0,0,0);
-
-        double dist_threshold_squared = 0.25; //mm
+        double dist_threshold_squared = 0.25; //mm // Used to ignore singularity (TODO: decrease to more reasonable value)
 
         ROOT::Math::XYZVector field = ROOT::Math::XYZVector(0,0,0);
 
         bool foundSamePos = false; // Check to pass over current
-        // int numSamePos = 0;
         for (int i = 0; i < charge_locations.size(); i++){
 
             // Only get fields from charges that have deposition time less than the current time (skip the ones that haven't been deposited yet)
@@ -591,7 +586,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                     numSamePos -= 1; // ignore the actual same charge (one per loop)
                     continue;
                 }
-                // local_position = // TODO: move randomly the overlapping charges
+                // local_position = // TODO: move randomly the overlapping charges (I don't think this currently doesn't occur often enough to have a significant effect)
             }
             // if (local_position == point && !foundSamePos){ // This just skips unnecessary calculations for dist_vector = 0. Replace with above code if implementing random offsets.
             //     foundSamePos = true;
@@ -641,9 +636,10 @@ InteractivePropagationModule::propagate_together(Event* event,
 
         Eigen::Vector3d output = Eigen::Vector3d(field.x(),field.y(),field.z());
 
-        if (time < 4 && std::fmod(time, 3.5) < timestep_/2){
-            LOG(DEBUG) << time << "ns: field = (" << output.x() << ", " << output.y() << ", " << output.z() << ")";
-        }
+        // Debugging
+        // if (time < 4 && std::fmod(time, 3.5) < timestep_/2){ 
+        //     LOG(DEBUG) << time << "ns: field = (" << output.x() << ", " << output.y() << ", " << output.z() << ")";
+        // }
 
         // if (numSamePos > 0){
         //     LOG(DEBUG) << numSamePos << " charges skipped due to overlapping positions at time " << time << "ns";
@@ -689,7 +685,7 @@ InteractivePropagationModule::propagate_together(Event* event,
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    //Functions that convert between ROOT::Math:XYZPoint and Eigen::Vector3d (Eigen::Matrix<double, 3, 1>)
+    // Functions that convert between ROOT::Math:XYZPoint and Eigen::Vector3d (Eigen::Matrix<double, 3, 1>)
     auto convertPointToVector = [] (ROOT::Math::XYZPoint point) -> Eigen::Vector3d {
         return Eigen::Vector3d(point.x(), point.y(), point.z());
     };
@@ -707,6 +703,7 @@ InteractivePropagationModule::propagate_together(Event* event,
     // Initialization loop through all charges
     for(auto charge : propagating_charges){
         
+        // Specify the charge type before passing into the rungekutta (the rk step function can only have two arguments: t and pos)
         std::function<Eigen::Matrix<double, 3, 1>(double, Eigen::Matrix<double, 3, 1>)> step_function;
         if (has_magnetic_field_){
             step_function = [=](double t, Eigen::Vector3d pos) -> Eigen::Vector3d {return carrier_velocity_withB(t, pos, charge.getType());};
@@ -717,21 +714,19 @@ InteractivePropagationModule::propagate_together(Event* event,
         // No error estimation required since we're not adapting step size
         auto rk = make_runge_kutta(
             tableau::RK4, 
-            step_function, // This step function can only have two arguments (so I determine charge type before here)
+            step_function,
             timestep_, 
             convertPointToVector(charge.getLocalPosition()));
 
         rk.advanceTime(charge.getLocalTime()); // Set the start time of each to the local time of the charges deposition
                                                 
-        runge_kutta_vector.push_back(rk); // Pass by value
-                                    //  Eigen::Matrix<double,3,1>(convertPointToVector(charge.getLocalPosition()))));
+        runge_kutta_vector.push_back(rk);
     
+        // Pixel map is required for pulse
         std::map<Pixel::Index, Pulse> pixel_map;
-
         pixel_map_vector.push_back(pixel_map);
 
         charge_locations.push_back(charge.getLocalPosition());
-        // charge_amounts.push_back(charge.getCharge());
         charge_times.push_back(charge.getLocalTime());
         charge_states.push_back(charge.getState());
     }
@@ -742,7 +737,7 @@ InteractivePropagationModule::propagate_together(Event* event,
     size_t next_idx = 0;
     for(time = 0; time < integration_time_; time += timestep_) { // time is the threshold value for each iteration
 
-        if(std::fmod(time, 1) < timestep_){
+        if(std::fmod(time, 1) < timestep_){ // For debugging to see integration progress
             LOG(INFO) << "Time during integration has reached " << time << "ns of " << integration_time_ << "ns";
             // LOG(DEBUG) << "Total number of charges skipped due to overlapping positions: " << numSamePos;
         }
@@ -750,13 +745,12 @@ InteractivePropagationModule::propagate_together(Event* event,
         // Loop over all charges remaining in the detector
         for (unsigned int i = 0; i < propagating_charges.size(); i++){
             
+            // Set the basic properties for the current charge
             auto &charge = propagating_charges[i];
             auto &runge_kutta = runge_kutta_vector[i]; // Must be a vector in order to keep data from iteration to iteration
             auto position = runge_kutta.getValue();
-            // auto state = charge.getState();
             auto type = charge.getType();
 
-            // ROOT::Math::XYZPoint position = charge_locations[i];
             allpix::CarrierState state = charge_states[i];
 
             if(output_linegraphs_) { // Set final state of charge carrier for plotting:
@@ -768,7 +762,8 @@ InteractivePropagationModule::propagate_together(Event* event,
                 }
             }
 
-            if(runge_kutta.getTime() < time || runge_kutta.getTime() >= time + timestep_){ // Only propagate within a timestep range above the time threshold (time <= rk_time < time + timestep_)
+            // Only propagate within a timestep range above the time threshold (time <= rk_time < time + timestep_)
+            if(runge_kutta.getTime() < time || runge_kutta.getTime() >= time + timestep_){ 
                 continue;
             }
             // Now the propagations are calculated only for those in the proper range
@@ -853,7 +848,7 @@ InteractivePropagationModule::propagate_together(Event* event,
             // Update final position after applying corrections from surface intercepts
             runge_kutta.setValue(position);
 
-            // Update position vector
+            // Update position vector after e-field and diffusion so it is up to date in in dynamic field calculation
             charge_locations[i] = convertVectorToPoint(position);
 
             // Update step length histogram
@@ -977,10 +972,8 @@ InteractivePropagationModule::propagate_together(Event* event,
             // charge += n_secondaries;
 
             // Set the values in vectors to keep them in sync with the propagation
-            // TODO: Change the storage of the charges' information such as state and position so that they can be updated
             charge_states[i] = state;
 
-            
         }
 
     }
@@ -1004,9 +997,11 @@ InteractivePropagationModule::propagate_together(Event* event,
         // Create PropagatedCharge object and add it to the list
         auto local_position = static_cast<ROOT::Math::XYZPoint>(runge_kutta.getValue());
         auto global_position = detector_->getGlobalPosition(local_position);
-        // LOG(INFO) << "final local: " << local_position << "  final global: " << global_position;
         auto local_time = runge_kutta.getTime();
         auto global_time = local_time - charge.getLocalTime() + charge.getGlobalTime();
+
+        // LOG(INFO) << "final local: " << local_position << "  final global: " << global_position;
+
         const DepositedCharge* deposit = charge.getDepositedCharge();
 
         PropagatedCharge propagated_charge(local_position,
@@ -1046,7 +1041,7 @@ InteractivePropagationModule::propagate_together(Event* event,
     return std::make_tuple(recombined_charges_count,trapped_charges_count,propagated_charges_count);
 }
 
-// Copied from TransientPropagation.cpp
+// Copied from TransientPropagation.cpp directly
 void InteractivePropagationModule::finalize() {
     LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
               << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
