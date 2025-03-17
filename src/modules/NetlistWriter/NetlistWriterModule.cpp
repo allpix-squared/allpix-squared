@@ -83,6 +83,9 @@ void NetlistWriterModule::initialize() {
     // Store the extension from the template netlist file
     extension_ = netlist_path_.extension().string();
 
+    bool found_source = false;
+    bool found_subckt = false;
+
     std::string line;
     size_t line_number = 0;
     while(getline(netlist_file, line)) {
@@ -110,6 +113,7 @@ void NetlistWriterModule::initialize() {
                 throw ModuleError("Could not find net connections");
             }
             LOG(DEBUG) << "Found the source line!";
+            found_source = true;
         }
 
         if(line.rfind(subckt_instance_name_, 0) == 0) {
@@ -137,7 +141,16 @@ void NetlistWriterModule::initialize() {
                 throw ModuleError("Could not find net connections of the subckt");
             }
             LOG(DEBUG) << "Found the subckt line!";
+            found_subckt = true;
         }
+    }
+
+    LOG(DEBUG) << "Read " << file_lines_.size() << " lines from file";
+
+    if(!found_subckt || !found_source) {
+        throw InvalidValueError(config_,
+                                (found_source ? "subckt_name" : "source_name"),
+                                "Could not find identifier in provided netlist template");
     }
 }
 
