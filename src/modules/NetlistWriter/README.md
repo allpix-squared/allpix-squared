@@ -97,7 +97,7 @@ A possible configuration is using a `ISOURCE` and the `SPICE` syntax, requiring 
 target = SPICE
 netlist_template = "front_end.asc"
 source_type = ISOURCE
-source_name = Instance_pulse
+source_name = Instance_source
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
 waveform_to_save = Pix_in, CSA_out, Comp_vout

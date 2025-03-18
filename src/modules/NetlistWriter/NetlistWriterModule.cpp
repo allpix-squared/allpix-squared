@@ -196,7 +196,7 @@ void NetlistWriterModule::run(Event* event) {
             if(target_ == Target::SPECTRE) {
                 file << source_name_ << "\\<" << idx << "\\> (";
                 // The source "gnd" (written "0") doesn't need to be incremented, this double "if" checks which net of the
-                // source the gnd is connected to Also a condition if none of the 2 nets are gnd
+                // source the gnd is connected to. Also a condition if none of the 2 nets are gnd
                 if(source_net1_ == "0") {
                     file << source_net1_ << " " << source_net2_ << "\\<" << idx << "\\>";
                 } else if(source_net2_ == "0") {
@@ -208,7 +208,7 @@ void NetlistWriterModule::run(Event* event) {
                 file << "I_" << idx << " ";
 
                 //   The source "gnd" (written "0") doesn't need to be incremented, this double "if" checks which net of the
-                //   source the gnd is connected to Also a condition if none of the 2 nets are gnd
+                //   source the gnd is connected to. Also a condition if none of the 2 nets are gnd
                 if(source_net1_ == "0") {
                     file << source_net1_ << " " << source_net2_ << "_" << idx << " ";
                 } else if(source_net2_ == "0") {
@@ -232,7 +232,7 @@ void NetlistWriterModule::run(Event* event) {
                 (target_ == Target::SPECTRE) ? file << ") isource delay=" << delay_ << "n type=pwl wave=[" : file << "PWL(";
 
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
-                    auto time = step * static_cast<double>(std::distance(pulse.begin(), bin)) * 1e-9;
+                    auto time = Units::convert(step,"s") * static_cast<double>(std::distance(pulse.begin(), bin));
                     double current_bin = *bin / step;
                     auto current = Units::convert(current_bin, "nC");
 
