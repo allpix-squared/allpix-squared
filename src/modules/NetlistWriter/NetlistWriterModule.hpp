@@ -7,10 +7,6 @@
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
- *
- * Contains minimal dummy module to use as a start for the development of your own module
- *
- * Please refer to the User Manual for more details on the different files of a module and the methods of the module class..
  */
 
 #include <filesystem>

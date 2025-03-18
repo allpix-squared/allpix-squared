@@ -37,7 +37,7 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     netlist_path_ = config.getPath("netlist_template", true);
 
     // Get the generated netlist name
-    config_.setDefault<std::string>("file_name", "output_netlist_event_");
+    config_.setDefault<std::string>("file_name", "output_netlist_event");
     file_name_ = config.get<std::string>("file_name");
 
     // Default source type set to ISOURCE_PULSE
@@ -232,7 +232,7 @@ void NetlistWriterModule::run(Event* event) {
                 (target_ == Target::SPECTRE) ? file << ") isource delay=" << delay_ << "n type=pwl wave=[" : file << "PWL(";
 
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
-                    auto time = Units::convert(step,"s") * static_cast<double>(std::distance(pulse.begin(), bin));
+                    auto time = Units::convert(step, "s") * static_cast<double>(std::distance(pulse.begin(), bin));
                     double current_bin = *bin / step;
                     auto current = Units::convert(current_bin, "nC");
 
