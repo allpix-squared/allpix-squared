@@ -247,6 +247,12 @@ namespace allpix {
         std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const override;
 
         /**
+         * @brief Return a set containing all pixels of the matrix
+         * @return Set of all pixel indices of the matrix
+         */
+        std::set<Pixel::Index> getPixels() const override;
+
+        /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
          * @param idx       Index of the pixel in question
          * @param distance  Distance for pixels to be considered neighbors

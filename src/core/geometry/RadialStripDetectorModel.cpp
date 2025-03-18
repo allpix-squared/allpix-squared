@@ -198,6 +198,19 @@ std::pair<int, int> RadialStripDetectorModel::getPixelIndex(const ROOT::Math::XY
     return {strip_x, strip_y};
 }
 
+std::set<Pixel::Index> RadialStripDetectorModel::getPixels() const {
+    std::set<Pixel::Index> pixels;
+
+    for(int x = 0; x < static_cast<int>(number_of_pixels_.x()); x++) {
+        for(int y = 0; y < static_cast<int>(number_of_pixels_.y()); y++) {
+            if(isWithinMatrix(x, y)) {
+                pixels.insert({x, y});
+            }
+        }
+    }
+    return pixels;
+}
+
 std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     // Vector to hold the neighbor indices
     std::vector<Pixel::Index> neighbors;

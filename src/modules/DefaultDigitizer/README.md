@@ -14,7 +14,15 @@ module_outputs: ["PixelHit"]
 Simple digitization module which translates the collected charges into a digitized signal proportional to the input charge. It simulates noise contributions from the readout electronics as Gaussian noise and allows for a configurable threshold. Furthermore, the linear response of an QDC as well as a TDC with configurable resolution can be simulated.
 For maximum simplicity only the absolute of the charge is used and compared to a positive threshold.
 
-In detail, the following steps are performed for every pixel charge:
+By default, this module operates only on channels which have received a pixel charge. This means, noise and threshold are only applied where there was a signal, but not in channels where no signal was present, and also not in events where no
+interaction with the sensor material has occurred. In many situations, this is the desired behavior since the threshold is configured such that it is unlikely to be crossed just from a pure noise contribution.
+Front-ends are often configured with a threshold equal or higher than five sigma of the noise.
+There are situations, however, where a sampling of *all channels* is desired, and where also the noise contribution is relevant. In this case, the parameter `sample_all_channels` can be set to `true`.
+The module then calculates the noise contribution for all channels of the detector, applies the threshold and passes on all hits crossing the threshold.
+This is also performed in events without any particle interaction in order to obtain a reasonable signal-to-noise ratio.
+It should be noted that this procedure can significantly slow down the simulation for detectors with high granularity or millions of channels.
+
+According to the above setting, the following steps are performed either for every pixel charge or for every pixel of the detector:
 
 * A Gaussian noise is added to the input charge value in order to simulate input noise to the preamplifier circuit.
 * The preamplifier is simulated by applying a gain function to the input charge, or by multiplying the input charge with a defined gain factor.
@@ -57,6 +65,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 
 ## Parameters
 
+* `sample_all_channels` : Boolean to decide whether to loop over all detector channels to sample the noise distribution and apply a threshold, or only over those that have seen a signal. If set to `true`, all detector channels are sampled, which might take significant time for detectors with high granularity. Furthermore, events without detector interaction are not skipped anymore but also sampled to provide a more realistic noise distribution. Defaults to `false`.
 * `threshold` : Threshold for considering the collected charge as a hit (No default value; required parameter).
 * `threshold_smearing` : Standard deviation of the Gaussian uncertainty in the threshold charge value. Defaults to 30 electrons.
 * `electronics_noise` : Standard deviation of the Gaussian noise in the electronics (before amplification and application of the threshold). Defaults to 110 electrons.

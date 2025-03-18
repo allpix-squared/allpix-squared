@@ -29,15 +29,13 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
-    // Require PixelCharge message for single detector
-    messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
-
     if(config_.has("gain") && config_.has("gain_function")) {
         throw InvalidCombinationError(
             config_, {"gain", "gain_function"}, "Gain and Gain Function cannot be simultaneously configured.");
     }
 
     // Set defaults for config variables
+    config_.setDefault<bool>("sample_all_channels", false);
     config_.setDefault<int>("electronics_noise", Units::get(110, "e"));
 
     if(!config_.has("gain_function")) {
@@ -72,6 +70,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     config_.setDefault<int>("output_plots_bins", 100);
 
     // Cache config parameters
+    sample_all_channels_ = config_.get<bool>("sample_all_channels");
     output_plots_ = config_.get<bool>("output_plots");
 
     electronics_noise_ = config_.get<unsigned int>("electronics_noise");
@@ -122,6 +121,9 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
     tdc_offset_ = config_.get<double>("tdc_offset");
     tdc_slope_ = config_.get<double>("tdc_slope");
     allow_zero_tdc_ = config_.get<bool>("allow_zero_tdc");
+
+    // Require PixelCharge message for single detector if we sample only channels with signal, otherwise drop "REQUIRED" flag
+    messenger_->bindSingle<PixelChargeMessage>(this, sample_all_channels_ ? MsgFlags::NONE : MsgFlags::REQUIRED);
 }
 
 void DefaultDigitizerModule::initialize() {
@@ -215,16 +217,41 @@ void DefaultDigitizerModule::initialize() {
 }
 
 void DefaultDigitizerModule::run(Event* event) {
-    auto pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
-    // Loop through all pixels with charges
+    // We might not have a pixel charge message available:
+    std::shared_ptr<PixelChargeMessage> pixel_message{nullptr};
+
+    try {
+        pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
+    } catch(const MessageNotFoundException&) {
+    }
+
+    // Ensure to not copy the data but to obtain only a reference - both returns from ternary operator must be references!
+    const std::vector<PixelCharge>& dummy = std::vector<PixelCharge>();
+    const auto& pixel_charges = (pixel_message ? pixel_message->getData() : dummy);
+
+    // Select what to iterate over:
+    std::set<Pixel::Index> pixels;
+    if(sample_all_channels_) {
+        // Loop through all pixels of the matrix
+        pixels = getDetector()->getModel()->getPixels();
+    } else {
+        // Loop only over pixels with a PixelCharge entry
+        for(const auto& px : pixel_charges) {
+            pixels.emplace(px.getIndex());
+        }
+    }
+
     std::vector<PixelHit> hits;
-    for(const auto& pixel_charge : pixel_message->getData()) {
-        auto pixel = pixel_charge.getPixel();
-        auto pixel_index = pixel.getIndex();
+    // Loop over selected channels:
+    for(const auto& index : pixels) {
+
+        const auto it = std::find_if(
+            pixel_charges.begin(), pixel_charges.end(), [index](const auto& px) { return px.getIndex() == index; });
+        const auto& pixel_charge = (it == pixel_charges.end() ? PixelCharge(getDetector()->getPixel(index), 0.) : *it);
         auto charge = static_cast<double>(pixel_charge.getAbsoluteCharge());
 
-        LOG(DEBUG) << "Received pixel " << pixel_index << ", (absolute) charge " << Units::display(charge, "e");
+        LOG(DEBUG) << "Received pixel " << pixel_charge.getIndex() << ", (absolute) charge " << Units::display(charge, "e");
         if(output_plots_) {
             h_pxq->Fill(charge / 1e3);
         }
@@ -342,8 +369,13 @@ void DefaultDigitizerModule::run(Event* event) {
             h_px_tdc->Fill(time);
         }
 
-        // Add the hit to the hitmap
-        hits.emplace_back(pixel, time, pixel_charge.getGlobalTime() + original_time, charge, &pixel_charge);
+        // Add the hit to the hitmap. Use the address of the iterator for PixelCharge reference instead of the object since
+        // the latter is a copy.
+        hits.emplace_back(pixel_charge.getPixel(),
+                          time,
+                          pixel_charge.getGlobalTime() + original_time,
+                          charge,
+                          (it == pixel_charges.end() ? nullptr : &(*it)));
     }
 
     // Output summary and update statistics
