@@ -65,7 +65,8 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         config_.setDefault<double>("weak_inversion_slope", 1.5);
         config_.setDefault<double>("temperature", 293.15);
     } else if(model_ == DigitizerType::GRAPH) {
-        config_.setDefault<double>("graph_time_unit_", Units::get(1, "s"));
+        config_.setDefault<double>("graph_time_unit", Units::get(1, "s"));
+        config_.setDefault<double>("graph_amplitude_unit", Units::get(1.0, "V/e"));
     }
 
     // Copy some variables from configuration to avoid lookups:
@@ -173,6 +174,7 @@ CSADigitizerModule::CSADigitizerModule(Configuration& config, Messenger* messeng
         const auto graph_path = config_.getPath("graph_file", true);
         graph_impulse_response_ = std::make_unique<TGraph>(graph_path.c_str(), "%lg,%lg");
         graph_time_unit_ = config_.get<double>("graph_time_unit");
+        graph_amplitude_unit_ = config_.get<double>("graph_amplitude_unit");
     }
 
     output_plots_ = config_.get<bool>("output_plots");
@@ -261,7 +263,8 @@ void CSADigitizerModule::run(Event* event) {
                                << graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) /
                                                                 graph_time_unit_);
                     impulse_response_function_.push_back(
-                        graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) / graph_time_unit_));
+                        graph_impulse_response_->Eval(timestep * static_cast<double>(itimepoint) / graph_time_unit_) *
+                        graph_amplitude_unit_);
                 }
             }
 
