@@ -58,6 +58,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Daniil Rastorguev, DESY, [drastorg](https://gitlab.cern.ch/drastorg)
 * Edoardo Rossi, DESY, [edrossi](https://gitlab.cern.ch/edrossi)
 * Sara Ruiz Daza, DESY, [ruizdaza](https://gitlab.cern.ch/ruizdaza)
+* Elio Sacchetti, IPHC, [elsacche](https://gitlab.cern.ch/elsacche)
 * Jihad Saidi, Université de Genève, [jisaidi](https://gitlab.cern.ch/jisaidi)
 * Andre Sailer, CERN, [sailer](https://gitlab.cern.ch/sailer)
 * Tasneem Saleem, Synchrotron SOLEIL, [TasneemSaleem](https://github.com/TasneemSaleem)
