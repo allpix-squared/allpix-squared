@@ -215,7 +215,7 @@ void NetlistWriterModule::run(Event* event) {
                 }
             }
 
-            // ------- ISOURCE-------
+            // ------- ISOURCE_PWL-------
 
             if(source_type_ == SourceType::ISOURCE_PWL) {
 
