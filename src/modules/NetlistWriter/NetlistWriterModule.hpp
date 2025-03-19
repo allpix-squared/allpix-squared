@@ -35,7 +35,7 @@ namespace allpix {
         };
 
         enum class SourceType {
-            ISOURCE,
+            ISOURCE_PWL,
             ISOURCE_PULSE,
         };
 

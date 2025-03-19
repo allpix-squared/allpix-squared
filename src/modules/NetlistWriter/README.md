@@ -45,9 +45,9 @@ One way to get a netlist already formatted could be to extract it from the Caden
 
 A new netlist is written for each event, reusing the header, footer, and circuit description from the netlist template specified with the `netlist_template` parameter. For each fired pixel, a source / circuit instance pair is added to the template.
 
-The new source written can be parameterized with the parameter `source_type`. Two different types of sources can be used: `ISOURCE` and `ISOURCE_PULSE`:
+The new source written can be parameterized with the parameter `source_type`. Two different types of sources can be used: `ISOURCE_PWL` and `ISOURCE_PULSE`:
 
-* `ISOURCE` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
+* `ISOURCE_PWL` allows writing all the temporal current waveform using a PWL (Piecewise Linear). This requires the use of the `[PulseTransfer]` module to get the current waveform. A delay can also be added using `t_delay`
 * In order to lightweight the generated netlists, the `ISOURCE_PULSE` can be selected: it uses the total collected charge Q (instead of the current pulse). Charge and current are linked by $ Q = \int I(t)dt $. The current pulse is set with the parameters `t_delay`, `t_rise`, `t_width` and `t_fall`. The following equation is then used to determine the current: $ I=\frac{Q}{\frac{t_{rise}+t_{fall}}{2}+t_{width}} $
 
 The generated netlist file name can be configured with a prefix taken from the `file_name` parameter, and contains the number of the event the netlist was generated for. The file extension is taken from the input netlist template file.
@@ -76,7 +76,7 @@ If performed, the electrical simulation puts in stand-by the execution of the ev
 * `target`: Syntax for the additional data to be written in the netlist, either `SPECTRE` or `SPICE`.
 * `netlist_template`: Location of file containing the netlist template of the circuit in one of the supported formats.
 * `file_name` : Generated netlist prefix name to which the event number is added as suffix. Defaults to `output_netlist_event_`.
-* `source_type`: Type of current source to be used, `ISOURCE` and `ISOURCE_PULSE`. Defaults to `ISOURCE_PULSE`.
+* `source_type`: Type of current source to be used, `ISOURCE_PWL` and `ISOURCE_PULSE`.
 * `source_name`: Name of the current source instance in the netlist.
 * `subckt_name`: Name of the circuit the source is connected to.
 * `common_nets`: Nets shared between the pixels.
@@ -90,13 +90,13 @@ If performed, the electrical simulation puts in stand-by the execution of the ev
 
 ## Usage
 
-A possible configuration is using a `ISOURCE` and the `SPICE` syntax, requiring the collecting electrode capacitance:
+A possible configuration is using a `ISOURCE_PWL` and the `SPICE` syntax, requiring the collecting electrode capacitance:
 
 ```ini
 [NetlistWriter]
 target = SPICE
 netlist_template = "front_end.asc"
-source_type = ISOURCE
+source_type = ISOURCE_PWL
 source_name = Instance_source
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
@@ -115,7 +115,7 @@ t_delay = 200ns
 t_rise = 5ns
 t_width = 20ns
 t_fall = 5ns
-source_name = Instance_pulse
+source_name = Instance_source
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
 waveform_to_save = Comp_vout

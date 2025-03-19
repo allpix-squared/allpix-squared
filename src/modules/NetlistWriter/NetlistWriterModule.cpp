@@ -40,11 +40,8 @@ NetlistWriterModule::NetlistWriterModule(Configuration& config, Messenger* messe
     config_.setDefault<std::string>("file_name", "output_netlist_event");
     file_name_ = config.get<std::string>("file_name");
 
-    // Default source type set to ISOURCE_PULSE
-    config_.setDefault<SourceType>("source_type", SourceType::ISOURCE_PULSE);
+    // Get the source type, name and the circuit connected to it, as defined in the netlist
     source_type_ = config.get<SourceType>("source_type");
-
-    // Get the source name and the circuit connected to it, as defined in the netlist
     source_name_ = config.get<std::string>("source_name");
     subckt_instance_name_ = config.get<std::string>("subckt_name");
 
@@ -220,7 +217,7 @@ void NetlistWriterModule::run(Event* event) {
 
             // ------- ISOURCE-------
 
-            if(source_type_ == SourceType::ISOURCE) {
+            if(source_type_ == SourceType::ISOURCE_PWL) {
 
                 // Get pulse and timepoints
                 const auto& pulse = pixel_charge.getPulse(); // the pulse containing charges and times
