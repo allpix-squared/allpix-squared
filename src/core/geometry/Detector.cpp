@@ -55,9 +55,9 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
     model_ = std::move(model);
 
     // Initialize the detector fields with the model:
-    electric_field_.set_model(model_);
-    weighting_potential_.set_model(model_);
-    doping_profile_.set_model(model_);
+    electric_field_.setModel(model_);
+    weighting_potential_.setModel(model_);
+    doping_profile_.setModel(model_);
 
     build_transform();
 }

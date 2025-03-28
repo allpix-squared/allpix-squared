@@ -95,7 +95,6 @@ namespace allpix {
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
-        friend class Detector;
 
     public:
         /**
@@ -162,13 +161,13 @@ namespace allpix {
                          std::pair<double, double> thickness_domain,
                          FieldType type = FieldType::CUSTOM);
 
-    private:
         /**
          * @brief Set the detector model this field is used for
          * @param model The detector model
          */
-        void set_model(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
+        void setModel(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
 
+    private:
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
          * @param offset The calculated global index to start from
