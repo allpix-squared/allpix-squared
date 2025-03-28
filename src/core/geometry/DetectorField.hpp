@@ -68,6 +68,11 @@ namespace allpix {
     template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint& pos)>;
 
     /**
+     * @brief FieldTable is a linearized 5x5 matrix
+     */
+    using FieldTable = std::array<double, 25>;
+
+    /**
      * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
      * @param field Field value, templated to support vector fields and scalar fields
      * @param x     Boolean to indicate flipping in x-direction
