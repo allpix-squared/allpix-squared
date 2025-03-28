@@ -70,7 +70,22 @@ namespace allpix {
     /**
      * @brief FieldTable is a linearized 5x5 matrix
      */
-    using FieldTable = std::array<double, 25>;
+    class FieldTable : public std::array<double, 25> {
+    public:
+        /**
+         * @brief Helper function to translate an iterator of the array into a coordinate of the 5x5 matrix.
+         *
+         * The central pixel has coordinates 0,0, the others around positive or negative values, respectively. This allows
+         * to directly add these coordinates to any pixel index of the sensor.
+         *
+         * @param it Iterator to the array
+         * @return Pair of x and y coordinates.
+         */
+        std::pair<int, int> getCoordinates(const FieldTable::iterator& it) {
+            const auto i = std::distance(this->begin(), it);
+            return {static_cast<int>(i % 5) - 2, static_cast<int>(i / 5) - 2};
+        }
+    };
 
     /**
      * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
