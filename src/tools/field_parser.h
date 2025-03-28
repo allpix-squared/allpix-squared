@@ -42,6 +42,7 @@ namespace allpix {
         UNKNOWN = 0, ///< Unknown field quantity
         SCALAR = 1,  ///< Scalar field, i.e. one entry per field position
         VECTOR = 3,  ///< Vector field, i.e. three entries per field position
+        MAP = 25,    ///< Field with a 5x5 map for each entry
     };
 
     /**
@@ -80,7 +81,7 @@ namespace allpix {
             : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)){};
 
         /**
-         * @brief Function to obtain the header (human readbale content description) of the field data
+         * @brief Function to obtain the header (human readable content description) of the field data
          * @return header string
          */
         std::string getHeader() const { return header_; }
