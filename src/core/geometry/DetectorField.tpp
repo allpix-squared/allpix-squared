@@ -266,11 +266,9 @@ namespace allpix {
 
     /*
      * Map field template specialization of helper function for field flipping.
-     * This swaps the entries of the 5x5 map depending on whether it is flipped in that coordinate
+     * Here, no inversion of the field components is required since the map does not rotate.
      */
-    template <> inline void flip_vector_components<FieldTable>(FieldTable&, bool, bool) {
-        // FIXME need to flip map components here
-    }
+    template <> inline void flip_vector_components<FieldTable>(FieldTable&, bool, bool) {}
 
     /*
      * Scalar field template specialization of helper function for field flipping
