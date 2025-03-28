@@ -75,19 +75,6 @@ namespace allpix {
      */
     template <typename T> void flip_vector_components(T& field, bool x, bool y);
 
-    /*
-     * Vector field template specialization of helper function for field flipping
-     */
-    template <> inline void flip_vector_components<ROOT::Math::XYZVector>(ROOT::Math::XYZVector& vec, bool x, bool y) {
-        vec.SetXYZ((x ? -vec.x() : vec.x()), (y ? -vec.y() : vec.y()), vec.z());
-    }
-
-    /*
-     * Scalar field template specialization of helper function for field flipping
-     * Here, no inversion of the field components is required
-     */
-    template <> inline void flip_vector_components<double>(double&, bool, bool) {}
-
     /**
      * @brief Field instance of a detector
      *
