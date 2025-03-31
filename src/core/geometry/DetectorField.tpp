@@ -28,16 +28,17 @@ namespace allpix {
             return {};
         }
 
-        // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-        auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
-        if(z < thickness_domain_.first || thickness_domain_.second < z) {
-            return {};
-        }
-
         if(type_ == FieldType::CONSTANT) {
             // Constant field - return value:
             return function_({});
         } else if(type_ == FieldType::LINEAR || type_ == FieldType::CUSTOM1D) {
+
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                return {};
+            }
+
             // Linear field or custom field function with z dependency only - calculate value from configured function:
             return function_(ROOT::Math::XYZPoint(0, 0, z));
         } else {
@@ -50,6 +51,12 @@ namespace allpix {
 
                 // Get field relative to pixel center:
                 return getRelativeTo(pos, ref, extrapolate_z);
+            }
+
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                return {};
             }
 
             // Shift the coordinates by the offset configured for the field:
