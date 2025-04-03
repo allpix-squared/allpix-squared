@@ -15,6 +15,8 @@ It is not used for the calculation of the electric field inside the sensor.
 The profile is extrapolated along `z` such that if a position outside the sensor is queried, the last value available at the sensor surface is returned.
 This precludes edge effects from charge carriers moving at the sensor surfaces.
 
+The designation of the dopants follows the common practice of assigning negative values to p-doped silicon and positive values to n-doped silicon.
+
 The following models for the doping profile can be used:
 
 * For **constant**, a constant doping profile is set in the sensor
