@@ -67,6 +67,13 @@ properties attached to it:
 The detector configuration is provided in the detector configuration file as explained in
 [Section 3.3](../03_getting_started/03_detector_configuration.md).
 
+{{% alert title="Note" color="info" %}}
+The framework parameter `random_seed_core` controls the seed used for the pseudo-random number generator that is responsible
+for geometry operations before the simulation commences. Most notably, this concerns the alignment of individual detectors as
+described above. By fixing the `random_seed_core` parameter but leaving `random_seed` free, multiple independent simulations
+can be conducted with the same geometric alignment of detectors.
+{{% /alert %}}
+
 ## Coordinate systems
 
 Local coordinate systems for each detector and a global frame of reference for the full setup are defined. The global
