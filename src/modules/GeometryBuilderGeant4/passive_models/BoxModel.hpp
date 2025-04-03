@@ -38,15 +38,15 @@ namespace allpix {
             : PassiveMaterialModel(config, geo_manager) {
 
             // Set the box specifications
-            setOuterSize(config_.get<ROOT::Math::XYZVector>("size"));
-            setInnerSize(config_.get<ROOT::Math::XYZVector>("inner_size", ROOT::Math::XYZVector()));
+            outer_size_ = config_.get<ROOT::Math::XYZVector>("size");
+            inner_size_ = config_.get<ROOT::Math::XYZVector>("inner_size", ROOT::Math::XYZVector());
             auto thickness = config_.get<double>("thickness", 0);
             if(thickness != 0) {
                 if(inner_size_ != ROOT::Math::XYZVector()) {
                     throw InvalidValueError(config_, "thickness", "cannot have both 'thickness' and 'inner_size'");
                 }
 
-                setInnerSize({outer_size_.x() - thickness, outer_size_.y() - thickness, outer_size_.z() - thickness});
+                inner_size_ = {outer_size_.x() - thickness, outer_size_.y() - thickness, outer_size_.z() - thickness};
             }
 
             std::string name = config_.getName();
@@ -58,13 +58,13 @@ namespace allpix {
             // Add infinitesimal amount of material if the inner and outer size are equal to avoid artificial remnant
             // surfaces
             if(outer_size_.x() - inner_size_.x() < std::numeric_limits<double>::epsilon()) {
-                setInnerSize(ROOT::Math::XYZVector(inner_size_.x() * 2, inner_size_.y(), inner_size_.z()));
+                inner_size_ = ROOT::Math::XYZVector(inner_size_.x() * 2, inner_size_.y(), inner_size_.z());
             }
             if(outer_size_.y() - inner_size_.y() < std::numeric_limits<double>::epsilon()) {
-                setInnerSize(ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y() * 2, inner_size_.z()));
+                inner_size_ = ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y() * 2, inner_size_.z());
             }
             if(outer_size_.z() - inner_size_.z() < std::numeric_limits<double>::epsilon()) {
-                setInnerSize(ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y(), inner_size_.z() * 2));
+                inner_size_ = ROOT::Math::XYZVector(inner_size_.x(), inner_size_.y(), inner_size_.z() * 2);
             }
 
             // Create the G4VSolids which make the Box
@@ -101,17 +101,6 @@ namespace allpix {
         // G4VSolid specifications
         ROOT::Math::XYZVector outer_size_;
         ROOT::Math::XYZVector inner_size_;
-
-        /**
-         * @brief Set the XYZ-value of the outer size of the box
-         * @param val Outer size of the box
-         */
-        void setOuterSize(ROOT::Math::XYZVector val) { outer_size_ = std::move(val); }
-        /**
-         * @brief Set the XYZ-value of the inner size of the box
-         * @param val Inner size of the box
-         */
-        void setInnerSize(ROOT::Math::XYZVector val) { inner_size_ = std::move(val); }
     };
 } // namespace allpix
 
