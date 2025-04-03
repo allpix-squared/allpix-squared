@@ -61,7 +61,8 @@ The Allpix Squared framework provides a set of global parameters which control a
 
 - `random_seed_core`:
   Optional seed used for pseudo-random number generators in the core components of the framework. If not set explicitly,
-  the value `random_seed + 1` is used.
+  the value `random_seed + 1` is used. This generator is used to calculate alignment offsets as described in
+  [Section 5.1](../05_geometry_detectors/01_geometry.md).
 
 - `library_directories`:
   Additional directories to search for module libraries, before searching the default paths. See
