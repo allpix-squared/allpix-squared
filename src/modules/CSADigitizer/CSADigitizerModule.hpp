@@ -75,7 +75,7 @@ namespace allpix {
     private:
         // Control of module output settings
         bool output_plots_{}, output_pulsegraphs_{};
-        bool store_tot_{false}, store_toa_{false}, ignore_polarity_{};
+        bool store_tot_{false}, store_toa_{false}, sync_event_time_{false}, ignore_polarity_{};
         Messenger* messenger_;
         DigitizerType model_;
 
@@ -89,7 +89,7 @@ namespace allpix {
         double graph_amplitude_unit_;
 
         // Parameters of the electronics: Noise, time-over-threshold logic
-        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{};
+        double sigmaNoise_{}, clockToT_{}, clockToA_{}, threshold_{}, tdc_offset_{};
 
         // Helper variables for transfer function
         double integration_time_{};
@@ -107,7 +107,8 @@ namespace allpix {
          * @return Tuple containing information about threshold crossing: Boolean (true if crossed), unsigned int (number
          *         of ToA clock cycles before crossing) and double (time of crossing)
          */
-        std::tuple<bool, unsigned int, double> get_toa(double timestep, const std::vector<double>& pulse) const;
+        std::tuple<bool, unsigned int, double>
+        get_toa(double timestep, const std::vector<double>& pulse, double time_offset) const;
 
         /**
          * @brief Calculate time-over-threshold
