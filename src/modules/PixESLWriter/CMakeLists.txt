@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
+ALLPIX_ENABLE_DEFAULT(OFF)
+
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
