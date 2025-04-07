@@ -5,7 +5,7 @@
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # LCIO library is required for LCIO file writing, obviously
-FIND_PACKAGE(Libapx 0.1 REQUIRED)
+FIND_PACKAGE(Libapx 0.2 REQUIRED)
 ADD_RUNTIME_LIB(APX::APX)
 
 # Add source files to library
