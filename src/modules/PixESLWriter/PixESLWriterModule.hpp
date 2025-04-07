@@ -47,11 +47,17 @@ namespace allpix {
          */
         void run(Event* event) override;
 
+        /**
+         * @brief Print some run statistics.
+         */
+        void finalize() override;
+
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
+        std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
     };
 } // namespace allpix

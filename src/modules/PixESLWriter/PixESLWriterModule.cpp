@@ -36,7 +36,7 @@ void PixESLWriterModule::initialize() {
     // Set up properties:
     std::vector<std::string> properties{"column", "row", "charge", "toa"};
 
-    std::filesystem::path file = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
+    output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
 
     // Collect information about this simulation:
     auto& global_config = getConfigManager()->getGlobalConfiguration();
@@ -45,7 +45,7 @@ void PixESLWriterModule::initialize() {
     const auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
     // Set up file writer:
-    writer_ = std::make_unique<apx::Writer>(file,
+    writer_ = std::make_unique<apx::Writer>(output_file_,
                                             detector_->getName(),
                                             detector_->getType(),
                                             properties,
@@ -73,4 +73,11 @@ void PixESLWriterModule::run(Event* event) {
 
     // Stream the event to file
     (*writer_) << apx_event;
+}
+
+void PixESLWriterModule::finalize() {
+    // Print statistics
+    LOG(STATUS) << "Wrote " << writer_->getRecordCount() << " records in " << writer_->getEventCount()
+                << " events to file:" << std::endl
+                << output_file_;
 }
