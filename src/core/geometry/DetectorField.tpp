@@ -112,50 +112,10 @@ namespace allpix {
             return {};
         }
 
-        // Calculate the coordinates relative to the reference point:
-        auto x = pos.x() - ref.x() + offset_[0];
-        auto y = pos.y() - ref.y() + offset_[1];
-
         T ret_val;
         if(type_ == FieldType::GRID) {
-
-            // Do we need to flip the position vector components?
-            auto flip_x =
-                (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
-                           mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
-                (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                           mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
-            auto flip_y =
-                (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                           mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
-                (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
-                           mapping_ == FieldMapping::PIXEL_HALF_TOP));
-
-            // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
-            auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
-            auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
-
-            if(mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
-               mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
-                px += 1.0;
-            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
-                      mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
-                px += 0.5;
-            }
-
-            if(mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-               mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
-                py += 1.0;
-            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_LEFT ||
-                      mapping_ == FieldMapping::PIXEL_HALF_RIGHT) {
-                py += 0.5;
-            }
-
-            // Shuffle quadrants for inverted maps
-            if(mapping_ == FieldMapping::PIXEL_FULL_INVERSE) {
-                px += (x >= 0 ? 0. : 1.0);
-                py += (y >= 0 ? 0. : 1.0);
-            }
+            // Map the coordinates onto the chosen pixel fraction
+            auto [px, py, flip_x, flip_y] = map_coordinates(pos, ref);
 
             // Intentionally do floating-point equality comparison to avoid us landing on the edge of the field
             px -= (px == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
@@ -166,11 +126,63 @@ namespace allpix {
             // Flip vector if necessary
             flip_vector_components(ret_val, flip_x, flip_y);
         } else {
+            // Calculate the coordinates relative to the reference point:
+            auto x = pos.x() - ref.x() + offset_[0];
+            auto y = pos.y() - ref.y() + offset_[1];
+
             // Calculate the field from the configured function:
             ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
         }
 
         return ret_val;
+    }
+
+    template <typename T, size_t N>
+    std::tuple<double, double, bool, bool> DetectorField<T, N>::map_coordinates(const ROOT::Math::XYZPoint& pos,
+                                                                                const ROOT::Math::XYPoint& ref) const {
+        // Calculate the coordinates relative to the reference point:
+        auto x = pos.x() - ref.x() + offset_[0];
+        auto y = pos.y() - ref.y() + offset_[1];
+
+        // Do we need to flip the position vector components?
+        auto flip_x =
+        (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+                   mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
+        (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                   mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
+        auto flip_y =
+        (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                   mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
+        (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+                   mapping_ == FieldMapping::PIXEL_HALF_TOP));
+
+        // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
+        auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
+        auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
+
+        if(mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+           mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
+            px += 1.0;
+        } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
+              mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
+            px += 0.5;
+        }
+
+        if(mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+           mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
+            py += 1.0;
+        } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_LEFT ||
+                  mapping_ == FieldMapping::PIXEL_HALF_RIGHT) {
+            py += 0.5;
+        }
+
+        // Shuffle quadrants for inverted maps
+        if(mapping_ == FieldMapping::PIXEL_FULL_INVERSE) {
+            px += (x >= 0 ? 0. : 1.0);
+            py += (y >= 0 ? 0. : 1.0);
+        }
+
+        return {px, py, flip_x, flip_y};
     }
 
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
