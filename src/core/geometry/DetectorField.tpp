@@ -232,11 +232,25 @@ namespace allpix {
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
-        if(model_ == nullptr) {
-            throw std::invalid_argument("field not initialized with detector model parameters");
-        }
+        set_grid_parameters(bins, size, mapping, scales, offset, std::move(thickness_domain));
+
         if(bins[0] * bins[1] * bins[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given dimensions");
+        }
+
+        // Store the field
+        field_ = std::move(field);
+    };
+
+    template <typename T, size_t N>
+    void DetectorField<T, N>::set_grid_parameters(std::array<size_t, 3> bins,
+                                 std::array<double, 3> size,
+                                 FieldMapping mapping,
+                                 std::array<double, 2> scales,
+                                 std::array<double, 2> offset,
+                                 std::pair<double, double> thickness_domain) {
+        if(model_ == nullptr) {
+            throw std::invalid_argument("field not initialized with detector model parameters");
         }
         if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
            model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
@@ -246,7 +260,6 @@ namespace allpix {
             throw std::invalid_argument("end of thickness domain is before begin");
         }
 
-        field_ = std::move(field);
         bins_ = bins;
         mapping_ = mapping;
 
