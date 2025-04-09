@@ -67,6 +67,8 @@ namespace allpix {
 
         Messenger* messenger_;
 
-        PropagationMap output_map_;
+        std::array<double, 3> size_;
+        std::array<size_t, 3> bins_;
+        std::unique_ptr<PropagationMap> output_map_;
     };
 } // namespace allpix
