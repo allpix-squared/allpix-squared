@@ -81,7 +81,11 @@ namespace allpix {
             T ret_val;
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
-                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z);
+                // Calculate the linearized index of the bin in the field vector
+                const auto index = get_grid_index(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z);
+
+                // Fetch the field value from the given index
+                ret_val = get_impl(index, std::make_index_sequence<N>{});
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
@@ -121,7 +125,11 @@ namespace allpix {
             px -= (px == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
             py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
 
-            ret_val = get_field_from_grid(px, py, z, extrapolate_z);
+            // Calculate the linearized index of the bin in the field vector
+            const auto index = get_grid_index(px, py, z, extrapolate_z);
+
+            // Fetch the field value from the given index
+            ret_val = get_impl(index, std::make_index_sequence<N>{});
 
             // Flip vector if necessary
             flip_vector_components(ret_val, flip_x, flip_y);
@@ -188,7 +196,7 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const double x,
+    size_t DetectorField<T, N>::get_grid_index(const double x,
                                                const double y,
                                                const double z,
                                                const bool extrapolate_z) const noexcept {
@@ -215,11 +223,8 @@ namespace allpix {
         }
 
         // Compute total index
-        size_t tot_ind = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
+        return static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
                          static_cast<size_t>(z_ind) * N;
-
-        // Retrieve field
-        return get_impl(tot_ind, std::make_index_sequence<N>{});
     }
 
     /**

@@ -200,14 +200,14 @@ namespace allpix {
         template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...>) const noexcept;
 
         /**
-         * @brief Helper function to calculate the field index based on the distance from its center and to return the values
+         * @brief Helper function to calculate the field index based on the distance from its center
          * @param x Distance in local-coordinate x from the center of the field to obtain the values for
          * @param y Distance in local-coordinate y from the center of the field to obtain the values for
          * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @param extrapolate_z Flag whether we should extrapolate
-         * @return Value(s) of the field at the queried point
+         * @return Absolute index in the field grid
          */
-        T get_field_from_grid(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+        size_t get_grid_index(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
 
         /**
          * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
