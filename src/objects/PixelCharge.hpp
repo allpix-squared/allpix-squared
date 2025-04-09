@@ -16,6 +16,7 @@
 #include <TRef.h>
 #include <algorithm>
 
+#include "DepositedCharge.hpp"
 #include "MCParticle.hpp"
 #include "Object.hpp"
 #include "Pixel.hpp"
@@ -112,6 +113,12 @@ namespace allpix {
          * @return Time with respect to local sensor
          */
         double getLocalTime() const;
+
+        /**
+         * @brief Return pointers to all PropagatedCharge objects that originate from a given DepositedCharge
+         * @return Possible set of pointers to propagated charges
+         */
+        std::vector<const PropagatedCharge*> find(const DepositedCharge* deposit) const;
 
         /**
          * @brief Print an ASCII representation of PixelCharge to the given stream
