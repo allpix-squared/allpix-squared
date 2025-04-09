@@ -30,8 +30,12 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
 
     model_ = detector_->getModel();
 
-    // Messages: register this module with the central messenger to request a certaintype of input messages:
+    // This module requires both DepositedCharge and PixelCharge information
+    messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
+
+    // Select which carriers we look at
+    carrier_type_ = config_.get<CarrierType>("carrier_type");
 }
 
 void PropagationMapWriterModule::initialize() {
@@ -55,34 +59,53 @@ void PropagationMapWriterModule::initialize() {
 
 void PropagationMapWriterModule::run(Event* event) {
 
-    // FIXME we need to go over *all* deposited charge messages, otherwise we won't see the lost ones!
-    // Messages: Fetch the (previously registered) messages for this event from the messenger:
-    auto message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
+    auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
+    auto pixel_message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
-    // Loop over all pixel charges
-    for(const auto& pixel_charge : message->getData()) {
-        // Obtain deposited charges:
-        for(const auto& propagated_charge : pixel_charge.getPropagatedCharges()) {
-            const auto& deposit = propagated_charge->getDepositedCharge();
+    // Loop over all deposited charges:
+    for(const auto& deposit : deposits_message->getData()) {
 
-            // Fetch initial position and pixel index:
-            const auto initial_position = deposit->getLocalPosition();
-            const auto initial_charge = deposit->getCharge();
-            const auto final_index = pixel_charge.getIndex();
-            const auto final_charge = pixel_charge.getCharge();
-
-            // FIXME charge initial and charge final might be different, need to keep track of that!
-            // at the very end we need to normalize!
-            // in propagator we cannot use cumulative probability anymore I guess...
-
-            // Add to map:
-            output_map_->set(initial_position, final_index, initial_charge);
-
-            const auto [xpixel, ypixel] = model_->getPixelIndex(initial_position);
-            LOG(TRACE) << "Deposited charge at " << deposit->getLocalPosition() << " from pixel " << xpixel << "," << ypixel
-                       << " ended on pixel " << final_index << ", relative: " << (final_index.x() - xpixel) << ","
-                       << (final_index.y() - ypixel);
+        // Ensure only one type is added to the map
+        if(deposit.getType() != carrier_type_) {
+            LOG(DEBUG) << "Skipping charge carriers (" << deposit.getType() << ") on "
+                       << Units::display(deposit.getLocalPosition(), {"mm", "um"});
+            continue;
         }
+
+        // Fetch initial position and pixel index:
+        const auto initial_position = deposit.getLocalPosition();
+        const auto initial_charge = deposit.getCharge();
+        const auto [xpixel, ypixel] = model_->getPixelIndex(initial_position);
+
+        // Prepare lookup table:
+        FieldTable probability_map{0};
+
+        // Check if we find  matching a PixelCharge with this deposit in it:
+        for(const auto& pixel_charge : pixel_message->getData()) {
+            const auto propagated_charges = pixel_charge.find(&deposit);
+            if(propagated_charges.empty()) {
+                continue;
+            }
+
+            const auto final_index = pixel_charge.getIndex();
+
+            long final_charge = 0;
+            for(const auto& prop_charge : propagated_charges) {
+                final_charge += prop_charge->getCharge();
+            }
+
+            LOG(TRACE) << "Deposited charge at " << initial_position << " from pixel " << xpixel << "," << ypixel
+                       << " ended on pixel " << final_index << ", relative: " << (final_index.x() - xpixel) << ","
+                       << (final_index.y() - ypixel) << ", charge fraction "
+                       << static_cast<double>(final_charge) / initial_charge;
+
+            // Normalize the table entries by the initial charge of the deposit and add it to the map
+            probability_map[FieldTable::getIndex(final_index.x() - xpixel, final_index.y() - ypixel)] =
+                static_cast<double>(final_charge) / initial_charge;
+        }
+
+        // Add probability map to the target pixel map:
+        output_map_->add(initial_position, probability_map);
     }
 }
 

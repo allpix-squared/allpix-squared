@@ -70,5 +70,7 @@ namespace allpix {
         std::array<double, 3> size_;
         std::array<size_t, 3> bins_;
         std::unique_ptr<PropagationMap> output_map_;
+
+        CarrierType carrier_type_;
     };
 } // namespace allpix
