@@ -85,6 +85,16 @@ namespace allpix {
             const auto i = std::distance(this->begin(), it);
             return {static_cast<int>(i % 5) - 2, static_cast<int>(i / 5) - 2};
         }
+
+        /**
+         * @brief Helper to get the index in the field table from relative coordinates
+         *
+         * @param x Relative coordinate in x
+         * @param y Relative coordinate in y
+         *
+         * @return field index
+         */
+        static size_t getIndex(int x, int y) { return static_cast<size_t>(y + 2) * 5 + static_cast<size_t>(x + 2); }
     };
 
     /**
