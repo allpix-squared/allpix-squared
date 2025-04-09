@@ -146,7 +146,7 @@ namespace cereal::detail {
         static std::uint32_t registerVersion() {
             ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
                 std::type_index(typeid(allpix::FieldData<T>)).hash_code(), APF_MIME_TYPE_VERSION);
-            return 3;
+            return APF_MIME_TYPE_VERSION;
         }
         static void unused() { (void)version; } // NOLINT
     };                                          /* end Version */
