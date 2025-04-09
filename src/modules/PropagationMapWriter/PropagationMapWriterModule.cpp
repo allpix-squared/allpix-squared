@@ -55,6 +55,7 @@ void PropagationMapWriterModule::initialize() {
 
 void PropagationMapWriterModule::run(Event* event) {
 
+    // FIXME we need to go over *all* deposited charge messages, otherwise we won't see the lost ones!
     // Messages: Fetch the (previously registered) messages for this event from the messenger:
     auto message = messenger_->fetchMessage<PixelChargeMessage>(this, event);
 
@@ -65,21 +66,22 @@ void PropagationMapWriterModule::run(Event* event) {
             const auto& deposit = propagated_charge->getDepositedCharge();
 
             // Fetch initial position and pixel index:
-            const auto position = deposit->getLocalPosition();
-            const auto [xpixel, ypixel] = model_->getPixelIndex(position);
-
-            const auto final = pixel_charge.getIndex();
+            const auto initial_position = deposit->getLocalPosition();
+            const auto initial_charge = deposit->getCharge();
+            const auto final_index = pixel_charge.getIndex();
+            const auto final_charge = pixel_charge.getCharge();
 
             // FIXME charge initial and charge final might be different, need to keep track of that!
             // at the very end we need to normalize!
             // in propagator we cannot use cumulative probability anymore I guess...
 
             // Add to map:
-            output_map_->set(position, final, deposit->getCharge());
+            output_map_->set(initial_position, final_index, initial_charge);
 
+            const auto [xpixel, ypixel] = model_->getPixelIndex(initial_position);
             LOG(TRACE) << "Deposited charge at " << deposit->getLocalPosition() << " from pixel " << xpixel << "," << ypixel
-                       << " ended on pixel " << final << ", relative: " << (final.x() - xpixel) << ","
-                       << (final.y() - ypixel);
+                       << " ended on pixel " << final_index << ", relative: " << (final_index.x() - xpixel) << ","
+                       << (final_index.y() - ypixel);
         }
     }
 }
