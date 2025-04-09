@@ -223,6 +223,18 @@ namespace allpix {
                                                                       const ROOT::Math::XYPoint& ref) const;
 
         /**
+         * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
+         *
+         * @param pos Position to calculate coordinates for
+         * @param ref Reference position to calculate relative position to
+         *
+         * @return Tuple with relative x and y coordinates, mapped into the chosen area, and booleans indicating whether
+         *         flipping of vector components is necessary
+         */
+        std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
+                                                               const ROOT::Math::XYPoint& ref) const;
+
+        /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
          * @param x Double-precision floating point value
          * @return Integer floored towards negative infinity
