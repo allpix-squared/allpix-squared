@@ -207,7 +207,8 @@ namespace allpix {
          * @param extrapolate_z Flag whether we should extrapolate
          * @return Absolute index in the field grid
          */
-        size_t get_grid_index(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+        inline size_t
+        get_grid_index(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
 
         /**
          * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
@@ -218,8 +219,8 @@ namespace allpix {
          * @return Tuple with relative x and y coordinates, mapped into the chosen area, and booleans indicating whether
          *         flipping of vector components is necessary
          */
-        std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
-                                                               const ROOT::Math::XYPoint& ref) const;
+        inline std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
+                                                                      const ROOT::Math::XYPoint& ref) const;
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
