@@ -31,7 +31,7 @@
 #include <utility>
 
 // Mime type version for APF files
-#define APF_MIME_TYPE_VERSION 1
+#define APF_MIME_TYPE_VERSION 2
 
 namespace allpix {
 
@@ -73,12 +73,14 @@ namespace allpix {
          * @param dimensions Number of bins of the field in each coordinate
          * @param size       Physical extent of the field in each dimension, given in internal units
          * @param data       Shared pointer to the flat field data
+         * @param norm       Normalization factor of field values, defaults to 1.0.
          */
         FieldData(std::string header,
                   std::array<size_t, 3> dimensions,
                   std::array<T, 3> size,
-                  std::shared_ptr<std::vector<T>> data)
-            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)){};
+                  std::shared_ptr<std::vector<T>> data,
+                  double norm = 1.)
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)), norm_(norm){};
 
         /**
          * @brief Function to obtain the header (human readable content description) of the field data
@@ -115,18 +117,26 @@ namespace allpix {
             return dim;
         }
 
+        /**
+         * @brief Get the norm value read from the file header. In some fields this may represent a normalization factor for
+         *        field values. Returns 1.0 if not read present in file.
+         * @return [description]
+         */
+        double getNorm() const { return norm_; }
+
     private:
         std::string header_;
         std::array<size_t, 3> dimensions_{};
         std::array<T, 3> size_{};
         std::shared_ptr<std::vector<T>> data_;
+        double norm_{1.};
 
         friend class cereal::access;
 
         // Versioned serialization function:
         template <class Archive> void serialize(Archive& archive, std::uint32_t const version) {
             // For now, we only know one version of this file type:
-            if(version != 1) {
+            if(version < 1 || version > 2) {
                 throw std::runtime_error("unknown format version " + std::to_string(version));
             }
 
@@ -134,6 +144,10 @@ namespace allpix {
             archive(header_);
             archive(dimensions_);
             archive(size_);
+            // We store the norm factor only in file version 2
+            if(version == 2) {
+                archive(norm_);
+            }
             archive(data_);
         }
     };
@@ -323,7 +337,14 @@ namespace allpix {
             // WARNING the usage of this field as storage for the field units differs from the original INIT format!
             file >> tmp;
             check_unit_match(allpix::trim(tmp), units);
-            file >> tmp;               // ignore cluster length
+            // Attempt to read the next value as sum value
+            file >> tmp;
+            double norm = 1.;
+            try {
+                norm = std::stod(tmp);
+            } catch(...) {
+                LOG(DEBUG) << "No norm value present in file.";
+            }
             file >> tmp >> tmp >> tmp; // ignore the incident pion direction
             file >> tmp >> tmp >> tmp; // ignore the magnetic field (specify separately)
             double thickness = NAN, xpixsz = NAN, ypixsz = NAN;
@@ -375,8 +396,11 @@ namespace allpix {
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
 
-            return FieldData<T>(
-                header, std::array<size_t, 3>{{xsize, ysize, zsize}}, std::array<T, 3>{{xpixsz, ypixsz, thickness}}, field);
+            return FieldData<T>(header,
+                                std::array<size_t, 3>{{xsize, ysize, zsize}},
+                                std::array<T, 3>{{xpixsz, ypixsz, thickness}},
+                                field,
+                                norm);
         }
 
         size_t N_;
@@ -474,10 +498,11 @@ namespace allpix {
             LOG(TRACE) << "Writing INIT file \"" << file_name << "\"";
 
             // Write INIT file header
-            file << field_data.getHeader() << std::endl;                                 // Header line
-            file << (!units.empty() ? units : "internal") << " ##EVENTS##" << std::endl; // Use placeholder for units
-            file << "##TURN## ##TILT## 1.0" << std::endl;                                // Unused
-            file << "0.0 0.0 0.0" << std::endl;                                          // Magnetic field (unused)
+            file << field_data.getHeader() << std::endl; // Header line
+            file << (!units.empty() ? units : "internal") << " " << field_data.getNorm()
+                 << std::endl;                            // Use placeholder for units
+            file << "##TURN## ##TILT## 1.0" << std::endl; // Unused
+            file << "0.0 0.0 0.0" << std::endl;           // Magnetic field (unused)
 
             auto size = field_data.getSize();
             file << Units::convert(size[2], "um") << " " << Units::convert(size[0], "um") << " "
