@@ -38,12 +38,14 @@ namespace allpix {
         /**
          * @brief Set the propagation map value in the sensor at a position provided in local coordinates
          * @param local_pos Position in the local frame
-         * @param final Pixel index the charges landed on
-         * @param charge Number of charge carriers
+         * @param table Tabulated probabilities, normalized to total charge
          */
-        void set(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index final, double charge);
+        void add(const ROOT::Math::XYZPoint& local_pos, const FieldTable& table);
 
-        std::shared_ptr<std::vector<double>> get_field_data() const { return field_; };
+        std::shared_ptr<std::vector<double>> getNormalizedField();
+
+    private:
+        std::vector<size_t> normalization_table;
     };
 } // namespace allpix
 

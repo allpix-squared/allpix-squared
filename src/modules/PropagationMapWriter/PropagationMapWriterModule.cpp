@@ -114,8 +114,9 @@ void PropagationMapWriterModule::finalize() {
     // Fetch the field data form the output map and write it to a file:
     auto file_name = createOutputFile("test", "apf");
 
+    // header info: carrier type
     const auto field_data =
-        FieldData<double>("this is just a header that will be filled", bins_, size_, output_map_->get_field_data());
+        FieldData<double>("this is just a header that will be filled", bins_, size_, output_map_->getNormalizedField());
 
     auto writer = FieldWriter<double>(FieldQuantity::MAP);
     writer.writeFile(field_data, file_name, FileType::APF, "uniz");
