@@ -13,6 +13,7 @@
 #define ALLPIX_PROPAGATION_MAP_H
 
 #include "core/geometry/DetectorField.hpp"
+#include "core/geometry/DetectorModel.hpp"
 
 namespace allpix {
     /**
@@ -24,9 +25,25 @@ namespace allpix {
 
     public:
         /**
-         * @brief Constructs a detector field
+         * @brief Constructs a propagation map
          */
-        PropagationMap() = default;
+        PropagationMap(const std::shared_ptr<DetectorModel>& model,
+                       std::array<size_t, 3> bins,
+                       std::array<double, 3> size,
+                       FieldMapping mapping,
+                       std::array<double, 2> scales,
+                       std::array<double, 2> offset,
+                       std::pair<double, double> thickness_domain);
+
+        /**
+         * @brief Set the propagation map value in the sensor at a position provided in local coordinates
+         * @param local_pos Position in the local frame
+         * @param final Pixel index the charges landed on
+         * @param charge Number of charge carriers
+         */
+        void set(const ROOT::Math::XYZPoint& local_pos, const Pixel::Index final, double charge);
+
+        std::shared_ptr<std::vector<double>> get_field_data() const { return field_; };
     };
 } // namespace allpix
 
