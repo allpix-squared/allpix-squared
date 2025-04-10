@@ -201,14 +201,14 @@ namespace allpix {
 
         /**
          * @brief Helper function to calculate the field index based on the distance from its center
+         * @param index Absolute index in the field grid
          * @param x Distance in local-coordinate x from the center of the field to obtain the values for
          * @param y Distance in local-coordinate y from the center of the field to obtain the values for
          * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @param extrapolate_z Flag whether we should extrapolate
-         * @return Absolute index in the field grid
          */
-        inline size_t
-        get_grid_index(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+        inline bool get_grid_index(
+            size_t& index, const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
 
         /**
          * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.

@@ -82,7 +82,10 @@ namespace allpix {
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
                 // Calculate the linearized index of the bin in the field vector
-                const auto index = get_grid_index(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z);
+                size_t index;
+                if(!get_grid_index(index, x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z)) {
+                    return {};
+                }
 
                 // Fetch the field value from the given index
                 ret_val = get_impl(index, std::make_index_sequence<N>{});
@@ -126,7 +129,10 @@ namespace allpix {
             py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
 
             // Calculate the linearized index of the bin in the field vector
-            const auto index = get_grid_index(px, py, z, extrapolate_z);
+            size_t index;
+            if(!get_grid_index(index, px, py, z, extrapolate_z)) {
+                return {};
+            }
 
             // Fetch the field value from the given index
             ret_val = get_impl(index, std::make_index_sequence<N>{});
@@ -196,7 +202,8 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    size_t DetectorField<T, N>::get_grid_index(const double x,
+    bool DetectorField<T, N>::get_grid_index(size_t& index,
+                                               const double x,
                                                const double y,
                                                const double z,
                                                const bool extrapolate_z) const noexcept {
@@ -206,12 +213,12 @@ namespace allpix {
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
         auto x_ind = (bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
-            return {};
+            return false;
         }
 
         auto y_ind = (bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
-            return {};
+            return false;
         }
 
         auto z_ind = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
@@ -219,12 +226,13 @@ namespace allpix {
         // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding:
         z_ind = (extrapolate_z ? std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1) : z_ind);
         if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
-            return {};
+            return false;
         }
 
         // Compute total index
-        return static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
+        index = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
                          static_cast<size_t>(z_ind) * N;
+        return true;
     }
 
     /**
