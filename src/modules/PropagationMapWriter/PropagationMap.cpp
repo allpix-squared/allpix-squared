@@ -23,7 +23,7 @@ PropagationMap::PropagationMap(const std::shared_ptr<DetectorModel>& model,
                                std::array<double, 2> offset,
                                std::pair<double, double> thickness_domain) {
 
-    const std::lock_guard field_lock {field_mutex_};
+    const std::lock_guard field_lock{field_mutex_};
 
     // Set detector model:
     setModel(model);
@@ -57,7 +57,7 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     // Calculate the linearized index of the starting bin in the field vector
     const auto field_index = get_grid_index(px, py, local_pos.z(), false);
 
-    const std::lock_guard field_lock {field_mutex_};
+    const std::lock_guard field_lock{field_mutex_};
     // Add the map values starting from the given index
     for(size_t i = 0; i < 25; i++) {
         (*field_)[field_index + i] += table[i];
@@ -67,8 +67,32 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     normalization_table[field_index / 25]++;
 }
 
+void PropagationMap::checkField() const {
+    size_t empty_bins = 0;
+    size_t low_statistics = 0;
+    size_t statistics = 0;
+
+    const std::lock_guard field_lock{field_mutex_};
+
+    for(const auto& bin : normalization_table) {
+        empty_bins += (bin == 0 ? 1 : 0);
+        low_statistics += (bin < 10 ? 1 : 0);
+        statistics += bin;
+    }
+    if(low_statistics > 0) {
+        LOG(WARNING) << low_statistics << " bins in output probability table have low statistics - result may be inaccurate";
+        if(empty_bins > 0) {
+            LOG(ERROR) << "Found " << empty_bins
+                       << " bins in output probability table without entries - result will be inaccurate";
+        }
+    } else {
+        LOG(STATUS) << "All bins have sufficient entries, average number of initial deposits per bin is "
+                    << statistics / normalization_table.size();
+    }
+}
+
 std::shared_ptr<std::vector<double>> PropagationMap::getNormalizedField() {
-    const std::lock_guard field_lock {field_mutex_};
+    const std::lock_guard field_lock{field_mutex_};
 
     // Loop over field and apply normalization:
     for(size_t i = 0; i < field_->size(); i++) {

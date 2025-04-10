@@ -44,6 +44,8 @@ namespace allpix {
          */
         void add(const ROOT::Math::XYZPoint& local_pos, const FieldTable& table);
 
+        void checkField() const;
+
         std::shared_ptr<std::vector<double>> getNormalizedField();
 
     private:
