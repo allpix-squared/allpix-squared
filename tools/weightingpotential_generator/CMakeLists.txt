@@ -40,6 +40,7 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/config/exceptions.cpp
     ${ALLPIX_SRC}/core/geometry/DetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/PixelDetectorModel.cpp
+    ${ALLPIX_SRC}/core/geometry/BrickwallPixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/HexagonalPixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/RadialStripDetectorModel.cpp
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)

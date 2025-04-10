@@ -143,4 +143,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif // ALLPIX_DETECTOR_MODEL_H
+#endif // ALLPIX_PIXEL_DETECTOR_MODEL_H
