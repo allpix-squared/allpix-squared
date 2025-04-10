@@ -55,7 +55,11 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     auto [px, py, flip_x, flip_y] = map_coordinates(local_pos, ref);
 
     // Calculate the linearized index of the starting bin in the field vector
-    const auto field_index = get_grid_index(px, py, local_pos.z(), false);
+    size_t field_index = 0;
+    if(!get_grid_index(field_index, px, py, local_pos.z(), false)) {
+        // Outside the field, ignoring
+        return;
+    }
 
     const std::lock_guard field_lock{field_mutex_};
     // Add the map values starting from the given index
