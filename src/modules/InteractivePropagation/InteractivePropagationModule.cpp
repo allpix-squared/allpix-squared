@@ -77,8 +77,9 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<bool>("output_linegraphs_recombined", false);
     config_.setDefault<bool>("output_linegraphs_trapped", false);
     config_.setDefault<bool>("output_animations", false);
+    config_.setDefault<bool>("output_rms", false);
     config_.setDefault<bool>("output_plots",
-    config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations"));
+    config_.get<bool>("output_linegraphs") || config_.get<bool>("output_animations") || config_.get<bool>("output_rms"));
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
@@ -117,9 +118,16 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     output_linegraphs_collected_ = config_.get<bool>("output_linegraphs_collected");
     output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
+    output_rms_ = config_.get<bool>("output_rms");
     output_plots_step_ = config_.get<double>("output_plots_step");
 
-    // Multithreading of this module is always disabled
+    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
+    // FIXME: Review if this is really the case or we can still use multithreading
+    if(!(config_.get<bool>("output_animations") || output_linegraphs_ || output_rms_)) {
+        allow_multithreading();
+    } else {
+        LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
+    }
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -505,7 +513,7 @@ void InteractivePropagationModule::run(Event* event) {
 
     }
 
-    auto default_charge_per_step = total_deposited_charge / max_charge_groups_; // The number of charges per charge group based on the total amount of charge
+    auto default_charge_per_step = total_deposited_charge / std::max(max_charge_groups_,static_cast<unsigned int>(1));; // The number of charges per charge group based on the total amount of charge
 
     // for(const auto& deposit : deposited_charges){
 
@@ -697,7 +705,7 @@ InteractivePropagationModule::propagate_together(Event* event,
             }
 
             // Get the correct signed charge
-            int q = static_cast<int>(propagating_charges[i].getType()) * propagating_charges[i].getCharge();
+            int q = static_cast<int8_t>(propagating_charges[i].getType()) * static_cast<int>(propagating_charges[i].getCharge());
             
             auto dist_vector = point - local_position; // A vector between the desired points (mm?)
             auto dist_mag2 = dist_vector.Mag2(); // std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
@@ -846,7 +854,7 @@ InteractivePropagationModule::propagate_together(Event* event,
     }
 
     // Continue time propagation until no more objects remain in propagating charge vector 
-    Eigen::Vector3d last_position;
+    Eigen::Vector3d last_position = Eigen::Vector3d(0,0,0); // Shouldn't be used as the default value (zeros are used to remove compiler warning)
     ROOT::Math::XYZVector efield{}, last_efield{};
     size_t next_idx = 0;
     for(time = 0; time < integration_time_; time += timestep_) { // time is the threshold value for each iteration
@@ -856,84 +864,87 @@ InteractivePropagationModule::propagate_together(Event* event,
             // LOG(DEBUG) << "Total number of charges skipped due to overlapping positions: " << numSamePos;
 
             // Get RMS of the charge distribution
+            if (output_rms_){
 
-            // Start by getting the mean
-            double x_mean_e = 0; double y_mean_e = 0; double z_mean_e = 0;
-            double x_mean_h = 0; double y_mean_h = 0; double z_mean_h = 0;
-            
-            double num_e = 0; //TODO: Ignore charges with state HALTED
-            double num_h = 0;
-            for (unsigned int i = 0; i < charge_locations.size(); i++){
-                auto location = charge_locations[i];
+                // Start by getting the mean
+                double x_mean_e = 0; double y_mean_e = 0; double z_mean_e = 0;
+                double x_mean_h = 0; double y_mean_h = 0; double z_mean_h = 0;
+                
+                double num_e = 0; 
+                double num_h = 0;
+                for (unsigned int i = 0; i < charge_locations.size(); i++){
+                    auto location = charge_locations[i];
 
-                // TODO: Think about whether there are certain states or time conditions we want to remove from RMS calc 
+                    // TODO: Think about whether there are certain states or time conditions we want to remove from RMS calc 
+                    // TODO: Ignore charges with state HALTED
 
-                if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
-                    num_e++;
-                    x_mean_e += location.x();
-                    y_mean_e += location.y();
-                    z_mean_e += location.z();
-                }else{
-                    num_h++;
-                    x_mean_h += location.x();
-                    y_mean_h += location.y();
-                    z_mean_h += location.z();
+                    if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                        num_e++;
+                        x_mean_e += location.x();
+                        y_mean_e += location.y();
+                        z_mean_e += location.z();
+                    }else{
+                        num_h++;
+                        x_mean_h += location.x();
+                        y_mean_h += location.y();
+                        z_mean_h += location.z();
+                    }
                 }
-            }
 
-            if (num_e > 0){
-                x_mean_e = x_mean_e/num_e;
-                y_mean_e = y_mean_e/num_e;
-                z_mean_e = z_mean_e/num_e;
-            }
-            if (num_h > 0){
-                x_mean_h = x_mean_h/num_h;
-                y_mean_h = y_mean_h/num_h;
-                z_mean_h = z_mean_h/num_h;
-            }
-            
-            // Now sum the square of the residuals (split up into x, y and z)
-            double res2_x_e = 0; double res2_y_e = 0; double res2_z_e = 0;
-            double res2_x_h = 0; double res2_y_h = 0; double res2_z_h = 0;
-
-            for (unsigned int i = 0; i < charge_locations.size(); i++){
-
-                auto location = charge_locations[i];
-
-                if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
-                    res2_x_e += (location.x() - x_mean_e)*(location.x() - x_mean_e);
-                    res2_y_e += (location.y() - y_mean_e)*(location.y() - y_mean_e);
-                    res2_z_e += (location.z() - z_mean_e)*(location.z() - z_mean_e);
-                }else{
-                    res2_x_h += (location.x() - x_mean_h)*(location.x() - x_mean_h);
-                    res2_y_h += (location.y() - y_mean_h)*(location.y() - y_mean_h);
-                    res2_z_h += (location.z() - z_mean_h)*(location.z() - z_mean_h);
+                if (num_e > 0){
+                    x_mean_e = x_mean_e/num_e;
+                    y_mean_e = y_mean_e/num_e;
+                    z_mean_e = z_mean_e/num_e;
                 }
+                if (num_h > 0){
+                    x_mean_h = x_mean_h/num_h;
+                    y_mean_h = y_mean_h/num_h;
+                    z_mean_h = z_mean_h/num_h;
+                }
+                
+                // Now sum the square of the residuals (split up into x, y and z)
+                double res2_x_e = 0; double res2_y_e = 0; double res2_z_e = 0;
+                double res2_x_h = 0; double res2_y_h = 0; double res2_z_h = 0;
+
+                for (unsigned int i = 0; i < charge_locations.size(); i++){
+
+                    auto location = charge_locations[i];
+
+                    if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                        res2_x_e += (location.x() - x_mean_e)*(location.x() - x_mean_e);
+                        res2_y_e += (location.y() - y_mean_e)*(location.y() - y_mean_e);
+                        res2_z_e += (location.z() - z_mean_e)*(location.z() - z_mean_e);
+                    }else{
+                        res2_x_h += (location.x() - x_mean_h)*(location.x() - x_mean_h);
+                        res2_y_h += (location.y() - y_mean_h)*(location.y() - y_mean_h);
+                        res2_z_h += (location.z() - z_mean_h)*(location.z() - z_mean_h);
+                    }
+                }
+
+                double rms_total_e = 0; double rms_x_e = 0; double rms_y_e = 0; double rms_z_e = 0;
+                if (num_e > 0){
+                    rms_total_e = sqrt((res2_x_e + res2_y_e + res2_z_e)/num_e);
+                    rms_x_e = sqrt(res2_x_e/num_e);
+                    rms_y_e = sqrt(res2_y_e/num_e);
+                    rms_z_e = sqrt(res2_z_e/num_e);
+                }
+                double rms_total_h = 0; // double rms_x_h = 0; double rms_y_h = 0; double rms_z_h = 0;
+                if (num_h > 0){
+                    rms_total_h = sqrt((res2_x_h + res2_y_h + res2_z_h)/num_h);
+                    // double rms_x_h = sqrt(res2_x_h/num_h); // Holes are less important
+                    // double rms_y_h = sqrt(res2_y_h/num_h);
+                    // double rms_z_h = sqrt(res2_z_h/num_h);
+                }
+
+                LOG(DEBUG) << "  RMS: " << rms_total_e << " for electrons and " << rms_total_h << " for holes";
+
+                rms_x_e_subgraph_->AddPoint(time, rms_x_e);
+                rms_y_e_subgraph_->AddPoint(time, rms_y_e);
+                rms_z_e_subgraph_->AddPoint(time, rms_z_e);
+                rms_e_subgraph_->AddPoint(time, rms_total_e);
+                rms_h_subgraph_->AddPoint(time, rms_total_h);
+
             }
-
-            double rms_total_e = 0; double rms_x_e = 0; double rms_y_e = 0; double rms_z_e = 0;
-            if (num_e > 0){
-                rms_total_e = sqrt((res2_x_e + res2_y_e + res2_z_e)/num_e);
-                rms_x_e = sqrt(res2_x_e/num_e);
-                rms_y_e = sqrt(res2_y_e/num_e);
-                rms_z_e = sqrt(res2_z_e/num_e);
-            }
-            double rms_total_h = 0; // double rms_x_h = 0; double rms_y_h = 0; double rms_z_h = 0;
-            if (num_h > 0){
-                rms_total_h = sqrt((res2_x_h + res2_y_h + res2_z_h)/num_h);
-                // double rms_x_h = sqrt(res2_x_h/num_h); // Holes are less important
-                // double rms_y_h = sqrt(res2_y_h/num_h);
-                // double rms_z_h = sqrt(res2_z_h/num_h);
-            }
-
-            LOG(DEBUG) << "  RMS: " << rms_total_e << " for electrons and " << rms_total_h << " for holes";
-
-            rms_x_e_subgraph_->AddPoint(time, rms_x_e);
-            rms_y_e_subgraph_->AddPoint(time, rms_y_e);
-            rms_z_e_subgraph_->AddPoint(time, rms_z_e);
-            rms_e_subgraph_->AddPoint(time, rms_total_e);
-            rms_h_subgraph_->AddPoint(time, rms_total_h);
-
         }
 
         // Loop over all charges remaining in the detector
