@@ -157,6 +157,10 @@ namespace allpix {
                 py += (y >= 0 ? 0. : 1.0);
             }
 
+            // Intentionally do floating-point equality comparison to avoid us landing on the edge of the field
+            px -= (px == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
+            py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
+
             ret_val = get_field_from_grid(px, py, z, extrapolate_z);
 
             // Flip vector if necessary
@@ -180,19 +184,12 @@ namespace allpix {
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
-        // Due to rounding issues at the upper field boundary, decrement bin if one beyond range.
         auto x_ind = (bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
-        if(x_ind == static_cast<int>(bins_[0])) {
-            x_ind--;
-        }
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
             return {};
         }
 
         auto y_ind = (bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
-        if(y_ind == static_cast<int>(bins_[1])) {
-            y_ind--;
-        }
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
             return {};
         }
