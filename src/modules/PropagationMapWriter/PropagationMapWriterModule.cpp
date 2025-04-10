@@ -33,6 +33,18 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
+    // Read number of bins
+    const auto bins = config_.getArray<size_t>("bins");
+    if(bins.size() != 3) {
+        throw InvalidValueError(
+            config_, "bins", "number of bins for three dimensions required, got values for " + std::to_string(bins.size()));
+    }
+    bins_ = {bins.at(0), bins.at(1), bins.at(2)};
+
+    // Read field mapping from configuration
+    field_mapping_ = config_.get<FieldMapping>("field_mapping");
+    LOG(DEBUG) << "Propagation map will be generated for mapping " << magic_enum::enum_name(field_mapping_);
+
     // Select which carriers we look at
     carrier_type_ = config_.get<CarrierType>("carrier_type");
 }
@@ -47,8 +59,22 @@ void PropagationMapWriterModule::initialize() {
     const auto sensor_min_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
     const auto thickness_domain = std::make_pair(sensor_min_z, sensor_max_z);
 
+    // Calculate sizes from field mapping, starting from full pixel
     size_ = std::array<double, 3>({pixel_size.x(), pixel_size.y(), thickness});
-    bins_ = std::array<size_t, 3>({32, 32, 49});
+    if(field_mapping_ == FieldMapping::PIXEL_HALF_LEFT || field_mapping_ == FieldMapping::PIXEL_HALF_RIGHT ||
+       field_mapping_ == FieldMapping::PIXEL_QUADRANT_I || field_mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+       field_mapping_ == FieldMapping::PIXEL_QUADRANT_III || field_mapping_ == FieldMapping::PIXEL_QUADRANT_IV) {
+        size_[0] /= 2.0;
+    }
+
+    if(field_mapping_ == FieldMapping::PIXEL_HALF_TOP || field_mapping_ == FieldMapping::PIXEL_HALF_BOTTOM ||
+       field_mapping_ == FieldMapping::PIXEL_QUADRANT_I || field_mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+       field_mapping_ == FieldMapping::PIXEL_QUADRANT_III || field_mapping_ == FieldMapping::PIXEL_QUADRANT_IV) {
+        size_[1] /= 2.0;
+    }
+    LOG(INFO) << "Using field with size " << Units::display(size_[0], "um") << "," << Units::display(size_[1], "um") << ","
+              << Units::display(size_[2], "um");
+
     const auto scales = std::array<double, 2>({1., 1.});
     const auto offset = std::array<double, 2>({0., 0.});
 
@@ -109,6 +135,8 @@ void PropagationMapWriterModule::run(Event* event) {
 }
 
 void PropagationMapWriterModule::finalize() {
+
+    output_map_->checkField();
 
     // Fetch the field data form the output map and write it to a file:
     auto file_name = createOutputFile("test", "apf");
