@@ -15,6 +15,8 @@
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
 
+#include <mutex>
+
 namespace allpix {
     /**
      * @brief Instance of a propagation map
@@ -46,6 +48,7 @@ namespace allpix {
 
     private:
         std::vector<size_t> normalization_table;
+        std::mutex field_mutex_;
     };
 } // namespace allpix
 

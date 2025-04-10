@@ -11,6 +11,8 @@
 
 #include "PropagationMap.hpp"
 
+#include <mutex>
+
 using namespace allpix;
 
 PropagationMap::PropagationMap(const std::shared_ptr<DetectorModel>& model,
@@ -20,6 +22,8 @@ PropagationMap::PropagationMap(const std::shared_ptr<DetectorModel>& model,
                                std::array<double, 2> scales,
                                std::array<double, 2> offset,
                                std::pair<double, double> thickness_domain) {
+
+    const std::lock_guard field_lock {field_mutex_};
 
     // Set detector model:
     setModel(model);
@@ -53,6 +57,7 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     // Calculate the linearized index of the starting bin in the field vector
     const auto field_index = get_grid_index(px, py, local_pos.z(), false);
 
+    const std::lock_guard field_lock {field_mutex_};
     // Add the map values starting from the given index
     for(size_t i = 0; i < 25; i++) {
         (*field_)[field_index + i] += table[i];
@@ -63,6 +68,8 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
 }
 
 std::shared_ptr<std::vector<double>> PropagationMap::getNormalizedField() {
+    const std::lock_guard field_lock {field_mutex_};
+
     // Loop over field and apply normalization:
     for(size_t i = 0; i < field_->size(); i++) {
         if(normalization_table[i / 25] > 0) {

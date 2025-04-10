@@ -25,8 +25,7 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
-    // Allow multithreading of the simulation. Only enabled if this module is thread-safe. See manual for more details.
-    // allow_multithreading();
+    allow_multithreading();
 
     model_ = detector_->getModel();
 
