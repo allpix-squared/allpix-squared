@@ -46,7 +46,7 @@ overall grid dimensions as demonstrated below:
 ![](./hexagon_grids.png)\
 *Grid layouts for pointy (left) and flat (right) hexagons with a size of 8-by-4 pixels.*
 
-This geometry can be selected using `geometry = hexagon`
+This geometry can be selected using `geometry = hexagonal`
 
 
 ## Radial Strips
