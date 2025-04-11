@@ -29,6 +29,19 @@ BrickwallPixelDetectorModel::BrickwallPixelDetectorModel(std::string type,
     }
 }
 
+ROOT::Math::XYZPoint BrickwallPixelDetectorModel::getMatrixCenter() const {
+    // Matrix center is shifted by the pixel offset along x - if the offset is negative, because then the origin of the
+    // local coordinate system not the leftmost pixel anymore, the matrix center is calculated relative to the local origin
+    return {getMatrixSize().x() / 2.0 - getPixelSize().x() / 2.0 + (offset_ < 0 ? offset_ : 0.) * getPixelSize().x(),
+            getMatrixSize().y() / 2.0 - getPixelSize().y() / 2.0,
+            0};
+}
+
+ROOT::Math::XYZVector BrickwallPixelDetectorModel::getMatrixSize() const {
+    // Matrix size is extended in x by the pixel offset:
+    return {(getNPixels().x() + std::fabs(offset_)) * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
+}
+
 /**
  * Faster implementation of matrix lookup for local coordinate positions than going through the pixel index
  * This is quite easy for rectangular pixels and matrices.

@@ -43,6 +43,25 @@ namespace allpix {
                                              const Configuration& config);
 
         /**
+         * @brief Get local coordinate of the position and rotation center in global frame
+         * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
+         * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
+         * under rotations
+         *
+         * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
+         */
+        ROOT::Math::XYZPoint getMatrixCenter() const override;
+
+        /**
+         * @brief Get total size of the pixel grid
+         * @return Size of the pixel grid
+         *
+         * @warning The grid has zero thickness
+         * @note This is basically a 2D method, but provided in 3D because it is primarily used there
+         */
+        ROOT::Math::XYZVector getMatrixSize() const override;
+
+        /**
          * @brief Returns if a position is within the grid of pixels defined for the device
          * @param position Position in local coordinates of the detector model
          * @return True if position within the pixel grid, false otherwise
