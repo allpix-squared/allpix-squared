@@ -90,12 +90,23 @@ void DetectorHistogrammerModule::initialize() {
         (model->getSensorCenter() + ROOT::Math::XYZVector(-model->getSensorSize().x(), model->getSensorSize().y(), 0) / 2));
     hit_map_global = CreateHistogram<TH2D>("hit_map_global",
                                            hit_map_global_title.c_str(),
-                                           static_cast<int>(model->getSensorSize().x()) * 10,
+                                           200,
                                            std::min({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
                                            std::max({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
-                                           static_cast<int>(model->getSensorSize().y()) * 10,
+                                           200,
                                            std::min({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}),
                                            std::max({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}));
+
+    std::string hit_map_global_mc_title =
+        "MCParticle position hitmap (" + detector_->getName() + ") in global coord.;x [mm[];y [mm];hits";
+    hit_map_global_mc = CreateHistogram<TH2D>("hit_map_global_mc",
+                                              hit_map_global_mc_title.c_str(),
+                                              200,
+                                              std::min({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
+                                              std::max({global_ll.x(), global_ur.x(), global_lr.x(), global_ul.x()}),
+                                              200,
+                                              std::min({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}),
+                                              std::max({global_ll.y(), global_ur.y(), global_lr.y(), global_ul.y()}));
 
     std::string hit_map_local_title = "Hitmap (" + detector_->getName() + ") in local coord.;x (mm);y (mm);hits";
     hit_map_local = CreateHistogram<TH2D>("hit_map_local",
@@ -493,8 +504,10 @@ void DetectorHistogrammerModule::run(Event* event) {
         LOG(TRACE) << "Matching primaries: " << intersection.size();
         for(const auto& particle : intersection) {
             auto particlePos = particle->getLocalReferencePoint();
+            auto particlePosGlobal = detector_->getGlobalPosition(particlePos);
             // Plot hist in global coordinates of the associated MCParticles:
             hit_map_local_mc->Fill(particlePos.x(), particlePos.y());
+            hit_map_global_mc->Fill(particlePosGlobal.x(), particlePosGlobal.y());
             // Add track smearing to the particle position:
             particlePos += track_smearing(track_resolution_);
             LOG(DEBUG) << "MCParticle at " << Units::display(particlePos, {"mm", "um"});
@@ -503,7 +516,8 @@ void DetectorHistogrammerModule::run(Event* event) {
             auto [xpixel, ypixel] = model->getPixelIndex(particlePos);
 
             auto inPixelPos = particlePos - model->getPixelCenter(xpixel, ypixel);
-            LOG(TRACE) << "MCParticle in pixel at " << Units::display(inPixelPos, {"mm", "um"});
+            LOG(TRACE) << "MCParticle in pixel (" << xpixel << "," << ypixel << ") at "
+                       << Units::display(inPixelPos, {"mm", "um"});
 
             // Calculate residual with cluster position:
             auto residual_um_x = static_cast<double>(Units::convert(particlePos.x() - clusterPos.x(), "um"));
@@ -630,6 +644,7 @@ void DetectorHistogrammerModule::finalize() {
     // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
     auto hit_map_histogram = hit_map->Merge();
     auto hit_map_global_histogram = hit_map_global->Merge();
+    auto hit_map_global_mc_histogram = hit_map_global_mc->Merge();
     auto hit_map_local_histogram = hit_map_local->Merge();
     auto hit_map_local_mc_histogram = hit_map_local_mc->Merge();
     auto charge_map_histogram = charge_map->Merge();
@@ -717,6 +732,7 @@ void DetectorHistogrammerModule::finalize() {
     // Set default drawing option histogram for hitmap
     hit_map_histogram->SetOption("colz");
     hit_map_global_histogram->SetOption("colz");
+    hit_map_global_mc_histogram->SetOption("colz");
     hit_map_local_histogram->SetOption("colz");
     hit_map_local_mc_histogram->SetOption("colz");
     // Set hit_map axis spacing
@@ -761,6 +777,7 @@ void DetectorHistogrammerModule::finalize() {
     n_cluster_histogram->Write();
     hit_map_histogram->Write();
     hit_map_global_histogram->Write();
+    hit_map_global_mc_histogram->Write();
     hit_map_local_histogram->Write();
     hit_map_local_mc_histogram->Write();
 
