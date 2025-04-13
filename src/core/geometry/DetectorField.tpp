@@ -160,15 +160,15 @@ namespace allpix {
 
         // Do we need to flip the position vector components?
         auto flip_x =
-        (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
-                   mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
-        (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                   mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
+            (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+                       mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
+            (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                       mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
         auto flip_y =
-        (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                   mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
-        (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
-                   mapping_ == FieldMapping::PIXEL_HALF_TOP));
+            (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                       mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
+            (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+                       mapping_ == FieldMapping::PIXEL_HALF_TOP));
 
         // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
         auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
@@ -178,7 +178,7 @@ namespace allpix {
            mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
             px += 1.0;
         } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
-              mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
+                  mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
             px += 0.5;
         }
 
@@ -202,11 +202,8 @@ namespace allpix {
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    bool DetectorField<T, N>::get_grid_index(size_t& index,
-                                               const double x,
-                                               const double y,
-                                               const double z,
-                                               const bool extrapolate_z) const noexcept {
+    bool DetectorField<T, N>::get_grid_index(
+        size_t& index, const double x, const double y, const double z, const bool extrapolate_z) const noexcept {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
@@ -231,7 +228,7 @@ namespace allpix {
 
         // Compute total index
         index = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
-                         static_cast<size_t>(z_ind) * N;
+                static_cast<size_t>(z_ind) * N;
         return true;
     }
 
@@ -269,11 +266,11 @@ namespace allpix {
 
     template <typename T, size_t N>
     void DetectorField<T, N>::set_grid_parameters(std::array<size_t, 3> bins,
-                                 std::array<double, 3> size,
-                                 FieldMapping mapping,
-                                 std::array<double, 2> scales,
-                                 std::array<double, 2> offset,
-                                 std::pair<double, double> thickness_domain) {
+                                                  std::array<double, 3> size,
+                                                  FieldMapping mapping,
+                                                  std::array<double, 2> scales,
+                                                  std::array<double, 2> offset,
+                                                  std::pair<double, double> thickness_domain) {
         if(model_ == nullptr) {
             throw std::invalid_argument("field not initialized with detector model parameters");
         }
