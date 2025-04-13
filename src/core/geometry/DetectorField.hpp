@@ -201,7 +201,6 @@ namespace allpix {
                                  std::array<double, 2> offset,
                                  std::pair<double, double> thickness_domain);
 
-    private:
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
          * @param offset The calculated global index to start from
@@ -231,18 +230,6 @@ namespace allpix {
          */
         inline std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
                                                                       const ROOT::Math::XYPoint& ref) const;
-
-        /**
-         * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
-         *
-         * @param pos Position to calculate coordinates for
-         * @param ref Reference position to calculate relative position to
-         *
-         * @return Tuple with relative x and y coordinates, mapped into the chosen area, and booleans indicating whether
-         *         flipping of vector components is necessary
-         */
-        std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
-                                                               const ROOT::Math::XYPoint& ref) const;
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
