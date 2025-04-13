@@ -71,7 +71,7 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     normalization_table[field_index / 25]++;
 }
 
-void PropagationMap::checkField() const {
+void PropagationMap::checkField() {
     size_t empty_bins = 0;
     size_t low_statistics = 0;
     size_t statistics = 0;

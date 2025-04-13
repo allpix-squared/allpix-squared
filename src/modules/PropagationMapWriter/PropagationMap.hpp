@@ -44,7 +44,10 @@ namespace allpix {
          */
         void add(const ROOT::Math::XYZPoint& local_pos, const FieldTable& table);
 
-        void checkField() const;
+        /**
+         * @brief Perform some validity checks on the field
+         */
+        void checkField();
 
         std::shared_ptr<std::vector<double>> getNormalizedField();
 
