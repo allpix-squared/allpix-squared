@@ -46,7 +46,7 @@ DefaultDigitizerModule::DefaultDigitizerModule(Configuration& config,
 
     // QDC configuration
     config_.setDefault<int>("qdc_resolution", 0);
-    config_.setDefault<int>("qdc_smearing", Units::get(300, "e"));
+    config_.setDefault<int>("qdc_smearing", Units::get(0, "e"));
     config_.setDefault<double>("qdc_offset", Units::get(0, "e"));
     config_.setDefault<double>("qdc_slope", Units::get(10, "e"));
     config_.setDefault<bool>("allow_zero_qdc", false);
