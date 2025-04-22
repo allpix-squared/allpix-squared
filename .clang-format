@@ -34,4 +34,7 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 ContinuationIndentWidth: 4
+---
+Language: Json
+BasedOnStyle: LLVM
 ...
