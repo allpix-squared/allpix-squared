@@ -72,6 +72,9 @@ namespace allpix {
         bool collect_from_implant_{};
         std::once_flag first_event_flag_;
 
+        bool skip_charge_carriers_{};
+        CarrierType skip_carrier_;
+
         // Output histograms
         Histogram<TH1D> h_total_induced_charge_, h_induced_pixel_charge_;
         Histogram<TH2D> h_induced_pulses_, h_integrated_pulses_;
