@@ -76,7 +76,7 @@ In addition, the distribution of the actually applied threshold is provided as h
 * `saturation_mean`: Mean of the simulated front-end saturation charge, defaults to `190ke`. Only used if `saturation` is `true.`
 * `saturation_width`: Width of the Gaussian distribution used to calculate the new charge value of the simulated front-end saturation, defaults to `20ke`. Only used if `saturation` is `true.`
 * `qdc_resolution` : Resolution of the QDC in units of bits. Thus, a value of 8 would translate to a QDC range of 0 -- 255. A value of 0bit switches off the QDC simulation and returns the actual charge in electrons. Defaults to 0.
-* `qdc_smearing` : Standard deviation of the Gaussian noise in the ADC conversion (after applying the threshold). Defaults to 300 electrons.
+* `qdc_smearing` : Standard deviation of the Gaussian noise in the ADC conversion (after applying the threshold). Defaults to 0 electrons.
 * `qdc_slope` : Slope of the QDC calibration in electrons per ADC unit (unit: "e"). Defaults to 10e.
 * `qdc_offset` : Offset of the QDC calibration in electrons. In order to simulate a ToT (time-over-threshold) device, this offset should be configured to the negative value of the threshold. Defaults to 0.
 * `allow_zero_qdc`: Allows the QDC to return a value of zero if enabled, otherwise the minimum value returned is one. Defaults to `false`. When enabled special care should be taken when analyzing data since charge-weighted cluster position interpolation might return unexpected results.
