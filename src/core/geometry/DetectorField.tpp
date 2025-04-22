@@ -81,7 +81,14 @@ namespace allpix {
             T ret_val;
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
-                ret_val = get_field_from_grid(x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z);
+                // Calculate the linearized index of the bin in the field vector
+                size_t index;
+                if(!get_grid_index(index, x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z)) {
+                    return {};
+                }
+
+                // Fetch the field value from the given index
+                ret_val = get_impl(index, std::make_index_sequence<N>{});
             } else {
                 // Calculate the field from the configured function:
                 ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
@@ -112,60 +119,31 @@ namespace allpix {
             return {};
         }
 
-        // Calculate the coordinates relative to the reference point:
-        auto x = pos.x() - ref.x() + offset_[0];
-        auto y = pos.y() - ref.y() + offset_[1];
-
         T ret_val;
         if(type_ == FieldType::GRID) {
-
-            // Do we need to flip the position vector components?
-            auto flip_x =
-                (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
-                           mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
-                (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                           mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
-            auto flip_y =
-                (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-                           mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
-                (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
-                           mapping_ == FieldMapping::PIXEL_HALF_TOP));
-
-            // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
-            auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
-            auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
-
-            if(mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
-               mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
-                px += 1.0;
-            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
-                      mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
-                px += 0.5;
-            }
-
-            if(mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
-               mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
-                py += 1.0;
-            } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_LEFT ||
-                      mapping_ == FieldMapping::PIXEL_HALF_RIGHT) {
-                py += 0.5;
-            }
-
-            // Shuffle quadrants for inverted maps
-            if(mapping_ == FieldMapping::PIXEL_FULL_INVERSE) {
-                px += (x >= 0 ? 0. : 1.0);
-                py += (y >= 0 ? 0. : 1.0);
-            }
+            // Map the coordinates onto the chosen pixel fraction
+            auto [px, py, flip_x, flip_y] = map_coordinates(pos, ref);
 
             // Intentionally do floating-point equality comparison to avoid us landing on the edge of the field
             px -= (px == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
             py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
 
-            ret_val = get_field_from_grid(px, py, z, extrapolate_z);
+            // Calculate the linearized index of the bin in the field vector
+            size_t index;
+            if(!get_grid_index(index, px, py, z, extrapolate_z)) {
+                return {};
+            }
+
+            // Fetch the field value from the given index
+            ret_val = get_impl(index, std::make_index_sequence<N>{});
 
             // Flip vector if necessary
             flip_vector_components(ret_val, flip_x, flip_y);
         } else {
+            // Calculate the coordinates relative to the reference point:
+            auto x = pos.x() - ref.x() + offset_[0];
+            auto y = pos.y() - ref.y() + offset_[1];
+
             // Calculate the field from the configured function:
             ret_val = function_(ROOT::Math::XYZPoint(x, y, z));
         }
@@ -173,25 +151,71 @@ namespace allpix {
         return ret_val;
     }
 
+    template <typename T, size_t N>
+    std::tuple<double, double, bool, bool> DetectorField<T, N>::map_coordinates(const ROOT::Math::XYZPoint& pos,
+                                                                                const ROOT::Math::XYPoint& ref) const {
+        // Calculate the coordinates relative to the reference point:
+        auto x = pos.x() - ref.x() + offset_[0];
+        auto y = pos.y() - ref.y() + offset_[1];
+
+        // Do we need to flip the position vector components?
+        auto flip_x =
+            (x > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+                       mapping_ == FieldMapping::PIXEL_HALF_LEFT)) ||
+            (x < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                       mapping_ == FieldMapping::PIXEL_HALF_RIGHT));
+        auto flip_y =
+            (y > 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+                       mapping_ == FieldMapping::PIXEL_HALF_BOTTOM)) ||
+            (y < 0 && (mapping_ == FieldMapping::PIXEL_QUADRANT_I || mapping_ == FieldMapping::PIXEL_QUADRANT_II ||
+                       mapping_ == FieldMapping::PIXEL_HALF_TOP));
+
+        // Fold onto available field scale in the range [0 , 1] - flip coordinates if necessary
+        auto px = (flip_x ? -1.0 : 1.0) * x * normalization_[0];
+        auto py = (flip_y ? -1.0 : 1.0) * y * normalization_[1];
+
+        if(mapping_ == FieldMapping::PIXEL_QUADRANT_II || mapping_ == FieldMapping::PIXEL_QUADRANT_III ||
+           mapping_ == FieldMapping::PIXEL_HALF_LEFT) {
+            px += 1.0;
+        } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_TOP ||
+                  mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
+            px += 0.5;
+        }
+
+        if(mapping_ == FieldMapping::PIXEL_QUADRANT_III || mapping_ == FieldMapping::PIXEL_QUADRANT_IV ||
+           mapping_ == FieldMapping::PIXEL_HALF_BOTTOM) {
+            py += 1.0;
+        } else if(mapping_ == FieldMapping::PIXEL_FULL || mapping_ == FieldMapping::PIXEL_HALF_LEFT ||
+                  mapping_ == FieldMapping::PIXEL_HALF_RIGHT) {
+            py += 0.5;
+        }
+
+        // Shuffle quadrants for inverted maps
+        if(mapping_ == FieldMapping::PIXEL_FULL_INVERSE) {
+            px += (x >= 0 ? 0. : 1.0);
+            py += (y >= 0 ? 0. : 1.0);
+        }
+
+        return {px, py, flip_x, flip_y};
+    }
+
     // Maps the field indices onto the range of -d/2 < x < d/2, where d is the scale of the field in coordinate x.
     // This means, {x,y,z} = (0,0,0) is in the center of the field.
     template <typename T, size_t N>
-    T DetectorField<T, N>::get_field_from_grid(const double x,
-                                               const double y,
-                                               const double z,
-                                               const bool extrapolate_z) const noexcept {
+    bool DetectorField<T, N>::get_grid_index(
+        size_t& index, const double x, const double y, const double z, const bool extrapolate_z) const noexcept {
 
         // Compute indices
         // If the number of bins in x or y is 1, the field is assumed to be 2-dimensional and the respective index
         // is forced to zero. This circumvents that the field size in the respective dimension would otherwise be zero
         auto x_ind = (bins_[0] == 1 ? 0 : int_floor(x * static_cast<double>(bins_[0])));
         if(x_ind < 0 || x_ind >= static_cast<int>(bins_[0])) {
-            return {};
+            return false;
         }
 
         auto y_ind = (bins_[1] == 1 ? 0 : int_floor(y * static_cast<double>(bins_[1])));
         if(y_ind < 0 || y_ind >= static_cast<int>(bins_[1])) {
-            return {};
+            return false;
         }
 
         auto z_ind = int_floor(static_cast<double>(bins_[2]) * (z - thickness_domain_.first) /
@@ -199,15 +223,13 @@ namespace allpix {
         // Clamp to field indices if required - we do this here (again) to not be affected by floating-point rounding:
         z_ind = (extrapolate_z ? std::clamp(z_ind, 0, static_cast<int>(bins_[2]) - 1) : z_ind);
         if(z_ind < 0 || z_ind >= static_cast<int>(bins_[2])) {
-            return {};
+            return false;
         }
 
         // Compute total index
-        size_t tot_ind = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
-                         static_cast<size_t>(z_ind) * N;
-
-        // Retrieve field
-        return get_impl(tot_ind, std::make_index_sequence<N>{});
+        index = static_cast<size_t>(x_ind) * bins_[1] * bins_[2] * N + static_cast<size_t>(y_ind) * bins_[2] * N +
+                static_cast<size_t>(z_ind) * N;
+        return true;
     }
 
     /**
@@ -232,11 +254,25 @@ namespace allpix {
                                       std::array<double, 2> scales,
                                       std::array<double, 2> offset,
                                       std::pair<double, double> thickness_domain) {
-        if(model_ == nullptr) {
-            throw std::invalid_argument("field not initialized with detector model parameters");
-        }
+        set_grid_parameters(bins, size, mapping, scales, offset, std::move(thickness_domain));
+
         if(bins[0] * bins[1] * bins[2] * N != field->size()) {
             throw std::invalid_argument("field does not match the given dimensions");
+        }
+
+        // Store the field
+        field_ = std::move(field);
+    };
+
+    template <typename T, size_t N>
+    void DetectorField<T, N>::set_grid_parameters(std::array<size_t, 3> bins,
+                                                  std::array<double, 3> size,
+                                                  FieldMapping mapping,
+                                                  std::array<double, 2> scales,
+                                                  std::array<double, 2> offset,
+                                                  std::pair<double, double> thickness_domain) {
+        if(model_ == nullptr) {
+            throw std::invalid_argument("field not initialized with detector model parameters");
         }
         if(thickness_domain.first + 1e-9 < model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0 ||
            model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0 < thickness_domain.second - 1e-9) {
@@ -246,7 +282,6 @@ namespace allpix {
             throw std::invalid_argument("end of thickness domain is before begin");
         }
 
-        field_ = std::move(field);
         bins_ = bins;
         mapping_ = mapping;
 

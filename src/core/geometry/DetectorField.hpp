@@ -174,6 +174,23 @@ namespace allpix {
          */
         void setModel(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
 
+    protected:
+        /**
+         * @brief Helper to calculate field size normalization factors and configure them
+         * @param bins The bins of the flat field array
+         * @param size Physical extent of the field
+         * @param mapping Specification of the mapping of the field onto the pixel plane
+         * @param scales Scaling factors for the field size, given in fractions of the field size in x and y
+         * @param offset Offset of the field from the pixel center, given in fractions of the field size in x and y
+         * @param thickness_domain Domain in local coordinates in the thickness direction where the field holds
+         */
+        void set_grid_parameters(std::array<size_t, 3> bins,
+                                 std::array<double, 3> size,
+                                 FieldMapping mapping,
+                                 std::array<double, 2> scales,
+                                 std::array<double, 2> offset,
+                                 std::pair<double, double> thickness_domain);
+
     private:
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
@@ -183,14 +200,27 @@ namespace allpix {
         template <std::size_t... I> inline auto get_impl(size_t offset, std::index_sequence<I...>) const noexcept;
 
         /**
-         * @brief Helper function to calculate the field index based on the distance from its center and to return the values
+         * @brief Helper function to calculate the field index based on the distance from its center
+         * @param index Absolute index in the field grid
          * @param x Distance in local-coordinate x from the center of the field to obtain the values for
          * @param y Distance in local-coordinate y from the center of the field to obtain the values for
          * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @param extrapolate_z Flag whether we should extrapolate
-         * @return Value(s) of the field at the queried point
          */
-        T get_field_from_grid(const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+        inline bool get_grid_index(
+            size_t& index, const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+
+        /**
+         * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
+         *
+         * @param pos Position to calculate coordinates for
+         * @param ref Reference position to calculate relative position to
+         *
+         * @return Tuple with relative x and y coordinates, mapped into the chosen area, and booleans indicating whether
+         *         flipping of vector components is necessary
+         */
+        inline std::tuple<double, double, bool, bool> map_coordinates(const ROOT::Math::XYZPoint& pos,
+                                                                      const ROOT::Math::XYPoint& ref) const;
 
         /**
          * @brief Fast floor-to-int implementation without overflow protection as std::floor
