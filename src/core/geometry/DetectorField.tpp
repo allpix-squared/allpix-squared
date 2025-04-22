@@ -28,16 +28,17 @@ namespace allpix {
             return {};
         }
 
-        // Check if we need to extrapolate along the z axis or if is inside thickness domain:
-        auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
-        if(z < thickness_domain_.first || thickness_domain_.second < z) {
-            return {};
-        }
-
         if(type_ == FieldType::CONSTANT) {
             // Constant field - return value:
             return function_({});
         } else if(type_ == FieldType::LINEAR || type_ == FieldType::CUSTOM1D) {
+
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                return {};
+            }
+
             // Linear field or custom field function with z dependency only - calculate value from configured function:
             return function_(ROOT::Math::XYZPoint(0, 0, z));
         } else {
@@ -50,6 +51,12 @@ namespace allpix {
 
                 // Get field relative to pixel center:
                 return getRelativeTo(pos, ref, extrapolate_z);
+            }
+
+            // Check if we need to extrapolate along the z axis or if is inside thickness domain:
+            auto z = (extrapolate_z ? std::clamp(pos.z(), thickness_domain_.first, thickness_domain_.second) : pos.z());
+            if(z < thickness_domain_.first || thickness_domain_.second < z) {
+                return {};
             }
 
             // Shift the coordinates by the offset configured for the field:
@@ -149,6 +156,10 @@ namespace allpix {
                 px += (x >= 0 ? 0. : 1.0);
                 py += (y >= 0 ? 0. : 1.0);
             }
+
+            // Intentionally do floating-point equality comparison to avoid us landing on the edge of the field
+            px -= (px == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
+            py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
 
             ret_val = get_field_from_grid(px, py, z, extrapolate_z);
 
@@ -256,4 +267,24 @@ namespace allpix {
         function_ = std::move(function);
         type_ = type;
     }
+
+    /*
+     * Vector field template specialization of helper function for field flipping
+     */
+    template <> inline void flip_vector_components<ROOT::Math::XYZVector>(ROOT::Math::XYZVector& vec, bool x, bool y) {
+        vec.SetXYZ((x ? -vec.x() : vec.x()), (y ? -vec.y() : vec.y()), vec.z());
+    }
+
+    /*
+     * Map field template specialization of helper function for field flipping.
+     * Here, no inversion of the field components is required since the map does not rotate.
+     */
+    template <> inline void flip_vector_components<FieldTable>(FieldTable&, bool, bool) {}
+
+    /*
+     * Scalar field template specialization of helper function for field flipping
+     * Here, no inversion of the field components is required
+     */
+    template <> inline void flip_vector_components<double>(double&, bool, bool) {}
+
 } // namespace allpix

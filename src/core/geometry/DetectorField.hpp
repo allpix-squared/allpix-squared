@@ -68,25 +68,32 @@ namespace allpix {
     template <typename T = ROOT::Math::XYZVector> using FieldFunction = std::function<T(const ROOT::Math::XYZPoint& pos)>;
 
     /**
+     * @brief FieldTable is a linearized 5x5 matrix
+     */
+    class FieldTable : public std::array<double, 25> {
+    public:
+        /**
+         * @brief Helper function to translate an iterator of the array into a coordinate of the 5x5 matrix.
+         *
+         * The central pixel has coordinates 0,0, the others around positive or negative values, respectively. This allows
+         * to directly add these coordinates to any pixel index of the sensor.
+         *
+         * @param it Iterator to the array
+         * @return Pair of x and y coordinates.
+         */
+        std::pair<int, int> getCoordinates(const FieldTable::iterator& it) {
+            const auto i = std::distance(this->begin(), it);
+            return {static_cast<int>(i % 5) - 2, static_cast<int>(i / 5) - 2};
+        }
+    };
+
+    /**
      * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
      * @param field Field value, templated to support vector fields and scalar fields
      * @param x     Boolean to indicate flipping in x-direction
      * @param y     Boolean to indicate flipping in y-direction
      */
     template <typename T> void flip_vector_components(T& field, bool x, bool y);
-
-    /*
-     * Vector field template specialization of helper function for field flipping
-     */
-    template <> inline void flip_vector_components<ROOT::Math::XYZVector>(ROOT::Math::XYZVector& vec, bool x, bool y) {
-        vec.SetXYZ((x ? -vec.x() : vec.x()), (y ? -vec.y() : vec.y()), vec.z());
-    }
-
-    /*
-     * Scalar field template specialization of helper function for field flipping
-     * Here, no inversion of the field components is required
-     */
-    template <> inline void flip_vector_components<double>(double&, bool, bool) {}
 
     /**
      * @brief Field instance of a detector
@@ -95,7 +102,6 @@ namespace allpix {
      * scaling or offset parameters.
      */
     template <typename T, size_t N = 3> class DetectorField {
-        friend class Detector;
 
     public:
         /**
@@ -162,13 +168,13 @@ namespace allpix {
                          std::pair<double, double> thickness_domain,
                          FieldType type = FieldType::CUSTOM);
 
-    private:
         /**
          * @brief Set the detector model this field is used for
          * @param model The detector model
          */
-        void set_model(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
+        void setModel(const std::shared_ptr<DetectorModel>& model) { model_ = model; }
 
+    private:
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
          * @param offset The calculated global index to start from
