@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2018-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 #Get the line for the CVMFS status and check if server is transaction

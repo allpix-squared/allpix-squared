@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 source $ROOTSYS/bin/thisroot.sh

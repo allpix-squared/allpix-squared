@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# SPDX-FileCopyrightText: 2020-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2020-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 import sys
