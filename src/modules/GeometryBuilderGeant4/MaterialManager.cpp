@@ -89,6 +89,7 @@ void Materials::set(const std::string& name, G4Material* material) { materials_.
  *   - silicon carbide
  *   - titanium grade 5
  *   - vacuum
+ *   - cesium_lead_bromide
  */
 void Materials::init_materials() {
     G4NistManager* nistman = G4NistManager::Instance();
@@ -127,6 +128,8 @@ void Materials::init_materials() {
     auto* Sn = nistman->FindOrBuildElement("Sn");
     auto* Te = nistman->FindOrBuildElement("Te");
     auto* Pb = nistman->FindOrBuildElement("Pb");
+    auto* Cs = nistman->FindOrBuildElement("Cs");
+    auto* Br = nistman->FindOrBuildElement("Br");
 
     // Create Epoxy material
     auto* Epoxy = new G4Material("Epoxy", 1.3 * CLHEP::g / CLHEP::cm3, 3);
@@ -219,4 +222,16 @@ void Materials::init_materials() {
 
     // Add vacuum
     materials_["vacuum"] = new G4Material("Vacuum", 1, 1.008 * CLHEP::g / CLHEP::mole, CLHEP::universe_mean_density);
+
+    // Create Cesium-Lead Bromide
+    // Increasingly studied material for hard X-ray detection
+    // https://doi.org/10.1063/5.0151902
+    // https://doi.org/10.1038/s41598-024-74384-7
+
+    auto* CsPbBr3 = new G4Material("CsPbBr3", 4.42 * CLHEP::g / CLHEP::cm3, 3);
+    CsPbBr3->AddElement(Cs, 1);
+    CsPbBr3->AddElement(Pb, 1);
+    CsPbBr3->AddElement(Br, 3);
+    materials_["cesium_lead_bromide"] = CsPbBr3;
+
 }

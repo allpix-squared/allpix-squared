@@ -30,7 +30,7 @@ composition and of vendors. The sources for the chosen default values are provid
 | Cadmium Zinc Telluride $`(\ce{Cd_{0.8}Zn_{0.2}Te})`$ | 4.6             | 0.14        | \[[@CdZnTe_Creation], [@CdZnTe_Fano]\] |
 | Diamond                                              | 13.1            | 0.382       | \[[@Diamond_Creation_Fano]\]           |
 | Silicon Carbide $`(\ce{{4H-}SiC})`$                  | 7.6             | 0.1         | \[[@SiC_Creation], [@SiC_Fano]\]       |
-
+| Cesium Lead Bromide (CsPbBr<sub>3</sub>)                      | 5.3             | 0.1         | \[[@CsPbBr3_Creation],[@CsPbBr3_Fano]\]|                                        |
 
 It should be noted that material properties such as the density and composition of materials are defined only in case of
 constructing a Geant4 geometry via the `GeometryBuilderGeant4` module, therefore these values are implemented within the
@@ -49,3 +49,5 @@ respective module.
 [@Diamond_Creation_Fano]: https://doi.org/10.1002/pssa.201600195
 [@SiC_Creation]: https://doi.org/10.1109/NSSMIC.2005.1596542
 [@SiC_Fano]: https://doi.org/10.1016/j.nima.2010.08.046
+[@CsPbBr3_Creation]: https://doi.org/10.1038/s41467-018-04073-3
+[@CsPbBr3_Fano]: https://doi.org/10.1038/s41566-020-00727-1
