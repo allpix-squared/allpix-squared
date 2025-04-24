@@ -6,6 +6,9 @@ ALLPIX_ENABLE_DEFAULT(ON)
 # Define module and return the generated name as MODULE_NAME
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
+# Switch off tests of libAPX
+SET(APX_BUILD_TESTS OFF CACHE INTERNAL "Turn off tests")
+
 # libAPX is required
 INCLUDE(FetchContent)
 FetchContent_Declare(
