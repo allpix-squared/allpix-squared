@@ -99,7 +99,8 @@ The global reference for time measurements is the beginning of the event, i.e. 
 setup. The local time reference is the time of entry of the *first* primary particle of the event into the sensor. This means
 that secondary particles created within the sensor inherit the local time reference from their parent particles in order to
 have a uniform time reference in the sensor. It should be noted that Monte Carlo particles that start the local time frame on
-different detectors do not necessarily have to belong to the same particle track.
+different detectors do not necessarily have to belong to the same particle track. Few exceptions to these definitions exist and
+are commented on in the corresponding module descriptions.
 
 ## Changing and accessing the geometry
 
