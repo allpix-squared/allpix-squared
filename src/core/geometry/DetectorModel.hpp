@@ -49,6 +49,7 @@ namespace allpix {
         DIAMOND,                ///< Diamond
         SILICON_CARBIDE,        ///< Silicon Carbide
         GALLIUM_NITRIDE,        ///< Gallium Nitride
+        CESIUM_LEAD_BROMIDE,    ///< CsPbBr3 (Perovskite)
     };
 
     /**

@@ -24,6 +24,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Koen van den Brandt, Nikhef, [kvandenb](https://gitlab.cern.ch/kvandenb)
 * Ben Bruers, DESY, [bbrueers](https://gitlab.cern.ch/bbrueers)
 * Carsten Daniel Burgard, DESY, [cburgard](https://gitlab.cern.ch/cburgard)
+* Raul Back Campanelli, Brazilian Synchrotron Light Laboratory, [raul-campanelli](https://github.com/raul-campanelli)
 * Maximilian Felix Caspar, DESY, [mcaspar](https://gitlab.cern.ch/mcaspar)
 * Liejian Chen, Institute of High Energy Physics Beijing, [chenlj](https://github.com/chenlj)
 * Naomi Davis, DESY, [naomi](https://gitlab.cern.ch/naomi)
