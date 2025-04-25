@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementation of a brick wall pixel detector model
+ * @brief Implementation of a staggered pixel detector model
  *
  * @copyright Copyright (c) 2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
@@ -9,12 +9,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "BrickwallPixelDetectorModel.hpp"
+#include "StaggeredPixelDetectorModel.hpp"
 #include "core/module/exceptions.h"
 
 using namespace allpix;
 
-BrickwallPixelDetectorModel::BrickwallPixelDetectorModel(std::string type,
+StaggeredPixelDetectorModel::StaggeredPixelDetectorModel(std::string type,
                                                          const std::shared_ptr<DetectorAssembly>& assembly,
                                                          const ConfigReader& reader,
                                                          const Configuration& config)
@@ -29,7 +29,7 @@ BrickwallPixelDetectorModel::BrickwallPixelDetectorModel(std::string type,
     }
 }
 
-ROOT::Math::XYZPoint BrickwallPixelDetectorModel::getMatrixCenter() const {
+ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getMatrixCenter() const {
     // Matrix center is shifted by the pixel offset along x - if the offset is negative, because then the origin of the
     // local coordinate system not the leftmost pixel anymore, the matrix center is calculated relative to the local origin
     return {getMatrixSize().x() / 2.0 - getPixelSize().x() / 2.0 + (offset_ < 0 ? offset_ : 0.) * getPixelSize().x(),
@@ -37,7 +37,7 @@ ROOT::Math::XYZPoint BrickwallPixelDetectorModel::getMatrixCenter() const {
             0};
 }
 
-ROOT::Math::XYZVector BrickwallPixelDetectorModel::getMatrixSize() const {
+ROOT::Math::XYZVector StaggeredPixelDetectorModel::getMatrixSize() const {
     // Matrix size is extended in x by the pixel offset:
     return {(getNPixels().x() + std::fabs(offset_)) * getPixelSize().x(), getNPixels().y() * getPixelSize().y(), 0};
 }
@@ -46,7 +46,7 @@ ROOT::Math::XYZVector BrickwallPixelDetectorModel::getMatrixSize() const {
  * Faster implementation of matrix lookup for local coordinate positions than going through the pixel index
  * This is quite easy for rectangular pixels and matrices.
  */
-bool BrickwallPixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
+bool StaggeredPixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
     // Check if we have an odd or even row
     bool odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
 
@@ -61,14 +61,14 @@ bool BrickwallPixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& pos
     return true;
 }
 
-ROOT::Math::XYZPoint BrickwallPixelDetectorModel::getPixelCenter(const int x, const int y) const {
+ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getPixelCenter(const int x, const int y) const {
     auto size = getPixelSize();
     auto local_x = size.x() * (x + ((y % 2) != 0 ? offset_ : 0.));
     auto local_y = size.y() * y;
     return {local_x, local_y, 0};
 }
 
-std::pair<int, int> BrickwallPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
+std::pair<int, int> StaggeredPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
     // Check if we have an odd or even row
     bool odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
 
@@ -77,7 +77,7 @@ std::pair<int, int> BrickwallPixelDetectorModel::getPixelIndex(const ROOT::Math:
     return {pixel_x, pixel_y};
 }
 
-std::set<Pixel::Index> BrickwallPixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
+std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::Index& idx, const size_t distance) const {
     std::set<Pixel::Index> neighbors;
 
 #pragma GCC diagnostic push
@@ -102,7 +102,7 @@ std::set<Pixel::Index> BrickwallPixelDetectorModel::getNeighbors(const Pixel::In
     return neighbors;
 }
 
-bool BrickwallPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
+bool StaggeredPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
                                                const Pixel::Index& entrant,
                                                const size_t distance) const {
     // Along y, it's just adjacent rows

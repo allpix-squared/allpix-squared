@@ -9,8 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_BRICKWALL_PIXEL_DETECTOR_MODEL_H
-#define ALLPIX_BRICKWALL_PIXEL_DETECTOR_MODEL_H
+#ifndef ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H
+#define ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H
 
 #include <array>
 #include <string>
@@ -28,7 +28,7 @@ namespace allpix {
      * @ingroup DetectorModels
      * @brief Model of a pixel detector with a brick wall layout.
      */
-    class BrickwallPixelDetectorModel : public PixelDetectorModel {
+    class StaggeredPixelDetectorModel : public PixelDetectorModel {
     public:
         /**
          * @brief Constructs the pixel detector model
@@ -37,7 +37,7 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit BrickwallPixelDetectorModel(std::string type,
+        explicit StaggeredPixelDetectorModel(std::string type,
                                              const std::shared_ptr<DetectorAssembly>& assembly,
                                              const ConfigReader& reader,
                                              const Configuration& config);
@@ -109,4 +109,4 @@ namespace allpix {
     };
 } // namespace allpix
 
-#endif // ALLPIX_BRICKWALL_PIXEL_DETECTOR_MODEL_H
+#endif // ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H

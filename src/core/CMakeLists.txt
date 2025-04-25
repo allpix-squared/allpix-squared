@@ -25,9 +25,9 @@ ADD_LIBRARY(
     geometry/DetectorModel.cpp
     geometry/PixelDetectorModel.cpp
     geometry/GeometryManager.cpp
-    geometry/BrickwallPixelDetectorModel.cpp
     geometry/HexagonalPixelDetectorModel.cpp
     geometry/RadialStripDetectorModel.cpp
+    geometry/StaggeredPixelDetectorModel.cpp
     Allpix.cpp)
 
 # Link the dependencies
