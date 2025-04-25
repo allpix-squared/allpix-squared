@@ -233,5 +233,4 @@ void Materials::init_materials() {
     CsPbBr3->AddElement(Pb, 1);
     CsPbBr3->AddElement(Br, 3);
     materials_["cesium_lead_bromide"] = CsPbBr3;
-
 }
