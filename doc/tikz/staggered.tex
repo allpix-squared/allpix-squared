@@ -4,7 +4,7 @@
 \begin{tikzpicture}[thick]
     % Define pixel size and offset
     \def\psize{1.5cm}
-    \def\offset{0.4cm}
+    \def\offset{0.8cm}
 
     % Draw bottom row (no offset)
     \draw[fill=blue!10] (0,0) rectangle (\psize,\psize);
@@ -19,9 +19,9 @@
         node[midway,below] {$\delta$};
 
     % Label pixel dimensions
-    \draw[<->,thick,teal] (2*\psize+0.5cm,0) -- ++(0,\psize)
+    \draw[<->,thick,teal] (2*\psize+\offset +0.1cm,0) -- ++(0,\psize)
         node[midway,right] {$p_y$};
-    \draw[<->,thick,teal] (0,-0.5cm) -- ++(\psize,0)
+    \draw[<->,thick,teal] (0,-0.2cm) -- ++(\psize,0)
         node[midway,below] {$p_x$};
 
 \end{tikzpicture}
