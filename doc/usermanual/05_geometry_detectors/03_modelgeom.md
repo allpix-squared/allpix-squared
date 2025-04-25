@@ -14,8 +14,19 @@ selected via the parameter `geometry` in the detector model file.
 This geometry is the default assumed for any detector without the `geometry` keyword. The individual channels are rectangular
 pixels, the `pixel_size` parameter denotes the pitch in Cartesian `x` and `y` direction.
 
-This geometry can be selected using `geometry = pixel`
+This geometry can be selected using `geometry = pixel`.
 
+## Staggered Pixel Matrix on a Cartesian Grid
+
+This geometry is an extension of the regular Cartesian grid and, in addition to the pixel pitch described above, it allows to
+configure a pixel offset for odd rows of the detector matrix using the `pixel_offset` parameter. The pixel offset needs to be
+provided in fractions of the pixel pitch and needs to be between $-1.0 < p < 1.0$.
+
+![Staggered Matrix](./staggered.png)\
+*Definition of a staggered pixel matrix. $`p_x`$ and $`p_y`$ indicate the pixel pitches along these Cartesian coordinates,
+$`\delta`$ denotes the relative offset of the odd rows*
+
+This geometry can be selected using `geometry = staggered`.
 
 ## Hexagonal Pixels
 
@@ -46,7 +57,7 @@ overall grid dimensions as demonstrated below:
 ![Hexagonal pixel grid](./hexagon_grids.png)\
 *Grid layouts for pointy (left) and flat (right) hexagons with a size of 8-by-4 pixels.*
 
-This geometry can be selected using `geometry = hexagonal`
+This geometry can be selected using `geometry = hexagonal`.
 
 
 ## Radial Strips
