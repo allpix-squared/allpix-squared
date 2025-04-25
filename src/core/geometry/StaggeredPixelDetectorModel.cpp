@@ -47,18 +47,10 @@ ROOT::Math::XYZVector StaggeredPixelDetectorModel::getMatrixSize() const {
  * This is quite easy for rectangular pixels and matrices.
  */
 bool StaggeredPixelDetectorModel::isWithinMatrix(const ROOT::Math::XYZPoint& position) const {
-    // Check if we have an odd or even row
-    bool odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
-
-    // For odd rows, shift everything by the offset (positive or negative)
-    if(position.x() < (-0.5 + (odd_row ? offset_ : 0.)) * pixel_size_.x() ||
-       position.x() > (number_of_pixels_.x() - 0.5 + (odd_row ? offset_ : 0.)) * pixel_size_.x()) {
-        return false;
-    }
-    if(position.y() < -0.5 * pixel_size_.y() || position.y() > (number_of_pixels_.y() - 0.5) * pixel_size_.y()) {
-        return false;
-    }
-    return true;
+    // Get indices of this pixel:
+    const auto indices = getPixelIndex(position);
+    // Check if indices are valid:
+    return PixelDetectorModel::isWithinMatrix(indices.first, indices.second);
 }
 
 ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getPixelCenter(const int x, const int y) const {
