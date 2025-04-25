@@ -22,7 +22,7 @@ StaggeredPixelDetectorModel::StaggeredPixelDetectorModel(std::string type,
 
     // Read tile offset - for now only possible along x, applied to odd rows
     offset_ = config.get<double>("pixel_offset");
-    if(std::fabs(offset_) > 1.0) {
+    if(std::fabs(offset_) >= 1.0) {
         throw InvalidValueError(config,
                                 "pixel_offset",
                                 "pixel offset should be provided in fractions of the pitch and cannot be larger than +-1.0");
