@@ -73,11 +73,22 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
     // Neighbor rows are the same as in a regular aligned pixel model
     for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
-        // In neighbor columns, we have three neighbors in odd rows and only two in even rows
-        // For positive offsets, the leftmost fall away
-        int distance_left = static_cast<int>(distance) - (y % 2 == 0 && offset_ > 0 ? 1 : 0);
-        // For negative offsets, the rightmost fall away
-        int distance_right = static_cast<int>(distance) - (y % 2 == 0 && offset_ < 0 ? 1 : 0);
+        auto distance_left = static_cast<int>(distance);
+        auto distance_right = static_cast<int>(distance);
+
+        // The same row as the pixel in question has three pixels, the neighboring rows only two pixels.
+        auto center_odd_row = (idx.y() % 2 != 0);
+        if(center_odd_row != (y % 2 != 0)) {
+            if(center_odd_row) {
+                // Odd rows of central pixel: for positive offset, left falls away, for negative offset, right falls away
+                distance_left -= (offset_ > 0 ? 1 : 0);
+                distance_right -= (offset_ < 0 ? 1 : 0);
+            } else {
+                // Even rows of central pixel: for negative offset, left falls away, for positive offset, right falls away
+                distance_left -= (offset_ < 0 ? 1 : 0);
+                distance_right -= (offset_ > 0 ? 1 : 0);
+            }
+        }
 
         for(int x = idx.x() - distance_left; x <= idx.x() + distance_right; x++) {
             if(!PixelDetectorModel::isWithinMatrix(x, y)) {
