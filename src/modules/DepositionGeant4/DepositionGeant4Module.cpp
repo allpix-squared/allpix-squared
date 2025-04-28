@@ -468,8 +468,8 @@ void DepositionGeant4Module::finalizeThread() {
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     if(geo_manager_->hasMagneticField()) {
-        G4MagneticField* magneticField = new MagneticField(geo_manager_);
-        G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+        auto* magneticField = new MagneticField(geo_manager_);
+        auto* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
         globalFieldMgr->SetDetectorField(magneticField);
         globalFieldMgr->CreateChordFinder(magneticField);
     }
@@ -605,14 +605,11 @@ void DepositionGeant4Module::record_module_statistics() {
     }
 }
 
-MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manager_(geometry_manager) {};
+MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manager_(geometry_manager){};
 
-// The Geant4 API expects a const double Point[4], not the std::array<> the linter suggests
 void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const { // NOLINT
-    G4cout << "Getting magnetic field from geometry manager" << G4endl;
-    ROOT::Math::XYZVector bfield_vector =
-        geometry_manager_->getMagneticField(ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]));
-    G4cout << bfield_vector << G4endl;
+    const auto point = ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]);
+    ROOT::Math::XYZVector bfield_vector = geometry_manager_->getMagneticField(point);
     Bfield[0] = bfield_vector.x();
     Bfield[1] = bfield_vector.y();
     Bfield[2] = bfield_vector.z();

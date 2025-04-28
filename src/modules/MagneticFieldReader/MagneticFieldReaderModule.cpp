@@ -56,37 +56,39 @@ void MagneticFieldReaderModule::initialize() {
     } else if(field_model == MagneticField::MESH) {
         type = MagneticFieldType::CUSTOM;
 
+        auto offset = config_.get<ROOT::Math::XYZVector>("offset", ROOT::Math::XYZVector());
+
         auto fallback_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
         auto field_data = read_field();
 
-        auto dims = field_data.getDimensionality(); // Vector dimensionality of the field (will be 3 for B-field)
-        auto cellsize = field_data.getSize();       // Physical dimensions for each cell in the field mesh
-        auto ncells = field_data.getDimensions();   // Number of cells in each direction of the field mesh
-        auto field_mesh = field_data.getData();     // The field mesh B-field data as a flattened array
+        auto fieldsize = field_data.getSize();    // Physical dimensions of the field
+        auto ncells = field_data.getDimensions(); // Number of cells in each direction of the field mesh
+        auto field_mesh = field_data.getData();   // The field mesh B-field data as a flattened array
 
         MagneticFieldFunction function =
-            [fallback_field, field_mesh, cellsize, ncells, dims](const ROOT::Math::XYZPoint& coord) {
-                // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centred about the
+            [fallback_field, field_mesh, fieldsize, ncells, offset](const ROOT::Math::XYZPoint& coord) {
+                // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centered about the
                 // origin)
-                auto xind = std::round((coord.X() / cellsize[0]) + (static_cast<double>(ncells[0]) / 2.));
-                auto yind = std::round((coord.Y() / cellsize[1]) + (static_cast<double>(ncells[1]) / 2.));
-                auto zind = std::round((coord.Z() / cellsize[2]) + (static_cast<double>(ncells[2]) / 2.));
+                auto xind = std::round(((coord.X() + offset.X()) * static_cast<double>(ncells[0]) / fieldsize[0]) +
+                                       (static_cast<double>(ncells[0]) / 2.));
+                auto yind = std::round(((coord.Y() + offset.Y()) * static_cast<double>(ncells[1]) / fieldsize[1]) +
+                                       (static_cast<double>(ncells[1]) / 2.));
+                auto zind = std::round(((coord.Z() + offset.Z()) * static_cast<double>(ncells[2]) / fieldsize[2]) +
+                                       (static_cast<double>(ncells[2]) / 2.));
 
                 if(xind < 0 || xind >= static_cast<double>(ncells[0]) || yind < 0 ||
                    yind >= static_cast<double>(ncells[1]) || zind < 0 || zind >= static_cast<double>(ncells[2])) {
                     return fallback_field;
-                } else {
-                    auto* field = field_mesh.get();
-
-                    auto ix = static_cast<uint64_t>(xind);
-                    auto iy = static_cast<uint64_t>(yind);
-                    auto iz = static_cast<uint64_t>(zind);
-
-                    auto bfieldx = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims);
-                    auto bfieldy = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 1);
-                    auto bfieldz = field->at(ix * ncells[1] * ncells[2] * dims + iy * ncells[2] * dims + iz * dims + 2);
-                    return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
                 }
+                auto ix = static_cast<uint64_t>(xind);
+                auto iy = static_cast<uint64_t>(yind);
+                auto iz = static_cast<uint64_t>(zind);
+
+                auto* field = field_mesh.get();
+                auto bfieldx = field->at(ix * ncells[1] * ncells[2] * 3 + iy * ncells[2] * 3 + iz * 3);
+                auto bfieldy = field->at(ix * ncells[1] * ncells[2] * 3 + iy * ncells[2] * 3 + iz * 3 + 1);
+                auto bfieldz = field->at(ix * ncells[1] * ncells[2] * 3 + iy * ncells[2] * 3 + iz * 3 + 2);
+                return ROOT::Math::XYZVector(bfieldx, bfieldy, bfieldz);
             };
 
         geometryManager_->setMagneticFieldFunction(function, type);
