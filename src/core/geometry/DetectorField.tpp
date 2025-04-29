@@ -82,7 +82,7 @@ namespace allpix {
             // Compute using the grid or a function depending on the setting
             if(type_ == FieldType::GRID) {
                 // Calculate the linearized index of the bin in the field vector
-                size_t index;
+                size_t index = 0;
                 if(!get_grid_index(index, x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z)) {
                     return {};
                 }
@@ -129,7 +129,7 @@ namespace allpix {
             py -= (py == 1.0 ? std::numeric_limits<double>::epsilon() : 0.);
 
             // Calculate the linearized index of the bin in the field vector
-            size_t index;
+            size_t index = 0;
             if(!get_grid_index(index, px, py, z, extrapolate_z)) {
                 return {};
             }
