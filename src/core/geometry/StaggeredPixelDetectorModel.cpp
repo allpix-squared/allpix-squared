@@ -108,17 +108,17 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
 bool StaggeredPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
                                                const Pixel::Index& entrant,
                                                const size_t distance) const {
-    // Along y, it's just adjacent rows
-    bool neighbor_in_y = static_cast<size_t>(std::abs(seed.y() - entrant.y())) <= distance;
+    // Double-resolution x positions
+    const int x1d = 2 * seed.x() + ((seed.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    const int x2d = 2 * entrant.x() + ((entrant.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
 
-    // Along x, we need to take the offset into account
-    // For positive offsets, the leftmost fall away in even rows
-    int distance_left = static_cast<int>(distance) - (entrant.y() % 2 == 0 && offset_ > 0 ? 1 : 0);
-    // For negative offsets, the rightmost fall away in even rows
-    int distance_right = static_cast<int>(distance) - (entrant.y() % 2 == 0 && offset_ < 0 ? 1 : 0);
+    const int dx = x2d - x1d;
+    const int dy = entrant.y() - seed.y();
 
-    bool neighbor_in_x = (seed.x() > entrant.x() && (seed.x() - entrant.x()) <= distance_right) ||
-                         (seed.x() < entrant.x() && (entrant.x() - seed.x()) <= distance_left);
+    // Double-resolution squared distance
+    const int dist2 = dx * dx + 4 * dy * dy;
+    // Squared distance threshold
+    const int r2 = (2 * static_cast<int>(distance) + 1) * (2 * static_cast<int>(distance) + 1);
 
-    return (neighbor_in_x && neighbor_in_y);
+    return dist2 <= r2;
 }
