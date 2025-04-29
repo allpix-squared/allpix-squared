@@ -71,30 +71,33 @@ std::set<Pixel::Index> StaggeredPixelDetectorModel::getNeighbors(const Pixel::In
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-    // Neighbor rows are the same as in a regular aligned pixel model
-    for(int y = idx.y() - static_cast<int>(distance); y <= idx.y() + static_cast<int>(distance); y++) {
-        auto distance_left = static_cast<int>(distance);
-        auto distance_right = static_cast<int>(distance);
 
-        // The same row as the pixel in question has three pixels, the neighboring rows only two pixels.
-        auto center_odd_row = (idx.y() % 2 != 0);
-        if(center_odd_row != (y % 2 != 0)) {
-            if(center_odd_row) {
-                // Odd rows of central pixel: for positive offset, left falls away, for negative offset, right falls away
-                distance_left -= (offset_ > 0 ? 1 : 0);
-                distance_right -= (offset_ < 0 ? 1 : 0);
-            } else {
-                // Even rows of central pixel: for negative offset, left falls away, for positive offset, right falls away
-                distance_left -= (offset_ < 0 ? 1 : 0);
-                distance_right -= (offset_ > 0 ? 1 : 0);
-            }
-        }
+    // Double-resolution integer coordinates for the center
+    const int cx = 2 * idx.x() + ((idx.y() % 2 != 0) ? (offset_ > 0 ? 1 : -1) : 0);
+    // Squared distance threshold
+    const int r2 = (2 * static_cast<int>(distance) + 1) * (2 * static_cast<int>(distance) + 1);
 
-        for(int x = idx.x() - distance_left; x <= idx.x() + distance_right; x++) {
-            if(!PixelDetectorModel::isWithinMatrix(x, y)) {
-                continue;
+    // Bounding box is distance in all directions, plus 1 due to diagonal reach
+    for(int ny = idx.y() - static_cast<int>(distance); ny <= idx.y() + static_cast<int>(distance); ++ny) {
+        for(int nx = idx.x() - static_cast<int>(distance); nx <= idx.x() + static_cast<int>(distance); ++nx) {
+
+            // Convert neighbor x to double-resolution center x
+            auto ncx = 2 * nx;
+            if(ny % 2 != 0) {
+                ncx += (offset_ > 0) ? 1 : -1;
             }
-            neighbors.insert({x, y});
+
+            // Squared distance in scaled space
+            auto dx2 = ncx - cx;
+            auto dy2 = ny - idx.y();
+
+            // Check distance to central pixel, add + 1 to distance to include diagonal elements
+            if((dx2 * dx2 + dy2 * dy2 * 4) <= r2) {
+                if(!PixelDetectorModel::isWithinMatrix(nx, ny)) {
+                    continue;
+                }
+                neighbors.insert({nx, ny});
+            }
         }
     }
 #pragma GCC diagnostic pop
