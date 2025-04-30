@@ -28,6 +28,10 @@ StaggeredPixelDetectorModel::StaggeredPixelDetectorModel(std::string type,
             "pixel_offset",
             "pixel offset should be provided in fractions of the pitch and cannot be larger than or equal to +-1.0");
     }
+    if(std::fabs(offset_) < std::numeric_limits<double>::epsilon()) {
+        throw InvalidValueError(
+            config, "pixel_offset", "for pixel offset of zero, the regular pixel geometry should be used");
+    }
 }
 
 ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getMatrixCenter() const {
