@@ -42,6 +42,7 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/geometry/PixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/HexagonalPixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/geometry/RadialStripDetectorModel.cpp
+    ${ALLPIX_SRC}/core/geometry/StaggeredPixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
 # Include Eigen dependency

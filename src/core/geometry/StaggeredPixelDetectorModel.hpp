@@ -2,15 +2,15 @@
  * @file
  * @brief Pixel detector model
  *
- * @copyright Copyright (c) 2017-2025 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2025 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef ALLPIX_PIXEL_DETECTOR_MODEL_H
-#define ALLPIX_PIXEL_DETECTOR_MODEL_H
+#ifndef ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H
+#define ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H
 
 #include <array>
 #include <string>
@@ -21,19 +21,14 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
-#include "core/config/exceptions.h"
-#include "core/geometry/DetectorModel.hpp"
-#include "core/utils/log.h"
-#include "objects/Pixel.hpp"
-#include "tools/ROOT.h"
+#include "PixelDetectorModel.hpp"
 
 namespace allpix {
     /**
      * @ingroup DetectorModels
-     * @brief Model of a generic pixel detector. This model is further extended by specialized pixel detector models.
+     * @brief Model of a pixel detector with a brick wall layout.
      */
-    class PixelDetectorModel : public DetectorModel {
+    class StaggeredPixelDetectorModel : public PixelDetectorModel {
     public:
         /**
          * @brief Constructs the pixel detector model
@@ -42,52 +37,29 @@ namespace allpix {
          * @param reader Configuration reader with description of the model
          * @param config Configuration reference holding the unnamed section of detector configuration
          */
-        explicit PixelDetectorModel(std::string type,
-                                    const std::shared_ptr<DetectorAssembly>& assembly,
-                                    const ConfigReader& reader,
-                                    const Configuration& config);
+        explicit StaggeredPixelDetectorModel(std::string type,
+                                             const std::shared_ptr<DetectorAssembly>& assembly,
+                                             const ConfigReader& reader,
+                                             const Configuration& config);
 
         /**
-         * @brief Returns if a local position is within the sensitive device
-         * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is within the sensor, false otherwise
-         */
-        bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const override;
-
-        /**
-         * @brief Returns if a local position is on the sensor boundary
-         * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is on the sensor boundary, false otherwise
-         */
-        bool isOnSensorBoundary(const ROOT::Math::XYZPoint& local_pos) const override;
-
-        /**
-         * @brief Calculate exit point of step outside sensor volume from one point inside the sensor (before step) and one
-         * point outside (after step).
-         * @throws std::invalid_argument if no intersection of track segment with sensor volume can be found
-         * @param  inside Position before the step, inside the sensor volume
-         * @param  outside  Position after the step, outside the sensor volume
-         * @return Exit point of the sensor in local coordinates
+         * @brief Get local coordinate of the position and rotation center in global frame
+         * @note It can be a bit counter intuitive that this is not usually the origin, neither the geometric center of the
+         * model, but the geometric center of the sensitive part. This way, the position of the sensing element is invariant
+         * under rotations
          *
-         * @note This method uses the Liang-Barsky clipping of a line segment with a box
+         * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
-        ROOT::Math::XYZPoint getSensorIntercept(const ROOT::Math::XYZPoint& inside,
-                                                const ROOT::Math::XYZPoint& outside) const override;
+        ROOT::Math::XYZPoint getMatrixCenter() const override;
 
         /**
-         * @brief Returns if a pixel index is within the grid of pixels defined for the device
-         * @param pixel_index Pixel index to be checked
-         * @return True if pixel_index is within the pixel grid, false otherwise
+         * @brief Get total size of the pixel grid
+         * @return Size of the pixel grid
+         *
+         * @warning The grid has zero thickness
+         * @note This is basically a 2D method, but provided in 3D because it is primarily used there
          */
-        bool isWithinMatrix(const Pixel::Index& pixel_index) const override;
-
-        /**
-         * @brief Returns if a set of pixel coordinates is within the grid of pixels defined for the device
-         * @param x X- (or column-) coordinate to be checked
-         * @param y Y- (or row-) coordinate to be checked
-         * @return True if pixel coordinates are within the pixel grid, false otherwise
-         */
-        bool isWithinMatrix(const int x, const int y) const override;
+        ROOT::Math::XYZVector getMatrixSize() const override;
 
         /**
          * @brief Returns if a position is within the grid of pixels defined for the device
@@ -114,12 +86,6 @@ namespace allpix {
         std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const override;
 
         /**
-         * @brief Return a set containing all pixels of the matrix
-         * @return Set of all pixel indices of the matrix
-         */
-        std::set<Pixel::Index> getPixels() const override;
-
-        /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance
          * @param idx       Index of the pixel in question
          * @param distance  Distance for pixels to be considered neighbors
@@ -138,9 +104,9 @@ namespace allpix {
          */
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
 
-    protected:
-        void validate() override;
+    private:
+        double offset_;
     };
 } // namespace allpix
 
-#endif // ALLPIX_PIXEL_DETECTOR_MODEL_H
+#endif // ALLPIX_Staggered_PIXEL_DETECTOR_MODEL_H
