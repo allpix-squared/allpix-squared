@@ -31,7 +31,6 @@
 
 #include "G4FieldManager.hh"
 #include "G4TransportationManager.hh"
-#include "G4UniformMagField.hh"
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
@@ -469,17 +468,10 @@ void DepositionGeant4Module::finalizeThread() {
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     if(geo_manager_->hasMagneticField()) {
-        MagneticFieldType magnetic_field_type_ = geo_manager_->getMagneticFieldType();
-
-        if(magnetic_field_type_ == MagneticFieldType::CONSTANT) {
-            ROOT::Math::XYZVector b_field = geo_manager_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
-            G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(b_field.x(), b_field.y(), b_field.z()));
-            G4FieldManager* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-            globalFieldMgr->SetDetectorField(magField);
-            globalFieldMgr->CreateChordFinder(magField);
-        } else {
-            throw ModuleError("Magnetic field enabled, but not constant. This can't be handled by this module yet.");
-        }
+        auto* magneticField = new MagneticField(geo_manager_);
+        auto* globalFieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+        globalFieldMgr->SetDetectorField(magneticField);
+        globalFieldMgr->CreateChordFinder(magneticField);
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
@@ -611,4 +603,14 @@ void DepositionGeant4Module::record_module_statistics() {
     for(auto& sensor : sensors_) {
         total_charges_ += sensor->getTotalDepositedCharge();
     }
+}
+
+MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manager_(geometry_manager){};
+
+void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const { // NOLINT
+    const auto point = ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]);
+    ROOT::Math::XYZVector bfield_vector = geometry_manager_->getMagneticField(point);
+    Bfield[0] = bfield_vector.x();
+    Bfield[1] = bfield_vector.y();
+    Bfield[2] = bfield_vector.z();
 }
