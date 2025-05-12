@@ -120,6 +120,12 @@ namespace allpix {
 
         unsigned int max_multiplication_level_{};
 
+        double relative_permativity_{};
+
+        // z bounds for capacitor
+        double z_lim_pos_;
+        double z_lim_neg_;
+
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
@@ -129,6 +135,9 @@ namespace allpix {
 
         // Precalculated value for Boltzmann constant:
         double boltzmann_kT_;
+
+        // Predefined value for Coulomb constant in units MV mm e-1
+        double coulomb_K_;
 
         // Predefined values for electron/hole velocity calculation in magnetic fields
         double electron_Hall_;

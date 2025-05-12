@@ -80,9 +80,12 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
     boltzmann_kT_ = Units::get(8.6173333e-5, "eV/K") * temperature_;
+    coulomb_K_ =  1.43996454e-12; //Units::get(1.43996454e-12, "MV mm/e");
     surface_reflectivity_ = config_.get<double>("surface_reflectivity");
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
+
+    relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -135,6 +138,25 @@ void InteractivePropagationModule::initialize() {
 
     // Impact ionization model
     multiplication_ = ImpactIonization(config_);
+
+
+    // TODO: Determine the distance from the model origin to electrodes in both z-directions
+    auto model_size = model_->getSize();
+    LOG(INFO) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
+    
+    auto model_center = model_->getModelCenter();
+    LOG(INFO) << "Model center: " << model_center.x() << ", " << model_center.y() << ", " << model_center.z();
+
+    auto sensor_center = model_->getSensorCenter();
+    LOG(INFO) << "Sensor center: " << sensor_center.x() << ", " << sensor_center.y() << ", " << sensor_center.z();
+
+    auto matrix_center = model_->getMatrixCenter();
+    LOG(INFO) << "matrix center: " << matrix_center.x() << ", " << matrix_center.y() << ", " << matrix_center.z();
+
+    z_lim_neg_ = model_center.z() - model_size.z() / 2; //TODO: Correct algorithm to not assume it's in the center
+    z_lim_pos_ = model_center.z() + model_size.z() / 2;
+
+    // z_lim_neg_ = model_->intersect(ROOT::Math::XYZVector(0, 0, -1), ROOT::Math::XYZPoint(0,0,0));
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_ > 0.001) {
@@ -532,31 +554,100 @@ InteractivePropagationModule::propagate_together(Event* event,
     // Survival probability of this charge carrier package, evaluated at every step
     allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
 
+    // Create vectors that store charge information in a place that can be modified (need to be here since they are used in dynamic field, but they are set to initial states below)
+    std::vector<ROOT::Math::XYZPoint> charge_locations;
+    // std::vector<int> charge_amounts;
+    std::vector<double> charge_times;
+    std::vector<allpix::CarrierState> charge_states;
+    double_t time = 0;
+    int numSamePos = 0;
+
     //Define a function to compute the e-field given a desired local point and the list of charges
         //TODO: Implement a filter to only calculate for charge with the same time (or within a certain time range) as well as Trapped charges that have larger time
     auto dynamic_efield = [&](ROOT::Math::XYZPoint point) -> Eigen::Vector3d {
 
         // for now just return nothing for the dynamic field
-        return Eigen::Vector3d(0,0,0);
+        // return Eigen::Vector3d(0,0,0);
+
+        double dist_threshold_squared = 0.25; //mm
 
         ROOT::Math::XYZVector field = ROOT::Math::XYZVector(0,0,0);
 
-        for (PropagatedCharge charge : propagating_charges){
-            ROOT::Math::XYZPoint local_position = charge.getLocalPosition();
-            if (local_position == point){
+        bool foundSamePos = false; // Check to pass over current
+        // int numSamePos = 0;
+        for (int i = 0; i < charge_locations.size(); i++){
+
+            // Only get fields from charges that have deposition time less than the current time (skip the ones that haven't been deposited yet)
+            // This means that trapped charges at future times are okay, but not charges that haven't been deposited yet
+            // Charges that have reached the sensor (HALTED) are assumed to be swept away
+            if (propagating_charges[i].getLocalTime() > time || charge_states[i] == allpix::CarrierState::HALTED){
                 continue;
             }
-            const double K = 100; //Coulomb's Constant: K = 8.99 × 10 9 N ⋅ m 2 /C 2 (i need to find the correct units to set correct value here)
-            auto q = charge.getCharge();
-            auto dist_vector = point - local_position; // A vector between the desired points
-            auto dist_mag2 = dist_vector.Mag2();
+
+            ROOT::Math::XYZPoint local_position = charge_locations[i];
+            if (local_position == point){
+                numSamePos += 1;
+                if (!foundSamePos){
+                    numSamePos -= 1; // ignore the actual same charge (one per loop)
+                    continue;
+                }
+                // local_position = // TODO: move randomly the overlapping charges
+            }
+            // if (local_position == point && !foundSamePos){ // This just skips unnecessary calculations for dist_vector = 0. Replace with above code if implementing random offsets.
+            //     foundSamePos = true;
+            //     continue;
+            // }
+
+            // Get the correct signed charge
+            int q = propagating_charges[i].getCharge();
+            if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                q *= -1;
+            }
+            
+            auto dist_vector = point - local_position; // A vector between the desired points (mm?)
+            auto dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared); // limit the distance to prevent numerical explosion
             auto dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            field = field + dist_vector * (K * q / dist_mag2 / dist_mag);
+            // if (dist_vector.x() < dist_threshold && dist_vector.y() < dist_threshold && dist_vector.z() < dist_threshold){
+            //     allpix::uniform_real_distribution<double> gauss_distribution(dist_threshold, dist_threshold*2);
+            //     auto x = gauss_distribution(event->getRandomEngine());
+            //     auto y = gauss_distribution(event->getRandomEngine());
+            //     auto z = gauss_distribution(event->getRandomEngine());
+            //     local_position = local_position + dist_vector/(dist_mag+dist_threshold/10)*dist_threshold + 
+            // }
+            
+            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * q / dist_mag2 / dist_mag); // Add the charges field to the net field at the point
+
+            // Now do the same for the mirror charges based on z_lim_neg and z_lim_pos
+            // Note: this assumes a parallel plate sensor (symmetry about z) in order to simplify the poisson equation to the mirror charge solution (potential is constant on each plate)
+            ROOT::Math::XYZPoint mirror_position_neg = ROOT::Math::XYZPoint(local_position.x(), local_position.y(), 2*z_lim_neg_ - local_position.z());
+            ROOT::Math::XYZPoint mirror_position_pos = ROOT::Math::XYZPoint(local_position.x(), local_position.y(), 2*z_lim_pos_ - local_position.z());
+
+            // Apply field for negative mirror charge
+            dist_vector = point - mirror_position_neg; // reuse the same variables to save some time
+            dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared);
+            dist_mag = ROOT::Math::sqrt(dist_mag2);
+
+            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag); // Mirror charges have opposite charge
+
+            // Apply field for positive mirror charge
+            dist_vector = point - mirror_position_pos;
+            dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared);
+            dist_mag = ROOT::Math::sqrt(dist_mag2);
+
+            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag);
             
         }
 
         Eigen::Vector3d output = Eigen::Vector3d(field.x(),field.y(),field.z());
+
+        if (time < 4 && std::fmod(time, 3.5) < timestep_/2){
+            LOG(DEBUG) << time << "ns: field = (" << output.x() << ", " << output.y() << ", " << output.z() << ")";
+        }
+
+        // if (numSamePos > 0){
+        //     LOG(DEBUG) << numSamePos << " charges skipped due to overlapping positions at time " << time << "ns";
+        // }
 
         return output;
     };
@@ -639,16 +730,21 @@ InteractivePropagationModule::propagate_together(Event* event,
 
         pixel_map_vector.push_back(pixel_map);
 
+        charge_locations.push_back(charge.getLocalPosition());
+        // charge_amounts.push_back(charge.getCharge());
+        charge_times.push_back(charge.getLocalTime());
+        charge_states.push_back(charge.getState());
     }
 
     // Continue time propagation until no more objects remain in propagating charge vector 
     Eigen::Vector3d last_position;
     ROOT::Math::XYZVector efield{}, last_efield{};
     size_t next_idx = 0;
-    for(double_t time = 0; time < integration_time_; time += timestep_) { // time is the threshold value for each iteration
+    for(time = 0; time < integration_time_; time += timestep_) { // time is the threshold value for each iteration
 
-        if(std::fmod(time, 10) < 0.005){
+        if(std::fmod(time, 1) < timestep_){
             LOG(INFO) << "Time during integration has reached " << time << "ns of " << integration_time_ << "ns";
+            // LOG(DEBUG) << "Total number of charges skipped due to overlapping positions: " << numSamePos;
         }
 
         // Loop over all charges remaining in the detector
@@ -657,8 +753,11 @@ InteractivePropagationModule::propagate_together(Event* event,
             auto &charge = propagating_charges[i];
             auto &runge_kutta = runge_kutta_vector[i]; // Must be a vector in order to keep data from iteration to iteration
             auto position = runge_kutta.getValue();
-            auto state = charge.getState();
+            // auto state = charge.getState();
             auto type = charge.getType();
+
+            // ROOT::Math::XYZPoint position = charge_locations[i];
+            allpix::CarrierState state = charge_states[i];
 
             if(output_linegraphs_) { // Set final state of charge carrier for plotting:
                 auto time_idx = static_cast<size_t>(runge_kutta_vector[i].getTime() / output_plots_step_);
@@ -693,8 +792,10 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             // Execute a Runge Kutta step
             auto step = runge_kutta.step();
+
             //TODO: Set the charge objects time to the new time so that it can be used in the electric field function for other charges. 
             // It might need to be in a different place so that they don't move out of range (in time) of the other charges.
+            charge_times[i]  = runge_kutta.getTime();
             
             // Get the new position due to the electric field
             position = runge_kutta.getValue();
@@ -752,6 +853,9 @@ InteractivePropagationModule::propagate_together(Event* event,
             // Update final position after applying corrections from surface intercepts
             runge_kutta.setValue(position);
 
+            // Update position vector
+            charge_locations[i] = convertVectorToPoint(position);
+
             // Update step length histogram
             if(output_plots_) {
                 step_length_histo_->Fill(static_cast<double>(Units::convert(step.value.norm(), "um")));
@@ -784,7 +888,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                 }
             }
 
-            // Don't apply multiplication
+            // Don't apply multiplication (charge amounts stay constant)
 
             // Signal calculation:
 
@@ -874,9 +978,9 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             // Set the values in vectors to keep them in sync with the propagation
             // TODO: Change the storage of the charges' information such as state and position so that they can be updated
-            // charge.getState() = state;
+            charge_states[i] = state;
 
-
+            
         }
 
     }
