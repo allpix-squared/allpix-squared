@@ -24,6 +24,7 @@
 #include "objects/DepositedCharge.hpp"
 
 #include "../TransientPropagation/TransientPropagationModule.hpp"
+#include <TGraph.h>
 
 namespace allpix {
     /**
@@ -116,15 +117,18 @@ namespace allpix {
             output_linegraphs_trapped_{};
         unsigned int distance_{};
         unsigned int charge_per_step_{};
-        unsigned int max_charge_groups_{};
+        unsigned int max_charge_groups_{}; // Changed to be the max out of all deposits (may be exceeded due to deposits with very few charges)
 
         unsigned int max_multiplication_level_{};
 
         double relative_permativity_{};
 
         // z bounds for capacitor
-        double z_lim_pos_;
-        double z_lim_neg_;
+        double z_lim_pos_{};
+        double z_lim_neg_{};
+
+        // minimum threshold for charge distances in coulomb repulsion
+        double coulomb_threshold_squared_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
@@ -174,6 +178,7 @@ namespace allpix {
         Histogram<TH1D> induced_charge_primary_histo_, induced_charge_primary_e_histo_, induced_charge_primary_h_histo_;
         Histogram<TH1D> induced_charge_secondary_histo_, induced_charge_secondary_e_histo_,
             induced_charge_secondary_h_histo_;
+        TGraph *drift_rms_e_graph_, *drift_rms_h_graph_;
     };
 
 } // namespace allpix

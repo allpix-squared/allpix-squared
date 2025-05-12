@@ -43,6 +43,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
+    config_.setDefault<double>("coulomb_threshold", Units::get(0.0005,"mm"));
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
@@ -88,6 +89,10 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
 
     relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
+    
+    coulomb_threshold_squared_ = config.get<double>("coulomb_threshold") * config.get<double>("coulomb_threshold");
+
+    //TODO: Make parameters to turn on/off diffusion and coulomb repulsion
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -96,13 +101,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
     output_plots_step_ = config_.get<double>("output_plots_step");
 
-    // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
-    // FIXME: Review if this is really the case or we can still use multithreading
-    if(!(config_.get<bool>("output_animations") || output_linegraphs_)) {
-    allow_multithreading();
-    } else {
-    LOG(WARNING) << "Per-event line graphs or animations requested, disabling parallel event processing";
-    }
+    // Multithreading of this module is always disabled
 
     // Parameter for charge transport in magnetic field (approximated from graphs:
     // http://www.ioffe.ru/SVA/NSM/Semicond/Si/electric.html) FIXME
@@ -413,6 +412,10 @@ void InteractivePropagationModule::initialize() {
                                                      -model_->getSensorSize().z() / 2.,
                                                      model_->getSensorSize().z() / 2.);
         }
+        drift_rms_e_graph_ = new TGraph();
+        drift_rms_e_graph_->SetNameTitle("drift_rms_e_graph","Spread of the electrons;Drift time [ns];RMS [mm]");
+        drift_rms_h_graph_ = new TGraph();
+        drift_rms_h_graph_->SetNameTitle("drift_rms_h_graph","Spread of the holes;Drift time [ns];RMS [mm]");
     }
 }
 
@@ -429,6 +432,31 @@ void InteractivePropagationModule::run(Event* event) {
     // Create vector of propagating charges to store each charge groups position, location, time, type, etc. at the start of propagation
     std::vector<PropagatedCharge> propagating_charges;
 
+    //Create vector to temporarily store the applicable deposited charges
+    std::vector<DepositedCharge> deposited_charges;
+
+    //Storage of total charge
+    unsigned int total_deposited_charge = 0;
+
+    // Initial loop just to get the total charge of applicable charges
+    for(const auto& deposit : deposits_message->getData()) {
+
+        // Only process if within requested integration time: 
+        if(deposit.getLocalTime() > integration_time_) {
+            continue;
+        }
+
+        total_deposits_++;
+        total_deposited_charge += deposit.getCharge();
+
+    }
+
+    auto default_charge_per_step = total_deposited_charge / max_charge_groups_; // The number of charges per charge group based on the total amount of charge
+
+    // for(const auto& deposit : deposited_charges){
+
+    LOG(INFO) << total_deposits_ << " total deposits must contain more than "<<default_charge_per_step<<" charges per charge group";
+
     // Loop over all deposits for propagation
     for(const auto& deposit : deposits_message->getData()) {
 
@@ -441,22 +469,24 @@ void InteractivePropagationModule::run(Event* event) {
             continue;
         }
 
-        total_deposits_++;
+        LOG(DEBUG) << "Set of "<<deposit.getCharge()<<" charge carriers (" << deposit.getType() << ") on "
+                   << Units::display(deposit.getLocalPosition(), {"mm", "um"});
+
+        // The maximum number of charge groups allowed for this deposit to remain below the maximum set for all deposits
+            // If this value is less than 
+        auto max_charge_groups = static_cast<double>(deposit.getCharge()) / default_charge_per_step; 
+
+        auto charge_per_step = charge_per_step_;
+        if(max_charge_groups > 0 && deposit.getCharge() / charge_per_step > max_charge_groups) { // Check if number of charge groups from using the specified group size would exceed rate allowed by max
+            charge_per_step = static_cast<unsigned int>(ceil(default_charge_per_step));
+            deposits_exceeding_max_groups_++;
+            // LOG(INFO) << "Deposited charge: " << deposit.getCharge()
+            //           << ", which exceeds the maximum number of charge groups allowed ("<< max_charge_groups <<" for this deposit). Increasing charge_per_step to "
+            //           << charge_per_step << " for this deposit.";
+        }
 
         // Get the charge of each deposit and determine the size of the charge groups
         unsigned int charges_remaining = deposit.getCharge();
-
-        LOG(DEBUG) << "Set of charge carriers (" << deposit.getType() << ") on "
-                   << Units::display(deposit.getLocalPosition(), {"mm", "um"});
-
-        auto charge_per_step = charge_per_step_;
-        if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
-            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
-            deposits_exceeding_max_groups_++;
-            LOG(INFO) << "Deposited charge: " << deposit.getCharge()
-                      << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
-                      << charge_per_step << " for this deposit.";
-        }
     
         // Split the deposit into charge groups
         while(charges_remaining > 0) {
@@ -487,7 +517,10 @@ void InteractivePropagationModule::run(Event* event) {
         }
     }
 
-    LOG(INFO) << "Number of charge groups: " << propagating_charges.size(); 
+    LOG(INFO) << "Number of charge groups: " << propagating_charges.size() << "(the " << deposits_exceeding_max_groups_ << " deposits are compressed to " << default_charge_per_step << " charges per step)"; 
+    if (propagating_charges.size() > max_charge_groups_){
+        LOG(WARNING) << "Number of charge groups exceeded set limit of " << max_charge_groups_ << " due to the large number of deposits with low charge quantity (true limit = set limit + number of deposits)";
+    }
 
     //Now we have a list of charges to propagate in a single function call
     auto [recombined_charges_count, trapped_charges_count, propagated_charges_count] = propagate_together(event, propagating_charges, propagated_charges, output_plot_points);
@@ -565,12 +598,10 @@ InteractivePropagationModule::propagate_together(Event* event,
     //A function to compute the changing component of the e-field given a desired local point and the list of charges
     auto dynamic_efield = [&](ROOT::Math::XYZPoint point) -> Eigen::Vector3d {
 
-        double dist_threshold_squared = 0.25; //mm // Used to ignore singularity (TODO: decrease to more reasonable value)
-
         ROOT::Math::XYZVector field = ROOT::Math::XYZVector(0,0,0);
 
         bool foundSamePos = false; // Check to pass over current
-        for (int i = 0; i < charge_locations.size(); i++){
+        for (unsigned int i = 0; i < charge_locations.size(); i++){
 
             // Only get fields from charges that have deposition time less than the current time (skip the ones that haven't been deposited yet)
             // This means that trapped charges at future times are okay, but not charges that haven't been deposited yet
@@ -594,14 +625,15 @@ InteractivePropagationModule::propagate_together(Event* event,
             // }
 
             // Get the correct signed charge
-            int q = propagating_charges[i].getCharge();
-            if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
-                q *= -1;
-            }
+            int q = static_cast<int>(propagating_charges[i].getType()) * propagating_charges[i].getCharge();
             
             auto dist_vector = point - local_position; // A vector between the desired points (mm?)
-            auto dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared); // limit the distance to prevent numerical explosion
+            auto dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
             auto dist_mag = ROOT::Math::sqrt(dist_mag2);
+
+            if (dist_mag2 == coulomb_threshold_squared_){
+                numSamePos += 1;
+            }
 
             // if (dist_vector.x() < dist_threshold && dist_vector.y() < dist_threshold && dist_vector.z() < dist_threshold){
             //     allpix::uniform_real_distribution<double> gauss_distribution(dist_threshold, dist_threshold*2);
@@ -620,14 +652,14 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             // Apply field for negative mirror charge
             dist_vector = point - mirror_position_neg; // reuse the same variables to save some time
-            dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared);
+            dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_);
             dist_mag = ROOT::Math::sqrt(dist_mag2);
 
             field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag); // Mirror charges have opposite charge
 
             // Apply field for positive mirror charge
             dist_vector = point - mirror_position_pos;
-            dist_mag2 = std::min(dist_vector.Mag2(), dist_threshold_squared);
+            dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_);
             dist_mag = ROOT::Math::sqrt(dist_mag2);
 
             field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag);
@@ -642,7 +674,7 @@ InteractivePropagationModule::propagate_together(Event* event,
         // }
 
         // if (numSamePos > 0){
-        //     LOG(DEBUG) << numSamePos << " charges skipped due to overlapping positions at time " << time << "ns";
+        //     LOG(DEBUG) << numSamePos << " charges skipped or capped due to similar positions at time " << time << "ns";
         // }
 
         return output;
@@ -737,9 +769,69 @@ InteractivePropagationModule::propagate_together(Event* event,
     size_t next_idx = 0;
     for(time = 0; time < integration_time_; time += timestep_) { // time is the threshold value for each iteration
 
-        if(std::fmod(time, 1) < timestep_){ // For debugging to see integration progress
-            LOG(INFO) << "Time during integration has reached " << time << "ns of " << integration_time_ << "ns";
+        if(std::fmod(time, output_plots_step_) < timestep_){ // For debugging to see integration progress
+            LOG(INFO) << "Time has reached " << time << "ns of " << integration_time_ << "ns";
             // LOG(DEBUG) << "Total number of charges skipped due to overlapping positions: " << numSamePos;
+
+            // Get RMS of the charge distribution
+
+            // Start by getting the mean
+            double x_mean_e = 0; double y_mean_e = 0; double z_mean_e = 0;
+            double x_mean_h = 0; double y_mean_h = 0; double z_mean_h = 0;
+            
+            auto num_charges = charge_locations.size();
+            for (unsigned int i = 0; i < num_charges; i++){
+                auto location = charge_locations[i];
+
+                if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                    x_mean_e += location.x();
+                    y_mean_e += location.y();
+                    z_mean_e += location.z();
+                }else{
+                    x_mean_h += location.x();
+                    y_mean_h += location.y();
+                    z_mean_h += location.z();
+                }
+            }
+            x_mean_e = x_mean_e/num_charges;
+            y_mean_e = y_mean_e/num_charges;
+            z_mean_e = z_mean_e/num_charges;
+            x_mean_h = x_mean_h/num_charges;
+            y_mean_h = y_mean_h/num_charges;
+            z_mean_h = z_mean_h/num_charges;
+
+            // Now sum the square of the residuals (split up into x, y and z)
+            double rms_x_e = 0; double rms_y_e = 0; double rms_z_e = 0;
+            double rms_x_h = 0; double rms_y_h = 0; double rms_z_h = 0;
+
+            for (unsigned int i = 0; i < num_charges; i++){
+                auto location = charge_locations[i];
+
+                if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                    rms_x_e += (location.x() - x_mean_e)*(location.x() - x_mean_e);
+                    rms_y_e += (location.y() - y_mean_e)*(location.y() - y_mean_e);
+                    rms_z_e += (location.z() - z_mean_e)*(location.z() - z_mean_e);
+                }else{
+                    rms_x_h += (location.x() - x_mean_h)*(location.x() - x_mean_h);
+                    rms_y_h += (location.y() - y_mean_h)*(location.y() - y_mean_h);
+                    rms_z_h += (location.z() - z_mean_h)*(location.z() - z_mean_h);
+                }
+            }
+
+            double rms_total_e = sqrt(rms_x_e + rms_y_e + rms_z_e); // The rms_i_e are already squared in this form
+            double rms_total_h = sqrt(rms_x_h + rms_y_h + rms_z_h);
+            // rms_x_e = sqrt(rms_x_e);
+            // rms_y_e = sqrt(rms_y_e);
+            // rms_z_e = sqrt(rms_z_e);
+            // rms_x_h = sqrt(rms_x_h);
+            // rms_y_h = sqrt(rms_y_h);
+            // rms_z_h = sqrt(rms_z_h); //TODO: Get these into graphs as well (perhaps a TMultiGraph?)
+
+            LOG(INFO) << "  RMS: " << rms_total_e << " for electrons and " << rms_total_h << " for holes";
+
+            drift_rms_e_graph_->AddPoint(time, rms_total_e);
+            drift_rms_h_graph_->AddPoint(time, rms_total_h);
+
         }
 
         // Loop over all charges remaining in the detector
@@ -1086,5 +1178,7 @@ void InteractivePropagationModule::finalize() {
             gain_h_vs_y_->Write();
             gain_h_vs_z_->Write();
         }
+        drift_rms_e_graph_->Write();
+        drift_rms_h_graph_->Write();
     }
 }
