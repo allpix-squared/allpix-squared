@@ -525,6 +525,8 @@ void InteractivePropagationModule::run(Event* event) {
     }
 
     // The number of charges per charge group based on the total amount of charge
+    // TODO: Add the ability to uncap by setting zero
+    // TODO: Check how many charge groups will be created by each deposit and dynamically increase the charge per step until the desired max is reached
     auto default_charge_per_step = total_deposited_charge / std::max(max_charge_groups_,static_cast<unsigned int>(1));; 
 
     LOG(INFO) << total_deposits_ << " total deposits must be split to conatin more than " << default_charge_per_step << " charges per charge group";
@@ -703,6 +705,8 @@ InteractivePropagationModule::propagate_together(Event* event,
         bool foundSamePos = false; // Whether the current point has been a duplicate in the list of charge positions (we skip once)
         for (unsigned int i = 0; i < charge_locations.size(); i++){
 
+            // TODO: Add check with tree object that only looks at charges within a certain distance
+
             // Only get fields from charges that have deposition time less than the current time (skip the ones that haven't been deposited yet)
             // This means that trapped charges at future times are okay, but not charges that haven't been deposited yet
             // Charges that have reached the sensor (HALTED) are assumed to be swept away and don't contribute to the field either
@@ -719,7 +723,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                 if (!foundSamePos){
                     numSamePos -= 1;
                     foundSamePos = true;
-                    continue;  // TODO: fix to include the mirror charges of this charge
+                    continue;  // TODO: fix to include the mirror charges of the current charge
                 }
                 
                 // Give the overlapping charge a random directional offset so the field pushes the charge in a random direction
@@ -1007,10 +1011,11 @@ InteractivePropagationModule::propagate_together(Event* event,
             last_efield = efield;
 
             // Get electric field at current (pre-step) position
+            // TODO: add a storage of the dynamic field so that we don't have to calculate it an extra time for use in diffusion
             efield = detector_->getElectricField(convertVectorToPoint(position));
             auto dynamic_field = dynamic_efield(static_cast<ROOT::Math::XYZPoint>(position));
             efield = ROOT::Math::XYZVector(efield.x() + dynamic_field.x(), efield.y() + dynamic_field.y(), efield.z() + dynamic_field.z());
-            auto doping = detector_->getDopingConcentration(convertVectorToPoint(position));
+            auto doping = detector_->getDopingConcentration(convertVectorToPoint(position)); //TODO: Does doping affect the dynamic field at all?
 
             // Execute a Runge Kutta step and update time in the vector
             auto step = runge_kutta.step();
@@ -1109,7 +1114,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                 }
             }
 
-            // Don't apply multiplication (charge amounts stay constant)
+            // No multiplication occurs since adding more charge groups increases simulation time dramatically
 
             // Signal calculation:
 
@@ -1145,7 +1150,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                 //                                 : initial_charge * (ramo - last_ramo) *
                 //                                         static_cast<std::underlying_type<CarrierType>::type>(type);
                 auto induced_primary = induced;
-                auto induced_secondary = induced - induced_primary;
+                auto induced_secondary = induced - induced_primary; // TODO: If multiplocation isn't reimplemented, remove the redundant info
 
                 LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                         << " q = " << Units::display(induced, "e");
@@ -1179,7 +1184,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                             runge_kutta.getTime(), position.z(), induced);
                         induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                     }
-                    if(!multiplication_.is<NoImpactIonization>()) {
+                    if(!multiplication_.is<NoImpactIonization>()) { //TODO: If muliplication isn't reimplemented, remove the primary and secondary histogram
                         induced_charge_primary_histo_->Fill(runge_kutta.getTime(), induced_primary);
                         induced_charge_secondary_histo_->Fill(runge_kutta.getTime(), induced_secondary);
                         if(type == CarrierType::ELECTRON) {
@@ -1258,7 +1263,7 @@ InteractivePropagationModule::propagate_together(Event* event,
         }
     
         if(output_plots_) {
-            drift_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge.getCharge());
+            drift_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge.getCharge()); //TODO: Check whether we need to remove the "dead time" before deposition
             group_size_histo_->Fill(charge.getCharge());
         }
     }
