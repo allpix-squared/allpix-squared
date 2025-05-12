@@ -30,15 +30,12 @@
 namespace allpix {
     /**
      * @ingroup Modules
-     * @brief A child of TransientPropagationModule that implements Coulomb repulsion between charges.
+     * @brief A Module that implements Coulomb repulsion between charges. (Based on TransientPropagationModule)
      *
      */
     // class InteractivePropagationModule : public TransientPropagationModule {
-    class InteractivePropagationModule : public Module { // If we are implementing the constructor here, we need to extend Module (not TransientPropagationModule)
+    class InteractivePropagationModule : public Module {
     public:
-
-        // By default this class copies from TransientPropagation, but the run method is overridden to allow proper scoping
-	    //using TransientPropagationModule::TransientPropagationModule; 
 
         /**
          * @brief Constructor for this detector-specific module
@@ -85,33 +82,6 @@ namespace allpix {
                            std::vector<PropagatedCharge>& propagated_charges,
                            LineGraph::OutputPlotPoints& output_plot_points) const;
 
-        /**
-         * @brief Propagate a single set of charges through the sensor
-         * @param event               Pointer to current event
-         * @param deposit             Reference to the original deposited charge object
-         * @param pos                 Position of the deposit in the sensor
-         * @param type                Type of the carrier to propagate
-         * @param charge              Total charge of the observed charge carrier set
-         * @param initial_time_local  Initial local time with respect to the start of the event
-         * @param initial_time_global Initial global time with respect to the start of the event
-         * @param level               Current level depth of the generated shower
-         * @param propagated_charges  Reference to vector with all produced final PropagatedCharge objects
-         * @param output_plot_points Reference to vector to hold points for line graph output plots
-         *
-         * @return Total recombined, trapped and propagated charge for statistics purposes
-         */
-        std::tuple<unsigned int, unsigned int, unsigned int>
-        propagate(Event* event,
-                  const DepositedCharge& deposit,
-                  const ROOT::Math::XYZPoint& pos,
-                  const CarrierType& type,
-                  unsigned int charge,
-                  const double initial_time_local,
-                  const double initial_time_global,
-                  const unsigned int level,
-                  std::vector<PropagatedCharge>& propagated_charges,
-                  LineGraph::OutputPlotPoints& output_plot_points) const;
-
         // Local copies of configuration parameters to avoid costly lookup:
         double temperature_{}, timestep_{}, integration_time_{}, output_plots_step_{};
         bool output_plots_{}, output_linegraphs_{}, output_linegraphs_collected_{}, output_linegraphs_recombined_{},
@@ -124,14 +94,13 @@ namespace allpix {
 
         double relative_permativity_{};
 
-        // z bounds for capacitor
+        // z bounds for capacitor (set during initialization)
         double z_lim_pos_;
         double z_lim_neg_;
 
-        // minimum threshold for charge distances in coulomb repulsion
-        double coulomb_threshold_squared_{};
-        double coulomb_field_limit_;
-        double coulomb_field_limit_squared_{};
+        // Maximum magnitude of the field between two charges
+        double coulomb_field_limit_{};
+        // double coulomb_field_limit_squared_{};
 
         // Configurability of diffusion and coulomb repulsion
         bool enable_diffusion_{};
