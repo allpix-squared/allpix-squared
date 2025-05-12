@@ -125,11 +125,12 @@ namespace allpix {
         double relative_permativity_{};
 
         // z bounds for capacitor
-        double z_lim_pos_{};
-        double z_lim_neg_{};
+        double z_lim_pos_;
+        double z_lim_neg_;
 
         // minimum threshold for charge distances in coulomb repulsion
         double coulomb_threshold_squared_{};
+        double coulomb_field_limit_;
         double coulomb_field_limit_squared_{};
 
         // Configurability of diffusion and coulomb repulsion

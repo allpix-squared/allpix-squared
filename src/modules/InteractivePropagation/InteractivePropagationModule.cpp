@@ -43,8 +43,8 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
-    config_.setDefault<double>("coulomb_threshold", Units::get(0.0005,"mm"));
-    config_.setDefault<double>("coulomb_field_limit", Units::get(5760,"V/cm")); // Will need to convert to V/cm to use properly
+    config_.setDefault<double>("coulomb_threshold", Units::get(0.00005,"cm"));
+    config_.setDefault<double>("coulomb_field_limit", Units::get(2e10,"V/cm")); // Will need to convert to V/cm to use properly (previously 5760)
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
@@ -110,8 +110,9 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
 
     relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
     
-    coulomb_threshold_squared_ = config.get<double>("coulomb_threshold") * config.get<double>("coulomb_threshold");
-    coulomb_field_limit_squared_ = config.get<double>("coulomb_field_limit") * config.get<double>("coulomb_field_limit") * 1e14; // Convert from (V/cm)^2 to (MV/mm)^2 (internal field units)
+    coulomb_threshold_squared_ = config.get<double>("coulomb_threshold") * config.get<double>("coulomb_threshold") * 1e2; // Convert from cm^2 to mm^2
+    coulomb_field_limit_ = config.get<double>("coulomb_field_limit") * 1e-5; // Convert from V/cm to MV/mm (internal field units)
+    coulomb_field_limit_squared_ = config.get<double>("coulomb_field_limit") * config.get<double>("coulomb_field_limit") * 1e-10; // Convert from (V/cm)^2 to (MV/mm)^2 (internal field units)
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -696,32 +697,27 @@ InteractivePropagationModule::propagate_together(Event* event,
                     continue;
                 }
                 
-                // TODO: move randomly the overlapping charges (doesn't happen very often but relies on diffusion (may be disabled) to separate these charge groups)
-                allpix::uniform_real_distribution<double> gauss_distribution(coulomb_threshold_squared_/10, coulomb_threshold_squared_*2/100);
-                auto x = gauss_distribution(event->getRandomEngine());
-                auto y = gauss_distribution(event->getRandomEngine());
-                auto z = gauss_distribution(event->getRandomEngine());
-                local_position = ROOT::Math::XYZPoint(local_position.x() + x, local_position.y() + y, local_position.z() + z);
+                // Give overlapping charges a random directional offset
+                auto phi = uniform_distribution(event->getRandomEngine()) * 2 * ROOT::Math::Pi();
+                auto theta = uniform_distribution(event->getRandomEngine()) * ROOT::Math::Pi();
+                auto r = ROOT::Math::sqrt(coulomb_threshold_squared_); //TODO: remove dependence of coulomb_threshold
+                auto x = r * ROOT::Math::cos(theta) * ROOT::Math::cos(phi);
+                auto y = r * ROOT::Math::cos(theta) * ROOT::Math::sin(phi);
+                auto z = r * ROOT::Math::sin(theta);
+                // local_position = ROOT::Math::XYZPoint(local_position.x() + x, local_position.y() + y, local_position.z() + z);
+                point = ROOT::Math::XYZPoint(point.x() + x, point.y() + y, point.z() + z);
             }
 
             // Get the correct signed charge
             int q = static_cast<int8_t>(propagating_charges[i].getType()) * static_cast<int>(propagating_charges[i].getCharge());
             
             auto dist_vector = point - local_position; // A vector between the desired points (mm?)
-            auto dist_mag2 = dist_vector.Mag2(); // std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
+            auto dist_mag2 =  std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // dist_vector.Mag2(); // limit the distance to prevent numerical explosion
             auto dist_mag = ROOT::Math::sqrt(dist_mag2);
 
             if (dist_mag2 == coulomb_threshold_squared_){
-                numSamePos += 1;
+                // numSamePos += 1;
             }
-
-            // if (dist_vector.x() < dist_threshold && dist_vector.y() < dist_threshold && dist_vector.z() < dist_threshold){
-            //     allpix::uniform_real_distribution<double> gauss_distribution(dist_threshold, dist_threshold*2);
-            //     auto x = gauss_distribution(event->getRandomEngine());
-            //     auto y = gauss_distribution(event->getRandomEngine());
-            //     auto z = gauss_distribution(event->getRandomEngine());
-            //     local_position = local_position + dist_vector/(dist_mag+dist_threshold/10)*dist_threshold + 
-            // }
             
             field = field + dist_vector * (coulomb_K_ / relative_permativity_ * q / dist_mag2 / dist_mag); // Add the charges field to the net field at the point
 
@@ -751,10 +747,14 @@ InteractivePropagationModule::propagate_together(Event* event,
             
         }
 
-        if (field.mag2() > coulomb_field_limit_squared_){
-            double field_mag = ROOT::Math::sqrt(field.mag2());
-            field = Eigen::Vector3d(field.x() / field_mag, field.y() / field_mag, field.z() / field_mag);
-        }
+        // Set a max total electric field for a charge (commented out for now since I can't figure out a good value)
+        // if (field.mag2() > coulomb_field_limit_squared_){
+        //     double field_mag = ROOT::Math::sqrt(field.mag2());
+        //     // LOG(INFO) << "Skipping field with magnitude " << field_mag << " > "<<coulomb_field_limit_;
+        //     field = Eigen::Vector3d(field.x() / field_mag * coulomb_field_limit_, field.y() / field_mag * coulomb_field_limit_, field.z() / field_mag * coulomb_field_limit_);
+        //     // LOG(INFO) << "   now " << field.mag2();
+        //     numSamePos+=1;
+        // }
 
         Eigen::Vector3d output = Eigen::Vector3d(field.x(),field.y(),field.z());
 
@@ -775,6 +775,7 @@ InteractivePropagationModule::propagate_together(Event* event,
         [&](double, const Eigen::Vector3d& cur_pos, allpix::CarrierType type) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+        // LOG(INFO) << "raw field: " << efield.x()*efield.x() + efield.y()*efield.y()  + efield.z()*efield.z() ;
         efield = efield + dynamic_efield(static_cast<ROOT::Math::XYZPoint>(cur_pos)); // Modified to include dynamic field from concurrent charges
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
@@ -861,7 +862,7 @@ InteractivePropagationModule::propagate_together(Event* event,
 
         if(std::fmod(time, output_plots_step_) < timestep_){ // For debugging to see integration progress
             LOG(INFO) << "Time has reached " << time << "ns of " << integration_time_ << "ns";
-            // LOG(DEBUG) << "Total number of charges skipped due to overlapping positions: " << numSamePos;
+            // LOG(INFO) << "  Total number of charges moved due to overlapping positions: " << numSamePos;
 
             // Get RMS of the charge distribution
             if (output_rms_){
@@ -987,6 +988,8 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             // Get electric field at current (pre-step) position
             efield = detector_->getElectricField(convertVectorToPoint(position));
+            auto dynamic_field = dynamic_efield(static_cast<ROOT::Math::XYZPoint>(position));
+            efield = ROOT::Math::XYZVector(efield.x() + dynamic_field.x(), efield.y() + dynamic_field.y(), efield.z() + dynamic_field.z());
             auto doping = detector_->getDopingConcentration(convertVectorToPoint(position));
 
             // Execute a Runge Kutta step
