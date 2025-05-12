@@ -61,6 +61,11 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<unsigned int>("max_multiplication_level", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
 
+    // Set defaults for diffusion and coulomb configurability
+    config_.setDefault<bool>("enable_diffusion", true);
+    config_.setDefault<bool>("enable_coulomb_repulsion", true);
+
+    // Set defaults for plots
     config_.setDefault<bool>("output_linegraphs", false);
     config_.setDefault<bool>("output_linegraphs_collected", false);
     config_.setDefault<bool>("output_linegraphs_recombined", false);
@@ -88,11 +93,12 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
 
     max_multiplication_level_ = config.get<unsigned int>("max_multiplication_level");
 
+    enable_diffusion_ = config.get<bool>("enable_diffusion");
+    enable_coulomb_repulsion_ = config.get<bool>("enable_coulomb_repulsion");
+
     relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
     
     coulomb_threshold_squared_ = config.get<double>("coulomb_threshold") * config.get<double>("coulomb_threshold");
-
-    //TODO: Make parameters to turn on/off diffusion and coulomb repulsion
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -125,6 +131,15 @@ void InteractivePropagationModule::initialize() {
         LOG(ERROR) << "This module will likely produce unphysical results when applying linear electric fields.";
     }
 
+    // Apply warnings if things are disabled
+    if(!enable_diffusion_){
+        LOG(WARNING) << "Diffusion is disabled in propagation. Results will be unphysical.";
+    }
+
+    if(!enable_coulomb_repulsion_){
+        LOG(WARNING) << "Coulomb Repulsion has been disabled. Use TransientPropagation instead for this use case.";
+    }
+
     // Prepare mobility model
     mobility_ = Mobility(config_, model_->getSensorMaterial(), detector_->hasDopingProfile());
 
@@ -143,16 +158,16 @@ void InteractivePropagationModule::initialize() {
 
     // Determine the distance from the model origin to electrodes in both z-directions
     auto model_size = model_->getSize();
-    LOG(INFO) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
+    LOG(DEBUG) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
     
     auto model_center = model_->getModelCenter();
-    LOG(INFO) << "Model center: " << model_center.x() << ", " << model_center.y() << ", " << model_center.z();
+    LOG(DEBUG) << "Model center: " << model_center.x() << ", " << model_center.y() << ", " << model_center.z();
 
     auto sensor_center = model_->getSensorCenter();
-    LOG(INFO) << "Sensor center: " << sensor_center.x() << ", " << sensor_center.y() << ", " << sensor_center.z();
+    LOG(DEBUG) << "Sensor center: " << sensor_center.x() << ", " << sensor_center.y() << ", " << sensor_center.z();
 
     auto matrix_center = model_->getMatrixCenter();
-    LOG(INFO) << "matrix center: " << matrix_center.x() << ", " << matrix_center.y() << ", " << matrix_center.z();
+    LOG(DEBUG) << "matrix center: " << matrix_center.x() << ", " << matrix_center.y() << ", " << matrix_center.z();
 
     z_lim_neg_ = model_center.z() - model_size.z() / 2; //TODO: Correct algorithm to not assume it's in the center
     z_lim_pos_ = model_center.z() + model_size.z() / 2;
@@ -412,10 +427,26 @@ void InteractivePropagationModule::initialize() {
                                                      -model_->getSensorSize().z() / 2.,
                                                      model_->getSensorSize().z() / 2.);
         }
-        drift_rms_e_graph_ = new TGraph();
-        drift_rms_e_graph_->SetNameTitle("drift_rms_e_graph","Spread of the electrons;Drift time [ns];RMS [mm]");
-        drift_rms_h_graph_ = new TGraph();
-        drift_rms_h_graph_->SetNameTitle("drift_rms_h_graph","Spread of the holes;Drift time [ns];RMS [mm]");
+        rms_total_graph_ = new TMultiGraph("rms_total_graph","Comparison of spread of electrons (dashed) and holes (solid);Drift time [ns];RMS [mm]");
+        rms_e_subgraph_ = new TGraph();
+        rms_e_subgraph_->SetNameTitle("rms_e_subgraph","Spread of electrons");
+        rms_e_subgraph_->SetLineColor(kBlack);
+        rms_e_subgraph_->SetLineStyle(kDashed);
+        rms_h_subgraph_ = new TGraph();
+        rms_h_subgraph_->SetNameTitle("rms_h_subgraph","Spread of holes");
+        rms_h_subgraph_->SetLineColor(kBlack);
+        rms_h_subgraph_->SetLineStyle(kSolid);
+
+        rms_e_graph_ = new TMultiGraph("rms_e_graph","Spread of electrons(xyz=rgb);Drift time [ns];RMS [mm]");
+        rms_x_e_subgraph_ = new TGraph();
+        rms_x_e_subgraph_->SetNameTitle("rms_x_e_subgraph","Spread in X");
+        rms_x_e_subgraph_->SetLineColor(kRed);
+        rms_y_e_subgraph_ = new TGraph();
+        rms_y_e_subgraph_->SetNameTitle("rms_y_e_subgraph","Spread in Y");
+        rms_y_e_subgraph_->SetLineColor(kGreen);
+        rms_z_e_subgraph_ = new TGraph();
+        rms_z_e_subgraph_->SetNameTitle("rms_z_e_subgraph","Spread in Z");
+        rms_z_e_subgraph_->SetLineColor(kBlue);
     }
 }
 
@@ -517,10 +548,11 @@ void InteractivePropagationModule::run(Event* event) {
         }
     }
 
-    LOG(INFO) << "Number of charge groups: " << propagating_charges.size() << "(the " << deposits_exceeding_max_groups_ << " deposits are compressed to " << default_charge_per_step << " charges per step)"; 
+    LOG(INFO) << "Number of charge groups: " << propagating_charges.size() << "(" << deposits_exceeding_max_groups_ << " deposits were compressed to " << default_charge_per_step << " charges per step)"; 
     if (propagating_charges.size() > max_charge_groups_){
         LOG(WARNING) << "Number of charge groups exceeded set limit of " << max_charge_groups_ << " due to the large number of deposits with low charge quantity (true limit = set limit + number of deposits)";
     }
+    LOG(INFO) << "Average number of charges per group is " << total_deposited_charge/propagating_charges.size();
 
     //Now we have a list of charges to propagate in a single function call
     auto [recombined_charges_count, trapped_charges_count, propagated_charges_count] = propagate_together(event, propagating_charges, propagated_charges, output_plot_points);
@@ -600,6 +632,11 @@ InteractivePropagationModule::propagate_together(Event* event,
 
         ROOT::Math::XYZVector field = ROOT::Math::XYZVector(0,0,0);
 
+        // Skip function entirely if disabled by configuration file
+        if (!enable_coulomb_repulsion_){
+            return Eigen::Vector3d(field.x(),field.y(),field.z());
+        }
+
         bool foundSamePos = false; // Check to pass over current
         for (unsigned int i = 0; i < charge_locations.size(); i++){
 
@@ -617,12 +654,8 @@ InteractivePropagationModule::propagate_together(Event* event,
                     numSamePos -= 1; // ignore the actual same charge (one per loop)
                     continue;
                 }
-                // local_position = // TODO: move randomly the overlapping charges (I don't think this currently doesn't occur often enough to have a significant effect)
+                // local_position = // TODO: move randomly the overlapping charges (doesn't happen very often but relies on diffusion (may be disabled) to separate these charge groups)
             }
-            // if (local_position == point && !foundSamePos){ // This just skips unnecessary calculations for dist_vector = 0. Replace with above code if implementing random offsets.
-            //     foundSamePos = true;
-            //     continue;
-            // }
 
             // Get the correct signed charge
             int q = static_cast<int>(propagating_charges[i].getType()) * propagating_charges[i].getCharge();
@@ -779,58 +812,78 @@ InteractivePropagationModule::propagate_together(Event* event,
             double x_mean_e = 0; double y_mean_e = 0; double z_mean_e = 0;
             double x_mean_h = 0; double y_mean_h = 0; double z_mean_h = 0;
             
-            auto num_charges = charge_locations.size();
-            for (unsigned int i = 0; i < num_charges; i++){
+            double num_e = 0; //TODO: Ignore charges with state HALTED
+            double num_h = 0;
+            for (unsigned int i = 0; i < charge_locations.size(); i++){
                 auto location = charge_locations[i];
 
+                // TODO: Think about whether there are certain states or time conditions we want to remove from RMS calc 
+
                 if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
+                    num_e++;
                     x_mean_e += location.x();
                     y_mean_e += location.y();
                     z_mean_e += location.z();
                 }else{
+                    num_h++;
                     x_mean_h += location.x();
                     y_mean_h += location.y();
                     z_mean_h += location.z();
                 }
             }
-            x_mean_e = x_mean_e/num_charges;
-            y_mean_e = y_mean_e/num_charges;
-            z_mean_e = z_mean_e/num_charges;
-            x_mean_h = x_mean_h/num_charges;
-            y_mean_h = y_mean_h/num_charges;
-            z_mean_h = z_mean_h/num_charges;
 
+            if (num_e > 0){
+                x_mean_e = x_mean_e/num_e;
+                y_mean_e = y_mean_e/num_e;
+                z_mean_e = z_mean_e/num_e;
+            }
+            if (num_h > 0){
+                x_mean_h = x_mean_h/num_h;
+                y_mean_h = y_mean_h/num_h;
+                z_mean_h = z_mean_h/num_h;
+            }
+            
             // Now sum the square of the residuals (split up into x, y and z)
-            double rms_x_e = 0; double rms_y_e = 0; double rms_z_e = 0;
-            double rms_x_h = 0; double rms_y_h = 0; double rms_z_h = 0;
+            double res2_x_e = 0; double res2_y_e = 0; double res2_z_e = 0;
+            double res2_x_h = 0; double res2_y_h = 0; double res2_z_h = 0;
 
-            for (unsigned int i = 0; i < num_charges; i++){
+            for (unsigned int i = 0; i < charge_locations.size(); i++){
+
                 auto location = charge_locations[i];
 
                 if (propagating_charges[i].getType() == allpix::CarrierType::ELECTRON){
-                    rms_x_e += (location.x() - x_mean_e)*(location.x() - x_mean_e);
-                    rms_y_e += (location.y() - y_mean_e)*(location.y() - y_mean_e);
-                    rms_z_e += (location.z() - z_mean_e)*(location.z() - z_mean_e);
+                    res2_x_e += (location.x() - x_mean_e)*(location.x() - x_mean_e);
+                    res2_y_e += (location.y() - y_mean_e)*(location.y() - y_mean_e);
+                    res2_z_e += (location.z() - z_mean_e)*(location.z() - z_mean_e);
                 }else{
-                    rms_x_h += (location.x() - x_mean_h)*(location.x() - x_mean_h);
-                    rms_y_h += (location.y() - y_mean_h)*(location.y() - y_mean_h);
-                    rms_z_h += (location.z() - z_mean_h)*(location.z() - z_mean_h);
+                    res2_x_h += (location.x() - x_mean_h)*(location.x() - x_mean_h);
+                    res2_y_h += (location.y() - y_mean_h)*(location.y() - y_mean_h);
+                    res2_z_h += (location.z() - z_mean_h)*(location.z() - z_mean_h);
                 }
             }
 
-            double rms_total_e = sqrt(rms_x_e + rms_y_e + rms_z_e); // The rms_i_e are already squared in this form
-            double rms_total_h = sqrt(rms_x_h + rms_y_h + rms_z_h);
-            // rms_x_e = sqrt(rms_x_e);
-            // rms_y_e = sqrt(rms_y_e);
-            // rms_z_e = sqrt(rms_z_e);
-            // rms_x_h = sqrt(rms_x_h);
-            // rms_y_h = sqrt(rms_y_h);
-            // rms_z_h = sqrt(rms_z_h); //TODO: Get these into graphs as well (perhaps a TMultiGraph?)
+            double rms_total_e = 0; double rms_x_e = 0; double rms_y_e = 0; double rms_z_e = 0;
+            if (num_e > 0){
+                rms_total_e = sqrt((res2_x_e + res2_y_e + res2_z_e)/num_e);
+                rms_x_e = sqrt(res2_x_e/num_e);
+                rms_y_e = sqrt(res2_y_e/num_e);
+                rms_z_e = sqrt(res2_z_e/num_e);
+            }
+            double rms_total_h = 0; // double rms_x_h = 0; double rms_y_h = 0; double rms_z_h = 0;
+            if (num_h > 0){
+                rms_total_h = sqrt((res2_x_h + res2_y_h + res2_z_h)/num_h);
+                // double rms_x_h = sqrt(res2_x_h/num_h); // Holes are less important
+                // double rms_y_h = sqrt(res2_y_h/num_h);
+                // double rms_z_h = sqrt(res2_z_h/num_h);
+            }
 
-            LOG(INFO) << "  RMS: " << rms_total_e << " for electrons and " << rms_total_h << " for holes";
+            LOG(DEBUG) << "  RMS: " << rms_total_e << " for electrons and " << rms_total_h << " for holes";
 
-            drift_rms_e_graph_->AddPoint(time, rms_total_e);
-            drift_rms_h_graph_->AddPoint(time, rms_total_h);
+            rms_x_e_subgraph_->AddPoint(time, rms_x_e);
+            rms_y_e_subgraph_->AddPoint(time, rms_y_e);
+            rms_z_e_subgraph_->AddPoint(time, rms_z_e);
+            rms_e_subgraph_->AddPoint(time, rms_total_e);
+            rms_h_subgraph_->AddPoint(time, rms_total_h);
 
         }
 
@@ -887,9 +940,11 @@ InteractivePropagationModule::propagate_together(Event* event,
             // Get the new position due to the electric field
             position = runge_kutta.getValue();
 
-            // Apply diffusion step
-            auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_, charge.getType());
-            position += diffusion;
+            // Apply diffusion step (if enabled)
+            if (enable_diffusion_){
+                auto diffusion = carrier_diffusion(std::sqrt(efield.Mag2()), doping, timestep_, charge.getType());
+                position += diffusion;
+            }
 
             // If charge carrier reaches implant, interpolate surface position for higher accuracy:
             if(auto implant = model_->isWithinImplant(convertVectorToPoint(position))) {
@@ -1178,7 +1233,16 @@ void InteractivePropagationModule::finalize() {
             gain_h_vs_y_->Write();
             gain_h_vs_z_->Write();
         }
-        drift_rms_e_graph_->Write();
-        drift_rms_h_graph_->Write();
+
+        rms_total_graph_->Add(rms_e_subgraph_);
+        rms_total_graph_->Add(rms_h_subgraph_);
+
+        rms_e_graph_->Add(rms_x_e_subgraph_);
+        rms_e_graph_->Add(rms_y_e_subgraph_);
+        rms_e_graph_->Add(rms_z_e_subgraph_);
+        rms_e_graph_->Add(rms_e_subgraph_);
+
+        rms_total_graph_->Write();
+        rms_e_graph_->Write();
     }
 }

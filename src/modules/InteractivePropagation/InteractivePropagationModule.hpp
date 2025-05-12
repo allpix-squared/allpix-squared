@@ -25,6 +25,7 @@
 
 #include "../TransientPropagation/TransientPropagationModule.hpp"
 #include <TGraph.h>
+#include <TMultiGraph.h>
 
 namespace allpix {
     /**
@@ -130,6 +131,10 @@ namespace allpix {
         // minimum threshold for charge distances in coulomb repulsion
         double coulomb_threshold_squared_{};
 
+        //Configurability of diffusion and coulomb repulsion
+        bool enable_diffusion_{};
+        bool enable_coulomb_repulsion_{};
+
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
@@ -178,7 +183,8 @@ namespace allpix {
         Histogram<TH1D> induced_charge_primary_histo_, induced_charge_primary_e_histo_, induced_charge_primary_h_histo_;
         Histogram<TH1D> induced_charge_secondary_histo_, induced_charge_secondary_e_histo_,
             induced_charge_secondary_h_histo_;
-        TGraph *drift_rms_e_graph_, *drift_rms_h_graph_;
+        TGraph *rms_e_subgraph_, *rms_h_subgraph_, *rms_x_e_subgraph_, *rms_y_e_subgraph_, *rms_z_e_subgraph_;
+        TMultiGraph *rms_e_graph_, *rms_total_graph_;
     };
 
 } // namespace allpix
