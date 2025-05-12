@@ -44,6 +44,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<unsigned int>("charge_per_step", 10);
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
     config_.setDefault<double>("coulomb_threshold", Units::get(0.0005,"mm"));
+    config_.setDefault<double>("coulomb_field_limit", Units::get(5760,"V/cm")); // Will need to convert to V/cm to use properly
 
     // Models:
     config_.setDefault<std::string>("mobility_model", "jacoboni");
@@ -61,9 +62,14 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<unsigned int>("max_multiplication_level", 5);
     config_.setDefault<std::string>("multiplication_model", "none");
 
-    // Set defaults for diffusion and coulomb configurability
+    // Set defaults for extra configurability
     config_.setDefault<bool>("enable_diffusion", true);
     config_.setDefault<bool>("enable_coulomb_repulsion", true);
+
+    config_.setDefault<bool>("propagate_electrons", true);
+    config_.setDefault<bool>("propagate_holes", true);
+
+    config_.setDefault<bool>("include_mirror_charges", true);
 
     // Set defaults for plots
     config_.setDefault<bool>("output_linegraphs", false);
@@ -96,9 +102,15 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     enable_diffusion_ = config.get<bool>("enable_diffusion");
     enable_coulomb_repulsion_ = config.get<bool>("enable_coulomb_repulsion");
 
+    propagate_electrons_ = config.get<bool>("propagate_electrons");
+    propagate_holes_ = config.get<bool>("propagate_holes");
+
+    include_mirror_charges_ = config.get<bool>("include_mirror_charges");
+
     relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
     
     coulomb_threshold_squared_ = config.get<double>("coulomb_threshold") * config.get<double>("coulomb_threshold");
+    coulomb_field_limit_squared_ = config.get<double>("coulomb_field_limit") * config.get<double>("coulomb_field_limit") * 1e14; // Convert from (V/cm)^2 to (MV/mm)^2 (internal field units)
 
     output_plots_ = config_.get<bool>("output_plots");
     output_linegraphs_ = config_.get<bool>("output_linegraphs");
@@ -155,24 +167,27 @@ void InteractivePropagationModule::initialize() {
     // Impact ionization model
     multiplication_ = ImpactIonization(config_);
 
+    if (include_mirror_charges_){ // Values won't be used if mirror charges aren't included
 
-    // Determine the distance from the model origin to electrodes in both z-directions
-    auto model_size = model_->getSize();
-    LOG(DEBUG) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
-    
-    auto model_center = model_->getModelCenter();
-    LOG(DEBUG) << "Model center: " << model_center.x() << ", " << model_center.y() << ", " << model_center.z();
+        // Determine the distance from the model origin to electrodes in both z-directions
+        auto model_size = model_->getSize();
+        LOG(DEBUG) << "Model size: " << model_size.x() << ", " << model_size.y() << ", " << model_size.z();
+        
+        auto model_center = model_->getModelCenter();
+        LOG(DEBUG) << "Model center: " << model_center.x() << ", " << model_center.y() << ", " << model_center.z();
 
-    auto sensor_center = model_->getSensorCenter();
-    LOG(DEBUG) << "Sensor center: " << sensor_center.x() << ", " << sensor_center.y() << ", " << sensor_center.z();
+        auto sensor_center = model_->getSensorCenter();
+        LOG(DEBUG) << "Sensor center: " << sensor_center.x() << ", " << sensor_center.y() << ", " << sensor_center.z();
 
-    auto matrix_center = model_->getMatrixCenter();
-    LOG(DEBUG) << "matrix center: " << matrix_center.x() << ", " << matrix_center.y() << ", " << matrix_center.z();
+        auto matrix_center = model_->getMatrixCenter();
+        LOG(DEBUG) << "matrix center: " << matrix_center.x() << ", " << matrix_center.y() << ", " << matrix_center.z();
 
-    z_lim_neg_ = model_center.z() - model_size.z() / 2; //TODO: Correct algorithm to not assume it's in the center
-    z_lim_pos_ = model_center.z() + model_size.z() / 2;
+        z_lim_neg_ = model_center.z() - model_size.z() / 2; //TODO: Correct algorithm to not assume it's in the center
+        z_lim_pos_ = model_center.z() + model_size.z() / 2;
 
-    // z_lim_neg_ = model_->intersect(ROOT::Math::XYZVector(0, 0, -1), ROOT::Math::XYZPoint(0,0,0));
+        // z_lim_neg_ = model_->intersect(ROOT::Math::XYZVector(0, 0, -1), ROOT::Math::XYZPoint(0,0,0));
+
+    }
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_ > 0.001) {
@@ -477,6 +492,14 @@ void InteractivePropagationModule::run(Event* event) {
             continue;
         }
 
+        // Skip charges with type not included in propagation
+        if(!propagate_electrons_ && deposit.getType() == allpix::CarrierType::ELECTRON){
+            continue;
+        }
+        if(!propagate_holes_ && deposit.getType() == allpix::CarrierType::HOLE){
+            continue;
+        }
+
         total_deposits_++;
         total_deposited_charge += deposit.getCharge();
 
@@ -497,6 +520,16 @@ void InteractivePropagationModule::run(Event* event) {
                        << Units::display(deposit.getGlobalTime(), "ns") << " global / "
                        << Units::display(deposit.getLocalTime(), {"ns", "ps"}) << " local"
                        << "> Integration Time of " << integration_time_;
+            continue;
+        }
+
+        // Skip charges with type not included in propagation
+        if(!propagate_electrons_ && deposit.getType() == allpix::CarrierType::ELECTRON){
+            LOG(DEBUG) << "Skipping "<< deposit.getCharge() <<" electron deposit as per configuration: " << Units::display(deposit.getLocalPosition(), {"mm", "um"});
+            continue;
+        }
+        if(!propagate_holes_ && deposit.getType() == allpix::CarrierType::HOLE){
+            LOG(DEBUG) << "Skipping "<< deposit.getCharge() <<" hole deposit as per configuration: " << Units::display(deposit.getLocalPosition(), {"mm", "um"});
             continue;
         }
 
@@ -654,14 +687,20 @@ InteractivePropagationModule::propagate_together(Event* event,
                     numSamePos -= 1; // ignore the actual same charge (one per loop)
                     continue;
                 }
-                // local_position = // TODO: move randomly the overlapping charges (doesn't happen very often but relies on diffusion (may be disabled) to separate these charge groups)
+                
+                // TODO: move randomly the overlapping charges (doesn't happen very often but relies on diffusion (may be disabled) to separate these charge groups)
+                allpix::uniform_real_distribution<double> gauss_distribution(coulomb_threshold_squared_/10, coulomb_threshold_squared_*2/100);
+                auto x = gauss_distribution(event->getRandomEngine());
+                auto y = gauss_distribution(event->getRandomEngine());
+                auto z = gauss_distribution(event->getRandomEngine());
+                local_position = ROOT::Math::XYZPoint(local_position.x() + x, local_position.y() + y, local_position.z() + z);
             }
 
             // Get the correct signed charge
             int q = static_cast<int>(propagating_charges[i].getType()) * propagating_charges[i].getCharge();
             
             auto dist_vector = point - local_position; // A vector between the desired points (mm?)
-            auto dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
+            auto dist_mag2 = dist_vector.Mag2(); // std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
             auto dist_mag = ROOT::Math::sqrt(dist_mag2);
 
             if (dist_mag2 == coulomb_threshold_squared_){
@@ -677,6 +716,11 @@ InteractivePropagationModule::propagate_together(Event* event,
             // }
             
             field = field + dist_vector * (coulomb_K_ / relative_permativity_ * q / dist_mag2 / dist_mag); // Add the charges field to the net field at the point
+
+            // Skip mirror charges. For use in more complex detectors.
+            if (!include_mirror_charges_){
+                continue;
+            }
 
             // Now do the same for the mirror charges based on z_lim_neg and z_lim_pos
             // Note: this assumes a parallel plate sensor (symmetry about z) in order to simplify the poisson equation to the mirror charge solution (potential is constant on each plate)
@@ -697,6 +741,11 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag);
             
+        }
+
+        if (field.mag2() > coulomb_field_limit_squared_){
+            double field_mag = ROOT::Math::sqrt(field.mag2());
+            field = Eigen::Vector3d(field.x() / field_mag, field.y() / field_mag, field.z() / field_mag);
         }
 
         Eigen::Vector3d output = Eigen::Vector3d(field.x(),field.y(),field.z());
@@ -895,7 +944,6 @@ InteractivePropagationModule::propagate_together(Event* event,
             auto &runge_kutta = runge_kutta_vector[i]; // Must be a vector in order to keep data from iteration to iteration
             auto position = runge_kutta.getValue();
             auto type = charge.getType();
-
             allpix::CarrierState state = charge_states[i];
 
             if(output_linegraphs_) { // Set final state of charge carrier for plotting:
@@ -1137,7 +1185,7 @@ InteractivePropagationModule::propagate_together(Event* event,
             if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
                 std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
             } else {
-                std::get<3>(output_plot_points.at(output_plot_index).first) = charge.getState();
+                std::get<3>(output_plot_points.at(output_plot_index).first) = charge_states[i];
             }
         }
 
@@ -1157,23 +1205,24 @@ InteractivePropagationModule::propagate_together(Event* event,
                                         std::move(pixel_map_vector[i]),
                                         local_time,
                                         global_time,
-                                        charge.getState(),
+                                        charge_states[i],
                                         deposit);
 
         LOG(DEBUG) << " Propagated " << charge << " (initial: " << charge.getCharge() << ") to "
                 << Units::display(local_position, {"mm", "um"}) << " in " << Units::display(runge_kutta.getTime(), "ns")
                 << " time, induced " << Units::display(propagated_charge.getCharge(), {"e"})
-                << ", final state: " << allpix::to_string(charge.getState());
+                << ", final state: " << allpix::to_string(charge_states[i]);
 
         propagated_charges.push_back(std::move(propagated_charge));
 
         // Calculate the final totals for the recombined, trapped, and propagated charges
-        if(charge.getState() == CarrierState::RECOMBINED) {
+        
+        if(charge_states[i] == CarrierState::RECOMBINED) {
             recombined_charges_count += charge.getCharge();
             if(output_plots_) {
                 recombination_time_histo_->Fill(runge_kutta.getTime(), charge.getCharge());
             }
-        } else if(charge.getState() == CarrierState::TRAPPED) { // If the charge still has the TRAPPED state at the integration time, it is clear that the detrapping time was sufficiently large
+        } else if(charge_states[i] == CarrierState::TRAPPED) { // If the charge still has the TRAPPED state at the integration time, it is clear that the detrapping time was sufficiently large
             trapped_charges_count += charge.getCharge();
         } else {
             propagated_charges_count += charge.getCharge();

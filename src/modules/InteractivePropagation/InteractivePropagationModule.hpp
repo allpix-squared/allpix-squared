@@ -130,10 +130,18 @@ namespace allpix {
 
         // minimum threshold for charge distances in coulomb repulsion
         double coulomb_threshold_squared_{};
+        double coulomb_field_limit_squared_{};
 
-        //Configurability of diffusion and coulomb repulsion
+        // Configurability of diffusion and coulomb repulsion
         bool enable_diffusion_{};
         bool enable_coulomb_repulsion_{};
+
+        // Determines whether electrons, holes, or both are included in the propagation. Default to true.
+        bool propagate_electrons_{};
+        bool propagate_holes_{};
+
+        // Toggle for whether to ignore mirror charges
+        bool include_mirror_charges_{};
 
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
