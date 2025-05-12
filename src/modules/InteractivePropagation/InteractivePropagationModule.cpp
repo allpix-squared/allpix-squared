@@ -471,6 +471,18 @@ void InteractivePropagationModule::initialize() {
         rms_z_e_subgraph_ = new TGraph();
         rms_z_e_subgraph_->SetNameTitle("rms_z_e_subgraph","Spread in Z");
         rms_z_e_subgraph_->SetLineColor(kBlue);
+
+        coulomb_mag_histo_ =
+            CreateHistogram<TH1D>("coulomb_mag_histo",
+                      "Coulomb Field Magnitude;Field Magnitude [V/cm];Count",
+                      100, // Number of bins for the field magnitude
+                      0,   // Minimum field magnitude
+                      5e5 // Maximum field magnitude
+            );
+
+            // static_cast<Int_t>(std::floor(integration_time_/timestep_)), // Number of bins for time
+            // 0,   // Minimum time
+            // integration_time_,  // Maximum time
     }
 }
 
@@ -694,13 +706,14 @@ InteractivePropagationModule::propagate_together(Event* event,
                 numSamePos += 1;
                 if (!foundSamePos){
                     numSamePos -= 1; // ignore the actual same charge (one per loop)
+                    foundSamePos = true;
                     continue;
                 }
                 
                 // Give overlapping charges a random directional offset
                 auto phi = uniform_distribution(event->getRandomEngine()) * 2 * ROOT::Math::Pi();
                 auto theta = uniform_distribution(event->getRandomEngine()) * ROOT::Math::Pi();
-                auto r = ROOT::Math::sqrt(coulomb_threshold_squared_); //TODO: remove dependence of coulomb_threshold
+                auto r = ROOT::Math::sqrt(1e-15); // A very small value as to always hit the electric field limit
                 auto x = r * ROOT::Math::cos(theta) * ROOT::Math::cos(phi);
                 auto y = r * ROOT::Math::cos(theta) * ROOT::Math::sin(phi);
                 auto z = r * ROOT::Math::sin(theta);
@@ -709,17 +722,23 @@ InteractivePropagationModule::propagate_together(Event* event,
             }
 
             // Get the correct signed charge
-            int q = static_cast<int8_t>(propagating_charges[i].getType()) * static_cast<int>(propagating_charges[i].getCharge());
+            int q = static_cast<int>(propagating_charges[i].getCharge()); // Positive charge [e]
+            int sign = static_cast<int8_t>(propagating_charges[i].getType()); // Sign of the charge q
             
             auto dist_vector = point - local_position; // A vector between the desired points (mm?)
-            auto dist_mag2 =  std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // dist_vector.Mag2(); // limit the distance to prevent numerical explosion
+            auto dist_mag2 =  dist_vector.Mag2(); // std::max(dist_vector.Mag2(), coulomb_threshold_squared_); // limit the distance to prevent numerical explosion
             auto dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            if (dist_mag2 == coulomb_threshold_squared_){
-                // numSamePos += 1;
-            }
+            auto interaction_magnitude = coulomb_K_ / relative_permativity_ * q / dist_mag2; // Always positive
+
+            coulomb_mag_histo_->Fill(interaction_magnitude * 1e5); // Conversion from MV/mm to V/cm
+
+            // if (numSamePos < 100){
+            //     LOG(INFO) << interaction_magnitude;
+            //     numSamePos++;
+            // }
             
-            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * q / dist_mag2 / dist_mag); // Add the charges field to the net field at the point
+            field = field + dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, interaction_magnitude); // Add the charges field to the net field at the point            
 
             // Skip mirror charges. For use in more complex detectors.
             if (!include_mirror_charges_){
@@ -733,17 +752,17 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             // Apply field for negative mirror charge
             dist_vector = point - mirror_position_neg; // reuse the same variables to save some time
-            dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_);
+            dist_mag2 = dist_vector.Mag2();
             dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag); // Mirror charges have opposite charge
+            field = field + dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Mirror charges have opposite charge
 
             // Apply field for positive mirror charge
             dist_vector = point - mirror_position_pos;
-            dist_mag2 = std::max(dist_vector.Mag2(), coulomb_threshold_squared_);
+            dist_mag2 = dist_vector.Mag2();
             dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            field = field + dist_vector * (coulomb_K_ / relative_permativity_ * -1*q / dist_mag2 / dist_mag);
+            field = field + dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2);
             
         }
 
@@ -1307,5 +1326,7 @@ void InteractivePropagationModule::finalize() {
 
         rms_total_graph_->Write();
         rms_e_graph_->Write();
+
+        coulomb_mag_histo_->Write();
     }
 }

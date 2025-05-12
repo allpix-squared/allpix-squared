@@ -194,6 +194,7 @@ namespace allpix {
             induced_charge_secondary_h_histo_;
         TGraph *rms_e_subgraph_, *rms_h_subgraph_, *rms_x_e_subgraph_, *rms_y_e_subgraph_, *rms_z_e_subgraph_;
         TMultiGraph *rms_e_graph_, *rms_total_graph_;
+        Histogram<TH1D> coulomb_mag_histo_;
     };
 
 } // namespace allpix
