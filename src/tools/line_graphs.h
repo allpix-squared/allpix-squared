@@ -15,6 +15,8 @@
 #include "core/module/Module.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include <fstream>
+
 #include <Math/Point3D.h>
 #include <TCanvas.h>
 #include <TFile.h>
@@ -373,6 +375,53 @@ namespace allpix {
 
                 LOG_PROGRESS(INFO, module->getUniqueName() + "_OUTPUT_PLOTS")
                     << "Written " << point_cnt << " of " << tot_point_cnt << " points for animation";
+            }
+        }
+
+        /**
+         * @brief Store line graphs of charge carrier drift paths as csv
+         *
+         * @param event_num Index for this event
+         * @param module Module to generate plots for, used to create output files and to obtain ROOT directory
+         * @param config Configuration object used for this module instance
+         * @param output_plot_points List of points cached for plotting
+         * @param plotting_state State of charge carriers to be plotted. If state is set to CarrierState::UNKNOWN, all charge
+         * carriers are plotted.
+         */
+        static void Store(uint64_t event_num, // NOLINT
+                          Module* module,
+                          const Configuration& config,
+                          const OutputPlotPoints& output_plot_points,
+                          CarrierState plotting_state) {
+
+            auto model = module->getDetector()->getModel();
+
+            auto title = (plotting_state == CarrierState::UNKNOWN ? "all" : allpix::to_string(plotting_state));
+            LOG(TRACE) << "Storing line graph for " << title << " charge carriers";
+
+            // Open a new file
+            const auto file_name_ = module->createOutputFile("linegraph_" + std::to_string(event_num), "csv", true);
+            auto file = std::ofstream(file_name_);
+
+            file << "id,type,pos_x,pos_y,pos_z,pos_t\n";
+
+            // Loop over all point sets created during propagation
+            size_t id = 0;
+            for(const auto& [deposit, points] : output_plot_points) {
+                // Check if we should plot this point:
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+                    continue;
+                }
+
+                unsigned long plot_idx = 0;
+                for(const auto& point : points) {
+                    const auto time_ns = Units::convert(plot_idx * config.get<long double>("output_plots_step"), "ns");
+                    file << id << "," << std::get<2>(deposit) << "," << point.x() << "," << point.y() << "," << point.z()
+                         << "," << time_ns << "\n";
+                    ++plot_idx;
+                }
+
+                id++;
             }
         }
 
