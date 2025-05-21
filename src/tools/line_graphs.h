@@ -32,8 +32,8 @@ namespace allpix {
     class LineGraph {
 
     public:
-        using OutputPlotPoints = std::vector<
-            std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>, std::vector<ROOT::Math::XYZPoint>>>;
+        using OutputPlotPoints = std::vector<std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>,
+                                                       std::vector<std::pair<ROOT::Math::XYZPoint, double>>>>;
 
         /**
          * @brief Generate line graphs of charge carrier drift paths
@@ -102,7 +102,7 @@ namespace allpix {
                 }
 
                 auto line = std::make_unique<TPolyLine3D>();
-                for(const auto& point : points) {
+                for(const auto& [point, time] : points) {
                     line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
                 }
                 // Plot all lines with at least three points with different color
@@ -298,18 +298,19 @@ namespace allpix {
                         static_cast<float>(charge * config.get<double>("output_animations_marker_size", 1)) /
                         static_cast<float>(max_charge));
                     auto initial_z_perc = static_cast<int>(
-                        ((points[0].z() + model->getSensorSize().z() / 2.0) / model->getSensorSize().z()) * 80);
+                        ((points[0].first.z() + model->getSensorSize().z() / 2.0) / model->getSensorSize().z()) * 80);
                     initial_z_perc = std::max(std::min(79, initial_z_perc), 0);
                     if(config.get<bool>("output_animations_color_markers")) {
                         marker->SetMarkerColor(static_cast<Color_t>(colors[initial_z_perc]->GetNumber()));
                     }
-                    marker->SetNextPoint(points[idx].x() / scale_x, points[idx].y() / scale_y, points[idx].z());
+                    marker->SetNextPoint(
+                        points[idx].first.x() / scale_x, points[idx].first.y() / scale_y, points[idx].first.z());
                     marker->Draw();
                     markers.push_back(std::move(marker));
 
-                    histogram_contour[0]->Fill(points[idx].y() / scale_y, points[idx].z(), charge);
-                    histogram_contour[1]->Fill(points[idx].x() / scale_x, points[idx].z(), charge);
-                    histogram_contour[2]->Fill(points[idx].x() / scale_x, points[idx].y() / scale_y, charge);
+                    histogram_contour[0]->Fill(points[idx].first.y() / scale_y, points[idx].first.z(), charge);
+                    histogram_contour[1]->Fill(points[idx].first.x() / scale_x, points[idx].first.z(), charge);
+                    histogram_contour[2]->Fill(points[idx].first.x() / scale_x, points[idx].first.y() / scale_y, charge);
                     ++point_cnt;
                 }
 
@@ -390,7 +391,7 @@ namespace allpix {
          */
         static void Store(uint64_t event_num, // NOLINT
                           Module* module,
-                          const Configuration& config,
+                          const Configuration& /*config*/,
                           const OutputPlotPoints& output_plot_points,
                           CarrierState plotting_state) {
 
@@ -414,10 +415,9 @@ namespace allpix {
                 }
 
                 unsigned long plot_idx = 0;
-                for(const auto& point : points) {
-                    const auto time_ns = Units::convert(plot_idx * config.get<long double>("output_plots_step"), "ns");
+                for(const auto& [point, time] : points) {
                     file << id << "," << std::get<2>(deposit) << "," << point.x() << "," << point.y() << "," << point.z()
-                         << "," << time_ns << "\n";
+                         << "," << time << "\n";
                     ++plot_idx;
                 }
 
@@ -445,7 +445,7 @@ namespace allpix {
             unsigned int total_charge = 0;
             unsigned int max_charge = 0;
             for(const auto& [deposit, points] : output_plot_points) {
-                for(const auto& point : points) {
+                for(const auto& [point, time] : points) {
                     minX = std::min(minX, point.x() / scale_x);
                     maxX = std::max(maxX, point.x() / scale_x);
 
