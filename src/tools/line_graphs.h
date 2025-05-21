@@ -32,8 +32,31 @@ namespace allpix {
     class LineGraph {
 
     public:
-        using OutputPlotPoints = std::vector<std::pair<std::tuple<double, unsigned int, CarrierType, CarrierState>,
-                                                       std::vector<std::pair<ROOT::Math::XYZPoint, double>>>>;
+        class CarrierPath {
+        public:
+            CarrierPath(double deposition_time, unsigned int total_charge, CarrierType type, CarrierState state)
+                : time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
+
+            void updateState(CarrierState state) { state_ = state; }
+            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(position, time); }
+
+            double getTime() const { return time_; }
+            unsigned int getCharge() const { return charge_; }
+            CarrierType getType() const { return type_; }
+            CarrierState getState() const { return state_; }
+
+            const std::vector<std::pair<ROOT::Math::XYZPoint, double>>& getPoints() const { return points_; }
+            size_t getNPoints() const { return points_.size(); }
+
+        private:
+            double time_;
+            unsigned int charge_;
+            CarrierType type_;
+            CarrierState state_;
+            std::vector<std::pair<ROOT::Math::XYZPoint, double>> points_;
+        };
+
+        using OutputPlotPoints = std::vector<CarrierPath>;
 
         /**
          * @brief Generate line graphs of charge carrier drift paths
@@ -95,21 +118,20 @@ namespace allpix {
             // The vector of unique_pointers is required in order not to delete the objects before the canvas is drawn.
             std::vector<std::unique_ptr<TPolyLine3D>> lines;
             short current_color = 1;
-            for(const auto& [deposit, points] : output_plot_points) {
+            for(const auto& path : output_plot_points) {
                 // Check if we should plot this point:
-                if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != path.getState()) {
                     continue;
                 }
 
                 auto line = std::make_unique<TPolyLine3D>();
-                for(const auto& [point, time] : points) {
+                for(const auto& [point, time] : path.getPoints()) {
                     line->SetNextPoint(point.x() / scale_x, point.y() / scale_y, point.z());
                 }
                 // Plot all lines with at least three points with different color
                 if(line->GetN() >= 2) {
-                    const EColor plot_color =
-                        (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
-                    current_color = static_cast<short int>(plot_color - 9 + ((static_cast<int>(current_color) + 1) % 19));
+                    EColor plot_color = (path.getType() == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
+                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
                     line->SetLineColor(current_color);
                     line->Draw("same");
                 }
@@ -277,11 +299,11 @@ namespace allpix {
                 text->Draw();
 
                 // Plot all the required points
-                for(const auto& [deposit, points] : output_plot_points) {
-                    const auto& [time, charge, type, state] = deposit;
+                for(const auto& path : output_plot_points) {
+                    const auto& points = path.getPoints();
 
                     auto diff = static_cast<unsigned long>(
-                        std::lround((time - start_time) / config.get<long double>("output_plots_step")));
+                        std::lround((path.getTime() - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
                         min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                         continue;
@@ -295,7 +317,7 @@ namespace allpix {
                     auto marker = std::make_unique<TPolyMarker3D>();
                     marker->SetMarkerStyle(kFullCircle);
                     marker->SetMarkerSize(
-                        static_cast<float>(charge * config.get<double>("output_animations_marker_size", 1)) /
+                        static_cast<float>(path.getCharge() * config.get<double>("output_animations_marker_size", 1)) /
                         static_cast<float>(max_charge));
                     auto initial_z_perc = static_cast<int>(
                         ((points[0].first.z() + model->getSensorSize().z() / 2.0) / model->getSensorSize().z()) * 80);
@@ -308,9 +330,10 @@ namespace allpix {
                     marker->Draw();
                     markers.push_back(std::move(marker));
 
-                    histogram_contour[0]->Fill(points[idx].first.y() / scale_y, points[idx].first.z(), charge);
-                    histogram_contour[1]->Fill(points[idx].first.x() / scale_x, points[idx].first.z(), charge);
-                    histogram_contour[2]->Fill(points[idx].first.x() / scale_x, points[idx].first.y() / scale_y, charge);
+                    histogram_contour[0]->Fill(points[idx].first.y() / scale_y, points[idx].first.z(), path.getCharge());
+                    histogram_contour[1]->Fill(points[idx].first.x() / scale_x, points[idx].first.z(), path.getCharge());
+                    histogram_contour[2]->Fill(
+                        points[idx].first.x() / scale_x, points[idx].first.y() / scale_y, path.getCharge());
                     ++point_cnt;
                 }
 
@@ -408,16 +431,16 @@ namespace allpix {
 
             // Loop over all point sets created during propagation
             size_t id = 0;
-            for(const auto& [deposit, points] : output_plot_points) {
+            for(const auto& path : output_plot_points) {
                 // Check if we should plot this point:
-                if(plotting_state != CarrierState::UNKNOWN && plotting_state != std::get<3>(deposit)) {
+                if(plotting_state != CarrierState::UNKNOWN && plotting_state != path.getState()) {
                     continue;
                 }
 
                 unsigned long plot_idx = 0;
-                for(const auto& [point, time] : points) {
-                    file << id << "," << std::get<2>(deposit) << "," << point.x() << "," << point.y() << "," << point.z()
-                         << "," << time << "\n";
+                for(const auto& [point, time] : path.getPoints()) {
+                    file << id << "," << path.getType() << "," << point.x() << "," << point.y() << "," << point.z() << ","
+                         << time << "\n";
                     ++plot_idx;
                 }
 
@@ -444,20 +467,19 @@ namespace allpix {
             double start_time = std::numeric_limits<double>::max();
             unsigned int total_charge = 0;
             unsigned int max_charge = 0;
-            for(const auto& [deposit, points] : output_plot_points) {
-                for(const auto& [point, time] : points) {
+            for(const auto& path : output_plot_points) {
+                for(const auto& [point, time] : path.getPoints()) {
                     minX = std::min(minX, point.x() / scale_x);
                     maxX = std::max(maxX, point.x() / scale_x);
 
                     minY = std::min(minY, point.y() / scale_y);
                     maxY = std::max(maxY, point.y() / scale_y);
                 }
-                const auto& [time, charge, type, state] = deposit;
-                start_time = std::min(start_time, time);
-                total_charge += charge;
-                max_charge = std::max(max_charge, charge);
+                start_time = std::min(start_time, path.getTime());
+                total_charge += path.getCharge();
+                max_charge = std::max(max_charge, path.getCharge());
 
-                tot_point_cnt += points.size();
+                tot_point_cnt += path.getPoints().size();
             }
 
             // Compute frame axis sizes if equal scaling is requested

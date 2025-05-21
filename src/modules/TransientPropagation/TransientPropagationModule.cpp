@@ -562,8 +562,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
-        output_plot_points.emplace_back(std::make_tuple(deposit.getGlobalTime(), charge, type, CarrierState::MOTION),
-                                        std::vector<std::pair<ROOT::Math::XYZPoint, double>>());
+        output_plot_points.emplace_back(deposit.getGlobalTime(), charge, type, CarrierState::MOTION);
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
@@ -638,9 +637,8 @@ TransientPropagationModule::propagate(Event* event,
             auto time_idx = static_cast<size_t>(runge_kutta.getTime() / output_plots_step_);
             while(next_idx <= time_idx) {
                 output_plot_points.at(output_plot_index)
-                    .second.emplace_back(static_cast<ROOT::Math::XYZPoint>(position),
-                                         initial_time_local + runge_kutta.getTime());
-                next_idx = output_plot_points.at(output_plot_index).second.size();
+                    .addPoint(static_cast<ROOT::Math::XYZPoint>(position), initial_time_local + runge_kutta.getTime());
+                next_idx = output_plot_points.at(output_plot_index).getNPoints();
             }
         }
 
@@ -922,9 +920,9 @@ TransientPropagationModule::propagate(Event* event,
     if(output_linegraphs_) {
         // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-            std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
+            output_plot_points.at(output_plot_index).updateState(CarrierState::UNKNOWN);
         } else {
-            std::get<3>(output_plot_points.at(output_plot_index).first) = state;
+            output_plot_points.at(output_plot_index).updateState(state);
         }
     }
 
