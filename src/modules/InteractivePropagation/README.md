@@ -28,6 +28,7 @@ A propagation module that includes the Coulomb interaction forces between charge
 * `ignore_magnetic_field`: The magnetic field, if present, is ignored for this module. Defaults to false.
 * `relative_permativity`: The relative permitivity $\varepsilon_r$ of the sensor material. Determines the affect of the dielectric on the Coulomb field. Defaults to `1.0`.
 * `coulomb_field_limit`: The maximum value for the electric field due to Coulomb repulsion between two charges. When the magnitude of the Coulomb field is greater than `coulomb_field_limit`, it is reduced to `coulomb_field_limit`. Defaults to 4e5V/cm.
+* `coulomb_distance_limit`: The maximum distance a charge must be within to be included in the coulomb field calculation. Defaults to 4e-5cm.
 * `enable_diffusion`: Whether diffusion occurs during propogation. Doesn't give physical results when disabled, so only use for verification of the propagation physics. Defaults to true.
 * `enable_coulomb_repulsion`: Whether the electric field includes the Coulomb forces between charge groups. Simulation takes significantly longer when enabled. If set to false, performs approximately the same simulation that TransientPropagation does, so use that instead. Defaults to true.
 * `propagate_electrons` : Select whether electron-type charge carriers should be propagated to the electrodes. Defaults to true.

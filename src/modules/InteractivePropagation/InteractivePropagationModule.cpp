@@ -43,7 +43,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<unsigned int>("charge_per_step", 1);
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
-    config_.setDefault<double>("coulomb_threshold", Units::get(0.00005,"cm"));
+    config_.setDefault<double>("coulomb_distance_limit", Units::get(4e-5,"cm"));
     config_.setDefault<double>("coulomb_field_limit", Units::get(4e5,"V/cm")); // Will need to convert to V/cm to use properly (previously 5760)
 
     // Models:
@@ -111,6 +111,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
 
     relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
     
+    coulomb_distance_limit_squared_ = config.get<double>("coulomb_distance_limit") * config.get<double>("coulomb_distance_limit") * 1e2; // cm^2 -> mm^2
     coulomb_field_limit_ = config.get<double>("coulomb_field_limit") * 1e-5; // Convert from V/cm to MV/mm (internal field units)
     // coulomb_field_limit_squared_ = config.get<double>("coulomb_field_limit") * config.get<double>("coulomb_field_limit") * 1e-10; // Convert from (V/cm)^2 to (MV/mm)^2 (internal field units)
 
@@ -477,7 +478,7 @@ void InteractivePropagationModule::initialize() {
         coulomb_mag_histo_ =
             CreateHistogram<TH1D>("coulomb_mag_histo",
                       "Direct Coulomb Field Interaction Magnitude;Interaction Field Magnitude [V/cm];Count",
-                      100, // Number of bins for the field magnitude
+                      200, // Number of bins for the field magnitude
                       0,   // Minimum field magnitude
                       coulomb_field_limit_ * 1e5 // Maximum field magnitude [MV/mm -> V/cm]
             );
@@ -602,8 +603,14 @@ void InteractivePropagationModule::run(Event* event) {
     
     LOG(INFO) << "Average number of charges per group is " << total_deposited_charge/propagating_charges.size();
 
+    auto start = std::chrono::system_clock::now();
+
     // Propagation occurs within the following function call
     auto [recombined_charges_count, trapped_charges_count, propagated_charges_count] = propagate_together(event, propagating_charges, propagated_charges, output_plot_points);
+
+    auto end = std::chrono::system_clock::now();
+
+    LOG(INFO) << "The propagate_together function took " << (end - start).count()/1e6 << "ms";
 
     // Output plots if required
     if(output_linegraphs_) {
@@ -650,6 +657,8 @@ InteractivePropagationModule::propagate_together(Event* event,
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
 
+    std::chrono::duration<double, std::nano> time_spent_coulomb{};
+
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep, allpix::CarrierType type) -> Eigen::Vector3d {
         double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
@@ -679,6 +688,8 @@ InteractivePropagationModule::propagate_together(Event* event,
 
     // Computes the coulomb force component of the e-field given a desired local point
     auto coulomb_efield = [&](ROOT::Math::XYZPoint point) -> Eigen::Vector3d {
+
+        auto coulomb_start = std::chrono::system_clock::now();
 
         ROOT::Math::XYZVector field = ROOT::Math::XYZVector(0,0,0);
 
@@ -734,14 +745,18 @@ InteractivePropagationModule::propagate_together(Event* event,
             
                 dist_vector = point - local_position; // A vector between the desired points (mm)
                 dist_mag2 =  dist_vector.Mag2();
-                dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-                interaction_magnitude = std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Magnitude of the force [MV/mm] (always positive)
-                coulomb_mag_histo_->Fill(interaction_magnitude * 1e5); // Conversion from MV/mm to V/cm
-                
-                // Add this charge's field to the total field at the point
-                field = field + dist_vector/dist_mag * sign * interaction_magnitude; 
+                if (dist_mag2 < coulomb_distance_limit_squared_){ // Limit the following calculations to if the distance of the charge is close enough to give a significant field
 
+                    dist_mag = ROOT::Math::sqrt(dist_mag2);
+
+                    interaction_magnitude = std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Magnitude of the force [MV/mm] (always positive)
+                    coulomb_mag_histo_ -> Fill(interaction_magnitude * 1e5); // Conversion from MV/mm to V/cm
+                    
+                    // Add this charge's field to the total field at the point
+                    field = field + dist_vector/dist_mag * sign * interaction_magnitude; 
+
+                }
             }
 
             // Skip mirror charges when specified
@@ -758,17 +773,20 @@ InteractivePropagationModule::propagate_together(Event* event,
             // Apply field for negative-side mirror charge
             dist_vector = point - mirror_position_neg;
             dist_mag2 = dist_vector.Mag2();
-            dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Mirror charges have opposite charge
+            if (dist_mag2 < coulomb_distance_limit_squared_){
+                dist_mag = ROOT::Math::sqrt(dist_mag2);
+                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Mirror charges have opposite charge
+            }
 
             // Apply field for positive-side mirror charge
             dist_vector = point - mirror_position_pos;
             dist_mag2 = dist_vector.Mag2();
-            dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-            field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2);
-            
+            if (dist_mag2 < coulomb_distance_limit_squared_){
+                dist_mag = ROOT::Math::sqrt(dist_mag2);
+                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2);
+            }
         }
 
         // TODO: Rather than using coulomb_field_limit for each interaction, we could use it on the final value. 
@@ -782,6 +800,10 @@ InteractivePropagationModule::propagate_together(Event* event,
             // }
 
         Eigen::Vector3d output = Eigen::Vector3d(field.x(),field.y(),field.z());
+
+        auto coulomb_end = std::chrono::system_clock::now();
+
+        time_spent_coulomb += coulomb_end - coulomb_start;
 
         return output;
     };
@@ -1282,6 +1304,8 @@ InteractivePropagationModule::propagate_together(Event* event,
             group_size_histo_->Fill(charge.getCharge());
         }
     }
+
+    LOG(INFO) << "The running of the coulomb_efield function took a combined " << time_spent_coulomb.count()/1e6 << "ms";
 
     return std::make_tuple(recombined_charges_count,trapped_charges_count,propagated_charges_count);
 }

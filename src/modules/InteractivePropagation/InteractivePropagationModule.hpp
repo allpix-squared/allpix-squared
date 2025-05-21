@@ -100,6 +100,7 @@ namespace allpix {
 
         // Maximum magnitude of the field between two charges
         double coulomb_field_limit_{};
+        double coulomb_distance_limit_squared_{};
         // double coulomb_field_limit_squared_{};
 
         // Configurability of diffusion and coulomb repulsion
