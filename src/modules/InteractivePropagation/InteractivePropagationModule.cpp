@@ -589,12 +589,6 @@ void InteractivePropagationModule::run(Event* event) {
                                             &deposit);
 
             propagating_charges.push_back(std::move(propagating_charge));
-
-            // Add point of deposition to the output plots if requested
-            if(output_linegraphs_) {
-                output_plot_points.emplace_back(std::make_tuple(deposit.getGlobalTime(), charge_per_step, deposit.getType(), CarrierState::MOTION),
-                                                std::vector<ROOT::Math::XYZPoint>());
-            }
         }
     }
 
@@ -655,8 +649,6 @@ InteractivePropagationModule::propagate_together(Event* event,
     unsigned int propagated_charges_count = 0;
     unsigned int recombined_charges_count = 0;
     unsigned int trapped_charges_count = 0;
-    
-    auto output_plot_index = output_plot_points.size() - 1;
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep, allpix::CarrierType type) -> Eigen::Vector3d {
@@ -876,6 +868,13 @@ InteractivePropagationModule::propagate_together(Event* event,
         charge_locations.push_back(charge.getLocalPosition());
         charge_times.push_back(charge.getLocalTime());
         charge_states.push_back(charge.getState());
+
+        // Add point of deposition to the output plots if requested
+        if(output_linegraphs_) {
+            output_plot_points.emplace_back(std::make_tuple(charge.getGlobalTime(), charge.getCharge(), charge.getType(), CarrierState::MOTION),
+                                            std::vector<ROOT::Math::XYZPoint>());
+        }
+
     }
 
     // Continue time propagation until the integration time has been reached
@@ -886,8 +885,22 @@ InteractivePropagationModule::propagate_together(Event* event,
 
         // Based on the desired output_plots_step, display integration progress and calculate rms if desired
         if(std::fmod(time, output_plots_step_) < timestep_){
+            // TODO: Change output_plots_step implementation to not depend on floating point errors.
+
+            // This code could be useful in making the output_plots_step more consistent and not dependent on floating point errors
+                // auto time_idx = static_cast<size_t>(runge_kutta_vector[i].getTime() / output_plots_step_);
+                // while(next_idx <= time_idx) {
+                    
+                //     // output_plot_points.at(output_plot_index).second.push_back(static_cast<ROOT::Math::XYZPoint>(charge.getLocalPosition()));
+                //     next_idx = output_plot_points.at(i).second.size();
+                // }
 
             LOG(INFO) << "Time has reached " << time << "ns of " << integration_time_ << "ns";
+
+            for (unsigned int i = 0; i < propagating_charges.size(); i++){
+                // Add the current position to the linegraph associated with the current charge
+                
+            }
 
             // Get RMS of the charge distribution
             if (output_rms_){
@@ -982,13 +995,9 @@ InteractivePropagationModule::propagate_together(Event* event,
             auto type = charge.getType();
             allpix::CarrierState state = charge_states[i];
 
-            if(output_linegraphs_) { // Set final state of charge carrier for plotting:
-                auto time_idx = static_cast<size_t>(runge_kutta_vector[i].getTime() / output_plots_step_);
-                while(next_idx <= time_idx) {
-                    output_plot_points.at(output_plot_index).second.push_back(convertVectorToPoint(position));
-                    // output_plot_points.at(output_plot_index).second.push_back(static_cast<ROOT::Math::XYZPoint>(charge.getLocalPosition()));
-                    next_idx = output_plot_points.at(output_plot_index).second.size();
-                }
+            // TODO: Change output_plots_step implementation to not depend on floating point errors.
+            if(output_linegraphs_ && std::fmod(time, output_plots_step_) < timestep_) {
+                output_plot_points.at(i).second.push_back(convertVectorToPoint(position));
             }
 
             // Only propagate within a timestep range above the time threshold (time <= rk_time < time + timestep_)
@@ -1217,12 +1226,7 @@ InteractivePropagationModule::propagate_together(Event* event,
         auto runge_kutta = runge_kutta_vector[i];
 
         if(output_linegraphs_) {
-            // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
-            if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
-                std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
-            } else {
-                std::get<3>(output_plot_points.at(output_plot_index).first) = charge_states[i];
-            }
+            std::get<3>(output_plot_points.at(i).first) = charge_states[i];
         }
 
         // Create PropagatedCharge object and add it to the list
