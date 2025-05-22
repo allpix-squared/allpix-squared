@@ -116,7 +116,7 @@ void propagationHistoryPlotting(TFile* file, std::string detector, int animEvent
             auto it = find_if(history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
             ROOT::Math::XYZPoint markerPosition;
             double markerTime = 0.0;
-            if(it != history.begin() && it != history.end()) {
+            if(it != history.begin() && it != history.end() && (it != history.begin() + 1)) {
                 markerPosition = std::get<1>(*(std::prev(it)));
                 markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
                 // In the event that the times are exactly equal:

@@ -23,8 +23,8 @@
 /**
  * An example of how to plot the full propagation history of charge carriers, and make an animation for a single event.
  * Takes a TFile (containing PropagatedCharge objects and PixelCharge objects), a detector name, the event number to
- * simulate, and whether or not to save the animation as a result as input. Note: saving the animations as .gif files takes a
- * long time.
+ * simulate, whether or not to save the animation as a result, and a file containing the modules output as input. Note:
+ * saving the animations as .gif files takes a long time.
  */
 void propagationPulseAnimation(
     TFile* dataFile, std::string detector, int animEventNo = 0, bool save_gif_output = false, TFile* modulesFile = nullptr) {
@@ -59,10 +59,8 @@ void propagationPulseAnimation(
     std::vector<allpix::PixelCharge*> pixel_charges;
     pixel_charge_branch->SetObject(&pixel_charges);
 
-    // Each pixelcharge can have a pulse. So we can slice the pulse on time as well. but how best to display? An event can
-    // have many pixelcharge objects, and thus many pulses Do I want to focus on just one, or display them all? Or sum them
-    // all up, as a "total charge from sensor" thing? Or just do the biggest one, highest collected charge? Maybe that's the
-    // way to go. Find the highest, center the whole thing on that and display it. I think that makes sense.
+    // Each pixelcharge can have a pulse. So we can slice the pulse on time as well. Find the highest pulse, center the whole
+    // thing on that and display it. I think that makes sense.
 
     // Vector to store plot markers. Needed so that they aren't deleted automatically.
     std::vector<TMarker*> markers = {};
@@ -131,28 +129,33 @@ void propagationPulseAnimation(
     propagation_map_xz_animation->Draw();
     gStyle->SetOptStat(false);
 
-    // Draw WP, from modules file
-    TH2F* wp = nullptr;
+    // Draw field, from modules file
+    TH2F* field = nullptr;
     if(modulesFile != nullptr) {
-        std::string potentialPath = "WeightingPotentialReader/" + detector + "/potential_x";
-        auto wpFromFile = static_cast<TH2F*>(modulesFile->Get(potentialPath.c_str()));
+        // Select weighting potential or E-field
+        std::string fieldName = "WeightingPotential";
+        std::string fieldPath = "WeightingPotentialReader/" + detector + "/potential_x";
+        // std::string fieldName = "ElectricField";
+        // std::string fieldPath = "ElectricFieldReader/" + detector + "/field_magnitude";
+        auto fieldFromFile = static_cast<TH2F*>(modulesFile->Get(fieldPath.c_str()));
         // Need to "shift" it along x; make a new histo in the right position
-        wp = new TH2F("WeightingPotential",
-                      "#phi_{w}/V_{w}",
-                      wpFromFile->GetNbinsX(),
-                      (maxChargePixelPos.x() - pixelSize.x() / 2) * 1000,
-                      (maxChargePixelPos.x() + pixelSize.x() / 2) * 1000,
-                      wpFromFile->GetNbinsY(),
-                      -thickness / 2.0,
-                      thickness / 2.0);
+        field = new TH2F(fieldName.c_str(),
+                         "#phi_{w}/V_{w}",
+                         fieldFromFile->GetNbinsX(),
+                         (maxChargePixelPos.x() - pixelSize.x() / 2) * 1000,
+                         (maxChargePixelPos.x() + pixelSize.x() / 2) * 1000,
+                         fieldFromFile->GetNbinsY(),
+                         -thickness / 2.0,
+                         thickness / 2.0);
         // Loop over old histo, fill new histo
-        for(int i = 0; i < wpFromFile->GetNbinsX(); i++) {
-            for(int j = 0; j < wpFromFile->GetNbinsY(); j++) {
-                wp->SetBinContent(i, j, wpFromFile->GetBinContent(i, j));
+        for(int i = 0; i < fieldFromFile->GetNbinsX(); i++) {
+            for(int j = 0; j < fieldFromFile->GetNbinsY(); j++) {
+                field->SetBinContent(i, j, fieldFromFile->GetBinContent(i, j));
             }
         }
     }
-    wp->Draw("CONT1 same");
+    // Plot the field as contours
+    field->Draw("CONT1 same");
 
     animCanvas_xz->cd(2);
     // Pulse is a vector of doubles, with a given bin width. So in this way, element 0 is between 0 and 0.01, bin 1 is
@@ -164,10 +167,7 @@ void propagationPulseAnimation(
                                 maxPulse.size(),
                                 0,
                                 maxPulse.getBinning() * (maxPulse.size() - 1));
-    // pulseHisto->Draw();
-    // How to do it? Fill the whole thing, then "uncover" as time progresses? Or setbincontent for all points below current
-    // time...
-    //  I should use SetContent: https://root.cern.ch/doc/v608/classTH1.html#a828aa3b97264611a20c3849e1820b28b
+    //  Use SetContent: https://root.cern.ch/doc/v608/classTH1.html#a828aa3b97264611a20c3849e1820b28b
     //  Slice the vector at the given point, and use SetContent. Should only set the nonzero ones, basically.
     //  Just cruical that the histogram matches the pulse exactly, but it should if defined correctly.
     //  v2 = std::vector<int>(v1.begin() + 1, v1.end());
@@ -225,7 +225,7 @@ void propagationPulseAnimation(
 
         animCanvas_xz->cd(1);
         propagation_map_xz_animation->Draw();
-        wp->Draw("CONT1 same");
+        field->Draw("CONT1 same");
 
         int current_color = 1;
         for(auto& propagated_charge : propagated_charges) {
@@ -236,8 +236,8 @@ void propagationPulseAnimation(
             current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
             auto marker = new TMarker();
             marker->SetMarkerStyle(kFullCircle);
-            // Marker size dependnet on charge carrier group size
-            marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 0.1));
+            // Marker size dependent on charge carrier group size
+            marker->SetMarkerSize(static_cast<float>(propagated_charge->getCharge() * 0.5));
             marker->SetMarkerColor(current_color);
 
             // Retrieve the history for this PropagatedCharge object
@@ -246,7 +246,7 @@ void propagationPulseAnimation(
             auto it = find_if(history.begin(), history.end(), [=](auto&& item) { return std::get<0>(item) * 1000.0 > ts; });
             ROOT::Math::XYZPoint markerPosition;
             double markerTime = 0.0;
-            if(it != history.begin() && it != history.end()) {
+            if(it != history.begin() && it != history.end() && it != (history.begin() + 1)) {
                 markerPosition = std::get<1>(*(std::prev(it)));
                 markerTime = std::get<0>(*(std::prev(it))) * 1000.0;
                 // In the event that the times are exactly equal:
