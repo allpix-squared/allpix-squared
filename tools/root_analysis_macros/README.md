@@ -14,7 +14,7 @@ Reads all required trees from the given file and binds their content to the obje
 
 To construct a comparison tree using this macro, follow these steps:
 
-* Open root with the data file attached like `root -l /path/to/data.root`
+* Open ROOT with the data file attached like `root -l /path/to/data.root`
 * Load the current library of objects with `.L path/to/libAllpixObjects.so`
 * Build the macro with `.L path/to/constructComparisonTree.C++`
 * Open a new file with `auto file = new TFile("output.root", "RECREATE")`
@@ -27,7 +27,7 @@ Analysis example demonstrating how to read data from ROOT TTrees, access attribu
 
 Usage:
 
-* Open root with the data file attached like `root -l /path/to/data.root`
+* Open ROOT with the data file attached like `root -l /path/to/data.root`
 * Load the current library of objects with `.L path/to/libAllpixObjects.so`
 * Build the macro with `.L path/to/analysisExample.C++`
 * Run the macro with `analysisExample(_file0, "name_of_detector")`
@@ -38,7 +38,7 @@ Analysis example demonstrating how to perform an "eta correction" for rectangula
 
 Usage:
 
-* Open root with the data file attached like `root -l /path/to/data.root`
+* Open ROOT with the data file attached like `root -l /path/to/data.root`
 * Load the current library of objects with `.L path/to/libAllpixObjects.so`
 * Load the Cluster object definition from the `DetectorHistogrammer` module with `.L path/to/libAllpixModuleDetectorHistogrammer.so`
 * Build the macro with `.L path/to/etaCorrectionResiduals.C++`
@@ -50,10 +50,25 @@ Analysis example demonstrating how to plot the propagation history, and make an 
 
 Usage:
 
-* Open root with the data file attached like `root -l /path/to/data.root`
+* Open ROOT with the data file attached like `root -l /path/to/data.root`
 * Load the current library of objects with `.L path/to/libAllpixObjects.so`
 * Build the macro with `.L path/to/propagationHistoryPlotting.C++`
 * Run the macro with `propagationHistoryPlotting(_file0, "name_of_detector")`
+
+The script also has options for specifying the event number to plot, and whether to save the output as a moving GIF. Note: if the motion of charge carriers is not smooth, try decreasing the timestep used in the simulation.
+
+## Propagation and pulse animation example
+
+Analysis example demonstrating how to plot the propagation history, and make an animation of charge carrier motion in a weighting potential, also showing the growing cumulative cahrge and the induced current. Requires the flag `store_full_propagation_history` in the propagation module, and saving the `PropagatedCharge` object in `ROOTObjectWriter`, as well as using `PulseTransfer` so that pulses are available. If the `modules` file is included in the call, the weighting potential is loaded (if an output plot of it exists).
+
+Usage:
+
+* Open ROOT with the data file and modules file attached like `root -l /path/to/data.root /path/to/modules.root`
+* Load the current library of objects with `.L path/to/libAllpixObjects.so`
+* Build the macro with `.L path/to/propagationPulseAnimation.C++`
+* Run the macro with `propagationPulseAnimation(_file0,"mydetector",0,false,_file1)`
+
+The script also has options for specifying the event number to plot, and whether to save the output as a moving GIF. Note: if the motion of charge carriers is not smooth, try decreasing the timestep used in the simulation.
 
 ## Remake project
 
@@ -61,7 +76,7 @@ Simple macro to show the possibility to recreate source files for legacy objects
 
 To recreate the project source files, the following commands should be executed:
 
-* Open root with the data file attached like `root -l /path/to/data.root`
+* Open ROOT with the data file attached like `root -l /path/to/data.root`
 * Build the macro with `.L path/to/remakeProject.C++`
 * Recreate the source files using `remakeProject(_file0, "output_dir")`
 

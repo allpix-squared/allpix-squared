@@ -26,7 +26,8 @@
  * simulate, and whether or not to save the animation as a result as input. Note: saving the animations as .gif files takes a
  * long time.
  */
-void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEventNo = 0, bool save_gif_output = false) {
+void propagationPulseAnimation(
+    TFile* dataFile, std::string detector, int animEventNo = 0, bool save_gif_output = false, TFile* modulesFile = nullptr) {
 
     // Initialise reading of the PropagatedCharge and PixelCharge TTrees
     TTree* propagated_charge_tree = static_cast<TTree*>(dataFile->Get("PropagatedCharge"));
@@ -71,7 +72,7 @@ void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEv
     // Setup for animation; define the timestep size, and the number of steps
     std::vector<double> animTimes = {0.0};
     double timeStepSize = 100; // ps
-    int numberOfSteps = 100;
+    int numberOfSteps = 250;
     double timeCounter = 0.0;
     std::generate_n(std::back_inserter(animTimes), numberOfSteps, [&timeCounter, &timeStepSize]() {
         timeCounter += timeStepSize;
@@ -98,6 +99,13 @@ void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEv
             maxPulse = pulse;
         }
     }
+    // If we don't have  a pulse: give a message and abort
+    if(maxPulse.getBinning() == 0) {
+        std::cerr
+            << "ERROR: This analysis script needs to be run on results of simulations using the [PulseTransfer] module."
+            << std::endl;
+        return;
+    }
     std::cout << "The maximum: " << maxChargePixelPos << ", charge: " << maxCharge << std::endl;
 
     ROOT::Math::XYVector pixelSize = pixel_charges[0]->getPixel().getSize();
@@ -117,22 +125,45 @@ void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEv
                                          ("Propagation of charge for event " + std::to_string(animEventNo)).c_str(),
                                          2 * 1280,
                                          1024);
-    animCanvas_xz->Divide(2, 1);
+    animCanvas_xz->Divide(2, 2);
     animCanvas_xz->cd(1);
 
     propagation_map_xz_animation->Draw();
     gStyle->SetOptStat(false);
+
+    // Draw WP, from modules file
+    TH2F* wp = nullptr;
+    if(modulesFile != nullptr) {
+        std::string potentialPath = "WeightingPotentialReader/" + detector + "/potential_x";
+        auto wpFromFile = static_cast<TH2F*>(modulesFile->Get(potentialPath.c_str()));
+        // Need to "shift" it along x; make a new histo in the right position
+        wp = new TH2F("WeightingPotential",
+                      "#phi_{w}/V_{w}",
+                      wpFromFile->GetNbinsX(),
+                      (maxChargePixelPos.x() - pixelSize.x() / 2) * 1000,
+                      (maxChargePixelPos.x() + pixelSize.x() / 2) * 1000,
+                      wpFromFile->GetNbinsY(),
+                      -thickness / 2.0,
+                      thickness / 2.0);
+        // Loop over old histo, fill new histo
+        for(int i = 0; i < wpFromFile->GetNbinsX(); i++) {
+            for(int j = 0; j < wpFromFile->GetNbinsY(); j++) {
+                wp->SetBinContent(i, j, wpFromFile->GetBinContent(i, j));
+            }
+        }
+    }
+    wp->Draw("CONT1 same");
 
     animCanvas_xz->cd(2);
     // Pulse is a vector of doubles, with a given bin width. So in this way, element 0 is between 0 and 0.01, bin 1 is
     // between 0.01 and 0.02 etc. How to slice it? Find the element that times binning gets us to the point before the
     // plotting time point.
 
-    TH1D* pulseHisto = new TH1D("Pulse", "Pulse; t [ns]; I [unit]", 2500, 0, 2500);
-    for(int i = 0; i < maxPulse.size(); i++) {
-        std::cout << " Time: " << i * 0.01 << ", " << maxPulse.at(i);
-    }
-    std::cout << std::endl;
+    TH1D* pulseHisto = new TH1D("Induced charge per unit step time",
+                                "Induced charge per unit step time; t [ns]; Q_{ind} [e]",
+                                maxPulse.size(),
+                                0,
+                                maxPulse.getBinning() * (maxPulse.size() - 1));
     // pulseHisto->Draw();
     // How to do it? Fill the whole thing, then "uncover" as time progresses? Or setbincontent for all points below current
     // time...
@@ -142,19 +173,59 @@ void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEv
     //  v2 = std::vector<int>(v1.begin() + 1, v1.end());
     //  Grabbing the vector as a pointer: double * a = &v[0];
     pulseHisto->SetContent(&maxPulse[0]);
-    pulseHisto->Draw();
+    pulseHisto->SetMaximum(*std::max_element(maxPulse.begin(), maxPulse.end()));
+    pulseHisto->SetMinimum(*std::min_element(maxPulse.begin(), maxPulse.end()));
+
+    // Generate other interesting pulse vector variants
+    // Absolute value of pulse
+    auto absoluteInducedPulse = maxPulse;
+    std::for_each(absoluteInducedPulse.begin(), absoluteInducedPulse.end(), [](auto& bin) { bin = std::fabs(bin); });
+
+    // Induced current
+    auto inducedCurrent = maxPulse;
+    // Convert charge bins to current in uA
+    std::for_each(inducedCurrent.begin(), inducedCurrent.end(), [maxPulse](auto& bin) {
+        bin = static_cast<double>(bin * 1.602176634e-19 / maxPulse.getBinning() * 1e9) * 1e6;
+    });
+
+    TH1D* inducedCurrentHisto = new TH1D("Induced current",
+                                         "Induced current; t [ns]; I_{ind} [#muA]",
+                                         maxPulse.size(),
+                                         0,
+                                         maxPulse.getBinning() * (maxPulse.size() - 1));
+    inducedCurrentHisto->SetContent(&inducedCurrent[0]);
+    inducedCurrentHisto->SetMaximum(*std::max_element(inducedCurrent.begin(), inducedCurrent.end()));
+    inducedCurrentHisto->SetMinimum(*std::min_element(inducedCurrent.begin(), inducedCurrent.end()));
+
+    // Cumulative charge
+    std::vector<double> cumulativeCharge;
+    double charge = 0;
+    for(const auto& bin : maxPulse) {
+        charge += bin;
+        cumulativeCharge.push_back(charge);
+    }
+
+    TH1D* cumulativeChargeHisto = new TH1D("Cumulative charge",
+                                           "Cumulative charge; t [ns]; Q_{tot} [e]",
+                                           maxPulse.size(),
+                                           0,
+                                           maxPulse.getBinning() * (maxPulse.size() - 1));
+    cumulativeChargeHisto->SetContent(&cumulativeCharge[0]);
+    cumulativeChargeHisto->SetMaximum(*std::max_element(cumulativeCharge.begin(), cumulativeCharge.end()) + 10);
+    cumulativeChargeHisto->SetMinimum(*std::min_element(cumulativeCharge.begin(), cumulativeCharge.end()) - 10);
 
     // Animate the requested event
     for(auto& ts : animTimes) {
 
         animCanvas_xz->Clear();
-        animCanvas_xz->Divide(2, 1);
+        animCanvas_xz->Divide(2, 2);
         animCanvas_xz->Draw();
         propagation_map_xz_animation->SetTitle(
             ("Charge carrier positions in xz at time " + std::to_string(static_cast<int>(round(ts))) + " ps").c_str());
 
         animCanvas_xz->cd(1);
         propagation_map_xz_animation->Draw();
+        wp->Draw("CONT1 same");
 
         int current_color = 1;
         for(auto& propagated_charge : propagated_charges) {
@@ -191,13 +262,31 @@ void propagationPulseAnimation(TFile* dataFile, std::string detector, int animEv
             }
             marker->SetX(markerPosition.x() * 1000.0);
             marker->SetY(markerPosition.z() * 1000.0);
-            gPad->Range(0, -140, 450, 140);
             marker->Draw();
             markers.push_back(std::move(marker)); // Push it to the vector to save it from deletion
         }
 
         animCanvas_xz->cd(2);
-        // pulseHisto->SetBinContent();
+        // Find the bin nearest to the time
+        auto nearestBin = static_cast<int>(ts / (maxPulse.getBinning() * 1000.0));
+        // Create copies of the interesting vectors, with content up until the nearest bin and the rest filled with zeroes
+
+        auto cumulativeChargePulse = std::vector<double>(cumulativeCharge.begin(), cumulativeCharge.begin() + nearestBin);
+        cumulativeChargePulse.resize(maxPulse.size(), 0);
+        cumulativeChargeHisto->SetContent(&cumulativeChargePulse[0]);
+        cumulativeChargeHisto->Draw();
+
+        animCanvas_xz->cd(3);
+        auto inducedCurrentPulse = std::vector<double>(inducedCurrent.begin(), inducedCurrent.begin() + nearestBin);
+        inducedCurrentPulse.resize(maxPulse.size(), 0);
+        inducedCurrentHisto->SetContent(&inducedCurrentPulse[0]);
+        inducedCurrentHisto->Draw();
+
+        animCanvas_xz->cd(4);
+        auto regularPulse = std::vector<double>(maxPulse.begin(), maxPulse.begin() + nearestBin);
+        regularPulse.resize(maxPulse.size(), 0);
+        pulseHisto->SetContent(&regularPulse[0]);
+
         pulseHisto->Draw();
 
         animCanvas_xz->Modified();
