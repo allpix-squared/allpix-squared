@@ -38,7 +38,7 @@ namespace allpix {
                 : time_(deposition_time), charge_(total_charge), type_(type), state_(state) {}
 
             void updateState(CarrierState state) { state_ = state; }
-            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(position, time); }
+            void addPoint(ROOT::Math::XYZPoint position, double time) { points_.emplace_back(std::move(position), time); }
 
             double getTime() const { return time_; }
             unsigned int getCharge() const { return charge_; }
@@ -427,7 +427,7 @@ namespace allpix {
             const auto file_name_ = module->createOutputFile("linegraph_" + std::to_string(event_num), "csv", true);
             auto file = std::ofstream(file_name_);
 
-            file << "id,type,pos_x,pos_y,pos_z,pos_t\n";
+            file << "id,type,pos_x_mm,pos_y_mm,pos_z_mm,time_ns\n";
 
             // Loop over all point sets created during propagation
             size_t id = 0;
@@ -437,11 +437,9 @@ namespace allpix {
                     continue;
                 }
 
-                unsigned long plot_idx = 0;
                 for(const auto& [point, time] : path.getPoints()) {
                     file << id << "," << path.getType() << "," << point.x() << "," << point.y() << "," << point.z() << ","
                          << time << "\n";
-                    ++plot_idx;
                 }
 
                 id++;
