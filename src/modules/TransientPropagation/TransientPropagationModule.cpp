@@ -455,6 +455,8 @@ void TransientPropagationModule::run(Event* event) {
             recombined_charges_count += recombined;
             trapped_charges_count += trapped;
             propagated_charges_count += propagated;
+            LOG(DEBUG) << "Propagated charges: " << propagated << ", recombined charges: " << recombined
+                       << ", trapped charges : " << trapped;
         }
     }
 
@@ -684,6 +686,8 @@ TransientPropagationModule::propagate(Event* event,
         // Check if the charge carrier has been trapped:
         if(state == CarrierState::MOTION &&
            trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
+            LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
+                       << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
                 trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
@@ -900,6 +904,7 @@ TransientPropagationModule::propagate(Event* event,
                << ", final state: " << allpix::to_string(state);
 
     propagated_charges.push_back(std::move(propagated_charge));
+    propagated_charges_count += charge;
 
     if(state == CarrierState::RECOMBINED) {
         recombined_charges_count += charge;
@@ -907,9 +912,9 @@ TransientPropagationModule::propagate(Event* event,
             recombination_time_histo_->Fill(runge_kutta.getTime(), charge);
         }
     } else if(state == CarrierState::TRAPPED) {
+        LOG(DEBUG) << " Trapped " << charge << " at " << Units::display(local_position, {"mm", "um"}) << " in "
+                   << Units::display(runge_kutta.getTime(), "ns") << " time, removing";
         trapped_charges_count += charge;
-    } else {
-        propagated_charges_count += charge;
     }
 
     if(output_plots_) {
@@ -934,6 +939,7 @@ void TransientPropagationModule::finalize() {
         recombine_histo_->Write();
         recombination_time_histo_->Write();
         trapped_histo_->Write();
+        trapping_time_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();
