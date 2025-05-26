@@ -404,6 +404,8 @@ void GenericPropagationModule::run(Event* event) {
             propagated_charges_count += propagated;
             step_count += steps;
             total_time += time;
+            LOG(DEBUG) << "Propagated charges: " << propagated << ", recombined charges: " << recombined
+                       << ", trapped charges : " << trapped;
         }
     }
 
@@ -604,6 +606,8 @@ GenericPropagationModule::propagate(Event* event,
         // Check if the charge carrier has been trapped:
         if(state == CarrierState::MOTION &&
            trapping_(type, uniform_distribution(event->getRandomEngine()), timestep, std::sqrt(efield.Mag2()))) {
+            LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
+                       << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
                 trapping_time_histo_->Fill(static_cast<double>(Units::convert(runge_kutta.getTime(), "ns")), charge);
             }
