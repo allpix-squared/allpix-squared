@@ -17,6 +17,8 @@ The number of electron/hole pairs created by a given energy deposition is calcul
 Default values of both parameters for different sensor materials are included and automatically selected for each of the detectors. A full list of supported materials can be found elsewhere in the manual.
 These can be overwritten by specifying the parameters `charge_creation_energy` and `fano_factor` in the configuration.
 
+For diamond sensors, the NRESP7.1 model \[[@nresp]\] is automatically activated to provide a more accurate description of neutron-on-Carbon reactions.
+
 ### Source Shapes
 
 The source can be defined in two different ways using the `source_type` parameter: with pre-defined shapes or with a Geant4 macro file.
@@ -177,3 +179,4 @@ number_of_particles = 1
 [@chargecreation]: https://doi.org/10.1103/PhysRevB.1.2945
 [@fano]: https://doi.org/10.1103%2FPhysRevB.22.5565
 [@microelec]: https://doi.org/10.1016/j.nimb.2020.11.016
+[@nresp]: https://inis.iaea.org/records/8wv2f-dgx35
