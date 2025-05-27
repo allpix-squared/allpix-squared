@@ -46,10 +46,12 @@ static void parse_macro_file_and_prepare_commands(const std::string& file_name, 
             if(line.rfind("/gps/number", 0) == 0) {
                 throw ModuleError(
                     "The number of particles must be defined in the main configuration file, not in the macro.");
-            } else if(line.rfind("/gps/", 0) == 0 || line.at(0) == '#') {
+            } else if(line.rfind("/gps/", 0) == 0 || line.rfind("/process/", 0) == 0) {
                 cmd_list.push_back(line);
+            } else if(line.at(0) == '#') {
+                LOG(DEBUG) << "Filtering Geant4 macro comment: " << line;
             } else {
-                LOG(WARNING) << "Ignoring Geant4 macro command: \"" + line + "\" - not related to particle source.";
+                LOG(WARNING) << "Ignoring Geant4 macro command \"" << line << "\", unrelated to particle source or process.";
             }
         }
     }
