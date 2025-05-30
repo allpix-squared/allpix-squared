@@ -169,7 +169,6 @@ void CoulombProjectionPropagationModule::run(Event* event) {
     unsigned int charge_lost = 0;
     unsigned int total_charge = 0;
     unsigned int total_projected_charge = 0;
-    unsigned int recombined_charges_count = 0;
 
     // Loop over all deposits for propagation
     // Only validated for photons with energy < 25 keV
