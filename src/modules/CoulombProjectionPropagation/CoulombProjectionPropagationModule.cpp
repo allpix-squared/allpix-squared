@@ -29,7 +29,9 @@ CoulombProjectionPropagationModule::CoulombProjectionPropagationModule(Configura
                                                                        Messenger* messenger,
                                                                        std::shared_ptr<Detector> detector)
     : Module(config, detector), messenger_(messenger), detector_(std::move(detector)),
-      top_z_(detector_->getModel()->getSensorSize().z() / 2) {
+      top_z_(detector_->getModel()->getSensorSize().z() / 2),
+      alpha_function_(new TF1("func_alpha", "[0] + [1] * sqrt((x)) + [2] * x + [3] * x^2")),
+      beta_function_(new TF1("func_betaT", "[0]*x^[1]+ [2]*exp([3]*x) + 2))")) {
 
     // Save detector model
     model_ = detector_->getModel();
@@ -60,7 +62,7 @@ CoulombProjectionPropagationModule::CoulombProjectionPropagationModule(Configura
     output_plots_ = config_.get<bool>("output_plots");
 
     // get the eight parameters from an array of doubles for the alpha and beta functions
-    std::string parameters = config_.get<std::string>("parameters");
+    auto parameters = config_.get<std::string>("parameters");
     std::istringstream iss(parameters);
     for(auto& param : parameters_) {
         iss >> param;
@@ -68,9 +70,9 @@ CoulombProjectionPropagationModule::CoulombProjectionPropagationModule(Configura
             iss.ignore();
         }
     }
-    alpha_function_ = new TF1("func_alpha", "[0] + [1] * sqrt((x)) + [2] * x + [3] * x^2");
+    // alpha_function_ = new TF1("func_alpha", "[0] + [1] * sqrt((x)) + [2] * x + [3] * x^2");
     alpha_function_->SetParameters(parameters_[0], parameters_[1], parameters_[2], parameters_[3]);
-    beta_function_ = new TF1("func_betaT", "[0]*x^[1]+ [2]*exp([3]*x) + 2");
+    // beta_function_ = new TF1("func_betaT", "[0]*x^[1]+ [2]*exp([3]*x) + 2");
     beta_function_->SetParameters(parameters_[4], parameters_[5], parameters_[6], parameters_[7]);
 
     // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
@@ -159,7 +161,7 @@ void CoulombProjectionPropagationModule::run(Event* event) {
     auto deposits_message = messenger_->fetchMessage<DepositedChargeMessage>(this, event);
 
     // Get the absorption position of the original incident particle
-    auto mc_particle = deposits_message->getData().front().getMCParticle();
+    const auto* mc_particle = deposits_message->getData().front().getMCParticle();
     auto mc_particle_end_position = mc_particle->getTrack()->getEndPoint();
     auto local_mc_particle_end_position = detector_->getLocalPosition(mc_particle_end_position);
 
@@ -205,7 +207,7 @@ void CoulombProjectionPropagationModule::run(Event* event) {
             }
             charges_remaining -= charge_per_step;
 
-            auto position = initial_position;
+            const auto& position = initial_position;
 
             // Get the electric field at the position of the deposited charge and the top of the sensor:
             auto efield = detector_->getElectricField(position);

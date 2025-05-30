@@ -18,6 +18,10 @@
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
+#include <cmath>  // for std::pow
+#include <limits> // for std::numeric_limits
+#include <random> // for std::gamma_distribution
+
 namespace allpix {
     template <typename T> using normal_distribution = boost::random::normal_distribution<T>;
     template <typename T> using piecewise_linear_distribution = boost::random::piecewise_linear_distribution<T>;
@@ -26,12 +30,12 @@ namespace allpix {
     template <typename T> using exponential_distribution = boost::random::exponential_distribution<T>;
 
     // Generalized Gaussian Distribution (GGD) for CoulombProjectionPropagation module
-    template <typename RealType = double> class generalized_gaussian_distribution {
+    template <typename RealType = double> class GeneralizedGaussianDistribution {
     public:
         using result_type = RealType;
 
         // Constructor with parameters alpha and beta; mean = 0
-        generalized_gaussian_distribution(RealType alpha = RealType{1}, RealType beta = RealType{2})
+        explicit GeneralizedGaussianDistribution(RealType alpha = RealType{1}, RealType beta = RealType{2})
             : alpha_(alpha), beta_(beta), gamma_dist_(RealType{1} / beta, RealType{1}),
               uniform_dist_(RealType{-1}, RealType{1}) {}
 
@@ -53,7 +57,7 @@ namespace allpix {
         boost::random::uniform_real_distribution<RealType> uniform_dist_;
     };
 
-    template <typename T> using ggd_distribution = generalized_gaussian_distribution<T>;
+    template <typename T> using ggd_distribution = GeneralizedGaussianDistribution<T>;
 } // namespace allpix
 
 #endif // ALLPIX_RANDOM_DISTRIBUTIONS_H
