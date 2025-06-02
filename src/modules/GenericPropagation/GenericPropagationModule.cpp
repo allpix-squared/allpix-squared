@@ -483,9 +483,8 @@ GenericPropagationModule::propagate(Event* event,
 
     // Add point of deposition to the output plots if requested
     if(output_linegraphs_) {
-        output_plot_points.emplace_back(
-            std::make_tuple(deposit.getGlobalTime(), charge, deposit.getType(), CarrierState::MOTION),
-            std::vector<ROOT::Math::XYZPoint>());
+        output_plot_points.emplace_back(std::make_tuple(deposit.getGlobalTime(), charge, type, CarrierState::MOTION),
+                                        std::vector<ROOT::Math::XYZPoint>());
     }
     auto output_plot_index = output_plot_points.size() - 1;
 
