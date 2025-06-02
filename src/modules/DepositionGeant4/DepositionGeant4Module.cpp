@@ -254,9 +254,15 @@ void DepositionGeant4Module::initialize() {
     // See https://geant4-forum.web.cern.ch/t/i-can-not-simulated-c12-n-be9-reaction/6112/11 for details
     if(G4ParticleHPManager::GetInstance() != nullptr) {
         for(auto& detector : geo_manager_->getDetectors()) {
-            if(detector->getModel()->getSensorMaterial() == SensorMaterial::DIAMOND) {
-                LOG(INFO) << "Found detector with diamond sensor, enabling NRESP71 model";
+            const auto material = detector->getModel()->getSensorMaterial();
+            if(material == SensorMaterial::DIAMOND || material == SensorMaterial::SILICON_CARBIDE) {
+                LOG(INFO) << "Found detector with " << magic_enum::enum_name(material) << " sensor, enabling NRESP71 model";
                 G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(true);
+
+                if(physics_list_up == "FTFP_BERT_LIV") {
+                    LOG(WARNING) << "Physics list " << physics_list_up
+                                 << " does not yield correct results for 12C(n,alpha)9Be reactions";
+                }
                 break;
             }
         }
