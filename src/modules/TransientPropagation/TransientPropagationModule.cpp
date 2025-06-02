@@ -513,7 +513,7 @@ TransientPropagationModule::propagate(Event* event,
 
     if(level > max_multiplication_level_) {
         LOG(WARNING) << "Found impact ionization shower with level larger than " << max_multiplication_level_
-                     << ", interrupting";
+                     << ", limiting shower to this level (not propagating this charge carrier).";
         return {};
     }
 
@@ -734,8 +734,8 @@ TransientPropagationModule::propagate(Event* event,
                 auto inverted_type = invertCarrierType(type);
                 // Placing new charge carrier at the end of the step:
                 auto carrier_pos = static_cast<ROOT::Math::XYZPoint>(position);
-                LOG(DEBUG) << "Set of charge carriers (" << inverted_type << ") generated from impact ionization on "
-                           << Units::display(carrier_pos, {"mm", "um"});
+                LOG(DEBUG) << "Set of " << n_secondaries << " charge carriers (" << inverted_type
+                           << ") generated from impact ionization on " << Units::display(carrier_pos, {"mm", "um"});
                 if(output_plots_) {
                     multiplication_depth_histo_->Fill(carrier_pos.z(), n_secondaries);
                 }
@@ -762,8 +762,9 @@ TransientPropagationModule::propagate(Event* event,
 
             auto gain = static_cast<double>(charge + n_secondaries) / initial_charge;
             if(gain > 50.) {
-                LOG(WARNING) << "Detected gain of " << gain << ", local electric field of "
-                             << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+                LOG_N(WARNING, 10) << "Detected gain of " << gain << ", local electric field of "
+                                   << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
+                                   << ", diode seems to be in breakdown";
             }
         }
 
