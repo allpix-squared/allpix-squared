@@ -493,15 +493,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     }
 
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
-    bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
-        if(messenger_->hasReceiver(this,
-                                   std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector)) ||
-           messenger_->hasReceiver(this, std::make_shared<MCParticleMessage>(std::vector<MCParticle>(), detector)) ||
-           messenger_->hasReceiver(this, std::make_shared<MCTrackMessage>(std::vector<MCTrack>()))) {
-            useful_deposition = true;
-        }
-
         // Get ionization energy and Fano factor
         auto model = detector->getModel();
         auto charge_creation_energy =
@@ -599,10 +591,6 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
                 }
             }
         }
-    }
-
-    if(!useful_deposition) {
-        LOG(WARNING) << "Not a single listener for deposited charges, module might be useless!";
     }
 }
 
