@@ -244,8 +244,7 @@ void DepositionGeant4Module::initialize() {
                 region->AddRootLogicalVolume(logical_volume.get());
 
                 LOG(DEBUG) << "Added " << logical_volume->GetName() << " to region " << region->GetName()
-                           << " for MicroElec physics"
-                           << "\n";
+                           << " for MicroElec physics" << "\n";
             }
         }
     }
@@ -496,16 +495,12 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     // Loop through all detectors and set the sensitive detector action that handles the particle passage
     bool useful_deposition = false;
     for(auto& detector : geo_manager_->getDetectors()) {
-        // Do not add sensitive detector for detectors that have no listeners for the deposited charges
-        if(!messenger_->hasReceiver(this,
-                                    std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector)) &&
-           !messenger_->hasReceiver(this, std::make_shared<MCParticleMessage>(std::vector<MCParticle>(), detector)) &&
-           !messenger_->hasReceiver(this, std::make_shared<MCTrackMessage>(std::vector<MCTrack>()))) {
-            LOG(INFO) << "Not depositing charges in " << detector->getName()
-                      << " because there is no listener for its output";
-            continue;
+        if(messenger_->hasReceiver(this,
+                                   std::make_shared<DepositedChargeMessage>(std::vector<DepositedCharge>(), detector)) ||
+           messenger_->hasReceiver(this, std::make_shared<MCParticleMessage>(std::vector<MCParticle>(), detector)) ||
+           messenger_->hasReceiver(this, std::make_shared<MCTrackMessage>(std::vector<MCTrack>()))) {
+            useful_deposition = true;
         }
-        useful_deposition = true;
 
         // Get ionization energy and Fano factor
         auto model = detector->getModel();
@@ -607,7 +602,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
     }
 
     if(!useful_deposition) {
-        LOG(ERROR) << "Not a single listener for deposited charges, module is useless!";
+        LOG(WARNING) << "Not a single listener for deposited charges, module might be useless!";
     }
 }
 
