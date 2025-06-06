@@ -136,9 +136,9 @@ namespace allpix {
      */
     class Mandic : virtual public TrappingModel {
     public:
-        explicit Mandic(double fluence) {
+        explicit Mandic(double fluence, bool scale_tau_holes) {
             tau_eff_electron_ = 0.54 * pow(fluence / Units::get(1e16, "/cm/cm"), -0.62);
-            tau_eff_hole_ = tau_eff_electron_ * (4.9 / 6.2);
+            tau_eff_hole_ = tau_eff_electron_ * (scale_tau_holes ? (4.9 / 6.2) : 1);
         }
     };
 
@@ -229,7 +229,7 @@ namespace allpix {
                 } else if(model == "cmstracker") {
                     model_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic") {
-                    model_ = std::make_unique<Mandic>(fluence);
+                    model_ = std::make_unique<Mandic>(fluence, config.get<bool>("scale_tau_holes", false));
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
                                                                 config.get<double>("trapping_time_hole"));
