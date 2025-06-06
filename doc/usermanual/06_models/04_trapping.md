@@ -151,7 +151,7 @@ with the parameters
 c_e      &= 0.54 \,\text{ns}\,\text{cm}^{-2} \\
 \kappa_e &= -0.62 \\
 \\
-c_h      &= 0.0427 \,\text{ns}\,\text{cm}^{-2} \\
+c_h      &= 0.54 \,\text{ns}\,\text{cm}^{-2} \\
 \kappa_h &= -0.62
 \end{aligned}
 ```
@@ -163,8 +163,8 @@ the results extrapolated to $`T = -30 \,\text{°C}`$.
 
 The c_e has been updated accordingly based on the erratum \[[@MandicErratum]\].
 
-A scaling from electrons to holes was performed based on the default
-values in Weightfield2 \[[@weightfield2]\].
+If the configuration parameter `scale_tau_holes = true` is set, the $`c_h`$ factor is scaled from electrons to holes based on
+the default values in Weightfield2 \[[@weightfield2]\], resulting in $`c_h = 0.0427 \,\text{ns}\,\text{cm}^{-2}`$
 
 This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
 
