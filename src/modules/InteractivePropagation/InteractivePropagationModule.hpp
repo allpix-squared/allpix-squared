@@ -92,7 +92,7 @@ namespace allpix {
 
         unsigned int max_multiplication_level_{};
 
-        double relative_permativity_{};
+        double relative_permittivity_{};
 
         // z bounds for capacitor (set during initialization)
         double z_lim_pos_;

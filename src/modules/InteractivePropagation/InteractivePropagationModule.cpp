@@ -55,7 +55,7 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
     config_.setDefault<double>("temperature", 293.15);
     config_.setDefault<unsigned int>("distance", 1);
     config_.setDefault<bool>("ignore_magnetic_field", false);
-    config_.setDefault<double>("relative_permitivity", 1.0);
+    config_.setDefault<double>("relative_permittivity", 1.0);
     config_.setDefault<double>("surface_reflectivity", 0.0);
 
     // Set defaults for charge carrier multiplication (not used currently)
@@ -109,7 +109,11 @@ InteractivePropagationModule::InteractivePropagationModule(Configuration& config
 
     include_mirror_charges_ = config.get<bool>("include_mirror_charges");
 
-    relative_permativity_ = config.get<double>("relative_permativity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
+    relative_permittivity_ = config.get<double>("relative_permittivity"); // the permativity of materials isn't in allpix, so rely on user to pass this in
+
+    if (enable_coulomb_repulsion_ && relative_permittivity_ == 1) {
+        LOG(WARNING) << "Coulomb repulsion is enabled but relative permittivity is set to one. Check that the parameter relative_permittivity isn't misspelled or ommited.";
+    }
     
     coulomb_distance_limit_squared_ = config.get<double>("coulomb_distance_limit") * config.get<double>("coulomb_distance_limit") * 1e2; // cm^2 -> mm^2
     coulomb_field_limit_ = config.get<double>("coulomb_field_limit") * 1e-5; // Convert from V/cm to MV/mm (internal field units)
@@ -750,7 +754,7 @@ InteractivePropagationModule::propagate_together(Event* event,
 
                     dist_mag = ROOT::Math::sqrt(dist_mag2);
 
-                    interaction_magnitude = std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Magnitude of the force [MV/mm] (always positive)
+                    interaction_magnitude = std::min(coulomb_field_limit_, coulomb_K_ / relative_permittivity_ * q / dist_mag2); // Magnitude of the force [MV/mm] (always positive)
                     coulomb_mag_histo_ -> Fill(interaction_magnitude * 1e5); // Conversion from MV/mm to V/cm
                     
                     // Add this charge's field to the total field at the point
@@ -776,7 +780,7 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             if (dist_mag2 < coulomb_distance_limit_squared_){
                 dist_mag = ROOT::Math::sqrt(dist_mag2);
-                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2); // Mirror charges have opposite charge
+                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permittivity_ * q / dist_mag2); // Mirror charges have opposite charge
             }
 
             // Apply field for positive-side mirror charge
@@ -785,7 +789,7 @@ InteractivePropagationModule::propagate_together(Event* event,
 
             if (dist_mag2 < coulomb_distance_limit_squared_){
                 dist_mag = ROOT::Math::sqrt(dist_mag2);
-                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permativity_ * q / dist_mag2);
+                field = field - dist_vector/dist_mag * sign * std::min(coulomb_field_limit_, coulomb_K_ / relative_permittivity_ * q / dist_mag2);
             }
         }
 
