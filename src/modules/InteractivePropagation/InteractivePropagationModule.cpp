@@ -927,7 +927,7 @@ InteractivePropagationModule::propagate_together(Event* event,
                 //     next_idx = output_plot_points.at(i).second.size();
                 // }
 
-            LOG(INFO) << "Time has reached " << time << "ns of " << integration_time_ << "ns";
+            LOG(DEBUG) << "Time has reached " << time << "ns of " << integration_time_ << "ns";
 
             for (unsigned int i = 0; i < propagating_charges.size(); i++){
                 // Add the current position to the linegraph associated with the current charge
