@@ -458,26 +458,29 @@ void InteractivePropagationModule::initialize() {
                                                      -model_->getSensorSize().z() / 2.,
                                                      model_->getSensorSize().z() / 2.);
         }
-        rms_total_graph_ = new TMultiGraph("rms_total_graph","Comparison of spread of electrons (dashed) and holes (solid);Drift time [ns];RMS [mm]");
-        rms_e_subgraph_ = new TGraph();
-        rms_e_subgraph_->SetNameTitle("rms_e_subgraph","Spread of electrons");
-        rms_e_subgraph_->SetLineColor(kBlack);
-        rms_e_subgraph_->SetLineStyle(kDashed);
-        rms_h_subgraph_ = new TGraph();
-        rms_h_subgraph_->SetNameTitle("rms_h_subgraph","Spread of holes");
-        rms_h_subgraph_->SetLineColor(kBlack);
-        rms_h_subgraph_->SetLineStyle(kSolid);
 
-        rms_e_graph_ = new TMultiGraph("rms_e_graph","Spread of electrons(xyz=rgb);Drift time [ns];RMS [mm]");
-        rms_x_e_subgraph_ = new TGraph();
-        rms_x_e_subgraph_->SetNameTitle("rms_x_e_subgraph","Spread in X");
-        rms_x_e_subgraph_->SetLineColor(kRed);
-        rms_y_e_subgraph_ = new TGraph();
-        rms_y_e_subgraph_->SetNameTitle("rms_y_e_subgraph","Spread in Y");
-        rms_y_e_subgraph_->SetLineColor(kGreen);
-        rms_z_e_subgraph_ = new TGraph();
-        rms_z_e_subgraph_->SetNameTitle("rms_z_e_subgraph","Spread in Z");
-        rms_z_e_subgraph_->SetLineColor(kBlue);
+        if (output_rms_){
+            rms_total_graph_ = new TMultiGraph("rms_total_graph","Comparison of spread of electrons (dashed) and holes (solid);Drift time [ns];RMS [mm]");
+            rms_e_subgraph_ = new TGraph();
+            rms_e_subgraph_->SetNameTitle("rms_e_subgraph","Spread of electrons");
+            rms_e_subgraph_->SetLineColor(kBlack);
+            rms_e_subgraph_->SetLineStyle(kDashed);
+            rms_h_subgraph_ = new TGraph();
+            rms_h_subgraph_->SetNameTitle("rms_h_subgraph","Spread of holes");
+            rms_h_subgraph_->SetLineColor(kBlack);
+            rms_h_subgraph_->SetLineStyle(kSolid);
+
+            rms_e_graph_ = new TMultiGraph("rms_e_graph","Spread of electrons(xyz=rgb);Drift time [ns];RMS [mm]");
+            rms_x_e_subgraph_ = new TGraph();
+            rms_x_e_subgraph_->SetNameTitle("rms_x_e_subgraph","Spread in X");
+            rms_x_e_subgraph_->SetLineColor(kRed);
+            rms_y_e_subgraph_ = new TGraph();
+            rms_y_e_subgraph_->SetNameTitle("rms_y_e_subgraph","Spread in Y");
+            rms_y_e_subgraph_->SetLineColor(kGreen);
+            rms_z_e_subgraph_ = new TGraph();
+            rms_z_e_subgraph_->SetNameTitle("rms_z_e_subgraph","Spread in Z");
+            rms_z_e_subgraph_->SetLineColor(kBlue);
+        }
 
         coulomb_mag_histo_ =
             CreateHistogram<TH1D>("coulomb_mag_histo",
@@ -601,7 +604,7 @@ void InteractivePropagationModule::run(Event* event) {
             << " due to the large number of deposits with low charge quantity (true limit = set limit + number of deposits)";
     }
     
-    LOG(INFO) << "Average number of charges per group is " << total_deposited_charge/propagating_charges.size();
+    LOG(INFO) << "Average number of charges per group is " << total_deposited_charge/propagating_charges.size() << " ("<< propagating_charges.size() <<" total)";
 
     auto start = std::chrono::system_clock::now();
 
@@ -1356,16 +1359,18 @@ void InteractivePropagationModule::finalize() {
             gain_h_vs_z_->Write();
         }
 
-        rms_total_graph_->Add(rms_e_subgraph_);
-        rms_total_graph_->Add(rms_h_subgraph_);
+        if (output_rms_){
+            rms_total_graph_->Add(rms_e_subgraph_);
+            rms_total_graph_->Add(rms_h_subgraph_);
 
-        rms_e_graph_->Add(rms_x_e_subgraph_);
-        rms_e_graph_->Add(rms_y_e_subgraph_);
-        rms_e_graph_->Add(rms_z_e_subgraph_);
-        rms_e_graph_->Add(rms_e_subgraph_);
+            rms_e_graph_->Add(rms_x_e_subgraph_);
+            rms_e_graph_->Add(rms_y_e_subgraph_);
+            rms_e_graph_->Add(rms_z_e_subgraph_);
+            rms_e_graph_->Add(rms_e_subgraph_);
 
-        rms_total_graph_->Write();
-        rms_e_graph_->Write();
+            rms_total_graph_->Write();
+            rms_e_graph_->Write();
+        }
 
         coulomb_mag_histo_->Write();
     }
