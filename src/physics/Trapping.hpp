@@ -128,17 +128,16 @@ namespace allpix {
 
     /**
      * @ingroup Models
-     * @brief Mandic effective trapping model
+     * @brief Ljubljana High-Fluence / Mandic effective trapping model
      *
      * Parametrization taken from https://doi.org/10.1088/1748-0221/15/11/P11018, section 5.
      * Updated the c_e based on https://doi.org/10.1088/1748-0221/16/03/E03001
-     * Scaling from electrons to holes taken from default beta values in Weightfield2
      */
     class Mandic : virtual public TrappingModel {
     public:
         explicit Mandic(double fluence) {
             tau_eff_electron_ = 0.54 * pow(fluence / Units::get(1e16, "/cm/cm"), -0.62);
-            tau_eff_hole_ = tau_eff_electron_ * (4.9 / 6.2);
+            tau_eff_hole_ = tau_eff_electron_;
         }
     };
 
@@ -228,7 +227,7 @@ namespace allpix {
                     model_ = std::make_unique<Dortmund>(fluence);
                 } else if(model == "cmstracker") {
                     model_ = std::make_unique<CMSTracker>(fluence);
-                } else if(model == "mandic") {
+                } else if(model == "mandic" || model == "ljubljana_highfluence") {
                     model_ = std::make_unique<Mandic>(fluence);
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
