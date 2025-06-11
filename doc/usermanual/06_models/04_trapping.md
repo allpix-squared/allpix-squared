@@ -163,10 +163,7 @@ the results extrapolated to $`T = -30 \,\text{°C}`$.
 
 The c_e has been updated accordingly based on the erratum \[[@MandicErratum]\].
 
-If the configuration parameter `scale_tau_holes = true` is set, the $`c_h`$ factor is scaled from electrons to holes based on
-the default values in Weightfield2 \[[@weightfield2]\], resulting in $`c_h = 0.0427 \,\text{ns}\,\text{cm}^{-2}`$
-
-This model can be selected in the configuration file via the parameter `trapping_model = "mandic"`.
+This model can be selected in the configuration file via the parameter `trapping_model = "ljubljana_highfluence"` or `trapping_model = "mandic"`.
 
 ### Constant Trapping Model
 
@@ -261,4 +258,3 @@ detrapping_time_hole = 10ns
 [@CMSTrackerTrapping]: https://doi.org/10.1088/1748-0221/11/04/p04023
 [@Mandic]: https://doi.org/10.1088/1748-0221/15/11/p11018
 [@MandicErratum]: https://doi.org/10.1088/1748-0221/16/03/E03001
-[@weightfield2]: http://personalpages.to.infn.it/~cartigli/Weightfield2/index.html
