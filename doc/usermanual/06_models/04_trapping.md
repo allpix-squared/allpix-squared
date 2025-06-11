@@ -134,9 +134,9 @@ No temperature scaling is provided.
 
 This model can be selected in the configuration file via the parameter `trapping_model = "cmstracker"`.
 
-### Mandic
+### Ljubljana High Fluence
 
-The Mandić model \[[@Mandic]\] is an empirical model developed from measurements with high fluences ranging from
+The Ljubljana High Fluence model \[[@Mandic]\] is an empirical model developed from measurements with high fluences ranging from
 $`\Phi_{eq} = 5\times 10^{15} \ n_{eq}\,\text{cm}^2`$ to $`\Phi_{eq} = 1\times 10^{17} \ n_{eq}\,\text{cm}^2`$ and describes
 the lifetime via
 
