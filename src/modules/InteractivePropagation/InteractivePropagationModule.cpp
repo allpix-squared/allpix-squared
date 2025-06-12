@@ -605,15 +605,9 @@ void InteractivePropagationModule::run(Event* event) {
     }
     
     LOG(INFO) << "Average number of charges per group is " << total_deposited_charge/propagating_charges.size() << " ("<< propagating_charges.size() <<" total)";
-
-    auto start = std::chrono::system_clock::now();
-
+    
     // Propagation occurs within the following function call
     auto [recombined_charges_count, trapped_charges_count, propagated_charges_count] = propagate_together(event, propagating_charges, propagated_charges, output_plot_points);
-
-    auto end = std::chrono::system_clock::now();
-
-    LOG(INFO) << "The propagate_together function took " << (end - start).count()/1e6 << "ms";
 
     // Output plots if required
     if(output_linegraphs_) {
