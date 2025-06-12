@@ -22,6 +22,7 @@
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NuclearLevelData.hh>
+#include <G4ParticleHPManager.hh>
 #include <G4PhysListFactory.hh>
 #include <G4ProcessTable.hh>
 #include <G4RadioactiveDecayPhysics.hh>
@@ -245,6 +246,24 @@ void DepositionGeant4Module::initialize() {
                 LOG(DEBUG) << "Added " << logical_volume->GetName() << " to region " << region->GetName()
                            << " for MicroElec physics"
                            << "\n";
+            }
+        }
+    }
+
+    // If one of the sensors is carbon-based, switch on the NRESP71 model
+    // See https://geant4-forum.web.cern.ch/t/i-can-not-simulated-c12-n-be9-reaction/6112/11 for details
+    if(G4ParticleHPManager::GetInstance() != nullptr) {
+        for(auto& detector : geo_manager_->getDetectors()) {
+            const auto material = detector->getModel()->getSensorMaterial();
+            if(material == SensorMaterial::DIAMOND || material == SensorMaterial::SILICON_CARBIDE) {
+                LOG(INFO) << "Found detector with " << magic_enum::enum_name(material) << " sensor, enabling NRESP71 model";
+                G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(true);
+
+                if(physics_list_up == "FTFP_BERT_LIV") {
+                    LOG(WARNING) << "Physics list " << physics_list_up
+                                 << " does not yield correct results for 12C(n,alpha)9Be reactions";
+                }
+                break;
             }
         }
     }
