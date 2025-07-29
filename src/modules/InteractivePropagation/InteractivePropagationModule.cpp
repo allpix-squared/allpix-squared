@@ -577,19 +577,20 @@ void InteractivePropagationModule::run(Event* event) {
     
         // Split the deposit into charge groups
         unsigned int charges_remaining = deposit.getCharge();
+        unsigned int charge_step = charge_per_step; // New charge step variable that gets reset for each deposit
         while(charges_remaining > 0) {
 
             // Define number of charges to be propagated and remove charges of this step from the total
             if(charge_per_step > charges_remaining) {
-                charge_per_step = charges_remaining;
+                charge_step = charges_remaining; // The final deposit has the remaining charge
             }
-            charges_remaining -= charge_per_step;
+            charges_remaining -= charge_step;
 
             // Add charge to propagating charge vector to be time-stepped later
             PropagatedCharge propagating_charge(deposit.getLocalPosition(),
                                             deposit.getGlobalPosition(),
                                             deposit.getType(),
-                                            charge_per_step,
+                                            charge_step,
                                             deposit.getLocalTime(), // The local deposition time
                                             deposit.getGlobalTime(), // The global deposition time
                                             CarrierState::MOTION,
