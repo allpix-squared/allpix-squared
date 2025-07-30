@@ -13,6 +13,7 @@
 #define ALLPIX_MC_TRACK_H
 
 #include <Math/Point3D.h>
+#include <Math/Vector3D.h>
 #include <TRef.h>
 
 #include "Object.hpp"
@@ -39,6 +40,7 @@ namespace allpix {
          * @param final_kin_E Final kinetic energy (in MeV)
          * @param initial_tot_E Initial total energy (in MeV)
          * @param final_tot_E Final total energy (in MeV)
+         * @param initial_mom_direction Initial momentum direction
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 ROOT::Math::XYZPoint end_point,
@@ -52,7 +54,8 @@ namespace allpix {
                 double initial_kin_E,
                 double final_kin_E,
                 double initial_tot_E,
-                double final_tot_E);
+                double final_tot_E,
+                ROOT::Math::XYZVector initial_mom_direction);
 
         /**
          * @brief Get the point of where the track originated
@@ -116,6 +119,12 @@ namespace allpix {
         double getTotalEnergyFinal() const;
 
         /**
+         * @brief Getter for the momentum direction the particle had when the track was created
+         * @return Particle motion direction at the beginning of the track
+         */
+        ROOT::Math::XYZVector getMomentumDirectionInitial() const;
+
+        /**
          * @brief Getter for the Geant4 name of the physical volume in which the track originated
          * @return The name of the phyical volume
          */
@@ -156,7 +165,7 @@ namespace allpix {
         /**
          * @brief ROOT class definition
          */
-        ClassDefOverride(MCTrack, 6); // NOLINT
+        ClassDefOverride(MCTrack, 7); // NOLINT
         /**
          * @brief Default constructor for ROOT I/O
          */
@@ -183,6 +192,7 @@ namespace allpix {
         double final_kin_E_{};
         double initial_tot_E_{};
         double final_tot_E_{};
+        ROOT::Math::XYZVector initial_mom_direction_{};
 
         PointerWrapper<MCTrack> parent_;
     };

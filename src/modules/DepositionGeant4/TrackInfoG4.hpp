@@ -132,6 +132,12 @@ namespace allpix {
          */
         const std::string& getCreationProcessName() const { return origin_g4_process_name_; }
 
+        /**
+         * @brief Getter for the momentum direction the particle had when the track was created
+         * @return Particle motion direction at the beginning of the track
+         */
+        const ROOT::Math::XYZVector& getMomentumDirectionInitial() const { return initial_momentum_direction_; }
+
     private:
         // Assigned track id to track
         int custom_track_id_{};
@@ -163,6 +169,8 @@ namespace allpix {
         double final_kin_E_{};
         // Final total energy (MeV)
         double final_tot_E_{};
+        // Initial momentum direction
+        ROOT::Math::XYZVector initial_momentum_direction_{};
     };
 } // namespace allpix
 #endif /* TrackInfoG4_H */
