@@ -41,7 +41,7 @@ namespace allpix {
          * @param initial_tot_E Initial total energy (in MeV)
          * @param final_tot_E Final total energy (in MeV)
          * @param initial_mom_direction Normalised initial momentum direction
-         * @param initial_mom_direction Normalised final momentum direction
+         * @param final_mom_direction Normalised final momentum direction
          */
         MCTrack(ROOT::Math::XYZPoint start_point,
                 ROOT::Math::XYZPoint end_point,
@@ -127,7 +127,7 @@ namespace allpix {
         ROOT::Math::XYZVector getMomentumDirectionInitial() const;
 
         /**
-         * @brief Getter for the momentum direction the particle had when the track was created
+         * @brief Getter for the momentum direction the particle had when the track terminated
          * @return Normalised particle motion direction at the end of the track
          */
         ROOT::Math::XYZVector getMomentumDirectionFinal() const;

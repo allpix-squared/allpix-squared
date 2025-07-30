@@ -139,7 +139,7 @@ namespace allpix {
         const ROOT::Math::XYZVector& getMomentumDirectionInitial() const { return initial_momentum_direction_; }
 
         /**
-         * @brief Getter for the momentum direction the particle had when the track was created
+         * @brief Getter for the momentum direction the particle had when the track terminated
          * @return Normalised particle motion direction at the end of the track
          */
         const ROOT::Math::XYZVector& getMomentumDirectionFinal() const { return final_momentum_direction_; }

@@ -38,6 +38,10 @@ Main properties:
    [`getKineticEnergyFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getkineticenergyfinal),
    [`getTotalEnergyFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-gettotalenergyfinal))
 
+- Initial and final mometum directions
+  ([`getMomentumDirectionInitial()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getmomentumdirectioninitial),
+   [`getMomentumDirectionFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getmomentumdirectionfinal))
+
 For more details refer to the [code reference](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/).
 
 ## MCParticle
