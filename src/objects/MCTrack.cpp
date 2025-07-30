@@ -27,12 +27,14 @@ MCTrack::MCTrack(ROOT::Math::XYZPoint start_point,
                  double final_kin_E,
                  double initial_tot_E,
                  double final_tot_E,
-                 ROOT::Math::XYZVector initial_mom_direction)
+                 ROOT::Math::XYZVector initial_mom_direction,
+                 ROOT::Math::XYZVector final_mom_direction)
     : start_point_(std::move(start_point)), end_point_(std::move(end_point)), start_g4_vol_name_(std::move(g4_volume_start)),
       end_g4_vol_name_(std::move(g4_volume_end)), origin_g4_process_name_(std::move(g4_prod_process_name)),
       origin_g4_process_type_(g4_prod_process_type), particle_id_(particle_id), global_start_time_(start_time),
       global_end_time_(end_time), initial_kin_E_(initial_kin_E), final_kin_E_(final_kin_E), initial_tot_E_(initial_tot_E),
-      final_tot_E_(final_tot_E), initial_mom_direction_(initial_mom_direction) {
+      final_tot_E_(final_tot_E), initial_mom_direction_(std::move(initial_mom_direction)),
+      final_mom_direction_(std::move(final_mom_direction)) {
     setParent(nullptr);
 }
 
@@ -57,6 +59,8 @@ double MCTrack::getKineticEnergyFinal() const { return final_kin_E_; }
 double MCTrack::getTotalEnergyFinal() const { return final_tot_E_; }
 
 ROOT::Math::XYZVector MCTrack::getMomentumDirectionInitial() const { return initial_mom_direction_; }
+
+ROOT::Math::XYZVector MCTrack::getMomentumDirectionFinal() const { return final_mom_direction_; }
 
 std::string MCTrack::getOriginatingVolumeName() const { return start_g4_vol_name_; }
 
@@ -108,9 +112,12 @@ void MCTrack::print(std::ostream& out) const {
         << std::left << std::setw(big_gap) << "Initial total energy: " << std::right << std::setw(med_gap) << initial_tot_E_
         << std::setw(small_gap) << " MeV | " << std::left << std::setw(big_gap) << "Final total energy: " << std::right
         << std::setw(med_gap) << final_tot_E_ << std::setw(small_gap) << " MeV   \n"
-        << std::left << std::setw(big_gap) << "Initial momentum direction:" << std::right << std::setw(med_gap)
+        << std::left << std::setw(big_gap) << "Initial mom. direction:" << std::right << std::setw(med_gap)
         << initial_mom_direction_.X() << " | " << std::setw(med_gap) << initial_mom_direction_.Y() << " | "
-        << std::setw(med_gap) << initial_mom_direction_.Z() << "\n";
+        << std::setw(med_gap) << initial_mom_direction_.Z() << "\n"
+        << std::left << std::setw(big_gap) << "Final mom. direction:" << std::right << std::setw(med_gap)
+        << final_mom_direction_.X() << " | " << std::setw(med_gap) << final_mom_direction_.Y() << " | " << std::setw(med_gap)
+        << final_mom_direction_.Z() << "\n";
     if(parent != nullptr) {
         out << "Linked parent: " << parent << '\n';
     } else {

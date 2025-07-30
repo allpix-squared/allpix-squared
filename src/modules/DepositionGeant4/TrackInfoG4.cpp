@@ -30,6 +30,7 @@ void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_g4_vol_name_ = aTrack->GetVolume()->GetName();
     final_kin_E_ = aTrack->GetKineticEnergy();
     final_tot_E_ = aTrack->GetTotalEnergy();
+    final_momentum_direction_ = static_cast<ROOT::Math::XYZVector>(aTrack->GetMomentumDirection());
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
     end_time_ = aTrack->GetGlobalTime();
 }
