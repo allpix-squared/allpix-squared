@@ -7,7 +7,7 @@ weight: 7
 
 #### How can I produce nicely looking drift-diffusion line graphs?
 
-The GenericPropagation module offers the possibility to produce line graphs depicting the path each of the charge carrier
+The GenericPropagation and TransientPropagation modules offer the possibility to produce line graphs depicting the path each of the charge carrier
 groups have taken during the simulation. This is a useful way to visualize the drift and diffusion along field lines.
 
 An optional parameter allows to reduce the lines drawn to those charge carrier groups which have reached the sensor surface
@@ -44,6 +44,10 @@ charge carriers per group can be used to vary the density of lines drawn. Larger
 *Drift and diffusion visualization of charge carrier groups being transported through a high-resistivity CMOS silicon sensor.
 The plot shows the situation after an integration time of 20 nanoseconds, only charge carrier groups which reached the
 implant side of the sensor are drawn.*
+
+##### How can I create nice animations of charge movement?
+
+The GenericPropagation and TransientPropagation modules offer the possibility to produce animations intrinsically using the `output_animations` keyword. However, if more customisation of the animation is desired, the full propagation history can be saved for each `PropagatedCharge` object by using the `store_full_propagation_history` keyword. Note that this uses a lot of memory. Example scripts for reading back and animating the propagation history can be found in `tools/root_analysis_macros`.
 
 #### Why does GeometryBuilderGeant4 warn me about reduced performance with disabled multithreading?
 
