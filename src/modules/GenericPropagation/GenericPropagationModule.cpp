@@ -233,27 +233,27 @@ void GenericPropagationModule::initialize() {
             gain_primary_histo_ = CreateHistogram<TH1D>(
                 "gain_primary_histo",
                 "Gain per primarily induced charge carrier group after propagation;gain;number of groups transported",
-                24,
+                49,
                 1,
-                25);
+                50);
             gain_all_histo_ =
                 CreateHistogram<TH1D>("gain_all_histo",
                                       "Gain per charge carrier group after propagation;gain;number of groups transported",
-                                      24,
+                                      49,
                                       1,
-                                      25);
+                                      50);
             gain_e_histo_ =
                 CreateHistogram<TH1D>("gain_e_histo",
                                       "Gain per primary electron group after propagation;gain;number of groups transported",
-                                      24,
+                                      49,
                                       1,
-                                      25);
+                                      50);
             gain_h_histo_ =
                 CreateHistogram<TH1D>("gain_h_histo",
                                       "Gain per primary hole group after propagation;gain;number of groups transported",
-                                      24,
+                                      49,
                                       1,
-                                      25);
+                                      50);
             multiplication_level_histo_ = CreateHistogram<TH1D>(
                 "multiplication_level_histo",
                 "Multiplication level of propagated charge carriers;multiplication level;charge carriers",
