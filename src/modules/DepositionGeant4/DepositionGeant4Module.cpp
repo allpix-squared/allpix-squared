@@ -244,7 +244,8 @@ void DepositionGeant4Module::initialize() {
                 region->AddRootLogicalVolume(logical_volume.get());
 
                 LOG(DEBUG) << "Added " << logical_volume->GetName() << " to region " << region->GetName()
-                           << " for MicroElec physics" << "\n";
+                           << " for MicroElec physics"
+                           << "\n";
             }
         }
     }
