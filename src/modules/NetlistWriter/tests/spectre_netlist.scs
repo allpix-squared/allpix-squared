@@ -1,0 +1,18 @@
+simulator lang=spectre
+global 0
+
+include "/path/to/SPECTRE/netlists/header.scs" section=NOM
+
+subckt Pixel_Analog Pix_in
+    R1 (Pix_in 0) resistor r=1
+ ends Pixel_Analog
+
+
+I0 (0 Pix_in) isource type=pulse
+X1 (Pix_in) Pixel_Analog
+
+simulatorOptions options psfversion="1.4.0" reltol=1e-3 vabstol=1e-6 \
+    iabstol=1e-12 temp=27 tnom=27 scalem=1.0 scale=1e-06 gmin=1e-20 \
+    rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 checklimitdest=both 
+
+tran tran stop=50u errpreset=conservative annotate=status maxiters=5 

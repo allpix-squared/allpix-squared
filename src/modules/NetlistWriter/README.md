@@ -59,13 +59,17 @@ i = x * N_y + y
 ```
 
 is used. Here, `x` and `y` are the respective pixel coordinates and $`N_y`$ is the number of pixels along `y`.
-This means that e.g. considering pixel (6,3) fired (7th column and 4th row) in a 10x10 matrix, the index 63 will be written in the netlist for this pixel..
+This means that e.g. considering pixel (6,3) fired (7th column and 4th row) in a 10x10 matrix, the index 63 will be written in the netlist for this pixel.
 
 The parameter `waveform_to_save` is used to write at the end of the generated netlist the waveform(s) to be saved (always using the index notation to identify the fired pixels).
-The electrical circuit simulation can be performed within the Allpix Squared event using the parameter `simulator_command` which is used to specify the command line to execute. Not setting it switches the feature off, setting a value will enable it. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE` syntax:
+The electrical circuit simulation can be performed within the Allpix Squared event using the parameter `simulator_command` which is used to specify the command line to execute. Not setting it switches the feature off, setting a value will enable it. The generated netlist name to execute is appended at the end of the command, as illustrated below for `SPECTRE`  and `SPICE` syntaxes:
 
 ```shell
 spectre -f nutascii <file_name_event1.scs>
+```
+
+```shell
+wine LTspice.exe -b -run -ascii -i
 ```
 
 If performed, the electrical simulation puts in stand-by the execution of the event. This electrical simulation is performed in the same terminal as the Allpix event, thus requiring the electrical simulator environment to be correctly set.
@@ -84,7 +88,7 @@ If performed, the electrical simulation puts in stand-by the execution of the ev
 * `t_rise`: rise time of the current pulse, defaults to 1 ns, only works for the `ISOURCE_PULSE`
 * `t_width`: width of the current pulse, defaults to 3 ns, only works for the `ISOURCE_PULSE`
 * `t_fall`: fall time of the current pulse, defaults to 1 ns, only works for the `ISOURCE_PULSE`
-* `waveform_to_save`: Name of the waveforms to save
+* `waveform_to_save`: Name of the waveforms to save, no default value
 * `simulator_command`: If specified, launches the electrical simulation. Command to be executed in the terminal, the generated netlist name is appended at the end of the command.
 
 
@@ -95,13 +99,13 @@ A possible configuration is using a `ISOURCE_PWL` and the `SPICE` syntax, requir
 ```ini
 [NetlistWriter]
 target = SPICE
-netlist_template = "front_end.asc"
+netlist_template = "front_end.cir"
 source_type = ISOURCE_PWL
 source_name = Instance_source
 subckt_name = Instance_front_end
 common_nets = Comp_vref, SUB, VDDA, VSSA, Vfbk
 waveform_to_save = Pix_in, CSA_out, Comp_vout
-simulator_command = "wine 'your\path\LTSpiceXVII\XVIIx64.exe' -run"
+simulator_command = "wine 'your\path\LTSpiceXVII\XVIIx64.exe' -b -run -ascii -i"
 ```
 
 A current pulse `ISOURCE_PULSE` and the `SPECTRE` syntax is used is this example:
