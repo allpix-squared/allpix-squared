@@ -20,8 +20,8 @@ Allpix Squared is split up in a slim core, providing base functionality as confi
 modules, messaging as well as various utilities. The actual chain of simulation is developed in independent modules. Please
 try to separate any merge request for improvements or changes to the core from the implementation and updates of modules.
 Generally any kind of separable simulation functionality should be implemented in its own module and submitted as a
-individual merge request. Also try to submit individual merge request for independent changes to allow us to review them
-separately.
+individual merge request. Also try to submit an individual merge request for each independent change to allow us to review
+them separately.
 
 If you have any doubt about the best way to implement new functionality or how to split it up, please open an issue with the
 discussion tag on the issue tracker \[[@ap2-issue-tracker]\]. Also please do open an incomplete merge request as
@@ -33,8 +33,8 @@ Please follow the next steps to setup your system for contributing. Note that th
 installation instructions.
 
 1. Fork the repository by clicking on "Fork" on the main repository \[[@ap2-repo]\].
-2. Clone your local fork using `git clone https://gitlab.cern.ch/allpix-squared/allpix-squared.git` (when using HTTPS, this
-   has to be changed accordingly for SSH or KRB5)
+2. Clone your local fork using `git clone https://github.com/GITHUB-USERNAME/allpix-squared` (when using HTTPS, this has to
+be changed accordingly for SSH or KRB5)
 3. Install the latest version of the *clang* package with the *clang-format* and *clang-tidy* programs.
 4. Follow the build instructions using CMake explained in the User's manual.
 
@@ -56,7 +56,7 @@ Now you can start making changes and adding new functionality to the code.
    remotes using `git remote add upstream https://gitlab.cern.ch/allpix-squared/allpix-squared.git` (or the SSH or KRB5
    version if preferred). This only has to be done once, the first time after cloning the repository. Afterwards you fetch
    the changes using `git fetch upstream`. Then you can add the change preferably using rebase with
-   `git rebase upstream master`. If that causes problems you can use merge with `git merge upstream master`.
+   `git rebase upstream/master`. If that causes problems you can use merge with `git merge upstream/master`.
 
 ## Submitting a merge request
 
