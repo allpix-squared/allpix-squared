@@ -566,7 +566,6 @@ TransientPropagationModule::propagate(Event* event,
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        Eigen::Vector3d velocity;
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
