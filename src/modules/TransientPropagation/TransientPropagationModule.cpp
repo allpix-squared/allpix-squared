@@ -585,7 +585,7 @@ TransientPropagationModule::propagate(Event* event,
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    // Create the runge kutta solver with an RK4 tableau, no error estimation required since we're not adapting step size
+    // Create the Runge-Kutta solver with an RK4 tableau, no error estimation required since we're not adapting step size
     auto runge_kutta = make_runge_kutta(
         tableau::RK4, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_, position);
 
@@ -612,7 +612,7 @@ TransientPropagationModule::propagate(Event* event,
         efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
-        // Execute a Runge Kutta step
+        // Execute a Runge-Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result
