@@ -67,6 +67,7 @@ The following authors, in alphabetical order, have developed or contributed to A
 * Christian Scharf, HU Berlin, [cscharf](https://gitlab.cern.ch/cscharf)
 * Enrico Jr. Schioppa, Unisalento and INFN Lecce, [schioppa](https://gitlab.cern.ch/schioppa)
 * Sebastian Schmidt, FAU Erlangen, [schmidtseb](https://github.com/schmidtseb)
+* Loren Schwiebert, Wayne State University, [LSchwiebert](https://github.com/LSchwiebert)
 * Sanchit Sharma, Kansas State University, [SanchitKratos](https://github.com/SanchitKratos)
 * Xin Shi, Institute of High Energy Physics Beijing, [xshi](https://gitlab.cern.ch/xshi)
 * Petja Skomina, Nikhef, [pskomina](https://gitlab.cern.ch/pskomina)
