@@ -796,11 +796,6 @@ TransientPropagationModule::propagate(Event* event,
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
             auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
 
-            auto induced_primary = level != 0 ? 0.
-                                              : initial_charge * (ramo - last_ramo) *
-                                                    static_cast<std::underlying_type<CarrierType>::type>(type);
-            auto induced_secondary = induced - induced_primary;
-
             LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                        << " q = " << Units::display(induced, "e");
 
@@ -834,6 +829,10 @@ TransientPropagationModule::propagate(Event* event,
                     induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 }
                 if(!multiplication_.is<NoImpactIonization>()) {
+                    auto induced_primary = level != 0 ? 0.
+                                                      : initial_charge * (ramo - last_ramo) *
+                                                            static_cast<std::underlying_type<CarrierType>::type>(type);
+                    auto induced_secondary = induced - induced_primary;
                     induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
                     induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_secondary);
                     if(type == CarrierType::ELECTRON) {
