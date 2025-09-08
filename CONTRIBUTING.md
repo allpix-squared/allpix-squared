@@ -60,8 +60,9 @@ Now you can start making changes and adding new functionality to the code.
 
 ## Submitting a merge request
 
-As soon as there exists something in your branch, a merge request can be opened on the main repository. Do not forget that it
-is not a problem to open a merge request for incomplete implementations.
+As soon as there exists something in your branch, a merge request can be opened on the main repository. If you don't have an
+account for [CERN's GitLab instance](https://gitlab.cern.ch) (restricted to CERN associates), you should instead open a pull
+request as explained below. Do not forget that it is not a problem to open a merge request for incomplete implementations.
 
 1. Retrieve the latest changes from the upstream version as explained above.
 2. Optionally format the code if you did not add the git-hook from the beginning, this can be done manually by running
@@ -85,6 +86,33 @@ is not a problem to open a merge request for incomplete implementations.
    happy :)
 10. Your merge request can now be merged in. Congratulations and thank you so much, you have contributed something new to
     the repository.
+
+## Submitting a pull request
+
+As soon as there exists something in your branch, a pull request can be opened on the main repository. Do not forget that it
+is not a problem to open a pull request for incomplete implementations.
+
+1. Retrieve the latest changes from the upstream version as explained above.
+2. Optionally format the code if you did not add the git-hook from the beginning, this can be done manually by running
+   `make format` from the build directory.
+3. Go to [pull request](https://github.com/your-username/allpix-squared) and click on "Pull requests" and then "New pull
+request".
+4. Follow the instructions. Do not forget to select the "Create draft pull request" if your code is only partially ready.
+Then submit the pull request.
+5. Please wait for the maintainers to give you access to the continuous integration (CI) runners that will check your code
+   if you do not already have it.
+6. Add all the specific runners on your local repository at https://github.com/your-username/allpix-squared/settings/ci_cd.
+7. The pipeline can now be restarted and the CI will check your changes. If the CI fails and gives an error please refer to
+   the log containing a description about what went wrong. It is likely that errors will appear because Allpix Squared
+   enforces a strict policy of compiler errors and requires full compliance of the clang-tidy "linter" tool, which
+   frequently complains about minor changes (it might help to search for `error:` to find the actual error(s) in the
+   output). This clang-tidy tool can also be run locally on your pc by executing `make check-lint` from the build directory.
+   Easy changes can be fixed automatically by executing `make lint`.
+8. The maintainers will look at your proposed changes and likely provide some (constructive) feedback.
+9. Please continue to update the code with the received comments until every reviewer and the continuous integration is
+   happy :)
+10. Your pull request can now be merged in. Congratulations and thank you so much, you have contributed something new to the
+    repository.
 
 
 [@ap2-issue-tracker]: https://gitlab.cern.ch/allpix-squared/allpix-squared/issues
