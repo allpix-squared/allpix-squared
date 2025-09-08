@@ -34,7 +34,7 @@ installation instructions.
 
 1. Fork the repository by clicking on "Fork" on the main repository \[[@ap2-repo]\].
 2. Clone your local fork using `git clone https://gitlab.cern.ch/your-username/allpix-squared` (when using HTTPS, this has
-to be changed accordingly for SSH or KRB5)
+   to be changed accordingly for SSH or KRB5)
 3. Install the latest version of the *clang* package with the *clang-format* and *clang-tidy* programs.
 4. Follow the build instructions using CMake explained in the User's manual.
 
