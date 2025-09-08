@@ -98,7 +98,7 @@ is not a problem to open a pull request for incomplete implementations.
 3. Go to [pull request](https://github.com/your-username/allpix-squared) and click on "Pull requests" and then "New pull
 request".
 4. Follow the instructions. Do not forget to select the "Create draft pull request" if your code is only partially ready.
-Then submit the pull request.
+   Then submit the pull request.
 5. Please wait for the maintainers to give you access to the continuous integration (CI) runners that will check your code
    if you do not already have it.
 6. Add all the specific runners on your local repository at https://github.com/your-username/allpix-squared/settings/ci_cd.
