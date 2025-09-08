@@ -95,8 +95,8 @@ is not a problem to open a pull request for incomplete implementations.
 1. Retrieve the latest changes from the upstream version as explained above.
 2. Optionally format the code if you did not add the git-hook from the beginning, this can be done manually by running
    `make format` from the build directory.
-3. Go to [pull request](https://github.com/allpix-squared/allpix-squared/pulls) and click on "Pull requests" and then "New
-   pull request".
+3. Go to [pull request](https://github.com/allpix-squared/allpix-squared/pulls) and click on "New pull request". Select
+   "compare across forks" and choose your fork and the appropriate branch on your fork. Then click "Create pull request".
 4. Follow the instructions. Do not forget to select the "Create draft pull request" if your code is only partially ready.
    Then submit the pull request.
 5. GitHub actions will automatically check your changes. If GitHub actions gives an error please refer to the log containing
