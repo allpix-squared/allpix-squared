@@ -2,7 +2,7 @@
 SPDX-FileCopyrightText: 2016-2025 CERN and the Allpix Squared authors
 SPDX-License-Identifier: CC-BY-4.0
 -->
-
+<!-- 'tis but a scratch -->
 [![ALlpix Squared Logo](doc/logo_small.png)](https://cern.ch/allpix-squared)
 
 # Allpix<sup>2</sup>
