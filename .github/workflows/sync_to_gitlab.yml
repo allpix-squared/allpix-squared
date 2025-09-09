@@ -11,9 +11,9 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     env:
-      GITLAB_REPOSITORY: "gitlab.cern.ch/allpix-sqiared-allpix-squared"
+      GITLAB_REPOSITORY: "gitlab.cern.ch/allpix-squared/allpix-squared"
       GITLAB_PROJECT_TOKEN: ${{ secrets.GITLAB_PROJECT_TOKEN }}
-      REMOTE_TARGET_BRANCH: "maaster"
+      REMOTE_TARGET_BRANCH: "master"
       REMOTE_BRANCH_PREFIX: "github"
 
     steps:
