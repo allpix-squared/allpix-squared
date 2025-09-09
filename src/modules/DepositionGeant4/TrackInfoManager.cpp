@@ -94,7 +94,9 @@ void TrackInfoManager::createMCTracks() {
                                     track_info->getKineticEnergyInitial(),
                                     track_info->getKineticEnergyFinal(),
                                     track_info->getTotalEnergyInitial(),
-                                    track_info->getTotalEnergyFinal());
+                                    track_info->getTotalEnergyFinal(),
+                                    track_info->getMomentumDirectionInitial(),
+                                    track_info->getMomentumDirectionFinal());
 
         id_to_track_[track_info->getID()] = &stored_tracks_.back();
         stored_track_ids_.emplace_back(track_info->getID());
