@@ -17,9 +17,9 @@ For writing analysis scripts, a detailed description of the code interface for e
 The MCTrack objects reflects the state of a particle's trajectory when it was created and when it terminates. Moreover, it
 allows to retrieve the hierarchy of secondary tracks. This can be done via the parent-child relations the MCTrack objects
 store, allowing retrieval of the primary track for a given track. Combining this information with [MCParticles](#mcparticle)
-allows the Monte-Carlo trajectory to be fully reconstructed. In addition to these relational information, the MCTrack stores
+allows the Monte-Carlo trajectory to be fully reconstructed. In addition to the relational information, the MCTrack stores
 information on the initial and final point of the trajectory (in *global* coordinates), the initial and final timestamps in
-global coordinates of the event, the energies (total as well as kinetic only) at those points, the creation process type,
+global coordinates of the event, the energies (total as well as kinetic only) and momentum directions in the global coordinate system at those points, the creation process type,
 name, and the volume it took place in. Furthermore, the particle's PDG id \[[@pdg]\] is stored.
 
 Main properties:
@@ -38,7 +38,7 @@ Main properties:
    [`getKineticEnergyFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getkineticenergyfinal),
    [`getTotalEnergyFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-gettotalenergyfinal))
 
-- Initial and final mometum directions
+- Initial and final mometum directions in the global coordinate system
   ([`getMomentumDirectionInitial()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getmomentumdirectioninitial),
    [`getMomentumDirectionFinal()`](https://allpix-squared.docs.cern.ch/reference/classes/classallpix_1_1mctrack/#function-getmomentumdirectionfinal))
 
