@@ -27,11 +27,15 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
     }
 
     // Set geometry parameters from config file
+    // Required parameters
     setNumberOfStrips(config.getArray<unsigned int>("number_of_strips"));
     setStripLength(config.getArray<double>("strip_length"));
     setAngularPitch(config.getArray<double>("angular_pitch"));
     setInnerPitch(config.getArray<double>("inner_pitch"));
-    setStereoAngle(config.get<double>("stereo_angle", 0));
+    // Optional parameters
+    setStereoAngle(config.get<double>("stereo_angle", 0.0));
+    setCenterRadius(config.get<double>("center_radius", 0.0));
+    setInnerRadius(config.get<double>("inner_radius", 0.0));
 
     // Get the number of strip rows
     auto strip_rows = static_cast<unsigned int>(number_of_strips_.size());
@@ -75,11 +79,16 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
     // Set the total length of the trapezoidal wrapper
     setSensorLength(total_strip_length + strip_extension);
 
-    // Set segment radii
-    // First segment radius is the strip extension and radius extension combined
-    row_radius_.push_back(strip_extension + radius_extension);
+    // If inner radius was not provided, fall back to an approximate calculation
+    if(getInnerRadius() < 1e-6) {
+        setInnerRadius(strip_extension + radius_extension);
+    }
+
+    // Set inner radius of the first strip row
+    row_radius_.push_back(getInnerRadius());
+    // Set outer radii of strip rows
     for(unsigned int row = 0; row < strip_rows; row++) {
-        // Subsequent segment radii calculated as previous segment radius plus strip length
+        // Outer row radii calculated as inner row radius plus strip length
         row_radius_.push_back(row_radius_.at(row) + strip_length_.at(row));
     }
 
@@ -89,6 +98,11 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
     // Pixel size is defined as the rectangular wrapper size divided by the maximum
     // number of strips (x-value) or strip rows (y-value)
     setPixelSize({getSize().x() / number_of_pixels_.x(), getSize().y() / number_of_pixels_.y()});
+
+    // If radius of the sensor center wasn't provided, fall back to the average radius
+    if(getCenterRadius() < 1e-6) {
+        setCenterRadius((row_radius_.at(0) + row_radius_.at(number_of_pixels_.y())) / 2);
+    }
 
     // Translation vector from local coordinate center to sensor focal point
     focus_translation_ = {getCenterRadius() * sin(stereo_angle_), getCenterRadius() * (1 - cos(stereo_angle_)), 0};

@@ -75,7 +75,7 @@ For radial strip detectors, the coordinate origin is placed in the center of con
 
 ![Radial strips parameters](./radial_params.png)
 
-The optional parameter `stereo_angle` can be used to shift the strip focal point around the center of the sensor to create an asymmetrical sensor. By default, the stereo angle is disabled.
+The optional parameter `stereo_angle` can be used to shift the strip focal point around the center of the sensor to create an asymmetrical sensor. By default, the stereo angle is disabled. When simulating sensors with the stereo angle, two additional optional parameters can be specified to further modify the simulated sensor geometry. The `inner_radius` parameter sets the distance from the coordinate origin to the inner radius of the first strip row. The `center_radius` sets the distance from the origin to the sensor center around which the stereo angle rotation is applied. If these parameters are not provided, their values are approximated by fallback calculations.
 
 ![Radial stips stereo angle](./radial_stereo_angle.png)
 

@@ -124,7 +124,13 @@ namespace allpix {
          * @brief Get the radius of the sensor center
          * @return Radius of the sensor center
          */
-        double getCenterRadius() const { return (row_radius_.at(0) + row_radius_.at(number_of_pixels_.y())) / 2; }
+        double getCenterRadius() const { return center_radius_; }
+
+        /**
+         * @brief Get the inner radius of the first strip row
+         * @return inner radius of the first strip row
+         */
+        double getInnerRadius() const { return inner_radius_; }
 
         /**
          * @brief Get the sensor stereo angle
@@ -165,6 +171,19 @@ namespace allpix {
             return {inner_pitch_.at(row) + 2 * strip_length_.at(row) * tan(angular_pitch_.at(row) / 2),
                     strip_length_.at(row)};
         }
+
+        /**
+         * @brief Set the radius of the sensor center
+         * @param val Radius of the sensor center
+         */
+        void setCenterRadius(double val) { center_radius_ = val; }
+
+        /**
+         * @brief Set the inner radius of the first strip row
+         * @param val Inner radius of the first strip row
+         */
+        void setInnerRadius(double val) { inner_radius_ = val; }
+
         /**
          * @brief Returns if a local position is within the sensitive device
          * @param position Position in local coordinates of the detector model
@@ -337,6 +356,8 @@ namespace allpix {
         std::vector<double> angular_pitch_{};
         std::vector<double> inner_pitch_{};
         double stereo_angle_{};
+        double center_radius_{};
+        double inner_radius_{};
 
         std::array<double, 2> sensor_base_{};
         double sensor_length_{};
