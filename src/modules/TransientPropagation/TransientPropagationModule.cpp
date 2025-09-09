@@ -72,6 +72,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_plots_align_pixels", false);
     config_.setDefault<double>("output_plots_theta", 0.0f);
     config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<int>("output_max_gain_histo",25);
 
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
@@ -91,6 +92,12 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     output_linegraphs_recombined_ = config_.get<bool>("output_linegraphs_recombined");
     output_linegraphs_trapped_ = config_.get<bool>("output_linegraphs_trapped");
     output_plots_step_ = config_.get<double>("output_plots_step");
+    output_max_gain_histo_=config.get<int>("output_max_gain_histo");
+
+    // Avoids wrong gain histogram inputs
+    if(output_max_gain_histo_ <2) {
+        throw std::runtime_error("Config error: 'output_max_gain_histo' must be >=2.");
+    }
 
     // Enable multithreading of this module if multithreading is enabled and no per-event output plots are requested:
     // FIXME: Review if this is really the case or we can still use multithreading
@@ -322,27 +329,27 @@ void TransientPropagationModule::initialize() {
             gain_primary_histo_ = CreateHistogram<TH1D>(
                 "gain_primary_histo",
                 "Gain per primarily induced charge carrier group after propagation;gain;number of groups transported",
-                24,
+                output_max_gain_histo_ - 1,
                 1,
-                25);
+                output_max_gain_histo_);
             gain_all_histo_ =
                 CreateHistogram<TH1D>("gain_all_histo",
                                       "Gain per charge carrier group after propagation;gain;number of groups transported",
-                                      24,
+                                      output_max_gain_histo_ - 1,
                                       1,
-                                      25);
+                                      output_max_gain_histo_);
             gain_e_histo_ =
                 CreateHistogram<TH1D>("gain_e_histo",
                                       "Gain per primary electron group after propagation;gain;number of groups transported",
-                                      24,
+                                      output_max_gain_histo_ - 1,
                                       1,
-                                      25);
+                                      output_max_gain_histo_);
             gain_h_histo_ =
                 CreateHistogram<TH1D>("gain_h_histo",
                                       "Gain per primary hole group after propagation;gain;number of groups transported",
-                                      24,
+                                      output_max_gain_histo_ - 1,
                                       1,
-                                      25);
+                                      output_max_gain_histo_);
             multiplication_level_histo_ = CreateHistogram<TH1D>(
                 "multiplication_level_histo",
                 "Multiplication level of propagated charge carriers;multiplication level;charge carriers",
