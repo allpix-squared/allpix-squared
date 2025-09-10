@@ -20,6 +20,7 @@ TrackInfoG4::TrackInfoG4(int custom_track_id, int parent_track_id, const G4Track
       initial_g4_vol_name_(aTrack->GetVolume()->GetName()), initial_kin_E_(aTrack->GetKineticEnergy()),
       initial_tot_E_(aTrack->GetTotalEnergy()) {
     start_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
+    initial_momentum_direction_ = static_cast<ROOT::Math::XYZVector>(aTrack->GetMomentumDirection());
     const auto* G4Process = aTrack->GetCreatorProcess();
     origin_g4_process_type_ = (G4Process != nullptr) ? G4Process->GetProcessSubType() : -1;
     origin_g4_process_name_ = (G4Process != nullptr) ? static_cast<std::string>(G4Process->GetProcessName()) : "none";
@@ -29,6 +30,7 @@ void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_g4_vol_name_ = aTrack->GetVolume()->GetName();
     final_kin_E_ = aTrack->GetKineticEnergy();
     final_tot_E_ = aTrack->GetTotalEnergy();
+    final_momentum_direction_ = static_cast<ROOT::Math::XYZVector>(aTrack->GetMomentumDirection());
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
     end_time_ = aTrack->GetGlobalTime();
 }
