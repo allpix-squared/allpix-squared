@@ -591,6 +591,8 @@ TransientPropagationModule::propagate(Event* event,
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     ROOT::Math::XYZVector efield{}, last_efield{};
+    // Initialize last_efield for first pass through the while loop
+    last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
     while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
@@ -602,10 +604,6 @@ TransientPropagationModule::propagate(Event* event,
                 next_idx = output_plot_points.at(output_plot_index).second.size();
             }
         }
-
-        // Save previous position and time
-        last_position = position;
-        last_efield = efield;
 
         // Get electric field at current (pre-step) position
         efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
@@ -849,6 +847,10 @@ TransientPropagationModule::propagate(Event* event,
         }
         // Increase charge at the end of the step in case of impact ionization
         charge += n_secondaries;
+
+        // Save previous position and time
+        last_position = position;
+        last_efield = efield;
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
