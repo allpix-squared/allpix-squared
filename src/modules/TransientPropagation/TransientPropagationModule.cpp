@@ -848,7 +848,7 @@ TransientPropagationModule::propagate(Event* event,
         // Increase charge at the end of the step in case of impact ionization
         charge += n_secondaries;
 
-        // Save previous position and time
+        // Save previous position and electric field
         last_position = position;
         last_efield = efield;
     }
