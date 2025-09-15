@@ -115,7 +115,7 @@ namespace allpix {
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
         unsigned int max_multiplication_level_{};
-        int output_max_gain_histo_{};
+        unsigned int output_max_gain_histo_{};
         // Models for electron and hole mobility and lifetime
         Mobility mobility_;
         Recombination recombination_;
