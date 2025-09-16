@@ -451,7 +451,7 @@ void GenericPropagationModule::run(Event* event) {
 
 /**
  * Propagation is simulated using a parameterization for the electron mobility. This is used to calculate the electron
- * velocity at every point with help of the electric field map of the detector. An Runge-Kutta integration is applied in
+ * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
 std::tuple<unsigned int, unsigned int, unsigned int, unsigned int, long double>
@@ -472,7 +472,7 @@ GenericPropagationModule::propagate(Event* event,
         return {};
     }
 
-    // Create a runge kutta solver using the electric field as step function
+    // Create a Runge-Kutta solver using the electric field as step function
     Eigen::Vector3d position(pos.x(), pos.y(), pos.z());
 
     unsigned int propagated_charges_count = 0;
@@ -522,7 +522,6 @@ GenericPropagationModule::propagate(Event* event,
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        Eigen::Vector3d velocity;
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
@@ -541,7 +540,7 @@ GenericPropagationModule::propagate(Event* event,
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    // Create the runge kutta solver with an RKF5 tableau, using different velocity calculators depending on the magnetic
+    // Create the Runge-Kutta solver with an RKF5 tableau, using different velocity calculators depending on the magnetic
     // field
     auto runge_kutta = make_runge_kutta(
         tableau::RK5, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_start_, position);
@@ -571,7 +570,7 @@ GenericPropagationModule::propagate(Event* event,
         efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
-        // Execute a Runge Kutta step
+        // Execute a Runge-Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result and timestep
