@@ -95,7 +95,7 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     output_max_gain_histo_ = config.get<unsigned int>("output_max_gain_histo");
 
     // Avoids wrong gain histogram inputs
-    if(output_max_gain_histo_ <2) {
+    if(output_max_gain_histo_ < 2) {
         throw InvalidValueError(config, "output_max_gain_histo", "value must be >= 2");
     }
 

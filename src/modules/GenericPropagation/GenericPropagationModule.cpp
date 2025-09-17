@@ -100,7 +100,6 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("multiplication_threshold", 1e-2);
     config_.setDefault<unsigned int>("max_multiplication_level", 5);
 
-
     // Copy some variables from configuration to avoid lookups:
     temperature_ = config_.get<double>("temperature");
     timestep_min_ = config_.get<double>("timestep_min");
