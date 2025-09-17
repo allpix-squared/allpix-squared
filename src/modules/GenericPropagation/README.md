@@ -90,6 +90,7 @@ This module requires an installation of Eigen3.
 * `output_animations_marker_size` : Scaling for the markers on the animation, defaults to one. The markers are already internally scaled to the charge of their step, normalized to the maximum charge.
 * `output_animations_contour_max_scaling` : Scaling to use for the contour color axis from the theoretical maximum charge at every single plot step. Default is 10, meaning that the maximum of the color scale axis is equal to the total amount of charges divided by ten (values above this are displayed in the same maximum color). Parameter can be used to improve the color scale of the contour plots.
 * `output_animations_color_markers`: Determines if colors should be for the markers in the animations, defaults to false.
+* `output_max_gain_histo` : Determines maximum gain value to be plotted in the gain histograms. Defaults to 25.
 
 ## Usage
 
