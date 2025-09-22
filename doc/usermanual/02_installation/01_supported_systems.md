@@ -13,9 +13,9 @@ GCC), AlmaLinux 9 and Red Hat Enterprise Linux 9 (with GCC and LLVM), Ubuntu 22.
 
 ## Compilers
 
-Allpix Squared relies on functionality from the C++17 standard and therefore requires a C++17-compliant compiler. This
-comprises for example GCC 9+, LLVM/Clang 4.0+ and AppleClang 10.0+. A detailed list of supported compilers can be found at
+Allpix Squared relies on functionality from the C++20 standard and therefore requires a C++20-compliant compiler. This
+comprises for example GCC 11+, LLVM/Clang 10.0+ and AppleClang 13.0+. A detailed list of supported compilers can be found at
 \[[@cppcompilersupport]\].
 
 
-[@cppcompilersupport]: https://en.cppreference.com/w/cpp/compiler_support/17
+[@cppcompilersupport]: https://en.cppreference.com/w/cpp/compiler_support/20

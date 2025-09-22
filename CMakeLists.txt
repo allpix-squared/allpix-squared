@@ -190,24 +190,24 @@ IF(NOT ROOT_FOUND)
 ENDIF()
 
 # Check which C++ version ROOT was built against
-IF(ROOT_CXX_STANDARD MATCHES "20")
+IF(ROOT_CXX_STANDARD MATCHES "23")
+    SET(ROOT_CXX_STD 23)
+ELSEIF(ROOT_CXX_STANDARD MATCHES "20")
     SET(ROOT_CXX_STD 20)
-ELSEIF(ROOT_CXX_STANDARD MATCHES "17")
-    SET(ROOT_CXX_STD 17)
 ELSEIF(NOT ROOT_CXX_STANDARD)
     #ROOT_CXX_STANDARD does not exist for ROOT versions earlier than 6.30.07.
     MESSAGE(WARNING "Could not find ROOT_CXX_STANDARD environment variable. Attempt to deduce from ROOT_CXX_FLAGS")
-    IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+2[0a].*")
+    IF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+23.*")
+        SET(ROOT_CXX_STD 23)
+    ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+2[0a].*")
         SET(ROOT_CXX_STD 20)
-    ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+1[7z].*")
-        SET(ROOT_CXX_STD 17)
     ELSEIF(ROOT_CXX_FLAGS MATCHES ".*std=c\\+\\+.*")
-        MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version, at least C++17 is required: ${ROOT_CXX_FLAGS}")
+        MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version, at least C++20 is required: ${ROOT_CXX_FLAGS}")
     ELSE()
         MESSAGE(FATAL_ERROR "Could not deduce ROOT's C++ version from build flags: ${ROOT_CXX_FLAGS}")
     ENDIF()
 ELSE()
-    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version, at least C++17 is required: ${ROOT_CXX_STANDARD}")
+    MESSAGE(FATAL_ERROR "ROOT was built with an unsupported C++ version, at least C++20 is required: ${ROOT_CXX_STANDARD}")
 ENDIF()
 
 # Check ROOT version
@@ -264,16 +264,16 @@ IF(CCACHE_FOUND)
         CACHE PATH "CCache program" FORCE)
 ENDIF()
 
-# Require C++17 or C++20
-CHECK_CXX_COMPILER_FLAG(-std=c++17 SUPPORT_STD_CXX17)
+# Require C++20 or C++23
 CHECK_CXX_COMPILER_FLAG(-std=c++20 SUPPORT_STD_CXX20)
+CHECK_CXX_COMPILER_FLAG(-std=c++23 SUPPORT_STD_CXX23)
 IF(ROOT_CXX_STD EQUAL 20 AND NOT SUPPORT_STD_CXX20)
     MESSAGE(FATAL_ERROR "Compiler does not support standard required by ROOT: C++20")
-ELSEIF(ROOT_CXX_STD EQUAL 17 AND NOT SUPPORT_STD_CXX17)
-    MESSAGE(FATAL_ERROR "Compiler does not support standard required by ROOT: C++17")
+ELSEIF(ROOT_CXX_STD EQUAL 23 AND NOT SUPPORT_STD_CXX23)
+    MESSAGE(FATAL_ERROR "Compiler does not support standard required by ROOT: C++23")
 ENDIF()
 
-# Build with C++20 or C++17
+# Build with C++20 or C++23
 SET(CMAKE_CXX_STANDARD "${ROOT_CXX_STD}")
 MESSAGE(STATUS "Building against C++ version ${CMAKE_CXX_STANDARD}")
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
