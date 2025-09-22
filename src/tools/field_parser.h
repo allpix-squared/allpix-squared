@@ -154,6 +154,7 @@ namespace allpix {
 } // namespace allpix
 
 // Enable versioning for the FieldData class template
+/// @cond doxygen_suppress
 namespace cereal::detail {
     template <class T> struct Version<allpix::FieldData<T>> {
         static const std::uint32_t version;
@@ -167,6 +168,7 @@ namespace cereal::detail {
     template <class T>
     const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
 } // namespace cereal::detail
+/// @endcond
 
 namespace allpix {
 

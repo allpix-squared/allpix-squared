@@ -75,7 +75,6 @@ namespace allpix {
 
         /**
          * @brief Create and apply a custom field from functions
-         * @param thickness_domain Domain of the thickness where the field is defined
          * @return Pair with the field function and the deduced field type, CUSTOM or CUSTOM1D
          */
         std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> get_custom_field_function();
