@@ -50,7 +50,7 @@ namespace allpix {
              * @param pos  Position vector
              * @param t    Creation time
              */
-            Particle(int id, double e, G4ThreeVector dir, G4ThreeVector pos, double t)
+            Particle(int id, double e, G4ThreeVector dir, G4ThreeVector pos, double t) noexcept
                 : id_(id), energy_(e), direction_(std::move(dir)), position_(std::move(pos)), time_(t) {}
 
             /**
