@@ -243,7 +243,7 @@ SET(COMPILER_FLAGS
     -Wsign-conversion
     -Wsign-promo
     -Wstrict-null-sentinel
-    -Wstrict-overflow=5
+    -Wstrict-overflow=2
     -Wswitch-default
     -Wundef
     -Wshadow
