@@ -115,6 +115,26 @@ RUN mkdir -p ${HEPMC3DIR}/{src,build} && \
     rm -rf ${HEPMC3DIR}
 
 # Install Allpix Squared dependencies
-RUN apt-get install -y libpqxx-dev postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+
+# Add layer for libpqxx, we need a newer version than available in the repos
+ENV PQXX_VERSION=7.10.1
+
+ENV PQXXDIR="/tmp/pqxx"
+RUN mkdir -p ${PQXXDIR}/{src,build} && \
+    curl -o ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz \
+            https://codeload.github.com/jtv/libpqxx/tar.gz/${PQXX_VERSION} && \
+    tar zxf ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz -C ${PQXXDIR}/src && \
+    rm -f ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz && \
+    cd ${PQXXDIR}/build && \
+    cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DBUILD_SHARED_LIBS=ON \
+          -DSKIP_BUILD_TEST=ON \
+          -DBUILD_DOC=OFF \
+          ../src/libpqxx-${PQXX_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${HEPMC3DIR}
 
 CMD ["bash"]
