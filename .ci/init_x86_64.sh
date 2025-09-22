@@ -1,32 +1,29 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # Determine which OS you are using
 if [ "$(uname)" = "Linux" ]; then
-    if [ "$( cat /etc/*-release | grep "CentOS Linux 7" )" ]; then
-        echo "Detected CentOS Linux 7"
-        OS=centos7
-    elif [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ]; then
+    if [ "$( cat /etc/*-release | grep "Red Hat Enterprise Linux 9" )" ]; then
         echo "Detected Red Hat Enterprise Linux 9"
         OS=el9
-    elif [ "$( cat /etc/*-release | grep "AlmaLinux 9" )" ]; then
-        echo "Detected AlmaLinux 9"
-        OS=el9
+    elif [ "$( cat /etc/*-release | grep "Ubuntu 24.04" )" ]; then
+        echo "Detected Ubuntu 24.04"
+        OS=ubuntu2404
     else
-        echo "Cannot detect OS, falling back to CentOS7"
-        OS=centos7
+        echo "Cannot detect OS, falling back to RHEL9"
+        OS=el9
     fi
 elif [ "$(uname)" = "Darwin" ]; then
     MACOS_MAJOR=$(sw_vers -productVersion | awk -F '.' '{print $1}')
     MACOS_MINOR=$(sw_vers -productVersion | awk -F '.' '{print $2}')
-    if [ $MACOS_MAJOR = "12" ]; then
-        OS=mac12
-    elif [ $MACOS_MAJOR = "11" ]; then
-        OS=mac11
-    elif [ "${MACOS_MAJOR}.${MACOS_MINOR}" = "10.15" ]; then
-        OS=mac1015
+    if [ $MACOS_MAJOR = "15" ]; then
+        OS=mac15
+    elif [ $MACOS_MAJOR = "14" ]; then
+        OS=mac14
+    elif [ $MACOS_MAJOR = "13" ]; then
+        OS=mac13
     else
         echo "Unsupported version of macOS ${MACOS_MAJOR}.${MACOS_MINOR}"
         exit 1
@@ -38,7 +35,7 @@ fi
 
 # Determine is you have CVMFS installed
 CVMFS_MOUNT=""
-if [ "$OS" = mac1015 ] || [ "$OS" = mac11 ] || [ "$OS" = mac12 ] ; then
+if [ "${OS:0:3}" = mac ]; then
     CVMFS_MOUNT="/Users/Shared"
 fi
 
@@ -58,7 +55,7 @@ fi
 
 
 # Determine which LCG version to use
-DEFAULT_LCG="LCG_105"
+DEFAULT_LCG="LCG_108"
 
 if [ -z ${ALLPIX_LCG_VERSION} ]; then
     echo "No explicit LCG version set, using ${DEFAULT_LCG}."
@@ -76,14 +73,24 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} = "gcc" ]; then
-    COMPILER_VERSION="gcc12"
+    if [ "$OS" == ubuntu2404 ]; then
+        COMPILER_VERSION="gcc13"
+    else
+        COMPILER_VERSION="gcc15"
+    fi
     echo "Compiler type set to GCC, version ${COMPILER_VERSION}."
 fi
 if [ ${COMPILER_TYPE} = "llvm" ]; then
     if [ "$(uname)" = "Darwin" ]; then
-        COMPILER_VERSION="clang120"
+        if [ "$OS" = mac13 ]; then
+            COMPILER_VERSION="clang150"
+        elif [ "$OS" = mac14 ]; then
+            COMPILER_VERSION="clang160"
+        else
+            COMPILER_VERSION="clang170"
+        fi
     else
-        COMPILER_VERSION="clang16"
+        COMPILER_VERSION="clang19"
     fi
     echo "Compiler type set to LLVM, version ${COMPILER_VERSION}."
 fi

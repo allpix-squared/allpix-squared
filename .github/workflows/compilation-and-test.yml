@@ -6,12 +6,12 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_105
+  LCG_VERSION: LCG_108
 jobs:
   compile-alma9:
     strategy:
       matrix:
-        compiler: [gcc12, clang16]
+        compiler: [gcc15, clang19]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         whichtest: [test_core, test_modules, examples]
-        compiler: [gcc12, clang16]
+        compiler: [gcc15, clang19]
     steps:
     - uses: actions/checkout@v4
       with:
