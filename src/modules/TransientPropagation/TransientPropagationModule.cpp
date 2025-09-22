@@ -573,7 +573,6 @@ TransientPropagationModule::propagate(Event* event,
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
 
-        Eigen::Vector3d velocity;
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
         Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
@@ -592,13 +591,15 @@ TransientPropagationModule::propagate(Event* event,
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
     };
 
-    // Create the runge kutta solver with an RK4 tableau, no error estimation required since we're not adapting step size
+    // Create the Runge-Kutta solver with an RK4 tableau, no error estimation required since we're not adapting step size
     auto runge_kutta = make_runge_kutta(
         tableau::RK4, (has_magnetic_field_ ? carrier_velocity_withB : carrier_velocity_noB), timestep_, position);
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
     ROOT::Math::XYZVector efield{}, last_efield{};
+    // Initialize last_efield for first pass through the while loop
+    last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     size_t next_idx = 0;
     auto state = CarrierState::MOTION;
     while(state == CarrierState::MOTION && (initial_time_local + runge_kutta.getTime()) < integration_time_) {
@@ -611,15 +612,11 @@ TransientPropagationModule::propagate(Event* event,
             }
         }
 
-        // Save previous position and time
-        last_position = position;
-        last_efield = efield;
-
         // Get electric field at current (pre-step) position
         efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(position));
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(position));
 
-        // Execute a Runge Kutta step
+        // Execute a Runge-Kutta step
         auto step = runge_kutta.step();
 
         // Get the current result
@@ -804,11 +801,6 @@ TransientPropagationModule::propagate(Event* event,
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
             auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
 
-            auto induced_primary = level != 0 ? 0.
-                                              : initial_charge * (ramo - last_ramo) *
-                                                    static_cast<std::underlying_type<CarrierType>::type>(type);
-            auto induced_secondary = induced - induced_primary;
-
             LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                        << " q = " << Units::display(induced, "e");
 
@@ -842,6 +834,10 @@ TransientPropagationModule::propagate(Event* event,
                     induced_charge_h_map_->Fill(inPixel_um_x, inPixel_um_y, induced);
                 }
                 if(!multiplication_.is<NoImpactIonization>()) {
+                    auto induced_primary = level != 0 ? 0.
+                                                      : initial_charge * (ramo - last_ramo) *
+                                                            static_cast<std::underlying_type<CarrierType>::type>(type);
+                    auto induced_secondary = induced - induced_primary;
                     induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
                     induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_secondary);
                     if(type == CarrierType::ELECTRON) {
@@ -858,6 +854,10 @@ TransientPropagationModule::propagate(Event* event,
         }
         // Increase charge at the end of the step in case of impact ionization
         charge += n_secondaries;
+
+        // Save previous position and electric field
+        last_position = position;
+        last_efield = efield;
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
