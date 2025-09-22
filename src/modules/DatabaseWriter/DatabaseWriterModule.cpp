@@ -114,7 +114,7 @@ void DatabaseWriterModule::initializeThread() {
     try {
         // Open new transaction
         pqxx::work transaction(*conn_);
-        auto runR = transaction.exec_prepared1("add_run", run_id_);
+        auto runR = transaction.exec(pqxx::prepped{"add_run"}, run_id_).one_row();
         run_nr_ = runR.front().as<int>();
         // Commit transaction to database:
         transaction.commit();
@@ -192,7 +192,7 @@ void DatabaseWriterModule::run(Event* event) {
         LOG(DEBUG) << "Started new database transaction";
 
         // Writing entry to event table
-        auto event_row = transaction.exec_prepared1("add_event", run_nr_, event->number);
+        auto event_row = transaction.exec(pqxx::prepped{"add_event"}, pqxx::params{run_nr_, event->number}).one_row();
         int event_nr = event_row.front().as<int>();
 
         // Looping through messages
@@ -207,113 +207,125 @@ void DatabaseWriterModule::run(Event* event) {
                 // Writing objects to corresponding database tables
                 if(class_name == "PixelHit") {
                     auto hit = static_cast<PixelHit&>(object.get());
-                    auto hit_row = transaction.exec_prepared1("add_pixelhit",
-                                                              run_nr_,
-                                                              event_nr,
-                                                              mcparticle_nr,
-                                                              pixelcharge_nr,
-                                                              detectorName,
-                                                              hit.getIndex().X(),
-                                                              hit.getIndex().Y(),
-                                                              hit.getSignal(),
-                                                              (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime()));
+                    auto hit_row = transaction
+                                       .exec(pqxx::prepped{"add_pixelhit"},
+                                             pqxx::params{run_nr_,
+                                                          event_nr,
+                                                          mcparticle_nr,
+                                                          pixelcharge_nr,
+                                                          detectorName,
+                                                          hit.getIndex().X(),
+                                                          hit.getIndex().Y(),
+                                                          hit.getSignal(),
+                                                          (timing_global_ ? hit.getGlobalTime() : hit.getLocalTime())})
+                                       .one_row();
                     LOG(TRACE) << "Inserted PixelHit with db id " << hit_row.front().as<int>();
                 } else if(class_name == "PixelCharge") {
                     auto charge = static_cast<PixelCharge&>(object.get());
-                    auto charge_row = transaction.exec_prepared1("add_pixelcharge",
-                                                                 run_nr_,
-                                                                 event_nr,
-                                                                 propagatedcharge_nr,
-                                                                 detectorName,
-                                                                 charge.getCharge(),
-                                                                 charge.getIndex().X(),
-                                                                 charge.getIndex().Y(),
-                                                                 charge.getPixel().getLocalCenter().X(),
-                                                                 charge.getPixel().getLocalCenter().Y(),
-                                                                 charge.getPixel().getGlobalCenter().X(),
-                                                                 charge.getPixel().getGlobalCenter().Y());
+                    auto charge_row = transaction
+                                          .exec(pqxx::prepped{"add_pixelcharge"},
+                                                pqxx::params{run_nr_,
+                                                             event_nr,
+                                                             propagatedcharge_nr,
+                                                             detectorName,
+                                                             charge.getCharge(),
+                                                             charge.getIndex().X(),
+                                                             charge.getIndex().Y(),
+                                                             charge.getPixel().getLocalCenter().X(),
+                                                             charge.getPixel().getLocalCenter().Y(),
+                                                             charge.getPixel().getGlobalCenter().X(),
+                                                             charge.getPixel().getGlobalCenter().Y()})
+                                          .one_row();
                     pixelcharge_nr = charge_row.front().as<int>();
                     LOG(TRACE) << "Inserted PixelCharge  with db id " << pixelcharge_nr.value();
                 } else if(class_name == "PropagatedCharge") {
                     PropagatedCharge charge = static_cast<PropagatedCharge&>(object.get());
-                    auto prop_row = transaction.exec_prepared1("add_propagatedcharge",
-                                                               run_nr_,
-                                                               event_nr,
-                                                               depositedcharge_nr,
-                                                               detectorName,
-                                                               static_cast<int>(charge.getType()),
-                                                               charge.getCharge(),
-                                                               charge.getLocalPosition().X(),
-                                                               charge.getLocalPosition().Y(),
-                                                               charge.getLocalPosition().Z(),
-                                                               charge.getGlobalPosition().X(),
-                                                               charge.getGlobalPosition().Y(),
-                                                               charge.getGlobalPosition().Z());
+                    auto prop_row = transaction
+                                        .exec(pqxx::prepped{"add_propagatedcharge"},
+                                              pqxx::params{run_nr_,
+                                                           event_nr,
+                                                           depositedcharge_nr,
+                                                           detectorName,
+                                                           static_cast<int>(charge.getType()),
+                                                           charge.getCharge(),
+                                                           charge.getLocalPosition().X(),
+                                                           charge.getLocalPosition().Y(),
+                                                           charge.getLocalPosition().Z(),
+                                                           charge.getGlobalPosition().X(),
+                                                           charge.getGlobalPosition().Y(),
+                                                           charge.getGlobalPosition().Z()})
+                                        .one_row();
                     propagatedcharge_nr = prop_row.front().as<int>();
                     LOG(TRACE) << "Inserted PropagatedCharge with db id " << propagatedcharge_nr.value();
                 } else if(class_name == "MCTrack") {
                     auto track = static_cast<MCTrack&>(object.get());
-                    auto mctrack_row = transaction.exec_prepared1("add_mctrack",
-                                                                  run_nr_,
-                                                                  event_nr,
-                                                                  detectorName,
-                                                                  reinterpret_cast<uintptr_t>(&object),           // NOLINT
-                                                                  reinterpret_cast<uintptr_t>(track.getParent()), // NOLINT
-                                                                  track.getParticleID(),
-                                                                  track.getCreationProcessName(),
-                                                                  track.getOriginatingVolumeName(),
-                                                                  track.getStartPoint().X(),
-                                                                  track.getStartPoint().Y(),
-                                                                  track.getStartPoint().Z(),
-                                                                  track.getEndPoint().X(),
-                                                                  track.getEndPoint().Y(),
-                                                                  track.getEndPoint().Z(),
-                                                                  track.getGlobalStartTime(),
-                                                                  track.getGlobalEndTime(),
-                                                                  track.getKineticEnergyInitial(),
-                                                                  track.getKineticEnergyFinal());
+                    auto mctrack_row = transaction
+                                           .exec(pqxx::prepped{"add_mctrack"},
+                                                 pqxx::params{run_nr_,
+                                                              event_nr,
+                                                              detectorName,
+                                                              reinterpret_cast<uintptr_t>(&object),           // NOLINT
+                                                              reinterpret_cast<uintptr_t>(track.getParent()), // NOLINT
+                                                              track.getParticleID(),
+                                                              track.getCreationProcessName(),
+                                                              track.getOriginatingVolumeName(),
+                                                              track.getStartPoint().X(),
+                                                              track.getStartPoint().Y(),
+                                                              track.getStartPoint().Z(),
+                                                              track.getEndPoint().X(),
+                                                              track.getEndPoint().Y(),
+                                                              track.getEndPoint().Z(),
+                                                              track.getGlobalStartTime(),
+                                                              track.getGlobalEndTime(),
+                                                              track.getKineticEnergyInitial(),
+                                                              track.getKineticEnergyFinal()})
+                                           .one_row();
                     mctrack_nr = mctrack_row.front().as<int>();
                     LOG(TRACE) << "Inserted MCTrack with db id " << mctrack_nr.value();
                 } else if(class_name == "DepositedCharge") {
                     auto charge = static_cast<DepositedCharge&>(object.get());
-                    auto depos_row = transaction.exec_prepared1("add_depositedcharge",
-                                                                run_nr_,
-                                                                event_nr,
-                                                                mcparticle_nr,
-                                                                detectorName,
-                                                                static_cast<int>(charge.getType()),
-                                                                charge.getCharge(),
-                                                                charge.getLocalPosition().X(),
-                                                                charge.getLocalPosition().Y(),
-                                                                charge.getLocalPosition().Z(),
-                                                                charge.getGlobalPosition().X(),
-                                                                charge.getGlobalPosition().Y(),
-                                                                charge.getGlobalPosition().Z());
+                    auto depos_row = transaction
+                                         .exec(pqxx::prepped{"add_depositedcharge"},
+                                               pqxx::params{run_nr_,
+                                                            event_nr,
+                                                            mcparticle_nr,
+                                                            detectorName,
+                                                            static_cast<int>(charge.getType()),
+                                                            charge.getCharge(),
+                                                            charge.getLocalPosition().X(),
+                                                            charge.getLocalPosition().Y(),
+                                                            charge.getLocalPosition().Z(),
+                                                            charge.getGlobalPosition().X(),
+                                                            charge.getGlobalPosition().Y(),
+                                                            charge.getGlobalPosition().Z()})
+                                         .one_row();
                     depositedcharge_nr = depos_row.front().as<int>();
                     LOG(TRACE) << "Inserted DepositedCharge with db id " << depositedcharge_nr.value();
                 } else if(class_name == "MCParticle") {
                     auto particle = static_cast<MCParticle&>(object.get());
-                    auto mcp_row = transaction.exec_prepared1("add_mcparticle",
-                                                              run_nr_,
-                                                              event_nr,
-                                                              mctrack_nr,
-                                                              detectorName,
-                                                              reinterpret_cast<uintptr_t>(&object),              // NOLINT
-                                                              reinterpret_cast<uintptr_t>(particle.getParent()), // NOLINT
-                                                              reinterpret_cast<uintptr_t>(particle.getTrack()),  // NOLINT
-                                                              particle.getParticleID(),
-                                                              particle.getLocalStartPoint().X(),
-                                                              particle.getLocalStartPoint().Y(),
-                                                              particle.getLocalStartPoint().Z(),
-                                                              particle.getLocalEndPoint().X(),
-                                                              particle.getLocalEndPoint().Y(),
-                                                              particle.getLocalEndPoint().Z(),
-                                                              particle.getGlobalStartPoint().X(),
-                                                              particle.getGlobalStartPoint().Y(),
-                                                              particle.getGlobalStartPoint().Z(),
-                                                              particle.getGlobalEndPoint().X(),
-                                                              particle.getGlobalEndPoint().Y(),
-                                                              particle.getGlobalEndPoint().Z());
+                    auto mcp_row = transaction
+                                       .exec(pqxx::prepped{"add_mcparticle"},
+                                             pqxx::params{run_nr_,
+                                                          event_nr,
+                                                          mctrack_nr,
+                                                          detectorName,
+                                                          reinterpret_cast<uintptr_t>(&object),              // NOLINT
+                                                          reinterpret_cast<uintptr_t>(particle.getParent()), // NOLINT
+                                                          reinterpret_cast<uintptr_t>(particle.getTrack()),  // NOLINT
+                                                          particle.getParticleID(),
+                                                          particle.getLocalStartPoint().X(),
+                                                          particle.getLocalStartPoint().Y(),
+                                                          particle.getLocalStartPoint().Z(),
+                                                          particle.getLocalEndPoint().X(),
+                                                          particle.getLocalEndPoint().Y(),
+                                                          particle.getLocalEndPoint().Z(),
+                                                          particle.getGlobalStartPoint().X(),
+                                                          particle.getGlobalStartPoint().Y(),
+                                                          particle.getGlobalStartPoint().Z(),
+                                                          particle.getGlobalEndPoint().X(),
+                                                          particle.getGlobalEndPoint().Y(),
+                                                          particle.getGlobalEndPoint().Z()})
+                                       .one_row();
                     mcparticle_nr = mcp_row.front().as<int>();
                     LOG(TRACE) << "Inserted MCParticle with db id " << mcparticle_nr.value();
                 } else {
