@@ -37,7 +37,7 @@ namespace corryvreckan {
          * @param trigger_list Optional list of triggers assigned to this event, containing their ID and timestamps
          */
         Event(double start, double end, std::map<uint32_t, double> trigger_list = std::map<uint32_t, double>())
-            : Object(start), end_(end), trigger_list_(std::move(trigger_list)){};
+            : Object(start), end_(end), trigger_list_(std::move(trigger_list)) {};
 
         /**
          * @brief Static member function to obtain base class for storage on the clipboard.

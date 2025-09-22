@@ -25,7 +25,7 @@ namespace allpix {
      */
     template <class GEN, class INIT> class ActionInitializationG4 : public G4VUserActionInitialization {
     public:
-        explicit ActionInitializationG4(const Configuration& config) : config_(config){};
+        explicit ActionInitializationG4(const Configuration& config) : config_(config) {};
 
         /**
          * @brief Build the user action to be executed by the worker

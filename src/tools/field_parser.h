@@ -80,7 +80,7 @@ namespace allpix {
                   std::array<T, 3> size,
                   std::shared_ptr<std::vector<T>> data,
                   double norm = 1.)
-            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)), norm_(norm){};
+            : header_(std::move(header)), dimensions_(dimensions), size_(size), data_(std::move(data)), norm_(norm) {};
 
         /**
          * @brief Function to obtain the header (human readable content description) of the field data
@@ -163,7 +163,7 @@ namespace cereal::detail {
             return APF_MIME_TYPE_VERSION;
         }
         static void unused() { (void)version; } // NOLINT
-    };                                          /* end Version */
+    }; /* end Version */
     template <class T>
     const std::uint32_t Version<allpix::FieldData<T>>::version = Version<allpix::FieldData<T>>::registerVersion();
 } // namespace cereal::detail
@@ -185,7 +185,7 @@ namespace allpix {
          * point)
          */
         explicit FieldParser(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)){};
+            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)) {};
         ~FieldParser() = default;
 
         /**
@@ -421,7 +421,7 @@ namespace allpix {
          * point)
          */
         explicit FieldWriter(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)){};
+            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)) {};
         ~FieldWriter() = default;
 
         /**

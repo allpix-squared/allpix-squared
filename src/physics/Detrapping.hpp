@@ -65,7 +65,7 @@ namespace allpix {
     class ConstantDetrapping : virtual public DetrappingModel {
     public:
         ConstantDetrapping(double electron_lifetime, double hole_lifetime)
-            : tau_eff_electron_(electron_lifetime), tau_eff_hole_(hole_lifetime){};
+            : tau_eff_electron_(electron_lifetime), tau_eff_hole_(hole_lifetime) {};
 
         double operator()(const CarrierType& type, double probability, double) const override {
             return -1 * log(1 - probability) * (type == CarrierType::ELECTRON ? tau_eff_electron_ : tau_eff_hole_);

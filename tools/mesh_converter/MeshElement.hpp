@@ -24,8 +24,8 @@ namespace mesh_converter {
     class Point {
     public:
         Point() noexcept = default;
-        Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3){};
-        Point(double py, double pz) noexcept : y(py), z(pz), dim(2){};
+        Point(double px, double py, double pz) noexcept : x(px), y(py), z(pz), dim(3) {};
+        Point(double py, double pz) noexcept : y(py), z(pz), dim(2) {};
 
         bool isFinite() const { return std::isfinite(x) && std::isfinite(y) && std::isfinite(z); }
 

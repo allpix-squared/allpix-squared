@@ -36,7 +36,7 @@ namespace allpix {
          * Default constructor
          * @param threshold Threshold electric field for impact ionization
          */
-        explicit ImpactIonizationModel(double threshold) : threshold_(threshold){};
+        explicit ImpactIonizationModel(double threshold) : threshold_(threshold) {};
 
         /**
          * Default virtual destructor
@@ -69,7 +69,7 @@ namespace allpix {
      */
     class NoImpactIonization : virtual public ImpactIonizationModel {
     public:
-        NoImpactIonization() : ImpactIonizationModel(std::numeric_limits<double>::max()){};
+        NoImpactIonization() : ImpactIonizationModel(std::numeric_limits<double>::max()) {};
         double operator()(const CarrierType&, double, double) const override { return 1.; };
 
     private:
