@@ -7,7 +7,7 @@ ALLPIX_ENABLE_DEFAULT(ON)
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Switch off tests of libAPX
-SET(APX_BUILD_TESTS OFF CACHE INTERNAL "Turn off tests")
+SET(APX_BUILD_TESTS OFF CACHE STRING "Turn off tests")
 
 # libAPX is required
 INCLUDE(FetchContent)
