@@ -18,6 +18,7 @@ default:
 stages:
     - compilation
     - testing
+    - linting
     - formatting
     - performance
     - documentation
@@ -128,11 +129,71 @@ cmp:el9-gcc:
         - .compile
 
 
-############################
-# Format and Lint Checking #
-############################
+###########
+# Linting #
+###########
 
-# Hidden key to define the basis for linting and formatting:
+# Hidden key to define the basis for linting:
+.lint:
+    stage: linting
+    needs: []
+    dependencies: []
+    extends: .alma9
+    variables:
+        COMPILER_TYPE: "llvm"
+
+fmt:clang-lint:
+    extends: .lint
+    script:
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - ninja check-lint 2> /dev/null
+    only:
+        - schedules
+        - tags
+
+fmt:clang-lint-diff:
+    extends: .lint
+    script:
+        - git remote add upstream $REPOSITORY && git fetch upstream
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
+        - ninja check-lint-diff 2> /dev/null
+
+fmt:coverage:
+    extends: .lint
+    variables:
+        COMPILER_TYPE: "gcc"
+    script:
+        - export PATH=$PATH:~/.local/bin
+        - export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
+        - pip install --trusted-host=pypi.org --user gcovr==5.0
+        - export CCACHE_DIR=`pwd`/ccache
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON ..
+        - ninja -k0
+        - ninja install
+        - ninja coverage_gcovr
+
+fmt:coverity:
+    extends: .lint
+    only:
+        - schedules
+    variables:
+        COMPILER_TYPE: "gcc"
+        SCHEDULE_TAG: "coverity"
+    script:
+        - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
+        - tar xfz /tmp/cov-analysis-linux64.tgz
+        - export CCACHE_DIR=`pwd`/ccache
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
+        - tar cfz cov-int.tar.gz cov-int
+        - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
+
+
+##############
+# Formatting #
+##############
+
+# Hidden key to define the basis for formatting:
 .format:
     stage: formatting
     needs: []
@@ -147,22 +208,6 @@ fmt:clang-format:
         - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - ninja check-format
 
-fmt:clang-lint:
-    extends: .format
-    script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - ninja check-lint 2> /dev/null
-    only:
-        - schedules
-        - tags
-
-fmt:clang-lint-diff:
-    extends: .format
-    script:
-        - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
-        - ninja check-lint-diff 2> /dev/null
-
 fmt:cmake-lint:
     extends: .format
     script:
@@ -170,20 +215,6 @@ fmt:cmake-lint:
         - pip install --trusted-host=pypi.org --user cmakelang
         - cmake -GNinja ..
         - ninja lint-cmake
-
-fmt:coverage:
-    extends: .format
-    variables:
-        COMPILER_TYPE: "gcc"
-    script:
-        - export PATH=$PATH:~/.local/bin
-        - export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
-        - pip install --trusted-host=pypi.org --user gcovr==5.0
-        - export CCACHE_DIR=`pwd`/ccache
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON ..
-        - ninja -k0
-        - ninja install
-        - ninja coverage_gcovr
 
 fmt:codespell:
     extends: .format
@@ -200,22 +231,6 @@ fmt:proselint:
         - cd ../
         - pip install --trusted-host=pypi.org --user proselint
         - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
-
-fmt:coverity:
-    extends: .format
-    only:
-        - schedules
-    variables:
-        COMPILER_TYPE: "gcc"
-        SCHEDULE_TAG: "coverity"
-    script:
-        - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
-        - tar xfz /tmp/cov-analysis-linux64.tgz
-        - export CCACHE_DIR=`pwd`/ccache
-        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
-        - tar cfz cov-int.tar.gz cov-int
-        - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
 
 fmt:reuse:
     image:
@@ -412,7 +427,7 @@ core:el9-llvm:
 # Compile Doxygen reference
 docs:doxygen:
     extends: .doc
-    image: $DOCKER_DEPS_IMAGE
+    image: $DOCKER_DEPS_UBUNTU2404
     script:
         - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
         - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
