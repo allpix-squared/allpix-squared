@@ -44,15 +44,11 @@ stages:
     image: $DOCKER_DEPS_UBUNTU2404
     tags:
         - k8s-default
-    before_script:
-        - mkdir -p build/ && cd build/
 
 .ubuntu2204:
     image: $DOCKER_DEPS_UBUNTU2204
     tags:
         - k8s-default
-    before_script:
-        - mkdir -p build/ && cd build/
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/alma9:latest
@@ -102,6 +98,8 @@ cmp:ubuntu2404:
     extends:
         - .ubuntu2404
         - .compile
+    before_script:
+        - mkdir -p build/ && cd build/
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
@@ -111,6 +109,8 @@ cmp:ubuntu2204:
     extends:
         - .ubuntu2204
         - .compile
+    before_script:
+        - mkdir -p build/ && cd build/
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
@@ -127,6 +127,142 @@ cmp:el9-gcc:
     extends:
         - .alma9
         - .compile
+
+
+##############
+# Unit tests #
+##############
+
+.test:
+    stage: testing
+    after_script:
+        - source .ci/init_x86_64.sh
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+    artifacts:
+        when: always
+        expire_in: 1 week
+        name: "apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
+        paths:
+            - apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+        reports:
+            junit: apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+.testmod:
+    extends: .test
+    script:
+        - ctest -R modules/ --repeat until-pass:2 --no-compress-output --test-action Test
+
+.testcore:
+    extends: .test
+    script:
+        - ctest -R core/ --repeat until-pass:2 --no-compress-output --test-action Test
+
+
+# Test if examples still execute fine:
+examples:
+    extends:
+        - .alma9
+        - .test
+    needs:
+        - job: cmp:el9-gcc
+          artifacts: true
+    script:
+        - ctest -R examples/ --repeat until-pass:2 --no-compress-output --test-action Test
+
+# LXPLUS
+mod:lxplus-gcc:
+    extends:
+        - .lxplus
+        - .testmod
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
+
+core:lxplus-gcc:
+    extends:
+        - .lxplus
+        - .testcore
+    needs:
+        - job: cmp:lxplus-gcc
+          artifacts: true
+
+# Ubuntu Docker images - overriding after_script to not load CVMFS
+mod:ubuntu2404:
+    extends:
+        - .ubuntu2404
+        - .testmod
+    needs:
+        - job: cmp:ubuntu2404
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+core:ubuntu2404:
+    extends:
+        - .ubuntu2404
+        - .testcore
+    needs:
+        - job: cmp:ubuntu2404
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+mod:ubuntu2204:
+    extends:
+        - .ubuntu2204
+        - .testmod
+    needs:
+        - job: cmp:ubuntu2204
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+core:ubuntu2204:
+    extends:
+        - .ubuntu2204
+        - .testcore
+    needs:
+        - job: cmp:ubuntu2204
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+# AlmaLinux 9
+mod:el9-gcc:
+    extends:
+        - .alma9
+        - .testmod
+    needs:
+        - job: cmp:el9-gcc
+          artifacts: true
+
+core:el9-gcc:
+    extends:
+        - .alma9
+        - .testcore
+    needs:
+        - job: cmp:el9-gcc
+          artifacts: true
+
+mod:el9-llvm:
+    extends:
+        - .alma9
+        - .testmod
+    variables:
+        COMPILER_TYPE: "llvm"
+    needs:
+        - job: cmp:el9-llvm
+          artifacts: true
+
+core:el9-llvm:
+    extends:
+        - .alma9
+        - .testcore
+    variables:
+        COMPILER_TYPE: "llvm"
+    needs:
+        - job: cmp:el9-llvm
+          artifacts: true
 
 
 ###########
@@ -243,141 +379,6 @@ fmt:reuse:
     dependencies: []
     script:
         - reuse lint
-
-##############
-# Unit tests #
-##############
-
-.test:
-    stage: testing
-    after_script:
-        - source .ci/init_x86_64.sh
-        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-    artifacts:
-        when: always
-        expire_in: 1 week
-        name: "apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
-        paths:
-            - apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-        reports:
-            junit: apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-
-.testmod:
-    extends: .test
-    script:
-        - ctest -R modules/ --repeat until-pass:2 --no-compress-output --test-action Test
-
-.testcore:
-    extends: .test
-    script:
-        - ctest -R core/ --repeat until-pass:2 --no-compress-output --test-action Test
-
-
-# Test if examples still execute fine:
-examples:
-    extends:
-        - .alma9
-        - .test
-    needs:
-        - job: cmp:el9-gcc
-          artifacts: true
-    script:
-        - ctest -R examples/ --repeat until-pass:2 --no-compress-output --test-action Test
-
-# LXPLUS
-mod:lxplus-gcc:
-    extends:
-        - .lxplus
-        - .testmod
-    needs:
-        - job: cmp:lxplus-gcc
-          artifacts: true
-
-core:lxplus-gcc:
-    extends:
-        - .lxplus
-        - .testcore
-    needs:
-        - job: cmp:lxplus-gcc
-          artifacts: true
-
-# Ubuntu Docker images - overriding after_script to not load CVMFS
-mod:ubuntu2404:
-    extends:
-        - .ubuntu2404
-        - .testmod
-    needs:
-        - job: cmp:ubuntu2404
-          artifacts: true
-    after_script:
-        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-
-core:ubuntu2404:
-    extends:
-        - .ubuntu2404
-        - .testcore
-    needs:
-        - job: cmp:ubuntu2404
-          artifacts: true
-    after_script:
-        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-
-mod:ubuntu2204:
-    extends:
-        - .ubuntu2204
-        - .testmod
-    needs:
-        - job: cmp:ubuntu2404
-          artifacts: true
-    after_script:
-        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-
-core:ubuntu2204:
-    extends:
-        - .ubuntu2204
-        - .testcore
-    needs:
-        - job: cmp:ubuntu2404
-          artifacts: true
-    after_script:
-        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
-
-# AlmaLinux 9
-mod:el9-gcc:
-    extends:
-        - .alma9
-        - .testmod
-    needs:
-        - job: cmp:el9-gcc
-          artifacts: true
-
-core:el9-gcc:
-    extends:
-        - .alma9
-        - .testcore
-    needs:
-        - job: cmp:el9-gcc
-          artifacts: true
-
-mod:el9-llvm:
-    extends:
-        - .alma9
-        - .testmod
-    variables:
-        COMPILER_TYPE: "llvm"
-    needs:
-        - job: cmp:el9-llvm
-          artifacts: true
-
-core:el9-llvm:
-    extends:
-        - .alma9
-        - .testcore
-    variables:
-        COMPILER_TYPE: "llvm"
-    needs:
-        - job: cmp:el9-llvm
-          artifacts: true
 
 
 #####################
