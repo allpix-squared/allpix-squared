@@ -3,7 +3,8 @@
 
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
-    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v9"
+    DOCKER_DEPS_UBUNTU2404: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2404-deps:latest"
+    DOCKER_DEPS_UBUNTU2204: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2204-deps:latest"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
@@ -38,8 +39,15 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
-.docker:
-    image: $DOCKER_DEPS_IMAGE
+.ubuntu2404:
+    image: $DOCKER_DEPS_UBUNTU2404
+    tags:
+        - k8s-default
+    before_script:
+        - mkdir -p build/ && cd build/
+
+.ubuntu2204:
+    image: $DOCKER_DEPS_UBUNTU2204
     tags:
         - k8s-default
     before_script:
@@ -89,9 +97,18 @@ cmp:lxplus-gcc:
         - ninja -k0
         - ninja install
 
-cmp:docker:
+cmp:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
+        - .compile
+    script:
+        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - make
+        - make install
+
+cmp:ubuntu2204:
+    extends:
+        - .ubuntu2204
         - .compile
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
@@ -269,23 +286,43 @@ core:lxplus-gcc:
         - job: cmp:lxplus-gcc
           artifacts: true
 
-# Ubuntu Docker image - overriding after_script to not load CVMFS
-mod:docker:
+# Ubuntu Docker images - overriding after_script to not load CVMFS
+mod:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
         - .testmod
     needs:
-        - job: cmp:docker
+        - job: cmp:ubuntu2404
           artifacts: true
     after_script:
         - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
-core:docker:
+core:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
         - .testcore
     needs:
-        - job: cmp:docker
+        - job: cmp:ubuntu2404
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+mod:ubuntu2204:
+    extends:
+        - .ubuntu2204
+        - .testmod
+    needs:
+        - job: cmp:ubuntu2404
+          artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
+
+core:ubuntu2204:
+    extends:
+        - .ubuntu2204
+        - .testcore
+    needs:
+        - job: cmp:ubuntu2404
           artifacts: true
     after_script:
         - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
@@ -466,7 +503,7 @@ deploy:documentation:
 deploy:eos:
     stage: deployment
     extends:
-        - .docker
+        - .ubuntu2404
     variables:
         GIT_STRATEGY: none
     # Only run on new tags for releases and on schedules for nightlies:
@@ -505,7 +542,7 @@ deploy:cvmfs:
 .deploy-docker:
     stage: deployment
     extends:
-        - .docker
+        - .ubuntu2404
     before_script: []
     image:
         name: gcr.io/kaniko-project/executor:debug
