@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
-FROM ubuntu:latest
+FROM ubuntu:22.04
 LABEL maintainer="Simon Spannagel <simon.spannagel@cern.ch>"
 
 SHELL ["/bin/bash", "-c"]
 
 # Install basic build requirements
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils unzip doxygen git
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++-12 gcc-12 binutils unzip doxygen git
 
 # Install ROOT dependencies
 RUN apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-dev python3-pip python3-tk python-is-python3 git
