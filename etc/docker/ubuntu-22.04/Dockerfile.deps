@@ -1,44 +1,22 @@
 # SPDX-FileCopyrightText: 2018-2025 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
-FROM ubuntu:latest
-MAINTAINER Simon Spannagel <simon.spannagel@cern.ch>
+FROM ubuntu:22.04
+LABEL maintainer="Simon Spannagel <simon.spannagel@cern.ch>"
 
 SHELL ["/bin/bash", "-c"]
 
 # Install basic build requirements
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++ gcc binutils unzip doxygen git
-
-# Install LCIO dependencies
-RUN apt-get install -y zlib1g-dev
-
-# Add layer for LCIO
-ENV LCIO_VERSION 02-21
-
-ENV LCIODIR="/tmp/lcio"
-RUN mkdir -p ${LCIODIR}/{src,build} && \
-    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
-            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
-    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
-    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
-    cd ${LCIODIR}/build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-        -DBUILD_TESTING=OFF \
-          ../src/LCIO-${LCIO_VERSION} && \
-    make -j`grep -c processor /proc/cpuinfo` && \
-    make install && \
-    rm -rf ${LCIODIR}
-
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl cmake g++-12 gcc-12 binutils unzip doxygen git
 
 # Install ROOT dependencies
 RUN apt-get install -y dpkg-dev libx11-dev libxpm-dev libxft-dev libxext-dev libssl-dev python3 python3-dev python3-pip python3-tk python-is-python3 git
 
 # Install helpful Python packages
-RUN pip3 install --upgrade pip && \
-    pip3 install numpy matplotlib scipy pandas
+RUN apt-get install -y python3-numpy python3-matplotlib python3-scipy python3-pandas
 
 # Add layer for ROOT6
-ENV ROOT6_VERSION 6.30.02
+ENV ROOT6_VERSION=6.36.04
 ENV PYTHONPATH="/usr/local/lib:$PYTHONPATH"
 
 ENV ROOTSYS="/tmp/root6"
@@ -51,7 +29,6 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
     cmake -Dgdml=ON \
            -Dgenvector=ON \
            -Dmathmore=ON \
-           -Dminuit2=ON \
            -Dthread=ON \
            -Dx11=OFF \
            -Dopengl=OFF \
@@ -69,18 +46,37 @@ RUN mkdir -p ${ROOTSYS}/{src,build} && \
            -Ddataframe=OFF \
            -Dpython3=ON \
            -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-           -DCMAKE_CXX_STANDARD=17 \
+           -DCMAKE_CXX_STANDARD=20 \
            ../src/root-${ROOT6_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
     rm -rf ${ROOTSYS}
 
+# Install LCIO dependencies
+RUN apt-get install -y zlib1g-dev
+
+# Add layer for LCIO
+ENV LCIO_VERSION=02-22-06
+
+ENV LCIODIR="/tmp/lcio"
+RUN mkdir -p ${LCIODIR}/{src,build} && \
+    curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
+            https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
+    tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
+    rm -f ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz && \
+    cd ${LCIODIR}/build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+        -DBUILD_TESTING=OFF \
+          ../src/LCIO-${LCIO_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${LCIODIR}
 
 # Install Geant4 dependencies
 RUN apt-get install -y libxerces-c-dev
 
 # Add layer for Geant4
-ENV GEANT4_VERSION 11.2.0
+ENV GEANT4_VERSION=11.3.2
 
 ENV GEANT4DIR="/tmp/geant4"
 RUN mkdir -p ${GEANT4DIR}/{src,build} && \
@@ -93,7 +89,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
           -DGEANT4_USE_GDML=ON \
           -DGEANT4_USE_SYSTEM_CLHEP=OFF \
           -DGEANT4_BUILD_MULTITHREADED=ON \
-          -DGEANT4_BUILD_CXXSTD=17 \
+          -DGEANT4_BUILD_CXXSTD=20 \
           -DGEANT4_BUILD_BUILTIN_BACKTRACE=OFF \
           ../src/geant4-v${GEANT4_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
@@ -102,7 +98,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
     rm -rf /usr/local/share/Geant4-${GEANT4_VERSION_PATH}/examples
 
 # Add layer for HepMC3
-ENV HEPMC3_VERSION 3.2.7
+ENV HEPMC3_VERSION=3.3.1
 
 ENV HEPMC3DIR="/tmp/hepmc3"
 RUN mkdir -p ${HEPMC3DIR}/{src,build} && \
@@ -119,6 +115,26 @@ RUN mkdir -p ${HEPMC3DIR}/{src,build} && \
     rm -rf ${HEPMC3DIR}
 
 # Install Allpix Squared dependencies
-RUN apt-get install -y libpqxx-dev postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-dev python3-lxml
+
+# Add layer for libpqxx, we need a newer version than available in the repos
+ENV PQXX_VERSION=7.10.1
+
+ENV PQXXDIR="/tmp/pqxx"
+RUN mkdir -p ${PQXXDIR}/{src,build} && \
+    curl -o ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz \
+            https://codeload.github.com/jtv/libpqxx/tar.gz/${PQXX_VERSION} && \
+    tar zxf ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz -C ${PQXXDIR}/src && \
+    rm -f ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz && \
+    cd ${PQXXDIR}/build && \
+    cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DBUILD_SHARED_LIBS=ON \
+          -DSKIP_BUILD_TEST=ON \
+          -DBUILD_DOC=OFF \
+          ../src/libpqxx-${PQXX_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${HEPMC3DIR}
 
 CMD ["bash"]

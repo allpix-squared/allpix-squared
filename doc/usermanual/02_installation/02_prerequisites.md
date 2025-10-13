@@ -16,7 +16,7 @@ external dependencies:
   libraries. The latest stable release of ROOT 6 is recommended and older versions, such as ROOT 5.x, are not supported.
   Please refer to \[[@rootinstallation]\] for instructions on how to install ROOT. ROOT has several components of which the
   `GenVector` package is required to run Allpix Squared. This package is included in the default build. ROOT needs to be
-  built using C++17, which is accomplished by supplying the CMake flag `-DCMAKE_CXX_STANDARD=17`.
+  built using C++20, which is accomplished by supplying the CMake flag `-DCMAKE_CXX_STANDARD=20`.
 
 * Boost.Random 1.64.0 or later \[[@boostrandom]\]:
   Random number generator and distribution library of the Boost project, used in order to get cross-platform portable,
@@ -31,7 +31,7 @@ For some modules, additional dependencies exist. For details about the dependenc
 * Geant4 \[[@geant4]\]:
   Simulates the desired particles and their interactions with matter, depositing charges in the detectors with the help of
   the constructed geometry. See the instructions in \[[@geant4installation]\] for details on how to install the software.
-  All Geant4 data sets are required to run the modules successfully, and Geant4 must be built using C++17. For
+  All Geant4 data sets are required to run the modules successfully, and Geant4 must be built using C++20. For
   multithreading to be possible, this must also be enabled in the Geant4 installation. It is recommended to enable the
   Geant4 Qt extensions to allow visualization of the detector setup and the simulated particle tracks. A recommended set of
   CMake flags to build a Geant4 package suitable for usage with Allpix Squared are:
@@ -42,7 +42,7 @@ For some modules, additional dependencies exist. For details about the dependenc
   -DGEANT4_USE_QT=ON
   -DGEANT4_USE_XM=ON
   -DGEANT4_USE_OPENGL_X11=ON
-  -DCMAKE_CXX_STANDARD=17
+  -DCMAKE_CXX_STANDARD=20
   -DGEANT4_BUILD_MULTITHREADED=ON
   -DGEANT4_BUILD_BUILTIN_BACKTRACE=OFF
   ```

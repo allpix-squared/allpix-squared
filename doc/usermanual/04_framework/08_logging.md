@@ -8,7 +8,7 @@ weight: 8
 The Allpix Squared framework provides a set of utilities which improve the usability of the framework and extend the
 functionality provided by the C++ Standard Template Library (STL). The former includes a flexible and easy-to-use logging
 system and an easy-to-use framework for units that supports converting arbitrary combinations of units to common base units
-which can be used transparently throughout the framework. The latter comprise tools which provide functionality the C++17
+which can be used transparently throughout the framework. The latter comprise tools which provide functionality the C++20
 standard does not contain. These utilities are used internally in the framework and are only shortly discussed.
 
 ### Logging system

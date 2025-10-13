@@ -3,7 +3,8 @@
 
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
-    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v6"
+    DOCKER_DEPS_UBUNTU2404: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2404-deps:latest"
+    DOCKER_DEPS_UBUNTU2204: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-ubuntu2204-deps:latest"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
 
@@ -17,6 +18,7 @@ default:
 stages:
     - compilation
     - testing
+    - linting
     - formatting
     - performance
     - documentation
@@ -28,16 +30,6 @@ stages:
 # General target templates #
 ############################
 
-.centos7:
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
-    tags:
-        - cvmfs
-    variables:
-        COMPILER_TYPE: "gcc"
-    before_script:
-        - source .ci/init_x86_64.sh
-        - mkdir -p build/ && cd build/
-
 .alma9:
     image: gitlab-registry.cern.ch/sft/docker/alma9:latest
     tags:
@@ -48,12 +40,15 @@ stages:
         - source .ci/init_x86_64.sh
         - mkdir -p build/ && cd build/
 
-.docker:
-    image: $DOCKER_DEPS_IMAGE
+.ubuntu2404:
+    image: $DOCKER_DEPS_UBUNTU2404
     tags:
         - k8s-default
-    before_script:
-        - mkdir -p build/ && cd build/
+
+.ubuntu2204:
+    image: $DOCKER_DEPS_UBUNTU2204
+    tags:
+        - k8s-default
 
 .lxplus:
     image: gitlab-registry.cern.ch/sft/docker/alma9:latest
@@ -64,7 +59,6 @@ stages:
     before_script:
         - source etc/scripts/setup_lxplus.sh
         - mkdir -p build/ && cd build/
-
 
 #######################
 # Compilation targets #
@@ -100,19 +94,27 @@ cmp:lxplus-gcc:
         - ninja -k0
         - ninja install
 
-cmp:docker:
+cmp:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
         - .compile
+    before_script:
+        - mkdir -p build/ && cd build/
     script:
         - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
         - make
         - make install
 
-cmp:cc7-gcc:
+cmp:ubuntu2204:
     extends:
-        - .centos7
+        - .ubuntu2204
         - .compile
+    before_script:
+        - mkdir -p build/ && cd build/
+    script:
+        - cmake -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - make
+        - make install
 
 cmp:el9-llvm:
     extends:
@@ -126,107 +128,6 @@ cmp:el9-gcc:
         - .alma9
         - .compile
 
-
-############################
-# Format and Lint Checking #
-############################
-
-# Hidden key to define the basis for linting and formatting:
-.format:
-    stage: formatting
-    needs: []
-    dependencies: []
-    extends: .alma9
-    variables:
-        COMPILER_TYPE: "llvm"
-
-fmt:clang-format:
-    extends: .format
-    script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - ninja check-format
-
-fmt:clang-lint:
-    extends: .format
-    script:
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - ninja check-lint 2> /dev/null
-    only:
-        - schedules
-        - tags
-
-fmt:clang-lint-diff:
-    extends: .format
-    script:
-        - git remote add upstream $REPOSITORY && git fetch upstream
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
-        - ninja check-lint-diff 2> /dev/null
-
-fmt:cmake-lint:
-    extends: .format
-    script:
-        - export PATH=$PATH:~/.local/bin
-        - pip install --trusted-host=pypi.org --user cmakelang
-        - cmake -GNinja ..
-        - ninja lint-cmake
-
-fmt:coverage:
-    extends: .format
-    variables:
-        COMPILER_TYPE: "gcc"
-    script:
-        - export PATH=$PATH:~/.local/bin
-        - export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
-        - pip install --trusted-host=pypi.org --user gcovr==5.0
-        - export CCACHE_DIR=`pwd`/ccache
-        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON ..
-        - ninja -k0
-        - ninja install
-        - ninja coverage_gcovr
-
-fmt:codespell:
-    extends: .format
-    script:
-        - export PATH=~/.local/bin:$PATH
-        - cd ../
-        - pip install --trusted-host=pypi.org --user codespell
-        - codespell
-
-fmt:proselint:
-    extends: .format
-    script:
-        - export PATH=~/.local/bin:$PATH
-        - cd ../
-        - pip install --trusted-host=pypi.org --user proselint
-        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
-
-fmt:coverity:
-    extends: .format
-    only:
-        - schedules
-    variables:
-        COMPILER_TYPE: "gcc"
-        SCHEDULE_TAG: "coverity"
-    script:
-        - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
-        - tar xfz /tmp/cov-analysis-linux64.tgz
-        - export CCACHE_DIR=`pwd`/ccache
-        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
-        - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
-        - tar cfz cov-int.tar.gz cov-int
-        - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
-
-fmt:reuse:
-    image:
-        name: registry.cern.ch/docker.io/fsfe/reuse:latest
-        entrypoint: [""]
-    tags:
-        - k8s-default
-    stage: formatting
-    needs: []
-    dependencies: []
-    script:
-        - reuse lint
 
 ##############
 # Unit tests #
@@ -260,10 +161,10 @@ fmt:reuse:
 # Test if examples still execute fine:
 examples:
     extends:
-        - .centos7
+        - .alma9
         - .test
     needs:
-        - job: cmp:cc7-gcc
+        - job: cmp:el9-gcc
           artifacts: true
     script:
         - ctest -R examples/ --repeat until-pass:2 --no-compress-output --test-action Test
@@ -285,43 +186,46 @@ core:lxplus-gcc:
         - job: cmp:lxplus-gcc
           artifacts: true
 
-# Ubuntu Docker image - overriding after_script to not load CVMFS
-mod:docker:
+# Ubuntu Docker images - overriding after_script to not load CVMFS
+mod:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
         - .testmod
     needs:
-        - job: cmp:docker
+        - job: cmp:ubuntu2404
           artifacts: true
     after_script:
         - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
-core:docker:
+core:ubuntu2404:
     extends:
-        - .docker
+        - .ubuntu2404
         - .testcore
     needs:
-        - job: cmp:docker
+        - job: cmp:ubuntu2404
           artifacts: true
     after_script:
         - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
-# CentOS 7
-mod:cc7-gcc:
+mod:ubuntu2204:
     extends:
-        - .centos7
+        - .ubuntu2204
         - .testmod
     needs:
-        - job: cmp:cc7-gcc
+        - job: cmp:ubuntu2204
           artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
-core:cc7-gcc:
+core:ubuntu2204:
     extends:
-        - .centos7
+        - .ubuntu2204
         - .testcore
     needs:
-        - job: cmp:cc7-gcc
+        - job: cmp:ubuntu2204
           artifacts: true
+    after_script:
+        - .gitlab/ci/transform_ctest_junit.py build/Testing/`head -n 1 build/Testing/TAG`/Test.xml .gitlab/ci/ctest-to-junit.xsl apsq-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}.xml
 
 # AlmaLinux 9
 mod:el9-gcc:
@@ -361,11 +265,127 @@ core:el9-llvm:
           artifacts: true
 
 
+###########
+# Linting #
+###########
+
+# Hidden key to define the basis for linting:
+.lint:
+    stage: linting
+    needs: []
+    dependencies: []
+    extends: .alma9
+    variables:
+        COMPILER_TYPE: "llvm"
+
+fmt:clang-lint:
+    extends: .lint
+    script:
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - ninja check-lint 2> /dev/null
+    only:
+        - schedules
+        - tags
+
+fmt:clang-lint-diff:
+    extends: .lint
+    script:
+        - git remote add upstream $REPOSITORY && git fetch upstream
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE -DTARGET_REMOTE="upstream" ..
+        - ninja check-lint-diff 2> /dev/null
+
+fmt:coverage:
+    extends: .lint
+    variables:
+        COMPILER_TYPE: "gcc"
+    script:
+        - export PATH=$PATH:~/.local/bin
+        - export PYTHONPATH=~/.local/lib/python3.9/site-packages:$PYTHONPATH
+        - pip install --trusted-host=pypi.org --user gcovr==5.0
+        - export CCACHE_DIR=`pwd`/ccache
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON ..
+        - ninja -k0
+        - ninja install
+        - ninja coverage_gcovr
+
+fmt:coverity:
+    extends: .lint
+    only:
+        - schedules
+    variables:
+        COMPILER_TYPE: "gcc"
+        SCHEDULE_TAG: "coverity"
+    script:
+        - wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$COVERITY_SCAN_PROJECT_NAME" -O /tmp/cov-analysis-linux64.tgz
+        - tar xfz /tmp/cov-analysis-linux64.tgz
+        - export CCACHE_DIR=`pwd`/ccache
+        - cmake -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - cov-analysis-linux64-*/bin/cov-build --dir cov-int make
+        - tar cfz cov-int.tar.gz cov-int
+        - curl --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL --form file=@cov-int.tar.gz --form version="`git describe --tags`" --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID " https://scan.coverity.com/builds?project=$COVERITY_SCAN_PROJECT_NAME
+
+
+##############
+# Formatting #
+##############
+
+# Hidden key to define the basis for formatting:
+.format:
+    stage: formatting
+    needs: []
+    dependencies: []
+    extends: .alma9
+    variables:
+        COMPILER_TYPE: "llvm"
+
+fmt:clang-format:
+    extends: .format
+    script:
+        - cmake -GNinja -DCMAKE_CXX_FLAGS="-Werror" -DBUILD_ALL_MODULES=ON -DCMAKE_BUILD_TYPE=RELEASE ..
+        - ninja check-format
+
+fmt:cmake-lint:
+    extends: .format
+    script:
+        - export PATH=$PATH:~/.local/bin
+        - pip install --trusted-host=pypi.org --user cmakelang
+        - cmake -GNinja ..
+        - ninja lint-cmake
+
+fmt:codespell:
+    extends: .format
+    script:
+        - export PATH=~/.local/bin:$PATH
+        - cd ../
+        - pip install --trusted-host=pypi.org --user codespell
+        - codespell
+
+fmt:proselint:
+    extends: .format
+    script:
+        - export PATH=~/.local/bin:$PATH
+        - cd ../
+        - pip install --trusted-host=pypi.org --user proselint
+        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
+
+fmt:reuse:
+    image:
+        name: registry.cern.ch/docker.io/fsfe/reuse:latest
+        entrypoint: [""]
+    tags:
+        - k8s-default
+    stage: formatting
+    needs: []
+    dependencies: []
+    script:
+        - reuse lint
+
+
 #####################
 # Performance tests #
 #####################
 
-# Performance tests are only run on Mac OS X and on a native CentOS7 installation. Otherwise we have no control
+# Performance tests are only run on Mac OS X and on a native RHEL9 installation. Otherwise we have no control
 # about how many CI jobs are performed on the same machine in parallel via the hypervisor.
 .testperf:
     stage: performance
@@ -376,14 +396,14 @@ core:el9-llvm:
     allow_failure: true
     retry: 1
 
-# CentOS7
+# RHEL9
 # Deactivated due to lack of runners
-.perf:cc7-gcc:
+.perf:el9-gcc:
     extends:
-        - .centos7
+        - .alma9
         - .testperf
     needs:
-        - job: cmp:cc7-gcc
+        - job: cmp:el9-gcc
           artifacts: true
 
 
@@ -408,7 +428,7 @@ core:el9-llvm:
 # Compile Doxygen reference
 docs:doxygen:
     extends: .doc
-    image: $DOCKER_DEPS_IMAGE
+    image: $DOCKER_DEPS_UBUNTU2404
     script:
         - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
         - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
@@ -463,14 +483,6 @@ docs:usermanual-pdf:
             - public
         expire_in: 24 hour
 
-pkg:cc7-gcc:
-    extends:
-        - .centos7
-        - .pack
-    needs:
-        - job: cmp:cc7-gcc
-          artifacts: true
-
 pkg:el9-llvm:
     extends:
         - .alma9
@@ -507,7 +519,7 @@ deploy:documentation:
 deploy:eos:
     stage: deployment
     extends:
-        - .docker
+        - .ubuntu2404
     variables:
         GIT_STRATEGY: none
     # Only run on new tags for releases and on schedules for nightlies:
@@ -528,7 +540,6 @@ deploy:eos:
 deploy:cvmfs:
     stage: deployment
     dependencies:
-        - pkg:cc7-gcc
         - pkg:el9-llvm
         - pkg:el9-gcc
     tags:
@@ -547,7 +558,7 @@ deploy:cvmfs:
 .deploy-docker:
     stage: deployment
     extends:
-        - .docker
+        - .ubuntu2404
     before_script: []
     image:
         name: gcr.io/kaniko-project/executor:debug

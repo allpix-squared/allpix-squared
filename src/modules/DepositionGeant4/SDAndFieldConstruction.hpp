@@ -20,7 +20,7 @@ namespace allpix {
      */
     class SDAndFieldConstruction : public SensitiveDetectorAndFieldConstruction {
     public:
-        explicit SDAndFieldConstruction(DepositionGeant4Module* module) : module_(module){};
+        explicit SDAndFieldConstruction(DepositionGeant4Module* module) : module_(module) {};
 
         /**
          * @brief Constructs the SD and field.

@@ -49,7 +49,7 @@ namespace allpix {
 
         /**
          * @brief Load modules from the main configuration and construct them
-         * @warning Should be called after the \ref Allpix() "constructor"
+         * @warning Should be called after the \ref Allpix::Allpix() "constructor"
          */
         void load();
 

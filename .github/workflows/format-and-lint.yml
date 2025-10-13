@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review, synchronize]
 env:
-  LCG_VERSION: LCG_105
+  LCG_VERSION: LCG_108
 jobs:
 
   format:
@@ -19,7 +19,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang19-opt"
         run: |
           mkdir build
           cd build
@@ -36,7 +36,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang19-opt"
         run: |
           mkdir build
           cd build
@@ -53,7 +53,7 @@ jobs:
     - uses: aidasoft/run-lcg-view@v4
       with:
         run_local_checkout: 'false'
-        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang16-opt"
+        release-platform: "${{env.LCG_VERSION}}/x86_64-el9-clang19-opt"
         run: |
           mkdir build
           cd build

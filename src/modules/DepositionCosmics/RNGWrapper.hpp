@@ -42,7 +42,7 @@ namespace allpix {
 
     template <class T> thread_local T* RNGWrapper<T>::m_obj;
 
-    template <class T> thread_local double (T::*RNGWrapper<T>::m_func)();
+    template <class T> thread_local double (T::* RNGWrapper<T>::m_func)();
 
     template <class T> void RNGWrapper<T>::set(T* object, double (T::*func)()) {
         m_obj = object;

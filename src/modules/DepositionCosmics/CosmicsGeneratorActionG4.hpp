@@ -53,7 +53,7 @@ namespace allpix {
 
     class GeneratorActionInitializationMaster {
     public:
-        explicit GeneratorActionInitializationMaster(const Configuration&){};
+        explicit GeneratorActionInitializationMaster(const Configuration&) {};
     };
 } // namespace allpix
 

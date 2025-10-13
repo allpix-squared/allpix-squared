@@ -59,7 +59,7 @@ This can lead to a significant start-up time for the first execution, it does no
 ### Compilation from Source
 
 Allpix<sup>2</sup> uses the CMake build system, version 3.6.3 or later, to configure and compile the framework.
-It requires a compiler with full C++17 support.
+It requires a compiler with full C++20 support.
 More detailed instructions on how to compile the framework from source can be found in the user manual.
 The framework has the following external dependencies:
 

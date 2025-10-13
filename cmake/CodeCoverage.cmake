@@ -88,7 +88,7 @@ ELSEIF(NOT CMAKE_COMPILER_IS_GNUCXX)
 ENDIF()
 
 SET(COVERAGE_COMPILER_FLAGS
-    "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
+    "-g -O0 --coverage -fprofile-arcs -fprofile-update=atomic -ftest-coverage"
     CACHE INTERNAL "")
 
 SET(CMAKE_CXX_FLAGS_COVERAGE
@@ -154,6 +154,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE_GCOVR)
         ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}
         # Running gcovr
         COMMAND ${GCOVR_PATH} -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES} --object-directory=${PROJECT_BINARY_DIR}
+                --merge-mode-functions=merge-use-line-min
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
         COMMENT "Running gcovr to produce Cobertura code coverage report.")
@@ -207,7 +208,8 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/${Coverage_NAME}
         # Running gcovr
         COMMAND ${GCOVR_PATH} --html --html-details -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES}
-                --object-directory=${PROJECT_BINARY_DIR} -o ${Coverage_NAME}/index.html
+                --object-directory=${PROJECT_BINARY_DIR}  --merge-mode-functions=merge-use-line-min
+                -o ${Coverage_NAME}/index.html
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
         COMMENT "Running gcovr to produce HTML code coverage report.")
