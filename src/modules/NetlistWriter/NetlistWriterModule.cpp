@@ -318,6 +318,6 @@ void NetlistWriterModule::run(Event* event) {
 
         LOG(INFO) << uelec_sim_command;
 
-        std::system(uelec_sim_command.c_str()); // NOLINT
+        const auto retval = std::system(uelec_sim_command.c_str()); // NOLINT
     }
 }
