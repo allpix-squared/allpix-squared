@@ -2,18 +2,44 @@
 # SPDX-License-Identifier: CC0-1.0
 cff-version: 1.2.0
 title: Allpix Squared
-message: If you use this software, please cite it
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
 type: software
 authors:
   - given-names: Simon
     family-names: Spannagel
-    orcid: https://orcid.org/0000-0003-4708-3774
+    email: simon.spannagel@desy.de
     affiliation: DESY
-  - given-names: Koen
-    family-names: Wolters
-  - given-names: Paul
+    orcid: 'https://orcid.org/0000-0003-4708-3774'
+  - given-names: 'Paul '
     family-names: Schütze
+    email: paul.schuetze@desy.de
     affiliation: DESY
-doi: 10.5281/zenodo.3550935
-url: https://cern.ch/allpix-squared
+  - given-names: Håkan
+    family-names: Wennlöf
+    email: hwennlof@nikhef.nl
+    affiliation: Nikhef
+    orcid: 'https://orcid.org/0000-0002-6410-8622'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.3550935
+    description: Zenodo Record
+  - type: doi
+    value: 10.1016/j.nima.2018.06.020
+    description: Journal Article
+repository-code: 'https://gitlab.cern.ch/allpix-squared/allpix-squared.git'
+url: 'http://cern.ch/allpix-squared'
+repository: 'https://github.com/allpix-squared/allpix-squared.git'
+abstract: >-
+  Allpix Squared is a generic simulation framework for
+  semiconductor tracker and vertex pixel detectors written
+  in modern C++. The goal of the framework is to provide a
+  complete and easy-to-use package for simulating the
+  performance of detectors from incident ionizing radiation
+  until the digitization of hits in the detector chip.
+keywords:
+  - Monte Carlo SImulation
+  - Semiconductor Detector
+  - Drift–diffusion Models
 license: MIT
