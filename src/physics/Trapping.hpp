@@ -255,7 +255,7 @@ namespace allpix {
         }
 
     private:
-        std::unique_ptr<TrappingModel> model_{};
+        std::unique_ptr<TrappingModel> model_;
     };
 
 } // namespace allpix

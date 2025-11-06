@@ -258,13 +258,13 @@ namespace allpix {
         double operator()(const CarrierType& type, double, double doping) const override {
             if(type == CarrierType::ELECTRON) {
                 return electron_mu0_ +
-                       (electron_mumax_ - electron_mu0_) /
-                           (1. + std::pow(std::fabs(doping) / electron_cr_, electron_alpha_)) -
-                       electron_mu1_ / (1. + std::pow(electron_cs_ / std::fabs(doping), electron_beta_));
+                       ((electron_mumax_ - electron_mu0_) /
+                        (1. + std::pow(std::fabs(doping) / electron_cr_, electron_alpha_))) -
+                       electron_mu1_ / (1. + (std::pow(electron_cs_ / std::fabs(doping), electron_beta_)));
             } else {
-                return hole_mu0_ * std::exp(-hole_pc_ / std::fabs(doping)) +
-                       hole_mumax_ / (1. + std::pow(std::fabs(doping) / hole_cr_, hole_alpha_)) -
-                       hole_mu1_ / (1. + std::pow(hole_cs_ / std::fabs(doping), hole_beta_));
+                return (hole_mu0_ * std::exp(-hole_pc_ / std::fabs(doping))) +
+                       hole_mumax_ / (1. + (std::pow(std::fabs(doping) / hole_cr_, hole_alpha_))) -
+                       hole_mu1_ / (1. + (std::pow(hole_cs_ / std::fabs(doping), hole_beta_)));
             }
         };
 
@@ -337,9 +337,9 @@ namespace allpix {
 
         double operator()(const CarrierType& type, double, double doping) const override {
             if(type == CarrierType::ELECTRON) {
-                return electron_mumin_ + electron_mu0_ / (1 + std::pow(std::fabs(doping) / electron_nref_, alpha_));
+                return electron_mumin_ + (electron_mu0_ / (1 + std::pow(std::fabs(doping) / electron_nref_, alpha_)));
             } else {
-                return hole_mumin_ + hole_mu0_ / (1 + std::pow(std::fabs(doping) / hole_nref_, alpha_));
+                return hole_mumin_ + (hole_mu0_ / (1 + std::pow(std::fabs(doping) / hole_nref_, alpha_)));
             }
         };
 
@@ -376,7 +376,7 @@ namespace allpix {
                 if(efield_mag < E0_gaas_) {
                     return mu_e_gaas_;
                 } else {
-                    return mu_e_gaas_ / sqrt(1 + std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2));
+                    return mu_e_gaas_ / sqrt(1 + (std::pow((efield_mag - E0_gaas_), 2) / std::pow(Ec_gaas_, 2)));
                 }
             } else {
                 return mu_h_gaas_;
@@ -446,9 +446,10 @@ namespace allpix {
 
         double operator()(const CarrierType& type, double efield_mag, double) const override {
             if(type == CarrierType::ELECTRON) {
-                return electron_Vsat_ / electron_Ec_ / std::sqrt(1. + efield_mag * efield_mag / electron_Ec_ / electron_Ec_);
+                return electron_Vsat_ / electron_Ec_ /
+                       std::sqrt(1. + (efield_mag * efield_mag / electron_Ec_ / electron_Ec_));
             } else {
-                return hole_Vsat_ / hole_Ec_ / std::sqrt(1. + efield_mag * efield_mag / hole_Ec_ / hole_Ec_);
+                return hole_Vsat_ / hole_Ec_ / std::sqrt(1. + (efield_mag * efield_mag / hole_Ec_ / hole_Ec_));
             }
         };
 
@@ -657,7 +658,7 @@ namespace allpix {
         }
 
     private:
-        std::unique_ptr<MobilityModel> model_{};
+        std::unique_ptr<MobilityModel> model_;
     };
 
 } // namespace allpix

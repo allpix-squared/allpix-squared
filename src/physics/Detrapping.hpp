@@ -121,7 +121,7 @@ namespace allpix {
         }
 
     private:
-        std::unique_ptr<DetrappingModel> model_{};
+        std::unique_ptr<DetrappingModel> model_;
     };
 
 } // namespace allpix

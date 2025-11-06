@@ -282,7 +282,7 @@ namespace allpix {
         }
 
     private:
-        std::unique_ptr<RecombinationModel> model_{};
+        std::unique_ptr<RecombinationModel> model_;
     };
 
 } // namespace allpix
