@@ -183,12 +183,12 @@ namespace allpix {
         void petrifyHistory() override;
 
     private:
-        ROOT::Math::XYZPoint start_point_{};
-        ROOT::Math::XYZPoint end_point_{};
+        ROOT::Math::XYZPoint start_point_;
+        ROOT::Math::XYZPoint end_point_;
 
-        std::string start_g4_vol_name_{};
-        std::string end_g4_vol_name_{};
-        std::string origin_g4_process_name_{};
+        std::string start_g4_vol_name_;
+        std::string end_g4_vol_name_;
+        std::string origin_g4_process_name_;
 
         int origin_g4_process_type_{};
         int particle_id_{};
@@ -200,8 +200,8 @@ namespace allpix {
         double final_kin_E_{};
         double initial_tot_E_{};
         double final_tot_E_{};
-        ROOT::Math::XYZVector initial_mom_direction_{};
-        ROOT::Math::XYZVector final_mom_direction_{};
+        ROOT::Math::XYZVector initial_mom_direction_;
+        ROOT::Math::XYZVector final_mom_direction_;
 
         PointerWrapper<MCTrack> parent_;
     };

@@ -38,7 +38,7 @@ namespace allpix {
      */
     class DepositionLaserModule : public Module {
 
-        enum class BeamGeometry {
+        enum class BeamGeometry : std::uint8_t {
             CYLINDRICAL,
             CONVERGING,
         };
@@ -120,8 +120,8 @@ namespace allpix {
         Messenger* messenger_;
 
         // Laser parameters
-        ROOT::Math::XYZPoint source_position_{};
-        ROOT::Math::XYZVector beam_direction_{};
+        ROOT::Math::XYZPoint source_position_;
+        ROOT::Math::XYZVector beam_direction_;
         double beam_waist_;
 
         BeamGeometry beam_geometry_{};
@@ -139,11 +139,11 @@ namespace allpix {
 
         // Histograms
         bool output_plots_;
-        Histogram<TH2D> h_intensity_sourceplane_{};
-        Histogram<TH2D> h_intensity_focalplane_{};
-        Histogram<TH1D> h_angular_phi_{};
-        Histogram<TH1D> h_angular_theta_{};
-        Histogram<TH1D> h_pulse_shape_{};
+        Histogram<TH2D> h_intensity_sourceplane_;
+        Histogram<TH2D> h_intensity_focalplane_;
+        Histogram<TH1D> h_angular_phi_;
+        Histogram<TH1D> h_angular_theta_;
+        Histogram<TH1D> h_pulse_shape_;
         std::map<const std::shared_ptr<Detector>, Histogram<TH3D>> h_deposited_charge_shapes_;
     };
 } // namespace allpix

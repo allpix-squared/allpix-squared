@@ -106,9 +106,9 @@ namespace allpix {
         bool record_all_{};
 
         // Geant4 id to custom id translation
-        std::map<int, int> g4_to_custom_id_{};
+        std::map<int, int> g4_to_custom_id_;
         // Custom id to custom parent id tracking
-        std::map<int, int> track_id_to_parent_id_{};
+        std::map<int, int> track_id_to_parent_id_;
         // List of track ids to be stored if they are provided via #storeTrackInfo
         std::vector<int> to_store_track_ids_;
         // The TrackInfoG4 instances which are handed over to this track manager

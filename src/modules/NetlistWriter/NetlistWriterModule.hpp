@@ -29,12 +29,12 @@ namespace allpix {
      */
     class NetlistWriterModule : public Module {
     public:
-        enum class Target {
+        enum class Target : std::uint8_t {
             SPICE,
             SPECTRE,
         };
 
-        enum class SourceType {
+        enum class SourceType : std::uint8_t {
             ISOURCE_PWL,
             ISOURCE_PULSE,
         };
@@ -65,13 +65,13 @@ namespace allpix {
 
         // Module parameters
         std::filesystem::path netlist_path_;
-        std::string extension_{};
-        std::string file_name_{};
+        std::string extension_;
+        std::string file_name_;
         Target target_;
         SourceType source_type_;
 
-        std::string source_name_{};
-        std::string subckt_instance_name_{};
+        std::string source_name_;
+        std::string subckt_instance_name_;
 
         std::string connections_;
         std::set<std::string> common_nets_;
@@ -79,7 +79,7 @@ namespace allpix {
         std::set<std::string> waveform_to_save_;
 
         bool run_netlist_simulation_{};
-        std::string simulator_command_{};
+        std::string simulator_command_;
 
         // isource_pulse
         double delay_{};

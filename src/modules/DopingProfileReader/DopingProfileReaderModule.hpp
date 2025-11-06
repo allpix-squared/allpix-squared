@@ -27,7 +27,7 @@ namespace allpix {
         /**
          * @brief Different doping profile types
          */
-        enum class DopingProfile {
+        enum class DopingProfile : std::uint8_t {
             CONSTANT, ///< Constant doping concentration
             REGIONS,  ///< Different regions with different doping concentrations
             MESH,     ///< Doping profile defined by a mesh

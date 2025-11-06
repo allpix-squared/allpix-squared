@@ -157,7 +157,7 @@ namespace allpix {
          *         or the default array if the key does not exist
          */
         // TODO [doc] Provide second template parameter to specify the vector type to return it in
-        template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T> def) const;
+        template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T>& def) const;
 
         /**
          * @brief Get values for a key containing a 2D matrix

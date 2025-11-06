@@ -154,19 +154,19 @@ namespace allpix {
         // PDG particle id
         int particle_id_{};
         // Start point of track (in mm)
-        ROOT::Math::XYZPoint start_point_{};
+        ROOT::Math::XYZPoint start_point_;
         // End point of track (in mm)
-        ROOT::Math::XYZPoint end_point_{};
+        ROOT::Math::XYZPoint end_point_;
         // Starting time (in ns)
         double start_time_{};
         // Ending time (in ns)
         double end_time_{};
         // Geant4 volume in which the track was created
-        std::string initial_g4_vol_name_{};
+        std::string initial_g4_vol_name_;
         // Geant4 volume in which the track was terminated
-        std::string final_g4_vol_name_{};
+        std::string final_g4_vol_name_;
         // Name of Geant4 process which created this track
-        std::string origin_g4_process_name_{};
+        std::string origin_g4_process_name_;
         // Initial kinetic energy (MeV)
         double initial_kin_E_{};
         // Initial total energy (MeV)
@@ -176,9 +176,9 @@ namespace allpix {
         // Final total energy (MeV)
         double final_tot_E_{};
         // Initial momentum direction
-        ROOT::Math::XYZVector initial_momentum_direction_{};
+        ROOT::Math::XYZVector initial_momentum_direction_;
         // Final momentum direction
-        ROOT::Math::XYZVector final_momentum_direction_{};
+        ROOT::Math::XYZVector final_momentum_direction_;
     };
 } // namespace allpix
 #endif /* TrackInfoG4_H */

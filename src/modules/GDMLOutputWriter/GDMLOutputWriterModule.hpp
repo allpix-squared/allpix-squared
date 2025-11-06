@@ -44,7 +44,7 @@ namespace allpix {
         void initialize() override;
 
     private:
-        std::string output_file_name_{};
+        std::string output_file_name_;
     };
 } // namespace allpix
 

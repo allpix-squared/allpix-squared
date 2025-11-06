@@ -68,11 +68,11 @@ namespace allpix {
         std::set<std::string> exclude_;
 
         // Output data file to write
-        std::string output_file_name_{};
+        std::string output_file_name_;
         std::unique_ptr<std::ofstream> output_file_;
 
         // Statistical information about number of objects
-        std::atomic<unsigned long> write_cnt_{};
-        std::atomic<unsigned long> msg_cnt_{};
+        std::atomic<unsigned long> write_cnt_;
+        std::atomic<unsigned long> msg_cnt_;
     };
 } // namespace allpix

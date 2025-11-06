@@ -43,7 +43,7 @@ namespace allpix {
         /**
          * @brief Different implemented file models
          */
-        enum class FileModel {
+        enum class FileModel : std::uint8_t {
             ROOT, ///< ROOT Trees
             CSV,  ///< Comma-separated value files
         };
@@ -102,7 +102,7 @@ namespace allpix {
 
         FileModel file_model_;
         size_t volume_chars_{};
-        std::string unit_length_{}, unit_time_{}, unit_energy_{};
+        std::string unit_length_, unit_time_, unit_energy_;
         bool output_plots_{};
 
         bool require_sequential_events_{}, create_mcparticles_{}, time_available_{};

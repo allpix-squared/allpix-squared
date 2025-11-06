@@ -81,13 +81,13 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
 
         // Statistics
-        std::atomic<unsigned long> total_hits_{};
+        std::atomic<unsigned long> total_hits_;
 
         // Cut criteria for efficiency measurement:
-        ROOT::Math::XYVector matching_cut_{};
+        ROOT::Math::XYVector matching_cut_;
 
         // Reference track resolution
-        ROOT::Math::XYVector track_resolution_{};
+        ROOT::Math::XYVector track_resolution_;
 
         // Histograms to output
         Histogram<TH2D> hit_map, hit_map_global, hit_map_global_mc, hit_map_local, hit_map_local_mc, charge_map, cluster_map,
