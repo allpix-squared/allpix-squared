@@ -68,8 +68,8 @@ namespace allpix {
                          minY,
                          maxY,
                          10,
-                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
-                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0);
+                         model->getSensorCenter().z() - (model->getSensorSize().z() / 2.0),
+                         model->getSensorCenter().z() + (model->getSensorSize().z() / 2.0));
             histogram_frame->SetDirectory(module->getROOTDirectory());
 
             // Create the canvas for the line plot and set orientation
@@ -106,7 +106,7 @@ namespace allpix {
                 // Plot all lines with at least three points with different color
                 if(line->GetN() >= 2) {
                     EColor plot_color = (std::get<2>(deposit) == CarrierType::ELECTRON ? EColor::kAzure : EColor::kOrange);
-                    current_color = static_cast<short int>(plot_color - 9 + (static_cast<int>(current_color) + 1) % 19);
+                    current_color = static_cast<short int>(plot_color - 9 + ((static_cast<int>(current_color) + 1) % 19));
                     line->SetLineColor(current_color);
                     line->Draw("same");
                 }
@@ -149,8 +149,8 @@ namespace allpix {
                          minY,
                          maxY,
                          10,
-                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
-                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0);
+                         model->getSensorCenter().z() - (model->getSensorSize().z() / 2.0),
+                         model->getSensorCenter().z() + (model->getSensorSize().z() / 2.0));
             histogram_frame->SetDirectory(module->getROOTDirectory());
 
             // Create canvas for GIF animition of process
@@ -161,9 +161,9 @@ namespace allpix {
             canvas->cd();
 
             // Change axis labels if close to zero or PI as they behave different here
-            if(std::fabs(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0) -
+            if(std::fabs((config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0)) -
                          std::round(config.get<double>("output_plots_theta") / (ROOT::Math::Pi() / 2.0))) < 1e-6 ||
-               std::fabs(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0) -
+               std::fabs((config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0)) -
                          std::round(config.get<double>("output_plots_phi") / (ROOT::Math::Pi() / 2.0))) < 1e-6) {
                 histogram_frame->GetXaxis()->SetLabelOffset(-0.1f);
                 histogram_frame->GetYaxis()->SetLabelOffset(-0.075f);
@@ -186,8 +186,8 @@ namespace allpix {
                          minY,
                          maxY,
                          100,
-                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
-                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0));
+                         model->getSensorCenter().z() - (model->getSensorSize().z() / 2.0),
+                         model->getSensorCenter().z() + (model->getSensorSize().z() / 2.0)));
             histogram_contour.back()->SetDirectory(module->getROOTDirectory());
             file_name_contour.push_back(module->createOutputFile("contourY" + std::to_string(event_num) + ".gif"));
             histogram_contour.push_back(
@@ -197,8 +197,8 @@ namespace allpix {
                          minX,
                          maxX,
                          100,
-                         model->getSensorCenter().z() - model->getSensorSize().z() / 2.0,
-                         model->getSensorCenter().z() + model->getSensorSize().z() / 2.0));
+                         model->getSensorCenter().z() - (model->getSensorSize().z() / 2.0),
+                         model->getSensorCenter().z() + (model->getSensorSize().z() / 2.0)));
             histogram_contour.back()->SetDirectory(module->getROOTDirectory());
             file_name_contour.push_back(module->createOutputFile("contourZ" + std::to_string(event_num) + ".gif"));
             histogram_contour.push_back(
@@ -232,9 +232,9 @@ namespace allpix {
             for(int i = 20; i < 100; ++i) {
                 auto color_idx = TColor::GetFreeColorIndex();
                 colors[i - 20] = new TColor(color_idx,
-                                            static_cast<float>(i) / 100.0f - 0.2f,
-                                            static_cast<float>(i) / 100.0f - 0.2f,
-                                            static_cast<float>(i) / 100.0f - 0.2f);
+                                            (static_cast<float>(i) / 100.0f) - 0.2f,
+                                            (static_cast<float>(i) / 100.0f) - 0.2f,
+                                            (static_cast<float>(i) / 100.0f) - 0.2f);
             }
 
             // Create animation of moving charges

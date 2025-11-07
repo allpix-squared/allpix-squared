@@ -31,6 +31,7 @@
 #include <utility>
 
 // Mime type version for APF files
+// NOLINTNEXTLINE(cppcoreguidelines-macro-to-enum)
 #define APF_MIME_TYPE_VERSION 2
 
 namespace allpix {
@@ -38,17 +39,17 @@ namespace allpix {
     /**
      * @brief Field quantities
      */
-    enum class FieldQuantity : size_t {
-        UNKNOWN = 0, ///< Unknown field quantity
-        SCALAR = 1,  ///< Scalar field, i.e. one entry per field position
-        VECTOR = 3,  ///< Vector field, i.e. three entries per field position
-        MAP = 25,    ///< Field with a 5x5 map for each entry
+    enum class FieldQuantity : size_t { // NOLINT(performance-enum-size)
+        UNKNOWN = 0,                    ///< Unknown field quantity
+        SCALAR = 1,                     ///< Scalar field, i.e. one entry per field position
+        VECTOR = 3,                     ///< Vector field, i.e. three entries per field position
+        MAP = 25,                       ///< Field with a 5x5 map for each entry
     };
 
     /**
      * @brief Type of file formats
      */
-    enum class FileType {
+    enum class FileType : std::uint8_t {
         UNKNOWN = 0, ///< Unknown file format
         INIT,        ///< Legacy file format, values stored in plain-text ASCII
         APF,         ///< Binary Allpix Squared format serialized using the cereal library
@@ -187,7 +188,7 @@ namespace allpix {
          * point)
          */
         explicit FieldParser(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)) {};
+            : N_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
         ~FieldParser() = default;
 
         /**
@@ -332,7 +333,7 @@ namespace allpix {
             std::ifstream file(file_name);
             std::string header;
             std::getline(file, header);
-            LOG(TRACE) << "Header of file " << file_name << " is " << std::endl << header;
+            LOG(TRACE) << "Header of file " << file_name << " is\n" << header;
 
             // Read the header
             std::string tmp;
@@ -393,7 +394,7 @@ namespace allpix {
                     file >> input;
 
                     // Set the field at a position
-                    (*field)[xind * ysize * zsize * N_ + yind * zsize * N_ + zind * N_ + j] = Units::get(input, units);
+                    (*field)[(xind * ysize * zsize * N_) + (yind * zsize * N_) + (zind * N_) + j] = Units::get(input, units);
                 }
             }
             LOG_PROGRESS(INFO, "read_init") << "Reading field data: finished.";
@@ -423,7 +424,7 @@ namespace allpix {
          * point)
          */
         explicit FieldWriter(const FieldQuantity quantity)
-            : N_(static_cast<std::underlying_type<FieldQuantity>::type>(quantity)) {};
+            : N_(static_cast<std::underlying_type_t<FieldQuantity>>(quantity)) {};
         ~FieldWriter() = default;
 
         /**
@@ -502,9 +503,9 @@ namespace allpix {
             // Write INIT file header
             file << field_data.getHeader() << std::endl; // Header line
             file << (!units.empty() ? units : "internal") << " " << field_data.getNorm()
-                 << std::endl;                            // Use placeholder for units
-            file << "##TURN## ##TILT## 1.0" << std::endl; // Unused
-            file << "0.0 0.0 0.0" << std::endl;           // Magnetic field (unused)
+                 << std::endl;                 // Use placeholder for units
+            file << "##TURN## ##TILT## 1.0\n"; // Unused
+            file << "0.0 0.0 0.0\n";           // Magnetic field (unused)
 
             auto size = field_data.getSize();
             file << Units::convert(size[2], "um") << " " << Units::convert(size[0], "um") << " "
@@ -513,7 +514,7 @@ namespace allpix {
 
             auto dimensions = field_data.getDimensions();
             file << dimensions[0] << " " << dimensions[1] << " " << dimensions[2] << " "; // Field grid dimensions (x, y, z)
-            file << "0.0" << std::endl;                                                   // Unused
+            file << "0.0\n";                                                              // Unused
 
             // Write the data block:
             auto data = field_data.getData();
@@ -533,7 +534,7 @@ namespace allpix {
                                                    units);
                         }
                         // End this line
-                        file << std::endl;
+                        file << '\n';
                     }
 
                     auto curr_point = xind * dimensions[1] * dimensions[2] + yind * dimensions[2];

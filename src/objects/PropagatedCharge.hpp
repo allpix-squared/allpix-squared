@@ -25,11 +25,11 @@ namespace allpix {
     /**
      * @brief State of the charge carrier
      */
-    enum class CarrierState {
-        UNKNOWN = 0, ///< State of the propagated charge carrier is unknown
-        MOTION,      ///< The propagated charge carrier is in motion
-        RECOMBINED,  ///< The propagated charge carrier has recombined with the lattice
-        TRAPPED,     ///< The propagated charge carrier is trapped temporarily
+    enum class CarrierState { // NOLINT(performance-enum-size)
+        UNKNOWN = 0,          ///< State of the propagated charge carrier is unknown
+        MOTION,               ///< The propagated charge carrier is in motion
+        RECOMBINED,           ///< The propagated charge carrier has recombined with the lattice
+        TRAPPED,              ///< The propagated charge carrier is trapped temporarily
         HALTED, ///< The carrier has come to a halt because it, for example, has reached the sensor surface or an implant
     };
 

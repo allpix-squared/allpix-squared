@@ -9,6 +9,10 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <cstdint>
+#include <map>
+#include <ostream>
+
 #include "Event.hpp"
 
 using namespace corryvreckan;
@@ -87,12 +91,12 @@ Event::Position Event::getTriggerPosition(uint32_t trigger_id) const {
 }
 
 void Event::print(std::ostream& out) const {
-    out << "Start: " << start() << std::endl;
+    out << "Start: " << start() << '\n';
     out << "End:   " << end();
     if(!trigger_list_.empty()) {
-        out << std::endl << "Trigger list: ";
+        out << '\n' << "Trigger list: ";
         for(const auto& trg : trigger_list_) {
-            out << std::endl << trg.first << ": " << trg.second;
+            out << '\n' << trg.first << ": " << trg.second;
         }
     }
 }

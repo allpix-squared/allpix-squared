@@ -51,7 +51,7 @@ namespace allpix {
 
             // Generate lookup table:
             for(size_t idx = 0; idx < S; ++idx) {
-                double x = dx_ * static_cast<double>(idx) + x_min_;
+                double x = (dx_ * static_cast<double>(idx)) + x_min_;
                 table_[idx] = std::pow(x, y);
             }
         }
@@ -65,7 +65,7 @@ namespace allpix {
          * constructor. For values outside the specified range, the return value will be a linear extrapolation from the
          * closest tabulated bin.
          */
-        inline double operator()(double x) const noexcept {
+        double operator()(double x) const noexcept {
             // Calculate position on pre-calculate table
             double pos = (x - x_min_) / dx_;
 

@@ -92,7 +92,7 @@ namespace allpix {
         bool timing_global_{};
 
         // Statistical information about number of objects
-        std::atomic<unsigned long> write_cnt_{};
-        std::atomic<unsigned long> msg_cnt_{};
+        std::atomic<unsigned long> write_cnt_;
+        std::atomic<unsigned long> msg_cnt_;
     };
 } // namespace allpix

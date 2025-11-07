@@ -136,7 +136,7 @@ namespace allpix {
         bool has_magnetic_field_{};
 
         // Deposit statistics
-        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
+        std::atomic<unsigned int> total_deposits_, deposits_exceeding_max_groups_;
 
         // Output plots
         Histogram<TH1D> potential_difference_, induced_charge_histo_, induced_charge_e_histo_, induced_charge_h_histo_;

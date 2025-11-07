@@ -30,7 +30,7 @@ namespace allpix {
         /**
          * @brief Different weighting potential types
          */
-        enum class WeightingPotential {
+        enum class WeightingPotential : std::uint8_t {
             PAD,  ///< Weighting potential calculated from geometry of the pad
             MESH, ///< Weighting potential defined by a mesh
         };

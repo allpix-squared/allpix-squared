@@ -95,7 +95,7 @@ namespace allpix {
         double boltzmann_kT_;
 
         // Statistical information
-        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
+        std::atomic<unsigned int> total_deposits_, deposits_exceeding_max_groups_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> diffusion_time_histo_;
         Histogram<TH1D> propagation_time_histo_;

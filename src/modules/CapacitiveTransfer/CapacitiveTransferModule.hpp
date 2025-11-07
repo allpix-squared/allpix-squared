@@ -75,7 +75,7 @@ namespace allpix {
         std::shared_ptr<DetectorModel> model_;
 
         // Statistical information
-        std::atomic<unsigned int> total_transferred_charges_{};
+        std::atomic<unsigned int> total_transferred_charges_;
 
         // Matrix to store cross-coupling values
         std::vector<std::vector<double>> relative_coupling_;

@@ -35,7 +35,7 @@ namespace allpix {
         /**
          * @brief Type of pixels
          */
-        enum class Type {
+        enum class Type {   // NOLINT(performance-enum-size)
             RECTANGLE = 0,  ///< Rectangular pixel shape
             HEXAGON_FLAT,   ///< Hexagonal pixel shape, flat side up
             HEXAGON_POINTY, ///< Hexagonal pixel shape, corner up

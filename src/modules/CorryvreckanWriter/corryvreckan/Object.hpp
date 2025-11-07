@@ -84,7 +84,7 @@ namespace corryvreckan {
          */
         void Print(Option_t*) const override {
             print(std::cout);
-            std::cout << std::endl;
+            std::cout << '\n';
         }
     };
 
