@@ -1,3 +1,6 @@
+* SPDX-FileCopyrightText: 2025 CERN and the Allpix Squared authors
+* SPDX-License-Identifier: CC0-1.0
+
 simulator lang=spectre
 global 0
 
@@ -13,6 +16,6 @@ X1 (Pix_in) Pixel_Analog
 
 simulatorOptions options psfversion="1.4.0" reltol=1e-3 vabstol=1e-6 \
     iabstol=1e-12 temp=27 tnom=27 scalem=1.0 scale=1e-06 gmin=1e-20 \
-    rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 checklimitdest=both 
+    rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 checklimitdest=both
 
-tran tran stop=50u errpreset=conservative annotate=status maxiters=5 
+tran tran stop=50u errpreset=conservative annotate=status maxiters=5
