@@ -41,7 +41,7 @@ namespace allpix {
         /**
          * @brief Different implemented digitization models
          */
-        enum class DigitizerType {
+        enum class DigitizerType : std::uint8_t {
             SIMPLE, ///< Simplified parametrisation
             CSA,    ///< Enter all contributions to the transfer function as parameters
             CUSTOM, ///< Custom impulse response function using a ROOT::TFormula expression
@@ -97,8 +97,8 @@ namespace allpix {
         std::once_flag first_event_flag_;
 
         // Output histograms
-        Histogram<TH1D> h_tot{}, h_toa{};
-        Histogram<TH2D> h_pxq_vs_tot{};
+        Histogram<TH1D> h_tot, h_toa;
+        Histogram<TH2D> h_pxq_vs_tot;
 
         /**
          * @brief Calculate time of first threshold crossing

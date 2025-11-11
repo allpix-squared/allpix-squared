@@ -33,7 +33,7 @@ namespace allpix {
         /**
          * @brief Different magnetic field types
          */
-        enum class MagneticField {
+        enum class MagneticField : std::uint8_t {
             CONSTANT, ///< Constant magnetic field
             MESH,     ///< Magnetic field defined by a mesh
         };

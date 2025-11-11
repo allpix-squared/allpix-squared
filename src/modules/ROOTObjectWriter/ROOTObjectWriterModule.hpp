@@ -78,7 +78,7 @@ namespace allpix {
 
         // Output data file to write
         std::unique_ptr<TFile> output_file_;
-        std::string output_file_name_{};
+        std::string output_file_name_;
 
         // Current event
         uint64_t current_event_{0};
@@ -93,6 +93,6 @@ namespace allpix {
         std::map<std::tuple<std::type_index, std::string, std::string>, std::vector<Object*>*> write_list_;
 
         // Statistical information about number of objects
-        std::atomic<unsigned long> write_cnt_{};
+        std::atomic<unsigned long> write_cnt_;
     };
 } // namespace allpix

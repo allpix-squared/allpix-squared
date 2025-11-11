@@ -79,6 +79,6 @@ namespace allpix {
         bool output_plots_{};
 
         // Statistical information
-        std::atomic<unsigned int> total_transferred_charges_{};
+        std::atomic<unsigned int> total_transferred_charges_;
     };
 } // namespace allpix

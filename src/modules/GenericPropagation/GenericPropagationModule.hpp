@@ -134,10 +134,10 @@ namespace allpix {
         bool has_magnetic_field_;
 
         // Statistical information
-        std::atomic<unsigned int> total_propagated_charges_{};
-        std::atomic<unsigned int> total_steps_{};
-        std::atomic<long unsigned int> total_time_picoseconds_{};
-        std::atomic<unsigned int> total_deposits_{}, deposits_exceeding_max_groups_{};
+        std::atomic<unsigned int> total_propagated_charges_;
+        std::atomic<unsigned int> total_steps_;
+        std::atomic<long unsigned int> total_time_picoseconds_;
+        std::atomic<unsigned int> total_deposits_, deposits_exceeding_max_groups_;
         Histogram<TH1D> step_length_histo_;
         Histogram<TH1D> drift_time_histo_;
         Histogram<TH1D> uncertainty_histo_;

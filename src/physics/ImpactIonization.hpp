@@ -89,9 +89,9 @@ namespace allpix {
     public:
         Massey(double temperature, double threshold)
             : ImpactIonizationModel(threshold), electron_a_(Units::get(4.43e5, "/cm")),
-              electron_b_(Units::get(9.66e5, "V/cm") + Units::get(4.99e2, "V/cm/K") * temperature),
+              electron_b_(Units::get(9.66e5, "V/cm") + (Units::get(4.99e2, "V/cm/K") * temperature)),
               hole_a_(Units::get(1.13e6, "/cm")),
-              hole_b_(Units::get(1.71e6, "V/cm") + Units::get(1.09e3, "V/cm/K") * temperature) {}
+              hole_b_(Units::get(1.71e6, "V/cm") + (Units::get(1.09e3, "V/cm/K") * temperature)) {}
 
     private:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
@@ -261,17 +261,17 @@ namespace allpix {
     public:
         Bologna(double temperature, double threshold)
             : ImpactIonizationModel(threshold),
-              electron_a_(Units::get(4.3383, "V") + Units::get(-2.42e-12, "V") * std::pow(temperature, 4.1233)),
+              electron_a_(Units::get(4.3383, "V") + (Units::get(-2.42e-12, "V") * std::pow(temperature, 4.1233))),
               electron_b_(Units::get(0.235, "V")),
-              electron_c_(Units::get(1.6831e4, "V/cm") + Units::get(4.3796, "V/cm") * temperature +
-                          Units::get(0.13005, "V/cm") * std::pow(temperature, 2)),
-              electron_d_(Units::get(1.2337e6, "V/cm") + Units::get(1.2039e3, "V/cm") * temperature +
-                          Units::get(0.56703, "V/cm") * std::pow(temperature, 2)),
-              hole_a_(Units::get(2.376, "V") + Units::get(1.033e-2, "V") * temperature),
+              electron_c_(Units::get(1.6831e4, "V/cm") + (Units::get(4.3796, "V/cm") * temperature) +
+                          (Units::get(0.13005, "V/cm") * std::pow(temperature, 2))),
+              electron_d_(Units::get(1.2337e6, "V/cm") + (Units::get(1.2039e3, "V/cm") * temperature) +
+                          (Units::get(0.56703, "V/cm") * std::pow(temperature, 2))),
+              hole_a_(Units::get(2.376, "V") + (Units::get(1.033e-2, "V") * temperature)),
               hole_b_(Units::get(0.17714, "V") * std::exp(Units::get(-2.178e-3, "/K") * temperature)),
               hole_c_(Units::get(9.47e-3, "V/cm") * std::pow(temperature, 2.4924)),
-              hole_d_(Units::get(1.4043e6, "V/cm") + Units::get(2.9744e3, "V/cm") * temperature +
-                      Units::get(1.4829, "V/cm") * std::pow(temperature, 2)) {}
+              hole_d_(Units::get(1.4043e6, "V/cm") + (Units::get(2.9744e3, "V/cm") * temperature) +
+                      (Units::get(1.4829, "V/cm") * std::pow(temperature, 2))) {}
 
     private:
         double gain_factor(const CarrierType& type, double efield_mag) const override {
@@ -414,7 +414,7 @@ namespace allpix {
         template <class T> bool is() const { return dynamic_cast<T*>(model_.get()) != nullptr; }
 
     private:
-        std::unique_ptr<ImpactIonizationModel> model_{};
+        std::unique_ptr<ImpactIonizationModel> model_;
     };
 
 } // namespace allpix

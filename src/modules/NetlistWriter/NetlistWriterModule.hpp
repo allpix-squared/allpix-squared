@@ -29,12 +29,12 @@ namespace allpix {
      */
     class NetlistWriterModule : public Module {
     public:
-        enum class Target {
+        enum class Target : std::uint8_t {
             SPICE,
             SPECTRE,
         };
 
-        enum class SourceType {
+        enum class SourceType : std::uint8_t {
             ISOURCE_PWL,
             ISOURCE_PULSE,
         };

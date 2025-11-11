@@ -50,8 +50,8 @@ namespace corryvreckan {
 
     private:
         int m_particle_id{};
-        ROOT::Math::XYZPoint m_local_start_point{};
-        ROOT::Math::XYZPoint m_local_end_point{};
+        ROOT::Math::XYZPoint m_local_start_point;
+        ROOT::Math::XYZPoint m_local_end_point;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDef(MCParticle, 3); // NOLINT

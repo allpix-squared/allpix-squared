@@ -34,7 +34,7 @@ namespace allpix {
         /**
          * @brief Different electric field types
          */
-        enum class ElectricField {
+        enum class ElectricField : std::uint8_t {
             CONSTANT,  ///< Constant electric field
             LINEAR,    ///< Linear electric field
             MESH,      ///< Electric field defined by a mesh

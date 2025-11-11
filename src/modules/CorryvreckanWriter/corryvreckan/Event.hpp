@@ -18,7 +18,7 @@ namespace corryvreckan {
     class Event : public Object {
 
     public:
-        enum class Position {
+        enum class Position : std::uint8_t {
             UNKNOWN, // StandardEvent position unknown
             BEFORE,  // StandardEvent is before current event
             DURING,  // StandardEvent is during current event
@@ -145,7 +145,7 @@ namespace corryvreckan {
         double end_;
 
         // List with all triggers known to the event, containing the trigger ID and its timestamp
-        std::map<uint32_t, double> trigger_list_{};
+        std::map<uint32_t, double> trigger_list_;
 
         // ROOT I/O class definition - update version number when you change this class!
         ClassDefOverride(Event, 6); // NOLINT

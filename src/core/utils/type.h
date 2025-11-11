@@ -41,7 +41,7 @@ namespace allpix {
         if(status == 0) {
             // Remove allpix tag if necessary
             std::string str = res.get();
-            if(!keep_allpix && str.find("allpix::") == 0) {
+            if(!keep_allpix && str.starts_with("allpix::")) {
                 return str.substr(8);
             }
             return str;

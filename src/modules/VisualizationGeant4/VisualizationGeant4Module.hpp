@@ -36,7 +36,7 @@ namespace allpix {
         /**
          * @brief Different viewing modes
          */
-        enum class ViewingMode {
+        enum class ViewingMode : std::uint8_t {
             NONE,     ///< No viewer
             GUI,      ///< GUI viewing mode
             TERMINAL, ///< Terminal viewing mode
@@ -45,7 +45,7 @@ namespace allpix {
         /**
          * @brief Different trajectory color modes
          */
-        enum class ColorMode {
+        enum class ColorMode : std::uint8_t {
             GENERIC,  ///< Generic trajectory coloration
             CHARGE,   ///< Trajectory coloration by charge
             PARTICLE, ///< Trajectory coloration by particle type

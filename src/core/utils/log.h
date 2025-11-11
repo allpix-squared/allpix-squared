@@ -27,7 +27,7 @@ namespace allpix {
     /**
      * @brief Logging detail level
      */
-    enum class LogLevel {
+    enum class LogLevel : std::uint8_t {
         FATAL = 0, ///< Fatal problems that terminate the framework (typically exceptions)
         STATUS,    ///< Only critical progress information
         ERROR,     ///< Critical problems that usually lead to fatal errors
@@ -41,7 +41,7 @@ namespace allpix {
     /**
      * @brief Format of the logger
      */
-    enum class LogFormat {
+    enum class LogFormat : std::uint8_t {
         SHORT = 0, ///< Only include a single character for the log level, the section header and the message
         DEFAULT,   ///< Also include the time and a full logging level description
         LONG       ///< All of the above and also information about the file and line where the message was defined
@@ -228,7 +228,7 @@ namespace allpix {
         static std::vector<std::ostream*>& get_streams();
 
         // Name of the process to log or empty if a normal log message
-        std::string identifier_{};
+        std::string identifier_;
         static std::string last_message_;
         static std::string last_identifier_;
 

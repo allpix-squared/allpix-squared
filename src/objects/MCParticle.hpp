@@ -197,10 +197,10 @@ namespace allpix {
         void petrifyHistory() override;
 
     private:
-        ROOT::Math::XYZPoint local_start_point_{};
-        ROOT::Math::XYZPoint global_start_point_{};
-        ROOT::Math::XYZPoint local_end_point_{};
-        ROOT::Math::XYZPoint global_end_point_{};
+        ROOT::Math::XYZPoint local_start_point_;
+        ROOT::Math::XYZPoint global_start_point_;
+        ROOT::Math::XYZPoint local_end_point_;
+        ROOT::Math::XYZPoint global_end_point_;
 
         int particle_id_{};
         double local_time_{};

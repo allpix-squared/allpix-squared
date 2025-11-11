@@ -92,7 +92,7 @@ namespace allpix {
          */
         void Print(Option_t*) const override {
             print(std::cout);
-            std::cout << std::endl;
+            std::cout << '\n';
         }
 
     public:
@@ -160,7 +160,7 @@ namespace allpix {
             bool markedForStorage() const { return get() == nullptr ? false : get()->TestBit(1ull << 14); }
 
             mutable T* ptr_{}; //! transient value
-            TRef ref_{};
+            TRef ref_;
         };
 
         template <class T> class PointerWrapper : public BaseWrapper<T> {

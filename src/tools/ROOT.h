@@ -167,7 +167,7 @@ namespace allpix {
      *
      * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
-    template <typename T, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* = nullptr> class ThreadedHistogram {
+    template <typename T, typename std::enable_if_t<std::is_base_of_v<TH1, T>>* = nullptr> class ThreadedHistogram {
     public:
         template <class... ARGS> explicit ThreadedHistogram(ARGS&&... args) { this->init(std::forward<ARGS>(args)...); }
 

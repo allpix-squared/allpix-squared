@@ -26,7 +26,7 @@ namespace allpix {
         /**
          * @brief Types of deposition
          */
-        enum class DepositionModel {
+        enum class DepositionModel : std::uint8_t {
             FIXED, ///< Deposition at a specific point
             SCAN,  ///< Scan through the volume of a pixel
             SPOT,  ///< Deposition around fixed position with Gaussian profile
@@ -35,7 +35,7 @@ namespace allpix {
         /**
          * @brief Types of sources
          */
-        enum class SourceType {
+        enum class SourceType : std::uint8_t {
             POINT, ///< Deposition at a single point
             MIP,   ///< MIP-like linear deposition of charge carrier
         };
@@ -100,9 +100,9 @@ namespace allpix {
         ROOT::Math::XYZVector voxel_;
         double step_size_{};
         unsigned int root_{}, events_per_cell_{1}, carriers_{};
-        ROOT::Math::XYZVector position_{};
-        ROOT::Math::XYZVector mip_direction_{};
-        std::vector<std::string> scan_coordinates_{};
+        ROOT::Math::XYZVector position_;
+        ROOT::Math::XYZVector mip_direction_;
+        std::vector<std::string> scan_coordinates_;
         size_t no_of_coordinates_;
 
         bool scan_x_;

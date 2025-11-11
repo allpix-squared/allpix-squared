@@ -134,7 +134,7 @@ namespace allpix {
     private:
         Pixel pixel_;
         long charge_{};
-        Pulse pulse_{};
+        Pulse pulse_;
 
         double local_time_{std::numeric_limits<double>::infinity()};
         double global_time_{std::numeric_limits<double>::infinity()};
