@@ -17,6 +17,7 @@
 
 #include <libapx/writer.hpp>
 
+#include "core/utils/distributions.h"
 #include "core/utils/log.h"
 
 using namespace allpix;
@@ -44,6 +45,19 @@ void PixESLWriterModule::initialize() {
                        std::to_string(global_config.get<uint64_t>("random_seed_core"));
     const auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
+    // Get the parameters from the configuration file
+    // config_.setDefault<double>("t_delay", Units::get(0, "ns"));
+
+    warm_up_duration_ = config_.get<double>("warm_up_duration");
+    BX_period_ = config_.get<double>("BX_period");
+    mean_hit_rate_ = config_.get<double>("mean_hit_rate");
+    peak_hit_rate_ = config_.get<double>("peak_hit_rate");
+    peak_duration_ = config_.get<double>("peak_duration");
+
+    if(peak_duration_ >= BX_period_) {
+        throw InvalidValueError(config_, "peak_duration", "peak duration can't be greater than BX period");
+    }
+
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
                                             detector_->getName(),
@@ -53,9 +67,32 @@ void PixESLWriterModule::initialize() {
                                             "Allpix Squared",
                                             ALLPIX_PROJECT_VERSION,
                                             std::move(info));
+
+    auto model = detector_->getModel();
+    LOG(INFO) << "Matrix size x = " << model->getMatrixSize().x() << " mm";
+    LOG(INFO) << "Matrix size y = " << model->getMatrixSize().y() << " mm";
+    double matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
+    LOG(INFO) << "Matrix area = " << matrix_area << " mm²";
+
+    lambda_warm_up = Units::convert(mean_hit_rate_, "/us/cm/cm") * Units::convert(matrix_area, "cm*cm") *
+                     Units::convert(warm_up_duration_, "s");
+
+    LOG(INFO) << "Mean hit rate = " << Units::convert(mean_hit_rate_, "/us/cm/cm") << " MHz/cm²";
+    LOG(INFO) << "Warm-up duration = " << Units::convert(warm_up_duration_, "ns") << " ns";
+    LOG(INFO) << "Lambda warm-up = " << lambda_warm_up << " events";
 }
 
 void PixESLWriterModule::run(Event* event) {
+
+    LOG(INFO) << "This is the event " << event->number;
+    // if isExist warm_up_duration.... {
+    // Calculating the mean number of events for the warm-up duration, if set.
+    if(event->number == 1) {
+        allpix::poisson_distribution<int> mydist(lambda_warm_up);
+        auto my_random_number = mydist(event->getRandomEngine());
+        LOG(INFO) << "Mean number of events during warm-up = " << my_random_number << " events";
+    }
+    //}
 
     // Generate new event for output:
     auto apx_event = writer_->createEvent(event->number);

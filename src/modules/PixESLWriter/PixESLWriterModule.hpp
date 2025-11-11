@@ -59,5 +59,12 @@ namespace allpix {
 
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
+
+        double BX_period_{};
+        double warm_up_duration_{};
+        double mean_hit_rate_{};
+        double peak_hit_rate_{};
+        double peak_duration_{};
+        double lambda_warm_up;
     };
 } // namespace allpix
