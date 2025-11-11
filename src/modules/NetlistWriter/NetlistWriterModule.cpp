@@ -319,5 +319,20 @@ void NetlistWriterModule::run(Event* event) {
         LOG(INFO) << uelec_sim_command;
 
         const auto retval = std::system(uelec_sim_command.c_str()); // NOLINT
+
+        // Log messages according to the electrical simulation execution
+        if(WIFEXITED(retval)) {
+            int exit_code = WEXITSTATUS(retval);
+            if(exit_code == 0) {
+                LOG(INFO) << "Command executed normally. \n";
+            } else {
+                throw InvalidValueError(config_,
+                                        "simulator_command",
+                                        " Failed to execute the shell. Check your external simulation command, and/or your "
+                                        "environment variables. \n");
+            }
+        } else {
+            throw EndOfRunException("Command failed or crashed.\n");
+        }
     }
 }
