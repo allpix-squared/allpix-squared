@@ -1,0 +1,21 @@
+* SPDX-FileCopyrightText: 2025 CERN and the Allpix Squared authors
+* SPDX-License-Identifier: CC0-1.0
+*
+* Netlist test for LTspice behaviour
+* A subckt is defined and then instantiated as X1
+* A current source I1 is connected to X1
+
+.subckt invCSA Pixin Inplus Out
+XU1 Pixin 0 Out opamp Aol=100K GBW=10Meg
+C1 Pixin Out 2.75f
+R2 Out Pixin 350Meg
+R1 Out 0 1k
+.ends invCSA
+
+I1 Pixin 0 PULSE(0 1 5m 1m 1m 10m 20m)
+X1 Pixin 0 Out invCSA
+
+.tran 0.01n 10u
+.backanno
+.lib opamp.sub
+.end
