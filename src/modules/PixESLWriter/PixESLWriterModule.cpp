@@ -23,7 +23,7 @@
 using namespace allpix;
 
 PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : SequentialModule(config, detector), detector_(std::move(detector)), messenger_(messenger) {
+    : SequentialModule(config, detector), detector_(std::move(detector)), messenger_(messenger), timestamp(0) {
 
     // This is a sequential module and therefore thread-safe
     allow_multithreading();
@@ -34,9 +34,6 @@ PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messeng
 
 void PixESLWriterModule::initialize() {
 
-    // Set up properties:
-    const std::vector<std::string> properties{"column", "row", "charge", "toa"};
-
     output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
 
     // Collect information about this simulation:
@@ -45,18 +42,30 @@ void PixESLWriterModule::initialize() {
                        std::to_string(global_config.get<uint64_t>("random_seed_core"));
     const auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
-    // Get the parameters from the configuration file
-    // config_.setDefault<double>("t_delay", Units::get(0, "ns"));
+    // Calculate the active matrix area
+    auto model = detector_->getModel();
+    LOG(DEBUG) << "Active matrix length x : " << model->getMatrixSize().x() << " mm";
+    LOG(DEBUG) << "Active matrix length y : " << model->getMatrixSize().y() << " mm";
+    double matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
+    LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
 
-    warm_up_duration_ = config_.get<double>("warm_up_duration");
-    BX_period_ = config_.get<double>("BX_period");
-    mean_hit_rate_ = config_.get<double>("mean_hit_rate");
-    peak_hit_rate_ = config_.get<double>("peak_hit_rate");
-    peak_duration_ = config_.get<double>("peak_duration");
+    // Calculate the exponential distribution parameter based on the given hit rate
+    mean_hit_rate_ = config_.get<double>("mean_hit_rate", (Units::get("/ns/mm/mm")));
+    lambda_mean_rate = mean_hit_rate_ * matrix_area;
+    tau_mean_rate = 1 / (Units::convert(lambda_mean_rate, "ns"));
 
-    if(peak_duration_ >= BX_period_) {
-        throw InvalidValueError(config_, "peak_duration", "peak duration can't be greater than BX period");
+    if(config_.has("BX_period")) {
+        BX_period_ = config_.get<double>("BX_period", (Units::get("ns")));
+        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate * BX_period_ << " events per BX";
+        // Set up properties:
+        properties = {"column", "row", "charge", "timestamp", "BXID"};
+    } else {
+        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate << " events per ns";
+        // Set up properties:
+        properties = {"column", "row", "charge", "timestamp"};
     }
+
+    LOG(INFO) << "Mean time between 2 events : " << tau_mean_rate << " ns";
 
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
@@ -67,32 +76,22 @@ void PixESLWriterModule::initialize() {
                                             "Allpix Squared",
                                             ALLPIX_PROJECT_VERSION,
                                             std::move(info));
-
-    auto model = detector_->getModel();
-    LOG(INFO) << "Matrix size x = " << model->getMatrixSize().x() << " mm";
-    LOG(INFO) << "Matrix size y = " << model->getMatrixSize().y() << " mm";
-    double matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
-    LOG(INFO) << "Matrix area = " << matrix_area << " mm²";
-
-    lambda_warm_up = Units::convert(mean_hit_rate_, "/us/cm/cm") * Units::convert(matrix_area, "cm*cm") *
-                     Units::convert(warm_up_duration_, "s");
-
-    LOG(INFO) << "Mean hit rate = " << Units::convert(mean_hit_rate_, "/us/cm/cm") << " MHz/cm²";
-    LOG(INFO) << "Warm-up duration = " << Units::convert(warm_up_duration_, "ns") << " ns";
-    LOG(INFO) << "Lambda warm-up = " << lambda_warm_up << " events";
 }
 
 void PixESLWriterModule::run(Event* event) {
 
-    LOG(INFO) << "This is the event " << event->number;
-    // if isExist warm_up_duration.... {
-    // Calculating the mean number of events for the warm-up duration, if set.
-    if(event->number == 1) {
-        allpix::poisson_distribution<int> mydist(lambda_warm_up);
-        auto my_random_number = mydist(event->getRandomEngine());
-        LOG(INFO) << "Mean number of events during warm-up = " << my_random_number << " events";
+    // Generate the distribution to associate a timestamp for event containing a PixelHit message:
+    allpix::exponential_distribution<double> time_dist(lambda_mean_rate);
+    auto dt = time_dist(event->getRandomEngine());
+    timestamp += dt;
+    LOG(INFO) << "Time between this event and the previous : " << dt << " ns";
+    LOG(INFO) << "Timestamp : " << timestamp << " ns";
+
+    // Calculate the BXID depending on the timestamp:
+    if(config_.has("BX_period")) {
+        BX_id = static_cast<int>(timestamp.load() / BX_period_);
+        LOG(INFO) << "BX " << BX_id;
     }
-    //}
 
     // Generate new event for output:
     auto apx_event = writer_->createEvent(event->number);
@@ -103,7 +102,9 @@ void PixESLWriterModule::run(Event* event) {
     // Loop over hits and write event record
     for(const auto& hit : message->getData()) {
         const auto index = hit.getIndex();
-        apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), hit.getGlobalTime()});
+        (config_.has("BX_period"))
+            ? apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp + hit.getGlobalTime(), BX_id})
+            : apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp + hit.getGlobalTime()});
     }
 
     LOG(TRACE) << "Event " << apx_event.getID() << " has " << apx_event.getRecords().size() << " records";
