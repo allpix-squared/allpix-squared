@@ -58,6 +58,10 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
+        // Object names to include or exclude from writing
+        std::set<std::string> include_;
+        std::set<std::string> exclude_;
+
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
         std::atomic<double> timestamp;
@@ -69,5 +73,9 @@ namespace allpix {
         double lambda_mean_rate;
         double tau_mean_rate;
         int BX_id;
+
+        // Statistical information
+        bool output_plots_{};
+        Histogram<TH1D> time_between_events_;
     };
 } // namespace allpix

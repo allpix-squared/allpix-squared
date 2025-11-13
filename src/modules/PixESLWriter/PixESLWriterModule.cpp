@@ -36,6 +36,8 @@ void PixESLWriterModule::initialize() {
 
     output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
 
+    output_plots_ = config_.get<bool>("output_plots");
+
     // Collect information about this simulation:
     auto& global_config = getConfigManager()->getGlobalConfiguration();
     std::string info = "Simulation from config " + global_config.getFilePath().string() + " with random seed " +
@@ -76,6 +78,14 @@ void PixESLWriterModule::initialize() {
                                             "Allpix Squared",
                                             ALLPIX_PROJECT_VERSION,
                                             std::move(info));
+
+    if(output_plots_) {
+        time_between_events_ = CreateHistogram<TH1D>("time_between_events",
+                                                     "Interval time between two events;Interval time [ns]; number of events",
+                                                     100,
+                                                     0,
+                                                     static_cast<double>(Units::convert(tau_mean_rate, "ns")) * 10);
+    }
 }
 
 void PixESLWriterModule::run(Event* event) {
@@ -86,6 +96,10 @@ void PixESLWriterModule::run(Event* event) {
     timestamp += dt;
     LOG(INFO) << "Time between this event and the previous : " << dt << " ns";
     LOG(INFO) << "Timestamp : " << timestamp << " ns";
+
+    if(output_plots_) {
+        time_between_events_->Fill(dt);
+    }
 
     // Calculate the BXID depending on the timestamp:
     if(config_.has("BX_period")) {
@@ -114,6 +128,11 @@ void PixESLWriterModule::run(Event* event) {
 }
 
 void PixESLWriterModule::finalize() {
+
+    if(output_plots_) {
+        time_between_events_->Write();
+    }
+
     // Print statistics
     LOG(STATUS) << "Wrote " << writer_->getRecordCount() << " records in " << writer_->getEventCount()
                 << " events to file:\n"
