@@ -52,12 +52,12 @@ void PixESLWriterModule::initialize() {
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
 
     // Calculate the exponential distribution parameter based on the given hit rate
-    mean_hit_rate_ = config_.get<double>("mean_hit_rate", (Units::get("/ns/mm/mm")));
+    mean_hit_rate_ = config_.get("mean_hit_rate", static_cast<double>(Units::get("/ns/mm/mm")));
     lambda_mean_rate = mean_hit_rate_ * matrix_area;
-    tau_mean_rate = 1 / (Units::convert(lambda_mean_rate, "ns"));
+    tau_mean_rate = 1 / static_cast<double>(Units::convert(lambda_mean_rate, "ns"));
 
     if(config_.has("BX_period")) {
-        BX_period_ = config_.get<double>("BX_period", (Units::get("ns")));
+        BX_period_ = config_.get("BX_period", static_cast<double>(Units::get("ns")));
         LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate * BX_period_ << " events per BX";
         // Set up properties:
         properties = {"column", "row", "charge", "timestamp", "BXID"};
@@ -84,7 +84,7 @@ void PixESLWriterModule::initialize() {
                                                      "Interval time between two events;Interval time [ns]; number of events",
                                                      100,
                                                      0,
-                                                     static_cast<double>(Units::convert(tau_mean_rate, "ns")) * 10);
+                                                     static_cast<double>(Units::convert(tau_mean_rate, "ns")) * 8);
     }
 }
 
