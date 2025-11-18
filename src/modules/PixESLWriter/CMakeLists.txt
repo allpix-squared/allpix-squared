@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(Libapx)
 ADD_RUNTIME_LIB(Libapx::APX)
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} PixESLWriterModule.cpp)
 TARGET_LINK_LIBRARIES(${MODULE_NAME} Libapx::APX)
+TARGET_COMPILE_OPTIONS(${MODULE_NAME} PRIVATE -Wno-strict-overflow)
 
 # Register module tests
 ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
