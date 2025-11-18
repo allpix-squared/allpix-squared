@@ -7,15 +7,16 @@ ALLPIX_ENABLE_DEFAULT(ON)
 ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Switch off tests of libAPX
-SET(APX_BUILD_TESTS OFF CACHE STRING "Turn off tests")
+SET(APX_BUILD_TESTS OFF CACHE STRING "" FORCE)
+set(APX_DISABLE_STRICT_OVERFLOW ON CACHE BOOL "" FORCE)
 
 # libAPX is required
 INCLUDE(FetchContent)
 FetchContent_Declare(
   Libapx
   GIT_REPOSITORY https://gitlab.cern.ch/allpix-squared/libapx.git
-  GIT_TAG        e54e42e681bf3c03313e377dd976fb390443b115 # v0.4.5
-  FIND_PACKAGE_ARGS 0.4.5
+  GIT_TAG        6aae6c91f8270595c944cf300a395e49183e8651 # v0.4.6
+  FIND_PACKAGE_ARGS 0.4.6
 )
 FetchContent_MakeAvailable(Libapx)
 
@@ -23,7 +24,6 @@ FetchContent_MakeAvailable(Libapx)
 ADD_RUNTIME_LIB(Libapx::APX)
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} PixESLWriterModule.cpp)
 TARGET_LINK_LIBRARIES(${MODULE_NAME} Libapx::APX)
-TARGET_COMPILE_OPTIONS(${MODULE_NAME} PRIVATE -Wno-strict-overflow)
 
 # Register module tests
 ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
