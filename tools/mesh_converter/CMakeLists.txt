@@ -44,6 +44,9 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/config/exceptions.cpp
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(mesh_converter PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # Include Eigen dependency
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)
@@ -67,6 +70,9 @@ INSTALL(
 # Add mesh_plotter executable
 ADD_EXECUTABLE(mesh_plotter MeshPlotter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
                             ${ALLPIX_SRC}/core/utils/unit.cpp)
+
+# Set compiler options
+TARGET_COMPILE_OPTIONS(mesh_plotter PRIVATE ${ALLPIX_CXX_FLAGS})
 
 # Link libraries
 TARGET_LINK_LIBRARIES(mesh_plotter ROOT::Core ROOT::Hist ROOT::GuiBld PkgConfig::Eigen3)

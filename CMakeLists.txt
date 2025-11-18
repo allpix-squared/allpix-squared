@@ -5,7 +5,7 @@
 # CMake File for the Allpix Squared Framework #
 ###############################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9.0 FATAL_ERROR)
 IF(COMMAND CMAKE_POLICY)
     CMAKE_POLICY(SET CMP0003 NEW) # change linker path search behaviour
     CMAKE_POLICY(SET CMP0048 NEW) # set project version
@@ -291,7 +291,7 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug AND ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") 
     # Sanitizer libraries:
     IF(SANITIZER)
         MESSAGE(STATUS "Running debug build, adding extra sanitizer flags")
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+        LIST(APPEND ALLPIX_CXX_FLAGS "-fno-omit-frame-pointer" "-fsanitize=address" "-fsanitize=undefined")
         # FIXME: remove earlier shared linker flags, because they can break the sanitizer debug build
         SET(CMAKE_SHARED_LINKER_FLAGS "-fsanitize=address -fsanitize=undefined")
     ENDIF()

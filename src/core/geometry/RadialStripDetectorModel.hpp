@@ -35,6 +35,8 @@ namespace allpix {
      */
     class RadialStripDetectorModel : public DetectorModel {
     public:
+        using DetectorModel::isWithinMatrix;
+
         /**
          * @brief Constructs the radial strip detector model
          * @param type Name of the model type

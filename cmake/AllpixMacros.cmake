@@ -54,6 +54,9 @@ Create the header or provide the alternative class name as first argument")
     # Define the library
     ADD_LIBRARY(${${name}} SHARED "")
 
+    # Set compiler options
+    TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${ALLPIX_CXX_FLAGS})
+
     # Add the current directory as include directory
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -397,11 +400,14 @@ MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
 
     # Add Geant4 flags before our own flags
     ADD_DEFINITIONS(${Geant4_DEFINITIONS})
-    SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+    SEPARATE_ARGUMENTS(G4_CXX_FLAGS NATIVE_COMMAND ${Geant4_CXX_FLAGS})
+    TARGET_COMPILE_OPTIONS(${name} PRIVATE ${G4_CXX_FLAGS})
     IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS}")
+        SEPARATE_ARGUMENTS(G4_CXX_FLAGS_DEBUG NATIVE_COMMAND ${Geant4_CXX_FLAGS_DEBUG})
+        TARGET_COMPILE_OPTIONS(${name} PRIVATE ${G4_CXX_FLAGS_DEBUG})
     ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
-        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
+        SEPARATE_ARGUMENTS(G4_CXX_FLAGS_RELEASE NATIVE_COMMAND ${Geant4_CXX_FLAGS_RELEASE})
+        TARGET_COMPILE_OPTIONS(${name} PRIVATE ${G4_CXX_FLAGS_RELEASE})
     ENDIF()
 
     # Add GDML flag if supported
@@ -410,10 +416,10 @@ MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
     ENDIF()
 
     # Include Geant4 directories (NOTE Geant4_USE_FILE is not used!)
-    TARGET_INCLUDE_DIRECTORIES(${MODULE_NAME} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+    TARGET_INCLUDE_DIRECTORIES(${name} SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 
     # Add Geant4 libraries
-    TARGET_LINK_LIBRARIES(${MODULE_NAME} ${Geant4_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${name} ${Geant4_LIBRARIES})
 ENDMACRO()
 
 # Macro to set up ROOT:: targets so that we can use the same code for root 6.8 and for root 6.10 and beyond
