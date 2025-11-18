@@ -36,3 +36,10 @@ repos:
     hooks:
       - id: markdownlint
         language_version: 24.2.0
+
+  - repo: https://github.com/amperser/proselint
+    rev: v0.16.0
+    hooks:
+      - id: proselint
+        types: [file, markdown]
+        args: ["check", "--config", ".proselint.json"]
