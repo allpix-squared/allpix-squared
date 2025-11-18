@@ -33,6 +33,9 @@ ADD_LIBRARY(
     MCParticle.cpp
     MCTrack.cpp)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(AllpixObjects PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # Link the standard dependencies
 TARGET_LINK_LIBRARIES(AllpixObjects PUBLIC ${ALLPIX_DEPS_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(AllpixObjects PUBLIC $<INSTALL_INTERFACE:include>)

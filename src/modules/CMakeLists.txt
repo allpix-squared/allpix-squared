@@ -12,6 +12,9 @@ SET(_ALLPIX_MODULE_LIBRARIES
 # Generate an interface library containing all modules:
 ADD_LIBRARY(Modules INTERFACE)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(Modules INTERFACE ${ALLPIX_CXX_FLAGS})
+
 # Build all the modules
 FILE(
     GLOB subdirs

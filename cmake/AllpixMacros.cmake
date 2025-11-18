@@ -54,6 +54,9 @@ Create the header or provide the alternative class name as first argument")
     # Define the library
     ADD_LIBRARY(${${name}} SHARED "")
 
+    # Set compiler options
+    TARGET_COMPILE_OPTIONS(${${name}} PRIVATE ${ALLPIX_CXX_FLAGS})
+
     # Add the current directory as include directory
     TARGET_INCLUDE_DIRECTORIES(${${name}} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -397,11 +400,14 @@ MACRO(ALLPIX_MODULE_REQUIRE_GEANT4_INTERFACE name)
 
     # Add Geant4 flags before our own flags
     ADD_DEFINITIONS(${Geant4_DEFINITIONS})
-    SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+    SEPARATE_ARGUMENTS(Geant4_CXX_FLAGS)
+    TARGET_COMPILE_OPTIONS(${name} PRIVATE ${Geant4_CXX_FLAGS})
     IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS}")
+        SEPARATE_ARGUMENTS(Geant4_CXX_FLAGS_DEBUG)
+        TARGET_COMPILE_OPTIONS(${name} PRIVATE ${Geant4_CXX_FLAGS_DEBUG})
     ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
-        SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
+        SEPARATE_ARGUMENTS(Geant4_CXX_FLAGS_RELEASE)
+        TARGET_COMPILE_OPTIONS(${name} PRIVATE ${Geant4_CXX_FLAGS_RELEASE})
     ENDIF()
 
     # Add GDML flag if supported
