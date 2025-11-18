@@ -30,6 +30,9 @@ ADD_LIBRARY(
     geometry/StaggeredPixelDetectorModel.cpp
     Allpix.cpp)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(AllpixCore PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # Link the dependencies
 TARGET_LINK_LIBRARIES(AllpixCore PUBLIC ${ALLPIX_DEPS_LIBRARIES})
 TARGET_LINK_LIBRARIES(AllpixCore PRIVATE ${ALLPIX_LIBRARIES})

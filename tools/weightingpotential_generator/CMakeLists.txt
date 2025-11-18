@@ -45,6 +45,9 @@ ADD_EXECUTABLE(
     ${ALLPIX_SRC}/core/geometry/StaggeredPixelDetectorModel.cpp
     ${ALLPIX_SRC}/core/module/ThreadPool.cpp)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(generate_potential PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # Include Eigen dependency
 FIND_PACKAGE(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)

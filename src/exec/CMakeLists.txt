@@ -8,6 +8,9 @@ INCLUDE_DIRECTORIES(SYSTEM ${ALLPIX_DEPS_INCLUDE_DIRS})
 ADD_EXECUTABLE(allpix allpix.cpp)
 TARGET_LINK_LIBRARIES(allpix ${ALLPIX_LIBRARIES})
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(allpix PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # prelink all module libraries
 # NOTE: fixes both the RPATH problem as well as the TLS problems
 # FIXME: should be removed when we have a better solution

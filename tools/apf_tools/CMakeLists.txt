@@ -22,6 +22,9 @@ INCLUDE_DIRECTORIES(${ALLPIX_SRC}/tools)
 ADD_EXECUTABLE(field_converter FieldConverter.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
                                ${ALLPIX_SRC}/core/utils/unit.cpp)
 
+# Set compiler options
+TARGET_COMPILE_OPTIONS(field_converter PRIVATE ${ALLPIX_CXX_FLAGS})
+
 # Create install target
 INSTALL(
     TARGETS field_converter
@@ -31,6 +34,9 @@ INSTALL(
 # Tiny header dump tool for APF
 ADD_EXECUTABLE(apf_dump DumpHeader.cpp ${ALLPIX_SRC}/core/utils/log.cpp ${ALLPIX_SRC}/core/utils/text.cpp
                         ${ALLPIX_SRC}/core/utils/unit.cpp)
+
+# Set compiler options
+TARGET_COMPILE_OPTIONS(apf_dump PRIVATE ${ALLPIX_CXX_FLAGS})
 
 # Create install target
 INSTALL(
