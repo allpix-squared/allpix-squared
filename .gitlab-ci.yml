@@ -366,7 +366,7 @@ fmt:proselint:
         - export PATH=~/.local/bin:$PATH
         - cd ../
         - pip install --trusted-host=pypi.org --user proselint
-        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint --config .proselint.json
+        - find . -name "*md" -not -path "./build/*" -print0 | xargs -0 proselint check --config .proselint.json
 
 fmt:reuse:
     image:

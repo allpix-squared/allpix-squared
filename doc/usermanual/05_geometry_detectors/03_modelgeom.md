@@ -71,7 +71,7 @@ Radial strip detectors feature a trapezoidal shape with curved edges and radial 
 
 Additionally, model parameters have to be set to `type = monolithic` and `geometry = radial_strip`. Due to the complexity of the geometry, this detector model currently doesn't allow the creation of passive support structures.
 
-For radial strip detectors, the coordinate origin is placed in the center of concentric arcs, which form the strip row edges, to enable easier transformation to polar coordinates utilized by the detector model's member functions.
+For radial strip detectors, the coordinate origin is placed in the center of concentric arcs, which form the strip row edges, to enable easier transformation to polar coordinates used by the detector model's member functions.
 
 ![Radial strips parameters](./radial_params.png)
 
