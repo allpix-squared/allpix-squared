@@ -15,8 +15,9 @@ INCLUDE(FetchContent)
 FetchContent_Declare(
   Libapx
   GIT_REPOSITORY https://gitlab.cern.ch/allpix-squared/libapx.git
-  GIT_TAG        6aae6c91f8270595c944cf300a395e49183e8651 # v0.4.6
-  FIND_PACKAGE_ARGS 0.4.6
+  GIT_TAG        29d9ea76d19216bb1d94dc63ef6cb15949b2aa88
+  FIND_PACKAGE_ARGS 0.4.8
+
 )
 FetchContent_MakeAvailable(Libapx)
 
