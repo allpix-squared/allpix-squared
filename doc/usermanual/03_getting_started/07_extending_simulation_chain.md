@@ -78,7 +78,7 @@ bias_voltage = -50V
 depletion_voltage = -10V
 ```
 
-Allpix Squared also provides the possibility to utilize a full electrostatic TCAD simulation for the description of the
+Allpix Squared also provides the possibility to use a full electrostatic TCAD simulation for the description of the
 electric field. In order to speed up the lookup of the electric field values at different positions in the sensor, the
 adaptive TCAD mesh has to be interpolated and transformed into a regular grid with configurable feature size before use.
 Allpix Squared comes with a converter tool which reads TCAD DF-ISE files from the sensor simulation, interpolates the field,

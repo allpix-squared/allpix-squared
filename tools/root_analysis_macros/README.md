@@ -34,7 +34,7 @@ Usage:
 
 ## Eta correction of residuals example
 
-Analysis example demonstrating how to perform an "eta correction" for rectangular pixels. Builds on from `Analysis example` above. This macro performs clustering using the method implemented in the `DetectorHistogrammer` module, and loops over all events twice; once to generate and fit the eta function (a fifth-order polynomial is used in this case), and once to apply the correction given by the fit. Produces graph of residuals before and after application of the correction. The pixel size used should be edited to match the simulated pixel size in the data to be analysed.
+Analysis example demonstrating how to perform an "eta correction" for rectangular pixels. Builds on from `Analysis example` above. This macro performs clustering using the method implemented in the `DetectorHistogrammer` module, and loops over all events twice; once to generate and fit the eta function (a fifth-order polynomial is used in this case), and once to apply the correction given by the fit. Produces graph of residuals before and after application of the correction. The pixel size used should be edited to match the simulated pixel size in the data to be analyzed.
 
 Usage:
 
