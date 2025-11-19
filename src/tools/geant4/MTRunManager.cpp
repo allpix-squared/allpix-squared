@@ -10,15 +10,18 @@
  */
 
 #include "MTRunManager.hpp"
-#include "G4LoggingDestination.hpp"
-#include "WorkerRunManager.hpp"
 
-#include <magic_enum/magic_enum.hpp>
+#include <climits>
 
+#include <G4MTRunManager.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
+#include <magic_enum/magic_enum.hpp>
 
+#include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
+#include "tools/geant4/G4LoggingDestination.hpp"
+#include "tools/geant4/WorkerRunManager.hpp"
 
 using namespace allpix;
 
@@ -46,7 +49,7 @@ void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLIN
 void MTRunManager::Initialize() {
     G4MTRunManager::Initialize();
 
-    G4bool cond = ConfirmBeamOnCondition();
+    G4bool const cond = ConfirmBeamOnCondition();
     if(cond) {
         G4MTRunManager::ConstructScoringWorlds();
         G4MTRunManager::RunInitialization();

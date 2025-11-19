@@ -81,7 +81,7 @@ namespace allpix {
          * @param level Log level to decide if message will be forwarded to logger
          * @param msg   Message to be processed
          */
-        void process_message(LogLevel level, std::string& msg) const;
+        static void process_message(LogLevel level, std::string& msg);
 
         /**
          * Static instance of G4LoggingDestination

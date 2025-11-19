@@ -10,16 +10,21 @@
  */
 
 #include "RunManager.hpp"
-#include "G4LoggingDestination.hpp"
-
-#include <magic_enum/magic_enum.hpp>
 
 #include <array>
+#include <climits>
 
+#include <G4ApplicationState.hh>
+#include <G4RunManager.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
+#include <G4ios.hh>
+#include <Randomize.hh>
+#include <magic_enum/magic_enum.hpp>
 
+#include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
+#include "tools/geant4/G4LoggingDestination.hpp"
 
 using namespace allpix;
 
@@ -44,7 +49,7 @@ void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
 void RunManager::AbortRun(bool softAbort) {
     // This method is valid only for GeomClosed or EventProc state
-    G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    G4ApplicationState const currentState = G4StateManager::GetStateManager()->GetCurrentState();
     if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {
         runAborted = true;
         if(currentState == G4State_EventProc && !softAbort) {

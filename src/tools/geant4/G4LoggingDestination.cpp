@@ -11,6 +11,13 @@
 
 #include "G4LoggingDestination.hpp"
 
+#include <string>
+
+#include <G4String.hh>
+#include <G4Types.hh>
+
+#include "core/utils/log.h"
+
 using namespace allpix;
 
 G4LoggingDestination* G4LoggingDestination::instance = nullptr;
@@ -25,7 +32,7 @@ LogLevel G4LoggingDestination::getG4coutReportingLevel() { return G4LoggingDesti
 
 LogLevel G4LoggingDestination::getG4cerrReportingLevel() { return G4LoggingDestination::reporting_level_g4cerr; }
 
-void G4LoggingDestination::process_message(LogLevel level, std::string& msg) const {
+void G4LoggingDestination::process_message(LogLevel level, std::string& msg) {
     if(!msg.empty() && level <= allpix::Log::getReportingLevel() && !allpix::Log::getStreams().empty()) {
         // Remove line-break always added to G4String
         msg.pop_back();
