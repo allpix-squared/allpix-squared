@@ -10,7 +10,12 @@
  */
 
 #include <algorithm>
-#include <fstream>
+#include <cctype>
+#include <cstring>
+#include <exception>
+#include <iostream>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 
 #include "core/utils/log.h"
@@ -51,7 +56,7 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
                     Log::setReportingLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
@@ -77,23 +82,23 @@ int main(int argc, const char* argv[]) {
 
         // Print help if requested or no arguments given
         if(print_help) {
-            std::cout << "Allpix Squared Field Converter Tool" << std::endl;
-            std::cout << std::endl;
-            std::cout << "Usage: field_converter <parameters>" << std::endl;
-            std::cout << std::endl;
-            std::cout << "Parameters (all mandatory):" << std::endl;
-            std::cout << "  --to <format>    file format of the output file" << std::endl;
-            std::cout << "  --input <file>   input field file" << std::endl;
-            std::cout << "  --output <file>  output field file" << std::endl;
-            std::cout << "  --units <units>  units the field is provided in" << std::endl << std::endl;
-            std::cout << "Options:" << std::endl;
-            std::cout << "  --scalar         Convert scalar field. Default is vector field" << std::endl;
-            std::cout << std::endl;
-            std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
+            std::cout << "Allpix Squared Field Converter Tool" << '\n';
+            std::cout << '\n';
+            std::cout << "Usage: field_converter <parameters>" << '\n';
+            std::cout << '\n';
+            std::cout << "Parameters (all mandatory):" << '\n';
+            std::cout << "  --to <format>    file format of the output file" << '\n';
+            std::cout << "  --input <file>   input field file" << '\n';
+            std::cout << "  --output <file>  output field file" << '\n';
+            std::cout << "  --units <units>  units the field is provided in" << '\n' << '\n';
+            std::cout << "Options:" << '\n';
+            std::cout << "  --scalar         Convert scalar field. Default is vector field" << '\n';
+            std::cout << '\n';
+            std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << '\n';
             return return_code;
         }
 
-        FieldQuantity quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        FieldQuantity const quantity = (scalar ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         LOG(STATUS) << "Reading input file from " << file_input;
@@ -102,7 +107,7 @@ int main(int argc, const char* argv[]) {
         LOG(STATUS) << "Writing output file to " << file_output;
         field_writer.writeFile(field_data, file_output, format_to, (format_to == FileType::INIT ? units : ""));
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
+        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

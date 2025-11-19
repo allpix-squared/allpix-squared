@@ -10,17 +10,18 @@
 
 #include "SilvacoParser.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
-#include <exception>
 #include <fstream>
 #include <iostream>
-#include <regex>
-#include <set>
+#include <iterator>
+#include <map>
 #include <sstream>
+#include <stdexcept>
 #include <string>
-#include "TFile.h"
-#include "TTree.h"
+#include <vector>
 
 #include "core/utils/log.h"
 #include "core/utils/text.h"
@@ -76,13 +77,16 @@ MeshMap SilvacoParser::read_meshes(const std::string& file_name) {
         std::stringstream sstr(line);
         // Read vertex points
         if(dimension == 3) {
-            double x = 0, y = 0, z = 0;
+            double x = 0;
+            double y = 0;
+            double z = 0;
             while(sstr >> x >> y >> z) {
                 vertices.emplace_back(x, y, z);
             }
         }
         if(dimension == 2) {
-            double y = 0, z = 0;
+            double y = 0;
+            double z = 0;
             while(sstr >> y >> z) {
                 vertices.emplace_back(y, z);
             }
@@ -109,7 +113,7 @@ FieldMap SilvacoParser::read_fields(const std::string& file_name, const std::str
     std::map<std::string, std::map<std::string, std::vector<Point>>> region_electric_field_map;
     std::vector<double> region_electric_field_num;
 
-    std::string region = "Silicon";
+    std::string const region = "Silicon";
     long unsigned int dimension = 1;
     long long num_lines_parsed = 0;
     long unsigned int columns_count = 0;

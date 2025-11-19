@@ -11,10 +11,14 @@
 #include <cmath>
 #include <csignal>
 #include <cstdio>
-#include <fstream>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
 #include <iostream>
-#include <sstream>
-#include <vector>
+#include <signal.h>
+#include <stdexcept>
+#include <string>
+
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH2.h"
@@ -27,12 +31,12 @@
 
 using namespace allpix;
 
-void interrupt_handler(int);
+void interrupt_handler(int /*unused*/);
 
 /**
  * @brief Handle termination request (CTRL+C)
  */
-void interrupt_handler(int) {
+void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);
@@ -101,7 +105,7 @@ int main(int argc, char** argv) {
             } else if(strcmp(argv[i], "-l") == 0) {
                 log_scale = true;
             } else {
-                std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << std::endl;
+                std::cout << "Unrecognized command line argument or missing value\"" << argv[i] << '\n';
                 print_help = true;
                 return_code = 1;
             }
@@ -116,18 +120,18 @@ int main(int argc, char** argv) {
         }
 
         if(print_help) {
-            std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << std::endl;
-            std::cout << "Required parameters:" << std::endl;
-            std::cout << "\t -f <file_name>         name of the interpolated file in INIT or APF format" << std::endl;
-            std::cout << "Optional parameters:" << std::endl;
-            std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << std::endl;
-            std::cout << "\t -h                     display this help text" << std::endl;
-            std::cout << "\t -l                     plot with logarithmic scale if set" << std::endl;
-            std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << std::endl;
-            std::cout << "\t -p <plane>             plane to be plotted. xy, yz or zx (default is yz)" << std::endl;
-            std::cout << "\t -u <units>             units to interpret the field data in" << std::endl;
-            std::cout << "\t -s                     parsed observable is a scalar field" << std::endl;
-            std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+            std::cerr << "Usage: mesh_plotter -f <file_name> [<options>]" << '\n';
+            std::cout << "Required parameters:" << '\n';
+            std::cout << "\t -f <file_name>         name of the interpolated file in INIT or APF format" << '\n';
+            std::cout << "Optional parameters:" << '\n';
+            std::cout << "\t -c <cut>               projection height index (default is mesh_pitch / 2)" << '\n';
+            std::cout << "\t -h                     display this help text" << '\n';
+            std::cout << "\t -l                     plot with logarithmic scale if set" << '\n';
+            std::cout << "\t -o <output_file_name>  name of the file to output (default is efield.png)" << '\n';
+            std::cout << "\t -p <plane>             plane to be plotted. xy, yz or zx (default is yz)" << '\n';
+            std::cout << "\t -u <units>             units to interpret the field data in" << '\n';
+            std::cout << "\t -s                     parsed observable is a scalar field" << '\n';
+            std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << '\n';
 
             allpix::Log::finish();
             return return_code;
@@ -137,25 +141,30 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Welcome to the Mesh Plotter Tool of Allpix^2 " << ALLPIX_PROJECT_VERSION;
         LOG(STATUS) << "Reading file: " << file_name;
 
-        size_t firstindex = file_name.find_last_of('_');
-        size_t lastindex = file_name.find_last_of('.');
-        std::string observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
+        size_t const firstindex = file_name.find_last_of('_');
+        size_t const lastindex = file_name.find_last_of('.');
+        std::string const observable = file_name.substr(firstindex + 1, lastindex - (firstindex + 1));
 
         // FIXME this should be done in a more elegant way
-        FieldQuantity quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
+        FieldQuantity const quantity = (scalar_field ? FieldQuantity::SCALAR : FieldQuantity::VECTOR);
 
         FieldParser<double> field_parser(quantity);
         auto field_data = field_parser.getByFileName(file_name, units);
-        size_t xdiv = field_data.getDimensions()[0], ydiv = field_data.getDimensions()[1],
-               zdiv = field_data.getDimensions()[2];
+        size_t xdiv = field_data.getDimensions()[0];
+        size_t ydiv = field_data.getDimensions()[1];
+        size_t zdiv = field_data.getDimensions()[2];
 
         LOG(STATUS) << "Number of divisions in x/y/z: " << xdiv << "/" << ydiv << "/" << zdiv;
 
         // Find plotting indices
         int x_bin = 0;
         int y_bin = 0;
-        size_t start_x = 0, start_y = 0, start_z = 0;
-        size_t stop_x = xdiv, stop_y = ydiv, stop_z = zdiv;
+        size_t start_x = 0;
+        size_t start_y = 0;
+        size_t start_z = 0;
+        size_t stop_x = xdiv;
+        size_t stop_y = ydiv;
+        size_t stop_z = zdiv;
         std::string axis_titles;
         if(plane == "xy") {
             if(!flag_cut) {
@@ -237,7 +246,8 @@ int main(int argc, char** argv) {
             output_name_log = "_log";
         }
 
-        int plot_x = 0, plot_y = 0;
+        int plot_x = 0;
+        int plot_y = 0;
         auto data = field_data.getData();
         for(size_t x = start_x; x < stop_x; x++) {
             for(size_t y = start_y; y < stop_y; y++) {
