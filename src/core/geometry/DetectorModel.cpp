@@ -10,20 +10,39 @@
  */
 
 #include "DetectorModel.hpp"
-#include "core/module/exceptions.h"
 
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <memory>
+#include <optional>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <Math/Translation3D.h>
+
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/HexagonalPixelDetectorModel.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
 #include "core/geometry/RadialStripDetectorModel.hpp"
 #include "core/geometry/StaggeredPixelDetectorModel.hpp"
+#include "core/geometry/SupportLayer.hpp"
+#include "core/utils/log.h"
 #include "tools/liang_barsky.h"
-
-#include <Math/Translation3D.h>
 
 using namespace allpix;
 
 std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigReader& reader) {
-    Configuration config = reader.getHeaderConfiguration();
+    Configuration const config = reader.getHeaderConfiguration();
 
     // Sensor geometry
     // FIXME we might want to deprecate this default at some point?
@@ -72,7 +91,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
         std::stringstream st;
         st << "Unused configuration keys in global section of sensor geometry definition:";
         for(auto& key : unused_keys) {
-            st << std::endl << key;
+            st << '\n' << key;
         }
         LOG(WARNING) << st.str();
     }
@@ -102,7 +121,7 @@ DetectorModel::DetectorModel(std::string type,
 
     // Issue a warning for pre-3.0 implant definitions:
     if(config.has("implant_size")) {
-        LOG(WARNING) << "Parameter \"implant_size\" of model " << config.getFilePath() << " not supported," << std::endl
+        LOG(WARNING) << "Parameter \"implant_size\" of model " << config.getFilePath() << " not supported," << '\n'
                      << "Individual [implant] sections must be used for implant definitions";
     }
 
@@ -121,7 +140,7 @@ DetectorModel::DetectorModel(std::string type,
             std::stringstream st;
             st << "Unused configuration keys in [implant] section of sensor geometry definition:";
             for(auto& key : unused_keys) {
-                st << std::endl << key;
+                st << '\n' << key;
             }
             LOG(WARNING) << st.str();
         }
@@ -161,7 +180,7 @@ DetectorModel::DetectorModel(std::string type,
             std::stringstream st;
             st << "Unused configuration keys in [support] section of sensor geometry definition:";
             for(auto& key : unused_keys) {
-                st << std::endl << key;
+                st << '\n' << key;
             }
             LOG(WARNING) << st.str();
         }
@@ -369,7 +388,9 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
             intercept = orientation_.Inverse()(intercept.value()) + offset_;
         }
         return intercept;
-    } else if(shape_ == Implant::Shape::ELLIPSE) {
+    }
+
+    if(shape_ == Implant::Shape::ELLIPSE) {
         // Translate so the ellipse is centered at the origin.
         auto pos = orientation_(position - offset_);
         auto dir = orientation_(direction);
@@ -424,5 +445,6 @@ std::optional<ROOT::Math::XYZPoint> DetectorModel::Implant::intersect(const ROOT
         // No intersection or only contact point found.
         return std::nullopt;
     }
+
     throw std::invalid_argument("Intersection not implemented for this implant type");
 }

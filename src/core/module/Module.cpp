@@ -11,13 +11,22 @@
 
 #include "Module.hpp"
 
+#include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
+#include <TDirectory.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 
@@ -117,7 +126,7 @@ Module::createOutputFile(const std::string& pathname, const std::string& extensi
         }
 
         // Open the file to check if it can be accessed
-        std::fstream file_stream(file, std::ios_base::out | std::ios_base::app);
+        std::fstream const file_stream(file, std::ios_base::out | std::ios_base::app);
         if(!file_stream.good()) {
             throw ModuleError("File " + file.string() + " not accessible");
         }

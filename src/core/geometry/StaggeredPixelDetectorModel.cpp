@@ -10,7 +10,20 @@
  */
 
 #include "StaggeredPixelDetectorModel.hpp"
-#include "core/module/exceptions.h"
+
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
+#include "objects/Pixel.hpp"
 
 using namespace allpix;
 
@@ -63,7 +76,7 @@ ROOT::Math::XYZPoint StaggeredPixelDetectorModel::getPixelCenter(const int x, co
 
 std::pair<int, int> StaggeredPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
     // Check if we have an odd or even row
-    bool odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
+    bool const odd_row = (static_cast<int>(std::lround(position.y() / pixel_size_.y())) % 2) != 0;
 
     auto pixel_x = static_cast<int>(std::lround(position.x() / pixel_size_.x() - (odd_row ? offset_ : 0.)));
     auto pixel_y = static_cast<int>(std::lround(position.y() / pixel_size_.y()));

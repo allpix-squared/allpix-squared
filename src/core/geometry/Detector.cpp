@@ -9,16 +9,26 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <limits>
 #include <memory>
-#include <stdexcept>
+#include <ostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <Math/Rotation3D.h>
 #include <Math/Translation3D.h>
 
-#include "Detector.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/geometry/DetectorModel.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "objects/Pixel.hpp"
 
 using namespace allpix;
 
@@ -63,15 +73,15 @@ void Detector::set_model(std::shared_ptr<DetectorModel> model) {
 }
 void Detector::build_transform() {
     // Transform from locally centered to global coordinates
-    ROOT::Math::Translation3D translation_center(static_cast<ROOT::Math::XYZVector>(position_));
-    ROOT::Math::Rotation3D rotation_center(orientation_);
+    ROOT::Math::Translation3D const translation_center(static_cast<ROOT::Math::XYZVector>(position_));
+    ROOT::Math::Rotation3D const rotation_center(orientation_);
     // Transformation from locally centered into global coordinate system, consisting of
     // * The rotation into the global coordinate system
     // * The shift from the origin to the detector position
-    ROOT::Math::Transform3D transform_center(rotation_center, translation_center);
+    ROOT::Math::Transform3D const transform_center(rotation_center, translation_center);
     // Transform from locally centered to local coordinates
-    ROOT::Math::Translation3D translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
-    ROOT::Math::Transform3D transform_local(translation_local);
+    ROOT::Math::Translation3D const translation_local(static_cast<ROOT::Math::XYZVector>(model_->getMatrixCenter()));
+    ROOT::Math::Transform3D const transform_local(translation_local);
     // Compute total transform local to global by first transforming local to locally centered and then to global coordinates
     transform_ = transform_center * transform_local.Inverse();
 }
@@ -92,7 +102,7 @@ ROOT::Math::XYZPoint Detector::getGlobalPosition(const ROOT::Math::XYZPoint& loc
  * The pixel has internal information about the size and location specific for this detector
  */
 Pixel Detector::getPixel(int x, int y) const {
-    Pixel::Index index(x, y);
+    Pixel::Index const index(x, y);
     return getPixel(index);
 }
 
@@ -170,8 +180,8 @@ void Detector::setWeightingPotentialFunction(FieldFunction<double> function,
     weighting_potential_.setFunction(std::move(function), thickness_domain, type);
 }
 
-// TODO Currently the magnetic field in the detector is fixed to the field vector at it's center position. Change in case a
-// field gradient is needed inside the sensor.
+// TODO(simonspa): Currently the magnetic field in the detector is fixed to the field vector at it's center position. Change
+// in case a field gradient is needed inside the sensor.
 void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
     magnetic_field_on_ = true;
     magnetic_field_ = std::move(b_field);
@@ -180,7 +190,7 @@ void Detector::setMagneticField(ROOT::Math::XYZVector b_field) {
 /**
  * The magnetic field is evaluated for any sensor position.
  */
-ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint&) const { return magnetic_field_; }
+ROOT::Math::XYZVector Detector::getMagneticField(const ROOT::Math::XYZPoint& /*unused*/) const { return magnetic_field_; }
 
 /**
  * The doping profile is replicated for all pixels and uses flipping at each boundary (side effects are not modeled in this
@@ -251,7 +261,7 @@ void Detector::check_field_match(std::array<double, 3> size,
         LOG(WARNING) << "Field map size is (" << Units::display(size[0] / scale_x, {"um", "mm"}) << ","
                      << Units::display(size[1] / scale_y, {"um", "mm"}) << ") but expecting a multiple of the pixel pitch ("
                      << Units::display(model_->getPixelSize().x(), {"um", "mm"}) << ", "
-                     << Units::display(model_->getPixelSize().y(), {"um", "mm"}) << ")" << std::endl
+                     << Units::display(model_->getPixelSize().y(), {"um", "mm"}) << ")" << '\n'
                      << "The area to which the field is applied can be changed using the field_scale parameter.";
     } else {
         LOG(INFO) << "Field map size is (" << Units::display(size[0] / scale_x, {"um", "mm"}) << ","

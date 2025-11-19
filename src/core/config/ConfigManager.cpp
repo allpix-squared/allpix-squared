@@ -12,14 +12,21 @@
 #include "ConfigManager.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <initializer_list>
+#include <iterator>
+#include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "Configuration.hpp"
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 
 using namespace allpix;
 
@@ -40,7 +47,7 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     LOG(TRACE) << "Reading main configuration";
 
     // Read the file
-    ConfigReader reader(file, std::move(file_name));
+    ConfigReader const reader(file, std::move(file_name));
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
@@ -53,7 +60,7 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     // Store all the configurations read
     for(auto& config : reader.getConfigurations()) {
         // Skip all ignored sections
-        std::string config_name = allpix::transform(config.getName(), ::tolower);
+        std::string const config_name = allpix::transform(config.getName(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {
             continue;
         }
@@ -75,11 +82,11 @@ void ConfigManager::parse_detectors() {
     }
 
     // Reading detector file
-    std::string detector_file_name = global_config_.getPath("detectors_file", true);
+    std::string const detector_file_name = global_config_.getPath("detectors_file", true);
     LOG(TRACE) << "Reading detector configuration";
 
     std::ifstream detector_file(detector_file_name);
-    ConfigReader detector_reader(detector_file, detector_file_name);
+    ConfigReader const detector_reader(detector_file, detector_file_name);
     auto detector_configs = detector_reader.getConfigurations();
     detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }

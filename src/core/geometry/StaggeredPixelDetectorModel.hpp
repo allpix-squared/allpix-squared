@@ -83,7 +83,7 @@ namespace allpix {
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const override;
+        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const override;
 
         /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance

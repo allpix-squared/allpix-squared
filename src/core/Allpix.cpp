@@ -11,24 +11,33 @@
 
 #include "Allpix.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <climits>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <functional>
+#include <initializer_list>
+#include <ios>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include <TROOT.h>
-#include <TRandom.h>
 #include <TStyle.h>
 #include <TSystem.h>
 
+#include "core/config/ConfigManager.hpp"
 #include "core/config/exceptions.h"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/ModuleManager.hpp"
 #include "core/utils/log.h"
-#include "core/utils/unit.h"
-
 #include "tools/units.h"
 
 using namespace allpix;
@@ -56,7 +65,7 @@ Allpix::Allpix(std::string config_file_name,
     conf_mgr_->loadDetectorOptions(detector_options);
 
     // Fetch the global configuration
-    Configuration& global_config = conf_mgr_->getGlobalConfiguration();
+    Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -64,7 +73,7 @@ Allpix::Allpix(std::string config_file_name,
         log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
-            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            LogLevel const log_level = Log::getLevelFromString(log_level_string);
             Log::setReportingLevel(log_level);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
@@ -79,7 +88,7 @@ Allpix::Allpix(std::string config_file_name,
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
     std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
     try {
-        LogFormat log_format = Log::getFormatFromString(log_format_string);
+        LogFormat const log_format = Log::getFormatFromString(log_format_string);
         Log::setFormat(log_format);
     } catch(std::invalid_argument& e) {
         LOG(ERROR) << "Log format \"" << log_format_string
@@ -130,7 +139,7 @@ void Allpix::load() {
         // Use memory location local variable
         auto mem_seed = reinterpret_cast<uint64_t>(&seed); // NOLINT
         // Use thread id
-        std::hash<std::thread::id> thrd_hasher;
+        std::hash<std::thread::id> const thrd_hasher;
         auto thread_seed = thrd_hasher(std::this_thread::get_id());
         seed = (clock_seed ^ mem_seed ^ thread_seed);
         seeder_modules_.seed(seed);
@@ -281,21 +290,21 @@ void Allpix::set_style() {
     style->SetLegendBorderSize(0);
 
     // Default text size
-    style->SetTextSize(0.04f);
-    style->SetTitleSize(0.04f, "xyz");
-    style->SetLabelSize(0.03f, "xyz");
+    style->SetTextSize(0.04F);
+    style->SetTitleSize(0.04F, "xyz");
+    style->SetLabelSize(0.03F, "xyz");
 
     // Title offset: distance between given text and axis
-    style->SetLabelOffset(0.01f, "xyz");
-    style->SetTitleOffset(1.4f, "yz");
-    style->SetTitleOffset(1.4f, "x");
+    style->SetLabelOffset(0.01F, "xyz");
+    style->SetTitleOffset(1.4F, "yz");
+    style->SetTitleOffset(1.4F, "x");
 
     // Set font settings
-    short font = 42; // Use a clear font
+    short const font = 42; // Use a clear font
     style->SetTitleFont(font);
-    style->SetTitleFontSize(0.06f);
+    style->SetTitleFontSize(0.06F);
     style->SetStatFont(font);
-    style->SetStatFontSize(0.07f);
+    style->SetStatFontSize(0.07F);
     style->SetTextFont(font);
     style->SetLabelFont(font, "xyz");
     style->SetTitleFont(font, "xyz");
@@ -305,7 +314,7 @@ void Allpix::set_style() {
     // Set style for markers
     style->SetMarkerStyle(1);
     style->SetLineWidth(2);
-    style->SetMarkerSize(1.2f);
+    style->SetMarkerSize(1.2F);
 
     // Set palette in 2d histogram to nice and colorful one
     style->SetPalette(1, nullptr);
@@ -330,10 +339,10 @@ void Allpix::set_style() {
     style->SetLabelColor(kBlack, "xyz");
 
     // Set the margins
-    style->SetPadBottomMargin(0.18f);
-    style->SetPadTopMargin(0.08f);
-    style->SetPadRightMargin(0.18f);
-    style->SetPadLeftMargin(0.17f);
+    style->SetPadBottomMargin(0.18F);
+    style->SetPadTopMargin(0.08F);
+    style->SetPadRightMargin(0.18F);
+    style->SetPadLeftMargin(0.17F);
 
     // Set the default number of divisions to show
     style->SetNdivisions(506, "xy");

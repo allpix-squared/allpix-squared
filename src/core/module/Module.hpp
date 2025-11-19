@@ -214,7 +214,7 @@ namespace allpix {
          * @brief Set the link to the config manager
          * @param config Pointer to the configuration manager holding all relevant configurations
          */
-        void set_config_manager(ConfigManager* config);
+        void set_config_manager(ConfigManager* conf_manager);
         ConfigManager* conf_manager_{nullptr};
 
         /**

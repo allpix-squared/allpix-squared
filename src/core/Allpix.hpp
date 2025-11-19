@@ -80,7 +80,7 @@ namespace allpix {
         /**
          * @brief Set the default ROOT plot style
          */
-        void set_style();
+        static void set_style();
 
         // Indicate the framework should terminate
         std::atomic<bool> terminate_;

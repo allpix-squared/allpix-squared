@@ -10,7 +10,23 @@
  */
 
 #include "HexagonalPixelDetectorModel.hpp"
-#include "core/module/exceptions.h"
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <math.h>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
+
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
+#include "core/geometry/PixelDetectorModel.hpp"
+#include "objects/Pixel.hpp"
 
 using namespace allpix;
 
@@ -38,17 +54,17 @@ ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getMatrixCenter() const {
 double HexagonalPixelDetectorModel::get_pixel_center_x(const int x, const int y) const {
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
         return (transform_pointy_.at(0) * x + transform_pointy_.at(1) * y) * pixel_size_.x() / 2;
-    } else {
-        return (transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x() / 2;
     }
+
+    return (transform_flat_.at(0) * x + transform_flat_.at(1) * y) * pixel_size_.x() / 2;
 }
 
 double HexagonalPixelDetectorModel::get_pixel_center_y(const int x, const int y) const {
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
         return (transform_pointy_.at(2) * x + transform_pointy_.at(3) * y) * pixel_size_.y() / 2;
-    } else {
-        return (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y() / 2;
     }
+
+    return (transform_flat_.at(2) * x + transform_flat_.at(3) * y) * pixel_size_.y() / 2;
 }
 
 ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, const int y) const {
@@ -57,7 +73,8 @@ ROOT::Math::XYZPoint HexagonalPixelDetectorModel::getPixelCenter(const int x, co
 
 std::pair<int, int> HexagonalPixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
     auto pt = ROOT::Math::XYPoint(position.x() / pixel_size_.x() * 2, position.y() / pixel_size_.y() * 2);
-    double q = 0, r = 0;
+    double q = 0;
+    double r = 0;
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
         q = inv_transform_pointy_.at(0) * pt.x() + inv_transform_pointy_.at(1) * pt.y();
         r = inv_transform_pointy_.at(2) * pt.x() + inv_transform_pointy_.at(3) * pt.y();
@@ -78,12 +95,12 @@ bool HexagonalPixelDetectorModel::isWithinMatrix(const int x, const int y) const
     // Check the valid pixel indices - this depends on the orientation of the axial index coordinate system with respect to
     // the cartesian local coordinate system, so we need to allow different indices depending on the hexagon orientation:
     if(pixel_type_ == Pixel::Type::HEXAGON_POINTY) {
-        return !(y < 0 || y >= static_cast<int>(number_of_pixels_.y()) || x < 0 - y / 2 ||
-                 x >= static_cast<int>(number_of_pixels_.x()) - y / 2);
-    } else {
-        return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 - x / 2 ||
-                 y >= static_cast<int>(number_of_pixels_.y()) - x / 2);
+        return y >= 0 && y < static_cast<int>(number_of_pixels_.y()) && x >= 0 - y / 2 &&
+               x < static_cast<int>(number_of_pixels_.x()) - y / 2;
     }
+
+    return !(x < 0 || x >= static_cast<int>(number_of_pixels_.x()) || y < 0 - x / 2 ||
+             y >= static_cast<int>(number_of_pixels_.y()) - x / 2);
 }
 
 bool HexagonalPixelDetectorModel::isWithinMatrix(const Pixel::Index& pixel_index) const {
@@ -139,13 +156,13 @@ bool HexagonalPixelDetectorModel::areNeighbors(const Pixel::Index& seed,
 
 // Rounding is more easy in cubic coordinates, so we need to reconstruct the third coordinate from the other two as z = - x -
 // y:
-std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, double y) const {
+std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, double y) {
     auto q = static_cast<int>(std::lround(x));
     auto r = static_cast<int>(std::lround(y));
     auto s = static_cast<int>(std::lround(-x - y));
-    double q_diff = std::abs(q - x);
-    double r_diff = std::abs(r - y);
-    double s_diff = std::abs(s - (-x - y));
+    double const q_diff = std::abs(q - x);
+    double const r_diff = std::abs(r - y);
+    double const s_diff = std::abs(s - (-x - y));
     if(q_diff > r_diff and q_diff > s_diff) {
         q = -r - s;
     } else if(r_diff > s_diff) {
@@ -156,6 +173,6 @@ std::pair<int, int> HexagonalPixelDetectorModel::round_to_nearest_hex(double x, 
 
 // The distance between two hexagons in cubic coordinates is half the Manhattan distance. To use axial coordinates, we have
 // to reconstruct the third coordinate z = - x - y:
-size_t HexagonalPixelDetectorModel::hex_distance(double x1, double y1, double x2, double y2) const {
+size_t HexagonalPixelDetectorModel::hex_distance(double x1, double y1, double x2, double y2) {
     return static_cast<size_t>(std::abs(x1 - x2) + std::abs(y1 - y2) + std::abs(-x1 - y1 + x2 + y2)) / 2;
 }

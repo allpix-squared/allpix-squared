@@ -11,15 +11,24 @@
 
 #include "ThreadPool.hpp"
 
+#include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <map>
+#include <mutex>
+#include <thread>
 
-#include "Module.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 
 std::map<std::thread::id, unsigned int> ThreadPool::thread_nums_;
-std::atomic_uint ThreadPool::thread_cnt_{1u};
-std::atomic_uint ThreadPool::thread_total_{1u};
+std::atomic_uint ThreadPool::thread_cnt_{1U};
+std::atomic_uint ThreadPool::thread_total_{1U};
 
 /**
  * The threads are created in an exception-safe way and all of them will be destroyed when creation of one fails
@@ -41,7 +50,7 @@ ThreadPool::ThreadPool(unsigned int num_threads,
     assert(max_buffered_size == 0 || max_buffered_size >= num_threads);
     // Create threads
     try {
-        for(unsigned int i = 0u; i < num_threads; ++i) {
+        for(unsigned int i = 0U; i < num_threads; ++i) {
             threads_.emplace_back(&ThreadPool::worker,
                                   this,
                                   std::min(num_threads, max_buffered_size),
@@ -80,7 +89,7 @@ void ThreadPool::checkException() {
 
 void ThreadPool::wait() {
     std::unique_lock<std::mutex> lock{run_mutex_};
-    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0 || done_ == true); });
+    run_condition_.wait(lock, [this]() { return exception_ptr_ != nullptr || (run_cnt_ == 0 || done_); });
 }
 
 /**
@@ -91,7 +100,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
                         const std::function<void()>& finalize_function) {
     try {
         // Register the thread
-        unsigned int thread_num = thread_cnt_++;
+        unsigned int const thread_num = thread_cnt_++;
         assert(thread_num < thread_total_);
         thread_nums_[std::this_thread::get_id()] = thread_num;
 
@@ -109,7 +118,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
                 // Fetch the future to propagate exceptions
                 task->get_future().get();
                 // Update the run count and propagate update
-                std::unique_lock<std::mutex> lock{run_mutex_};
+                std::unique_lock<std::mutex> const lock{run_mutex_};
                 if(--run_cnt_ == 0) {
                     run_condition_.notify_all();
                 }
@@ -122,7 +131,7 @@ void ThreadPool::worker(size_t min_thread_buffer,
         }
     } catch(...) {
         // Check if the first exception thrown
-        std::unique_lock<std::mutex> lock{run_mutex_};
+        std::unique_lock<std::mutex> const lock{run_mutex_};
         if(!has_exception_.test_and_set()) {
             // Save the first exception
             exception_ptr_ = std::current_exception();

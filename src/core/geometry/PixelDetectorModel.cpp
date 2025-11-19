@@ -10,10 +10,25 @@
  */
 
 #include "PixelDetectorModel.hpp"
-#include "core/module/exceptions.h"
-#include "tools/liang_barsky.h"
 
-#include <Math/Translation3D.h>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
+#include <Math/GenVector/Cartesian2D.h>
+#include <Math/GenVector/DisplacementVector2D.h>
+#include <Math/GenVector/Translation3D.h>
+
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "objects/Pixel.hpp"
+#include "tools/liang_barsky.h"
 
 using namespace allpix;
 
@@ -169,7 +184,6 @@ ROOT::Math::XYZPoint PixelDetectorModel::getSensorIntercept(const ROOT::Math::XY
     // Get intersection from Liang-Barsky line clipping and re-transform to local coordinates:
     if(intersection_point) {
         return translation_local(intersection_point.value());
-    } else {
-        return inside;
     }
+    return inside;
 }

@@ -152,7 +152,7 @@ namespace allpix {
          * @param y  Row axial coordinate of the hexagon
          * @return Indices of nearest hexagon
          */
-        std::pair<int, int> round_to_nearest_hex(double x, double y) const;
+        static std::pair<int, int> round_to_nearest_hex(double x, double y);
 
         /**
          * @brief Helper function to calculate the distance between two hexagons using Manhattan metric in cubic coordinates
@@ -162,7 +162,7 @@ namespace allpix {
          * @param y2  Row axial coordinate of the second hexagon
          * @return    Absolute distance between the hexagons
          */
-        size_t hex_distance(double x1, double y1, double x2, double y2) const;
+        static size_t hex_distance(double x1, double y1, double x2, double y2);
     };
 } // namespace allpix
 
