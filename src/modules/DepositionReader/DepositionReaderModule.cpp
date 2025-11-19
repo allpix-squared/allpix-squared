@@ -11,12 +11,39 @@
 
 #include "DepositionReaderModule.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <fstream>
+#include <map>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <Math/Point3Dfwd.h>
+#include <TFile.h>
+#include <TH1.h>
+#include <TTreeReader.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
+#include "objects/DepositedCharge.hpp"
+#include "objects/MCParticle.hpp"
+#include "objects/SensorCharge.hpp"
 #include "physics/MaterialProperties.hpp"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -98,7 +125,7 @@ void DepositionReaderModule::initialize() {
         auto branch_list = config_.getArray<std::string>("branch_names");
 
         // Exactly 10 branch names are required unless time or monte carlo particles are left out:
-        size_t required_list_size =
+        size_t const required_list_size =
             10 - static_cast<size_t>(time_available_ ? 0 : 1) - static_cast<size_t>(create_mcparticles_ ? 0 : 2);
         if(branch_list.size() != required_list_size) {
             throw InvalidValueError(config_,
@@ -171,11 +198,11 @@ void DepositionReaderModule::initialize() {
         for(auto& detector : geo_manager_->getDetectors()) {
 
             // Plot axis are in kilo electrons - convert from framework units!
-            int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            int nbins = 5 * maximum;
+            int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            int const nbins = 5 * maximum;
 
             // Create histograms if needed
-            std::string plot_name = "deposited_charge_" + detector->getName();
+            std::string const plot_name = "deposited_charge_" + detector->getName();
             charge_per_event_[detector] = CreateHistogram<TH1D>(
                 plot_name.c_str(), "deposited charge per event;deposited charge [ke];events", nbins, 0, maximum);
         }
@@ -234,8 +261,11 @@ void DepositionReaderModule::run(Event* event) {
         bool read_status = false;
         ROOT::Math::XYZPoint global_position;
         std::string volume;
-        double energy = NAN, time = NAN;
-        int pdg_code = 0, track_id = 0, parent_id = 0;
+        double energy = NAN;
+        double time = NAN;
+        int pdg_code = 0;
+        int track_id = 0;
+        int parent_id = 0;
 
         try {
             if(file_model_ == FileModel::CSV) {
@@ -367,7 +397,7 @@ void DepositionReaderModule::run(Event* event) {
         }
 
         // Send the mc particle information if available
-        bool has_mcparticles = !mc_particles.empty();
+        bool const has_mcparticles = !mc_particles.empty();
         auto mc_particle_message = std::make_shared<MCParticleMessage>(std::move(mc_particles), detector);
         if(has_mcparticles) {
             messenger_->dispatchMessage(this, mc_particle_message, event);
@@ -411,7 +441,7 @@ void DepositionReaderModule::run(Event* event) {
 
             // Fill output plots if requested:
             if(output_plots_) {
-                double charge = static_cast<double>(Units::convert(total_deposits, "ke"));
+                double const charge = static_cast<double>(Units::convert(total_deposits, "ke"));
                 charge_per_event_[detector]->Fill(charge);
             }
         }
@@ -445,7 +475,8 @@ bool DepositionReaderModule::read_root(uint64_t event_num,
     auto status = tree_reader_->GetEntryStatus();
     if(status == TTreeReader::kEntryNotFound || status == TTreeReader::kEntryBeyondEnd) {
         throw EndOfRunException("Requesting end of run: end of tree reached");
-    } else if(status != TTreeReader::kEntryValid) {
+    }
+    if(status != TTreeReader::kEntryValid) {
         throw EndOfRunException("Problem reading from tree, error: " + std::to_string(static_cast<int>(status)));
     }
 
@@ -501,7 +532,8 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
                                       int& track_id,
                                       int& parent_id) {
 
-    std::string line, tmp;
+    std::string line;
+    std::string tmp;
     do { // NOLINT
         // Read input file line-by-line and trim whitespaces at beginning and end:
         std::getline(*input_file_, line);
@@ -528,7 +560,9 @@ bool DepositionReaderModule::read_csv(uint64_t event_num,
     } while(line.empty() || line.front() == '#' || line.front() == 'E');
 
     std::istringstream ls(line);
-    double px = NAN, py = NAN, pz = NAN;
+    double px = NAN;
+    double py = NAN;
+    double pz = NAN;
 
     std::getline(ls, tmp, ',');
     std::istringstream(tmp) >> pdg_code;

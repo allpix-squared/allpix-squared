@@ -11,7 +11,19 @@
  */
 
 #include "PassiveMaterialConstructionG4.hpp"
+
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <vector>
+
+#include <G4LogicalVolume.hh>
+
+#include "PassiveMaterialModel.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/log.h"
 
 using namespace allpix;
 
@@ -22,7 +34,7 @@ void PassiveMaterialConstructionG4::registerVolumes() {
     LOG(TRACE) << "Registering " << passive_configs.size() << " passive material volume(s)";
 
     for(auto& passive_config : passive_configs) {
-        std::shared_ptr<PassiveMaterialModel> model = PassiveMaterialModel::factory(passive_config, geo_manager_);
+        std::shared_ptr<PassiveMaterialModel> const model = PassiveMaterialModel::factory(passive_config, geo_manager_);
         passive_volumes_.emplace_back(model);
     }
 

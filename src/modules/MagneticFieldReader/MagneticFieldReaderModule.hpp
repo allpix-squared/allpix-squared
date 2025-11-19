@@ -43,9 +43,9 @@ namespace allpix {
          * @brief Constructor for this unique module
          * @param config Configuration object for this module as retrieved from the steering file
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
-         * @param geoManager Pointer to the global GeometryManager
+         * @param geo_manager Pointer to the global GeometryManager
          */
-        MagneticFieldReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager);
+        MagneticFieldReaderModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager);
 
         /**
          * @brief Read magnetic field, feed it back to the geometry manager and apply it to the bound detectors

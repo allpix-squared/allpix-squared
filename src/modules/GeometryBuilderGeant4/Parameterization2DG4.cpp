@@ -11,7 +11,12 @@
 
 #include "Parameterization2DG4.hpp"
 
-#include <memory>
+#include <G4LogicalVolume.hh>
+#include <G4PVParameterised.hh>
+#include <G4String.hh>
+#include <G4Types.hh>
+#include <G4VPVParameterisation.hh>
+#include <G4VPhysicalVolume.hh>
 
 using namespace allpix;
 

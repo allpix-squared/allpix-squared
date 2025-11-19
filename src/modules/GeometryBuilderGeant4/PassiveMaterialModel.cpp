@@ -10,7 +10,13 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <ostream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 #include <G4LogicalVolume.hh>
 #include <G4LogicalVolumeStore.hh>
@@ -18,19 +24,22 @@
 #include <G4PVPlacement.hh>
 #include <G4RotationMatrix.hh>
 #include <G4ThreeVector.hh>
+#include <G4Transform3D.hh>
 #include <G4VisAttributes.hh>
-
-#include "core/module/exceptions.h"
-#include "tools/ROOT.h"
-#include "tools/geant4/geant4.h"
 
 #include "MaterialManager.hpp"
 #include "PassiveMaterialModel.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "passive_models/BoxModel.hpp"
 #include "passive_models/ConeModel.hpp"
 #include "passive_models/CylinderModel.hpp"
 #include "passive_models/GDMLModel.hpp"
 #include "passive_models/SphereModel.hpp"
+#include "tools/geant4/geant4.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -40,13 +49,21 @@ std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(cons
     auto type = config.get<std::string>("type");
     if(type == "box") {
         return std::make_shared<BoxModel>(config, geo_manager);
-    } else if(type == "cylinder") {
+    }
+
+    if(type == "cylinder") {
         return std::make_shared<CylinderModel>(config, geo_manager);
-    } else if(type == "sphere") {
+    }
+
+    if(type == "sphere") {
         return std::make_shared<SphereModel>(config, geo_manager);
-    } else if(type == "cone") {
+    }
+
+    if(type == "cone") {
         return std::make_shared<ConeModel>(config, geo_manager);
-    } else if(type == "gdml") {
+    }
+
+    if(type == "gdml") {
 #ifdef Geant4_GDML
         return std::make_shared<GDMLModel>(config, geo_manager);
 #else
@@ -55,9 +72,9 @@ std::shared_ptr<PassiveMaterialModel> allpix::PassiveMaterialModel::factory(cons
             "type",
             "GDML not supported by Geant4 version. Recompile Geant4 with the option -DGEANT4_USE_GDML=ON to enable support");
 #endif
-    } else {
-        throw ModuleError("Passive Material has an unknown type " + type);
     }
+
+    throw ModuleError("Passive Material has an unknown type " + type);
 }
 
 PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, GeometryManager* geo_manager)
@@ -73,7 +90,9 @@ PassiveMaterialModel::PassiveMaterialModel(const Configuration& config, Geometry
     position_ = geo_manager_->getPassiveElementOrientation(getName()).first;
     std::vector<double> copy_vec(9);
     orientation_.GetComponents(copy_vec.begin(), copy_vec.end());
-    XYZPoint vx, vy, vz;
+    XYZPoint vx;
+    XYZPoint vy;
+    XYZPoint vz;
     orientation_.GetComponents(vx, vy, vz);
     rotation_ = std::make_shared<G4RotationMatrix>(copy_vec.data());
 
@@ -95,8 +114,8 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
         throw InvalidValueError(config_, "mother_volume", "mother_volume does not exist");
     }
 
-    G4ThreeVector position_vector = toG4Vector(position_);
-    G4Transform3D transform_phys(*rotation_, position_vector);
+    G4ThreeVector const position_vector = toG4Vector(position_);
+    G4Transform3D const transform_phys(*rotation_, position_vector);
 
     auto& materials = Materials::getInstance();
     auto material = config_.get<std::string>("material");
@@ -131,7 +150,7 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
         std::stringstream st;
         st << "Unused configuration keys in passive material definition:";
         for(auto& key : unused_keys) {
-            st << std::endl << key;
+            st << '\n' << key;
         }
         LOG(WARNING) << st.str();
     }

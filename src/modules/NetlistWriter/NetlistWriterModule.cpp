@@ -11,14 +11,32 @@
 
 #include "NetlistWriterModule.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <ios>
+#include <iterator>
+#include <limits>
+#include <memory>
 #include <regex>
+#include <sstream>
+#include <stdlib.h>
 #include <string>
 #include <utility>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
-
-#include <TFormula.h>
+#include "core/utils/unit.h"
+#include "objects/PixelCharge.hpp"
 
 using namespace allpix;
 
@@ -97,8 +115,8 @@ void NetlistWriterModule::initialize() {
 
             // regex for the ISOURCE line
             std::regex source_regex;
-            (target_ == Target::SPECTRE) ? source_regex = ("^\\S+\\s+\\((\\S+)\\s+(\\S+)\\).*")
-                                         : source_regex = ("^\\S+\\s+(\\S+)\\s+(\\S+)");
+            (target_ == Target::SPECTRE) ? source_regex = (R"(^\S+\s+\((\S+)\s+(\S+)\).*)")
+                                         : source_regex = (R"(^\S+\s+(\S+)\s+(\S+))");
             std::smatch connection_match;
             if(std::regex_search(line, connection_match, source_regex)) {
                 LOG(INFO) << "Found connections in netlist template: " << connection_match[0];
@@ -119,14 +137,14 @@ void NetlistWriterModule::initialize() {
 
             // regex for the SUBCKT line
             std::regex subckt_regex;
-            (target_ == Target::SPECTRE) ? subckt_regex = ("^(\\w+)\\s+\\((.+)\\)\\s+(\\w+)")
-                                         : subckt_regex = ("^(\\S+)\\s+(.*?)\\s+(\\S+)$");
+            (target_ == Target::SPECTRE) ? subckt_regex = (R"(^(\w+)\s+\((.+)\)\s+(\w+))")
+                                         : subckt_regex = (R"(^(\S+)\s+(.*?)\s+(\S+)$)");
             std::smatch connection_match;
 
             if(std::regex_search(line, connection_match, subckt_regex)) {
 
-                std::string circuit_instance = connection_match[1].str();
-                std::string nets = connection_match[2].str();
+                std::string const circuit_instance = connection_match[1].str();
+                std::string const nets = connection_match[2].str();
                 subckt_name_ = connection_match[3].str();
 
                 LOG(INFO) << "Circuit instance name: " << circuit_instance;
@@ -232,7 +250,7 @@ void NetlistWriterModule::run(Event* event) {
 
                 for(auto bin = pulse.begin(); bin != pulse.end(); ++bin) {
                     auto time = Units::convert(step, "s") * static_cast<double>(std::distance(pulse.begin(), bin));
-                    double current_bin = *bin / step;
+                    double const current_bin = *bin / step;
                     auto current = Units::convert(current_bin, "nC");
 
                     file << std::setprecision(15) << time << " " << current << (bin < pulse.end() - 1 ? " " : "");
@@ -311,7 +329,7 @@ void NetlistWriterModule::run(Event* event) {
 
     // Runs the external uelec simulation, if selected in the configuration file, on the same terminal (ie. with uelec soft.
     // env variables loaded)
-    if(run_netlist_simulation_ == true) {
+    if(run_netlist_simulation_) {
         std::string uelec_sim_command = simulator_command_;
         uelec_sim_command += " ";
         uelec_sim_command += file_name;
@@ -322,7 +340,7 @@ void NetlistWriterModule::run(Event* event) {
 
         // Log messages according to the electrical simulation execution
         if(WIFEXITED(retval)) {
-            int exit_code = WEXITSTATUS(retval);
+            int const exit_code = WEXITSTATUS(retval);
             if(exit_code == 0) {
                 LOG(INFO) << "Command executed normally. \n";
             } else {

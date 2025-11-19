@@ -11,21 +11,38 @@
 
 #include "RCEWriterModule.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
+#include <iomanip>
+#include <ios>
+#include <limits>
+#include <math.h>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include <TBranchElement.h>
-#include <TClass.h>
 #include <TDecompSVD.h>
 #include <TDirectory.h>
-#include <TMatrixD.h>
+#include <TTree.h>
 
+#include "core/config/ConfigManager.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
-#include "core/utils/type.h"
 #include "core/utils/unit.h"
-#include "objects/Object.hpp"
+#include "objects/PixelHit.hpp"
 #include "objects/objects.h"
 
 using namespace allpix;
@@ -37,7 +54,7 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
     double total = 0;
     // helper functions to add component to total length w/ logging
     auto add = [&](const char* what, double X0, double x) {
-        double xX0 = x / X0;
+        double const xX0 = x / X0;
         LOG(DEBUG) << "  " << what << " x/X0 = " << Units::display(x, {"um", "mm", "cm"}) << "/"
                    << Units::display(X0, {"um", "mm", "cm", "m"}) << " = " << xX0;
         total += xX0;
@@ -60,11 +77,11 @@ static double compute_model_relative_radlength(const DetectorModel& model) {
         // volume_bump = area_bump * thickness = area_pixel * effective_thickness
         auto relative_area = area_bump / area_pixel;
         LOG(DEBUG) << "  bump_height = " << Units::display(bump_height, "um") << " relative_area = " << relative_area;
-        // TODO use typical solder combination instead of just indium
+        // TODO(simonspa): use typical solder combination instead of just indium
         add("bumps", X0_IN, relative_area * bump_height);
     }
 
-    // TODO consider also support layers after material handling has been clarified
+    // TODO(simonspa): consider also support layers after material handling has been clarified
 
     LOG(DEBUG) << "  total x/X0 = " << total;
     return total;
@@ -139,11 +156,11 @@ static void print_device_sensor_type(std::ostream& os, const sensor_type& sensor
     os << "[sensor_types." << sensor_type.name << "]\n";
     os << "cols = " << model.getNPixels().x() << "\n";
     os << "rows = " << model.getNPixels().y() << "\n";
-    // TODO add timestamp_{min,max} once the timing is supported by digitizer
+    // TODO(simonspa): add timestamp_{min,max} once the timing is supported by digitizer
     os << "value_max = " << sensor_type.value_max << "\n";
     os << "pitch_col = " << model.getPixelSize().x() << "\n";
     os << "pitch_row = " << model.getPixelSize().y() << "\n";
-    // TODO add pitch_timestamp once timing is supported by digitizer
+    // TODO(simonspa): add pitch_timestamp once timing is supported by digitizer
     // thickness is the active thickness
     os << "thickness = " << model.getSensorSize().z() << "\n";
     // relative radiation length is for all material in the beam
@@ -284,7 +301,7 @@ static void write_proteus_config(const std::string& device_path,
     geometry_file << std::setprecision(std::numeric_limits<double>::max_digits10);
 
     // device config
-    // TODO use path relative to the device file
+    // TODO(simonspa): use path relative to the device file
     device_file << "geometry = \"" << std::filesystem::canonical(geometry_path) << "\"\n";
     device_file << '\n';
     print_device(device_file, names, geo_mgr, cfg_mgr);
@@ -319,7 +336,7 @@ void RCEWriterModule::initialize() {
     std::sort(detector_names.begin(), detector_names.end());
 
     // Open output data file
-    std::string path_data = createOutputFile(config_.get<std::string>("file_name"), "root");
+    std::string const path_data = createOutputFile(config_.get<std::string>("file_name"), "root");
     output_file_ = std::make_unique<TFile>(path_data.c_str(), "RECREATE");
     output_file_->cd();
 
@@ -340,7 +357,7 @@ void RCEWriterModule::initialize() {
         LOG(TRACE) << "Sensor " << det_index << ", detector " << detector_name;
 
         // Create sensor directory
-        std::string det_dir_name = "Plane" + std::to_string(det_index);
+        std::string const det_dir_name = "Plane" + std::to_string(det_index);
         TDirectory* detector = output_file_->mkdir(det_dir_name.c_str());
         detector->cd();
 

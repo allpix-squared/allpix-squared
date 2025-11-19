@@ -11,27 +11,30 @@
 
 #include "MagneticFieldReaderModule.hpp"
 
-#include <fstream>
-#include <limits>
+#include <cmath>
+#include <cstdint>
 #include <memory>
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
-#include <Math/Point3D.h>
-#include <Math/Vector3D.h>
-#include <TH2F.h>
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/DetectorModel.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "tools/field_parser.h"
 
 using namespace allpix;
 
-MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config, Messenger*, GeometryManager* geoManager)
-    : Module(config), geometryManager_(geoManager) {
+MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config,
+                                                     Messenger* /*unused*/,
+                                                     GeometryManager* geo_manager)
+    : Module(config), geometryManager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
@@ -49,7 +52,7 @@ void MagneticFieldReaderModule::initialize() {
 
         auto b_field = config_.get<ROOT::Math::XYZVector>("magnetic_field", ROOT::Math::XYZVector());
 
-        MagneticFieldFunction function = [b_field](const ROOT::Math::XYZPoint&) { return b_field; };
+        MagneticFieldFunction const function = [b_field](const ROOT::Math::XYZPoint&) { return b_field; };
 
         geometryManager_->setMagneticFieldFunction(function, type);
         LOG(INFO) << "Set constant magnetic field: " << Units::display(b_field, {"T", "mT"});
@@ -65,7 +68,7 @@ void MagneticFieldReaderModule::initialize() {
         auto ncells = field_data.getDimensions(); // Number of cells in each direction of the field mesh
         auto field_mesh = field_data.getData();   // The field mesh B-field data as a flattened array
 
-        MagneticFieldFunction function =
+        MagneticFieldFunction const function =
             [fallback_field, field_mesh, fieldsize, ncells, offset](const ROOT::Math::XYZPoint& coord) {
                 // Find the nearest field mesh cell to the given input coordinate (assuming the mesh is centered about the
                 // origin)
@@ -97,8 +100,8 @@ void MagneticFieldReaderModule::initialize() {
 
     auto detectors = geometryManager_->getDetectors();
     for(auto& detector : detectors) {
-        // TODO the magnetic field is calculated once for the center position of the detector. This could be extended to
-        // a function enabling a gradient in the magnetic field inside the sensor
+        // TODO(simonspa): the magnetic field is calculated once for the center position of the detector. This could be
+        // extended to a function enabling a gradient in the magnetic field inside the sensor
         auto position = detector->getPosition();
         detector->setMagneticField(detector->getOrientation().Inverse() * geometryManager_->getMagneticField(position));
         LOG(DEBUG) << "Magnetic field in detector " << detector->getName() << ": "

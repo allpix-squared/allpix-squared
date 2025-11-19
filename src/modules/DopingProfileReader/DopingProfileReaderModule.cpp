@@ -11,16 +11,36 @@
 
 #include "DopingProfileReaderModule.hpp"
 
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <map>
+#include <memory>
+#include <new>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
-#include <TH2F.h>
+#include <Math/Vector2Dfwd.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <magic_enum/magic_enum.hpp>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "tools/field_parser.h"
 
 using namespace allpix;
 
-DopingProfileReaderModule::DopingProfileReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
+DopingProfileReaderModule::DopingProfileReaderModule(Configuration& config,
+                                                     Messenger* /*unused*/,
+                                                     std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
@@ -107,9 +127,8 @@ void DopingProfileReaderModule::initialize() {
             auto item = concentration_map.lower_bound(thickness / 2 - position.z());
             if(item != concentration_map.end()) {
                 return item->second;
-            } else {
-                return concentration_map.rbegin()->second;
             }
+            return concentration_map.rbegin()->second;
         };
 
         detector_->setDopingProfileFunction(std::move(function), FieldType::CUSTOM1D);
@@ -167,12 +186,14 @@ void DopingProfileReaderModule::create_output_plots() {
              ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
              : model->getSensorSize());
 
-    double z_min = center.z() - size.z() / 2.0;
-    double z_max = center.z() + size.z() / 2.0;
+    double const z_min = center.z() - size.z() / 2.0;
+    double const z_max = center.z() + size.z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
-    double min1 = NAN, max1 = NAN;
-    double min2 = NAN, max2 = NAN;
+    double min1 = NAN;
+    double max1 = NAN;
+    double min2 = NAN;
+    double max2 = NAN;
     if(project == 'x') {
         min1 = center.y() - size.y() / 2.0;
         max1 = center.y() + size.y() / 2.0;
@@ -210,7 +231,9 @@ void DopingProfileReaderModule::create_output_plots() {
     doping_concentration_histogram1D->SetOption("hist");
 
     // Determine the coordinate to use for projection
-    double x = 0, y = 0, z = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
     if(project == 'x') {
         x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.x();
         doping_concentration_histogram->GetXaxis()->SetTitle("y (mm)");

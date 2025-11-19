@@ -11,31 +11,27 @@
 
 #include "GeometryBuilderGeant4Module.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
-#include <utility>
 
+#include <G4EnvironmentUtils.hh>
 #include <G4GlobalConfig.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
-#include <G4UIterminal.hh>
 #include <G4Version.hh>
-#include <G4VisManager.hh>
 
-#include <Math/Vector3D.h>
-
-#include "DetectorConstructionG4.hpp"
 #include "GeometryConstructionG4.hpp"
-#include "PassiveMaterialConstructionG4.hpp"
-
-#include "tools/ROOT.h"
-#include "tools/geant4/geant4.h"
-
-#include "core/config/ConfigReader.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "messenger/Messenger.hpp"
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/MTRunManager.hpp"
@@ -44,7 +40,9 @@
 using namespace allpix;
 using namespace ROOT;
 
-GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
+GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config,
+                                                         Messenger* /*unused*/,
+                                                         GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
 
     // Register an exception handler for Geant4:
@@ -67,7 +65,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
 
     // Set Geant4 G4cerr log level
     try {
-        LogLevel log_level = Log::getLevelFromString(g4cerr_log_level);
+        LogLevel const log_level = Log::getLevelFromString(g4cerr_log_level);
         G4LoggingDestination::setG4cerrReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "log_level_g4cerr", "invalid log level provided");
@@ -75,7 +73,7 @@ GeometryBuilderGeant4Module::GeometryBuilderGeant4Module(Configuration& config, 
 
     // Set Geant G4cout log level
     try {
-        LogLevel log_level = Log::getLevelFromString(g4cout_log_level);
+        LogLevel const log_level = Log::getLevelFromString(g4cout_log_level);
         G4LoggingDestination::setG4coutReportingLevel(log_level);
     } catch(std::invalid_argument& e) {
         throw InvalidValueError(config_, "log_level_g4cout", "invalid log level provided");
@@ -103,7 +101,7 @@ static void check_dataset_g4(const std::string& env_name) {
                           " is not set, make sure to source a Geant4 "
                           "environment with all datasets");
     }
-    std::ifstream file(file_name);
+    std::ifstream const file(file_name);
     if(!file.good()) {
         throw ModuleError("Geant4 environment variable " + env_name +
                           " does not point to existing dataset, the Geant4 "

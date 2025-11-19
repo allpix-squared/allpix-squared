@@ -10,17 +10,41 @@
  */
 
 #include "PulseTransferModule.hpp"
-#include "core/module/Event.hpp"
-#include "core/utils/log.h"
-#include "objects/PixelCharge.hpp"
-#include "objects/exceptions.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <ostream>
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <TAxis.h>
 #include <TGraph.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TProfile.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "objects/Pixel.hpp"
+#include "objects/PixelCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "objects/Pulse.hpp"
+#include "objects/SensorCharge.hpp"
+#include "objects/exceptions.h"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -65,7 +89,7 @@ void PulseTransferModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -161,7 +185,7 @@ void PulseTransferModule::run(Event* event) {
                 continue;
             }
 
-            Pixel::Index pixel_index(xpixel, ypixel);
+            Pixel::Index const pixel_index(xpixel, ypixel);
 
             // Generate pseudo-pulse:
             Pulse pulse(timestep_);
@@ -169,7 +193,7 @@ void PulseTransferModule::run(Event* event) {
                 pulse.addCharge(static_cast<double>(propagated_charge.getSign() * propagated_charge.getCharge()),
                                 propagated_charge.getLocalTime());
             } catch(const PulseBadAllocException& e) {
-                LOG(ERROR) << e.what() << std::endl
+                LOG(ERROR) << e.what() << '\n'
                            << "Ignoring pulse contribution at time "
                            << Units::display(propagated_charge.getLocalTime(), {"ms", "us", "ns"});
             }
@@ -224,16 +248,16 @@ void PulseTransferModule::run(Event* event) {
         }
 
         // Store the pulse:
-        std::vector<const PropagatedCharge*> pixel_charge_vec(pixel_charge_map[index].begin(),
-                                                              pixel_charge_map[index].end());
+        std::vector<const PropagatedCharge*> const pixel_charge_vec(pixel_charge_map[index].begin(),
+                                                                    pixel_charge_map[index].end());
         LOG(DEBUG) << "Charge on pixel " << index << " has " << pixel_charge_vec.size() << " ancestors";
         pixel_charges.emplace_back(detector_->getPixel(index), std::move(pulse), std::move(pixel_charge_vec));
     }
 
     if(output_pulsegraphs_) {
-        std::string name = "chargemap_ev" + std::to_string(event->number);
+        std::string const name = "chargemap_ev" + std::to_string(event->number);
         auto size = detector_->getModel()->getNPixels();
-        std::string title =
+        std::string const title =
             "Map of accumulated induced charge in event " + std::to_string(event->number) + ";x (pixels);y (pixels);charge";
         auto* charge_map = new TH2D(name.c_str(),
                                     title.c_str(),

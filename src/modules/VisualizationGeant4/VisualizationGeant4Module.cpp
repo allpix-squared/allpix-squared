@@ -16,18 +16,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <set>
+#include <stdlib.h>
 #include <string>
 #include <thread>
-#include <utility>
-
-#ifdef G4UI_USE_QT
-#include <QCoreApplication>
-#endif
+#include <vector>
 
 #include <G4LogicalVolume.hh>
-#ifdef G4UI_USE_QT
-#include <G4UIQt.hh>
-#endif
 #include <G4PVParameterised.hh>
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
@@ -38,13 +33,26 @@
 #include <G4VisAttributes.hh>
 #include <G4VisExecutive.hh>
 
+#ifdef G4UI_USE_QT
+#include <G4UIQt.hh>
+#include <QCoreApplication>
+#endif
+
 #include "core/config/exceptions.h"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
 
 using namespace allpix;
 
-VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config, Messenger*, GeometryManager* geo_manager)
+VisualizationGeant4Module::VisualizationGeant4Module(Configuration& config,
+                                                     Messenger* /*unused*/,
+                                                     GeometryManager* geo_manager)
     : Module(config), geo_manager_(geo_manager) {
     // Interpret transparency parameter as opacity for backwards-compatibility
     config_.setAlias("opacity", "transparency", true);
@@ -126,7 +134,7 @@ void VisualizationGeant4Module::initialize() {
     UI->ApplyCommand("/vis/scene/create");
 
     // Initialize the driver and checking it actually exists
-    int check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
+    int const check_driver = UI->ApplyCommand("/vis/sceneHandler/create " + config_.get<std::string>("driver"));
     if(check_driver != 0) {
         std::set<G4String> candidates;
         for(auto* system : vis_manager_g4_->GetAvailableGraphicsSystems()) {
@@ -402,11 +410,11 @@ void VisualizationGeant4Module::set_visualization_attributes() {
     }
 }
 
-void VisualizationGeant4Module::run(Event*) {
+void VisualizationGeant4Module::run(Event* /*event*/) {
     if(!config_.get<bool>("accumulate")) {
         vis_manager_g4_->GetCurrentViewer()->ShowView();
         std::this_thread::sleep_for(
-            std::chrono::nanoseconds(config_.get<unsigned long>("accumulate_time_step", Units::get(100ul, "ms"))));
+            std::chrono::nanoseconds(config_.get<unsigned long>("accumulate_time_step", Units::get(100UL, "ms"))));
     }
 }
 
@@ -443,7 +451,7 @@ void VisualizationGeant4Module::add_visualization_volumes() {
             }
 
             // Place the pixels if all objects are available
-            std::shared_ptr<G4PVParameterised> pixel_param_phys = std::make_shared<G4PVParameterised>(
+            std::shared_ptr<G4PVParameterised> const pixel_param_phys = std::make_shared<G4PVParameterised>(
                 "pixel_" + detector->getName() + "_param",
                 pixel_log.get(),
                 sensor_log.get(),

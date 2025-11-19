@@ -12,23 +12,35 @@
 #include "ROOTObjectReaderModule.hpp"
 
 #include <climits>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <initializer_list>
+#include <memory>
+#include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <TBranch.h>
 #include <TKey.h>
+#include <TList.h>
 #include <TObjArray.h>
+#include <TObject.h>
 #include <TProcessID.h>
 #include <TTree.h>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/type.h"
-
 #include "objects/Object.hpp"
 #include "objects/objects.h"
-
 #include "tools/ROOT.h"
 
 using namespace allpix;
@@ -92,8 +104,8 @@ template <typename T> static void add_creator(ROOTObjectReaderModule::MessageCre
  * for every object in a tuple of objects.
  */
 template <template <typename...> class T, typename... Args>
-static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>>) {
-    std::initializer_list<int> value{(add_creator<Args>(map), 0)...};
+static void gen_creator_map_from_tag(ROOTObjectReaderModule::MessageCreatorMap& map, type_tag<T<Args...>> /*unused*/) {
+    std::initializer_list<int> const value{(add_creator<Args>(map), 0)...};
     (void)value;
 }
 
@@ -111,7 +123,8 @@ void ROOTObjectReaderModule::initialize() {
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidCombinationError(
             config_, {"exclude", "include"}, "include and exclude parameter are mutually exclusive");
-    } else if(config_.has("include")) {
+    }
+    if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
     } else if(config_.has("exclude")) {
@@ -211,7 +224,7 @@ void ROOTObjectReaderModule::initialize() {
         // Loop over the list of branches and create the set of receiver objects
         TObjArray* branches = tree->GetListOfBranches();
         for(int i = 0; i < branches->GetEntries(); i++) {
-            auto* branch = static_cast<TBranch*>(branches->At(i));
+            auto* branch = dynamic_cast<TBranch*>(branches->At(i));
 
             // Add a new vector of objects and bind it to the branch
             message_info message_inf;
@@ -244,8 +257,8 @@ void ROOTObjectReaderModule::initialize() {
                 throw ModuleError("Tree is malformed and cannot be used for creating messages");
             }
             std::string class_name = split_type[1].substr(0, split_type[1].size() - 1);
-            std::string apx_namespace = "allpix::";
-            size_t ap_idx = class_name.find(apx_namespace);
+            std::string const apx_namespace = "allpix::";
+            size_t const ap_idx = class_name.find(apx_namespace);
             if(ap_idx != std::string::npos) {
                 class_name.replace(ap_idx, apx_namespace.size(), "");
             }

@@ -131,7 +131,7 @@ namespace allpix {
         double hole_Hall_;
 
         // Magnetic field
-        bool has_magnetic_field_;
+        bool has_magnetic_field_{};
 
         // Statistical information
         std::atomic<unsigned int> total_propagated_charges_;
