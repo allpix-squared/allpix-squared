@@ -35,7 +35,7 @@
 #include <TH3.h>
 #include <TMath.h>
 
-#include "config/Configuration.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/GeometryManager.hpp"
