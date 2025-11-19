@@ -147,7 +147,7 @@ namespace allpix {
          * @brief Set a new logging format
          * @param format New log log format
          */
-        static void setFormat(LogFormat level);
+        static void setFormat(LogFormat format);
 
         /**
          * @brief Convert a string to a LogFormat
@@ -179,7 +179,7 @@ namespace allpix {
 
         /**
          * @brief Set the section header to use from now on
-         * @param header Header to use
+         * @param section Section header to use
          */
         static void setSection(std::string section);
         /**

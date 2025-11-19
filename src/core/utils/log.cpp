@@ -319,7 +319,7 @@ LogFormat& DefaultLogger::get_format() {
     thread_local LogFormat reporting_level = LogFormat::DEFAULT;
     return reporting_level;
 }
-void DefaultLogger::setFormat(LogFormat level) { get_format() = level; }
+void DefaultLogger::setFormat(LogFormat format) { get_format() = format; }
 LogFormat DefaultLogger::getFormat() { return get_format(); }
 
 // Convert string to log format and vice versa
