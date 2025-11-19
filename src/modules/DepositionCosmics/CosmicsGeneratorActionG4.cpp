@@ -10,18 +10,30 @@
  */
 
 #include "CosmicsGeneratorActionG4.hpp"
-#include "DepositionCosmicsModule.hpp"
-#include "RNGWrapper.hpp"
 
+#include <algorithm>
+#include <iomanip>
 #include <limits>
 #include <memory>
-#include <regex>
+#include <string>
+#include <vector>
 
+#include <CLHEP/Random/Random.h>
+#include <CLHEP/Random/RandomEngine.h>
+#include <CLHEP/Units/SystemOfUnits.h>
+#include <CRYGenerator.h>
+#include <CRYParticle.h>
+#include <CRYSetup.h>
+#include <CRYUtils.h>
 #include <G4Event.hh>
+#include <G4ParticleGun.hh>
 #include <G4ParticleTable.hh>
 
+#include "DepositionCosmicsModule.hpp"
+#include "RNGWrapper.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "tools/geant4/geant4.h"
 
 using namespace allpix;
@@ -77,7 +89,7 @@ void CosmicsGeneratorActionG4::GeneratePrimaries(G4Event* event) {
             G4ThreeVector(particle->x() * CLHEP::m, particle->y() * CLHEP::m, particle->z() * CLHEP::m));
         particle_gun_->SetParticleMomentumDirection(G4ThreeVector(particle->u(), particle->v(), particle->w()));
 
-        double time = (reset_particle_time_ ? 0. : particle->t() - event_starting_time);
+        double const time = (reset_particle_time_ ? 0. : particle->t() - event_starting_time);
         particle_gun_->SetParticleTime(time);
         particle_gun_->GeneratePrimaryVertex(event);
 

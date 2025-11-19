@@ -10,14 +10,19 @@
  */
 
 #include "DepositionGeneratorModule.hpp"
+
+#include <memory>
+
 #include "ActionInitializationPrimaries.hpp"
 #include "PrimariesGeneratorAction.hpp"
-
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
 #include "tools/geant4/geant4.h"
-
-#include "core/utils/log.h"
 
 // Reader modules:
 #include "PrimariesReaderGenie.hpp"

@@ -9,9 +9,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "StepInfoUserHookG4.hpp"
-#include "DepositionGeant4Module.hpp"
+#include <G4Step.hh>
 
+#include "DepositionGeant4Module.hpp"
+#include "StepInfoUserHookG4.hpp"
+
+#include "core/utils/log.h"
 #include "tools/geant4/RunManager.hpp"
 
 using namespace allpix;

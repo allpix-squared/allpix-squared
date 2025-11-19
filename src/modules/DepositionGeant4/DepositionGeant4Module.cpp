@@ -12,48 +12,67 @@
 
 #include "DepositionGeant4Module.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <cfloat>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <fstream>
 #include <limits>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <G4Box.hh>
 #include <G4EmParameters.hh>
+#include <G4FieldManager.hh>
 #include <G4HadronicParameters.hh>
 #include <G4HadronicProcessStore.hh>
 #include <G4LogicalVolume.hh>
+#include <G4MTRunManager.hh>
 #include <G4NuclearLevelData.hh>
 #include <G4ParticleHPManager.hh>
 #include <G4PhysListFactory.hh>
 #include <G4ProcessTable.hh>
 #include <G4RadioactiveDecayPhysics.hh>
+#include <G4Region.hh>
 #include <G4StepLimiterPhysics.hh>
-#include <G4UImanager.hh>
+#include <G4Threading.hh>
+#include <G4TransportationManager.hh>
 #include <G4UserLimits.hh>
+#include <G4VModularPhysicsList.hh>
+#include <G4ios.hh>
+#include <Math/Point3Dfwd.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <magic_enum/magic_enum.hpp>
 
-#include "G4FieldManager.hh"
-#include "G4TransportationManager.hh"
-
+#include "ActionInitializationG4.hpp"
+#include "AdditionalPhysicsLists.hpp"
+#include "GeneratorActionG4.hpp"
+#include "SDAndFieldConstruction.hpp"
+#include "SensitiveDetectorActionG4.hpp"
+#include "TrackInfoManager.hpp"
 #include "core/config/exceptions.h"
+#include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/GeometryManager.hpp"
-#include "core/geometry/RadialStripDetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
-#include "objects/DepositedCharge.hpp"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
 #include "physics/MaterialProperties.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
-#include "tools/geant4/geant4.h"
 
-#include "AdditionalPhysicsLists.hpp"
-
-#include "ActionInitializationG4.hpp"
-#include "GeneratorActionG4.hpp"
-#include "SDAndFieldConstruction.hpp"
-#include "SensitiveDetectorActionG4.hpp"
-#include "SetTrackInfoUserHookG4.hpp"
-
-#define G4_NUM_SEEDS 10
+enum { G4_NUM_SEEDS = 10 };
 
 using namespace allpix;
 
@@ -99,13 +118,16 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
         std::ifstream file(config.getPath("file_name", true));
         std::string line;
         while(std::getline(file, line)) {
-            if(line.rfind("/gps/position", 0) == 0 || line.rfind("/gps/pos/centre") == 0) {
+            if(line.starts_with("/gps/position") || line.rfind("/gps/pos/centre") == 0) {
                 LOG(TRACE) << "Macro contains source position: \"" << line << "\"";
                 std::stringstream sstr(line);
-                std::string command, units;
-                double pos_x = NAN, pos_y = NAN, pos_z = NAN;
+                std::string command;
+                std::string units;
+                double pos_x = NAN;
+                double pos_y = NAN;
+                double pos_z = NAN;
                 sstr >> command >> pos_x >> pos_y >> pos_z >> units;
-                ROOT::Math::XYZPoint source_position(
+                ROOT::Math::XYZPoint const source_position(
                     Units::get(pos_x, units), Units::get(pos_y, units), Units::get(pos_z, units));
                 LOG(DEBUG) << "Found source positioned at " << Units::display(source_position, {"mm", "cm"});
                 geo_manager_->addPoint(source_position);
@@ -129,7 +151,7 @@ void DepositionGeant4Module::initialize() {
     // Load the G4 run manager (which is owned by the geometry builder)
     if(multithreadingEnabled()) {
         run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
-        run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
         G4Threading::SetMultithreadedApplication(true);
     } else {
         run_manager_g4_ = G4RunManager::GetRunManager();
@@ -194,7 +216,7 @@ void DepositionGeant4Module::initialize() {
         }
     } catch(ModuleError&) {
         std::string message = "specified physics list does not exists";
-        std::vector<G4String> base_lists = physListFactory.AvailablePhysLists();
+        std::vector<G4String> const base_lists = physListFactory.AvailablePhysLists();
         message += "\nAvailable base lists are: ";
         for(auto& base_list : base_lists) {
             message += base_list;
@@ -202,7 +224,7 @@ void DepositionGeant4Module::initialize() {
         }
         message = message.substr(0, message.size() - 2);
         message += "\nwith optional suffixes for electromagnetic lists: ";
-        std::vector<G4String> em_lists = physListFactory.AvailablePhysListsEM();
+        std::vector<G4String> const em_lists = physListFactory.AvailablePhysListsEM();
         for(auto& em_list : em_lists) {
             if(em_list.empty()) {
                 continue;
@@ -279,7 +301,7 @@ void DepositionGeant4Module::initialize() {
         std::string min_detector;
         for(auto& detector : geo_manager_->getDetectors()) {
             auto model = detector->getModel();
-            double prev_min_size = min_size;
+            double const prev_min_size = min_size;
             min_size =
                 std::min({min_size, model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z()});
             if(min_size != prev_min_size) {
@@ -302,7 +324,8 @@ void DepositionGeant4Module::initialize() {
         min_charge_creation_energy = std::numeric_limits<double>::max();
         std::string min_detector;
         for(auto& detector : geo_manager_->getDetectors()) {
-            double this_min_charge_creation_energy = allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
+            double const this_min_charge_creation_energy =
+                allpix::ionization_energies[detector->getModel()->getSensorMaterial()];
             if(this_min_charge_creation_energy < min_charge_creation_energy) {
                 min_charge_creation_energy = this_min_charge_creation_energy;
                 min_detector = detector->getName();
@@ -317,7 +340,7 @@ void DepositionGeant4Module::initialize() {
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
         // Quickly estimate longest distance in world and limit max track length
-        auto* world_box = static_cast<G4Box*>(world_log_volume->GetSolid());
+        auto* world_box = dynamic_cast<G4Box*>(world_log_volume->GetSolid());
         auto max_track_length =
             2e2 * (world_box->GetXHalfLength() + world_box->GetYHalfLength() + world_box->GetZHalfLength());
         user_limits_world_->SetUserMaxTrackLength(max_track_length);
@@ -376,7 +399,7 @@ void DepositionGeant4Module::initializeThread() {
 
     // Initialize the thread local G4RunManager in case of MT
     if(multithreadingEnabled()) {
-        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
 
         // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
         // track manager for each calling thread here.
@@ -407,10 +430,10 @@ void DepositionGeant4Module::run(Event* event) {
 
     try {
         if(multithreadingEnabled()) {
-            auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+            auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
             run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
         } else {
-            auto* run_manager = static_cast<RunManager*>(run_manager_g4_);
+            auto* run_manager = dynamic_cast<RunManager*>(run_manager_g4_);
             run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
         }
 
@@ -426,10 +449,10 @@ void DepositionGeant4Module::run(Event* event) {
 
             // Fill output plots if requested:
             if(output_plots_) {
-                double charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
+                double const charge = static_cast<double>(Units::convert(sensor->getDepositedCharge(), "ke"));
                 charge_per_event_[sensor->getName()]->Fill(charge);
 
-                double deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
+                double const deposited_energy = static_cast<double>(Units::convert(sensor->getDepositedEnergy(), "keV"));
                 energy_per_event_[sensor->getName()]->Fill(deposited_energy);
 
                 for(const auto& track_position : sensor->getTrackIncidentPositions()) {
@@ -467,7 +490,7 @@ void DepositionGeant4Module::finalize() {
 
     // Print summary or warns if module did not output any charges
     if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
-        size_t average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
+        size_t const average_charge = total_charges_ / number_of_sensors_ / last_event_num_;
         LOG(INFO) << "Deposited total of " << total_charges_ << " charges in " << number_of_sensors_
                   << " sensor(s) (average of " << average_charge << " per sensor for every event)";
     } else {
@@ -480,7 +503,7 @@ void DepositionGeant4Module::finalizeThread() {
     record_module_statistics();
 
     if(multithreadingEnabled()) {
-        auto* run_manager_mt = static_cast<MTRunManager*>(run_manager_g4_);
+        auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
         run_manager_mt->TerminateForThread();
     }
 }
@@ -543,10 +566,10 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
             LOG(TRACE) << "Creating output plots for detector " << sensitive_detector_action->getName();
 
             // Plot axis are in kilo electrons - convert from framework units!
-            int maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
-            double maximum_energy =
+            int const maximum_charge = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+            double const maximum_energy =
                 (static_cast<int>(maximum_charge / 2. * Units::convert(charge_creation_energy, "eV")) / 10) * 10 + 10;
-            int nbins = 5 * maximum_charge;
+            int const nbins = 5 * maximum_charge;
 
             // Get detector model size
             auto sensor_size = detector->getModel()->getSensorSize();
@@ -554,7 +577,7 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
 
             // Create histograms if needed
             {
-                std::lock_guard<std::mutex> lock(histogram_mutex_);
+                std::lock_guard<std::mutex> const lock(histogram_mutex_);
                 std::string plot_name = "deposited_charge_" + sensitive_detector_action->getName();
 
                 if(charge_per_event_.find(sensitive_detector_action->getName()) == charge_per_event_.end()) {
@@ -612,7 +635,7 @@ MagneticField::MagneticField(GeometryManager* geometry_manager) : geometry_manag
 
 void MagneticField::GetFieldValue(const double Point[4], double* Bfield) const { // NOLINT
     const auto point = ROOT::Math::XYZPoint(Point[0], Point[1], Point[2]);
-    ROOT::Math::XYZVector bfield_vector = geometry_manager_->getMagneticField(point);
+    ROOT::Math::XYZVector const bfield_vector = geometry_manager_->getMagneticField(point);
     Bfield[0] = bfield_vector.x();
     Bfield[1] = bfield_vector.y();
     Bfield[2] = bfield_vector.z();

@@ -12,21 +12,32 @@
 #include "DepositionCosmicsModule.hpp"
 #include "CosmicsGeneratorActionG4.hpp"
 
-#include "tools/geant4/MTRunManager.hpp"
-#include "tools/geant4/RunManager.hpp"
-#include "tools/geant4/geant4.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <filesystem>
+#include <mutex>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 
 #include "modules/DepositionGeant4/ActionInitializationG4.hpp"
+#include "modules/DepositionGeant4/DepositionGeant4Module.hpp"
 
-#include <filesystem>
-#include <sstream>
-#include <string>
-#include <utility>
-
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/RunManager.hpp"
+#include "tools/geant4/geant4.h"
 
 using namespace allpix;
 
@@ -117,7 +128,7 @@ DepositionCosmicsModule::DepositionCosmicsModule(Configuration& config, Messenge
     double min_world_size_meters{0};
     auto world_log_volume = geo_manager_->getExternalObject<G4LogicalVolume>("", "world_log");
     if(world_log_volume != nullptr) {
-        auto* world_box = static_cast<G4Box*>(world_log_volume->GetSolid());
+        auto* world_box = dynamic_cast<G4Box*>(world_log_volume->GetSolid());
         min_world_size_meters = 2e-3 * std::min(world_box->GetXHalfLength(), world_box->GetYHalfLength());
     }
 
@@ -181,7 +192,7 @@ void DepositionCosmicsModule::finalizeThread() {
 
     LOG(DEBUG) << "CRY instance reports simulation time of "
                << Units::display(cry_instance_time_simulated_, {"us", "ms", "s"});
-    std::lock_guard<std::mutex> lock{stats_mutex_};
+    std::lock_guard<std::mutex> const lock{stats_mutex_};
     total_time_simulated_ += cry_instance_time_simulated_;
 }
 

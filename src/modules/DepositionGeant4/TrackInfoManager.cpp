@@ -11,6 +11,21 @@
 
 #include "TrackInfoManager.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <memory>
+#include <utility>
+
+#include <G4Track.hh>
+
+#include "TrackInfoG4.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "objects/MCTrack.hpp"
+
 using namespace allpix;
 
 TrackInfoManager::TrackInfoManager(bool record_all) : counter_(1), record_all_(record_all) {}

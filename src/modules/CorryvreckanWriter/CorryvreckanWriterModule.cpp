@@ -11,19 +11,40 @@
 
 #include "CorryvreckanWriterModule.hpp"
 
-#include <Math/RotationZYX.h>
-#include <TProcessID.h>
-
+#include <algorithm>
 #include <fstream>
+#include <ios>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <Math/GenVector/RotationZYX.h>
+#include <Math/Vector3Dfwd.h>
+#include <TFile.h>
+#include <TProcessID.h>
+#include <TTree.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "corryvreckan/Event.hpp"
+#include "corryvreckan/MCParticle.hpp"
+#include "corryvreckan/Pixel.hpp"
+#include "objects/PixelHit.hpp"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
-CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geoManager)
-    : SequentialModule(config), messenger_(messenger), geometryManager_(geoManager) {
+CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
+    : SequentialModule(config), messenger_(messenger), geometryManager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 
@@ -221,7 +242,7 @@ void CorryvreckanWriterModule::finalize() {
     output_file_->Write();
 
     // Print statistics
-    LOG(STATUS) << "Wrote output data to file:" << std::endl << fileName_;
+    LOG(STATUS) << "Wrote output data to file:" << '\n' << fileName_;
 
     // Loop over all detectors and store the geometry:
     // Write geometry:
@@ -232,32 +253,31 @@ void CorryvreckanWriterModule::finalize() {
             throw ModuleError("Cannot write to Corryvreckan geometry file");
         }
 
-        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << std::endl << std::endl;
+        geometry_file << "# Allpix Squared detector geometry - https://cern.ch/allpix-squared" << '\n' << '\n';
 
         auto detectors = geometryManager_->getDetectors();
         for(auto& detector : detectors) {
-            geometry_file << "[" << detector->getName() << "]" << std::endl;
+            geometry_file << "[" << detector->getName() << "]" << '\n';
             geometry_file << "position = " << Units::display(detector->getPosition().x(), {"mm", "um"}) << ", "
                           << Units::display(detector->getPosition().y(), {"mm", "um"}) << ", "
-                          << Units::display(detector->getPosition().z(), {"mm", "um"}) << std::endl;
+                          << Units::display(detector->getPosition().z(), {"mm", "um"}) << '\n';
 
             // Transform the rotation matrix to a ZYX rotation and invert it to get a XYZ rotation
             // This way we stay compatible to old Corryvreckan versions which only support XYZ.
-            geometry_file << "orientation_mode = \"xyz\"" << std::endl;
-            ROOT::Math::RotationZYX rotations(detector->getOrientation().Inverse());
+            geometry_file << "orientation_mode = \"xyz\"" << '\n';
+            ROOT::Math::RotationZYX const rotations(detector->getOrientation().Inverse());
             geometry_file << "orientation = " << Units::display(-rotations.Psi(), "deg") << ", "
                           << Units::display(-rotations.Theta(), "deg") << ", " << Units::display(-rotations.Phi(), "deg")
-                          << std::endl;
+                          << '\n';
 
             auto model = detector->getModel();
-            geometry_file << "type = \"" << model->getType() << "\"" << std::endl;
+            geometry_file << "type = \"" << model->getType() << "\"" << '\n';
             geometry_file << "pixel_pitch = " << Units::display(model->getPixelSize().x(), "um") << ", "
-                          << Units::display(model->getPixelSize().y(), "um") << std::endl;
-            geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y()
-                          << std::endl;
+                          << Units::display(model->getPixelSize().y(), "um") << '\n';
+            geometry_file << "number_of_pixels = " << model->getNPixels().x() << ", " << model->getNPixels().y() << '\n';
             // Time resolution hard-coded as 5ns due to time structure of written out events: events of length 5ns, with a
             // gap of 10ns in between events
-            geometry_file << "time_resolution = 5ns" << std::endl;
+            geometry_file << "time_resolution = 5ns" << '\n';
 
             std::string roles;
             if(detector->getName() == reference_) {
@@ -270,16 +290,16 @@ void CorryvreckanWriterModule::finalize() {
                 roles += "dut";
             }
             if(!roles.empty()) {
-                geometry_file << "role = " << roles << std::endl;
+                geometry_file << "role = " << roles << '\n';
             }
 
             // Get the material budget if available:
             auto budget = geometryManager_->getExternalObject<double>(detector->getName(), "material_budget");
             if(budget != nullptr) {
                 LOG(DEBUG) << "Found calculated material budget for detector " << detector->getName() << ", storing.";
-                geometry_file << "material_budget = " << *budget << std::endl;
+                geometry_file << "material_budget = " << *budget << '\n';
             }
-            geometry_file << std::endl;
+            geometry_file << '\n';
         }
     }
 }

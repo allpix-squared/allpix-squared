@@ -10,6 +10,12 @@
  */
 
 #include "SetTrackInfoUserHookG4.hpp"
+
+#include <memory>
+#include <utility>
+
+#include <G4Track.hh>
+
 #include "DepositionGeant4Module.hpp"
 #include "TrackInfoG4.hpp"
 
@@ -25,7 +31,7 @@ void SetTrackInfoUserHookG4::PreUserTrackingAction(const G4Track* aTrack) {
 }
 
 void SetTrackInfoUserHookG4::PostUserTrackingAction(const G4Track* aTrack) {
-    auto* userInfo = static_cast<TrackInfoG4*>(aTrack->GetUserInformation());
+    auto* userInfo = dynamic_cast<TrackInfoG4*>(aTrack->GetUserInformation());
     userInfo->finalizeInfo(aTrack);
     // Regain ownership of the TrackInfoG4, and remove it from the G4Track
     auto userInfoOwningPtr = std::unique_ptr<TrackInfoG4>(userInfo);

@@ -11,6 +11,10 @@
 
 #include "Object.hpp"
 
+#include <ostream>
+#include <string>
+#include <utility>
+
 using namespace corryvreckan;
 
 Object::Object() = default;

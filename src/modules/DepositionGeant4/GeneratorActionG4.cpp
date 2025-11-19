@@ -12,20 +12,33 @@
 
 #include "GeneratorActionG4.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
 #include <limits>
+#include <map>
 #include <memory>
 #include <regex>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include <G4Event.hh>
+#include <G4GeneralParticleSource.hh>
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
-#include <G4RunManager.hh>
+#include <G4ThreeVector.hh>
+#include <G4TwoVector.hh>
 #include <G4UImanager.hh>
-#include <Math/Vector2D.h>
-#include <core/module/exceptions.h>
+#include <Math/Math.h>
+#include <Math/Vector2Dfwd.h>
+#include <Randomize.hh>
 
 #include "core/config/exceptions.h"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
@@ -43,10 +56,11 @@ static void parse_macro_file_and_prepare_commands(const std::string& file_name, 
     while(std::getline(file, line)) {
         // Check for the "/gps/" pattern in the line:
         if(!line.empty()) {
-            if(line.rfind("/gps/number", 0) == 0) {
+            if(line.starts_with("/gps/number")) {
                 throw ModuleError(
                     "The number of particles must be defined in the main configuration file, not in the macro.");
-            } else if(line.rfind("/gps/", 0) == 0 || line.rfind("/process/", 0) == 0) {
+            }
+            if(line.rfind("/gps/", 0) == 0 || line.rfind("/process/", 0) == 0) {
                 cmd_list.push_back(line);
             } else if(line.at(0) == '#') {
                 LOG(DEBUG) << "Filtering Geant4 macro comment: " << line;
@@ -127,7 +141,7 @@ GeneratorActionG4::GeneratorActionG4(const Configuration& config)
             } else if(min_element == std::abs((direction.z()))) {
                 angref1 = direction.cross({0, 0, 1});
             }
-            G4ThreeVector angref2 = angref1.cross(direction);
+            G4ThreeVector const angref2 = angref1.cross(direction);
 
             // Set position parameters
             single_source->GetPosDist()->SetPosDisType("Beam");
@@ -355,7 +369,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
     // Set the time of the particle source within the time window
     if(time_window_ > 0) {
         auto* single_source = particle_source_->GetCurrentSource();
-        double event_time = time_ + G4UniformRand() * time_window_;
+        double const event_time = time_ + G4UniformRand() * time_window_;
         single_source->SetParticleTime(event_time);
     }
 
