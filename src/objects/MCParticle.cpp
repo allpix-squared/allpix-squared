@@ -10,9 +10,18 @@
  */
 
 #include "MCParticle.hpp"
-#include <sstream>
 
-#include <Math/Vector3D.h>
+#include <cstddef>
+#include <iomanip>
+#include <ios>
+#include <ostream>
+#include <sstream>
+#include <utility>
+
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
+
+#include "objects/MCTrack.hpp"
 
 using namespace allpix;
 
@@ -46,10 +55,10 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
         auto t = -1 * local_start_point_.z() / direction.z();
         // Calculate reference point at z = 0 from parametric line equation
         return (direction * t + local_start_point_);
-    } else {
-        // Both points are coplanar with x-y plane. SImply return their center:
-        return (static_cast<ROOT::Math::XYZVector>(local_end_point_) + local_start_point_) / 2.0;
     }
+
+    // Both points are coplanar with x-y plane. SImply return their center:
+    return (static_cast<ROOT::Math::XYZVector>(local_end_point_) + local_start_point_) / 2.0;
 }
 
 double MCParticle::getTotalEnergyStart() const { return total_energy_start_; }
@@ -147,7 +156,7 @@ void MCParticle::print(std::ostream& out) const {
     } else {
         out << std::right << std::setw(small_gap) << "<nullptr>\n";
     }
-    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
+    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << '\n';
 }
 
 void MCParticle::loadHistory() {

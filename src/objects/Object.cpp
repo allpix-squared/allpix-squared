@@ -11,6 +11,10 @@
 
 #include "Object.hpp"
 
+#include <ostream>
+
+#include <TRef.h>
+
 using namespace allpix;
 
 std::ostream& allpix::operator<<(std::ostream& out, const Object& obj) {

@@ -10,7 +10,13 @@
  */
 
 #include "DepositedCharge.hpp"
+#include <ostream>
+#include <utility>
 
+#include <Math/Point3Dfwd.h>
+
+#include "objects/MCParticle.hpp"
+#include "objects/SensorCharge.hpp"
 #include "objects/exceptions.h"
 
 using namespace allpix;

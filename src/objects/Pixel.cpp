@@ -11,6 +11,13 @@
 
 #include "Pixel.hpp"
 
+#include <utility>
+
+#include <Math/GenVector/Cartesian2D.h>
+#include <Math/GenVector/DisplacementVector2D.h>
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector2Dfwd.h>
+
 using namespace allpix;
 
 bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,

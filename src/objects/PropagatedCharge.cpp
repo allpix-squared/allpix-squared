@@ -9,11 +9,21 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <magic_enum/magic_enum.hpp>
-#include <numeric>
-
 #include "PropagatedCharge.hpp"
 
+#include <map>
+#include <numeric>
+#include <ostream>
+#include <utility>
+
+#include <Math/Point3Dfwd.h>
+#include <magic_enum/magic_enum.hpp>
+
+#include "objects/DepositedCharge.hpp"
+#include "objects/MCParticle.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/Pulse.hpp"
+#include "objects/SensorCharge.hpp"
 #include "objects/exceptions.h"
 
 using namespace allpix;
@@ -47,7 +57,7 @@ PropagatedCharge::PropagatedCharge(ROOT::Math::XYZPoint local_position,
                        type,
                        std::accumulate(pulses.begin(),
                                        pulses.end(),
-                                       0u,
+                                       0U,
                                        [](const unsigned int prev, const auto& elem) {
                                            return prev + static_cast<unsigned int>(std::abs(elem.second.getCharge()));
                                        }),
