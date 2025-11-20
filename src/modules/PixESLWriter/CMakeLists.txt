@@ -11,15 +11,14 @@ SET(APX_BUILD_TESTS OFF CACHE STRING "" FORCE)
 set(APX_DISABLE_STRICT_OVERFLOW ON CACHE BOOL "" FORCE)
 
 # libAPX is required
-FIND_PACKAGE(Libapx QUIET)
-
+FIND_PACKAGE(Libapx QUIET 0.4.9)
 IF(NOT Libapx_FOUND)
     MESSAGE(STATUS "Did not find local installation of Libapx, fetching dependency...")
     INCLUDE(FetchContent)
     FetchContent_Declare(
       Libapx
       GIT_REPOSITORY https://gitlab.cern.ch/allpix-squared/libapx.git
-      GIT_TAG        0229ba8375a616fcc31cad070960d3023b4f9ff2
+      GIT_TAG        b1c288397a7c24326b88199ac440dcec07c65795
       FIND_PACKAGE_ARGS 0.4.9
 
     )
