@@ -72,7 +72,7 @@
 #include "tools/geant4/MTRunManager.hpp"
 #include "tools/geant4/RunManager.hpp"
 
-enum { G4_NUM_SEEDS = 10 };
+#define G4_NUM_SEEDS 10
 
 using namespace allpix;
 
