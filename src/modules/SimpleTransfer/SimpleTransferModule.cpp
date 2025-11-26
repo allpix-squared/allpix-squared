@@ -11,20 +11,31 @@
 
 #include "SimpleTransferModule.hpp"
 
-#include <fstream>
-#include <limits>
+#include <cmath>
+#include <map>
 #include <memory>
-#include <new>
-#include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
+
+#include <TH1.h>
 
 #include "core/config/exceptions.h"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 #include "core/utils/unit.h"
-#include "tools/ROOT.h"
-
+#include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -132,7 +143,7 @@ void SimpleTransferModule::run(Event* event) {
             continue;
         }
 
-        Pixel::Index pixel_index(xpixel, ypixel);
+        Pixel::Index const pixel_index(xpixel, ypixel);
 
         // Update statistics
         transferred_charges_count += propagated_charge.getCharge();

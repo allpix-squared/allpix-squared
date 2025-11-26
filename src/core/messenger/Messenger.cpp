@@ -11,10 +11,16 @@
 
 #include "Messenger.hpp"
 
+#include <cassert>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <typeindex>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
 #include "Message.hpp"
 #include "core/module/Module.hpp"
@@ -47,10 +53,10 @@ static bool check_send(Module* source, BaseMessage* message, BaseDelegate* deleg
  * Messages should be bound during construction, so this function only gives useful information outside the constructor
  */
 bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& message) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> const lock(mutex_);
 
     const BaseMessage* inst = message.get();
-    std::type_index type_idx = typeid(*inst);
+    std::type_index const type_idx = typeid(*inst);
 
     // Get the name of the output message
     auto name = source->get_configuration().get<std::string>("output");
@@ -83,7 +89,7 @@ bool Messenger::hasReceiver(Module* source, const std::shared_ptr<BaseMessage>& 
     return false;
 }
 
-bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) const {
+bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) {
     auto* local_messenger = event->get_local_messenger();
     return local_messenger->isSatisfied(delegate);
 }
@@ -91,7 +97,7 @@ bool Messenger::isSatisfied(BaseDelegate* delegate, Event* event) const {
 void Messenger::add_delegate(const std::type_info& message_type,
                              Module* module,
                              const std::shared_ptr<BaseDelegate>& delegate) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> const lock(mutex_);
 
     // Register generic or specific delegate depending on flag
     std::string message_name;
@@ -117,7 +123,7 @@ void Messenger::add_delegate(const std::type_info& message_type,
  * @throws std::out_of_range if a delegate is removed which is never registered
  */
 void Messenger::remove_delegate(BaseDelegate* delegate) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> const lock(mutex_);
 
     auto iter = delegate_to_iterator_.find(delegate);
     if(iter == delegate_to_iterator_.end()) {
@@ -178,7 +184,7 @@ bool LocalMessenger::dispatchMessage(Module* source,
 
     // Create type identifier from the typeid
     const BaseMessage* inst = message.get();
-    std::type_index type_idx = typeid(*inst);
+    std::type_index const type_idx = typeid(*inst);
 
     // Retrieve listeners for the given message type and name
     const auto msg_type_iterator = global_messenger_.delegates_.find(type_idx);
@@ -242,9 +248,5 @@ bool LocalMessenger::isSatisfied(BaseDelegate* delegate) const {
 
     // check our records for messages for this delegate
     auto iter = messages_iter->second.find(std::get<0>(delegate_iter->second));
-    if(iter == messages_iter->second.end()) {
-        return false;
-    }
-
-    return true;
+    return iter != messages_iter->second.end();
 }

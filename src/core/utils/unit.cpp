@@ -12,12 +12,15 @@
 #include "unit.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <initializer_list>
 #include <limits>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
+#include <utility>
 
 #include "text.h"
 
@@ -81,7 +84,7 @@ allpix::Units::UnitType Units::get(const std::string& str) {
     // Go through all units
     char lst = '*';
     std::string unit;
-    for(char ch : str) {
+    for(char const ch : str) {
         if(ch == '*' || ch == '/') {
             if(lst == '*') {
                 ret_value = getSingle(ret_value, unit);
@@ -112,7 +115,7 @@ allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
     // Go through all units
     char lst = '*';
     std::string unit;
-    for(char ch : str) {
+    for(char const ch : str) {
         if(ch == '*' || ch == '/') {
             if(lst == '*') {
                 input = getSingleInverse(input, unit);
@@ -154,7 +157,7 @@ std::string Units::display(UnitType input, std::initializer_list<std::string> un
     int best_exponent = std::numeric_limits<int>::min();
     std::string best_unit;
     for(const auto& unit : units) {
-        Units::UnitType value = convert(input, unit);
+        Units::UnitType const value = convert(input, unit);
         int exponent = 0;
         std::frexp(value, &exponent);
         if((best_exponent <= 0 && exponent > best_exponent) || (exponent > 0 && exponent < best_exponent)) {

@@ -12,22 +12,25 @@
 #include "TextWriterModule.hpp"
 
 #include <fstream>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 
-#include <TBranchElement.h>
-#include <TClass.h>
-
-#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/exceptions.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/type.h"
-
 #include "objects/Object.hpp"
 #include "objects/objects.h"
 
 using namespace allpix;
 
-TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager*)
+TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*unused*/)
     : SequentialModule(config), messenger_(messenger) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
@@ -41,12 +44,13 @@ void TextWriterModule::initialize() {
     output_file_name_ = createOutputFile(config_.get<std::string>("file_name", "data"), "txt", true);
     output_file_ = std::make_unique<std::ofstream>(output_file_name_);
 
-    *output_file_ << "# Allpix Squared ASCII data - https://cern.ch/allpix-squared" << std::endl << std::endl;
+    *output_file_ << "# Allpix Squared ASCII data - https://cern.ch/allpix-squared" << '\n' << '\n';
 
     // Read include and exclude list
     if(config_.has("include") && config_.has("exclude")) {
         throw InvalidValueError(config_, "exclude", "include and exclude parameter are mutually exclusive");
-    } else if(config_.has("include")) {
+    }
+    if(config_.has("include")) {
         auto inc_arr = config_.getArray<std::string>("include");
         include_.insert(inc_arr.begin(), inc_arr.end());
     } else if(config_.has("exclude")) {
@@ -74,7 +78,7 @@ bool TextWriterModule::filter(const std::shared_ptr<BaseMessage>& message, const
         auto object_array = message->getObjectArray();
         if(!object_array.empty()) {
             const Object& first_object = object_array[0];
-            std::string class_name = allpix::demangle(typeid(first_object).name());
+            std::string const class_name = allpix::demangle(typeid(first_object).name());
 
             // Check if this message should be kept
             if((!include_.empty() && include_.find(class_name) == include_.end()) ||
@@ -101,20 +105,20 @@ void TextWriterModule::run(Event* event) {
     LOG(TRACE) << "Writing new objects to text file";
 
     // Print the current event:
-    *output_file_ << "=== " << event->number << " ===" << std::endl;
+    *output_file_ << "=== " << event->number << " ===" << '\n';
 
     for(auto& pair : messages) {
         auto& message = pair.first;
 
         // Print the current detector:
         if(message->getDetector() != nullptr) {
-            *output_file_ << "--- " << message->getDetector()->getName() << " ---" << std::endl;
+            *output_file_ << "--- " << message->getDetector()->getName() << " ---" << '\n';
         } else {
-            *output_file_ << "--- <global> ---" << std::endl;
+            *output_file_ << "--- <global> ---" << '\n';
         }
         for(auto& object : message->getObjectArray()) {
             // Print the object's ASCII representation:
-            *output_file_ << object << std::endl;
+            *output_file_ << object << '\n';
             write_cnt_++;
         }
         msg_cnt_++;
@@ -123,9 +127,9 @@ void TextWriterModule::run(Event* event) {
 
 void TextWriterModule::finalize() {
     // Finish writing to output file
-    *output_file_ << "# " << write_cnt_ << " objects from " << msg_cnt_ << " messages" << std::endl;
+    *output_file_ << "# " << write_cnt_ << " objects from " << msg_cnt_ << " messages" << '\n';
 
     // Print statistics
-    LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to file:" << std::endl
+    LOG(STATUS) << "Wrote " << write_cnt_ << " objects from " << msg_cnt_ << " messages to file:" << '\n'
                 << output_file_name_;
 }

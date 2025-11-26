@@ -11,10 +11,18 @@
 
 #include "PixelHit.hpp"
 
+#include <algorithm>
+#include <iomanip>
+#include <limits>
+#include <ostream>
 #include <set>
+#include <utility>
+#include <vector>
 
-#include "DepositedCharge.hpp"
-#include "PropagatedCharge.hpp"
+#include "objects/MCParticle.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/PixelPulse.hpp"
+#include "objects/PropagatedCharge.hpp"
 #include "objects/exceptions.h"
 
 using namespace allpix;

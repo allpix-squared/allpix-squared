@@ -11,6 +11,18 @@
 
 #include "PrimariesReaderGenie.hpp"
 
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <TFile.h>
+#include <TTreeReader.h>
+
+#include "PrimariesReader.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
 
@@ -69,7 +81,8 @@ std::vector<PrimariesReader::Particle> PrimariesReaderGenie::getParticles() {
     auto status = tree_reader_->GetEntryStatus();
     if(status == TTreeReader::kEntryNotFound || status == TTreeReader::kEntryBeyondEnd) {
         throw EndOfRunException("Requesting end of run: end of tree reached");
-    } else if(status != TTreeReader::kEntryValid) {
+    }
+    if(status != TTreeReader::kEntryValid) {
         throw EndOfRunException("Problem reading from tree, error: " + std::to_string(static_cast<int>(status)));
     }
 

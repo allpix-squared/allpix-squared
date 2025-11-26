@@ -179,9 +179,9 @@ namespace allpix {
 
         /**
          * @brief Set the section header to use from now on
-         * @param header Header to use
+         * @param section Section header to use
          */
-        static void setSection(std::string header);
+        static void setSection(std::string section);
         /**
          * @brief Get the current section header
          * @return Header used
@@ -204,7 +204,7 @@ namespace allpix {
          * @brief Get the current date as a printable string
          * @return Current date as a string
          */
-        std::string get_current_date();
+        static std::string get_current_date();
 
         /**
          * @brief Return if a stream is likely a terminal screen (supporting colors etc.)

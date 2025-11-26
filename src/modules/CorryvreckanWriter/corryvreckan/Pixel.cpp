@@ -11,6 +11,8 @@
 
 #include "Pixel.hpp"
 
+#include <ostream>
+
 using namespace corryvreckan;
 
 void Pixel::print(std::ostream& out) const {

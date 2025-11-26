@@ -10,7 +10,15 @@
 
 #include "MeshElement.hpp"
 
-#include <exception>
+#include <cmath>
+#include <cstddef>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+#include <Eigen/Core>
+#include <octree/Octree.hpp>
 
 #include "core/utils/log.h"
 
@@ -91,7 +99,8 @@ bool MeshElement::isValid(double volume_cut, Point& qp) const {
         if(std::fabs(volume_) < MIN_VOLUME) {
             LOG(TRACE) << "Invalid tetrahedron, all vertices are " << (dimension_ == 3 ? "coplanar" : "colinear");
             return false;
-        } else if(std::fabs(volume_) <= volume_cut) {
+        }
+        if(std::fabs(volume_) <= volume_cut) {
             LOG(TRACE) << "Invalid tetrahedron with volume " << std::fabs(volume_) << " smaller than volume cut "
                        << volume_cut;
             return false;
@@ -110,7 +119,7 @@ bool MeshElement::isValid(double volume_cut, Point& qp) const {
 Point MeshElement::getObservable(Point& qp) const {
     Point new_observable;
     for(size_t index = 0; index < dimension_ + 1; index++) {
-        double sub_volume = get_sub_volume(index, qp);
+        double const sub_volume = get_sub_volume(index, qp);
         LOG(DEBUG) << "Sub volume " << index << ": " << sub_volume;
         new_observable.x = new_observable.x + (sub_volume * e_field_[index].x) / volume_;
         new_observable.y = new_observable.y + (sub_volume * e_field_[index].y) / volume_;
@@ -127,7 +136,7 @@ std::string MeshElement::print(Point& qp) const {
         stream << "Tetrahedron vertex (" << vertices_[index].x << ", " << vertices_[index].y << ", " << vertices_[index].z
                << ") - "
                << " Distance: " << get_distance(index, qp) << " - Electric field: (" << e_field_[index].x << ", "
-               << e_field_[index].y << ", " << e_field_[index].z << ")" << std::endl;
+               << e_field_[index].y << ", " << e_field_[index].z << ")" << '\n';
     }
     stream << "Volume: " << volume_;
     return stream.str();

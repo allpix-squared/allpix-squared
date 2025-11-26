@@ -11,14 +11,23 @@
 
 #include "PrimariesReaderHepMC.hpp"
 
-#include "core/module/exceptions.h"
-#include "core/utils/log.h"
+#include <cstdint>
+#include <filesystem>
+#include <memory>
+#include <vector>
 
+#include <HepMC3/GenEvent.h>
 #include <HepMC3/Print.h>
 #include <HepMC3/ReaderAscii.h>
 #include <HepMC3/ReaderAsciiHepMC2.h>
 #include <HepMC3/ReaderRoot.h>
 #include <HepMC3/ReaderRootTree.h>
+#include <HepMC3/Units.h>
+
+#include "PrimariesReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/log.h"
 
 using namespace allpix;
 

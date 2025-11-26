@@ -72,7 +72,7 @@ namespace allpix {
          * @param  threshold    Threshold to be crossed
          * @return              Timestamp of threshold crossing in internal units
          */
-        double time_of_arrival(const PixelCharge& pixel_charge, double threshold) const;
+        static double time_of_arrival(const PixelCharge& pixel_charge, double threshold);
 
         // Configuration
         bool sample_all_channels_{};

@@ -11,26 +11,40 @@
 
 #include "WeightingPotentialReaderModule.hpp"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
-#include <fstream>
+#include <cstddef>
 #include <limits>
+#include <math.h>
 #include <memory>
 #include <new>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include <TH2F.h>
+#include <Math/Point2Dfwd.h>
+#include <Math/Vector2Dfwd.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <magic_enum/magic_enum.hpp>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/DetectorModel.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "objects/Pixel.hpp"
+#include "tools/field_parser.h"
 
 using namespace allpix;
 
 WeightingPotentialReaderModule::WeightingPotentialReaderModule(Configuration& config,
-                                                               Messenger*,
+                                                               Messenger* /*unused*/,
                                                                std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
@@ -116,7 +130,7 @@ FieldFunction<double>
 WeightingPotentialReaderModule::get_pad_potential_function(const ROOT::Math::XYVector& implant,
                                                            std::pair<double, double> thickness_domain) {
 
-    LOG(TRACE) << "Calculating function for the plane condenser weighting potential." << std::endl;
+    LOG(TRACE) << "Calculating function for the plane condenser weighting potential." << '\n';
 
     return [implant, thickness_domain](const ROOT::Math::XYZPoint& pos) {
         // Calculate values of the "f" function
@@ -127,10 +141,10 @@ WeightingPotentialReaderModule::get_pad_potential_function(const ROOT::Math::XYV
             };
 
             // Shift the x and y coordinates by plus/minus half the implant size:
-            double x1 = x - implant.x() / 2;
-            double x2 = x + implant.x() / 2;
-            double y1 = y - implant.y() / 2;
-            double y2 = y + implant.y() / 2;
+            double const x1 = x - implant.x() / 2;
+            double const x2 = x + implant.x() / 2;
+            double const y1 = y - implant.y() / 2;
+            double const y2 = y + implant.y() / 2;
 
             // Calculate arctan sum and return
             return arctan(x1, y1, u) + arctan(x2, y2, u) - arctan(x1, y2, u) - arctan(x2, y1, u);
@@ -162,20 +176,20 @@ void WeightingPotentialReaderModule::create_output_plots() {
     auto position = config_.get<ROOT::Math::XYPoint>("output_plots_position", {center.x(), center.y()});
     auto steps = config_.get<size_t>("output_plots_steps", 500);
 
-    double x_min = center.x() - size.x() / 2.0;
-    double x_max = center.x() + size.x() / 2.0;
-    double y_min = center.y() - size.y() / 2.0;
-    double y_max = center.y() + size.y() / 2.0;
-    double z_min = center.z() - size.z() / 2.0;
-    double z_max = center.z() + size.z() / 2.0;
+    double const x_min = center.x() - size.x() / 2.0;
+    double const x_max = center.x() + size.x() / 2.0;
+    double const y_min = center.y() - size.y() / 2.0;
+    double const y_max = center.y() + size.y() / 2.0;
+    double const z_min = center.z() - size.z() / 2.0;
+    double const z_max = center.z() + size.z() / 2.0;
 
     // Create 1D histograms
-    std::string title = "#phi_{w}/V_{w} at " + Units::display(position, {"um"}) + ";z (mm);unit potential";
+    std::string const title = "#phi_{w}/V_{w} at " + Units::display(position, {"um"}) + ";z (mm);unit potential";
     auto* histogram = new TH1F("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
-        double z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+        double const z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
         auto pos = ROOT::Math::XYZPoint(position.x(), position.y(), z);
 
         // Get potential from detector and fill the histogram
@@ -219,13 +233,13 @@ void WeightingPotentialReaderModule::create_output_plots() {
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
-        double z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
+        double const z = z_min + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * (z_max - z_min);
 
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double x =
+            double const x =
                 center.x() - size.x() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.x();
-            double y =
+            double const y =
                 center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
 
             // Get potential from detector and fill histogram. We calculate relative to pixel (1,1) so we need to shift:
@@ -239,10 +253,11 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
     for(size_t j = 0; j < steps; ++j) {
         LOG_PROGRESS(INFO, "plotting") << "Plotting weighting potential: " << 100 * j * steps / (steps * steps) << "%";
-        double x = center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
+        double const x =
+            center.x() - size.x() / 2.0 + ((static_cast<double>(j) + 0.5) / static_cast<double>(steps)) * size.x();
         // Scan horizontally over three pixels (from -1.5 pitch to +1.5 pitch)
         for(size_t k = 0; k < steps; ++k) {
-            double y =
+            double const y =
                 center.y() - size.y() / 2.0 + ((static_cast<double>(k) + 0.5) / static_cast<double>(steps)) * size.y();
             auto potential_z = detector_->getWeightingPotential(ROOT::Math::XYZPoint(x, y, zcut), Pixel::Index(1, 1));
             histogram2Dz->Fill(x, y, potential_z);

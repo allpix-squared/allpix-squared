@@ -10,6 +10,8 @@
  */
 
 #include "core/config/exceptions.h"
+#include <initializer_list>
+#include <string>
 #include "Configuration.hpp"
 #include "core/module/ModuleIdentifier.hpp"
 

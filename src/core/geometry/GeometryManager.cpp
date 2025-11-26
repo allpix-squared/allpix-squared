@@ -9,26 +9,42 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "GeometryManager.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <Math/RotationX.h>
-#include <Math/RotationY.h>
-#include <Math/RotationZ.h>
-#include <Math/RotationZYX.h>
-#include <Math/Vector3D.h>
+#include <Math/GenVector/Cartesian3D.h>
+#include <Math/GenVector/DisplacementVector3D.h>
+#include <Math/GenVector/Rotation3D.h>
+#include <Math/GenVector/RotationX.h>
+#include <Math/GenVector/RotationY.h>
+#include <Math/GenVector/RotationZ.h>
+#include <Math/GenVector/RotationZYX.h>
 
-#include "GeometryManager.hpp"
+#include "core/config/ConfigManager.hpp"
 #include "core/config/ConfigReader.hpp"
+#include "core/config/exceptions.h"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorModel.hpp"
 #include "core/geometry/exceptions.h"
 #include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/prng.h"
+#include "core/utils/text.h"
 #include "core/utils/unit.h"
-#include "tools/ROOT.h"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -70,8 +86,9 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
             passive_elements_.push_back(geometry_section);
             LOG(DEBUG) << "Passive element " << geometry_section.getName() << ", putting aside";
             continue;
+        }
 
-        } else if(role != "active") {
+        if(role != "active") {
             throw InvalidValueError(geometry_section, "role", "unknown role");
         }
 
@@ -123,7 +140,7 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
  * Returns the pre-calculated position and orientation of a passive element in global coordinates
  */
 std::pair<XYZPoint, Rotation3D> GeometryManager::getPassiveElementOrientation(const std::string& passive_element) const {
-    if(passive_orientations_.count(passive_element) == 0) {
+    if(!passive_orientations_.contains(passive_element)) {
         throw ModuleError("Passive Material '" + passive_element + "' is not defined.");
     }
     return passive_orientations_.at(passive_element);
@@ -346,7 +363,7 @@ void GeometryManager::load_models() {
     LOG(TRACE) << "Loading remaining default models";
 
     // Get paths to read models from
-    std::vector<std::string> paths = getModelsPath();
+    std::vector<std::string> const paths = getModelsPath();
 
     LOG(TRACE) << "Reading model files";
     // Add all the paths to the reader
@@ -360,7 +377,7 @@ void GeometryManager::load_models() {
 
                 // Accept only with correct model suffix
                 auto sub_path = std::filesystem::canonical(entry);
-                std::string suffix(ALLPIX_MODEL_SUFFIX);
+                std::string const suffix(ALLPIX_MODEL_SUFFIX);
                 if(sub_path.extension() != suffix) {
                     continue;
                 }
@@ -399,7 +416,7 @@ void GeometryManager::read_model_file(const std::filesystem::path& path) {
 
     } catch(const ConfigParseError& e) {
         // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
-        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << std::endl << e.what();
+        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << '\n' << e.what();
     }
 }
 
@@ -469,9 +486,9 @@ std::pair<XYZPoint, Rotation3D> GeometryManager::calculate_orientation(const Con
 
     // Calculate possible detector misalignment to be added
     auto misalignment = [&](auto residuals) {
-        double dx = allpix::normal_distribution<double>(0, residuals.x())(random_generator_);
-        double dy = allpix::normal_distribution<double>(0, residuals.y())(random_generator_);
-        double dz = allpix::normal_distribution<double>(0, residuals.z())(random_generator_);
+        double const dx = allpix::normal_distribution<double>(0, residuals.x())(random_generator_);
+        double const dy = allpix::normal_distribution<double>(0, residuals.y())(random_generator_);
+        double const dz = allpix::normal_distribution<double>(0, residuals.z())(random_generator_);
         return DisplacementVector3D<Cartesian3D<double>>(dx, dy, dz);
     };
 

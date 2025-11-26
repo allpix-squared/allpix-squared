@@ -11,28 +11,39 @@
  */
 
 #include "SensitiveDetectorActionG4.hpp"
-#include "TrackInfoG4.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <memory>
+#include <utility>
+#include <vector>
 
-#include "G4DecayTable.hh"
-#include "G4HCofThisEvent.hh"
-#include "G4LogicalVolume.hh"
-#include "G4RunManager.hh"
-#include "G4SDManager.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4Track.hh"
-#include "G4VProcess.hh"
-#include "G4ios.hh"
+#include <G4LogicalVolume.hh>
+#include <G4RunManager.hh>
+#include <G4SDManager.hh>
+#include <G4Step.hh>
+#include <G4StepPoint.hh>
+#include <G4ThreeVector.hh>
+#include <G4TouchableHandle.hh>
+#include <G4TouchableHistory.hh>
+#include <G4Track.hh>
+#include <G4Types.hh>
+#include <G4VProcess.hh>
+#include <Math/Point3Dfwd.h>
 
-#include "TMath.h"
-#include "TString.h"
-
+#include "TrackInfoG4.hpp"
+#include "TrackInfoManager.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
-#include "tools/ROOT.h"
-#include "tools/geant4/geant4.h"
+#include "core/utils/unit.h"
+#include "objects/DepositedCharge.hpp"
+#include "objects/MCParticle.hpp"
+#include "objects/SensorCharge.hpp"
 
 using namespace allpix;
 
@@ -50,7 +61,7 @@ SensitiveDetectorActionG4::SensitiveDetectorActionG4(const std::shared_ptr<Detec
     sd_man_g4->AddNewDetector(this);
 }
 
-G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*) {
+G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory* /*ROhist*/) {
     // Get the step parameters
     auto edep = step->GetTotalEnergyDeposit();
     G4StepPoint* preStep = step->GetPreStepPoint();
@@ -58,14 +69,15 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     LOG(TRACE) << "Distance of this step: " << (postStep->GetPosition() - preStep->GetPosition()).mag();
 
     // Get Transportaion Matrix
-    G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+    G4TouchableHandle const theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
     auto* track = step->GetTrack();
 
     // Put the charge deposit in the middle of the step unless it is a photon:
     auto is_photon = (track->GetDynamicParticle()->GetPDGcode() == 22);
     LOG(TRACE) << "Placing energy deposit "
                << (is_photon ? "at the end of step, photon detected" : "in the middle of the step");
-    G4ThreeVector step_pos = is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
+    G4ThreeVector const step_pos =
+        is_photon ? postStep->GetPosition() : (preStep->GetPosition() + postStep->GetPosition()) / 2;
     double step_time = is_photon ? postStep->GetGlobalTime() : (preStep->GetGlobalTime() + postStep->GetGlobalTime()) / 2;
 
     // If this arrives very late, skip MCParticle and DepositedCharge creation:
@@ -181,7 +193,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto track_id = track_id_point.first;
         auto local_begin = track_id_point.second;
 
-        ROOT::Math::XYZPoint end_point;
+        ROOT::Math::XYZPoint const end_point;
         auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
         auto charge = track_charge_.at(track_id);

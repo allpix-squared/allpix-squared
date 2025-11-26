@@ -12,26 +12,32 @@
 #include "PrimariesGeneratorAction.hpp"
 #include "PrimariesReader.hpp"
 
-#include <limits>
+#include <iomanip>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include <G4Event.hh>
+#include <G4ParticleGun.hh>
 #include <G4ParticleTable.hh>
+#include <G4ThreeVector.hh>
 #include <G4TransportationManager.hh>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "tools/ROOT.h"
 #include "tools/geant4/geant4.h"
 
 using namespace allpix;
 
-PrimariesGeneratorAction::PrimariesGeneratorAction(const Configuration&, std::shared_ptr<PrimariesReader> reader)
+PrimariesGeneratorAction::PrimariesGeneratorAction(const Configuration& /*unused*/, std::shared_ptr<PrimariesReader> reader)
     : particle_gun_(std::make_unique<G4ParticleGun>()), reader_(std::move(reader)) {
 
     LOG(DEBUG) << "Setting up Geant4 generator action";
 }
 
-bool PrimariesGeneratorAction::check_vertex_inside_world(const G4ThreeVector& pos) const {
+bool PrimariesGeneratorAction::check_vertex_inside_world(const G4ThreeVector& pos) {
     auto* solid = G4TransportationManager::GetTransportationManager()
                       ->GetNavigatorForTracking()
                       ->GetWorldVolume()
@@ -47,7 +53,7 @@ void PrimariesGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     // Read next set of primary particles from the data file
     using PrimaryParticle = PrimariesReader::Particle;
-    std::vector<PrimaryParticle> particles = reader_->getParticles();
+    std::vector<PrimaryParticle> const particles = reader_->getParticles();
 
     // Dispatch them to the Geant4 particle gun
     LOG(DEBUG) << "Primary particles generated:";

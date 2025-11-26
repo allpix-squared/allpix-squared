@@ -44,7 +44,7 @@ namespace allpix {
          * @param  pos Initial position of the primary particle
          * @return     True if within the world volume, false otherwise
          */
-        bool check_vertex_inside_world(const G4ThreeVector& pos) const;
+        static bool check_vertex_inside_world(const G4ThreeVector& pos);
 
         std::unique_ptr<G4ParticleGun> particle_gun_;
         std::shared_ptr<PrimariesReader> reader_;

@@ -10,29 +10,36 @@
  */
 
 #include "WorkerRunManager.hpp"
-#include "G4LoggingDestination.hpp"
-#include "MTRunManager.hpp"
-#include "SensitiveDetectorAndFieldConstruction.hpp"
-#include "core/module/exceptions.h"
-
-#include <magic_enum/magic_enum.hpp>
 
 #include <atomic>
+#include <vector>
 
+#include <CLHEP/Random/RandomEngine.h>
+#include <G4ApplicationState.hh>
 #include <G4MTRunManager.hh>
+#include <G4RunManager.hh>
+#include <G4RunManagerKernel.hh>
 #include <G4StateManager.hh>
+#include <G4String.hh>
 #include <G4Threading.hh>
 #include <G4TransportationManager.hh>
 #include <G4UImanager.hh>
-#include <G4UserRunAction.hh>
 #include <G4UserWorkerInitialization.hh>
 #include <G4UserWorkerThreadInitialization.hh>
 #include <G4VUserActionInitialization.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <G4WorkerRunManager.hh>
 #include <G4WorkerThread.hh>
+#include <G4ios.hh>
+#include <Randomize.hh>
+#include <magic_enum/magic_enum.hpp>
 
+#include "core/module/exceptions.h"
+#include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
+#include "tools/geant4/G4LoggingDestination.hpp"
+#include "tools/geant4/MTRunManager.hpp"
+#include "tools/geant4/SensitiveDetectorAndFieldConstruction.hpp"
 
 using namespace allpix;
 
@@ -86,7 +93,7 @@ void WorkerRunManager::InitializeGeometry() {
     kernel->WorkerDefineWorldVolume(worldVol, false);
     kernel->SetNumberOfParallelWorld(masterKernel->GetNumberOfParallelWorld());
     // Step3: Call user's ConstructSDandField()
-    auto* master_run_manager = static_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
+    auto* master_run_manager = dynamic_cast<MTRunManager*>(G4MTRunManager::GetMasterRunManager());
     SensitiveDetectorAndFieldConstruction* detector_construction = master_run_manager->GetSDAndFieldConstruction();
     if(detector_construction == nullptr) {
         throw ModuleError("DetectorConstruction is not defined!");
@@ -123,7 +130,7 @@ void WorkerRunManager::DoEventLoop(G4int n_event, const char* macroFile, G4int n
     TerminateEventLoop();
 }
 
-G4Event* WorkerRunManager::GenerateEvent(G4int) {
+G4Event* WorkerRunManager::GenerateEvent(G4int /*i_event*/) {
     if(userPrimaryGeneratorAction == nullptr) {
         throw ModuleError("G4VUserPrimaryGeneratorAction is not defined!");
     }
@@ -136,9 +143,9 @@ G4Event* WorkerRunManager::GenerateEvent(G4int) {
         if(!runIsSeeded) {
             // Seeds are stored in this queue to ensure we can reproduce the results of events
             // each event will reseed the random number generator
-            long s1 = seedsQueue.front();
+            long const s1 = seedsQueue.front();
             seedsQueue.pop();
-            long s2 = seedsQueue.front();
+            long const s2 = seedsQueue.front();
             seedsQueue.pop();
 
             // Seed RNG for this run only once
@@ -165,7 +172,7 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
     // Initliazie per-thread stream-output
     // The following line is needed before we actually do I/O initialization
     // because the constructor of UI manager resets the I/O destination.
-    G4int this_id = counter.fetch_add(1);
+    G4int const this_id = counter.fetch_add(1);
     G4Threading::G4SetThreadId(this_id);
     G4UImanager::GetUIpointer()->SetUpForAThread(this_id);
 
@@ -226,7 +233,7 @@ WorkerRunManager* WorkerRunManager::GetNewInstanceForThread() { // NOLINT
 
 void WorkerRunManager::AbortRun(bool softAbort) {
     // This method is valid only for GeomClosed or EventProc state
-    G4ApplicationState currentState = G4StateManager::GetStateManager()->GetCurrentState();
+    G4ApplicationState const currentState = G4StateManager::GetStateManager()->GetCurrentState();
     if(currentState == G4State_GeomClosed || currentState == G4State_EventProc) {
         runAborted = true;
         if(currentState == G4State_EventProc && !softAbort) {

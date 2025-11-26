@@ -10,22 +10,42 @@
 
 #include "CapacitiveTransferModule.hpp"
 
+#include <cmath>
+#include <cstddef>
 #include <fstream>
+#include <ios>
 #include <limits>
+#include <map>
 #include <memory>
-#include <new>
-#include <stdexcept>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
+
+#include <Eigen/src/Core/Matrix.h>
+#include <Eigen/src/Geometry/Hyperplane.h>
+#include <Math/Point2Dfwd.h>
+#include <TFile.h>
+#include <TGraph.h>
+#include <TH2.h>
+#include <TString.h>
 
 #include "core/config/exceptions.h"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 #include "core/utils/unit.h"
-#include "tools/ROOT.h"
-
-#include <Eigen/Core>
-
+#include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -82,7 +102,8 @@ void CapacitiveTransferModule::initialize() {
     if(config_.count({"coupling_matrix", "coupling_file", "coupling_scan_file"}) > 1) {
         throw InvalidCombinationError(
             config_, {"coupling_matrix", "coupling_file", "coupling_scan_file"}, "More than one coupling input defined");
-    } else if(config_.has("coupling_matrix")) {
+    }
+    if(config_.has("coupling_matrix")) {
         relative_coupling_ = config_.getMatrix<double>("coupling_matrix");
         matrix_rows_ = static_cast<unsigned int>(relative_coupling_.size());
         matrix_cols_ = static_cast<unsigned int>(relative_coupling_[0].size());
@@ -334,11 +355,11 @@ void CapacitiveTransferModule::run(Event* event) {
 
                 // Some designs have a mirrored crosstalk matrix which is flipped in every other row or column:
                 auto row_to_use = row;
-                if(flip_odd_rows_ == true && (ypixel % 2 == 1)) {
+                if(flip_odd_rows_ && (ypixel % 2 == 1)) {
                     row_to_use = max_row_ - row - 1;
                 }
                 auto col_to_use = col;
-                if(flip_odd_cols_ == true && (xpixel % 2 == 1)) {
+                if(flip_odd_cols_ && (xpixel % 2 == 1)) {
                     col_to_use = max_col_ - col - 1;
                 }
                 auto xcoord = xpixel + static_cast<int>(col_to_use - static_cast<size_t>(std::floor(matrix_cols_ / 2)));
@@ -356,8 +377,8 @@ void CapacitiveTransferModule::run(Event* event) {
 
                 double ccpd_factor = 0;
                 if(config_.has("coupling_scan_file")) {
-                    double local_x = pixel_index.x() * model_->getPixelSize().x();
-                    double local_y = pixel_index.y() * model_->getPixelSize().y();
+                    double const local_x = pixel_index.x() * model_->getPixelSize().x();
+                    double const local_y = pixel_index.y() * model_->getPixelSize().y();
                     auto pixel_point = Eigen::Vector3d(local_x, local_y, 0);
                     auto pixel_projection = plane_.projection(pixel_point);
                     auto pixel_gap = pixel_projection[2];
@@ -400,7 +421,7 @@ void CapacitiveTransferModule::run(Event* event) {
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
     for(auto& pixel_index_charge : pixel_map) {
-        double charge = pixel_index_charge.second.first;
+        double const charge = pixel_index_charge.second.first;
 
         // Get pixel object from detector
         auto pixel = detector_->getPixel(pixel_index_charge.first.x(), pixel_index_charge.first.y());

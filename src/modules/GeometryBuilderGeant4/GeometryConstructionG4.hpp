@@ -50,7 +50,7 @@ namespace allpix {
         /**
          * @brief Check all placed volumes for overlaps
          */
-        void check_overlaps() const;
+        static void check_overlaps();
 
         /**
          * @brief Verify that framework coordinate transformations match with the transformations built from Geant4 volumes

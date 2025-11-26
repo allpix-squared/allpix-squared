@@ -12,13 +12,20 @@
 #include "Configuration.hpp"
 
 #include <cassert>
+#include <cctype>
+#include <cstddef>
 #include <filesystem>
+#include <initializer_list>
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 
 using namespace allpix;
 
@@ -81,7 +88,7 @@ std::string Configuration::getText(const std::string& key, const std::string& de
  *
  * For a relative path the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
-// TODO [doc] Document canonicalizing behaviour
+// TODO(simonspa): [doc] Document canonicalizing behaviour
 std::filesystem::path Configuration::getPath(const std::string& key, bool check_exists) const {
     try {
         return path_to_absolute(get<std::string>(key), check_exists);
@@ -107,7 +114,7 @@ Configuration::getPathWithExtension(const std::string& key, const std::string& e
  *
  * For all relative paths the absolute path of the configuration file is prepended. Absolute paths are not changed.
  */
-// TODO [doc] Document canonicalizing behaviour
+// TODO(simonspa): [doc] Document canonicalizing behaviour
 std::vector<std::filesystem::path> Configuration::getPathArray(const std::string& key, bool check_exists) const {
     std::vector<std::filesystem::path> path_array;
 
@@ -223,7 +230,9 @@ std::unique_ptr<Configuration::parse_node> Configuration::parse_value(std::strin
     }
 
     // Initialize variables for non-zero levels
-    size_t beg = 1, lst = 1, in_dpt = 0;
+    size_t beg = 1;
+    size_t lst = 1;
+    size_t in_dpt = 0;
     bool in_dpt_chg = false;
 
     // Implicitly add pair of brackets on zero level

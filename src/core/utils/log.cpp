@@ -11,17 +11,25 @@
 
 #include "log.h"
 
-#include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <ctime>
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <ostream>
 #include <regex>
+#include <sstream>
+#include <stdexcept>
+#include <stdio.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
+#include <utility>
+#include <vector>
 
 using namespace allpix;
 
@@ -49,7 +57,7 @@ DefaultLogger::~DefaultLogger() {
         return;
     }
 
-    // TODO [doc] any extra exceptions here need to be caught
+    // TODO(simonspa): [doc] any extra exceptions here need to be caught
 
     // Get output string
     std::string out(os.str());
@@ -100,7 +108,8 @@ DefaultLogger::~DefaultLogger() {
 
     // Create a version without any special terminal characters
     std::string out_no_special;
-    size_t prev = 0, pos = 0;
+    size_t prev = 0;
+    size_t pos = 0;
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         out_no_special += out.substr(prev, pos - prev);
         prev = out.find('m', pos) + 1;
@@ -134,12 +143,12 @@ DefaultLogger::~DefaultLogger() {
  */
 void DefaultLogger::finish() {
     // Lock the mutex to guard output writing
-    std::lock_guard<std::mutex> lock(write_mutex_);
+    std::lock_guard<std::mutex> const lock(write_mutex_);
 
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
         for(auto* stream : get_streams()) {
-            (*stream) << std::endl;
+            (*stream) << '\n';
             (*stream).flush();
         }
     }
@@ -228,8 +237,9 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
     }
 
     // Save the indent count to fix with newlines
-    size_t prev = 0, pos = 0;
-    std::string out = os.str();
+    size_t prev = 0;
+    size_t pos = 0;
+    std::string const out = os.str();
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         indent_count_ += static_cast<unsigned int>(pos - prev);
         prev = out.find('m', pos) + 1;
@@ -309,7 +319,7 @@ LogFormat& DefaultLogger::get_format() {
     thread_local LogFormat reporting_level = LogFormat::DEFAULT;
     return reporting_level;
 }
-void DefaultLogger::setFormat(LogFormat level) { get_format() = level; }
+void DefaultLogger::setFormat(LogFormat format) { get_format() = format; }
 LogFormat DefaultLogger::getFormat() { return get_format(); }
 
 // Convert string to log format and vice versa

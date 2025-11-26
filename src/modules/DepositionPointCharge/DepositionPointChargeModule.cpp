@@ -11,16 +11,30 @@
 
 #include "DepositionPointChargeModule.hpp"
 
+#include <algorithm>
 #include <cmath>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
+#include <Math/GenVector/Translation3D.h>
+#include <Math/Point2Dfwd.h>
+#include <TH2.h>
+
+#include "core/config/ConfigManager.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
+#include "objects/SensorCharge.hpp"
+#include "tools/ROOT.h"
 #include "tools/liang_barsky.h"
 
 using namespace allpix;
@@ -76,7 +90,7 @@ void DepositionPointChargeModule::initialize() {
         LOG(DEBUG) << "Normalised MIP direction: " << mip_direction_;
 
         // Calculate voxel size and ensure granularity is not zero:
-        auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1u);
+        auto granularity = std::max(config_.get<unsigned int>("number_of_steps"), 1U);
         // To get the step size, look at the intersection points along the MIP direction starting from the centre of the
         // sensitive region
         auto centre_position = detector_model_->getMatrixCenter();
@@ -261,9 +275,9 @@ void DepositionPointChargeModule::run(Event* event) {
     } else {
         // Calculate random offset from configured position
         auto shift = [&](auto size) {
-            double dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
-            double dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double const dx = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double const dy = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
+            double const dz = allpix::normal_distribution<double>(0, size)(event->getRandomEngine());
             return ROOT::Math::XYZVector(dx, dy, dz);
         };
 
@@ -350,8 +364,8 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     // End point is the intersection along the line to the box. Start position is also that, but in the other direction.
     // The given position is a point the line intersects. Need to extrapolate to surfaces using this
     auto [start_local, end_local] = SensorIntersection(position);
-    ROOT::Math::XYZPoint start_global = detector_->getGlobalPosition(start_local);
-    ROOT::Math::XYZPoint end_global = detector_->getGlobalPosition(end_local);
+    ROOT::Math::XYZPoint const start_global = detector_->getGlobalPosition(start_local);
+    ROOT::Math::XYZPoint const end_global = detector_->getGlobalPosition(end_local);
 
     // Total number of carriers will be:
     auto charge = static_cast<unsigned int>(carriers_ * sqrt((end_local - start_local).Mag2()) / step_size_);

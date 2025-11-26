@@ -8,28 +8,47 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cmath>
 #include <csignal>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
-
-#include "core/config/ConfigReader.hpp"
-#include "core/config/Configuration.hpp"
-#include "core/config/exceptions.h"
-#include "core/geometry/DetectorModel.hpp"
-#include "core/module/ThreadPool.hpp"
-#include "core/utils/log.h"
-#include "tools/ROOT.h"
-#include "tools/field_parser.h"
-#include "tools/units.h"
+#include <future>
+#include <iostream>
+#include <limits>
+#include <math.h>
+#include <memory>
+#include <ostream>
+#include <signal.h>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
+#include "core/config/ConfigReader.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "core/module/ThreadPool.hpp"
+#include "core/utils/log.h"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
+#include "tools/field_parser.h"
+#include "tools/units.h"
+
 using allpix::ThreadPool;
 
-void interrupt_handler(int);
+void interrupt_handler(int /*unused*/);
 
 bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& lhs,
                            const ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<int>>& rhs) {
@@ -42,7 +61,7 @@ bool ROOT::Math::operator<(const ROOT::Math::DisplacementVector2D<ROOT::Math::Ca
 /**
  * @brief Handle termination request (CTRL+C)
  */
-void interrupt_handler(int) {
+void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting generation...";
     allpix::Log::finish();
     std::exit(0);
@@ -110,23 +129,22 @@ int main(int argc, char** argv) {
 
         // Print help if requested or no arguments given
         if(print_help) {
-            std::cerr << "Usage: generate_potential --model <file_name> [<options>]" << std::endl;
-            std::cout << "Required parameters:" << std::endl;
+            std::cerr << "Usage: generate_potential --model <file_name> [<options>]" << '\n';
+            std::cout << "Required parameters:" << '\n';
             std::cout << "\t --model <file>          Canonical path to the model file the potential should be generated for"
-                      << std::endl;
-            std::cout << "Optional parameters:" << std::endl;
-            std::cout << "\t --binning <int vector>  3D vector with the number of bins in each coordinate x, y, z"
-                      << std::endl;
+                      << '\n';
+            std::cout << "Optional parameters:" << '\n';
+            std::cout << "\t --binning <int vector>  3D vector with the number of bins in each coordinate x, y, z" << '\n';
             std::cout
                 << "\t --matrix  <int vector>  2D vector with size of the pixel array in x and y the potential should be "
                    "calculated for"
-                << std::endl;
-            std::cout << "\t --output  <file name>   Name of the file the potential should be stored in" << std::endl;
+                << '\n';
+            std::cout << "\t --output  <file name>   Name of the file the potential should be stored in" << '\n';
             std::cout
                 << "\t --init                  Switch to enable writing the potential in the INIT format instead of APF"
-                << std::endl;
-            std::cout << "\t -v <level>              verbosity level (default reporiting level is INFO)" << std::endl;
-            std::cout << "\t -h                      print this help text" << std::endl;
+                << '\n';
+            std::cout << "\t -v <level>              verbosity level (default reporiting level is INFO)" << '\n';
+            std::cout << "\t -h                      print this help text" << '\n';
 
             allpix::Log::finish();
             return return_code;
@@ -137,7 +155,7 @@ int main(int argc, char** argv) {
 
         // Parsing detector model to generate potential for:
         std::ifstream file(model_path);
-        allpix::ConfigReader reader(file, model_path);
+        allpix::ConfigReader const reader(file, model_path);
         auto model = allpix::DetectorModel::factory(model_path, reader);
 
         // Get pixel implant size from the detector model:
@@ -171,7 +189,7 @@ int main(int argc, char** argv) {
         }
 
         // Output file path:
-        std::string output_file_name =
+        std::string const output_file_name =
             output_file_prefix + "_weightingpotential" + (file_type == allpix::FileType::INIT ? ".init" : ".apf");
 
         LOG(INFO) << "Field size: " << allpix::Units::display(fieldsize, {"um", "mm"});
@@ -180,7 +198,7 @@ int main(int argc, char** argv) {
         auto start = std::chrono::system_clock::now();
 
         // Start potential generation on many threads:
-        auto num_threads = std::max(std::thread::hardware_concurrency(), 1u);
+        auto num_threads = std::max(std::thread::hardware_concurrency(), 1U);
         ThreadPool::registerThreadCount(num_threads);
         LOG(STATUS) << "Starting weighting potential generation with " << num_threads << " threads.";
         auto weighting_potential = std::make_shared<std::vector<double>>();
@@ -197,10 +215,10 @@ int main(int argc, char** argv) {
                     };
 
                     // Shift the x and y coordinates by plus/minus half the implant size:
-                    double x1 = x - implant.x() / 2;
-                    double x2 = x + implant.x() / 2;
-                    double y1 = y - implant.y() / 2;
-                    double y2 = y + implant.y() / 2;
+                    double const x1 = x - implant.x() / 2;
+                    double const x2 = x + implant.x() / 2;
+                    double const y1 = y - implant.y() / 2;
+                    double const y2 = y + implant.y() / 2;
 
                     // Calculate arctan sum and return
                     return arctan(x1, y1, u) + arctan(x2, y2, u) - arctan(x1, y2, u) - arctan(x2, y1, u);
@@ -253,7 +271,8 @@ int main(int argc, char** argv) {
         for(auto& wp_future : wp_futures) {
             auto slice = wp_future.get();
             weighting_potential->insert(weighting_potential->end(), slice.begin(), slice.end());
-            LOG_PROGRESS(INFO, "generation") << "Generating potential: " << (100 * slices_done / wp_futures.size()) << "%";
+            LOG_PROGRESS(INFO, "generation")
+                << "Generating potential: " << (static_cast<size_t>(100 * slices_done) / wp_futures.size()) << "%";
             slices_done++;
         }
         LOG_PROGRESS(INFO, "generation") << "Generating potential: 100%";
@@ -264,11 +283,12 @@ int main(int argc, char** argv) {
         LOG(INFO) << "Weighting potential generated in " << elapsed_seconds << " seconds.";
 
         // Prepare header and auxiliary information:
-        std::string header = "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " Weighting Potential Generator";
-        std::array<double, 3> size{{fieldsize.x(), fieldsize.y(), fieldsize.z()}};
-        std::array<size_t, 3> gridsize{{binning.x(), binning.y(), binning.z()}};
+        std::string const header =
+            "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " Weighting Potential Generator";
+        std::array<double, 3> const size{{fieldsize.x(), fieldsize.y(), fieldsize.z()}};
+        std::array<size_t, 3> const gridsize{{binning.x(), binning.y(), binning.z()}};
 
-        allpix::FieldData<double> field_data(header, gridsize, size, weighting_potential);
+        allpix::FieldData<double> const field_data(header, gridsize, size, weighting_potential);
         allpix::FieldWriter<double> field_writer(allpix::FieldQuantity::SCALAR);
         field_writer.writeFile(field_data, output_file_name, file_type);
 

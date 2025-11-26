@@ -11,12 +11,25 @@
 
 #include "InducedTransferModule.hpp"
 
+#include <cmath>
+#include <map>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/delegates.h"
 #include "core/module/Event.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "objects/Pixel.hpp"
 #include "objects/PixelCharge.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "objects/SensorCharge.hpp"
 
 using namespace allpix;
 using namespace ROOT::Math;
@@ -50,7 +63,8 @@ void InducedTransferModule::run(Event* event) {
 
     // Calculate induced charge by total motion of charge carriers
     LOG(TRACE) << "Calculating induced charge on pixels";
-    bool found_electrons = false, found_holes = false;
+    bool found_electrons = false;
+    bool found_holes = false;
 
     std::map<Pixel::Index, std::vector<std::pair<double, const PropagatedCharge*>>> pixel_map;
     for(const auto& propagated_charge : propagated_message->getData()) {
@@ -102,7 +116,7 @@ void InducedTransferModule::run(Event* event) {
     // Send an error message if this even only contained one of the two carrier types
     if(!found_electrons || !found_holes) {
         LOG_ONCE(ERROR) << "Did not find charge carriers of type \"" << (found_electrons ? "holes" : "electrons")
-                        << "\" in this event." << std::endl
+                        << "\" in this event." << '\n'
                         << "This will cause wrong calculation of induced charge";
     }
 

@@ -11,16 +11,17 @@
 
 #include "Event.hpp"
 
-#include <algorithm>
-#include <chrono>
-#include <list>
+#include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 
-#include "Module.hpp"
-#include "ModuleManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/ModuleManager.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/prng.h"
 
 using namespace allpix;
 

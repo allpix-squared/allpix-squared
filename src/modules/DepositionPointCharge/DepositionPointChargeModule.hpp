@@ -103,11 +103,11 @@ namespace allpix {
         ROOT::Math::XYZVector position_;
         ROOT::Math::XYZVector mip_direction_;
         std::vector<std::string> scan_coordinates_;
-        size_t no_of_coordinates_;
+        size_t no_of_coordinates_{};
 
-        bool scan_x_;
-        bool scan_y_;
-        bool scan_z_;
+        bool scan_x_{};
+        bool scan_y_{};
+        bool scan_z_{};
 
         // Output plot parameters
         bool output_plots_{};

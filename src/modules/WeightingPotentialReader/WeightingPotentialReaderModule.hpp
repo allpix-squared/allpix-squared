@@ -57,8 +57,8 @@ namespace allpix {
          * @param implant Vector with size of the readout implant in x and y
          * @param thickness_domain Domain of the thickness where the field is defined
          */
-        FieldFunction<double> get_pad_potential_function(const ROOT::Math::XYVector& implant,
-                                                         std::pair<double, double> thickness_domain);
+        static FieldFunction<double> get_pad_potential_function(const ROOT::Math::XYVector& implant,
+                                                                std::pair<double, double> thickness_domain);
 
         /**
          * @brief Read field from a file in init or apf format

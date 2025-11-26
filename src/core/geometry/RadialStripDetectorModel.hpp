@@ -188,10 +188,10 @@ namespace allpix {
 
         /**
          * @brief Returns if a local position is within the sensitive device
-         * @param position Position in local coordinates of the detector model
+         * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the sensor, false otherwise
          */
-        bool isWithinSensor(const ROOT::Math::XYZPoint& position) const override;
+        bool isWithinSensor(const ROOT::Math::XYZPoint& local_pos) const override;
 
         /**
          * @brief Returns if a local position is on the sensor boundary

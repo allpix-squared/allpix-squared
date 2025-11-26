@@ -11,10 +11,14 @@
 
 #include "Message.hpp"
 
+#include <functional>
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "core/geometry/Detector.hpp"
 #include "core/messenger/exceptions.h"
+#include "objects/Object.hpp"
 
 using namespace allpix;
 

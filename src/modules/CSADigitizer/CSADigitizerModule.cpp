@@ -11,18 +11,37 @@
 
 #include "CSADigitizerModule.hpp"
 
-#include "core/utils/distributions.h"
-#include "core/utils/unit.h"
-#include "tools/ROOT.h"
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <memory>
+#include <mutex>
+#include <numeric>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
-#include <TFile.h>
+#include <TFormula.h>
 #include <TGraph.h>
-#include <TH1D.h>
-#include <TH2D.h>
-#include <TProfile.h>
+#include <TH1.h>
+#include <TH2.h>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/distributions.h"
+#include "core/utils/log.h"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
+#include "objects/PixelCharge.hpp"
 #include "objects/PixelHit.hpp"
 #include "objects/PixelPulse.hpp"
+#include "tools/ROOT.h"
 
 using namespace allpix;
 
@@ -207,7 +226,7 @@ void CSADigitizerModule::initialize() {
         LOG(TRACE) << "Creating output plots";
 
         // Plot axis are in kilo electrons - convert from framework units!
-        int maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
+        int const maximum = static_cast<int>(Units::convert(config_.get<int>("output_plots_scale"), "ke"));
         auto nbins = config_.get<int>("output_plots_bins");
 
         // Create histograms if needed
@@ -304,7 +323,7 @@ void CSADigitizerModule::run(Event* event) {
             double outsum{};
             // Convolution: multiply pulse.at(k - i) * impulse_response_function_.at(i), when (k - i) < input length
             // -> no point to start i at 0, start from jmin:
-            size_t jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
+            size_t const jmin = (k >= pulse.size() - 1) ? k - (pulse.size() - 1) : 0;
             for(size_t i = jmin; i <= k; ++i) {
                 outsum += pulse.at(k - i) * impulse_response_function_.at(i);
             }
@@ -408,9 +427,8 @@ CSADigitizerModule::get_toa(double timestep, const std::vector<double>& pulse, d
     auto is_above_threshold = [this](double bin) {
         if(ignore_polarity_) {
             return (std::fabs(bin) > std::fabs(threshold_));
-        } else {
-            return (threshold_ > 0 ? bin > threshold_ : bin < threshold_);
         }
+        return (threshold_ > 0 ? bin > threshold_ : bin < threshold_);
     };
 
     // Find the point where the signal crosses the threshold, latch ToA
@@ -435,9 +453,8 @@ unsigned int CSADigitizerModule::get_tot(double timestep, double arrival_time, c
     auto is_below_threshold = [this](double bin) {
         if(ignore_polarity_) {
             return (std::fabs(bin) < std::fabs(threshold_));
-        } else {
-            return (threshold_ > 0 ? bin < threshold_ : bin > threshold_);
         }
+        return (threshold_ > 0 ? bin < threshold_ : bin > threshold_);
     };
 
     // Start calculation from the next ToT clock cycle following the threshold crossing
@@ -471,7 +488,7 @@ void CSADigitizerModule::create_output_pulsegraphs(const std::string& s_event_nu
     std::transform(
         plot_pulse_vec.begin(), plot_pulse_vec.end(), pulse_in_mV.begin(), [](auto& c) { return Units::convert(c, "mV"); });
 
-    std::string name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
+    std::string const name = s_name + "_ev" + s_event_num + "_px" + s_pixel_index;
     auto* csa_pulse_graph = new TGraph(static_cast<int>(pulse_in_mV.size()), amptime.data(), pulse_in_mV.data());
     csa_pulse_graph->GetXaxis()->SetTitle("t [ns]");
     csa_pulse_graph->GetYaxis()->SetTitle("CSA output [mV]");

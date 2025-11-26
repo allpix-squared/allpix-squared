@@ -12,14 +12,23 @@
  */
 
 #include "text.h"
+#include <cctype>
+#include <cstddef>
+#include <cstdio>
+#include <filesystem>
+#include <ios>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
-#include "unit.h"
+#include "core/utils/type.h"
 
 using namespace allpix;
 
 std::string allpix::trim(const std::string& str, const std::string& delims) {
-    size_t b = str.find_first_not_of(delims);
-    size_t e = str.find_last_not_of(delims);
+    size_t const b = str.find_first_not_of(delims);
+    size_t const e = str.find_last_not_of(delims);
     if(b == std::string::npos || e == std::string::npos) {
         return "";
     }
@@ -34,7 +43,7 @@ std::string allpix::from_string_helper(std::string str) {
     }
 
     // Check if there is whitespace in the string
-    size_t white_space = str.find_first_of(" \t\n\r\v");
+    size_t const white_space = str.find_first_of(" \t\n\r\v");
     if(white_space != std::string::npos) {
         throw std::invalid_argument("remaining data at end");
     }
@@ -45,7 +54,7 @@ std::string allpix::from_string_helper(std::string str) {
  * If a pair of enclosing double quotation marks is found, the whole string within the quotation marks is returned.
  * Otherwise only the first part is read until whitespace is encountered.
  */
-std::string allpix::from_string_impl(std::string str, type_tag<std::string>) {
+std::string allpix::from_string_impl(std::string str, type_tag<std::string> /*unused*/) {
     str = trim(str);
     // If there are "" then we should take the whole string
     if(!str.empty() && (str.front() == '\"' || str.front() == '\'')) {
@@ -61,7 +70,7 @@ std::string allpix::from_string_impl(std::string str, type_tag<std::string>) {
 /**
  * First parse as normal string and then construct path from it.
  */
-std::filesystem::path allpix::from_string_impl(std::string str, type_tag<std::filesystem::path>) {
+std::filesystem::path allpix::from_string_impl(std::string str, type_tag<std::filesystem::path> /*unused*/) {
     return {from_string<std::string>(std::move(str))};
 }
 
@@ -69,7 +78,7 @@ std::filesystem::path allpix::from_string_impl(std::string str, type_tag<std::fi
  * Both numerical (0, 1) and textual representations ("false", "true") are supported for booleans. No enclosing quotation
  * marks should be used.
  */
-bool allpix::from_string_impl(std::string str, type_tag<bool>) {
+bool allpix::from_string_impl(std::string str, type_tag<bool> /*unused*/) {
     str = from_string_helper(str);
 
     std::istringstream sstream(str);

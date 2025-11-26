@@ -10,21 +10,31 @@
  */
 
 #include "ModuleManager.hpp"
-#include "Event.hpp"
-
-#include <dlfcn.h>
-#include <unistd.h>
 
 #include <algorithm>
+#include <atomic>
+#include <cassert>
+#include <cctype>
 #include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <cstring>
+#include <dlfcn.h>
 #include <filesystem>
 #include <fstream>
-#include <limits>
+#include <memory>
+#include <mutex>
+#include <ostream>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <tuple>
+#include <utility>
+#include <vector>
 
+#include <TH1.h>
 #include <TROOT.h>
 #include <TSystem.h>
 
@@ -33,10 +43,17 @@
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "core/module/ThreadPool.hpp"
+#include "core/module/exceptions.h"
+#include "core/utils/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/prng.h"
+#include "core/utils/unit.h"
+#include "tools/ROOT.h"
 
 // Common prefix for all modules
-// TODO [doc] Should be provided by the build system
+// TODO(simonspa): [doc] Should be provided by the build system
 #define ALLPIX_MODULE_PREFIX "libAllpixModule"
 
 // These should point to the function defined in dynamic_module_impl.cpp
@@ -87,13 +104,14 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     // Loop through all non-global configurations
     for(auto& config : configs) {
         // Load library for each module. Libraries are named (by convention + CMAKE) libAllpixModule Name.suffix
-        std::string lib_name = std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
+        std::string const lib_name =
+            std::string(ALLPIX_MODULE_PREFIX).append(config.getName()).append(SHARED_LIBRARY_SUFFIX);
         LOG_PROGRESS(STATUS, "LOAD_LOOP") << "Loading module " << config.getName();
 
         void* lib = nullptr;
         bool load_error = false;
         dlerror();
-        if(loaded_libraries_.count(lib_name) == 0) {
+        if(!loaded_libraries_.contains(lib_name)) {
             // If library is not loaded then try to load it first from the config directories
             if(global_config.has("library_directories")) {
                 LOG(TRACE) << "Attempting to load library from configured paths";
@@ -104,7 +122,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     LOG(TRACE) << "Searching in path " << full_lib_path;
 
                     // Check if the absolute file exists and try to load if it exists
-                    std::ifstream check_file(full_lib_path);
+                    std::ifstream const check_file(full_lib_path);
                     if(check_file.good()) {
                         lib = dlopen(full_lib_path.c_str(), RTLD_NOW);
                         if(lib != nullptr) {
@@ -126,7 +144,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
                     dl_info.dli_fname = "";
 
                     // workaround to get the location of the library
-                    int ret = dladdr(dlsym(lib, ALLPIX_UNIQUE_FUNCTION), &dl_info);
+                    int const ret = dladdr(dlsym(lib, ALLPIX_UNIQUE_FUNCTION), &dl_info);
                     if(ret != 0) {
                         LOG(DEBUG) << "Found library during global search in runtime paths at " << dl_info.dli_fname;
                     } else {
@@ -147,8 +165,8 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
             const char* lib_error = dlerror();
 
             // Find the name of the loaded library if it exists
-            std::string lib_error_str = lib_error;
-            size_t end_pos = lib_error_str.find(':');
+            std::string const lib_error_str = lib_error;
+            size_t const end_pos = lib_error_str.find(':');
             std::string problem_lib;
             if(end_pos != std::string::npos) {
                 problem_lib = lib_error_str.substr(0, end_pos);
@@ -156,24 +174,23 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
 
             // FIXME is checking the error in this way portable?
             if(lib_error != nullptr && std::strstr(lib_error, "cannot allocate memory in static TLS block") != nullptr) {
-                LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << std::endl
-                           << "Try one of below workarounds:" << std::endl
-                           << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'"
-                           << std::endl
+                LOG(ERROR) << "Library could not be loaded: not enough thread local storage available" << '\n'
+                           << "Try one of below workarounds:" << '\n'
+                           << "- Rerun library with the environmental variable LD_PRELOAD='" << problem_lib << "'" << '\n'
                            << "- Recompile the library " << problem_lib << " with tls-model=global-dynamic";
             } else if(lib_error != nullptr && std::strstr(lib_error, "cannot open shared object file") != nullptr &&
                       problem_lib.find(ALLPIX_MODULE_PREFIX) == std::string::npos) {
-                LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << std::endl
-                           << "The name of the missing library is " << problem_lib << std::endl
+                LOG(ERROR) << "Library could not be loaded: one of its dependencies is missing" << '\n'
+                           << "The name of the missing library is " << problem_lib << '\n'
                            << "Please make sure the library is properly initialized and try again";
             } else if(lib_error != nullptr && std::strstr(lib_error, "undefined symbol") != nullptr) {
                 LOG(ERROR) << "Library could not be loaded: library version does not match framework (undefined symbols)"
-                           << std::endl
-                           << "The name of the problematic library is " << problem_lib << std::endl
+                           << '\n'
+                           << "The name of the problematic library is " << problem_lib << '\n'
                            << "Please make sure the library is compiled against the correct framework version";
             } else {
-                LOG(ERROR) << "Library could not be loaded: it is not available" << std::endl
-                           << " - Did you enable the library during building? " << std::endl
+                LOG(ERROR) << "Library could not be loaded: it is not available" << '\n'
+                           << " - Did you enable the library during building? " << '\n'
                            << " - Did you spell the library name correctly (case-sensitive)? ";
                 if(lib_error != nullptr) {
                     LOG(DEBUG) << "Detailed error: " << lib_error;
@@ -186,19 +203,17 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         loaded_libraries_[lib_name] = lib;
 
         // Check if this module is produced once, or once per detector
-        bool unique = true;
         void* uniqueFunction = dlsym(loaded_libraries_[lib_name], ALLPIX_UNIQUE_FUNCTION);
 
         // If the unique function was not found, throw an error
         if(uniqueFunction == nullptr) {
             LOG(ERROR) << "Module library is invalid or outdated: required interface function not found!";
             throw allpix::DynamicLibraryError(config.getName());
-        } else {
-            unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
         }
+        const auto unique = reinterpret_cast<bool (*)()>(uniqueFunction)(); // NOLINT
 
         // Add the global internal parameters to the configuration
-        std::string global_dir = gSystem->pwd();
+        std::string const global_dir = gSystem->pwd();
         config.set<std::string>("_global_dir", global_dir);
 
         // Set default input and output name
@@ -314,7 +329,7 @@ std::pair<ModuleIdentifier, Module*> ModuleManager::create_unique_modules(void* 
         }
         identifier_str += config.get<std::string>("output");
     }
-    ModuleIdentifier identifier(module_name, std::move(identifier_str), 0);
+    ModuleIdentifier const identifier(module_name, std::move(identifier_str), 0);
 
     // Get the generator function for this module
     void* generator = dlsym(library, ALLPIX_GENERATOR_FUNCTION);
@@ -399,7 +414,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
     // Create all names first with highest priority
     std::set<std::string> module_names;
     if(config.has("name")) {
-        std::vector<std::string> names = config.getArray<std::string>("name");
+        std::vector<std::string> const names = config.getArray<std::string>("name");
         for(auto& name : names) {
             auto det = geo_manager->getDetector(name);
             instantiations.emplace_back(det, ModuleIdentifier(module_name, det->getName() + identifier, 0));
@@ -412,7 +427,7 @@ std::vector<std::pair<ModuleIdentifier, Module*>> ModuleManager::create_detector
 
     // Then create all types that are not yet name instantiated
     if(config.has("type")) {
-        std::vector<std::string> types = config.getArray<std::string>("type");
+        std::vector<std::string> const types = config.getArray<std::string>("type");
         for(auto& type : types) {
             auto detectors = geo_manager->getDetectorsByType(type);
 
@@ -486,12 +501,12 @@ std::tuple<LogLevel, LogFormat, std::string, uint64_t> ModuleManager::set_module
                                                                                         const std::string& prefix,
                                                                                         const uint64_t event) {
     // Set new log level if necessary
-    LogLevel prev_level = Log::getReportingLevel();
+    LogLevel const prev_level = Log::getReportingLevel();
     if(config.has("log_level")) {
         auto log_level_string = config.get<std::string>("log_level");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
-            LogLevel log_level = Log::getLevelFromString(log_level_string);
+            LogLevel const log_level = Log::getLevelFromString(log_level_string);
             if(log_level != prev_level) {
                 LOG(TRACE) << "Local log level is set to " << log_level_string;
                 Log::setReportingLevel(log_level);
@@ -502,12 +517,12 @@ std::tuple<LogLevel, LogFormat, std::string, uint64_t> ModuleManager::set_module
     }
 
     // Set new log format if necessary
-    LogFormat prev_format = Log::getFormat();
+    LogFormat const prev_format = Log::getFormat();
     if(config.has("log_format")) {
         auto log_format_string = config.get<std::string>("log_format");
         std::transform(log_format_string.begin(), log_format_string.end(), log_format_string.begin(), ::toupper);
         try {
-            LogFormat log_format = Log::getFormatFromString(log_format_string);
+            LogFormat const log_format = Log::getFormatFromString(log_format_string);
             if(log_format != prev_format) {
                 LOG(TRACE) << "Local log format is set to " << log_format_string;
                 Log::setFormat(log_format);
@@ -530,16 +545,16 @@ std::tuple<LogLevel, LogFormat, std::string, uint64_t> ModuleManager::set_module
 
 void ModuleManager::set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev) {
     // Reset the previous log level
-    LogLevel cur_level = Log::getReportingLevel();
-    LogLevel old_level = std::get<0>(prev);
+    LogLevel const cur_level = Log::getReportingLevel();
+    LogLevel const old_level = std::get<0>(prev);
     if(cur_level != old_level) {
         Log::setReportingLevel(old_level);
         LOG(TRACE) << "Reset log level to global level of " << Log::getStringFromLevel(old_level);
     }
 
     // Reset the previous log format
-    LogFormat cur_format = Log::getFormat();
-    LogFormat old_format = std::get<1>(prev);
+    LogFormat const cur_format = Log::getFormat();
+    LogFormat const old_format = std::get<1>(prev);
     if(cur_format != old_format) {
         Log::setFormat(old_format);
         LOG(TRACE) << "Reset log format to global level of " << Log::getStringFromFormat(old_format);
@@ -562,14 +577,15 @@ void ModuleManager::initialize() {
     if(multithreading_flag_ && can_parallelize_) {
         // Try to fetch a suitable number of workers if multithreading is enabled
         auto available_hardware_concurrency = std::thread::hardware_concurrency();
-        if(available_hardware_concurrency > 2u) {
+        if(available_hardware_concurrency > 2U) {
             // Try to be graceful and leave one core out if the number of workers was not specified
-            available_hardware_concurrency -= 1u;
+            available_hardware_concurrency -= 1U;
         }
-        number_of_threads_ = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1u));
+        number_of_threads_ = global_config.get<unsigned int>("workers", std::max(available_hardware_concurrency, 1U));
         if(number_of_threads_ < 1) {
             throw InvalidValueError(global_config, "workers", "number of workers should be larger than zero");
-        } else if(number_of_threads_ == 1) {
+        }
+        if(number_of_threads_ == 1) {
             LOG(WARNING) << "Using multithreading with only one worker, this might be slower than multithreading=false";
         }
 
@@ -626,7 +642,7 @@ void ModuleManager::initialize() {
 
         // Create main ROOT directory for this module class if it does not exists yet
         LOG(TRACE) << "Creating and accessing ROOT directory";
-        std::string module_name = module->get_configuration().getName();
+        std::string const module_name = module->get_configuration().getName();
         auto* directory = modules_file_->GetDirectory(module_name.c_str());
         if(directory == nullptr) {
             directory = modules_file_->mkdir(module_name.c_str());
@@ -738,7 +754,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
     // Push all events to the thread pool
     std::atomic<uint64_t> finished_events{0};
     std::atomic<uint64_t> aborted_events{0};
-    global_config.setDefault<uint64_t>("number_of_events", 1u);
+    global_config.setDefault<uint64_t>("number_of_events", 1U);
     auto number_of_events = global_config.get<uint64_t>("number_of_events");
 
     // Skip first N events and discard their event seed from the seeder engine:
@@ -761,7 +777,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         }
 
         // Get a new seed for the new event
-        uint64_t seed = seeder();
+        uint64_t const seed = seeder();
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
@@ -818,11 +834,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 } catch(const MissingDependenciesException& e) {
                     stop = true;
                 } catch(const AbortEventException& e) {
-                    LOG(WARNING) << "Event aborted:" << std::endl << e.what();
+                    LOG(WARNING) << "Event aborted:" << '\n' << e.what();
                     abort = true;
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
-                    LOG(WARNING) << "Request to terminate:" << std::endl << e.what();
+                    LOG(WARNING) << "Request to terminate:" << '\n' << e.what();
                     this->terminate_ = true;
                 }
 
@@ -836,7 +852,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 this->module_execution_time_[module.get()] += duration;
 
                 if(plot) {
-                    std::lock_guard<std::mutex> stat_lock{event->stats_mutex_};
+                    std::lock_guard<std::mutex> const stat_lock{event->stats_mutex_};
                     event_time += duration;
                     this->module_event_time_[module.get()]->Fill(
                         std::chrono::duration<double>(std::chrono::nanoseconds(duration)).count());
@@ -854,7 +870,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                     // Store state of PRNG engine:
                     event->store_random_engine_state();
                     // Reschedule the event:
-                    auto event_function = std::bind(self_func, event, module_iter, event_time, self_func);
+                    auto event_function = std::bind(self_func, event, module_iter, event_time, self_func); // NOLINT
                     auto future = thread_pool_->submit(event->number, event_function, false);
                     assert(future.valid() || !thread_pool_->valid());
                     auto buffered_events = thread_pool_->bufferedQueueSize();
@@ -883,7 +899,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         };
 
         auto event_function =
-            std::bind(event_function_with_module, nullptr, modules_.begin(), 0, event_function_with_module);
+            std::bind(event_function_with_module, nullptr, modules_.begin(), 0, event_function_with_module); // NOLINT
 
         auto future = thread_pool_->submit(event_function);
         assert(future.valid() || !thread_pool_->valid());
@@ -964,7 +980,7 @@ void ModuleManager::finalize() {
     }
 
     // Store performance plots
-    Configuration& global_config = conf_manager_->getGlobalConfiguration();
+    Configuration const& global_config = conf_manager_->getGlobalConfiguration();
     if(global_config.get<bool>("performance_plots")) {
 
         auto* perf_dir = modules_file_->mkdir("performance");
@@ -1007,7 +1023,7 @@ void ModuleManager::finalize() {
         std::stringstream st;
         st << "Unused configuration keys in global section:";
         for(auto& key : unused_keys) {
-            st << std::endl << key;
+            st << '\n' << key;
         }
         LOG(WARNING) << st.str();
     }
@@ -1023,14 +1039,15 @@ void ModuleManager::finalize() {
             std::stringstream st;
             st << "Unused configuration keys in section " << unique_name << ":";
             for(auto& key : cfg_unused_keys) {
-                st << std::endl << key;
+                st << '\n' << key;
             }
             LOG(WARNING) << st.str();
         }
     }
 
     // Find the slowest module, and accumulate the total run-time for all modules
-    int64_t slowest_time = 0, total_module_time = 0;
+    int64_t slowest_time = 0;
+    int64_t total_module_time = 0;
     std::string slowest_module;
     for(auto& module_exec_time : module_execution_time_) {
         total_module_time += module_exec_time.second;
@@ -1040,14 +1057,15 @@ void ModuleManager::finalize() {
         }
     }
     LOG(STATUS) << "Executed " << modules_.size() << " instantiations in " << nanoseconds_to_time(total_time)
-                << ", spending " << std::round((100 * slowest_time) / std::max(int64_t(1), total_module_time))
+                << ", spending " << std::round((100 * slowest_time) / std::max(static_cast<int64_t>(1), total_module_time))
                 << "% of time in slowest instantiation " << slowest_module;
     for(auto& module : modules_) {
         LOG(INFO) << " Module " << module->getUniqueName() << " took "
                   << Units::display(module_execution_time_[module.get()].load(), {"s", "ms"});
     }
 
-    auto processing_time = std::round(run_time_ / std::max(uint64_t(1), global_config.get<uint64_t>("number_of_events")));
+    auto processing_time =
+        std::round(run_time_ / std::max(static_cast<uint64_t>(1), global_config.get<uint64_t>("number_of_events")));
     LOG(STATUS) << "Average processing time is \x1B[1m" << Units::display(processing_time, {"ms", "us"})
                 << "/event\x1B[0m, event generation at \x1B[1m"
                 << std::round(global_config.get<double>("number_of_events") / Units::convert(run_time_, "s"))

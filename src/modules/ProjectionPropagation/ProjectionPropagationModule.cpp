@@ -14,14 +14,30 @@
 #include <cmath>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
+#include <TH1.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
+#include "objects/SensorCharge.hpp"
+#include "physics/Mobility.hpp"
+#include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 
 using namespace allpix;
 
@@ -51,8 +67,8 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<bool>("output_animations_color_markers", false);
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<bool>("output_plots_align_pixels", false);
-    config_.setDefault<double>("output_plots_theta", 0.0f);
-    config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<double>("output_plots_theta", 0.0F);
+    config_.setDefault<double>("output_plots_phi", 0.0F);
 
     integration_time_ = config_.get<double>("integration_time");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
@@ -108,7 +124,8 @@ void ProjectionPropagationModule::initialize() {
     if(detector_->hasMagneticField() && !config_.get<bool>("ignore_magnetic_field")) {
         throw ModuleError("This module should not be used with magnetic fields. Add the option 'ignore_magnetic_field' to "
                           "the configuration if you would like to continue.");
-    } else if(detector_->hasMagneticField() && config_.get<bool>("ignore_magnetic_field")) {
+    }
+    if(detector_->hasMagneticField() && config_.get<bool>("ignore_magnetic_field")) {
         LOG(WARNING) << "A magnetic field is switched on, but is set to be ignored for this module.";
     }
 
@@ -244,20 +261,20 @@ void ProjectionPropagationModule::run(Event* event) {
                 if(!diffuse_deposit_) {
                     continue;
                 }
-                double diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
-                double diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
+                double const diffusion_constant = boltzmann_kT_ * (*mobility_)(type, efield_mag, doping);
+                double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * integration_time_);
                 LOG(TRACE) << "Diffusion width of this charge carrier is " << Units::display(diffusion_std_dev, "um");
 
                 allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-                double diffusion_x = gauss_distribution(event->getRandomEngine());
-                double diffusion_y = gauss_distribution(event->getRandomEngine());
-                double diffusion_z = gauss_distribution(event->getRandomEngine());
+                double const diffusion_x = gauss_distribution(event->getRandomEngine());
+                double const diffusion_y = gauss_distribution(event->getRandomEngine());
+                double const diffusion_z = gauss_distribution(event->getRandomEngine());
                 auto diffusion_vec = ROOT::Math::XYZVector(diffusion_x, diffusion_y, diffusion_z);
 
                 auto local_position_diffusion = position + diffusion_vec;
 
                 auto efield_diffusion = detector_->getElectricField(local_position_diffusion);
-                double efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
+                double const efield_mag_diffusion = std::sqrt(efield_diffusion.Mag2());
 
                 if(efield_mag_diffusion < std::numeric_limits<double>::epsilon() &&
                    (detector_->getModel()->isWithinSensor(position))) {
@@ -279,12 +296,11 @@ void ProjectionPropagationModule::run(Event* event) {
                         return stop;
                     }
                     auto efield_center = detector_->getElectricField((stop + ROOT::Math::XYZVector(start)) / 2.);
-                    double efield_center_mag = std::sqrt(efield_center.Mag2());
+                    double const efield_center_mag = std::sqrt(efield_center.Mag2());
                     if(efield_center_mag > std::numeric_limits<double>::epsilon()) {
                         return interval(start, (stop + ROOT::Math::XYZVector(start)) / 2.);
-                    } else {
-                        return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
                     }
+                    return interval((stop + ROOT::Math::XYZVector(start)) / 2., stop);
                 };
 
                 position = interval(position, local_position_diffusion);
@@ -326,7 +342,7 @@ void ProjectionPropagationModule::run(Event* event) {
                     return 0.;
                 }
 
-                double Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
+                double const Ec = (type == CarrierType::ELECTRON ? electron_Ec_ : hole_Ec_);
 
                 return ((log(efield_mag_top) - log(efield_mag)) / slope_efield + std::abs(top_z_ - position.z()) / Ec) /
                        (*mobility_)(type, 0, doping);
@@ -334,11 +350,11 @@ void ProjectionPropagationModule::run(Event* event) {
             LOG(TRACE) << "Electric field is " << Units::display(efield_mag, "V/cm");
 
             // Assume linear electric field over the depleted part of the sensor
-            double diffusion_constant =
+            double const diffusion_constant =
                 boltzmann_kT_ * ((*mobility_)(type, efield_mag, doping) + (*mobility_)(type, efield_mag_top, doping)) / 2.;
 
-            double drift_time = calc_drift_time();
-            double propagation_time = drift_time + diffusion_time;
+            double const drift_time = calc_drift_time();
+            double const propagation_time = drift_time + diffusion_time;
             LOG(TRACE) << "Drift time is " << Units::display(drift_time, "ns");
 
             if(output_plots_) {
@@ -349,11 +365,11 @@ void ProjectionPropagationModule::run(Event* event) {
                 }
             }
 
-            double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
+            double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
-            allpix::uniform_real_distribution<double> survival(0, 1);
+            allpix::uniform_real_distribution<double> const survival(0, 1);
             if(recombination_(
                    type, detector_->getDopingConcentration(position), survival(event->getRandomEngine()), drift_time)) {
                 LOG(DEBUG) << "Recombined " << charge_per_step << " charge carriers (" << type << ") at "
@@ -363,8 +379,8 @@ void ProjectionPropagationModule::run(Event* event) {
             }
 
             allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
-            double diffusion_x = gauss_distribution(event->getRandomEngine());
-            double diffusion_y = gauss_distribution(event->getRandomEngine());
+            double const diffusion_x = gauss_distribution(event->getRandomEngine());
+            double const diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
             auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);

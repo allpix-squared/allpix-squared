@@ -10,16 +10,20 @@
 
 #include "DFISEParser.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdlib>
-#include <exception>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <map>
 #include <regex>
-#include <set>
+#include <sstream>
+#include <stdexcept>
 #include <string>
-#include "TFile.h"
-#include "TTree.h"
+#include <utility>
+#include <vector>
 
 #include "core/utils/log.h"
 #include "core/utils/text.h"
@@ -90,7 +94,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
             }
 
             // Search for headers with data
-            base_regex = std::regex("([a-zA-Z]+) \\((\\S+)\\) \\{");
+            base_regex = std::regex(R"(([a-zA-Z]+) \((\S+)\) \{)");
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
                 auto header_string = base_match[1].str();
                 auto header_data = base_match[2].str();
@@ -169,7 +173,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
 
         // Look for key data pairs
         if(line.find('=') != std::string::npos) {
-            auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
+            auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
                 auto key = base_match[1].str();
@@ -200,13 +204,16 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
         case DFSection::VERTICES: {
             // Read vertex points
             if(dimension == 3) {
-                double x = 0, y = 0, z = 0;
+                double x = 0;
+                double y = 0;
+                double z = 0;
                 while(sstr >> x >> y >> z) {
                     vertices.emplace_back(x, y, z);
                 }
             }
             if(dimension == 2) {
-                double y = 0, z = 0;
+                double y = 0;
+                double z = 0;
                 while(sstr >> y >> z) {
                     vertices.emplace_back(y, z);
                 }
@@ -378,7 +385,7 @@ MeshMap DFISEParser::read_meshes(const std::string& file_name) {
     return ret_map;
 }
 
-FieldMap DFISEParser::read_fields(const std::string& file_name, const std::string&) {
+FieldMap DFISEParser::read_fields(const std::string& file_name, const std::string& /*observable*/) {
     std::ifstream file(file_name);
     if(!file) {
         throw std::runtime_error("file cannot be accessed");
@@ -441,13 +448,13 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
             }
 
             // Search for headers with data
-            base_regex = std::regex("([a-zA-Z]+) \\((\\S+)\\) \\{");
+            base_regex = std::regex(R"(([a-zA-Z]+) \((\S+)\) \{)");
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
                 auto header_string = base_match[1].str();
                 auto header_data = base_match[2].str();
 
                 if(header_string == "Dataset") {
-                    std::string data_type = header_data.substr(1, header_data.size() - 2);
+                    std::string const data_type = header_data.substr(1, header_data.size() - 2);
                     LOG(DEBUG) << "Opening dataset of type " << data_type;
 
                     if(data_type == "ElectricField") {
@@ -481,7 +488,7 @@ FieldMap DFISEParser::read_fields(const std::string& file_name, const std::strin
 
         // Look for key data pairs
         if(line.find('=') != std::string::npos) {
-            auto base_regex = std::regex("([a-zA-Z]+)\\s+=\\s+([\\S ]+)");
+            auto base_regex = std::regex(R"(([a-zA-Z]+)\s+=\s+([\S ]+))");
             std::smatch base_match;
             if(std::regex_match(line, base_match, base_regex) && base_match.ready()) {
                 auto key = base_match[1].str();

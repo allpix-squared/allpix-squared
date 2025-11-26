@@ -11,16 +11,45 @@
 
 #include "TransientPropagationModule.hpp"
 
+#include <cmath>
+#include <cstddef>
+#include <functional>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <Eigen/Core>
+#include <Math/Point3Dfwd.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TProfile.h>
 
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
+#include "core/module/exceptions.h"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
+#include "core/utils/unit.h"
+#include "objects/DepositedCharge.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "objects/Pulse.hpp"
+#include "objects/SensorCharge.hpp"
 #include "objects/exceptions.h"
+#include "physics/ImpactIonization.hpp"
+#include "tools/ROOT.h"
+#include "tools/line_graphs.h"
 #include "tools/runge_kutta.h"
 
 using namespace allpix;
@@ -70,8 +99,8 @@ TransientPropagationModule::TransientPropagationModule(Configuration& config,
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<bool>("output_plots_align_pixels", false);
-    config_.setDefault<double>("output_plots_theta", 0.0f);
-    config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<double>("output_plots_theta", 0.0F);
+    config_.setDefault<double>("output_plots_phi", 0.0F);
     config_.setDefault<unsigned int>("output_max_gain_histo", 25);
 
     // Copy some variables from configuration to avoid lookups:
@@ -145,7 +174,7 @@ void TransientPropagationModule::initialize() {
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_ > 0.001) {
-        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << std::endl
+        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << '\n'
                      << "This might lead to unphysical gain values.";
     }
 
@@ -484,8 +513,8 @@ void TransientPropagationModule::run(Event* event) {
         }
     }
 
-    LOG(INFO) << "Propagated " << propagated_charges_count << " charges" << std::endl
-              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+    LOG(INFO) << "Propagated " << propagated_charges_count << " charges" << '\n'
+              << "Recombined " << recombined_charges_count << " charges during transport" << '\n'
               << "Trapped " << trapped_charges_count << " charges during transport";
 
     if(output_plots_) {
@@ -543,8 +572,8 @@ TransientPropagationModule::propagate(Event* event,
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping, double timestep) -> Eigen::Vector3d {
-        double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
-        double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
+        double const diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping);
+        double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
@@ -555,26 +584,26 @@ TransientPropagationModule::propagate(Event* event,
     };
 
     // Survival probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
+    allpix::uniform_real_distribution<double> const uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_withB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
+        Eigen::Vector3d const bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
@@ -582,10 +611,10 @@ TransientPropagationModule::propagate(Event* event,
         auto exb = efield.cross(bfield);
 
         Eigen::Vector3d term1;
-        double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        double const hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
         term1 = static_cast<int>(type) * mob * hallFactor * exb;
 
-        Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+        Eigen::Vector3d const term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
         auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
@@ -597,7 +626,8 @@ TransientPropagationModule::propagate(Event* event,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
-    ROOT::Math::XYZVector efield{}, last_efield{};
+    ROOT::Math::XYZVector efield{};
+    ROOT::Math::XYZVector last_efield{};
     // Initialize last_efield for first pass through the while loop
     last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     size_t next_idx = 0;
@@ -727,7 +757,7 @@ TransientPropagationModule::propagate(Event* event,
 
             // For each charge carrier draw a number to determine the number of
             // secondaries generated in this step
-            double log_prob = 1. / std::log1p(-1. / local_gain);
+            double const log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
                 n_secondaries +=
                     static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
@@ -799,7 +829,7 @@ TransientPropagationModule::propagate(Event* event,
             auto last_ramo = detector_->getWeightingPotential(static_cast<ROOT::Math::XYZPoint>(last_position), pixel_index);
 
             // Induced charge on electrode is q_int = q * (phi(x1) - phi(x0))
-            auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type<CarrierType>::type>(type);
+            auto induced = charge * (ramo - last_ramo) * static_cast<std::underlying_type_t<CarrierType>>(type);
 
             LOG(TRACE) << "Pixel " << pixel_index << " dPhi = " << (ramo - last_ramo) << ", induced " << type
                        << " q = " << Units::display(induced, "e");
@@ -809,7 +839,7 @@ TransientPropagationModule::propagate(Event* event,
             try {
                 pixel_map_iterator.first->second.addCharge(induced, initial_time_local + runge_kutta.getTime());
             } catch(const PulseBadAllocException& e) {
-                LOG(ERROR) << e.what() << std::endl
+                LOG(ERROR) << e.what() << '\n'
                            << "Ignoring pulse contribution at time "
                            << Units::display(initial_time_local + runge_kutta.getTime(), {"ms", "us", "ns"});
             }
@@ -836,7 +866,7 @@ TransientPropagationModule::propagate(Event* event,
                 if(!multiplication_.is<NoImpactIonization>()) {
                     auto induced_primary = level != 0 ? 0.
                                                       : initial_charge * (ramo - last_ramo) *
-                                                            static_cast<std::underlying_type<CarrierType>::type>(type);
+                                                            static_cast<std::underlying_type_t<CarrierType>>(type);
                     auto induced_secondary = induced - induced_primary;
                     induced_charge_primary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_primary);
                     induced_charge_secondary_histo_->Fill(initial_time_local + runge_kutta.getTime(), induced_secondary);

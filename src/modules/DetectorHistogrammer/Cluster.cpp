@@ -14,9 +14,12 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <utility>
 
-#include "core/utils/log.h"
-#include "objects/exceptions.h"
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
+
+#include "objects/PixelHit.hpp"
 
 using namespace allpix;
 
@@ -36,7 +39,7 @@ Cluster::Cluster(const PixelHit* seed_pixel_hit)
 
 bool Cluster::addPixelHit(const PixelHit* pixel_hit) {
     auto ret = pixel_hits_.insert(pixel_hit);
-    if(ret.second == true) {
+    if(ret.second) {
         cluster_charge_ += pixel_hit->getSignal();
         auto pixX = pixel_hit->getPixel().getIndex().x();
         auto pixY = pixel_hit->getPixel().getIndex().y();

@@ -78,12 +78,12 @@ namespace allpix {
 
         /**
          * @brief Return X,Y indices of a pixel corresponding to a local position in a sensor.
-         * @param local_pos Position in local coordinates of the detector model
+         * @param position Position in local coordinates of the detector model
          * @return X,Y pixel indices
          *
          * @note No checks are performed on whether these indices represent an existing pixel or are within the pixel matrix.
          */
-        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& local_pos) const override;
+        std::pair<int, int> getPixelIndex(const ROOT::Math::XYZPoint& position) const override;
 
         /**
          * @brief Return a set containing all pixels neighboring the given one with a configurable maximum distance

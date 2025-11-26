@@ -11,26 +11,36 @@
 
 #include "ElectricFieldReaderModule.hpp"
 
-#include <fstream>
-#include <limits>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstddef>
 #include <memory>
 #include <new>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include <Math/Vector3D.h>
+#include <Math/Vector2Dfwd.h>
 #include <TFormula.h>
-#include <TH2F.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <magic_enum/magic_enum.hpp>
 
 #include "core/config/exceptions.h"
-#include "core/geometry/DetectorModel.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "tools/field_parser.h"
 
 using namespace allpix;
 
-ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config, Messenger*, std::shared_ptr<Detector> detector)
+ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config,
+                                                     Messenger* /*unused*/,
+                                                     std::shared_ptr<Detector> detector)
     : Module(config, detector), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
@@ -163,11 +173,12 @@ ElectricFieldReaderModule::get_linear_field_function(double depletion_voltage, s
     LOG(DEBUG) << "Depleting the sensor from the " << (deplete_from_implants ? "implant side." : "back side.");
     return [bias_voltage, depletion_voltage, direction, eff_thickness, thickness_domain, deplete_from_implants](
                const ROOT::Math::XYZPoint& pos) {
-        double z_rel = thickness_domain.second - pos.z();
-        double field_z = std::max(0.0,
-                                  (bias_voltage - depletion_voltage) / eff_thickness +
-                                      2 * (depletion_voltage / eff_thickness) *
-                                          (deplete_from_implants ? (1 - z_rel / eff_thickness) : z_rel / eff_thickness));
+        double const z_rel = thickness_domain.second - pos.z();
+        double const field_z =
+            std::max(0.0,
+                     (bias_voltage - depletion_voltage) / eff_thickness +
+                         2 * (depletion_voltage / eff_thickness) *
+                             (deplete_from_implants ? (1 - z_rel / eff_thickness) : z_rel / eff_thickness));
         return ROOT::Math::XYZVector(0, 0, (direction ? -1 : 1) * field_z);
     };
 }
@@ -178,7 +189,7 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
 
     auto z_min = config_.get<double>("minimum_position");
     auto e_max = config_.get<double>("maximum_field");
-    double eff_thickness = thickness_domain.second - thickness_domain.first;
+    double const eff_thickness = thickness_domain.second - thickness_domain.first;
 
     if(z_min <= thickness_domain.first || z_min >= thickness_domain.second) {
         throw InvalidValueError(config_,
@@ -194,7 +205,7 @@ ElectricFieldReaderModule::get_parabolic_field_function(std::pair<double, double
     auto c = e_max - a * (thickness_domain.second * thickness_domain.second - eff_thickness * z_min);
 
     return [a, b, c](const ROOT::Math::XYZPoint& pos) {
-        double field_z = a * pos.z() * pos.z() + b * pos.z() + c;
+        double const field_z = a * pos.z() * pos.z() + b * pos.z() + c;
         return ROOT::Math::XYZVector(0, 0, field_z);
     };
 }
@@ -227,7 +238,8 @@ std::pair<FieldFunction<ROOT::Math::XYZVector>, FieldType> ElectricFieldReaderMo
                     return ROOT::Math::XYZVector(0, 0, z->Eval(pos.x(), pos.y(), pos.z()));
                 },
                 FieldType::CUSTOM1D};
-    } else if(field_functions.size() == 3) {
+    }
+    if(field_functions.size() == 3) {
         LOG(DEBUG) << "Found definition of 3D custom field, applying to three Cartesian axes";
         auto x = std::make_shared<TFormula>("ex", field_functions.at(0).c_str(), false);
         auto y = std::make_shared<TFormula>("ey", field_functions.at(1).c_str(), false);
@@ -324,12 +336,14 @@ void ElectricFieldReaderModule::create_output_plots() {
              ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), model->getSensorSize().z())
              : model->getSensorSize());
 
-    double z_min = center.z() - size.z() / 2.0;
-    double z_max = center.z() + size.z() / 2.0;
+    double const z_min = center.z() - size.z() / 2.0;
+    double const z_max = center.z() + size.z() / 2.0;
 
     // Determine minimum and maximum index depending on projection axis
-    double min1 = NAN, max1 = NAN;
-    double min2 = NAN, max2 = NAN;
+    double min1 = NAN;
+    double max1 = NAN;
+    double min2 = NAN;
+    double max2 = NAN;
     if(project == 'x') {
         min1 = center.y() - size.y() / 2.0;
         max1 = center.y() + size.y() / 2.0;
@@ -378,7 +392,9 @@ void ElectricFieldReaderModule::create_output_plots() {
     histogram1D->SetOption("hist");
 
     // Determine the coordinate to use for projection
-    double x = 0, y = 0, z = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
     if(project == 'x') {
         x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5) * size.x();
         histogram->GetXaxis()->SetTitle("y (mm)");

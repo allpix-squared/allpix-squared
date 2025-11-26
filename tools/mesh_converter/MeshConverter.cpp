@@ -9,21 +9,27 @@
  */
 
 #include <algorithm>
+#include <array>
+#include <cctype>
 #include <cfloat>
 #include <chrono>
 #include <climits>
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
+#include <exception>
 #include <fstream>
+#include <future>
 #include <iostream>
-#include <sstream>
+#include <memory>
+#include <signal.h>
+#include <stdexcept>
 #include <string>
-#include <utility>
-
-#include <Math/Vector3D.h>
-#include <TTree.h>
+#include <thread>
+#include <vector>
 
 #include <Eigen/Eigen>
+#include <Math/Vector3D.h>
 
 #include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
@@ -46,12 +52,12 @@ using allpix::Log;
 using allpix::ThreadPool;
 using allpix::Units;
 
-void interrupt_handler(int);
+void interrupt_handler(int /*unused*/);
 
 /**
  * @brief Handle termination request (CTRL+C)
  */
-void interrupt_handler(int) {
+void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     Log::finish();
     std::exit(0);
@@ -134,17 +140,17 @@ int main(int argc, char** argv) {
 
     // Print help if requested or no arguments given
     if(print_help) {
-        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << std::endl;
-        std::cout << "Required parameters:" << std::endl;
-        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << std::endl;
-        std::cout << "Optional parameters:" << std::endl;
-        std::cout << "\t -c <config_file>  configuration file name" << std::endl;
-        std::cout << "\t -h                display this help text" << std::endl;
-        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << std::endl;
+        std::cerr << "Usage: mesh_converter -f <file_name> [<options>]" << '\n';
+        std::cout << "Required parameters:" << '\n';
+        std::cout << "\t -f <file_prefix>  common prefix of DF-ISE grid (.grd) and data (.dat) files" << '\n';
+        std::cout << "Optional parameters:" << '\n';
+        std::cout << "\t -c <config_file>  configuration file name" << '\n';
+        std::cout << "\t -h                display this help text" << '\n';
+        std::cout << "\t -l <file>         file to log to besides standard output (disabled by default)" << '\n';
         std::cout
             << "\t -o <file_prefix>  output file prefix without .init extension (defaults to file name of <file_prefix>)"
-            << std::endl;
-        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << std::endl;
+            << '\n';
+        std::cout << "\t -v <level>        verbosity level (default reporiting level is INFO)" << '\n';
 
         Log::finish();
         return return_code;
@@ -164,8 +170,8 @@ int main(int argc, char** argv) {
 
     try {
         std::ifstream file(conf_file_name);
-        allpix::ConfigReader reader(file, conf_file_name);
-        allpix::Configuration config = reader.getHeaderConfiguration();
+        allpix::ConfigReader const reader(file, conf_file_name);
+        allpix::Configuration const config = reader.getHeaderConfiguration();
 
         auto log_level = Log::getReportingLevel();
         if(log_level == allpix::LogLevel::NONE) {
@@ -187,7 +193,7 @@ int main(int argc, char** argv) {
         // Output file format:
         auto format = config.get<std::string>("model", "apf");
         std::transform(format.begin(), format.end(), format.begin(), ::tolower);
-        FileType file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
+        FileType const file_type = (format == "init" ? FileType::INIT : format == "apf" ? FileType::APF : FileType::UNKNOWN);
         if(file_type == FileType::UNKNOWN) {
             throw allpix::InvalidValueError(config, "model", "only models 'apf' and 'init' are currently supported");
         }
@@ -221,7 +227,7 @@ int main(int argc, char** argv) {
 
         auto start = std::chrono::system_clock::now();
 
-        std::string grid_file = file_prefix + ".grd";
+        std::string const grid_file = file_prefix + ".grd";
         std::vector<Point> points = parser->getMesh(grid_file, regions);
 
         // Obtain number of mesh dimensions from mesh point:
@@ -240,7 +246,7 @@ int main(int argc, char** argv) {
             throw allpix::InvalidValueError(config, "xyz", "For 2D meshes the first coordinate has to remain 'x'");
         }
 
-        std::string data_file = file_prefix + ".dat";
+        std::string const data_file = file_prefix + ".dat";
         std::vector<Point> field = parser->getField(data_file, observable, regions);
 
         if(points.size() != field.size()) {
@@ -317,9 +323,9 @@ int main(int argc, char** argv) {
         }
 
         const auto mesh_points_total = divisions.x() * divisions.y() * divisions.z();
-        LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << std::endl
-                    << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep << std::endl
-                    << "Volume: " << cell_volume << std::endl
+        LOG(STATUS) << "Mesh dimensions: " << maxx - minx << " x " << maxy - miny << " x " << maxz - minz << '\n'
+                    << "New mesh element dimension: " << xstep << " x " << ystep << " x " << zstep << '\n'
+                    << "Volume: " << cell_volume << '\n'
                     << "New mesh grid points: " << static_cast<ROOT::Math::XYZVector>(divisions) << " (" << mesh_points_total
                     << " total)";
 
@@ -388,10 +394,10 @@ int main(int argc, char** argv) {
 
                     if(radius == initial_radius && results.size() > 100) {
                         LOG(WARNING) << "Found " << results.size() << " mesh vertices within initial search radius of "
-                                     << initial_radius << "um." << std::endl
+                                     << initial_radius << "um." << '\n'
                                      << "This might indicate that the output mesh granularity is too low and field features "
                                         "might be missed."
-                                     << std::endl
+                                     << '\n'
                                      << "Consider increasing output mesh granularity.";
                     }
 
@@ -413,7 +419,7 @@ int main(int argc, char** argv) {
                     // If we have too many neighbors, we could decay to using lower-dimension interpolation:
                     if(allow_decay && radius > initial_radius && results.size() > 100) {
                         LOG_ONCE(WARNING) << "Large number of neighbors found, this hints to a quasi-co"
-                                          << (dimension == 3 ? "planar" : "linear") << " situation" << std::endl
+                                          << (dimension == 3 ? "planar" : "linear") << " situation" << '\n'
                                           << "Decaying to interpolation in " << (dimension == 3 ? "planar" : "linear")
                                           << " space for affected points";
                         allow_zero_volume = true;
@@ -467,7 +473,7 @@ int main(int argc, char** argv) {
         };
 
         // Start the interpolation on many threads:
-        auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1u));
+        auto num_threads = config.get<unsigned int>("workers", std::max(std::thread::hardware_concurrency(), 1U));
         ThreadPool::registerThreadCount(num_threads);
         LOG(STATUS) << "Starting regular grid interpolation with " << num_threads << " threads.";
         std::vector<Point> e_field_new_mesh;
@@ -506,14 +512,14 @@ int main(int argc, char** argv) {
         LOG(INFO) << "New mesh created in " << elapsed_seconds << " seconds.";
 
         // Prepare header and auxiliary information:
-        std::string header =
+        std::string const header =
             "Allpix Squared " + std::string(ALLPIX_PROJECT_VERSION) + " TCAD Mesh Converter, observable: " + observable;
-        std::array<double, 3> size{
+        std::array<double, 3> const size{
             {Units::get(maxx - minx, "um"), Units::get(maxy - miny, "um"), Units::get(maxz - minz, "um")}};
-        std::array<size_t, 3> gridsize{
+        std::array<size_t, 3> const gridsize{
             {static_cast<size_t>(divisions.x()), static_cast<size_t>(divisions.y()), static_cast<size_t>(divisions.z())}};
 
-        FieldQuantity quantity = (vector_field ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
+        FieldQuantity const quantity = (vector_field ? FieldQuantity::VECTOR : FieldQuantity::SCALAR);
         // Prepare data:
         LOG(INFO) << "Preparing data for storage...";
         auto data = std::make_shared<std::vector<double>>();
@@ -543,8 +549,9 @@ int main(int argc, char** argv) {
             }
         }
 
-        allpix::FieldData<double> field_data(header, gridsize, size, data);
-        std::string init_file_name = init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
+        allpix::FieldData<double> const field_data(header, gridsize, size, data);
+        std::string const init_file_name =
+            init_file_prefix + "_" + observable + (file_type == FileType::INIT ? ".init" : ".apf");
 
         allpix::FieldWriter<double> field_writer(quantity);
         field_writer.writeFile(field_data, init_file_name, file_type, (file_type == FileType::INIT ? units : ""));
@@ -555,12 +562,12 @@ int main(int argc, char** argv) {
         LOG(STATUS) << "Interpolation and conversion completed in " << elapsed_seconds << " seconds.";
 
     } catch(allpix::ConfigurationError& e) {
-        LOG(FATAL) << "Error in the configuration:" << std::endl
-                   << e.what() << std::endl
+        LOG(FATAL) << "Error in the configuration:" << '\n'
+                   << e.what() << '\n'
                    << "The configuration needs to be updated. Cannot continue.";
         return_code = 1;
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
+        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

@@ -11,36 +11,39 @@
  */
 
 #include "GeometryConstructionG4.hpp"
+#include "DetectorConstructionG4.hpp"
 #include "MaterialManager.hpp"
 
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <functional>
 #include <memory>
+#include <ostream>
 #include <string>
-#include <utility>
 
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4NavigationHistory.hh>
-#include <G4NistManager.hh>
 #include <G4PVDivision.hh>
 #include <G4PVPlacement.hh>
 #include <G4PhysicalVolumeStore.hh>
-#include <G4Sphere.hh>
-#include <G4StepLimiterPhysics.hh>
-#include <G4SubtractionSolid.hh>
 #include <G4ThreeVector.hh>
-#include <G4Tubs.hh>
-#include <G4UnionSolid.hh>
-#include <G4UserLimits.hh>
 #include <G4VSolid.hh>
 #include <G4VisAttributes.hh>
 
+#include "PassiveMaterialConstructionG4.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/GeometryManager.hpp"
 #include "core/module/exceptions.h"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "tools/ROOT.h"
 #include "tools/geant4/G4LoggingDestination.hpp"
 #include "tools/geant4/geant4.h"
-
-#include "Parameterization2DG4.hpp"
 
 using namespace allpix;
 
@@ -74,8 +77,8 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
 
     // Calculate world size
     ROOT::Math::XYZVector half_world_size;
-    ROOT::Math::XYZPoint min_coord = geo_manager_->getMinimumCoordinate();
-    ROOT::Math::XYZPoint max_coord = geo_manager_->getMaximumCoordinate();
+    ROOT::Math::XYZPoint const min_coord = geo_manager_->getMinimumCoordinate();
+    ROOT::Math::XYZPoint const max_coord = geo_manager_->getMaximumCoordinate();
     half_world_size.SetX(std::max(std::abs(min_coord.x()), std::abs(max_coord.x())));
     half_world_size.SetY(std::max(std::abs(min_coord.y()), std::abs(max_coord.y())));
     half_world_size.SetZ(std::max(std::abs(min_coord.z()), std::abs(max_coord.z())));
@@ -128,7 +131,7 @@ G4VPhysicalVolume* GeometryConstructionG4::Construct() {
     return world_phys_.get();
 }
 
-void GeometryConstructionG4::check_overlaps() const {
+void GeometryConstructionG4::check_overlaps() {
     G4PhysicalVolumeStore* phys_volume_store = G4PhysicalVolumeStore::GetInstance();
     LOG(TRACE) << "Checking overlaps";
     bool overlapFlag = false;
@@ -195,15 +198,15 @@ void GeometryConstructionG4::verify_transforms() const {
 
         if((local_g4 - local).mag2() > 0.001) {
             LOG(FATAL) << "Model \"" << detector->getModel()->getType() << "\" has invalid coordinate transformation";
-            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << std::endl
-                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << std::endl
-                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << std::endl
+            LOG(FATAL) << "Coordinate transformation test for detector " << detector->getName() << '\n'
+                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << '\n'
+                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << '\n'
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
             assert("Invalid coordinate transformation" && false);
         } else {
-            LOG(TRACE) << "Completed coordinate transformation test for detector " << detector->getName() << std::endl
-                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << std::endl
-                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << std::endl
+            LOG(TRACE) << "Completed coordinate transformation test for detector " << detector->getName() << '\n'
+                       << "Global test vector:      " << Units::display(global, {"mm", "um"}) << '\n'
+                       << "In local coordinates:    " << Units::display(local, {"mm", "um"}) << '\n'
                        << "In G4 local coordinates: " << Units::display(local_g4, {"mm", "um"});
         }
     }

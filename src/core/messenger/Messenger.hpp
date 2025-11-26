@@ -138,8 +138,8 @@ namespace allpix {
          * @param event Event to fetch the messages from
          * @return Vector of pairs containing shared pointer to and name of message
          */
-        std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module,
-                                                                                                Event* event);
+        static std::vector<std::pair<std::shared_ptr<BaseMessage>, std::string>> fetchFilteredMessages(Module* module,
+                                                                                                       Event* event);
 
         /**
          * @brief Check if a specific message has a receiver
@@ -155,7 +155,7 @@ namespace allpix {
          * @param event Event to check the messages for this delegate
          * @return True if satisfied, false otherwise
          */
-        bool isSatisfied(BaseDelegate* delegate, Event* event) const;
+        static bool isSatisfied(BaseDelegate* delegate, Event* event);
 
     private:
         /**

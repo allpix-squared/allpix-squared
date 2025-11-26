@@ -11,14 +11,34 @@
 
 #include "DefaultDigitizerModule.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdlib>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
+
+#include <TFormula.h>
+#include <TH1.h>
+#include <TH2.h>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/messenger/exceptions.h"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/distributions.h"
+#include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "objects/Pixel.hpp"
+#include "objects/PixelCharge.hpp"
 #include "objects/PixelHit.hpp"
 #include "tools/ROOT.h"
-
-#include <TFile.h>
-#include <TH1D.h>
-#include <TProfile.h>
 
 using namespace allpix;
 
@@ -169,7 +189,7 @@ void DefaultDigitizerModule::initialize() {
             h_pxq_adc_smear = CreateHistogram<TH1D>(
                 "pixelcharge_adc_smeared", "pixel charge after ADC smearing;pixel charge [ke];pixels", nbins, 0, maximum);
 
-            int adcbins = (1 << qdc_resolution_);
+            int const adcbins = (1 << qdc_resolution_);
             h_pxq_adc = CreateHistogram<TH1D>(
                 "pixelcharge_adc", "pixel charge after QDC;pixel charge [QDC];pixels", adcbins, 0, adcbins);
             h_calibration =
@@ -197,7 +217,7 @@ void DefaultDigitizerModule::initialize() {
                                                    0,
                                                    time_maximum);
 
-            int adcbins = (1 << tdc_resolution_);
+            int const adcbins = (1 << tdc_resolution_);
             h_px_tdc = CreateHistogram<TH1D>(
                 "pixel_tdc", "pixel time-of-arrival after TDC;pixel ToA [TDC];pixels", adcbins, 0, adcbins);
             h_toa_calibration = CreateHistogram<TH2D>(
@@ -292,7 +312,7 @@ void DefaultDigitizerModule::run(Event* event) {
 
         // Smear the threshold, Gaussian distribution around "threshold" with width "threshold_smearing"
         allpix::normal_distribution<double> thr_smearing(threshold_, threshold_smearing_);
-        double threshold = thr_smearing(event->getRandomEngine());
+        double const threshold = thr_smearing(event->getRandomEngine());
         if(output_plots_) {
             h_thr->Fill(threshold / 1e3);
         }
@@ -389,7 +409,7 @@ void DefaultDigitizerModule::run(Event* event) {
     }
 }
 
-double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, double threshold) const {
+double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, double threshold) {
 
     // If this PixelCharge has a pulse, we can find out when it crossed the threshold:
     const auto& pulse = pixel_charge.getPulse();
@@ -403,10 +423,9 @@ double DefaultDigitizerModule::time_of_arrival(const PixelCharge& pixel_charge, 
             }
         }
         return pulse.getBinning() * static_cast<double>(std::distance(pulse.begin(), bin));
-    } else {
-        LOG_ONCE(INFO) << "Simulation chain does not allow for time-of-arrival calculation";
-        return 0;
     }
+    LOG_ONCE(INFO) << "Simulation chain does not allow for time-of-arrival calculation";
+    return 0;
 }
 
 void DefaultDigitizerModule::finalize() {

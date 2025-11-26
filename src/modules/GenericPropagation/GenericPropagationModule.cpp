@@ -12,29 +12,38 @@
 
 #include "GenericPropagationModule.hpp"
 
+#include <algorithm>
 #include <cmath>
-#include <limits>
-#include <map>
+#include <cstddef>
+#include <functional>
 #include <memory>
-#include <sstream>
+#include <ostream>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include <Eigen/Core>
-
-#include <Math/Point3D.h>
-#include <Math/Vector3D.h>
+#include <TH1.h>
+#include <TProfile.h>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
 #include "core/messenger/Messenger.hpp"
+#include "core/messenger/delegates.h"
+#include "core/module/Module.hpp"
 #include "core/utils/distributions.h"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 #include "core/utils/unit.h"
-#include "tools/ROOT.h"
-#include "tools/runge_kutta.h"
-
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
+#include "objects/SensorCharge.hpp"
+#include "physics/ImpactIonization.hpp"
+#include "tools/ROOT.h"
+#include "tools/line_graphs.h"
+#include "tools/runge_kutta.h"
 
 using namespace allpix;
 
@@ -79,8 +88,8 @@ GenericPropagationModule::GenericPropagationModule(Configuration& config,
     config_.setDefault<double>("output_plots_step", config_.get<double>("timestep_max"));
     config_.setDefault<bool>("output_plots_use_pixel_units", false);
     config_.setDefault<bool>("output_plots_align_pixels", false);
-    config_.setDefault<double>("output_plots_theta", 0.0f);
-    config_.setDefault<double>("output_plots_phi", 0.0f);
+    config_.setDefault<double>("output_plots_theta", 0.0F);
+    config_.setDefault<double>("output_plots_phi", 0.0F);
     config_.setDefault<unsigned int>("output_max_gain_histo", 25);
 
     // Set defaults for charge carrier propagation:
@@ -320,7 +329,7 @@ void GenericPropagationModule::initialize() {
 
     // Check multiplication and step size larger than a picosecond:
     if(!multiplication_.is<NoImpactIonization>() && timestep_max_ > 0.001) {
-        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << std::endl
+        LOG(WARNING) << "Charge multiplication enabled with maximum timestep larger than 1ps" << '\n'
                      << "This might lead to unphysical gain values.";
     }
 
@@ -434,10 +443,10 @@ void GenericPropagationModule::run(Event* event) {
     }
 
     // Write summary and update statistics
-    long double average_time = total_time / std::max(1u, propagated_charges_count);
+    long double const average_time = total_time / std::max(1U, propagated_charges_count);
     LOG(INFO) << "Propagated " << propagated_charges_count << " charges in " << step_count << " steps in average time of "
-              << Units::display(average_time, "ns") << std::endl
-              << "Recombined " << recombined_charges_count << " charges during transport" << std::endl
+              << Units::display(average_time, "ns") << '\n'
+              << "Recombined " << recombined_charges_count << " charges during transport" << '\n'
               << "Trapped " << trapped_charges_count << " charges during transport";
     total_propagated_charges_ += propagated_charges_count;
     total_steps_ += step_count;
@@ -500,8 +509,8 @@ GenericPropagationModule::propagate(Event* event,
 
     // Define a function to compute the diffusion
     auto carrier_diffusion = [&](double efield_mag, double doping_concentration, double timestep) -> Eigen::Vector3d {
-        double diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping_concentration);
-        double diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
+        double const diffusion_constant = boltzmann_kT_ * mobility_(type, efield_mag, doping_concentration);
+        double const diffusion_std_dev = std::sqrt(2. * diffusion_constant * timestep);
 
         // Compute the independent diffusion in three
         allpix::normal_distribution<double> gauss_distribution(0, diffusion_std_dev);
@@ -512,25 +521,25 @@ GenericPropagationModule::propagate(Event* event,
     };
 
     // Survival or detrap probability of this charge carrier package, evaluated at every step
-    allpix::uniform_real_distribution<double> uniform_distribution(0, 1);
+    allpix::uniform_real_distribution<double> const uniform_distribution(0, 1);
 
     // Define lambda functions to compute the charge carrier velocity with or without magnetic field
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_noB =
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_noB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
         return static_cast<int>(type) * mobility_(type, efield.norm(), doping) * efield;
     };
 
-    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> carrier_velocity_withB =
+    std::function<Eigen::Vector3d(double, const Eigen::Vector3d&)> const carrier_velocity_withB =
         [&](double, const Eigen::Vector3d& cur_pos) -> Eigen::Vector3d {
         auto raw_field = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d efield(raw_field.x(), raw_field.y(), raw_field.z());
+        Eigen::Vector3d const efield(raw_field.x(), raw_field.y(), raw_field.z());
 
         auto magnetic_field = detector_->getMagneticField(static_cast<ROOT::Math::XYZPoint>(cur_pos));
-        Eigen::Vector3d bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
+        Eigen::Vector3d const bfield(magnetic_field.x(), magnetic_field.y(), magnetic_field.z());
 
         auto doping = detector_->getDopingConcentration(static_cast<ROOT::Math::XYZPoint>(cur_pos));
 
@@ -538,10 +547,10 @@ GenericPropagationModule::propagate(Event* event,
         auto exb = efield.cross(bfield);
 
         Eigen::Vector3d term1;
-        double hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
+        double const hallFactor = (type == CarrierType::ELECTRON ? electron_Hall_ : hole_Hall_);
         term1 = static_cast<int>(type) * mob * hallFactor * exb;
 
-        Eigen::Vector3d term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
+        Eigen::Vector3d const term2 = mob * mob * hallFactor * hallFactor * efield.dot(bfield) * bfield;
 
         auto rnorm = 1 + mob * mob * hallFactor * hallFactor * bfield.dot(bfield);
         return static_cast<int>(type) * mob * (efield + term1 + term2) / rnorm;
@@ -554,7 +563,8 @@ GenericPropagationModule::propagate(Event* event,
 
     // Continue propagation until the deposit is outside the sensor
     Eigen::Vector3d last_position = position;
-    ROOT::Math::XYZVector efield{}, last_efield{};
+    ROOT::Math::XYZVector efield{};
+    ROOT::Math::XYZVector last_efield{};
     // Initialize last_efield for first pass through the while loop
     last_efield = detector_->getElectricField(static_cast<ROOT::Math::XYZPoint>(last_position));
     double last_time = 0;
@@ -654,7 +664,7 @@ GenericPropagationModule::propagate(Event* event,
 
             // For each charge carrier draw a number to determine the number of
             // secondaries generated in this step
-            double log_prob = 1. / std::log1p(-1. / local_gain);
+            double const log_prob = 1. / std::log1p(-1. / local_gain);
             for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
                 n_secondaries +=
                     static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
@@ -715,7 +725,7 @@ GenericPropagationModule::propagate(Event* event,
         }
 
         // Adapt step size to match target precision
-        double uncertainty = step.error.norm();
+        double const uncertainty = step.error.norm();
 
         // Lower timestep when reaching the sensor edge
         if(std::fabs(model_->getSensorSize().z() / 2.0 - position.z()) < 2 * step.value.z()) {
@@ -863,8 +873,8 @@ void GenericPropagationModule::finalize() {
         }
     }
 
-    long double average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
-                               std::max(1u, static_cast<unsigned int>(total_propagated_charges_));
+    long double const average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
+                                     std::max(1U, static_cast<unsigned int>(total_propagated_charges_));
     LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
               << " steps in average time of " << Units::display(average_time, "ns");
     LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "

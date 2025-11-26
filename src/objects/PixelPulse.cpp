@@ -11,10 +11,16 @@
 
 #include "PixelPulse.hpp"
 
+#include <algorithm>
+#include <ostream>
 #include <set>
+#include <utility>
+#include <vector>
 
-#include "DepositedCharge.hpp"
-#include "PropagatedCharge.hpp"
+#include "objects/MCParticle.hpp"
+#include "objects/Pixel.hpp"
+#include "objects/PropagatedCharge.hpp"
+#include "objects/Pulse.hpp"
 #include "objects/exceptions.h"
 
 using namespace allpix;

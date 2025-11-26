@@ -10,8 +10,20 @@
  */
 
 #include "MaterialManager.hpp"
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <utility>
+
+#include <CLHEP/Units/PhysicalConstants.h>
+#include <CLHEP/Units/SystemOfUnits.h>
+#include <G4Element.hh>
+#include <G4Isotope.hh>
+#include <G4Material.hh>
+#include <G4NistManager.hh>
 
 #include "core/module/exceptions.h"
+#include "core/utils/log.h"
 #include "core/utils/text.h"
 
 using namespace allpix;

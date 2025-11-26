@@ -11,8 +11,24 @@
 
 #include "RadialStripDetectorModel.hpp"
 
-#include <Math/RotationZ.h>
-#include <Math/Transform3D.h>
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <memory>
+#include <numeric>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <Math/Math.h>
+
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
+#include "core/geometry/DetectorAssembly.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "objects/Pixel.hpp"
 
 using namespace allpix;
 
@@ -318,8 +334,6 @@ ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Ma
         auto z_last_border = std::fabs(getSensorSize().z() / 2.0 - inside.z());
         auto z_total = z_cur_border + z_last_border;
         return (z_last_border / z_total) * static_cast<ROOT::Math::XYZVector>(outside) + (z_cur_border / z_total) * inside;
-    } else {
-        // Carrier left sensor on any other border, use last position inside instead
-        return inside;
-    }
+    } // Carrier left sensor on any other border, use last position inside instead
+    return inside;
 }

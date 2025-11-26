@@ -10,7 +10,17 @@
  */
 
 #include "MCTrack.hpp"
+
+#include <cstddef>
+#include <iomanip>
+#include <ios>
+#include <ostream>
 #include <sstream>
+#include <string>
+#include <utility>
+
+#include <Math/Point3Dfwd.h>
+#include <Math/Vector3Dfwd.h>
 
 using namespace allpix;
 
@@ -123,7 +133,7 @@ void MCTrack::print(std::ostream& out) const {
     } else {
         out << "Linked parent: <nullptr>\n";
     }
-    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << std::endl;
+    out << std::setfill('-') << std::setw(largest_output) << "" << std::setfill(' ') << '\n';
 }
 
 void MCTrack::loadHistory() { parent_.get(); }

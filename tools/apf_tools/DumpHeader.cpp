@@ -9,11 +9,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <fstream>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
 #include "tools/field_parser.h"
 #include "tools/units.h"
 
@@ -29,11 +35,11 @@ template <typename T> static void print_info(allpix::FieldData<T> field_data, si
     std::cout << "Field vector with " << field_data.getData()->size() << " entries" << std::endl;
 
     if(n > 0) {
-        std::cout << "First " << n << " entries of field data:" << std::endl;
+        std::cout << "First " << n << " entries of field data:" << '\n';
         for(size_t i = 0; i < field_data.getData()->size() && i < n; i++) {
             std::cout << Units::display(field_data.getData()->at(i), units) << " ";
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
 }
 
@@ -67,7 +73,7 @@ int main(int argc, const char* argv[]) {
                 print_help = true;
             } else if(strcmp(argv[i], "-v") == 0 && (i + 1 < argc)) {
                 try {
-                    LogLevel log_level = Log::getLevelFromString(std::string(argv[++i]));
+                    LogLevel const log_level = Log::getLevelFromString(std::string(argv[++i]));
                     Log::setReportingLevel(log_level);
                 } catch(std::invalid_argument& e) {
                     LOG(ERROR) << "Invalid verbosity level \"" << std::string(argv[i]) << "\", ignoring overwrite";
@@ -83,20 +89,20 @@ int main(int argc, const char* argv[]) {
 
         // Print help if requested or no arguments given
         if(print_help) {
-            std::cout << "Allpix Squared APF Field Dump Tool" << std::endl;
-            std::cout << std::endl;
-            std::cout << "Usage: apf_dump <file(s)>" << std::endl;
-            std::cout << std::endl;
-            std::cout << "Options:" << std::endl;
-            std::cout << "  --values <N>     also print the first N values from the file" << std::endl;
-            std::cout << "  --units  <units> units the field should be represented in" << std::endl;
-            std::cout << std::endl;
-            std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << std::endl;
+            std::cout << "Allpix Squared APF Field Dump Tool" << '\n';
+            std::cout << '\n';
+            std::cout << "Usage: apf_dump <file(s)>" << '\n';
+            std::cout << '\n';
+            std::cout << "Options:" << '\n';
+            std::cout << "  --values <N>     also print the first N values from the file" << '\n';
+            std::cout << "  --units  <units> units the field should be represented in" << '\n';
+            std::cout << '\n';
+            std::cout << "For more help, please see <https://cern.ch/allpix-squared>" << '\n';
             return return_code;
         }
 
         for(auto& file_input : file_names) {
-            std::cout << "FILE:       " << file_input << std::endl;
+            std::cout << "FILE:       " << file_input << '\n';
             try {
                 FieldParser<double> field_parser(FieldQuantity::VECTOR);
                 auto field_data = field_parser.getByFileName(file_input);
@@ -109,7 +115,7 @@ int main(int argc, const char* argv[]) {
         }
 
     } catch(std::exception& e) {
-        LOG(FATAL) << "Fatal internal error" << std::endl << e.what() << std::endl << "Cannot continue.";
+        LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
 

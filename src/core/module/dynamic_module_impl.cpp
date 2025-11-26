@@ -18,12 +18,9 @@
 #error "This header should only be automatically included during the build"
 #endif
 
-#include <memory>
-#include <utility>
-
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
-#include "core/utils/log.h"
+#include "core/module/Module.hpp"
 
 #include ALLPIX_MODULE_HEADER
 

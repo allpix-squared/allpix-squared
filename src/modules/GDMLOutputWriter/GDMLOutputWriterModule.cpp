@@ -12,41 +12,28 @@
 #include "GDMLOutputWriterModule.hpp"
 
 #include <cassert>
-#include <fstream>
-#include <memory>
 #include <string>
-#include <utility>
 
+#include <G4GDMLParser.hh>
 #include <G4RunManager.hh>
-#include <G4UImanager.hh>
-#include <G4UIterminal.hh>
-#include <G4Version.hh>
-#include <G4VisManager.hh>
-
-#include <Math/Vector3D.h>
-
-#include "tools/ROOT.h"
-#include "tools/geant4/geant4.h"
 
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
-
-#include "core/config/ConfigReader.hpp"
-#include "core/utils/log.h"
-#include "core/utils/type.h"
-
-#include "G4GDMLParser.hh"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Module.hpp"
 
 using namespace allpix;
 
-GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger*, GeometryManager*) : Module(config) {
+GDMLOutputWriterModule::GDMLOutputWriterModule(Configuration& config, Messenger* /*unused*/, GeometryManager* /*unused*/)
+    : Module(config) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }
 
 void GDMLOutputWriterModule::initialize() {
 
-    std::string GDML_output_file = createOutputFile(config_.get<std::string>("file_name", "Output"), "gdml", false, true);
+    std::string const GDML_output_file =
+        createOutputFile(config_.get<std::string>("file_name", "Output"), "gdml", false, true);
 
     G4GDMLParser parser;
     parser.SetRegionExport(true);

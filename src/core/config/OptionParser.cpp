@@ -10,9 +10,13 @@
  */
 
 #include "OptionParser.hpp"
+#include <string>
+#include <utility>
 
-#include "ConfigReader.hpp"
+#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
+#include "core/utils/text.h"
 
 using namespace allpix;
 

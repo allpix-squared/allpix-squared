@@ -11,6 +11,12 @@
 
 #include "SensorCharge.hpp"
 
+#include <ostream>
+#include <type_traits>
+#include <utility>
+
+#include <Math/Point3Dfwd.h>
+
 using namespace allpix;
 
 SensorCharge::SensorCharge(ROOT::Math::XYZPoint local_position,
@@ -30,7 +36,7 @@ CarrierType SensorCharge::getType() const { return type_; }
 
 unsigned int SensorCharge::getCharge() const { return charge_; }
 
-long SensorCharge::getSign() const { return static_cast<std::underlying_type<CarrierType>::type>(type_); }
+long SensorCharge::getSign() const { return static_cast<std::underlying_type_t<CarrierType>>(type_); }
 
 double SensorCharge::getGlobalTime() const { return global_time_; }
 
