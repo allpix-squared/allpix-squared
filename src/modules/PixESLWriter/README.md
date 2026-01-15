@@ -11,7 +11,7 @@ module_inputs: ["PixelHit"]
 ## Description
 
 This detector module writes output files in the [Allpix Squared PixESL Exchange Format](https://gitlab.cern.ch/allpix-squared/libapx)
-ready for consumption with the [PixESL Pixel detector Electronic System Level framework](https://cern.ch/pixesl).
+ready for consumption with the [PixESL Pixel detector Electronic System Level framework](https://cern.ch/pixesl) and requires an installation of `libAPX`.
 
 This module consumes `PixelHit` objects and and writes the following record properties to the output file:
 
