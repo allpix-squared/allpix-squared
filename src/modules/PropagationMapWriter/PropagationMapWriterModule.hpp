@@ -13,15 +13,18 @@
  * Please refer to the User Manual for more details on the different files of a module and the methods of the module class..
  */
 
-#include <string>
+#include <array>
+#include <cstddef>
+#include <memory>
 
 #include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
-
-#include "objects/PixelCharge.hpp"
+#include "objects/SensorCharge.hpp"
 
 #include "PropagationMap.hpp"
 
@@ -67,8 +70,8 @@ namespace allpix {
 
         Messenger* messenger_;
 
-        std::array<double, 3> size_;
-        std::array<size_t, 3> bins_;
+        std::array<double, 3> size_{};
+        std::array<size_t, 3> bins_{};
         FieldMapping field_mapping_;
         std::unique_ptr<PropagationMap> output_map_;
 

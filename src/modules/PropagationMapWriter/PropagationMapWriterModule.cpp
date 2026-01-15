@@ -12,10 +12,25 @@
 #include "PropagationMapWriterModule.hpp"
 #include "PropagationMap.hpp"
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 
+#include <magic_enum/magic_enum.hpp>
+
+#include "core/config/Configuration.hpp"
+#include "core/geometry/Detector.hpp"
+#include "core/messenger/Messenger.hpp"
+#include "core/module/Event.hpp"
+#include "core/module/Module.hpp"
 #include "core/utils/log.h"
+#include "core/utils/unit.h"
+#include "objects/DepositedCharge.hpp"
+#include "objects/PixelCharge.hpp"
+#include "objects/SensorCharge.hpp"
 #include "tools/field_parser.h"
 
 using namespace allpix;
@@ -55,8 +70,8 @@ void PropagationMapWriterModule::initialize() {
     const auto pixel_size = model_->getPixelSize();
     const auto thickness = model_->getSensorSize().z();
 
-    const auto sensor_max_z = model_->getSensorCenter().z() + model_->getSensorSize().z() / 2.0;
-    const auto sensor_min_z = model_->getSensorCenter().z() - model_->getSensorSize().z() / 2.0;
+    const auto sensor_max_z = model_->getSensorCenter().z() + (model_->getSensorSize().z() / 2.0);
+    const auto sensor_min_z = model_->getSensorCenter().z() - (model_->getSensorSize().z() / 2.0);
     const auto thickness_domain = std::make_pair(sensor_min_z, sensor_max_z);
 
     // Calculate sizes from field mapping, starting from full pixel
@@ -114,7 +129,7 @@ void PropagationMapWriterModule::run(Event* event) {
 
             const auto final_index = pixel_charge.getIndex();
 
-            long final_charge = 0;
+            std::int64_t final_charge = 0;
             for(const auto& prop_charge : propagated_charges) {
                 final_charge += prop_charge->getCharge();
             }

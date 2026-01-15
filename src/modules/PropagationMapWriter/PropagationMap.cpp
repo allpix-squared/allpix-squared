@@ -11,7 +11,18 @@
 
 #include "PropagationMap.hpp"
 
+#include <array>
+#include <cstddef>
+#include <memory>
 #include <mutex>
+#include <utility>
+#include <vector>
+
+#include <Math/Point3D.h>
+
+#include "core/geometry/DetectorField.hpp"
+#include "core/geometry/DetectorModel.hpp"
+#include "core/utils/log.h"
 
 using namespace allpix;
 
@@ -33,7 +44,7 @@ PropagationMap::PropagationMap(const std::shared_ptr<DetectorModel>& model,
     field_->resize(bins[0] * bins[1] * bins[2] * 25);
 
     // Keep track of how many tables we summed per bin
-    normalization_table.resize(bins[0] * bins[1] * bins[2]);
+    normalization_table_.resize(bins[0] * bins[1] * bins[2]);
 
     // Calculate grid extent
     set_grid_parameters(bins, size, mapping, scales, offset, std::move(thickness_domain));
@@ -68,7 +79,7 @@ void PropagationMap::add(const ROOT::Math::XYZPoint& local_pos, const FieldTable
     }
 
     // Count up the number of tables summed in this bin:
-    normalization_table[field_index / 25]++;
+    normalization_table_[field_index / 25]++;
 }
 
 void PropagationMap::checkField() {
@@ -78,7 +89,7 @@ void PropagationMap::checkField() {
 
     const std::lock_guard field_lock{field_mutex_};
 
-    for(const auto& bin : normalization_table) {
+    for(const auto& bin : normalization_table_) {
         empty_bins += (bin == 0 ? 1 : 0);
         low_statistics += (bin < 10 ? 1 : 0);
         statistics += bin;
@@ -91,7 +102,7 @@ void PropagationMap::checkField() {
         }
     } else {
         LOG(STATUS) << "All bins have sufficient entries, average number of initial deposits per bin is "
-                    << statistics / normalization_table.size();
+                    << statistics / normalization_table_.size();
     }
 }
 
@@ -100,8 +111,8 @@ std::shared_ptr<std::vector<double>> PropagationMap::getNormalizedField() {
 
     // Loop over field and apply normalization:
     for(size_t i = 0; i < field_->size(); i++) {
-        if(normalization_table[i / 25] > 0) {
-            (*field_)[i] /= static_cast<double>(normalization_table[i / 25]);
+        if(normalization_table_[i / 25] > 0) {
+            (*field_)[i] /= static_cast<double>(normalization_table_[i / 25]);
         }
     }
     // Return field

@@ -12,10 +12,17 @@
 #ifndef ALLPIX_PROPAGATION_MAP_H
 #define ALLPIX_PROPAGATION_MAP_H
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <mutex>
+#include <utility>
+#include <vector>
+
+#include <Math/Point3D.h>
+
 #include "core/geometry/DetectorField.hpp"
 #include "core/geometry/DetectorModel.hpp"
-
-#include <mutex>
 
 namespace allpix {
     /**
@@ -52,7 +59,7 @@ namespace allpix {
         std::shared_ptr<std::vector<double>> getNormalizedField();
 
     private:
-        std::vector<size_t> normalization_table;
+        std::vector<size_t> normalization_table_;
         std::mutex field_mutex_;
     };
 } // namespace allpix

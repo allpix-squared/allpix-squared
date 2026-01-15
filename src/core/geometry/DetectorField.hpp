@@ -13,6 +13,7 @@
 #define ALLPIX_DETECTOR_FIELD_H
 
 #include <array>
+#include <cstddef>
 #include <functional>
 #include <vector>
 
@@ -94,7 +95,7 @@ namespace allpix {
          *
          * @return field index
          */
-        static size_t getIndex(int x, int y) { return static_cast<size_t>(y + 2) * 5 + static_cast<size_t>(x + 2); }
+        static size_t getIndex(int x, int y) { return (static_cast<size_t>(y + 2) * 5) + static_cast<size_t>(x + 2); }
     };
 
     /**

@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/PropagatedCharge.hpp"
