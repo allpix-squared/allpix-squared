@@ -39,6 +39,10 @@ namespace allpix {
     public:
         MTRunManager();
         ~MTRunManager() override = default;
+        MTRunManager(const MTRunManager&) = default;
+        MTRunManager& operator=(const MTRunManager&) = default;
+        MTRunManager(MTRunManager&&) = default;
+        MTRunManager& operator=(MTRunManager&&) = default;
 
         /**
          * @brief Thread safe version of G4RunManager::BeamOn. Offload the work to a thread specific worker.
@@ -116,13 +120,13 @@ namespace allpix {
          * @brief Previously used to issue a new command to the workers.
          * Send a new command to workers waiting for master to tell them what to do. It will now do nothing.
          */
-        void NewActionRequest(WorkerActionRequest) override {}
+        void NewActionRequest(WorkerActionRequest /*unused*/) override {}
 
         /**
          * @brief Previously used to generate initial seeds. We skip this since we provide seeds to each event directly
          * It is important to override this function to make sure Geant4 is not seeding itself independently.
          */
-        G4bool InitializeSeeds(G4int) override { return true; };
+        G4bool InitializeSeeds(G4int /*unused*/) override { return true; };
 
         /**
          * @brief Previously used to tell workers to execute UI commands.
@@ -144,7 +148,7 @@ namespace allpix {
          * Worker will ask us to setup the events. This includes figuring out the event numbers that worker will do
          * and setting up the seeds to ensure results can be reproduced. It will now do nothing.
          */
-        G4int SetUpNEvents(G4Event*, G4SeedsQueue*, G4bool) override { return 0; }
+        G4int SetUpNEvents(G4Event* /*unused*/, G4SeedsQueue* /*unused*/, G4bool /*unused*/) override { return 0; }
 
         /**
          * @brief Previously used to stop all the workers.
