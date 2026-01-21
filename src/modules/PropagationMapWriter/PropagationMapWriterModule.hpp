@@ -25,6 +25,7 @@
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
 #include "objects/SensorCharge.hpp"
+#include "tools/field_parser.h"
 
 #include "PropagationMap.hpp"
 
@@ -74,6 +75,9 @@ namespace allpix {
         std::array<size_t, 3> bins_{};
         FieldMapping field_mapping_;
         std::unique_ptr<PropagationMap> output_map_;
+
+        std::string file_name_;
+        FileType file_type_;
 
         CarrierType carrier_type_;
     };

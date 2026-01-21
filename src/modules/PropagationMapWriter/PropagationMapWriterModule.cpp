@@ -48,6 +48,10 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
     messenger_->bindSingle<DepositedChargeMessage>(this, MsgFlags::REQUIRED);
     messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
 
+    // Output settings:
+    file_name_ = config_.get<std::string>("file_name", "propagation_map");
+    file_type_ = config_.get<FileType>("file_type", FileType::APF);
+
     // Read number of bins
     const auto bins = config_.getArray<size_t>("bins");
     if(bins.size() != 3) {
@@ -153,12 +157,12 @@ void PropagationMapWriterModule::finalize() {
     output_map_->checkField();
 
     // Fetch the field data form the output map and write it to a file:
-    auto file_name = createOutputFile(config_.get<std::string>("file_name", "propagation_map"), "apf", true);
+    auto file_name = createOutputFile(file_name_, (file_type_ == FileType::APF ? "apf" : "init"));
 
     // header info: carrier type
     const auto field_data =
         FieldData<double>("this is just a header that will be filled", bins_, size_, output_map_->getNormalizedField());
 
     auto writer = FieldWriter<double>(FieldQuantity::MAP);
-    writer.writeFile(field_data, file_name, FileType::APF, "prob");
+    writer.writeFile(field_data, file_name, file_type_, "prob");
 }

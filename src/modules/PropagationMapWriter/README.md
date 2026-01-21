@@ -12,7 +12,8 @@ module_inputs: ["DepositedCharge", "PixelCharge"]
 
 ## Parameters
 
-* `file_name`: Name of the data file to create, relative to the output directory of the framework. The file extension `.apf` will be appended if not present.
+* `file_type`: Type of the output field file, either `APF` or `INIT`, for the binary or ASCII file format, respectively.
+* `file_name`: Name of the data file to create, relative to the output directory of the framework. The file extension `.apf` or `.init` will be appended if not present, depending on the chosen file type.
 * `bins`: Array with the number of bins for the three dimensions x, y and z.
 * `field_mapping`: Description of the mapping of the output propagation lookup table onto the sensor or pixel cell. Possible values are `SENSOR` for
   sensor-wide mapping, `PIXEL_FULL`, indicating that the map spans the full 2D plane and the field is centered around the
