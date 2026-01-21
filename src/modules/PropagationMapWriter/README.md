@@ -10,6 +10,33 @@ module_inputs: ["DepositedCharge", "PixelCharge"]
 
 ## Description
 
+This modules produces probability maps of charge carrier propagation which can be used as lookup tables in fast simulations.
+For every voxel of the output map, the probability of a charge carrier being collected by any of the 5x5 pixels around its
+starting position is encoded as probability. Any code reading this map can therefore use initial positions of charge carriers
+or groups thereof, lookup the respective starting voxel and randomly pick a final destination for the charge carriers by
+randomly sampling the end point distribution.
+
+The probability is normalized to the total number of charge carriers in this voxel. In case of a limited charge collection
+efficiency, the sum of the resulting probability distribution does not have to be equal to one, but might be lower. It is
+therefore also possible to simulate sensors with radiation-induced defects, charge carrier recombination, or other effects.
+
+The input data to this module can come from any simulation chain, including realistic charge depositions, but it is optimally
+paired e.g. with the *DepositionPointCharge* module which allows uniform sampling of an entire pixel cell.
+The module requires both *DepositedCharge* and *PixelCharge* information to relate them to each other, and to determine the
+initial charge distribution for every charge seen at a pixel.
+
+The algorithm for generating the probability maps works as follows:
+
+* The module loops over all available *DepositedCharge* objects in the event
+  * For each of these objects, it searches for any *PixelCharge* object which contains this specific *DepositedCharge* in its Monte Carlo history
+    * For any matching *PixelCharge* object, all corresponding *PropagatedCharge* objects which have contributed to the final signal are selected from the Monte Carlo history
+    * The total charge which originated from the given *DepositedCharge* and ends on the given *PixelCharge* is calculated
+    * The respective initial deposition position, final pixel index, and fraction of total charge is added to a lookup table
+  * Any such lookup table is added to the global propagation map
+* Finally, in the `finalize()` method the full propagation map is normalized by the number of contributions (number of lookup tables) added to each respective bin and the map is written to file.
+
+The module prints a warning in case of low statistics or even an entirely empty bin encountered during the normalization step.
+
 ## Parameters
 
 * `file_type`: Type of the output field file, either `APF` or `INIT`, for the binary or ASCII file format, respectively.
@@ -25,4 +52,13 @@ module_inputs: ["DepositedCharge", "PixelCharge"]
 
 ## Usage
 
-Include an *example how to use this module*
+A valid configuration for this module is the following:
+
+```ini
+[PropagationMapWriter]
+file_type = APF
+file_name = "my_propagation_map"
+bins = 20 20 100
+field_mapping = PIXEL_FULL
+carrier_type = ELECTRON
+```
