@@ -19,7 +19,7 @@ module_inputs: ["DepositedCharge", "PixelCharge"]
   pixel center, `PIXEL_HALF_TOP` or `PIXEL_HALF_BOTTOM` indicating that the field only contains only one half-axis along `y`,
   `HALF_LEFT` or `HALF_RIGHT` indicating that the field only contains only one half-axis along `x`, or `PIXEL_QUADRANT_I`,
   `PIXEL_QUADRANT_II`, `PIXEL_QUADRANT_III`, `PIXEL_QUADRANT_IV` stating that the field only covers the respective quadrant
-  of the 2D pixel plane.
+  of the 2D pixel plane. Defaults to `PIXEL_FULL`.
 * `carrier_type`: Type of charge carrier type to build the propagation map for, either `ELECTRON` or `HOLE`.
 
 ## Usage

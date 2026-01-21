@@ -57,7 +57,7 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
     bins_ = {bins.at(0), bins.at(1), bins.at(2)};
 
     // Read field mapping from configuration
-    field_mapping_ = config_.get<FieldMapping>("field_mapping");
+    field_mapping_ = config_.get<FieldMapping>("field_mapping", FieldMapping::PIXEL_FULL);
     LOG(DEBUG) << "Propagation map will be generated for mapping " << magic_enum::enum_name(field_mapping_);
 
     // Select which carriers we look at
@@ -93,8 +93,7 @@ void PropagationMapWriterModule::initialize() {
     const auto scales = std::array<double, 2>({1., 1.});
     const auto offset = std::array<double, 2>({0., 0.});
 
-    output_map_ =
-        std::make_unique<PropagationMap>(model_, bins_, size_, FieldMapping::PIXEL_FULL, scales, offset, thickness_domain);
+    output_map_ = std::make_unique<PropagationMap>(model_, bins_, size_, field_mapping_, scales, offset, thickness_domain);
 }
 
 void PropagationMapWriterModule::run(Event* event) {
