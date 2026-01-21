@@ -100,7 +100,8 @@ namespace allpix {
         return out.str();
     }
 
-    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool>> std::string to_string_impl(T inp, empty_tag /*unused*/) {
+    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool>>
+    std::string to_string_impl(T inp, empty_tag /*unused*/) {
         return allpix::transform(enum_name(inp), ::tolower);
     }
 
