@@ -124,7 +124,7 @@ namespace allpix {
      * @throws InvalidKeyError If the conversion to the requested type did not succeed
      * @throws InvalidKeyError If an overflow happened while converting the key
      */
-    template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key, const Matrix<T> def) const {
+    template <typename T> Matrix<T> Configuration::getMatrix(const std::string& key, const Matrix<T>& def) const {
         if(has(key)) {
             return getMatrix<T>(key);
         }

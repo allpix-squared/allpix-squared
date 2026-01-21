@@ -61,6 +61,11 @@ namespace allpix {
              */
             AccessMarker& operator=(const AccessMarker& rhs);
 
+            /* Default destructor, move constructor and operator */
+            ~AccessMarker() = default;
+            AccessMarker(AccessMarker&&) = default;
+            AccessMarker& operator=(AccessMarker&&) = default;
+
             /**
              * @brief Method to register a key for a new access marker
              * @param key Key of the marker
@@ -95,6 +100,9 @@ namespace allpix {
          * @param path Path to the file containing the configuration (or empty if not stored in a file)
          */
         explicit Configuration(std::string name = "", std::filesystem::path path = "");
+
+        /* Default destructor */
+        ~Configuration() = default;
 
         /// @{
         /**
@@ -172,7 +180,7 @@ namespace allpix {
          * @param def Default value matrix to use if key is not defined
          * @return Matrix of values from the requested template parameter
          */
-        template <typename T> Matrix<T> getMatrix(const std::string& key, const Matrix<T> def) const;
+        template <typename T> Matrix<T> getMatrix(const std::string& key, const Matrix<T>& def) const;
 
         /**
          * @brief Get literal value of a key as string
@@ -213,7 +221,6 @@ namespace allpix {
          * @param check_exists If the files should be checked for existence (if yes always returns a canonical path)
          * @return List of absolute path to all the requested files
          */
-        // TODO [doc] Provide second template parameter to specify the vector type to return it in
         std::vector<std::filesystem::path> getPathArray(const std::string& key, bool check_exists = false) const;
 
         /**
@@ -238,7 +245,6 @@ namespace allpix {
          * @param val List of values to assign to the key
          * @param mark_used Flag whether key should be marked as "used" directly
          */
-        // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> void setArray(const std::string& key, const std::vector<T>& val, bool mark_used = false);
 
         /**

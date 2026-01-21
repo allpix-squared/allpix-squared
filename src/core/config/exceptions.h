@@ -28,7 +28,6 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Notifies of a missing configuration file
      */
-    // TODO [doc] Rename to not found?
     class ConfigFileUnavailableError : public ConfigurationError {
     public:
         /**
@@ -44,7 +43,6 @@ namespace allpix {
      * @ingroup Exceptions
      * @brief Indicates a problem converting the value of a configuration key to the value it should represent
      */
-    // TODO [doc] this should be InvalidValueTypeError (see below)
     class InvalidKeyError : public ConfigurationError {
     public:
         /**
