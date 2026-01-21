@@ -49,7 +49,7 @@ namespace allpix {
          */
         Exception() = default;
 
-        std::string error_message_;
+        std::string error_message_; // NOLINT(misc-non-private-member-variables-in-classes)
     };
 
     /**

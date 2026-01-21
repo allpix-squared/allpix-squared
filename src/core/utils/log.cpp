@@ -60,7 +60,7 @@ DefaultLogger::~DefaultLogger() {
     // TODO(simonspa): [doc] any extra exceptions here need to be caught
 
     // Get output string
-    std::string out(os.str());
+    std::string out(os_.str());
 
     // Replace every newline by indented code if necessary
     auto start_pos = out.find('\n');
@@ -175,31 +175,31 @@ std::ostringstream&
 DefaultLogger::getStream(LogLevel level, const std::string& file, const std::string& function, uint32_t line) {
     // Add date in all except short format
     if(get_format() != LogFormat::SHORT) {
-        os << "\x1B[1m"; // BOLD
-        os << "|" << get_current_date() << "| ";
-        os << "\x1B[0m"; // RESET
+        os_ << "\x1B[1m"; // BOLD
+        os_ << "|" << get_current_date() << "| ";
+        os_ << "\x1B[0m"; // RESET
     }
 
     // Add thread id only in long format
     if(get_format() == LogFormat::LONG) {
-        os << "\x1B[1m"; // BOLD
-        os << "=" << std::this_thread::get_id() << "= ";
-        os << "\x1B[0m"; // RESET
+        os_ << "\x1B[1m"; // BOLD
+        os_ << "=" << std::this_thread::get_id() << "= ";
+        os_ << "\x1B[0m"; // RESET
     }
 
     // Set color for log level
     if(level == LogLevel::FATAL || level == LogLevel::ERROR) {
-        os << "\x1B[31;1m"; // RED
+        os_ << "\x1B[31;1m"; // RED
     } else if(level == LogLevel::WARNING) {
-        os << "\x1B[33;1m"; // YELLOW
+        os_ << "\x1B[33;1m"; // YELLOW
     } else if(level == LogLevel::STATUS) {
-        os << "\x1B[32;1m"; // GREEN
+        os_ << "\x1B[32;1m"; // GREEN
     } else if(level == LogLevel::TRACE || level == LogLevel::DEBUG) {
-        os << "\x1B[36m"; // NON-BOLD CYAN
+        os_ << "\x1B[36m"; // NON-BOLD CYAN
     } else if(level == LogLevel::PRNG) {
-        os << "\x1B[90m"; // NON-BOLD GREY
+        os_ << "\x1B[90m"; // NON-BOLD GREY
     } else {
-        os << "\x1B[36;1m"; // CYAN
+        os_ << "\x1B[36;1m"; // CYAN
     }
 
     // Add log level (shortly in the short format)
@@ -207,39 +207,39 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
         std::string level_str = "(";
         level_str += getStringFromLevel(level);
         level_str += ")";
-        os << std::setw(9) << level_str << " ";
+        os_ << std::setw(9) << level_str << " ";
     } else {
-        os << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
+        os_ << "(" << getStringFromLevel(level).substr(0, 1) << ") ";
     }
-    os << "\x1B[0m"; // RESET
+    os_ << "\x1B[0m"; // RESET
 
     // Add event number if any (shortly in the short format)
     if(getEventNum() != 0) {
         if(get_format() != LogFormat::SHORT) {
-            os << "(Event " << getEventNum() << ") ";
+            os_ << "(Event " << getEventNum() << ") ";
         } else {
-            os << "(E: " << getEventNum() << ") ";
+            os_ << "(E: " << getEventNum() << ") ";
         }
     }
 
     // Add section if available
     if(!get_section().empty()) {
-        os << "\x1B[1m"; // BOLD
-        os << "[" << get_section() << "] ";
-        os << "\x1B[0m"; // RESET
+        os_ << "\x1B[1m"; // BOLD
+        os_ << "[" << get_section() << "] ";
+        os_ << "\x1B[0m"; // RESET
     }
 
     // Print function name and line number information in debug format
     if(get_format() == LogFormat::LONG) {
-        os << "\x1B[1m"; // BOLD
-        os << "<" << file << "/" << function << ":L" << line << "> ";
-        os << "\x1B[0m"; // RESET
+        os_ << "\x1B[1m"; // BOLD
+        os_ << "<" << file << "/" << function << ":L" << line << "> ";
+        os_ << "\x1B[0m"; // RESET
     }
 
     // Save the indent count to fix with newlines
     size_t prev = 0;
     size_t pos = 0;
-    std::string const out = os.str();
+    std::string const out = os_.str();
     while((pos = out.find("\x1B[", prev)) != std::string::npos) {
         indent_count_ += static_cast<unsigned int>(pos - prev);
         prev = out.find('m', pos) + 1;
@@ -247,7 +247,7 @@ DefaultLogger::getStream(LogLevel level, const std::string& file, const std::str
             break;
         }
     }
-    return os;
+    return os_;
 }
 
 /**

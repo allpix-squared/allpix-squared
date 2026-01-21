@@ -32,7 +32,7 @@ namespace allpix {
      * The Magic Enum library is used for conversion between string and enum type
      */
     template <typename T>
-    typename std::enable_if_t<std::is_enum<T>::value, T> from_string_impl(std::string str, type_tag<T>) {
+    typename std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_impl(str, type_tag<std::string>());
 
         auto val = enum_cast<T>(str, true);
@@ -54,7 +54,7 @@ namespace allpix {
      * standard framework unit.
      */
     template <typename T>
-    typename std::enable_if_t<std::is_arithmetic<T>::value, T> from_string_impl(std::string str, type_tag<T>) {
+    typename std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/) {
         str = from_string_helper(str);
 
         // Find an optional set of units
@@ -64,7 +64,7 @@ namespace allpix {
                 break;
             }
         }
-        std::string units = str.substr(unit_idx + 1);
+        const auto units = str.substr(unit_idx + 1);
 
         // Get the actual arithmetic value
         std::istringstream sstream(str.substr(0, unit_idx + 1));
@@ -88,19 +88,19 @@ namespace allpix {
      * function should be overloaded. The string is passed as first argument to this function, the second argument should be
      * an \ref allpix::empty_tag (required to search in the allpix namespace).
      */
-    template <typename T> std::string to_string(T inp) {
+    template <typename T> std::string to_string(const T& inp) {
         // Use tag dispatch to select the correct implementation
         return to_string_impl(inp, empty_tag());
     }
 
-    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, bool>>
-    std::string to_string_impl(T inp, empty_tag) {
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool>>
+    std::string to_string_impl(T inp, empty_tag /*unused*/) {
         std::ostringstream out;
         out << inp;
         return out.str();
     }
 
-    template <typename T, std::enable_if_t<std::is_enum<T>::value, bool>> std::string to_string_impl(T inp, empty_tag) {
+    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool>> std::string to_string_impl(T inp, empty_tag /*unused*/) {
         return allpix::transform(enum_name(inp), ::tolower);
     }
 
@@ -116,7 +116,8 @@ namespace allpix {
         std::vector<T> elems;
 
         // Loop through the string
-        std::size_t prev = 0, pos = 0;
+        std::size_t prev = 0;
+        std::size_t pos = 0;
         while((pos = str.find_first_of(delims, prev)) != std::string::npos) {
             if(pos > prev) {
                 elems.push_back(from_string<T>(str.substr(prev, pos - prev)));

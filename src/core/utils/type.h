@@ -17,8 +17,6 @@
 #include <memory>
 #include <string>
 
-// TODO: This should be reworked to show complex types in a better way
-
 namespace allpix {
     /**
      * @brief Tag for specific type
@@ -36,7 +34,7 @@ namespace allpix {
     inline std::string demangle(const char* name, bool keep_allpix = false) {
         // Try to demangle
         int status = -1;
-        std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
+        const std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
 
         if(status == 0) {
             // Remove allpix tag if necessary

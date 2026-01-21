@@ -55,7 +55,6 @@ namespace allpix {
          * @param str Name of the unit
          * @return Value in the base unit
          */
-        // TODO [doc] This function should likely be removed
         static UnitType getSingle(std::string str);
         /**
          * @brief Get single input parameter in the base units
@@ -63,7 +62,6 @@ namespace allpix {
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        // TODO [doc] This function should likely be removed
         template <typename T> static T getSingle(T inp, std::string str);
         /**
          * @brief Get single input parameter in the inverse of the base units
@@ -71,7 +69,6 @@ namespace allpix {
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        // TODO [doc] This function should likely be removed
         template <typename T> static T getSingleInverse(T inp, std::string str);
 
         /**
@@ -95,7 +92,6 @@ namespace allpix {
          * @param str Name of that particular unit
          * @return Value in the base unit
          */
-        // TODO [doc] This function should likely be removed
         template <typename T> static T getInverse(T inp, const std::string& str);
 
         /**
@@ -104,8 +100,6 @@ namespace allpix {
          * @param str Name of the output unit
          * @return Value in the requested unit
          */
-        // TODO [doc] This function should maybe be removed
-        // TODO [doc] Shall we change the name in something better here
         static UnitType convert(UnitType input, std::string str);
 
         /**
