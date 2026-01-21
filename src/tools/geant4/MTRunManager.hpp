@@ -39,10 +39,10 @@ namespace allpix {
     public:
         MTRunManager();
         ~MTRunManager() override = default;
-        MTRunManager(const MTRunManager&) = default;
-        MTRunManager& operator=(const MTRunManager&) = default;
-        MTRunManager(MTRunManager&&) = default;
-        MTRunManager& operator=(MTRunManager&&) = default;
+        MTRunManager(const MTRunManager&) = delete;
+        MTRunManager& operator=(const MTRunManager&) = delete;
+        MTRunManager(MTRunManager&&) = delete;
+        MTRunManager& operator=(MTRunManager&&) = delete;
 
         /**
          * @brief Thread safe version of G4RunManager::BeamOn. Offload the work to a thread specific worker.
