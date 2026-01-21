@@ -98,12 +98,13 @@ namespace allpix {
      * @brief Conversion handler for all arithmetic types
      */
     template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
-    std::string to_string_impl(T inp, empty_tag);
+    std::string to_string_impl(T inp, empty_tag /*unused*/);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all enum types
      */
-    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true> std::string to_string_impl(T inp, empty_tag);
+    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
+    std::string to_string_impl(T inp, empty_tag /*unused*/);
 
     /// @{
     /**
@@ -113,9 +114,9 @@ namespace allpix {
      *
      * Adds enclosing double quotation marks to properly store strings containing whitespace.
      */
-    inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
-    inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
-    inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(const std::string& inp, empty_tag /*unused*/) { return '"' + inp + '"'; }
+    inline std::string to_string_impl(const char* inp, empty_tag /*unused*/) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(char* inp, empty_tag /*unused*/) { return '"' + std::string(inp) + '"'; }
     /// @}
 
     /**
