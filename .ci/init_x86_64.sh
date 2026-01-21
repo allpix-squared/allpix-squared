@@ -73,7 +73,7 @@ if [ -z ${COMPILER_TYPE} ]; then
     fi
 fi
 if [ ${COMPILER_TYPE} = "gcc" ]; then
-    if [ "$OS" == ubuntu2404 ]; then
+    if [ "$OS" = ubuntu2404 ]; then
         COMPILER_VERSION="gcc13"
     else
         COMPILER_VERSION="gcc15"
