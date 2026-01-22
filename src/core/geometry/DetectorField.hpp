@@ -13,6 +13,7 @@
 #define ALLPIX_DETECTOR_FIELD_H
 
 #include <array>
+#include <cstddef>
 #include <functional>
 #include <vector>
 
@@ -85,6 +86,16 @@ namespace allpix {
             const auto i = std::distance(this->begin(), it);
             return {static_cast<int>(i % 5) - 2, static_cast<int>(i / 5) - 2};
         }
+
+        /**
+         * @brief Helper to get the index in the field table from relative coordinates
+         *
+         * @param x Relative coordinate in x
+         * @param y Relative coordinate in y
+         *
+         * @return field index
+         */
+        static size_t getIndex(int x, int y) { return (static_cast<size_t>(y + 2) * 5) + static_cast<size_t>(x + 2); }
     };
 
     /**
@@ -191,7 +202,6 @@ namespace allpix {
                                  std::array<double, 2> offset,
                                  std::pair<double, double> thickness_domain);
 
-    private:
         /**
          * @brief Helper function to retrieve the return type from a calculated index of the field data vector
          * @param offset The calculated global index to start from

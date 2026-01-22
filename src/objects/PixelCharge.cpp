@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "objects/DepositedCharge.hpp"
 #include "objects/MCParticle.hpp"
 #include "objects/Pixel.hpp"
 #include "objects/PropagatedCharge.hpp"
@@ -136,6 +137,18 @@ std::vector<const MCParticle*> PixelCharge::getPrimaryMCParticles() const {
 
     // Return as a vector of mc particles
     return primary_particles;
+}
+
+std::vector<const PropagatedCharge*> PixelCharge::find(const DepositedCharge* deposit) const {
+    // FIXME: This is not very efficient unfortunately
+    std::vector<const PropagatedCharge*> propagated_charges;
+    for(const auto& propagated_charge : propagated_charges_) {
+        const auto* charge = propagated_charge.get();
+        if(charge != nullptr && charge->getDepositedCharge() == deposit) {
+            propagated_charges.emplace_back(propagated_charge.get());
+        }
+    }
+    return propagated_charges;
 }
 
 void PixelCharge::print(std::ostream& out) const {
