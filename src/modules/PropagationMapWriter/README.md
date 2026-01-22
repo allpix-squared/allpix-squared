@@ -13,7 +13,7 @@ module_inputs: ["DepositedCharge", "PixelCharge"]
 This modules produces probability maps of charge carrier propagation which can be used as lookup tables in fast simulations.
 For every voxel of the output map, the probability of a charge carrier being collected by any of the 5x5 pixels around its
 starting position is encoded as probability. Any code reading this map can therefore use initial positions of charge carriers
-or groups thereof, lookup the respective starting voxel and randomly pick a final destination for the charge carriers by
+or groups thereof, lookup the respective starting voxel and pick a final destination for the charge carriers by
 randomly sampling the end point distribution.
 
 The probability is normalized to the total number of charge carriers in this voxel. In case of a limited charge collection

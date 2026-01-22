@@ -164,5 +164,5 @@ void PropagationMapWriterModule::finalize() {
         FieldData<double>("this is just a header that will be filled", bins_, size_, output_map_->getNormalizedField());
 
     auto writer = FieldWriter<double>(FieldQuantity::MAP);
-    writer.writeFile(field_data, file_name, file_type_, "prob");
+    writer.writeFile(field_data, file_name, file_type_);
 }
