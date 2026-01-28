@@ -536,3 +536,27 @@ INSTALL(
     NAMESPACE Allpix::
     FILE AllpixConfigTargets.cmake
     DESTINATION ${ALLPIX_CMAKE_DIR})
+
+
+# pkgconfig file generation:
+
+SET(PKG_CONFIG_LIBDIR
+    "\${prefix}/${ALLPIX_LIBRARY_DIR}"
+)
+SET(PKG_CONFIG_INCLUDEDIR
+    "\${prefix}/${ALLPIX_INCLUDE_DIR}"
+)
+SET(PKG_CONFIG_LIBS
+    "-L\${libdir}"
+)
+SET(PKG_CONFIG_CFLAGS
+    "-I\${includedir}"
+)
+
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pkg-config.pc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+)
+
+INSTALL(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
+        DESTINATION ${ALLPIX_LIBRARY_DIR}/pkgconfig)
