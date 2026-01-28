@@ -213,7 +213,7 @@ namespace allpix {
         static bool is_terminal(std::ostream& stream);
 
         // Output stream
-        std::ostringstream os;
+        std::ostringstream os_;
 
         // Number of exceptions to prevent abort
         int exception_count_{};
@@ -244,6 +244,7 @@ namespace allpix {
 #define __FILE_NAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 /**
  * @brief Execute a block only if the reporting level is high enough
  * @param level The minimum log level
@@ -325,6 +326,7 @@ namespace allpix {
      */
     // TODO [doc] rewrite as a lowercase function in a namespace?
     inline void RELEASE_STREAM(std::ostream& stream) { stream.clear(); }
+    // NOLINTEND(cppcoreguidelines-macro-usage)
 } // namespace allpix
 
 #endif /* ALLPIX_LOG_H */

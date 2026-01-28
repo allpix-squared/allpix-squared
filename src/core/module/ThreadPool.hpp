@@ -54,6 +54,16 @@ namespace allpix {
              */
             ~SafeQueue() { invalidate(); };
 
+            /// @{
+            /**
+             * @brief Disallow copy and move
+             */
+            SafeQueue(const SafeQueue&) = delete;
+            SafeQueue& operator=(const SafeQueue&) = delete;
+            SafeQueue(SafeQueue&&) = delete;
+            SafeQueue& operator=(SafeQueue&&) = delete;
+            /// @}
+
             /**
              * @brief Get the top value from the appropriate queue
              * @param out Reference where the value at the top of the queue will be written to

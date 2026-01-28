@@ -42,7 +42,7 @@ namespace allpix {
      */
     template <typename T>
     inline ROOT::Math::DisplacementVector3D<T> from_string_impl(std::string str,
-                                                                type_tag<ROOT::Math::DisplacementVector3D<T>>) {
+                                                                type_tag<ROOT::Math::DisplacementVector3D<T>> /*unused*/) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
@@ -53,7 +53,8 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 3D displacement vector to string for storage in the configuration
      */
-    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag) {
+    template <typename T>
+    inline std::string to_string_impl(const ROOT::Math::DisplacementVector3D<T>& vec, empty_tag /*unused*/) {
         std::string res;
         res += std::to_string(vec.x());
         res += ",";
@@ -69,7 +70,7 @@ namespace allpix {
      */
     template <typename T>
     inline ROOT::Math::DisplacementVector2D<T> from_string_impl(std::string str,
-                                                                type_tag<ROOT::Math::DisplacementVector2D<T>>) {
+                                                                type_tag<ROOT::Math::DisplacementVector2D<T>> /*unused*/) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
@@ -80,7 +81,8 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 2D displacement vector to string for storage in the configuration
      */
-    template <typename T> inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag) {
+    template <typename T>
+    inline std::string to_string_impl(const ROOT::Math::DisplacementVector2D<T>& vec, empty_tag /*unused*/) {
         std::string res;
         res += std::to_string(vec.x());
         res += ",";
@@ -93,7 +95,8 @@ namespace allpix {
      * @brief Enable support to convert string directly to ROOT 3D position vector while fetching configuration parameter
      */
     template <typename T>
-    inline ROOT::Math::PositionVector3D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector3D<T>>) {
+    inline ROOT::Math::PositionVector3D<T> from_string_impl(std::string str,
+                                                            type_tag<ROOT::Math::PositionVector3D<T>> /*unused*/) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
@@ -104,7 +107,8 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 3D position vector to string for storage in the configuration
      */
-    template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector3D<T>& vec, empty_tag) {
+    template <typename T>
+    inline std::string to_string_impl(const ROOT::Math::PositionVector3D<T>& vec, empty_tag /*unused*/) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector3D<T>>(vec), empty_tag());
     }
 
@@ -113,7 +117,8 @@ namespace allpix {
      * @brief Enable support to convert string directly to ROOT 2D position vector while fetching configuration parameter
      */
     template <typename T>
-    inline ROOT::Math::PositionVector2D<T> from_string_impl(std::string str, type_tag<ROOT::Math::PositionVector2D<T>>) {
+    inline ROOT::Math::PositionVector2D<T> from_string_impl(std::string str,
+                                                            type_tag<ROOT::Math::PositionVector2D<T>> /*unused*/) {
         std::vector<typename T::Scalar> vec_split = allpix::split<typename T::Scalar>(std::move(str));
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
@@ -124,7 +129,8 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert ROOT 2D position vector to string for storage in the configuration
      */
-    template <typename T> inline std::string to_string_impl(const ROOT::Math::PositionVector2D<T>& vec, empty_tag) {
+    template <typename T>
+    inline std::string to_string_impl(const ROOT::Math::PositionVector2D<T>& vec, empty_tag /*unused*/) {
         return to_string_impl(static_cast<ROOT::Math::DisplacementVector2D<T>>(vec), empty_tag());
     }
 
@@ -235,7 +241,7 @@ namespace allpix {
 #else
             // create at least one directory (we need it for the model), plus others as needed by the size of objects
             directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
-            for(auto i = 1u; i < num_slots; ++i) {
+            for(auto i = 1U; i < num_slots; ++i) {
                 directories_.emplace_back(ROOT::Internal::TThreadedObjectUtils::DirCreator<T>::Create());
             }
 #endif
@@ -274,7 +280,7 @@ namespace allpix {
 
         auto* pids = TProcessID::GetPIDs();
         for(int i = 0; i < pids->GetEntries(); ++i) {
-            auto* pid_ptr = static_cast<TProcessID*>((*pids)[i]);
+            auto* pid_ptr = dynamic_cast<TProcessID*>((*pids)[i]);
             pid_ptr->Clear();
         }
 

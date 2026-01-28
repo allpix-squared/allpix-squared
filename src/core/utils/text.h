@@ -28,8 +28,6 @@
 
 #include "type.h"
 
-// TODO [doc]: should possible be put in a separate namespace
-
 namespace allpix {
 
     /**
@@ -59,54 +57,54 @@ namespace allpix {
      * @throws std::invalid_argument If the string cannot be converted to the required arithmetic type
      */
     template <typename T>
-    typename std::enable_if_t<std::is_arithmetic<T>::value, T> from_string_impl(std::string str, type_tag<T>);
+    typename std::enable_if_t<std::is_arithmetic_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all enum types
      * @throws std::invalid_argument If the string cannot be converted to the required enum type
      */
     template <typename T>
-    typename std::enable_if_t<std::is_enum<T>::value, T> from_string_impl(std::string str, type_tag<T>);
+    typename std::enable_if_t<std::is_enum_v<T>, T> from_string_impl(std::string str, type_tag<T> /*unused*/);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
      * @throws std::invalid_argument If no closing quotation mark as last character after an opening quotation mark
      * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
      */
-    std::string from_string_impl(std::string str, type_tag<std::string>);
+    std::string from_string_impl(std::string str, type_tag<std::string> /*unused*/);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for filesystem paths
      * @throws std::invalid_argument If no closing quotation mark as last character after an opening quotation mark
      * @throws std::invalid_argument If string without enclosing quotation marks, but more data after whitespace is found
      */
-    std::filesystem::path from_string_impl(std::string str, type_tag<std::filesystem::path>);
+    std::filesystem::path from_string_impl(std::string str, type_tag<std::filesystem::path> /*unused*/);
 
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for booleans
      * @throws std::invalid_argument If the string cannot be converted to a boolean type
      */
-    bool from_string_impl(std::string str, type_tag<bool>);
+    bool from_string_impl(std::string str, type_tag<bool> /*unused*/);
 
     /**
      * @brief Converts any type to a string
      * @note C-strings are not supported due to allocation issues
      */
-    template <typename T> std::string to_string(T inp);
+    template <typename T> std::string to_string(const T& inp);
 
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all arithmetic types
      */
-    template <typename T, std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
-    std::string to_string_impl(T inp, empty_tag);
+    template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    std::string to_string_impl(T inp, empty_tag /*unused*/);
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for all enum types
      */
-    template <typename T, std::enable_if_t<std::is_enum<T>::value, bool> = true>
-    std::string to_string_impl(T inp, empty_tag);
+    template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
+    std::string to_string_impl(T inp, empty_tag /*unused*/);
 
     /// @{
     /**
@@ -116,9 +114,9 @@ namespace allpix {
      *
      * Adds enclosing double quotation marks to properly store strings containing whitespace.
      */
-    inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
-    inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
-    inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(const std::string& inp, empty_tag /*unused*/) { return '"' + inp + '"'; }
+    inline std::string to_string_impl(const char* inp, empty_tag /*unused*/) { return '"' + std::string(inp) + '"'; }
+    inline std::string to_string_impl(char* inp, empty_tag /*unused*/) { return '"' + std::string(inp) + '"'; }
     /// @}
 
     /**

@@ -19,9 +19,14 @@ namespace allpix {
     class SensitiveDetectorAndFieldConstruction {
     public:
         /**
-         * @brief Required virtual destructor
+         * @brief Required virtual destructor, copy and move constructors and operators
          */
         virtual ~SensitiveDetectorAndFieldConstruction() = default;
+        SensitiveDetectorAndFieldConstruction() = default;
+        SensitiveDetectorAndFieldConstruction(const SensitiveDetectorAndFieldConstruction&) = default;
+        SensitiveDetectorAndFieldConstruction& operator=(const SensitiveDetectorAndFieldConstruction&) = default;
+        SensitiveDetectorAndFieldConstruction(SensitiveDetectorAndFieldConstruction&&) = default;
+        SensitiveDetectorAndFieldConstruction& operator=(SensitiveDetectorAndFieldConstruction&&) = default;
 
         /**
          * @brief Constructs the sensitive detectors and field for each worker.

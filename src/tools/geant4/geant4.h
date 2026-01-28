@@ -39,7 +39,7 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to Geant4 3D vector while fetching configuration parameter
      */
-    inline G4ThreeVector from_string_impl(std::string str, type_tag<G4ThreeVector>) {
+    inline G4ThreeVector from_string_impl(std::string str, type_tag<G4ThreeVector> /*unused*/) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 3) {
             throw std::invalid_argument("array should contain exactly three elements");
@@ -50,7 +50,7 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert Geant4 3D vector to string for storage in the configuration
      */
-    inline std::string to_string_impl(const G4ThreeVector& vec, empty_tag) {
+    inline std::string to_string_impl(const G4ThreeVector& vec, empty_tag /*unused*/) {
         std::string res;
         for(int i = 0; i < 3; ++i) {
             res += std::to_string(vec[i]);
@@ -65,7 +65,7 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert string directly to Geant4 2D vector for fetching configuration parameter
      */
-    inline G4TwoVector from_string_impl(std::string str, type_tag<G4TwoVector>) {
+    inline G4TwoVector from_string_impl(std::string str, type_tag<G4TwoVector> /*unused*/) {
         std::vector<double> vec_split = allpix::split<double>(std::move(str));
         if(vec_split.size() != 2) {
             throw std::invalid_argument("array should contain exactly two elements");
@@ -76,7 +76,7 @@ namespace allpix {
      * @ingroup StringConversions
      * @brief Enable support to convert Geant4 2D vector to string for storage in the configuration
      */
-    inline std::string to_string_impl(const G4TwoVector& vec, empty_tag) {
+    inline std::string to_string_impl(const G4TwoVector& vec, empty_tag /*unused*/) {
         std::string res;
         for(int i = 0; i < 2; ++i) {
             res += std::to_string(vec[i]);

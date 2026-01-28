@@ -22,6 +22,10 @@ namespace allpix {
     public:
         RunManager();
         ~RunManager() override = default;
+        RunManager(const RunManager&) = delete;
+        RunManager& operator=(const RunManager&) = delete;
+        RunManager(RunManager&&) = delete;
+        RunManager& operator=(RunManager&&) = delete;
 
         /**
          * @brief Wrapper around G4RunManager::BeamOn that seeds the RNG before calling BeamOn
