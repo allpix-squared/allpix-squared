@@ -50,7 +50,6 @@
 #include <Math/Point3Dfwd.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <magic_enum/magic_enum.hpp>
 
 #include "ActionInitializationG4.hpp"
 #include "AdditionalPhysicsLists.hpp"
@@ -64,6 +63,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "core/utils/text.h"
 #include "core/utils/unit.h"
@@ -278,7 +278,7 @@ void DepositionGeant4Module::initialize() {
         for(auto& detector : geo_manager_->getDetectors()) {
             const auto material = detector->getModel()->getSensorMaterial();
             if(material == SensorMaterial::DIAMOND || material == SensorMaterial::SILICON_CARBIDE) {
-                LOG(INFO) << "Found detector with " << magic_enum::enum_name(material) << " sensor, enabling NRESP71 model";
+                LOG(INFO) << "Found detector with " << enum_name(material) << " sensor, enabling NRESP71 model";
                 G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(true);
 
                 if(physics_list_up == "FTFP_BERT_LIV") {

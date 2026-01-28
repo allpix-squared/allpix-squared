@@ -20,8 +20,8 @@
 #include <G4UImanager.hh>
 #include <G4ios.hh>
 #include <Randomize.hh>
-#include <magic_enum/magic_enum.hpp>
 
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
@@ -37,7 +37,7 @@ RunManager::RunManager() {
 
 void RunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
-    LOG(DEBUG) << "Current Geant4 state: " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
+    LOG(DEBUG) << "Current Geant4 state: " << enum_name(G4StateManager::GetStateManager()->GetCurrentState());
 
     // Set the event seeds - with a zero-terminated list:
     std::array<long, 3> seeds{static_cast<long>(seed1 % LONG_MAX), static_cast<long>(seed2 % LONG_MAX), 0};
@@ -59,8 +59,7 @@ void RunManager::AbortRun(bool softAbort) {
         }
         // Ready for new event, set the state back to G4State_Idle
         G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
-        LOG(DEBUG) << "Reset Geant4 state to "
-                   << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
+        LOG(DEBUG) << "Reset Geant4 state to " << enum_name(G4StateManager::GetStateManager()->GetCurrentState());
     } else {
         LOG(WARNING) << "Run is not in progress. AbortRun() ignored." << G4endl;
     }

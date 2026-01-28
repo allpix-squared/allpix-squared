@@ -16,8 +16,8 @@
 #include <G4MTRunManager.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
-#include <magic_enum/magic_enum.hpp>
 
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "tools/geant4/G4ExceptionHandler.hpp"
 #include "tools/geant4/G4LoggingDestination.hpp"
@@ -36,7 +36,7 @@ MTRunManager::MTRunManager() {
 
 void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLINT
 
-    LOG(DEBUG) << "Current Geant4 state: " << magic_enum::enum_name(G4StateManager::GetStateManager()->GetCurrentState());
+    LOG(DEBUG) << "Current Geant4 state: " << enum_name(G4StateManager::GetStateManager()->GetCurrentState());
 
     // Seed the worker run manager for this event:
     worker_run_manager_->seedsQueue.push(static_cast<long>(seed1 % LONG_MAX));

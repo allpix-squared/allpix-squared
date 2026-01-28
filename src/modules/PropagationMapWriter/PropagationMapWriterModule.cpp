@@ -19,13 +19,12 @@
 #include <string>
 #include <utility>
 
-#include <magic_enum/magic_enum.hpp>
-
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Event.hpp"
 #include "core/module/Module.hpp"
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/DepositedCharge.hpp"
@@ -62,7 +61,7 @@ PropagationMapWriterModule::PropagationMapWriterModule(Configuration& config,
 
     // Read field mapping from configuration
     field_mapping_ = config_.get<FieldMapping>("field_mapping", FieldMapping::PIXEL_FULL);
-    LOG(DEBUG) << "Propagation map will be generated for mapping " << magic_enum::enum_name(field_mapping_);
+    LOG(DEBUG) << "Propagation map will be generated for mapping " << enum_name(field_mapping_);
 
     // Select which carriers we look at
     carrier_type_ = config_.get<CarrierType>("carrier_type");
