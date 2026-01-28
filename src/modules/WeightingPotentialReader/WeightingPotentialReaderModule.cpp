@@ -28,7 +28,6 @@
 #include <Math/Vector2Dfwd.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <magic_enum/magic_enum.hpp>
 
 #include "core/config/exceptions.h"
 #include "core/geometry/Detector.hpp"
@@ -36,6 +35,7 @@
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
 #include "core/module/exceptions.h"
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/Pixel.hpp"
@@ -75,7 +75,7 @@ void WeightingPotentialReaderModule::initialize() {
             throw InvalidValueError(
                 config_, "field_mapping", "the weighting potential needs to be centered around an electrode");
         }
-        LOG(DEBUG) << "Weighting potential maps to " << magic_enum::enum_name(field_mapping);
+        LOG(DEBUG) << "Weighting potential maps to " << enum_name(field_mapping);
         auto field_data = read_field();
 
         // By default, set field scale from physical extent read from field file:

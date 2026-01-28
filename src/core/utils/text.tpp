@@ -14,8 +14,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include <magic_enum/magic_enum.hpp>
-
+#include "enum.h"
 #include "unit.h"
 
 namespace allpix {
@@ -36,13 +35,13 @@ namespace allpix {
     typename std::enable_if_t<std::is_enum<T>::value, T> from_string_impl(std::string str, type_tag<T>) {
         str = from_string_impl(str, type_tag<std::string>());
 
-        auto val = magic_enum::enum_cast<T>(str, magic_enum::case_insensitive);
+        auto val = enum_cast<T>(str, true);
         if(val.has_value()) {
             return val.value();
         }
 
         // Generate list of available values for the exception:
-        auto v = magic_enum::enum_names<T>();
+        auto v = enum_names<T>();
         std::string vstr = std::accumulate(v.begin(), v.end(), std::string(), [](auto a, auto s) {
             return a + (a.empty() ? "" : ", ") + std::string(s.data());
         });
@@ -102,7 +101,7 @@ namespace allpix {
     }
 
     template <typename T, std::enable_if_t<std::is_enum<T>::value, bool>> std::string to_string_impl(T inp, empty_tag) {
-        return allpix::transform(std::string(magic_enum::enum_name(inp)), ::tolower);
+        return allpix::transform(enum_name(inp), ::tolower);
     }
 
     template <typename T> std::vector<T> split(std::string str, const std::string& delims) {

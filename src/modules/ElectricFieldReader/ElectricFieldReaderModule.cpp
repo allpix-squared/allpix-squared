@@ -25,13 +25,13 @@
 #include <TFormula.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <magic_enum/magic_enum.hpp>
 
 #include "core/config/exceptions.h"
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorField.hpp"
 #include "core/messenger/Messenger.hpp"
 #include "core/module/Module.hpp"
+#include "core/utils/enum.h"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "tools/field_parser.h"
@@ -85,7 +85,7 @@ void ElectricFieldReaderModule::initialize() {
     if(field_model == ElectricField::MESH) {
         // Read field mapping from configuration
         auto field_mapping = config_.get<FieldMapping>("field_mapping");
-        LOG(DEBUG) << "Electric field maps to " << magic_enum::enum_name(field_mapping);
+        LOG(DEBUG) << "Electric field maps to " << enum_name(field_mapping);
         auto field_data = read_field();
 
         // By default, set field scale from physical extent read from field file:
