@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2026 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+
+SPDX-PackageName = "Allpix Squared"
+SPDX-PackageSupplier = "Simon Spannagel <simon.spannagel@cern.ch>"
+SPDX-PackageDownloadLocation = "https://gitlab.cern.ch/allpix-squared/allpix-squared"
+
+[[annotations]]
+path = ".gitlab/ci/ctest-to-junit.xsl"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2011 Ryan Pavlik <rpavlik@iastate.edu>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "3rdparty/cereal/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2014, Randolph Voorhies, Shane Grant"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+[[annotations]]
+path = "3rdparty/combinations/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Howard Hinnant 2005-2011"
+SPDX-License-Identifier = "BSL-1.0"
+
+[[annotations]]
+path = "3rdparty/octree/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2015 Jens Behley, University of Bonn"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "cmake/CodeCoverage.cmake"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2012 - 2017, Lars Bilke"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+[[annotations]]
+path = "doc/convert/pandoc-gitlab-math.lua"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2018 Nikolay Yakimov"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "doc/convert/pandoc-minted.lua"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019 Stephen McDowell"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+  "doc/**",
+  "etc/manual**.conf",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-2026 CERN and the Allpix Squared authors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+precedence = "aggregate"
+path = "examples/**"
+SPDX-FileCopyrightText = "2017-2023 CERN and the Allpix Squared authors"
+SPDX-License-Identifier = "CC0-1.0 OR CC-BY-4.0"
+
+[[annotations]]
+path = "src/modules/DepositionCosmics/cry/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2007-2012, The Regents of the University of California", "2021-2023 CERN and the Allpix Squared authors"]
+SPDX-License-Identifier = "BSD-3-Clause"
+
+[[annotations]]
+path = "src/modules/DepositionCosmics/data/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2007-2012, The Regents of the University of California"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "src/modules/DepositionLaser/data/silicon_photoabsorption.data"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "1995 John Wiley & Sons, Ltd."
+SPDX-License-Identifier = "CC0-1.0"
+SPDX-FileComment = "Taken from https://doi.org/10.1002/pip.4670030303"
+
+[[annotations]]
+path = ".proselint.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 CERN and the Allpix Squared authors"
+SPDX-License-Identifier = "CC0-1.0"
