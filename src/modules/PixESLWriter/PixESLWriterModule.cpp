@@ -34,7 +34,7 @@ PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messeng
 void PixESLWriterModule::initialize() {
 
     // Set up properties:
-    std::vector<std::string> properties{"column", "row", "charge", "toa"};
+    const std::vector<std::string> properties{"column", "row", "charge", "toa"};
 
     output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
 
@@ -78,6 +78,6 @@ void PixESLWriterModule::run(Event* event) {
 void PixESLWriterModule::finalize() {
     // Print statistics
     LOG(STATUS) << "Wrote " << writer_->getRecordCount() << " records in " << writer_->getEventCount()
-                << " events to file:" << std::endl
+                << " events to file:\n"
                 << output_file_;
 }
