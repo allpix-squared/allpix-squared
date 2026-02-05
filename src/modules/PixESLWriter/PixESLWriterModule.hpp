@@ -63,7 +63,7 @@ namespace allpix {
         std::unique_ptr<apx::Writer> writer_;
         std::atomic<double> timestamp_;
 
-        std::optional<double> bx_period_{};
+        std::optional<double> bx_period_;
         double lambda_mean_rate_{};
 
         // Statistical information

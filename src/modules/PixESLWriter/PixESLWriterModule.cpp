@@ -49,7 +49,7 @@ void PixESLWriterModule::initialize() {
     // Calculate the active matrix area
     auto model = detector_->getModel();
     LOG(DEBUG) << "Calculating rate for active matrix size of " << Units::display(model->getMatrixSize(), {"mm"});
-    double matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
+    const auto matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
 
     // Calculate the exponential distribution parameter based on the given hit rate
@@ -60,7 +60,7 @@ void PixESLWriterModule::initialize() {
         bx_period_ = config_.get<double>("bx_period");
         LOG(INFO) << "Mean hit rate on the active matrix: " << lambda_mean_rate_ * bx_period_.value()
                   << " events per bunch crossing";
-        properties.push_back("bx_id");
+        properties.emplace_back("bx_id");
     } else {
         LOG(INFO) << "Mean hit rate on the active matrix: " << lambda_mean_rate_ << " events per ns";
     }
@@ -89,7 +89,7 @@ void PixESLWriterModule::initialize() {
 void PixESLWriterModule::run(Event* event) {
 
     // Generate the distribution to associate a timestamp for event containing a PixelHit message:
-    allpix::exponential_distribution<double> time_dist(lambda_mean_rate_);
+    const allpix::exponential_distribution<double> time_dist(lambda_mean_rate_);
     auto dt = time_dist(event->getRandomEngine());
     timestamp_ += dt;
     LOG(INFO) << "Time since previous event: " << Units::display(dt, {"ns"})
