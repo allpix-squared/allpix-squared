@@ -59,10 +59,6 @@ namespace allpix {
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
 
-        // Object names to include or exclude from writing
-        std::set<std::string> include_;
-        std::set<std::string> exclude_;
-
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
         std::atomic<double> timestamp_;
