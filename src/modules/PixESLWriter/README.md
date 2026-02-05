@@ -28,12 +28,14 @@ file will not contain an event entry with the respective event ID.
 
 * `file_name`: Name of the output file. The file will automatically placed in a subdirectory for this detector and appended
   with the `.apx` file extension.
-* `BX_period` : Optional, bunch cross period. Cyclic duration to reproduce ina simple way a bunch cross behavior.
-* `mean_hit_rate` : Mean hit rate, used to calculate the timestamps.
+* `mean_hit_rate`: Mean hit rate, used to calculate the timestamps. Values should be provided with units, e.g. `0.1 /ns/mm/mm`, which corresponds to 1 MHz per square millimeter.
+* `bx_period`: Optional bunch cross period. Cyclic duration to reproduce in a simple way a bunch cross behavior. If this
+  option is provided, an additional property called `bx_id` is added to the output file, which contains the respective bunch
+  crossing ID of the hit object. If not specified, the property is not written to file.
 
 ## Usage
 
-The following snippet enables this module to write data into a file named "test.apx""
+The following snippet enables this module to write data into a file named `test.apx`
 
 ```ini
 [PixESLWriter]

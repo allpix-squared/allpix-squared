@@ -48,26 +48,24 @@ void PixESLWriterModule::initialize() {
 
     // Calculate the active matrix area
     auto model = detector_->getModel();
-    LOG(DEBUG) << "Active matrix length x : " << model->getMatrixSize().x() << " mm";
-    LOG(DEBUG) << "Active matrix length y : " << model->getMatrixSize().y() << " mm";
+    LOG(DEBUG) << "Calculating rate for active matrix size of " << Units::display(model->getMatrixSize(), {"mm"});
     double matrix_area = model->getMatrixSize().x() * model->getMatrixSize().y();
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
 
     // Calculate the exponential distribution parameter based on the given hit rate
-    const auto mean_hit_rate = config_.get("mean_hit_rate", static_cast<double>(Units::get("/ns/mm/mm")));
+    const auto mean_hit_rate = config_.get<double>("mean_hit_rate");
     lambda_mean_rate_ = mean_hit_rate * matrix_area;
-    auto tau_mean_rate = 1 / static_cast<double>(Units::convert(lambda_mean_rate_, "ns"));
 
     if(config_.has("bx_period")) {
-        bx_period_ = config_.get("BX_period", static_cast<double>(Units::get("ns")));
-        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate_ * bx_period_.value() << " events per BX";
-        // Set up properties:
+        bx_period_ = config_.get<double>("bx_period");
+        LOG(INFO) << "Mean hit rate on the active matrix: " << lambda_mean_rate_ * bx_period_.value()
+                  << " events per bunch crossing";
         properties.push_back("bx_id");
     } else {
-        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate_ << " events per ns";
+        LOG(INFO) << "Mean hit rate on the active matrix: " << lambda_mean_rate_ << " events per ns";
     }
 
-    LOG(INFO) << "Mean time between consecutive events : " << tau_mean_rate << " ns";
+    LOG(INFO) << "Mean time between consecutive events: " << Units::display(1. / lambda_mean_rate_, {"ns", "us"});
 
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
@@ -84,7 +82,7 @@ void PixESLWriterModule::initialize() {
                                                      "Interval time between two events;Interval time [ns]; number of events",
                                                      100,
                                                      0,
-                                                     static_cast<double>(Units::convert(tau_mean_rate, "ns")) * 8);
+                                                     8. / lambda_mean_rate_);
     }
 }
 
@@ -94,7 +92,8 @@ void PixESLWriterModule::run(Event* event) {
     allpix::exponential_distribution<double> time_dist(lambda_mean_rate_);
     auto dt = time_dist(event->getRandomEngine());
     timestamp_ += dt;
-    LOG(INFO) << "Time since previous event: " << dt << " ns, timestamp: " << timestamp_ << " ns";
+    LOG(INFO) << "Time since previous event: " << Units::display(dt, {"ns"})
+              << ", timestamp: " << Units::display(timestamp_.load(), {"ns"});
 
     if(output_plots_) {
         time_between_events_->Fill(dt);
