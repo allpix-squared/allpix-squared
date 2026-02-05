@@ -39,7 +39,7 @@ The following snippet enables this module to write data into a file named `test.
 
 ```ini
 [PixESLWriter]
-BX_period = 25ns
+bx_period = 25ns
 mean_hit_rate = 100/us/cm/cm
 file_name = "test"
 ```
