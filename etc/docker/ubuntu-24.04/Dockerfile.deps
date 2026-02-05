@@ -20,7 +20,7 @@ ENV ROOT6_VERSION=6.36.04
 ENV PYTHONPATH="/usr/local/lib:$PYTHONPATH"
 
 ENV ROOTSYS="/tmp/root6"
-RUN mkdir -p ${ROOTSYS}/{src,build} && \
+RUN mkdir -p ${ROOTSYS}/src ${ROOTSYS}/build && \
     curl -o ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz \
             https://root.cern.ch/download/root_v${ROOT6_VERSION}.source.tar.gz && \
     tar zxf ${ROOTSYS}/root.${ROOT6_VERSION}.tar.gz -C ${ROOTSYS}/src && \
@@ -59,7 +59,7 @@ RUN apt-get install -y zlib1g-dev
 ENV LCIO_VERSION=02-22-06
 
 ENV LCIODIR="/tmp/lcio"
-RUN mkdir -p ${LCIODIR}/{src,build} && \
+RUN mkdir -p ${LCIODIR}/src ${LCIODIR}/build && \
     curl -o ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz \
             https://codeload.github.com/iLCSoft/LCIO/tar.gz/v${LCIO_VERSION} && \
     tar zxf ${LCIODIR}/lcio.${LCIO_VERSION}.tar.gz -C ${LCIODIR}/src && \
@@ -79,7 +79,7 @@ RUN apt-get install -y libxerces-c-dev
 ENV GEANT4_VERSION=11.3.2
 
 ENV GEANT4DIR="/tmp/geant4"
-RUN mkdir -p ${GEANT4DIR}/{src,build} && \
+RUN mkdir -p ${GEANT4DIR}/src ${GEANT4DIR}/build && \
     curl -o ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz \
             https://geant4-data.web.cern.ch/geant4-data/releases/source/geant4-v${GEANT4_VERSION}.tar.gz && \
     tar zxf ${GEANT4DIR}/geant4.${GEANT4_VERSION}.tar.gz -C ${GEANT4DIR}/src && \
@@ -101,7 +101,7 @@ RUN mkdir -p ${GEANT4DIR}/{src,build} && \
 ENV HEPMC3_VERSION=3.3.1
 
 ENV HEPMC3DIR="/tmp/hepmc3"
-RUN mkdir -p ${HEPMC3DIR}/{src,build} && \
+RUN mkdir -p ${HEPMC3DIR}/src ${HEPMC3DIR}/build && \
     curl -o ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz \
             https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC3_VERSION}/HepMC3-${HEPMC3_VERSION}.tar.gz && \
     tar zxf ${HEPMC3DIR}/hepmc3.${HEPMC3_VERSION}.tar.gz -C ${HEPMC3DIR}/src && \
@@ -121,7 +121,7 @@ RUN apt-get install -y postgresql-server-dev-all libeigen3-dev libboost-random-d
 ENV PQXX_VERSION=7.10.1
 
 ENV PQXXDIR="/tmp/pqxx"
-RUN mkdir -p ${PQXXDIR}/{src,build} && \
+RUN mkdir -p ${PQXXDIR}/src ${PQXXDIR}/build && \
     curl -o ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz \
             https://codeload.github.com/jtv/libpqxx/tar.gz/${PQXX_VERSION} && \
     tar zxf ${PQXXDIR}/libpqxx.${PQXX_VERSION}.tar.gz -C ${PQXXDIR}/src && \
@@ -135,6 +135,23 @@ RUN mkdir -p ${PQXXDIR}/{src,build} && \
           ../src/libpqxx-${PQXX_VERSION} && \
     make -j`grep -c processor /proc/cpuinfo` && \
     make install && \
-    rm -rf ${HEPMC3DIR}
+    rm -rf ${PQXXDIR}
+
+
+# Add layer for libapx
+ENV APX_VERSION=0.4.9
+
+ENV APXDIR="/tmp/libapx"
+RUN mkdir -p ${APXDIR}/src ${APXDIR}/build && \
+    curl -o ${APXDIR}/libapx.${APX_VERSION}.tar.gz \
+            https://gitlab.cern.ch/allpix-squared/libapx/-/archive/v${APX_VERSION}/libapx-v${APX_VERSION}.tar.gz && \
+    tar zxf ${APXDIR}/libapx.${APX_VERSION}.tar.gz -C ${APXDIR}/src && \
+    rm -f ${APXDIR}/libapx.${APX_VERSION}.tar.gz && \
+    cd ${APXDIR}/build && \
+    cmake -DAPX_BUILD_TESTS=OFF \
+          ../src/libapx-v${APX_VERSION} && \
+    make -j`grep -c processor /proc/cpuinfo` && \
+    make install && \
+    rm -rf ${APXDIR}
 
 CMD ["bash"]
