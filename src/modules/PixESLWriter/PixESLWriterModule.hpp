@@ -10,6 +10,7 @@
  */
 
 #include <atomic>
+#include <optional>
 #include <string>
 
 #include <libapx/writer.hpp>
@@ -64,15 +65,10 @@ namespace allpix {
 
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
-        std::atomic<double> timestamp;
-        std::vector<std::string> properties;
+        std::atomic<double> timestamp_;
 
-        double BX_period_{};
-        double mean_hit_rate_{};
-
-        double lambda_mean_rate;
-        double tau_mean_rate;
-        int BX_id;
+        std::optional<double> bx_period_{};
+        double lambda_mean_rate_{};
 
         // Statistical information
         bool output_plots_{};

@@ -23,7 +23,7 @@
 using namespace allpix;
 
 PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : SequentialModule(config, detector), detector_(std::move(detector)), messenger_(messenger), timestamp(0) {
+    : SequentialModule(config, detector), detector_(std::move(detector)), messenger_(messenger) {
 
     // This is a sequential module and therefore thread-safe
     allow_multithreading();
@@ -34,8 +34,10 @@ PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messeng
 
 void PixESLWriterModule::initialize() {
 
-    output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
+    // Set up properties:
+    std::vector<std::string> properties{"column", "row", "charge", "timestamp"};
 
+    output_file_ = createOutputFile(config_.get<std::string>("file_name"), "apx", false);
     output_plots_ = config_.get<bool>("output_plots");
 
     // Collect information about this simulation:
@@ -52,22 +54,20 @@ void PixESLWriterModule::initialize() {
     LOG(INFO) << "Active matrix area : " << matrix_area << " mm^2";
 
     // Calculate the exponential distribution parameter based on the given hit rate
-    mean_hit_rate_ = config_.get("mean_hit_rate", static_cast<double>(Units::get("/ns/mm/mm")));
-    lambda_mean_rate = mean_hit_rate_ * matrix_area;
-    tau_mean_rate = 1 / static_cast<double>(Units::convert(lambda_mean_rate, "ns"));
+    const auto mean_hit_rate = config_.get("mean_hit_rate", static_cast<double>(Units::get("/ns/mm/mm")));
+    lambda_mean_rate_ = mean_hit_rate * matrix_area;
+    auto tau_mean_rate = 1 / static_cast<double>(Units::convert(lambda_mean_rate_, "ns"));
 
-    if(config_.has("BX_period")) {
-        BX_period_ = config_.get("BX_period", static_cast<double>(Units::get("ns")));
-        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate * BX_period_ << " events per BX";
+    if(config_.has("bx_period")) {
+        bx_period_ = config_.get("BX_period", static_cast<double>(Units::get("ns")));
+        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate_ * bx_period_.value() << " events per BX";
         // Set up properties:
-        properties = {"column", "row", "charge", "timestamp", "BXID"};
+        properties.push_back("bx_id");
     } else {
-        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate << " events per ns";
-        // Set up properties:
-        properties = {"column", "row", "charge", "timestamp"};
+        LOG(INFO) << "Mean hit rate on the active matrix : " << lambda_mean_rate_ << " events per ns";
     }
 
-    LOG(INFO) << "Mean time between 2 events : " << tau_mean_rate << " ns";
+    LOG(INFO) << "Mean time between consecutive events : " << tau_mean_rate << " ns";
 
     // Set up file writer:
     writer_ = std::make_unique<apx::Writer>(output_file_,
@@ -91,20 +91,20 @@ void PixESLWriterModule::initialize() {
 void PixESLWriterModule::run(Event* event) {
 
     // Generate the distribution to associate a timestamp for event containing a PixelHit message:
-    allpix::exponential_distribution<double> time_dist(lambda_mean_rate);
+    allpix::exponential_distribution<double> time_dist(lambda_mean_rate_);
     auto dt = time_dist(event->getRandomEngine());
-    timestamp += dt;
-    LOG(INFO) << "Time between this event and the previous : " << dt << " ns";
-    LOG(INFO) << "Timestamp : " << timestamp << " ns";
+    timestamp_ += dt;
+    LOG(INFO) << "Time since previous event: " << dt << " ns, timestamp: " << timestamp_ << " ns";
 
     if(output_plots_) {
         time_between_events_->Fill(dt);
     }
 
     // Calculate the BXID depending on the timestamp:
-    if(config_.has("BX_period")) {
-        BX_id = static_cast<int>(timestamp.load() / BX_period_);
-        LOG(INFO) << "BX " << BX_id;
+    int current_bx_id = 0;
+    if(bx_period_.has_value()) {
+        current_bx_id = static_cast<int>(timestamp_.load() / bx_period_.value());
+        LOG(INFO) << "BX " << current_bx_id;
     }
 
     // Generate new event for output:
@@ -116,9 +116,10 @@ void PixESLWriterModule::run(Event* event) {
     // Loop over hits and write event record
     for(const auto& hit : message->getData()) {
         const auto index = hit.getIndex();
-        (config_.has("BX_period"))
-            ? apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp + hit.getGlobalTime(), BX_id})
-            : apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp + hit.getGlobalTime()});
+        (bx_period_.has_value())
+            ? apx_event.appendRecord(
+                  {index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime(), current_bx_id})
+            : apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime()});
     }
 
     LOG(TRACE) << "Event " << apx_event.getID() << " has " << apx_event.getRecords().size() << " records";
