@@ -36,6 +36,7 @@ namespace mesh_converter {
             DONOR_CONCENTRATION,
             DOPING_CONCENTRATION,
             ACCEPTOR_CONCENTRATION,
+            ACTIVE_DOPING_CONCENTRATION,
             ELECTRIC_FIELD,
             ELECTROSTATIC_POTENTIAL,
             VALUES
