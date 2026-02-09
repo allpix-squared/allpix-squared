@@ -43,6 +43,10 @@ namespace allpix {
          */
         DetectorAssembly() = delete;
         virtual ~DetectorAssembly() = default;
+        DetectorAssembly(const DetectorAssembly&) = default;
+        DetectorAssembly& operator=(const DetectorAssembly&) = default;
+        DetectorAssembly(DetectorAssembly&&) noexcept = default;
+        DetectorAssembly& operator=(DetectorAssembly&&) noexcept = default;
         ///@}
 
         /**

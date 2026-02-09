@@ -31,7 +31,7 @@ namespace allpix {
     /**
      * @brief Type of fields
      */
-    enum class FieldType {
+    enum class FieldType : std::uint8_t {
         NONE = 0, ///< No field is applied
         CONSTANT, ///< Constant field
         LINEAR,   ///< Linear field (linearity determined by function)
@@ -43,7 +43,7 @@ namespace allpix {
     /**
      * @brief Type of field maps
      */
-    enum class FieldMapping {
+    enum class FieldMapping : std::uint8_t {
         PIXEL_FULL = 0,     ///< The field map spans the full pixel plane
         PIXEL_FULL_INVERSE, ///< The field map spans the full pixel plane, but pixel centers are at field corners
         PIXEL_HALF_LEFT,    ///< The field map spans the left half of the volume and is mirrored along x
@@ -139,7 +139,7 @@ namespace allpix {
          * @param extrapolate_z Extrapolate the field along z when outside the defined region
          * @return Value(s) of the field at the queried point
          */
-        T get(const ROOT::Math::XYZPoint& local_pos, const bool extrapolate_z = false) const;
+        T get(const ROOT::Math::XYZPoint& local_pos, bool extrapolate_z = false) const;
 
         /**
          * @brief Get the value of the field at a position provided in local coordinates with respect to the reference
@@ -150,7 +150,7 @@ namespace allpix {
          */
         T getRelativeTo(const ROOT::Math::XYZPoint& local_pos,
                         const ROOT::Math::XYPoint& reference,
-                        const bool extrapolate_z = false) const;
+                        bool extrapolate_z = false) const;
 
         /**
          * @brief Set the field in the detector using a grid
@@ -217,8 +217,7 @@ namespace allpix {
          * @param z Distance in local-coordinate z from the center of the field to obtain the values for
          * @param extrapolate_z Flag whether we should extrapolate
          */
-        inline bool get_grid_index(
-            size_t& index, const double x, const double y, const double z, const bool extrapolate_z) const noexcept;
+        inline bool get_grid_index(size_t& index, double x, double y, double z, bool extrapolate_z) const noexcept;
 
         /**
          * @brief Map x and y coordinates of a position and a reference point onto a pixel given the chosen mapping.
@@ -266,7 +265,7 @@ namespace allpix {
          *   field_i(x, y, z) =  x * Y_SIZE* Z_SIZE * N + y * Z_SIZE * + z * N + i
          */
         std::shared_ptr<std::vector<double>> field_;
-        std::pair<double, double> thickness_domain_{};
+        std::pair<double, double> thickness_domain_;
         FieldType type_{FieldType::NONE};
         FieldFunction<T> function_;
 

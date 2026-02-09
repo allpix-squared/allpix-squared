@@ -42,6 +42,7 @@ namespace allpix {
          * @brief Construct default pulse, uninitialized
          */
         Pulse() = default;
+        virtual ~Pulse() = default;
 
         /**
          * @brief adding induced charge to the pulse

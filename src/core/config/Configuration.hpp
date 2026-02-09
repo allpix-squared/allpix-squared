@@ -154,7 +154,6 @@ namespace allpix {
          * @param key Key to get values of
          * @return List of values in the array in the requested template parameter
          */
-        // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key) const;
 
         /**
@@ -164,7 +163,6 @@ namespace allpix {
          * @return List of values in the array in the requested template parameter
          *         or the default array if the key does not exist
          */
-        // TODO [doc] Provide second template parameter to specify the vector type to return it in
         template <typename T> std::vector<T> getArray(const std::string& key, const std::vector<T>& def) const;
 
         /**

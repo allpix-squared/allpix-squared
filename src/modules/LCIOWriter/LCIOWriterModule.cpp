@@ -69,7 +69,7 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
     long double aX = 0;
     long double aY = 0;
     long double aZ = 0;
-    static long double const pi = 3.14159265359;
+
     // This is a correct decomposition for the given rotation order: YXZ, i.e. initial Z-rotation, followed by X and
     // ultimately Y rotation. In the case of a gimbal lock, the angle around the Z axis is (arbitrarily) set to 0.
     if(r12 < 1) {
@@ -78,12 +78,12 @@ inline std::array<long double, 3> getRotationAnglesFromMatrix(ROOT::Math::Rotati
             aY = std::atan2(r02, r22);
             aZ = std::atan2(r10, r11);
         } else /* r12 == -1 */ {
-            aX = pi / 2;
+            aX = std::numbers::pi / 2;
             aY = -std::atan2(-r01, r00);
             aZ = 0;
         }
     } else /* r12 == 1 */ {
-        aX = -pi / 2;
+        aX = -std::numbers::pi / 2;
         aY = std::atan2(-r01, r00);
         aZ = 0;
     }
@@ -180,7 +180,7 @@ LCIOWriterModule::LCIOWriterModule(Configuration& config, Messenger* messenger, 
                                                 "\" is not a valid integer");             // NOLINT
                 }
 
-                if(std::find(assigned_ids.begin(), assigned_ids.end(), sensor_id) == assigned_ids.end()) {
+                if(std::ranges::find(assigned_ids, sensor_id) == assigned_ids.end()) {
                     assigned_ids.emplace_back(sensor_id);
                     // This map will translate the internally used detector name to the sensor id
                     detector_names_to_id_[det_name] = sensor_id;
@@ -243,12 +243,12 @@ void LCIOWriterModule::initialize() {
     geometry_file_name_ = createOutputFile(config_.get<std::string>("geometry_file"), "xml");
     // Open LCIO file and write run header
     lcio_file_name_ = createOutputFile(config_.get<std::string>("file_name"), "slcio");
-    lcWriter_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
-    lcWriter_->open(lcio_file_name_, LCIO::WRITE_NEW);
+    lc_writer_ = std::shared_ptr<IO::LCWriter>(LCFactory::getInstance()->createLCWriter());
+    lc_writer_->open(lcio_file_name_, LCIO::WRITE_NEW);
     auto run = std::make_unique<LCRunHeaderImpl>();
     run->setRunNumber(1);
     run->setDetectorName(detector_name_);
-    lcWriter_->writeRunHeader(run.get());
+    lc_writer_->writeRunHeader(run.get());
 }
 
 void LCIOWriterModule::run(Event* event) {
@@ -263,7 +263,7 @@ void LCIOWriterModule::run(Event* event) {
     auto output_col_encoder_vec = std::vector<std::unique_ptr<CellIDEncoder<TrackerDataImpl>>>();
     // Prepare dynamic output setup and their CellIDEncoders which are defined by the user's config
     for(size_t i = 0; i < collection_names_vector_.size(); ++i) {
-        output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA));
+        output_col_vec.emplace_back(new LCCollectionVec(LCIO::TRACKERDATA)); // NOLINT(cppcoreguidelines-owning-memory)
         output_col_encoder_vec.emplace_back(
             std::make_unique<CellIDEncoder<TrackerDataImpl>>(eutelescope::gTrackerDataEncoding, output_col_vec.back()));
     }
@@ -283,12 +283,14 @@ void LCIOWriterModule::run(Event* event) {
     // Monte Carlo truth cluster
     auto mcp_to_pixel_data_vec = std::map<MCParticle const*, std::vector<std::vector<float>>>{};
 
-    if(dump_mc_truth_ == true) {
+    if(dump_mc_truth_) {
         // Prepare static Monte-Carlo output setup and their CellIDEncoders which are the same every time
+        // NOLINTBEGIN(cppcoreguidelines-owning-memory)
         mc_cluster_vec = new LCCollectionVec(LCIO::TRACKERPULSE);
         mc_cluster_raw_vec = new LCCollectionVec(LCIO::TRACKERDATA);
         mc_hit_vec = new LCCollectionVec(LCIO::TRACKERHIT);
         mc_track_vec = new LCCollectionVec(LCIO::TRACK);
+        // NOLINTEND(cppcoreguidelines-owning-memory)
 
         mc_cluster_raw_encoder =
             std::make_unique<CellIDEncoder<TrackerDataImpl>>(eutelescope::gTrackerDataEncoding, mc_cluster_raw_vec);
@@ -314,7 +316,7 @@ void LCIOWriterModule::run(Event* event) {
             LOG(DEBUG) << "X: " << hitdata.getPixel().getIndex().x() << ", Y:" << hitdata.getPixel().getIndex().y()
                        << ", Signal: " << hitdata.getSignal();
 
-            unsigned det_id = detector_names_to_id_[hit_msg->getDetector()->getName()];
+            const auto det_id = detector_names_to_id_[hit_msg->getDetector()->getName()];
 
             switch(pixel_type_) {
             case 1:                                                                               // EUTelSimpleSparsePixel
@@ -366,11 +368,13 @@ void LCIOWriterModule::run(Event* event) {
 
     // A MCParticle will be reflected by an LCIO hit and cluster - the hit is stored in a TrackerHit, the cluster in
     // a TrackerPulse linked to a TrackerData object
-    if(dump_mc_truth_ == true) {
+    if(dump_mc_truth_) {
         for(auto& mcp_pixel_data_vec_pair : mcp_to_pixel_data_vec) {
+            // NOLINTBEGIN(cppcoreguidelines-owning-memory)
             auto* mc_tracker_data = new TrackerDataImpl();
             auto* mc_tracker_pulse = new TrackerPulseImpl();
             auto* mc_tracker_hit = new TrackerHitImpl();
+            // NOLINTEND(cppcoreguidelines-owning-memory)
 
             const auto& mc_particle = mcp_pixel_data_vec_pair.first;
 
@@ -418,7 +422,7 @@ void LCIOWriterModule::run(Event* event) {
     // Fill hitvector with event data
     for(auto const& det_id_name_pair : detector_names_to_id_) {
         auto det_id = det_id_name_pair.second;
-        auto* hit = new TrackerDataImpl();
+        auto* hit = new TrackerDataImpl(); // NOLINT(cppcoreguidelines-owning-memory)
         hit->setChargeValues(charges[det_id]);
         auto col_index = detector_ids_to_colllection_index_[det_id];
         (*output_col_encoder_vec[col_index])["sensorID"] = det_id;
@@ -427,7 +431,7 @@ void LCIOWriterModule::run(Event* event) {
         output_col_vec[col_index]->push_back(hit);
     }
 
-    if(dump_mc_truth_ == true) {
+    if(dump_mc_truth_) {
         LCFlagImpl flag(mc_track_vec->getFlag());
         flag.setBit(LCIO::TRBIT_HITS);
         mc_track_vec->setFlag(flag.getFlag());
@@ -450,14 +454,14 @@ void LCIOWriterModule::run(Event* event) {
         evt->addCollection(output_col_vec[i], collection_names_vector_[i]);
     }
 
-    lcWriter_->writeEvent(evt.get()); // write the event to the file
+    lc_writer_->writeEvent(evt.get()); // write the event to the file
     write_cnt_++;
 }
 
 void LCIOWriterModule::finalize() {
-    lcWriter_->close();
+    lc_writer_->close();
     // Print statistics
-    LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:" << std::endl << lcio_file_name_;
+    LOG(STATUS) << "Wrote " << write_cnt_ << " events to file:\n" << lcio_file_name_;
 
     // Write geometry:
     std::ofstream geometry_file;
@@ -468,35 +472,34 @@ void LCIOWriterModule::finalize() {
         }
 
         auto detectors = geo_mgr_->getDetectors();
-        geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl
-                      << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->" << std::endl
-                      << "<gear>" << std::endl;
+        geometry_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                      << "<!-- ?xml-stylesheet type=\"text/xsl\" href=\"https://cern.ch/allpix-squared/\"? -->\n"
+                      << "<gear>\n";
 
-        geometry_file << "  <global detectorName=\"" << detector_name_ << "\"/>" << std::endl;
+        geometry_file << "  <global detectorName=\"" << detector_name_ << "\"/>\n";
         if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::CONSTANT) {
             ROOT::Math::XYZVector b_field = geo_mgr_->getMagneticField(ROOT::Math::XYZPoint(0., 0., 0.));
             geometry_file << "  <BField type=\"ConstantBField\" x=\"" << Units::convert(b_field.x(), "T") << "\" y=\""
-                          << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>"
-                          << std::endl;
+                          << Units::convert(b_field.y(), "T") << "\" z=\"" << Units::convert(b_field.z(), "T") << "\"/>\n";
         } else if(geo_mgr_->getMagneticFieldType() == MagneticFieldType::NONE) {
-            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";
         } else {
             LOG(WARNING) << "Field type not handled by GEAR geometry. Writing null magnetic field instead.";
-            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>" << std::endl;
+            geometry_file << "  <BField type=\"ConstantBField\" x=\"0.0\" y=\"0.0\" z=\"0.0\"/>\n";
         }
 
-        geometry_file << "  <detectors>" << std::endl;
-        geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">" << std::endl;
-        geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>" << std::endl;
-        geometry_file << "      <siplanesNumber number=\"" << detectors.size() << "\"/>" << std::endl;
-        geometry_file << "      <siplanesID ID=\"" << 0 << "\"/>" << std::endl;
-        geometry_file << "      <layers>" << std::endl;
+        geometry_file << "  <detectors>\n";
+        geometry_file << "    <detector name=\"SiPlanes\" geartype=\"SiPlanesParameters\">\n";
+        geometry_file << "      <siplanesType type=\"TelescopeWithoutDUT\"/>\n";
+        geometry_file << "      <siplanesNumber number=\"" << detectors.size() << "\"/>\n";
+        geometry_file << "      <siplanesID ID=\"" << 0 << "\"/>\n";
+        geometry_file << "      <layers>\n";
 
         for(auto& detector : detectors) {
             // Write header for the layer:
             geometry_file << "      <!-- Allpix Squared Detector: " << detector->getName()
-                          << " - type: " << detector->getType() << " -->" << std::endl;
-            geometry_file << "        <layer>" << std::endl;
+                          << " - type: " << detector->getType() << " -->\n";
+            geometry_file << "        <layer>\n";
 
             auto position = detector->getPosition();
 
@@ -508,49 +511,49 @@ void LCIOWriterModule::finalize() {
             auto sensitive_size = model->getSensorSize();
 
             // Write ladder
-            geometry_file << "          <ladder ID=\"" << detector_names_to_id_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "          <ladder ID=\"" << detector_names_to_id_[detector->getName()] << "\"\n";
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
-                          << "\"" << std::endl;
+                          << "\"\n";
 
             auto angles = getRotationAnglesFromMatrix(detector->getOrientation());
 
             geometry_file << "            rotationZY=\"" << Units::convert(-angles[0], "deg") << "\"     rotationZX=\""
                           << Units::convert(-angles[1], "deg") << "\"   rotationXY=\"" << Units::convert(-angles[2], "deg")
-                          << "\"" << std::endl;
+                          << "\"\n";
             geometry_file << "            sizeX=\"" << Units::convert(total_size.x(), "mm") << "\"\tsizeY=\""
                           << Units::convert(total_size.y(), "mm") << "\"\tthickness=\""
-                          << Units::convert(total_size.z(), "mm") << "\"" << std::endl;
-            geometry_file << "            radLength=\"93.65\"" << std::endl;
-            geometry_file << "            />" << std::endl;
+                          << Units::convert(total_size.z(), "mm") << "\"\n";
+            geometry_file << "            radLength=\"93.65\"\n";
+            geometry_file << "            />\n";
 
             // Write sensitive
-            geometry_file << "          <sensitive ID=\"" << detector_names_to_id_[detector->getName()] << "\"" << std::endl;
+            geometry_file << "          <sensitive ID=\"" << detector_names_to_id_[detector->getName()] << "\"\n";
             geometry_file << "            positionX=\"" << Units::convert(position.x(), "mm") << "\"\tpositionY=\""
                           << Units::convert(position.y(), "mm") << "\"\tpositionZ=\"" << Units::convert(position.z(), "mm")
-                          << "\"" << std::endl;
+                          << "\"\n";
             geometry_file << "            sizeX=\"" << Units::convert(npixels.x() * pitch.x(), "mm") << "\"\tsizeY=\""
                           << Units::convert(npixels.y() * pitch.y(), "mm") << "\"\tthickness=\""
-                          << Units::convert(sensitive_size.z(), "mm") << "\"" << std::endl;
-            geometry_file << "            npixelX=\"" << npixels.x() << "\"\tnpixelY=\"" << npixels.y() << "\"" << std::endl;
+                          << Units::convert(sensitive_size.z(), "mm") << "\"\n";
+            geometry_file << "            npixelX=\"" << npixels.x() << "\"\tnpixelY=\"" << npixels.y() << "\"\n";
             geometry_file << "            pitchX=\"" << Units::convert(pitch.x(), "mm") << "\"\tpitchY=\""
                           << Units::convert(pitch.y(), "mm") << "\"\tresolution=\""
-                          << Units::convert(pitch.x() / std::sqrt(12), "mm") << "\"" << std::endl;
-            geometry_file << "            rotation1=\"1.0\"\trotation2=\"0.0\"" << std::endl;
-            geometry_file << "            rotation3=\"0.0\"\trotation4=\"1.0\"" << std::endl;
-            geometry_file << "            radLength=\"93.65\"" << std::endl;
-            geometry_file << "            />" << std::endl;
+                          << Units::convert(pitch.x() / std::sqrt(12), "mm") << "\"\n";
+            geometry_file << "            rotation1=\"1.0\"\trotation2=\"0.0\"\n";
+            geometry_file << "            rotation3=\"0.0\"\trotation4=\"1.0\"\n";
+            geometry_file << "            radLength=\"93.65\"\n";
+            geometry_file << "            />\n";
 
             // End the layer:
-            geometry_file << "        </layer>" << std::endl;
+            geometry_file << "        </layer>\n";
         }
 
         // Close XML tree:
-        geometry_file << "      </layers>" << std::endl
-                      << "    </detector>" << std::endl
-                      << "  </detectors>" << std::endl
-                      << "</gear>" << std::endl;
+        geometry_file << "      </layers>\n"
+                      << "    </detector>\n"
+                      << "  </detectors>\n"
+                      << "</gear>\n";
 
-        LOG(STATUS) << "Wrote GEAR geometry to file:" << std::endl << geometry_file_name_;
+        LOG(STATUS) << "Wrote GEAR geometry to file:\n" << geometry_file_name_;
     }
 }

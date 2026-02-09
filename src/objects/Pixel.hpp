@@ -82,6 +82,8 @@ namespace allpix {
          * @brief ROOT class definition
          */
         Pixel() = default;
+        virtual ~Pixel() = default;
+
         /**
          * @brief Default constructor for ROOT I/O
          */
