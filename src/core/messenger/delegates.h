@@ -47,12 +47,12 @@ namespace allpix {
      * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
      * combination of flags is valid.
      */
-    enum class MsgFlags : uint32_t { // NOLINT(performance-enum-size)
-        NONE = 0,                    ///< No enabled flags
-        REQUIRED = (1 << 0U),        ///< Require a message before running a module
-        ALLOW_OVERWRITE = (1 << 1U), ///< Allow overwriting a previous message
-        IGNORE_NAME = (1 << 2U),     ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
-        UNNAMED_ONLY = (1 << 3U) ///< Listen to all messages without explicit name (equal to ? as configuration parameter)
+    enum class MsgFlags : uint32_t {  // NOLINT(performance-enum-size)
+        NONE = 0,                     ///< No enabled flags
+        REQUIRED = (1U << 0U),        ///< Require a message before running a module
+        ALLOW_OVERWRITE = (1U << 1U), ///< Allow overwriting a previous message
+        IGNORE_NAME = (1U << 2U), ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
+        UNNAMED_ONLY = (1U << 3U) ///< Listen to all messages without explicit name (equal to ? as configuration parameter)
     };
     /**
      * @ingroup Delegates

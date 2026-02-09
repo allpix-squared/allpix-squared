@@ -43,6 +43,10 @@ namespace allpix {
          */
         Pulse() = default;
         virtual ~Pulse() = default;
+        Pulse(const Pulse&) = default;
+        Pulse& operator=(const Pulse&) = default;
+        Pulse(Pulse&&) = default;
+        Pulse& operator=(Pulse&&) = default;
 
         /**
          * @brief adding induced charge to the pulse

@@ -150,7 +150,7 @@ namespace allpix {
 
         private:
             /**
-             * @brief Constructs an implant, used in \ref DetectorModel::addImplant
+             * @brief Constructs an implant, used in \ref DetectorModel::add_implant
              * @param type Type of the implant
              * @param shape Shape of the implant cross-section
              * @param size Size of the implant

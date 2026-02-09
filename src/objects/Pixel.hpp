@@ -83,6 +83,10 @@ namespace allpix {
          */
         Pixel() = default;
         virtual ~Pixel() = default;
+        Pixel(const Pixel&) = default;
+        Pixel& operator=(const Pixel&) = default;
+        Pixel(Pixel&&) = default;
+        Pixel& operator=(Pixel&&) = default;
 
         /**
          * @brief Default constructor for ROOT I/O

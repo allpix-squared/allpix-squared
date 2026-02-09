@@ -217,8 +217,7 @@ void PulseTransferModule::run(Event* event) {
     }
 
     // Create vector of pixel pulses to return for this detector
-    std::vector<PixelCharge> pixel_charges;
-    pixel_charges.reserve(pixel_pulse_map.size());
+    std::vector<PixelCharge> pixel_charges(pixel_pulse_map.size());
     Pulse total_pulse;
     for(auto& [index, pulse] : pixel_pulse_map) {
         // Sum all pulses for informational output:
