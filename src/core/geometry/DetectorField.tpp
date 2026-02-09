@@ -83,7 +83,7 @@ namespace allpix {
             if(type_ == FieldType::GRID) {
                 // Calculate the linearized index of the bin in the field vector
                 size_t index = 0;
-                if(!get_grid_index(index, x * normalization_[0] + 0.5, y * normalization_[1] + 0.5, z, extrapolate_z)) {
+                if(!get_grid_index(index, (x * normalization_[0]) + 0.5,( y * normalization_[1]) + 0.5, z, extrapolate_z)) {
                     return {};
                 }
 
@@ -239,7 +239,7 @@ namespace allpix {
      */
     template <typename T, size_t N>
     template <std::size_t... I>
-    auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const noexcept {
+    auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...> /*unused*/) const noexcept {
         return T{(*field_)[offset + I]...};
     }
 
@@ -314,12 +314,12 @@ namespace allpix {
      * Map field template specialization of helper function for field flipping.
      * Here, no inversion of the field components is required since the map does not rotate.
      */
-    template <> inline void flip_vector_components<FieldTable>(FieldTable&, bool, bool) {}
+    template <> inline void flip_vector_components<FieldTable>(FieldTable& /*unused*/, bool /*unused*/, bool /*unused*/) {}
 
     /*
      * Scalar field template specialization of helper function for field flipping
      * Here, no inversion of the field components is required
      */
-    template <> inline void flip_vector_components<double>(double&, bool, bool) {}
+    template <> inline void flip_vector_components<double>(double& /*unused*/, bool /*unused*/, bool /*unused*/) {}
 
 } // namespace allpix

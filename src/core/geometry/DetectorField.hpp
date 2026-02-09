@@ -100,11 +100,11 @@ namespace allpix {
 
     /**
      * @brief Helper function to invert the field vector when flipping the field direction at pixel/field boundaries
-     * @param field Field value, templated to support vector fields and scalar fields
-     * @param x     Boolean to indicate flipping in x-direction
-     * @param y     Boolean to indicate flipping in y-direction
+     * @param vec Field value, templated to support vector fields and scalar fields
+     * @param x   Boolean to indicate flipping in x-direction
+     * @param y   Boolean to indicate flipping in y-direction
      */
-    template <typename T> void flip_vector_components(T& field, bool x, bool y);
+    template <typename T> void flip_vector_components(T& vec, bool x, bool y);
 
     /**
      * @brief Field instance of a detector
