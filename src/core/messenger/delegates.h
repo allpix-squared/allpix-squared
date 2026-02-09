@@ -26,8 +26,6 @@
 #include "core/geometry/Detector.hpp"
 #include "core/messenger/exceptions.h"
 
-// TODO [doc] This should partly move to a source file
-
 namespace allpix {
     /**
      * @ingroup Delegates
@@ -49,13 +47,12 @@ namespace allpix {
      * Messenger::bindSingle "single" or \ref Messenger::bindMulti "multiple" messages. It depends on the delegate which
      * combination of flags is valid.
      */
-    // TODO [doc] Is DelegateFlags or MessengerFlags a better name (and in separate file?)
-    enum class MsgFlags : uint32_t {
-        NONE = 0,                   ///< No enabled flags
-        REQUIRED = (1 << 0),        ///< Require a message before running a module
-        ALLOW_OVERWRITE = (1 << 1), ///< Allow overwriting a previous message
-        IGNORE_NAME = (1 << 2),     ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
-        UNNAMED_ONLY = (1 << 3)     ///< Listen to all messages without explicit name (equal to ? as configuration parameter)
+    enum class MsgFlags : uint32_t { // NOLINT(performance-enum-size)
+        NONE = 0,                    ///< No enabled flags
+        REQUIRED = (1 << 0U),        ///< Require a message before running a module
+        ALLOW_OVERWRITE = (1 << 1U), ///< Allow overwriting a previous message
+        IGNORE_NAME = (1 << 2U),     ///< Listen to all ignoring message name (equal to * as a input configuration parameter)
+        UNNAMED_ONLY = (1 << 3U) ///< Listen to all messages without explicit name (equal to ? as configuration parameter)
     };
     /**
      * @ingroup Delegates
@@ -198,7 +195,7 @@ namespace allpix {
          * @brief Stores the received message in the delegate until the end of the event
          * @param msg Message to store
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes&) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string /*unused*/, DelegateTypes& /*unused*/) override {
             // Store the message and mark as processed
             messages_.push_back(msg);
         }
@@ -231,7 +228,7 @@ namespace allpix {
          * @warning The filter function is called directly from the delegate, no heavy processing should be done in the
          * filter function
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string /*unused*/, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -305,7 +302,7 @@ namespace allpix {
          *
          * The saved value is overwritten if the \ref MsgFlags::ALLOW_OVERWRITE "ALLOW_OVERWRITE" flag is enabled.
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string /*unused*/, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();
@@ -339,7 +336,7 @@ namespace allpix {
          * @param msg Message to process
          * @param dest Destination of the message
          */
-        void process(std::shared_ptr<BaseMessage> msg, std::string, DelegateTypes& dest) override {
+        void process(std::shared_ptr<BaseMessage> msg, std::string /*unused*/, DelegateTypes& dest) override {
 #ifndef NDEBUG
             // The type names should have been correctly resolved earlier
             const BaseMessage* inst = msg.get();

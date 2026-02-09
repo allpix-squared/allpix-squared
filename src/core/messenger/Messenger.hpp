@@ -76,7 +76,7 @@ namespace allpix {
          */
         template <typename T>
         void registerFilter(T* receiver,
-                            bool (T::*filter)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
+                            bool (T::*method)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
                             MsgFlags flags = MsgFlags::IGNORE_NAME);
 
         /**
@@ -87,7 +87,7 @@ namespace allpix {
          */
         template <typename T, typename R>
         void
-        registerFilter(T* receiver, bool (T::*filter)(const std::shared_ptr<R>&) const, MsgFlags flags = MsgFlags::NONE);
+        registerFilter(T* receiver, bool (T::*method)(const std::shared_ptr<R>&) const, MsgFlags flags = MsgFlags::NONE);
 
         /**
          * @brief Register subscription for a single message

@@ -14,16 +14,16 @@ namespace allpix {
     void Messenger::registerFilter(T* receiver,
                                    bool (T::*method)(const std::shared_ptr<BaseMessage>&, const std::string& name) const,
                                    MsgFlags flags) {
-        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        static_assert(std::is_base_of_v<Module, T>, "Receiver should have Module as a base class");
         auto delegate = std::make_shared<FilterAllDelegate<T>>(flags, receiver, method);
         add_delegate(typeid(BaseMessage), receiver, std::move(delegate));
     }
 
     template <typename T, typename R>
     void Messenger::registerFilter(T* receiver, bool (T::*method)(const std::shared_ptr<R>&) const, MsgFlags flags) {
-        static_assert(std::is_base_of<Module, T>::value, "Receiver should have Module as a base class");
+        static_assert(std::is_base_of_v<Module, T>, "Receiver should have Module as a base class");
         static_assert(
-            std::is_base_of<BaseMessage, R>::value,
+            std::is_base_of_v<BaseMessage, R>,
             "Notifier method should take a shared pointer to a message derived from the Message class as argument");
 
         auto delegate = std::make_shared<FilterDelegate<T, R>>(flags, receiver, method);
@@ -31,7 +31,7 @@ namespace allpix {
     }
 
     template <typename T> void Messenger::bindSingle(Module* receiver, MsgFlags flags) {
-        static_assert(std::is_base_of<BaseMessage, T>::value,
+        static_assert(std::is_base_of_v<BaseMessage, T>,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_shared<SingleBindDelegate<Module, T>>(flags, receiver);
@@ -39,7 +39,7 @@ namespace allpix {
     }
 
     template <typename T> void Messenger::bindMulti(Module* receiver, MsgFlags flags) {
-        static_assert(std::is_base_of<BaseMessage, T>::value,
+        static_assert(std::is_base_of_v<BaseMessage, T>,
                       "Bound variable should be a shared pointer to a message derived from the Message class");
 
         auto delegate = std::make_shared<VectorBindDelegate<Module, T>>(flags, receiver);
@@ -71,13 +71,13 @@ namespace allpix {
     }
 
     template <typename T> std::shared_ptr<T> LocalMessenger::fetchMessage(Module* module) {
-        static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
+        static_assert(std::is_base_of_v<BaseMessage, T>, "Fetched message should inherit from Message class");
         std::type_index type_idx = typeid(T);
         return std::static_pointer_cast<T>(messages_.at(module->getUniqueName()).at(type_idx).single);
     }
 
     template <typename T> std::vector<std::shared_ptr<T>> LocalMessenger::fetchMultiMessage(Module* module) {
-        static_assert(std::is_base_of<BaseMessage, T>::value, "Fetched message should inherit from Message class");
+        static_assert(std::is_base_of_v<BaseMessage, T>, "Fetched message should inherit from Message class");
 
         // TODO: do nothing if T == BaseMessage; there is no need to cast (optimized out)?
         std::type_index type_idx = typeid(T);

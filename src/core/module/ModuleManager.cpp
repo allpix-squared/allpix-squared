@@ -665,7 +665,7 @@ void ModuleManager::initialize() {
 
         // Change to the directory and save it in the module
         local_directory->cd();
-        module->set_ROOT_directory(local_directory);
+        module->set_root_directory(local_directory);
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
@@ -970,7 +970,7 @@ void ModuleManager::finalize() {
         // Finalize module
         module->finalize();
         // Remove the pointer to the ROOT directory after finalizing
-        module->set_ROOT_directory(nullptr);
+        module->set_root_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
         set_module_after(std::move(old_settings));

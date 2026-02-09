@@ -207,7 +207,7 @@ namespace allpix {
          * @brief Set the output ROOT directory for this module
          * @param directory ROOT directory for storage
          */
-        void set_ROOT_directory(TDirectory* directory);
+        void set_root_directory(TDirectory* directory);
         TDirectory* directory_{nullptr};
 
         /**
@@ -234,7 +234,7 @@ namespace allpix {
         /**
          * @brief Inform the module that a certain event will be skipped
          */
-        virtual void skip_event(uint64_t) {}
+        virtual void skip_event(uint64_t /*unused*/) {}
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
 
