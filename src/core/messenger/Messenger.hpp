@@ -71,7 +71,7 @@ namespace allpix {
         /**
          * @brief Register a function filtering all dispatched messages
          * @param receiver Receiving module
-         * @param filter Filter function in the module (fetching a pointer to the base message and the name of the message)
+         * @param method Filter function in the module (fetching a pointer to the base message and the name of the message)
          * @param flags Message configuration flags (defaults to \ref MsgFlags::IGNORE_NAME "ignoring the message name")
          */
         template <typename T>
@@ -82,7 +82,7 @@ namespace allpix {
         /**
          * @brief Register a function filtering a particular message
          * @param receiver Receiving module
-         * @param filter Filter function in the module (fetching a pointer to the message)
+         * @param method Filter function in the module (fetching a pointer to the message)
          * @param flags Message configuration flags
          */
         template <typename T, typename R>
