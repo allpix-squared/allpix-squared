@@ -162,7 +162,8 @@ void SimpleTransferModule::run(Event* event) {
 
     // Create pixel charges
     LOG(TRACE) << "Combining charges at same pixel";
-    std::vector<PixelCharge> pixel_charges(pixel_map.size());
+    std::vector<PixelCharge> pixel_charges;
+    pixel_charges.reserve(pixel_map.size());
     for(auto& [index, pulse] : pixel_map) {
         long charge = 0;
         for(auto& propagated_charge : pulse) {
