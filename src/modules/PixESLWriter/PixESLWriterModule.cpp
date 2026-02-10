@@ -28,8 +28,12 @@ PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messeng
     // This is a sequential module and therefore thread-safe
     allow_multithreading();
 
-    // Messages: register this module with the central messenger to request a certaintype of input messages:
-    messenger_->bindSingle<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    message_pixelcharge_ = config_.get<bool>("write_pixelcharge", false);
+    if(message_pixelcharge_) {
+        messenger_->bindSingle<PixelChargeMessage>(this, MsgFlags::REQUIRED);
+    } else {
+        messenger_->bindSingle<PixelHitMessage>(this, MsgFlags::REQUIRED);
+    }
 }
 
 void PixESLWriterModule::initialize() {
@@ -86,6 +90,32 @@ void PixESLWriterModule::initialize() {
     }
 }
 
+template <> void PixESLWriterModule::transfer_data<PixelHitMessage>(Event* in, apx::Event& out, std::int64_t bx) {
+    // Fetch the messages for this event from the messenger:
+    auto message = messenger_->fetchMessage<PixelHitMessage>(this, in);
+
+    // Loop over hits and write event record
+    for(const auto& hit : message->getData()) {
+        const auto index = hit.getIndex();
+        (bx_period_.has_value())
+            ? out.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime(), bx})
+            : out.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime()});
+    }
+}
+
+template <> void PixESLWriterModule::transfer_data<PixelChargeMessage>(Event* in, apx::Event& out, std::int64_t bx) {
+    // Fetch the messages for this event from the messenger:
+    auto message = messenger_->fetchMessage<PixelChargeMessage>(this, in);
+
+    // Loop over pixel charges and write event record
+    for(const auto& pc : message->getData()) {
+        const auto index = pc.getIndex();
+        (bx_period_.has_value())
+            ? out.appendRecord({index.x(), index.y(), pc.getCharge(), timestamp_ + pc.getGlobalTime(), bx})
+            : out.appendRecord({index.x(), index.y(), pc.getCharge(), timestamp_ + pc.getGlobalTime()});
+    }
+}
+
 void PixESLWriterModule::run(Event* event) {
 
     // Generate the distribution to associate a timestamp for event containing a PixelHit message:
@@ -100,25 +130,20 @@ void PixESLWriterModule::run(Event* event) {
     }
 
     // Calculate the BXID depending on the timestamp:
-    int current_bx_id = 0;
+    std::int64_t current_bx_id = 0;
     if(bx_period_.has_value()) {
-        current_bx_id = static_cast<int>(timestamp_.load() / bx_period_.value());
+        current_bx_id = static_cast<std::int64_t>(timestamp_.load() / bx_period_.value());
         LOG(INFO) << "BX " << current_bx_id;
     }
 
     // Generate new event for output:
     auto apx_event = writer_->createEvent(event->number);
 
-    // Fetch the messages for this event from the messenger:
-    auto message = messenger_->fetchMessage<PixelHitMessage>(this, event);
-
-    // Loop over hits and write event record
-    for(const auto& hit : message->getData()) {
-        const auto index = hit.getIndex();
-        (bx_period_.has_value())
-            ? apx_event.appendRecord(
-                  {index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime(), current_bx_id})
-            : apx_event.appendRecord({index.x(), index.y(), hit.getSignal(), timestamp_ + hit.getGlobalTime()});
+    // Append the data from the message:
+    if(message_pixelcharge_) {
+        transfer_data<PixelChargeMessage>(event, apx_event, current_bx_id);
+    } else {
+        transfer_data<PixelHitMessage>(event, apx_event, current_bx_id);
     }
 
     LOG(TRACE) << "Event " << apx_event.getID() << " has " << apx_event.getRecords().size() << " records";

@@ -55,9 +55,13 @@ namespace allpix {
         void finalize() override;
 
     private:
+        template <typename MESSAGE> void transfer_data(Event* in, apx::Event& out, std::int64_t bx);
+
+    private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
+        bool message_pixelcharge_{};
 
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
