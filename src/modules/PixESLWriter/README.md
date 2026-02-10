@@ -32,6 +32,7 @@ file will not contain an event entry with the respective event ID.
 * `bx_period`: Optional bunch cross period. Cyclic duration to reproduce in a simple way a bunch cross behavior. If this
   option is provided, an additional property called `bx_id` is added to the output file, which contains the respective bunch
   crossing ID of the hit object. If not specified, the property is not written to file.
+* `write_pixelcharge`: Select whether to write `PixelHit` objects (after processing and discrimination in front-end electronics) or `PixelCharge` objects (before any front-end electronics) to the output file. Defaults to `PixelHit` objects with `write_pixelcharge = false`.
 
 ## Usage
 
