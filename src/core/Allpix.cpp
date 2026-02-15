@@ -23,6 +23,7 @@
 #include <ios>
 #include <memory>
 #include <stdexcept>
+#include <stop_token>
 #include <string>
 #include <thread>
 #include <utility>
@@ -51,8 +52,9 @@ using namespace allpix;
 Allpix::Allpix(std::string config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
-    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
+    : has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
       geo_mgr_(std::make_unique<GeometryManager>()) {
+
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
                                                 std::initializer_list<std::string>({"Allpix", ""}),
@@ -115,6 +117,12 @@ Allpix::Allpix(std::string config_file_name,
  * - Load the modules from the configuration
  */
 void Allpix::load() {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
+        LOG(INFO) << "Skip loading modules because termination is requested";
+        return;
+    }
+
     LOG(TRACE) << "Loading Allpix";
 
     // Fetch the global configuration
@@ -202,36 +210,51 @@ void Allpix::load() {
     geo_mgr_->load(conf_mgr_.get(), seeder_core_);
 
     // Load the modules from the configuration
-    if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
-    } else {
-        LOG(INFO) << "Skip loading modules because termination is requested";
-    }
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
 }
 
 /**
  * Runs the Module::initialize() method linearly for every module
  */
 void Allpix::initialize() {
-    if(!terminate_) {
-        LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->initialize();
-    } else {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip initializing modules because termination is requested";
+        return;
     }
+
+    LOG(TRACE) << "Initializing Allpix";
+    mod_mgr_->initialize();
 }
+
+/**
+ * Start the thread which calls the ModuleManager's run method
+ */
+void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, this)); }
+
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void Allpix::run() {
-    if(!terminate_) {
-        LOG(TRACE) << "Running Allpix";
-        mod_mgr_->run(seeder_modules_);
-
-        // Set that we have run and want to finalize as well
-        has_run_ = true;
-    } else {
+void Allpix::run(const std::stop_token&) {
+    Log::setReportingLevel(log_level_);
+    auto stop_token = stop_source_.get_token();
+    if(stop_token.stop_requested()) {
         LOG(INFO) << "Skip running modules because termination is requested";
+        return;
+    }
+
+    LOG(TRACE) << "Running Allpix";
+    mod_mgr_->run(seeder_modules_, stop_token);
+
+    // Indicate that we have run and want to finalize as well
+    has_run_ = true;
+}
+
+void Allpix::interrupt() { stop_source_.request_stop(); }
+
+void Allpix::wait() {
+    if(run_thread_.joinable()) {
+        run_thread_.join();
     }
 }
 
@@ -239,21 +262,15 @@ void Allpix::run() {
  * Runs all modules Module::finalize() method linearly for every module
  */
 void Allpix::finalize() {
-    if(has_run_) {
-        LOG(TRACE) << "Finalizing Allpix";
-        mod_mgr_->finalize();
-    } else {
-        LOG(INFO) << "Skip finalizing modules because no module did run";
-    }
-}
+    Log::setReportingLevel(log_level_);
 
-/**
- * This function can be called safely from any signal handler. Time between the request to terminate
- * and the actual termination is not always negigible.
- */
-void Allpix::terminate() {
-    terminate_ = true;
-    mod_mgr_->terminate();
+    if(!has_run_) {
+        LOG(INFO) << "Skip finalizing modules because no module did run";
+        return;
+    }
+
+    LOG(TRACE) << "Finalizing Allpix";
+    mod_mgr_->finalize();
 }
 
 /**
