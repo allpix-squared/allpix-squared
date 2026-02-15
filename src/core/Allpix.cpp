@@ -73,16 +73,14 @@ Allpix::Allpix(std::string config_file_name,
         log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
-            LogLevel const log_level = Log::getLevelFromString(log_level_string);
-            Log::setReportingLevel(log_level);
+            log_level_ = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
-            Log::setReportingLevel(LogLevel::WARNING);
+            log_level_ = LogLevel::WARNING;
         }
-    } else {
-        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
     }
+    Log::setReportingLevel(log_level_);
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
@@ -105,7 +103,7 @@ Allpix::Allpix(std::string config_file_name,
     }
 
     // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 }
 
@@ -236,6 +234,7 @@ void Allpix::run() {
         LOG(INFO) << "Skip running modules because termination is requested";
     }
 }
+
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
