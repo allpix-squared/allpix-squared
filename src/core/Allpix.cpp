@@ -235,7 +235,7 @@ void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, 
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void Allpix::run(const std::stop_token&) {
+void Allpix::run(const std::stop_token& /*unused*/) {
     Log::setReportingLevel(log_level_);
     auto stop_token = stop_source_.get_token();
     if(stop_token.stop_requested()) {

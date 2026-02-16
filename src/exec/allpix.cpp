@@ -57,6 +57,7 @@ namespace {
 } // namespace
 
 // The only safe thing a signal handler can do is setting an atomic int
+extern "C" void signal_handler(int signal);
 extern "C" void signal_handler(int signal) { signal_v = signal; }
 
 /**
@@ -221,11 +222,11 @@ int main(int argc, const char* argv[]) {
             }
 
             if(signal_v == SIGABRT || signal_v == SIGQUIT) {
-                LOG(FATAL) << "Aborting!";
+                LOG(FATAL) << "Aborting!"; // NOLINT(bugprone-lambda-function-name)
                 Log::finish();
                 std::quick_exit(134);
             } else if(signal_v != 0) {
-                LOG(STATUS) << "Interrupted! Finishing up active events...";
+                LOG(STATUS) << "Interrupted! Finishing up active events..."; // NOLINT(bugprone-lambda-function-name)
                 apx->interrupt();
             }
         });
