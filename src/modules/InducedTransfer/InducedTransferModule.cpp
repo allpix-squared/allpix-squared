@@ -123,6 +123,7 @@ void InducedTransferModule::run(Event* event) {
     // Create pixel charges
     LOG(TRACE) << "Combining charges at same pixel";
     std::vector<PixelCharge> pixel_charges;
+    pixel_charges.reserve(pixel_map.size());
     for(auto& pixel_index_charge : pixel_map) {
         double charge = 0;
         std::vector<const PropagatedCharge*> prop_charges;

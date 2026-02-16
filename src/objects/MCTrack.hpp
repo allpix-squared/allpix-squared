@@ -196,10 +196,13 @@ namespace allpix {
         double global_start_time_{};
         double global_end_time_{};
 
+        // NOLINTBEGIN(readability-identifier-naming)
         double initial_kin_E_{};
         double final_kin_E_{};
         double initial_tot_E_{};
         double final_tot_E_{};
+        // NOLINTEND(readability-identifier-naming)
+
         ROOT::Math::XYZVector initial_mom_direction_;
         ROOT::Math::XYZVector final_mom_direction_;
 

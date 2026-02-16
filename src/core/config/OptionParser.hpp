@@ -76,9 +76,9 @@ namespace allpix {
         bool applyOptions(const std::string& identifier, Configuration& config);
 
     private:
-        std::vector<std::pair<std::string, std::string>> global_options_{};
+        std::vector<std::pair<std::string, std::string>> global_options_;
 
-        std::map<std::string, std::vector<std::pair<std::string, std::string>>> identifier_options_{};
+        std::map<std::string, std::vector<std::pair<std::string, std::string>>> identifier_options_;
     };
 } // namespace allpix
 

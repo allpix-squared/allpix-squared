@@ -40,7 +40,7 @@ namespace allpix {
     /**
      * @brief Sensor materials
      */
-    enum class SensorMaterial {
+    enum class SensorMaterial : std::uint8_t {
         SILICON = 1,            ///< Silicon
         GALLIUM_ARSENIDE,       ///< Gallium Arsenide
         GERMANIUM,              ///< Germanium
@@ -55,7 +55,7 @@ namespace allpix {
     /**
      * @brief Type of dopant
      */
-    enum class Dopant {
+    enum class Dopant : std::uint8_t {
         PHOSPHORUS = 0,
         ARSENIC,
     };
@@ -94,8 +94,8 @@ namespace allpix {
             friend class DetectorModel;
 
         public:
-            enum class Type { FRONTSIDE, BACKSIDE };
-            enum class Shape { RECTANGLE, ELLIPSE };
+            enum class Type : std::uint8_t { FRONTSIDE, BACKSIDE };
+            enum class Shape : std::uint8_t { RECTANGLE, ELLIPSE };
 
             /**
              * @brief Get the offset of the implant with respect to the pixel center
@@ -150,7 +150,7 @@ namespace allpix {
 
         private:
             /**
-             * @brief Constructs an implant, used in \ref DetectorModel::addImplant
+             * @brief Constructs an implant, used in \ref DetectorModel::add_implant
              * @param type Type of the implant
              * @param shape Shape of the implant cross-section
              * @param size Size of the implant
@@ -216,8 +216,8 @@ namespace allpix {
          * The center coordinate corresponds to the \ref Detector::getPosition "position" in the global frame.
          */
         virtual ROOT::Math::XYZPoint getMatrixCenter() const {
-            return {getMatrixSize().x() / 2.0 - getPixelSize().x() / 2.0,
-                    getMatrixSize().y() / 2.0 - getPixelSize().y() / 2.0,
+            return {(getMatrixSize().x() / 2.0) - (getPixelSize().x() / 2.0),
+                    (getMatrixSize().y() / 2.0) - (getPixelSize().y() / 2.0),
                     0};
         }
 
@@ -283,9 +283,9 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and sensor thickness
          */
         virtual ROOT::Math::XYZVector getSensorSize() const {
-            ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
-                                                   (sensor_excess_.at(0) + sensor_excess_.at(2)),
-                                                   sensor_thickness_);
+            const ROOT::Math::XYZVector excess_thickness((sensor_excess_.at(1) + sensor_excess_.at(3)),
+                                                         (sensor_excess_.at(0) + sensor_excess_.at(2)),
+                                                         sensor_thickness_);
             return getMatrixSize() + excess_thickness;
         }
         /**
@@ -295,7 +295,7 @@ namespace allpix {
          * Center of the sensor with excess taken into account
          */
         virtual ROOT::Math::XYZPoint getSensorCenter() const {
-            ROOT::Math::XYZVector offset(
+            const ROOT::Math::XYZVector offset(
                 (sensor_excess_.at(1) - sensor_excess_.at(3)) / 2.0, (sensor_excess_.at(0) - sensor_excess_.at(2)) / 2.0, 0);
             return getMatrixCenter() + offset;
         }
@@ -313,7 +313,7 @@ namespace allpix {
          * Calculated from \ref DetectorModel::getMatrixSize "pixel grid size", sensor excess and chip thickness
          */
         virtual ROOT::Math::XYZVector getChipSize() const {
-            ROOT::Math::XYZVector excess_thickness(
+            const ROOT::Math::XYZVector excess_thickness(
                 assembly_->getChipExcess().x(), assembly_->getChipExcess().y(), assembly_->getChipThickness());
             return getMatrixSize() + excess_thickness;
         }
@@ -324,10 +324,10 @@ namespace allpix {
          * Center of the chip calculated from chip excess and sensor offset
          */
         virtual ROOT::Math::XYZPoint getChipCenter() const {
-            ROOT::Math::XYZVector offset(assembly_->getChipOffset().x() / 2.0,
-                                         assembly_->getChipOffset().y() / 2.0,
-                                         getSensorSize().z() / 2.0 + getChipSize().z() / 2.0 +
-                                             assembly_->getChipOffset().z());
+            const ROOT::Math::XYZVector offset(assembly_->getChipOffset().x() / 2.0,
+                                               assembly_->getChipOffset().y() / 2.0,
+                                               (getSensorSize().z() / 2.0) + (getChipSize().z() / 2.0) +
+                                                   assembly_->getChipOffset().z());
             return getMatrixCenter() + offset;
         }
 
@@ -543,8 +543,8 @@ namespace allpix {
         DetectorModel(const DetectorModel&) = default;
         DetectorModel& operator=(const DetectorModel&) = default;
 
-        DetectorModel(DetectorModel&&) = default;
-        DetectorModel& operator=(DetectorModel&&) = default;
+        DetectorModel(DetectorModel&&) noexcept = default;
+        DetectorModel& operator=(DetectorModel&&) noexcept = default;
         ///@}
 
         /**
@@ -556,12 +556,12 @@ namespace allpix {
          * @param orientation Rotation angle around the implant z-axis
          * @param config Configuration of the implant
          */
-        void addImplant(const Implant::Type& type,
-                        const Implant::Shape& shape,
-                        ROOT::Math::XYZVector size,
-                        const ROOT::Math::XYVector& offset,
-                        double orientation,
-                        const Configuration& config);
+        void add_implant(const Implant::Type& type,
+                         const Implant::Shape& shape,
+                         ROOT::Math::XYZVector size,
+                         const ROOT::Math::XYVector& offset,
+                         double orientation,
+                         const Configuration& config);
 
         /**
          * @brief Add a new layer of support
@@ -574,14 +574,14 @@ namespace allpix {
          * @param hole_size Size of the optional hole in the support
          * @param hole_offset Offset of the hole from its default position
          */
-        void addSupportLayer(const ROOT::Math::XYVector& size,
-                             double thickness,
-                             ROOT::Math::XYZVector offset,
-                             std::string material,
-                             std::string type,
-                             const SupportLayer::Location location,
-                             const ROOT::Math::XYVector& hole_size,
-                             ROOT::Math::XYVector hole_offset) {
+        void add_support_layer(const ROOT::Math::XYVector& size,
+                               double thickness,
+                               ROOT::Math::XYZVector offset,
+                               std::string material,
+                               std::string type,
+                               const SupportLayer::Location location,
+                               const ROOT::Math::XYVector& hole_size,
+                               ROOT::Math::XYVector hole_offset) {
             ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
             ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
             support_layers_.push_back(SupportLayer(std::move(full_size),

@@ -157,7 +157,7 @@ TDirectory* Module::getROOTDirectory() const {
 
     return directory_;
 }
-void Module::set_ROOT_directory(TDirectory* directory) { directory_ = directory; }
+void Module::set_root_directory(TDirectory* directory) { directory_ = directory; }
 
 /**
  * @throws InvalidModuleActionException If this method is called from the constructor or destructor

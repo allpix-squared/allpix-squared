@@ -58,7 +58,7 @@ namespace allpix {
     private:
         Messenger* messenger_;
         GeometryManager* geo_mgr_{};
-        std::shared_ptr<IO::LCWriter> lcWriter_;
+        std::shared_ptr<IO::LCWriter> lc_writer_;
 
         std::vector<std::string> collection_names_vector_;
         std::map<unsigned, size_t> detector_ids_to_colllection_index_;

@@ -76,7 +76,7 @@ namespace allpix {
 
         void markForStorage() {
             // Using bit 14 of the TObject bit field, unused by ROOT:
-            this->SetBit(1ull << 14);
+            this->SetBit(1ULL << 14U);
         }
 
     protected:
@@ -140,24 +140,24 @@ namespace allpix {
              * @note A TRef is only constructed if the object the wrapped pointer is referring to has been marked for storage
              */
             void store() {
-                if(markedForStorage()) {
+                if(marked_for_storage()) {
                     ref_ = get();
                 }
             }
 
             ClassDef(BaseWrapper, 1); // NOLINT
 
-        protected:
             /**
              * @brief Required virtual destructor
              */
             virtual ~BaseWrapper() = default;
 
+        protected:
             /**
              * @brief Helper to determine whether the pointed object will be stored
              * @return True if object will be stored, false otherwise
              */
-            bool markedForStorage() const { return get() == nullptr ? false : get()->TestBit(1ull << 14); }
+            bool marked_for_storage() const { return get() == nullptr ? false : get()->TestBit(1ULL << 14U); }
 
             mutable T* ptr_{}; //! transient value
             TRef ref_;

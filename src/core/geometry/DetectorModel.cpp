@@ -133,7 +133,7 @@ DetectorModel::DetectorModel(std::string type,
         auto offset = implant_config.get<XYVector>("offset", {0, 0});
         auto orientation = implant_config.get<double>("orientation", 0.);
 
-        addImplant(imtype, shape, std::move(size), offset, orientation, implant_config);
+        add_implant(imtype, shape, std::move(size), offset, orientation, implant_config);
 
         auto unused_keys = implant_config.getUnusedKeys();
         if(!unused_keys.empty()) {
@@ -166,14 +166,14 @@ DetectorModel::DetectorModel(std::string type,
         std::transform(hole_type.begin(), hole_type.end(), hole_type.begin(), ::tolower);
         auto hole_size = support_config.get<XYVector>("hole_size", {0, 0});
         auto hole_offset = support_config.get<XYVector>("hole_offset", {0, 0});
-        addSupportLayer(size,
-                        thickness,
-                        std::move(offset),
-                        std::move(material),
-                        std::move(hole_type),
-                        location,
-                        hole_size,
-                        std::move(hole_offset));
+        add_support_layer(size,
+                          thickness,
+                          std::move(offset),
+                          std::move(material),
+                          std::move(hole_type),
+                          location,
+                          hole_size,
+                          std::move(hole_offset));
 
         auto unused_keys = support_config.getUnusedKeys();
         if(!unused_keys.empty()) {
@@ -187,12 +187,12 @@ DetectorModel::DetectorModel(std::string type,
     }
 }
 
-void DetectorModel::addImplant(const Implant::Type& type,
-                               const Implant::Shape& shape,
-                               ROOT::Math::XYZVector size,
-                               const ROOT::Math::XYVector& offset,
-                               double orientation,
-                               const Configuration& config) {
+void DetectorModel::add_implant(const Implant::Type& type,
+                                const Implant::Shape& shape,
+                                ROOT::Math::XYZVector size,
+                                const ROOT::Math::XYVector& offset,
+                                double orientation,
+                                const Configuration& config) {
     // Calculate offset from sensor center - sign of the shift depends on whether it's on front- or backside:
     auto offset_z = (getSensorSize().z() - size.z()) / 2. * (type == Implant::Type::FRONTSIDE ? 1 : -1);
     ROOT::Math::XYZVector full_offset(offset.x(), offset.y(), offset_z);
@@ -325,7 +325,7 @@ std::vector<SupportLayer> DetectorModel::getSupportLayers() const {
     auto ret_layers = support_layers_;
 
     auto sensor_offset = -getSensorSize().z() / 2.0;
-    auto chip_offset = getSensorSize().z() / 2.0 + getChipSize().z() + assembly_->getChipOffset().z();
+    auto chip_offset = (getSensorSize().z() / 2.0) + getChipSize().z() + assembly_->getChipOffset().z();
     for(auto& layer : ret_layers) {
         ROOT::Math::XYZVector offset = layer.offset_;
         if(layer.location_ == SupportLayer::Location::SENSOR) {

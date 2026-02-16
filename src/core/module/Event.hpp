@@ -57,6 +57,14 @@ namespace allpix {
         Event& operator=(Event&&) = delete;
         /// @}
 
+        /// @{
+        /**
+         * @brief Copying a module is not allowed
+         */
+        Event(const Event&) = delete;
+        Event& operator=(const Event&) = delete;
+        /// @}
+
         /**
          * @brief Unique identifier of this event
          */

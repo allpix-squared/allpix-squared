@@ -36,7 +36,7 @@ namespace allpix {
     template <typename T>
     template <typename U>
     std::vector<std::reference_wrapper<Object>>
-    Message<T>::get_object_array(typename std::enable_if<std::is_base_of<Object, U>::value>::type*) {
+    Message<T>::get_object_array(typename std::enable_if_t<std::is_base_of_v<Object, U>>* /*unused*/) {
         std::vector<std::reference_wrapper<Object>> data(data_.begin(), data_.end());
         return data;
     }
@@ -47,7 +47,7 @@ namespace allpix {
     template <typename T>
     template <typename U>
     std::vector<std::reference_wrapper<Object>>
-    Message<T>::get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type*) {
+    Message<T>::get_object_array(typename std::enable_if_t<!std::is_base_of_v<Object, U>>* /*unused*/) {
         throw MessageWithoutObjectException(typeid(*this));
     }
 
@@ -58,7 +58,7 @@ namespace allpix {
      */
     template <typename T>
     template <typename U>
-    void Message<T>::skip_object_cleanup(typename std::enable_if<std::is_base_of<Object, U>::value>::type*) {
+    void Message<T>::skip_object_cleanup(typename std::enable_if_t<std::is_base_of_v<Object, U>>* /*unused*/) {
         auto objects = get_object_array();
         for(auto& object : objects) {
             // We handle cleanup of objects ourselves, we therefore can deactivate the RecursiveRemove functionality of

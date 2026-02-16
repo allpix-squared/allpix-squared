@@ -93,6 +93,13 @@ namespace allpix {
          */
         ~Message() override;
 
+        /// @{
+        Message(const Message&) = delete;
+        Message& operator=(const Message&) = delete;
+        Message(Message&&) noexcept = delete;
+        Message& operator=(Message&&) noexcept = delete;
+        /// @}
+
         /**
          * @brief Get a reference to the data in this message
          */
@@ -110,20 +117,20 @@ namespace allpix {
          */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
-        get_object_array(typename std::enable_if<std::is_base_of<Object, U>::value>::type* = nullptr);
+        get_object_array(typename std::enable_if_t<std::is_base_of_v<Object, U>>* t = nullptr);
 
         /**
          * @brief Throws error if message does not contain object
          */
         template <typename U = T>
         std::vector<std::reference_wrapper<Object>>
-        get_object_array(typename std::enable_if<!std::is_base_of<Object, U>::value>::type* = nullptr);
+        get_object_array(typename std::enable_if_t<!std::is_base_of_v<Object, U>>* t = nullptr);
 
         /**
          * @brief Set kMustCleanup bit in all Objects to false, to prevent cleanup by ROOT
          */
         template <typename U = T>
-        void skip_object_cleanup(typename std::enable_if<std::is_base_of<Object, U>::value>::type* = nullptr);
+        void skip_object_cleanup(typename std::enable_if_t<std::is_base_of_v<Object, U>>* t = nullptr);
 
         /**
          * @brief Does nothing if message does not contain objects

@@ -358,7 +358,7 @@ void CSADigitizerModule::run(Event* event) {
                                       amplified_pulse);
         }
 
-        // Store amplified pulse fir dispatch
+        // Store amplified pulse for dispatch
         pulses.emplace_back(pixel, amplified_pulse, &pixel_charge);
 
         double time_offset = tdc_offset_;

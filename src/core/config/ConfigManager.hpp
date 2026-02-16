@@ -127,8 +127,8 @@ namespace allpix {
         bool loadDetectorOptions(const std::vector<std::string>& options);
 
     private:
-        std::set<std::string> global_names_{};
-        std::set<std::string> ignore_names_{};
+        std::set<std::string> global_names_;
+        std::set<std::string> ignore_names_;
 
         OptionParser module_option_parser_;
 
