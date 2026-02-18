@@ -58,7 +58,7 @@ using namespace ROOT::Math;
 TransientPropagationModule::TransientPropagationModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
+    : Module(config, detector), messenger_(messenger) {
 
     // Save detector model
     model_ = detector_->getModel();

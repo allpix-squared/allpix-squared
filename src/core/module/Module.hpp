@@ -226,6 +226,8 @@ namespace allpix {
         Configuration& config_;
         Logger& logger_;
 
+        std::shared_ptr<Detector> detector_;
+
     private:
         /**
          * @brief Set the module identifier for internal use
@@ -280,8 +282,6 @@ namespace allpix {
         virtual void skip_event(uint64_t /*unused*/) {}
 
         std::vector<std::pair<Messenger*, BaseDelegate*>> delegates_;
-
-        std::shared_ptr<Detector> detector_;
 
         /**
          * @brief Sets the multithreading flag

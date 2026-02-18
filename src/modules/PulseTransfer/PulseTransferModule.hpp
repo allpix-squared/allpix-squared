@@ -62,8 +62,6 @@ namespace allpix {
         void create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const;
 
         // General module members
-        std::shared_ptr<Detector> detector_;
-
         double max_depth_distance_{};
         bool collect_from_implant_{};
         std::once_flag first_event_flag_;

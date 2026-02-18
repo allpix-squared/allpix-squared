@@ -67,7 +67,6 @@ namespace allpix {
     private:
         Messenger* messenger_;
 
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         Histogram<TH1D> drift_time_histo_;

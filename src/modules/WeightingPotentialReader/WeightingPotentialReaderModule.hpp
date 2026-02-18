@@ -50,8 +50,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-        std::shared_ptr<Detector> detector_;
-
         /**
          * @brief Create and apply a weighting potential equivalent to a pixel/pad in a plane condenser
          * @param implant Vector with size of the readout implant in x and y

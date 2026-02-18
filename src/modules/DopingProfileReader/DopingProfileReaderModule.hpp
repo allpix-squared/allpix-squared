@@ -48,9 +48,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-        // General module members
-        std::shared_ptr<Detector> detector_;
-
         /**
          * @brief Read field from a file in init or apf format
          * @return Data of the field read from file

@@ -66,7 +66,6 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         Messenger* messenger_;

@@ -72,7 +72,6 @@ namespace allpix {
     private:
         // Configuration config_;
         Messenger* messenger_;
-        std::shared_ptr<Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         // Statistical information

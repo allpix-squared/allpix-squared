@@ -41,7 +41,7 @@ using namespace allpix;
 ElectricFieldReaderModule::ElectricFieldReaderModule(Configuration& config,
                                                      Messenger* /*unused*/,
                                                      std::shared_ptr<Detector> detector)
-    : Module(config, detector), detector_(std::move(detector)) {
+    : Module(config, detector) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

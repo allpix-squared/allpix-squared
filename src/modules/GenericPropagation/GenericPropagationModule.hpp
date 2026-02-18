@@ -12,7 +12,6 @@
 #include <atomic>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include <Math/Point3D.h>
@@ -78,7 +77,6 @@ namespace allpix {
 
     private:
         Messenger* messenger_;
-        std::shared_ptr<const Detector> detector_;
         std::shared_ptr<const DetectorModel> model_;
 
         /**

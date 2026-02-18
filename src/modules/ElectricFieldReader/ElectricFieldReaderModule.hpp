@@ -57,7 +57,6 @@ namespace allpix {
         void initialize() override;
 
     private:
-        std::shared_ptr<Detector> detector_;
 
         /**
          * @brief Create and apply a linear field

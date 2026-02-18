@@ -79,8 +79,6 @@ namespace allpix {
 
         Messenger* messenger_;
 
-        std::shared_ptr<Detector> detector_;
-
         // Statistics
         std::atomic<unsigned long> total_hits_;
 
