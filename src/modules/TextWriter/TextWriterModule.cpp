@@ -31,7 +31,7 @@
 using namespace allpix;
 
 TextWriterModule::TextWriterModule(Configuration& config, Messenger* messenger, GeometryManager* /*unused*/)
-    : SequentialModule(config), messenger_(messenger) {
+    : SequentialModule(config, messenger) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

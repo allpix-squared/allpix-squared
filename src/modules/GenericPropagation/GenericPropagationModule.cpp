@@ -54,7 +54,7 @@ using namespace allpix;
 GenericPropagationModule::GenericPropagationModule(Configuration& config,
                                                    Messenger* messenger,
                                                    std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger) {
+    : Module(config, messenger, detector) {
     // Save detector model
     model_ = detector_->getModel();
 

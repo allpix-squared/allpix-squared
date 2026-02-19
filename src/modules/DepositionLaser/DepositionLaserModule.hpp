@@ -113,7 +113,6 @@ namespace allpix {
 
         // General module members
         GeometryManager* geo_manager_;
-        Messenger* messenger_;
 
         // Laser parameters
         ROOT::Math::XYZPoint source_position_;

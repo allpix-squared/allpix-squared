@@ -59,7 +59,7 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        Messenger* messenger_;
+
         bool message_pixelcharge_{};
 
         std::filesystem::path output_file_;

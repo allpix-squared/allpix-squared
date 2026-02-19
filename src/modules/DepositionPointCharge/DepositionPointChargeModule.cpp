@@ -42,7 +42,7 @@ using namespace allpix;
 DepositionPointChargeModule::DepositionPointChargeModule(Configuration& config,
                                                          Messenger* messenger,
                                                          std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger) {
+    : Module(config, messenger, detector) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

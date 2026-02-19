@@ -63,7 +63,6 @@ namespace allpix {
 
     private:
         // General module members
-        Messenger* messenger_;
         GeometryManager* geometry_manager_;
 
         // Parameters for output writing

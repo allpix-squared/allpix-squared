@@ -53,8 +53,6 @@ namespace allpix {
         void run(Event* event) override;
 
     private:
-        Messenger* messenger_;
-
         std::shared_ptr<const DetectorModel> model_;
 
         // Distance of pixels taken into account for induction

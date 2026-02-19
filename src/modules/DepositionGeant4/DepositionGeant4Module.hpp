@@ -86,7 +86,6 @@ namespace allpix {
         void finalize() override;
 
     protected:
-        Messenger* messenger_;
         GeometryManager* geo_manager_;
 
         // Pointer to the Geant4 manager (owned by GeometryBuilderGeant4)

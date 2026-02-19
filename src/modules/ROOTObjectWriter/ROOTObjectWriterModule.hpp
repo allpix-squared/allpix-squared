@@ -80,7 +80,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
         GeometryManager* geo_mgr_;
 
         // Object names to include or exclude from writing

@@ -85,8 +85,6 @@ namespace allpix {
         std::tuple<ROOT::Math::XYZPoint, ROOT::Math::XYZPoint>
         sensor_intersection(const ROOT::Math::XYZPoint& line_origin) const;
 
-        Messenger* messenger_;
-
         std::shared_ptr<const DetectorModel> detector_model_;
 
         DepositionModel model_;

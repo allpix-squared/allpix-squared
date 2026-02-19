@@ -57,8 +57,6 @@ namespace allpix {
         bool output_plots_{}, output_pulsegraphs_{};
         double timestep_{};
 
-        Messenger* messenger_;
-
         void create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const;
 
         // General module members

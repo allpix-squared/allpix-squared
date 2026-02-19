@@ -181,7 +181,7 @@ For unique modules, the constructor for a `TestModule` should be:
 
 ```cpp
 TestModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config) {}
+    : Module(config, messenger) {}
 ```
 
 For detector modules, the first two arguments are the same, but the last argument is a `std::shared_ptr` to the linked

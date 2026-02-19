@@ -44,7 +44,7 @@
 using namespace allpix;
 
 CorryvreckanWriterModule::CorryvreckanWriterModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : SequentialModule(config), messenger_(messenger), geometry_manager_(geo_manager) {
+    : SequentialModule(config, messenger), geometry_manager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

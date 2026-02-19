@@ -49,7 +49,7 @@
 using namespace allpix;
 
 PulseTransferModule::PulseTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger) {
+    : Module(config, messenger, detector) {
 
     // Set default value for config variables
     config_.setDefault("max_depth_distance", Units::get(5.0, "um"));

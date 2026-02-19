@@ -25,7 +25,7 @@
 using namespace allpix;
 
 DummyModule::DummyModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : Module(config, messenger), geo_manager_(geo_manager) {
 
     // Allow multithreading of the simulation. Only enabled if this module is thread-safe. See manual for more details.
     // allow_multithreading();

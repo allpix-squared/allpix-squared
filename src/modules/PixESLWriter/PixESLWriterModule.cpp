@@ -23,7 +23,7 @@
 using namespace allpix;
 
 PixESLWriterModule::PixESLWriterModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
-    : SequentialModule(config, detector), messenger_(messenger) {
+    : SequentialModule(config, messenger, detector) {
 
     // This is a sequential module and therefore thread-safe
     allow_multithreading();

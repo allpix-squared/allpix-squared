@@ -56,7 +56,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
         GeometryManager* geo_mgr_{};
         std::shared_ptr<IO::LCWriter> lc_writer_;
 

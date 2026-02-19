@@ -53,7 +53,7 @@ using namespace allpix;
 DetectorHistogrammerModule::DetectorHistogrammerModule(Configuration& config,
                                                        Messenger* messenger,
                                                        std::shared_ptr<Detector> detector)
-    : Module(config, detector), messenger_(messenger) {
+    : Module(config, messenger, detector) {
     using namespace ROOT::Math;
 
     // Enable multithreading of this module if multithreading is enabled

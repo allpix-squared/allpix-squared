@@ -89,7 +89,6 @@ namespace allpix {
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         GeometryManager* geo_manager_;
-        Messenger* messenger_;
 
         // A local module member variable which is set on the constructor and only read during runtime:
         int setting_{};

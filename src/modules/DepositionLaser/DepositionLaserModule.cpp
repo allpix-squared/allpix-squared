@@ -57,7 +57,7 @@
 using namespace allpix;
 
 DepositionLaserModule::DepositionLaserModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), geo_manager_(geo_manager), messenger_(messenger) {
+    : Module(config, messenger), geo_manager_(geo_manager) {
 
     allow_multithreading();
 

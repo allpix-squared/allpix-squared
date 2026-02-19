@@ -68,8 +68,6 @@ namespace allpix {
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         std::shared_ptr<const DetectorModel> model_;
 
-        Messenger* messenger_;
-
         std::array<double, 3> size_{};
         std::array<size_t, 3> bins_{};
         FieldMapping field_mapping_;

@@ -60,7 +60,6 @@ namespace allpix {
 
     private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
-        Messenger* messenger_;
 
         // Module parameters
         std::filesystem::path netlist_path_;

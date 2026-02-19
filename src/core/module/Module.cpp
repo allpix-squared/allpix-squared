@@ -34,9 +34,12 @@
 
 using namespace allpix;
 
-Module::Module(Configuration& config) : Module(config, nullptr) {}
-Module::Module(Configuration& config, std::shared_ptr<Detector> detector)
-    : config_(config), logger_(generate_logger(config)), detector_(std::move(detector)) {}
+Module::Module(Configuration& config) : Module(config, nullptr, nullptr) {}
+
+Module::Module(Configuration& config, Messenger* messenger) : Module(config, messenger, nullptr) {}
+
+Module::Module(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+    : config_(config), logger_(generate_logger(config)), messenger_(messenger), detector_(std::move(detector)) {}
 /**
  * @note The remove_delegate can throw in theory, but this should never happen in practice
  */

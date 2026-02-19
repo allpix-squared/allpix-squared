@@ -65,8 +65,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-
         /**
          * @brief Helper function to calculate time of crossing the threshold
          * @param  pixel_charge PixelCharge object to calculate the threshold crossing for

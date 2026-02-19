@@ -34,7 +34,7 @@ using namespace allpix;
 MagneticFieldReaderModule::MagneticFieldReaderModule(Configuration& config,
                                                      Messenger* /*unused*/,
                                                      GeometryManager* geo_manager)
-    : Module(config), geometry_manager_(geo_manager) {
+    : Module(config, nullptr), geometry_manager_(geo_manager) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 }

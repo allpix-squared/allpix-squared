@@ -65,13 +65,20 @@ namespace allpix {
          */
         explicit Module(Configuration& config);
         /**
+         * @brief Base constructor for unique modules
+         * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
+         */
+        explicit Module(Configuration& config, Messenger* messenger);
+        /**
          * @brief Base constructor for detector modules
          * @param config Configuration for this module
+         * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Detector bound to this module
          * @warning Detector modules should not forget to forward their detector to the base constructor. An
          *          \ref InvalidModuleStateException will be raised if the module failed to so.
          */
-        explicit Module(Configuration& config, std::shared_ptr<Detector> detector);
+        explicit Module(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
         /**
          * @brief Essential virtual destructor.
          *
@@ -226,6 +233,7 @@ namespace allpix {
         Configuration& config_;
         Logger& logger_;
 
+        Messenger* messenger_;
         std::shared_ptr<Detector> detector_;
 
     private:
@@ -320,9 +328,9 @@ namespace allpix {
         friend class Messenger;
 
     public:
-        explicit SequentialModule(Configuration& config) : Module(config) {}
-        explicit SequentialModule(Configuration& config, std::shared_ptr<Detector> detector)
-            : Module(config, std::move(detector)) {}
+        explicit SequentialModule(Configuration& config, Messenger* messenger) : Module(config, messenger) {}
+        explicit SequentialModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+            : Module(config, messenger, std::move(detector)) {}
 
     protected:
         /**

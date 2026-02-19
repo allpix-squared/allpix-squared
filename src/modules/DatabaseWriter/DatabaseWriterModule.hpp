@@ -68,8 +68,6 @@ namespace allpix {
         void finalize() override;
 
     private:
-        Messenger* messenger_;
-
         /**
          * @brief Submit "prepared statements" to the database connection(s)
          * @param connection  Database connection to be used

@@ -77,8 +77,6 @@ namespace allpix {
          */
         static std::vector<const MCParticle*> get_primary_particles(std::shared_ptr<MCParticleMessage>& mcparticle_message);
 
-        Messenger* messenger_;
-
         // Statistics
         std::atomic<unsigned long> total_hits_;
 
