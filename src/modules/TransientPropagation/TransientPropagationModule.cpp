@@ -718,13 +718,20 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Check if the charge carrier has been trapped:
+        const double dx_drift = step.value.norm(); // drift-only distance in this RK step
+
         if(state == CarrierState::MOTION &&
-           trapping_(type, uniform_distribution(event->getRandomEngine()), timestep_, std::sqrt(efield.Mag2()))) {
-            LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
-                       << position.z() << " and time " << runge_kutta.getTime();
+           trapping_(type,
+                     uniform_distribution(event->getRandomEngine()),
+                     timestep_,
+                     std::sqrt(efield.Mag2()),
+                     dx_drift)) {
+	    LOG(TRACE) << "Trapping charge " << charge << " at " << position.x() << "," << position.y() << ","
+		       << position.z() << " and time " << runge_kutta.getTime();
             if(output_plots_) {
                 trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
+            // dx_drift = step.value.norm() is drift-only because diffusion is applied later.
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
             if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {

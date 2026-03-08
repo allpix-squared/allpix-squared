@@ -51,6 +51,9 @@ namespace allpix {
         virtual double operator()(const CarrierType& type, double efield_mag, double doping) const = 0;
     };
 
+
+
+
     /**
      * @ingroup Models
      * @brief Jacoboni/Canali mobility model for charge carriers in silicon
@@ -587,6 +590,110 @@ namespace allpix {
         };
     };
 
+       /**
+     * @ingroup Models
+     * @brief Mobility model for intrinsic diamond sensors
+     *
+     * Implements a piecewise (PW) mobility model for electrons and a Caughey-Thomas (CT) mobility
+     * model for holes. Parameters correspond to the full electric-field range fit
+     * (0.009 -- 12 V/µm) around room temperature. https://doi.org/10.48550/arXiv.2601.10807
+     */
+    class DiamondMobility : public MobilityModel {
+    public:
+        explicit DiamondMobility(SensorMaterial material, double /* temperature */) {
+            if(material != SensorMaterial::DIAMOND) {
+                LOG(WARNING) << "Sensor material " << allpix::to_string(material) << " not valid for this model.";
+            }
+
+            // ------------------------------------------------------------------
+            // Electron mobility: piecewise model
+            //
+            // Drift velocity:
+            //   v_d(E) = α E,                                           E < E_t
+            //   v_d(E) = v_s E / ( E_c * [1 + (E/E_c)^β]^(1/β) ),       E ≥ E_t
+            //
+            // Therefore, mobility μ(E) = v_d(E)/E becomes:
+            //   μ(E) = α,                                                E < E_t
+            //   μ(E) = (v_s / E_c) / [1 + (E/E_c)^β]^(1/β),             E ≥ E_t
+            //
+            // Parameters (electrons, PW, full range):
+            //   v_s = 26.59e6 cm/s
+            //   E_c = 0.56 V/um
+            //   α   = 1879.59 cm^2/V/s   // low-field mobility
+            //   β   = 0.41
+            //   E_t = 0.08 V/um
+            // ------------------------------------------------------------------
+
+            // Low-field mobility μ0,1
+            electron_mu0_linear_ = Units::get(1879.59, "cm*cm/V/s");
+
+            // Threshold field E_t
+            electron_Et_ = Units::get(0.08, "V/um"); // criritcal electric field 1
+
+            // High-field CT branch parameters (electrons)
+            electron_vs_   = Units::get(26.59e6, "cm/s"); // saturation velocity
+            electron_Ec_   = Units::get(0.56,   "V/um");  // Critical electric field 2
+            electron_beta_ = 0.41; // shaper of the curve
+
+            // ------------------------------------------------------------------
+            // Holes: Caughey-Thomas model
+            //
+            //   μ(E) = (v_s / E_c) / [1 + (E/E_c)^β]^(1/β)
+            //
+            // Parameters (holes, CT, full range):
+            //   v_s   = 15.09 × 10^6 cm/s
+            //   E_c   = 0.55 V/µm
+            //   μ0,2  = v_s / E_c ≈ 2744 cm^2/V/s
+            //   β     = 0.88
+            // ------------------------------------------------------------------
+
+            hole_vs_   = Units::get(15.09e6, "cm/s"); // saturation velocity
+            hole_Ec_   = Units::get(0.55,   "V/um");  // critical electric field
+            hole_beta_ = 0.88; // curve shaper
+        }
+
+        double operator()(const CarrierType& type, double efield_mag, double doping) const override {
+            (void)doping; // Doping not used for intrinsic diamond
+
+            const double E = std::fabs(efield_mag);
+
+            if(type == CarrierType::ELECTRON) {
+                // Electrons: PW model
+                if(E < electron_Et_) {
+                    // Linear branch: μ(E) = μ0,1
+                    return electron_mu0_linear_;
+                }
+                // High-field CT branch
+                return caughey_thomas_mobility(E, electron_vs_, electron_Ec_, electron_beta_);
+            } else {
+                // Holes: pure CT model
+                return caughey_thomas_mobility(E, hole_vs_, hole_Ec_, hole_beta_);
+            }
+        }
+
+    private:
+        // Electron parameters (PW model)
+        double electron_mu0_linear_{}; // α = μ0,1
+        double electron_Et_{};         // Threshold field E_t
+        double electron_vs_{};         // Saturation velocity v_s
+        double electron_Ec_{};         // Critical field E_c
+        double electron_beta_{};       // Shape parameter β
+
+        // Hole parameters (CT model)
+        double hole_vs_{};
+        double hole_Ec_{};
+        double hole_beta_{};
+
+        // Generic Caughey-Thomas mobility:
+        //   μ(E) = (V_s / E_c) / [1 + (E/E_c)^β]^(1/β)
+        static double caughey_thomas_mobility(double E, double Vs, double Ec, double beta) {
+            const double ratio = E / Ec;
+            return Vs / Ec / std::pow(1.0 + std::pow(ratio, beta), 1.0 / beta);
+        }
+    };
+
+
+
     /**
      * @brief Wrapper class and factory for mobility models.
      *
@@ -640,7 +747,9 @@ namespace allpix {
                                                                 config.get<double>("mobility_hole"));
                 } else if(model == "custom") {
                     model_ = std::make_unique<Custom>(config, doping);
-                } else {
+                } else if(model == "diamond") {
+                    model_ = std::make_unique<DiamondMobility>(material, temperature);
+                }  else {
                     throw InvalidModelError(model);
                 }
                 LOG(INFO) << "Selected mobility model \"" << model << "\"";
