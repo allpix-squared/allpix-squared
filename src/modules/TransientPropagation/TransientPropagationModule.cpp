@@ -22,7 +22,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
 #include <Eigen/Core>
 #include <Math/Point3Dfwd.h>
 #include <TH1.h>
@@ -462,7 +461,8 @@ void TransientPropagationModule::run(Event* event) {
 
         auto charge_per_step = charge_per_step_;
         if(max_charge_groups_ > 0 && deposit.getCharge() / charge_per_step > max_charge_groups_) {
-            charge_per_step = static_cast<unsigned int>(ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
+            charge_per_step =
+                static_cast<unsigned int>(std::ceil(static_cast<double>(deposit.getCharge()) / max_charge_groups_));
             deposits_exceeding_max_groups_++;
             LOG(INFO) << "Deposited charge: " << deposit.getCharge()
                       << ", which exceeds the maximum number of charge groups allowed. Increasing charge_per_step to "
@@ -718,8 +718,7 @@ TransientPropagationModule::propagate(Event* event,
         }
 
         // Check if the charge carrier has been trapped:
-        const double dx_drift = step.value.norm(); // drift-only distance in this RK step
-
+        const double dx_drift = step.value.norm(); //drift-only distance in this RK step
         if(state == CarrierState::MOTION &&
            trapping_(type,
                      uniform_distribution(event->getRandomEngine()),
@@ -751,16 +750,11 @@ TransientPropagationModule::propagate(Event* event,
         // Apply multiplication step: calculate gain factor from local efield and step length; Interpolate efield values
         // The multiplication factor is not scaled by the velocity fraction parallel to the electric field, as the
         // correction is negligible for semiconductors
-        auto local_gain =
-            multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
-
         unsigned int n_secondaries = 0;
 
-        if(local_gain > 1.0) {
-            LOG(DEBUG) << "Calculated local gain of " << local_gain << " for step of "
-                       << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
-                       << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
-                       << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+        if(state == CarrierState::MOTION) {
+            auto local_gain =
+                multiplication_(type, (std::sqrt(efield.Mag2()) + std::sqrt(last_efield.Mag2())) / 2., step.value.norm());
 
             // For each charge carrier draw a number to determine the number of
             // secondaries generated in this step
@@ -779,36 +773,47 @@ TransientPropagationModule::propagate(Event* event,
                            << ") generated from impact ionization on " << Units::display(carrier_pos, {"mm", "um"});
                 if(output_plots_) {
                     multiplication_depth_histo_->Fill(carrier_pos.z(), n_secondaries);
+            if(local_gain > 1.0) {
+                LOG(DEBUG) << "Calculated local gain of " << local_gain << " for step of "
+                        << Units::display(step.value.norm(), {"um", "nm"}) << " from field of "
+                        << Units::display(std::sqrt(last_efield.Mag2()), "kV/cm") << " to "
+                        << Units::display(std::sqrt(efield.Mag2()), "kV/cm");
+
+                // For each charge carrier draw a number to determine the number of
+                // secondaries generated in this step
+                double log_prob = 1. / std::log1p(-1. / local_gain);
+                for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
+                    n_secondaries +=
+                        static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
                 }
 
-                auto [recombined, trapped, propagated] = propagate(event,
-                                                                   deposit,
-                                                                   carrier_pos,
-                                                                   inverted_type,
-                                                                   n_secondaries,
-                                                                   initial_time_local + runge_kutta.getTime(),
-                                                                   initial_time_global + runge_kutta.getTime(),
-                                                                   level + 1,
-                                                                   propagated_charges,
-                                                                   output_plot_points);
+                    auto [recombined, trapped, propagated] = propagate(event,
+                                                                    deposit,
+                                                                    carrier_pos,
+                                                                    inverted_type,
+                                                                    n_secondaries,
+                                                                    initial_time_local + runge_kutta.getTime(),
+                                                                    initial_time_global + runge_kutta.getTime(),
+                                                                    level + 1,
+                                                                    propagated_charges,
+                                                                    output_plot_points);
 
-                // Update statistics:
-                recombined_charges_count += recombined;
-                trapped_charges_count += trapped;
-                propagated_charges_count += propagated;
+                    // Update statistics:
+                    recombined_charges_count += recombined;
+                    trapped_charges_count += trapped;
+                    propagated_charges_count += propagated;
 
-                LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
-                           << Units::display(carrier_pos, {"mm", "um"});
-            }
+                    LOG(DEBUG) << "Continuing propagation of charge carrier set (" << type << ") at "
+                               << Units::display(carrier_pos, {"mm", "um"});
+                }
 
-            auto gain = static_cast<double>(charge + n_secondaries) / initial_charge;
-            if(gain > 50.) {
-                LOG_N(WARNING, 10) << "Detected gain of " << gain << ", local electric field of "
-                                   << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
-                                   << ", diode seems to be in breakdown";
+                auto gain = static_cast<double>(charge + n_secondaries) / initial_charge;
+                if(gain > 50.) {
+                    LOG(WARNING, 10) << "Detected gain of " << gain << ", local electric field of "
+                                << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+                }
             }
         }
-
         // Signal calculation:
 
         // Find the nearest pixel - before and after the step
@@ -900,7 +905,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
-        auto gain = charge / initial_charge;
+        double gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
         if(level == 0) {
             gain_primary_histo_->Fill(gain, initial_charge);
             if(type == CarrierType::ELECTRON) {
@@ -987,6 +992,7 @@ void TransientPropagationModule::finalize() {
         recombination_time_histo_->Write();
         trapped_histo_->Write();
         trapping_time_histo_->Write();
+        detrapping_time_histo_->Write();
         induced_charge_histo_->Write();
         induced_charge_e_histo_->Write();
         induced_charge_h_histo_->Write();

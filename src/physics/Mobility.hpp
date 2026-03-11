@@ -13,15 +13,14 @@
 #define ALLPIX_MOBILITY_MODELS_H
 
 #include <TFormula.h>
-
 #include "exceptions.h"
-
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
 #include "tools/tabulated_pow.h"
+#include <cmath>
 
 namespace allpix {
 
@@ -628,7 +627,7 @@ namespace allpix {
             electron_mu0_linear_ = Units::get(1879.59, "cm*cm/V/s");
 
             // Threshold field E_t
-            electron_Et_ = Units::get(0.08, "V/um"); // criritcal electric field 1
+            electron_Et_ = Units::get(0.08, "V/um"); // critical electric field 1
 
             // High-field CT branch parameters (electrons)
             electron_vs_   = Units::get(26.59e6, "cm/s"); // saturation velocity

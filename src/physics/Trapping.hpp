@@ -23,6 +23,9 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include <cctype>
+#include <memory>
+#include <string>
 
 
 namespace allpix {
@@ -158,7 +161,7 @@ namespace allpix {
     /**
      * @ingroup Models
      * @brief Polycrystalline diamond trapping model based on charge collection distance (CCD)
-     *DOI ........ may be next week but from when :)
+     *  DOI
      * This model derives effective electron and hole trapping lengths from the
      * sensor thickness and the input charge collection distance (CCD), assuming
      * a fixed ratio (configurable) between hole and electron trapping lengths (mean drift path).
@@ -310,7 +313,7 @@ namespace allpix {
                     low = mid;
                 }
             }
-            // Setting the final electron and hole trapping lengths (mean drif pahths)
+            // Setting the final electron and hole trapping lengths (mean drift pahths)
             lambda_electron_ = 0.5 * (low + high);
             lambda_hole_ = ratio_ * lambda_electron_;
         }
@@ -387,7 +390,9 @@ namespace allpix {
         explicit Trapping(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("trapping_model", "none");
-                std::transform(model.begin(), model.end(), model.begin(), ::tolower);
+                std::transform(model.begin(), model.end(), model.begin(), [](unsigned char c) {
+                    return static_cast<char>(std::tolower(c));
+                });
                 auto temperature = config.get<double>("temperature");
                 auto fluence = config.get<double>("fluence", 0);
 
@@ -409,7 +414,7 @@ namespace allpix {
                     model_ = std::make_unique<pcdiamond>(
                         config.get<double>("pcdiamond_ccd"),
                         config.get<double>("pcdiamond_thickness"),
-                        config.get<double>("pcdiamond_lambda_ratio", 1.3)   //  the assuemd ration of h-drift distance to e-drift distance
+                        config.get<double>("pcdiamond_lambda_ratio", 1.3)   //  the assumed ratio of h-drift distance to e-drift distance
                     );
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),
