@@ -18,7 +18,7 @@ This module consumes `PixelHit` objects and and writes the following record prop
 * `column` (integer value)
 * `row` (integer value)
 * `charge` (floating-point value)
-* `toa` (floating-point value)
+* `timestamp` (floating-point value)
 
 It should be noted that Allpix Squared only calls this module if the respective detector has actually received a pixel hit.
 If e.g. all charge remains below a previously imposed threshold, this module will not be called and the resulting APX output
@@ -28,12 +28,19 @@ file will not contain an event entry with the respective event ID.
 
 * `file_name`: Name of the output file. The file will automatically placed in a subdirectory for this detector and appended
   with the `.apx` file extension.
+* `mean_hit_rate`: Mean hit rate, used to calculate the timestamps. Values should be provided with units, e.g. `0.1 /ns/mm/mm`, which corresponds to 1 MHz per square millimeter.
+* `bx_period`: Optional bunch cross period. Cyclic duration to reproduce in a simple way a bunch cross behavior. If this
+  option is provided, an additional property called `bx_id` is added to the output file, which contains the respective bunch
+  crossing ID of the hit object. If not specified, the property is not written to file.
+* `write_pixelcharge`: Select whether to write `PixelHit` objects (after processing and discrimination in front-end electronics) or `PixelCharge` objects (before any front-end electronics) to the output file. Defaults to `PixelHit` objects with `write_pixelcharge = false`.
 
 ## Usage
 
-The following snippet enables this module to write data into a file named "test.apx""
+The following snippet enables this module to write data into a file named `test.apx`
 
 ```ini
 [PixESLWriter]
+bx_period = 25ns
+mean_hit_rate = 100/us/cm/cm
 file_name = "test"
 ```

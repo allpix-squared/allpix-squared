@@ -9,6 +9,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <atomic>
+#include <optional>
 #include <string>
 
 #include <libapx/writer.hpp>
@@ -53,11 +55,23 @@ namespace allpix {
         void finalize() override;
 
     private:
+        template <typename MESSAGE> void transfer_data(Event* in, apx::Event& out, std::int64_t bx);
+
+    private:
         // Pointers to the central geometry manager and the messenger for interaction with the framework core:
         std::shared_ptr<Detector> detector_;
         Messenger* messenger_;
+        bool message_pixelcharge_{};
 
         std::filesystem::path output_file_;
         std::unique_ptr<apx::Writer> writer_;
+        std::atomic<double> timestamp_;
+
+        std::optional<double> bx_period_;
+        double lambda_mean_rate_{};
+
+        // Statistical information
+        bool output_plots_{};
+        Histogram<TH1D> time_between_events_;
     };
 } // namespace allpix
