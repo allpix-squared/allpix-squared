@@ -67,8 +67,8 @@ void PixelDetectorModel::validate() {
             }
         } else {
             // For frontside implants, check that the implant lies within the pixel cell with its entire size
-            if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
-               std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
+            if(std::fabs(implant.getOffset().x()) + (implant.getSize().x() / 2) > (pixel_size_.x() / 2) ||
+               std::fabs(implant.getOffset().y()) + (implant.getSize().y() / 2) > (pixel_size_.y() / 2)) {
                 throw InvalidValueError(
                     implant.getConfiguration(), "offset", "implant exceeds pixel cell. Reduce implant size or offset");
             }

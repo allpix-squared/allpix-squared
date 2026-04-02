@@ -15,7 +15,6 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
-#include <signal.h>
 #include <stdexcept>
 #include <string>
 
@@ -36,7 +35,7 @@ void interrupt_handler(int /*unused*/);
 /**
  * @brief Handle termination request (CTRL+C)
  */
-void interrupt_handler(int /*unused*/) {
+static void interrupt_handler(int /*unused*/) {
     LOG(STATUS) << "Interrupted! Aborting conversion...";
     allpix::Log::finish();
     std::exit(0);

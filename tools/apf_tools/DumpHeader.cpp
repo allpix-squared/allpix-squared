@@ -25,7 +25,7 @@
 
 using namespace allpix;
 
-template <typename T> static void print_info(allpix::FieldData<T> field_data, size_t n, std::string units) {
+template <typename T> static void print_info(const allpix::FieldData<T>& field_data, size_t n, const std::string& units) {
     std::cout << "Header:     \"" << field_data.getHeader() << "\"" << std::endl;
     std::cout << "Field size: " << Units::display(field_data.getSize()[0], "um") << " x "
               << Units::display(field_data.getSize()[1], "um") << " x " << Units::display(field_data.getSize()[2], "um")

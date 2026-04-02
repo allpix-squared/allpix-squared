@@ -25,7 +25,7 @@ double Event::duration() const { return (end_ - timestamp()); }
 
 void Event::addTrigger(uint32_t trigger_id, double trigger_ts) { trigger_list_.emplace(trigger_id, trigger_ts); }
 
-bool Event::hasTriggerID(uint32_t trigger_id) const { return (trigger_list_.find(trigger_id) != trigger_list_.end()); }
+bool Event::hasTriggerID(uint32_t trigger_id) const { return trigger_list_.contains(trigger_id); }
 
 double Event::getTriggerTime(uint32_t trigger_id) const { return trigger_list_.find(trigger_id)->second; }
 
@@ -56,16 +56,16 @@ Event::Position Event::getFramePosition(double frame_start, double frame_end, bo
             return Position::AFTER;
         }
         return Position::DURING;
-    } else {
-        // Return DURING only if fully covered
-        if(frame_start < start()) {
-            return Position::BEFORE;
-        }
-        if(end() < frame_end) {
-            return Position::AFTER;
-        }
-        return Position::DURING;
     }
+
+    // Return DURING only if fully covered
+    if(frame_start < start()) {
+        return Position::BEFORE;
+    }
+    if(end() < frame_end) {
+        return Position::AFTER;
+    }
+    return Position::DURING;
 }
 
 Event::Position Event::getTriggerPosition(uint32_t trigger_id) const {

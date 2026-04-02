@@ -38,10 +38,10 @@ std::map<std::string, allpix::Units::UnitType> Units::unit_map_;
  */
 void Units::add(std::string str, UnitType value) {
     // Do not distinguish between different case for units
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    std::ranges::transform(str, str.begin(), ::tolower);
 
     // Find the unit
-    if(unit_map_.find(str) != unit_map_.end()) {
+    if(unit_map_.contains(str)) {
         throw std::invalid_argument("unit " + str + " already defined");
     }
     unit_map_.emplace(str, value);
@@ -58,7 +58,7 @@ allpix::Units::UnitType Units::getSingle(std::string str) {
         return 1.;
     }
     // Do not distinguish between different case for units
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    std::ranges::transform(str, str.begin(), ::tolower);
 
     // Find the unit
     auto iter = unit_map_.find(str);
@@ -110,7 +110,7 @@ allpix::Units::UnitType Units::get(const std::string& str) {
 
 allpix::Units::UnitType Units::convert(UnitType input, std::string str) {
     // Do not distinguish between different case for units
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    std::ranges::transform(str, str.begin(), ::tolower);
 
     // Go through all units
     char lst = '*';

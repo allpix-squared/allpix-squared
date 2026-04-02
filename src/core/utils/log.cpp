@@ -15,6 +15,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <ctime>
 #include <exception>
 #include <iomanip>
@@ -24,7 +25,6 @@
 #include <regex>
 #include <sstream>
 #include <stdexcept>
-#include <stdio.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -122,7 +122,7 @@ DefaultLogger::~DefaultLogger() {
     // Replace carriage return by newline:
     try {
         out_no_special = std::regex_replace(out_no_special, std::regex("\\\r"), "\n");
-    } catch(std::regex_error&) {
+    } catch(std::regex_error&) { // NOLINT(bugprone-empty-catch)
     }
 
     // Print output to streams
@@ -143,7 +143,7 @@ DefaultLogger::~DefaultLogger() {
  */
 void DefaultLogger::finish() {
     // Lock the mutex to guard output writing
-    std::lock_guard<std::mutex> const lock(write_mutex_);
+    const std::scoped_lock lock(write_mutex_);
 
     if(!last_identifier_.empty()) {
         // Flush final line if necessary
@@ -398,7 +398,7 @@ std::string DefaultLogger::get_current_date() {
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
     std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%X");
+    ss << std::put_time(std::localtime(&in_time_t), "%X"); // NOLINT(concurrency-mt-unsafe)
 
     auto seconds_from_epoch = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() - seconds_from_epoch).count();

@@ -15,7 +15,6 @@
 #include <numeric>
 
 #include "enum.h"
-#include "unit.h"
 
 namespace allpix {
     /**
