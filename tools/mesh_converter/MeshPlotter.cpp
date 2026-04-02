@@ -30,7 +30,7 @@
 
 using namespace allpix;
 
-void interrupt_handler(int /*unused*/);
+static void interrupt_handler(int /*unused*/);
 
 /**
  * @brief Handle termination request (CTRL+C)

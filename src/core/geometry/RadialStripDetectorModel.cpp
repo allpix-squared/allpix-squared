@@ -110,7 +110,7 @@ RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
 
     // Set number of strips; x-value is the maximum number of strips
     // in all rows, y-value is the number of rows
-    setNPixels({*std::max_element(number_of_strips_.begin(), number_of_strips_.end()), strip_rows});
+    setNPixels({*std::ranges::max_element(number_of_strips_), strip_rows});
     // Pixel size is defined as the rectangular wrapper size divided by the maximum
     // number of strips (x-value) or strip rows (y-value)
     setPixelSize({getSize().x() / number_of_pixels_.x(), getSize().y() / number_of_pixels_.y()});
@@ -161,13 +161,13 @@ bool RadialStripDetectorModel::isOnSensorBoundary(const ROOT::Math::XYZPoint& lo
 }
 
 bool RadialStripDetectorModel::isWithinMatrix(const Pixel::Index& strip_index) const {
-    return !(strip_index.y() < 0 || strip_index.y() >= static_cast<int>(getNPixels().y()) || strip_index.x() < 0 ||
-             strip_index.x() >= static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y()))));
+    return strip_index.y() >= 0 && strip_index.y() < static_cast<int>(getNPixels().y()) && strip_index.x() >= 0 &&
+           strip_index.x() < static_cast<int>(number_of_strips_.at(static_cast<unsigned int>(strip_index.y())));
 }
 
 ROOT::Math::Polar2DPoint RadialStripDetectorModel::getPositionPolar(const ROOT::Math::XYZPoint& local_pos) const {
     // Calculate the radial component
-    auto r = sqrt(local_pos.x() * local_pos.x() + local_pos.y() * local_pos.y());
+    auto r = sqrt((local_pos.x() * local_pos.x()) + (local_pos.y() * local_pos.y()));
     // Shift the coordinate origin to the strip focal point
     auto focus_pos = local_pos - focus_translation_;
     // Calculate the angular component obtained from the corrected position
@@ -184,7 +184,7 @@ ROOT::Math::XYPoint RadialStripDetectorModel::getPositionCartesian(const ROOT::M
     auto alpha = std::acos(len_foc / (2 * getCenterRadius()));
     auto gamma = asin(len_foc * sin(alpha + polar_pos.phi() + stereo_angle_) / polar_pos.r());
     // Transform the angle
-    auto phi = 2 * alpha + gamma + polar_pos.phi() + stereo_angle_ - ROOT::Math::Pi();
+    auto phi = (2 * alpha) + gamma + polar_pos.phi() + stereo_angle_ - ROOT::Math::Pi();
 
     return {polar_pos.r() * sin(phi), polar_pos.r() * cos(phi)};
 }
@@ -194,14 +194,14 @@ ROOT::Math::XYZPoint RadialStripDetectorModel::getPixelCenter(int x, int y) cons
     auto local_r = (row_radius_.at(static_cast<unsigned int>(y)) + row_radius_.at(static_cast<unsigned int>(y + 1))) / 2;
     // Calculate the angular coordinate of the strip center
     auto local_phi =
-        -angular_pitch_.at(static_cast<unsigned int>(y)) * number_of_strips_.at(static_cast<unsigned int>(y)) / 2 +
-        (x + 0.5) * angular_pitch_.at(static_cast<unsigned int>(y)) - stereo_angle_;
+        (-angular_pitch_.at(static_cast<unsigned int>(y)) * number_of_strips_.at(static_cast<unsigned int>(y)) / 2) +
+        ((x + 0.5) * angular_pitch_.at(static_cast<unsigned int>(y))) - stereo_angle_;
 
     // Convert strip center position to cartesian coordinates
     auto center = getPositionCartesian(ROOT::Math::Polar2DPoint(local_r, local_phi));
     auto local_x = center.x();
     auto local_y = center.y();
-    auto local_z = getSensorCenter().z() - getSensorSize().z() / 2.0;
+    auto local_z = getSensorCenter().z() - (getSensorSize().z() / 2.0);
 
     return {local_x, local_y, local_z};
 }
@@ -261,10 +261,10 @@ std::set<Pixel::Index> RadialStripDetectorModel::getNeighbors(const Pixel::Index
         // Move row seed position to the center of a requested row
         for(unsigned int shift_y = 1; shift_y <= std::labs(y); shift_y++) {
             // Add or subtract position based on whether given row is below or above global seed
-            row_seed_r += (y < 0) ? -strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y + 1) / 2 -
-                                        strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y) / 2
-                                  : strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y - 1) / 2 +
-                                        strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y) / 2;
+            row_seed_r += (y < 0) ? (-strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y + 1) / 2) -
+                                        (strip_length_.at(static_cast<unsigned int>(idx.y()) - shift_y) / 2)
+                                  : (strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y - 1) / 2) +
+                                        (strip_length_.at(static_cast<unsigned int>(idx.y()) + shift_y) / 2);
         }
 
         // Get cartesian position and pixel indices of the row seed
@@ -308,10 +308,10 @@ bool RadialStripDetectorModel::areNeighbors(const Pixel::Index& seed,
 
     // Move row seed position to the center of the requested row
     for(unsigned int shift_y = 0; shift_y < static_cast<unsigned int>(std::abs(dist_y)); shift_y++) {
-        row_seed_r += (dist_y < 0) ? -strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y) / 2 -
-                                         strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y - 1) / 2
-                                   : strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y) / 2 +
-                                         strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y + 1) / 2;
+        row_seed_r += (dist_y < 0) ? (-strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y) / 2) -
+                                         (strip_length_.at(static_cast<unsigned int>(seed.y()) - shift_y - 1) / 2)
+                                   : (strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y) / 2) +
+                                         (strip_length_.at(static_cast<unsigned int>(seed.y()) + shift_y + 1) / 2);
     }
 
     // Get cartesian position and pixel indices of the row seed
@@ -330,8 +330,8 @@ ROOT::Math::XYZPoint RadialStripDetectorModel::getSensorIntercept(const ROOT::Ma
     check_position.SetZ(inside.z());
     if(std::fabs(outside.z()) > getSensorSize().z() / 2.0 && isWithinSensor(check_position)) {
         // Carrier left sensor on the top or bottom surface of the sensor, interpolate end point on surface
-        auto z_cur_border = std::fabs(outside.z() - getSensorSize().z() / 2.0);
-        auto z_last_border = std::fabs(getSensorSize().z() / 2.0 - inside.z());
+        auto z_cur_border = std::fabs(outside.z() - (getSensorSize().z() / 2.0));
+        auto z_last_border = std::fabs((getSensorSize().z() / 2.0) - inside.z());
         auto z_total = z_cur_border + z_last_border;
         return (z_last_border / z_total) * static_cast<ROOT::Math::XYZVector>(outside) + (z_cur_border / z_total) * inside;
     } // Carrier left sensor on any other border, use last position inside instead

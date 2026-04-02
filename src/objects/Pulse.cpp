@@ -27,7 +27,7 @@ Pulse::Pulse(double time_bin, double total_time) : bin_(time_bin), initialized_(
     try {
         this->reserve(bins);
     } catch(const std::bad_alloc& e) {
-        PulseBadAllocException(bins, total_time, e.what());
+        throw PulseBadAllocException(bins, total_time, e.what());
     }
 }
 
@@ -42,7 +42,7 @@ void Pulse::addCharge(double charge, double time) {
         }
         this->at(bin) += charge;
     } catch(const std::bad_alloc& e) {
-        PulseBadAllocException(bin + 1, time, e.what());
+        throw PulseBadAllocException(bin + 1, time, e.what());
     }
 }
 
