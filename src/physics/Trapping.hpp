@@ -409,8 +409,8 @@ namespace allpix {
                     model_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic" || model == "ljubljana_highfluence") {
                     model_ = std::make_unique<Mandic>(fluence);
-                } else if(model == "PCDiamond") {
-                    model_ = std::make_unique<pcdiamond>(
+                } else if(model == "pcdiamond") {
+                    model_ = std::make_unique<PCDiamond>(
                         config.get<double>("pcdiamond_ccd"),
                         config.get<double>("pcdiamond_thickness"),
                         config.get<double>("pcdiamond_lambda_ratio", 1.3)   //  the assumed ratio of h-drift distance to e-drift distance
