@@ -36,7 +36,7 @@ namespace allpix {
      * @brief Module that directly converts propagated charges to charges on a pixel and its neighbours (simulating the
      * cross-coupling in CCPDs)
      * This module is based on the SimpleTransferModule. It does a mapping of the propagated charges to the nearest pixel in
-     * the grid and copies this propageted charge, scaled by the cross-coupling matrix, to the neighbouring pixels.
+     * the grid and copies this propagated charge, scaled by the cross-coupling matrix, to the neighbouring pixels.
      * The coupling matrix must be provided in the configuration file as a Matrix or as a matrix file.
      * Like the SimpleTransferModule, it only considers propagated charges within a certain distance from the implants and
      * within the pixel grid, charges in the rest of the sensor are ignored.
