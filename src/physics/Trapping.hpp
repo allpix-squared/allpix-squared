@@ -214,11 +214,10 @@ namespace allpix {
     // where lambda is the trapping length (Mean Drift Path) of the carrier type.
     // ------------------------------------------------------------------
 
-
-    class pcdiamond : virtual public TrappingModel {
+    class PCDiamond : virtual public TrappingModel {
     public:
         // ccd and thickness must be in the SAME length units as dx_drift (Allpix internal length units)
-        pcdiamond(double ccd, double thickness, double lambda_ratio_h_over_e = 1.3)
+        PCDiamond(double ccd, double thickness, double lambda_ratio_h_over_e = 1.3)
             : thickness_(thickness), ratio_(lambda_ratio_h_over_e) {
 
             if(thickness_ <= 0) {
@@ -410,7 +409,7 @@ namespace allpix {
                     model_ = std::make_unique<CMSTracker>(fluence);
                 } else if(model == "mandic" || model == "ljubljana_highfluence") {
                     model_ = std::make_unique<Mandic>(fluence);
-                } else if(model == "pcdiamond") {
+                } else if(model == "PCDiamond") {
                     model_ = std::make_unique<pcdiamond>(
                         config.get<double>("pcdiamond_ccd"),
                         config.get<double>("pcdiamond_thickness"),
