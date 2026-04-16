@@ -161,7 +161,7 @@ namespace allpix {
     /**
      * @ingroup Models
      * @brief Polycrystalline diamond trapping model based on charge collection distance (CCD)
-     *  DOI
+     *  https://doi.org/10.48550/arXiv.2603.13146
      * This model derives effective electron and hole trapping lengths from the
      * sensor thickness and the input charge collection distance (CCD), assuming
      * a fixed ratio (configurable) between hole and electron trapping lengths (mean drift path).

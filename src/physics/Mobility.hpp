@@ -595,7 +595,7 @@ namespace allpix {
      *
      * Implements a piecewise (PW) mobility model for electrons and a Caughey-Thomas (CT) mobility
      * model for holes. Parameters correspond to the full electric-field range fit
-     * (0.009 -- 12 V/µm) around room temperature. https://doi.org/10.48550/arXiv.2601.10807
+     * (0.009 -- 12 V/µm) around room temperature. https://doi.org/10.1016/j.diamond.2026.113558
      */
     class DiamondMobility : public MobilityModel {
     public:
