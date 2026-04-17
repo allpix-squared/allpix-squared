@@ -535,8 +535,8 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
-// NOLINTNEXTLINE(misc-no-recursion)
 std::tuple<unsigned int, unsigned int, unsigned int>
+// NOLINTNEXTLINE(misc-no-recursion)
 TransientPropagationModule::propagate(Event* event,
                                       const DepositedCharge& deposit,
                                       const ROOT::Math::XYZPoint& pos,
@@ -546,7 +546,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const double initial_time_global,
                                       const unsigned int level,
                                       std::vector<PropagatedCharge>& propagated_charges,
-                                      LineGraph::OutputPlotPoints& output_plot_points) const { // NOLINT(misc-no-recursion)
+                                      LineGraph::OutputPlotPoints& output_plot_points) const {
 
     if(level > max_multiplication_level_) {
         LOG(WARNING) << "Found impact ionization shower with level larger than " << max_multiplication_level_
