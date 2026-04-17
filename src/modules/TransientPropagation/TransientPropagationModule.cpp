@@ -781,7 +781,6 @@ TransientPropagationModule::propagate(Event* event,
 
                 // For each charge carrier draw a number to determine the number of
                 // secondaries generated in this step
-                double log_prob = 1. / std::log1p(-1. / local_gain);
                 for(unsigned int i_carrier = 0; i_carrier < charge; ++i_carrier) {
                     n_secondaries +=
                         static_cast<unsigned int>(std::log(uniform_distribution(event->getRandomEngine())) * log_prob);
@@ -809,11 +808,13 @@ TransientPropagationModule::propagate(Event* event,
 
                 auto gain = static_cast<double>(charge + n_secondaries) / initial_charge;
                 if(gain > 50.) {
-                    LOG(WARNING, 10) << "Detected gain of " << gain << ", local electric field of "
-                                << Units::display(std::sqrt(efield.Mag2()), "kV/cm") << ", diode seems to be in breakdown";
+                    LOG_N(WARNING, 10) << "Detected gain of " << gain << ", local electric field of "
+                                << Units::display(std::sqrt(efield.Mag2()), "kV/cm")
+				<< ", diode seems to be in breakdown";
                 }
             }
-        }
+	 }
+
         // Signal calculation:
 
         // Find the nearest pixel - before and after the step
