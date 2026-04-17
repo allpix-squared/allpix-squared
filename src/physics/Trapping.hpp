@@ -16,17 +16,16 @@
 
 #include "exceptions.h"
 
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <string>
 #include "core/config/Configuration.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
 #include "objects/SensorCharge.hpp"
-#include <limits>
-#include <cmath>
-#include <algorithm>
-#include <cctype>
-#include <memory>
-#include <string>
-
 
 namespace allpix {
 
@@ -60,11 +59,8 @@ namespace allpix {
         }
 
         // new interface for time + step length - d
-        virtual bool operator()(const CarrierType& type,
-                                double probability,
-                                double timestep,
-                                double efield_mag,
-                                double /* dx_drift */) const {
+        virtual bool operator()(
+            const CarrierType& type, double probability, double timestep, double efield_mag, double /* dx_drift */) const {
             // default: ignore dx_drift and fall back to old behavior
             return (*this)(type, probability, timestep, efield_mag);
         }
@@ -173,7 +169,6 @@ namespace allpix {
      * lambda_h / lambda_e = r.
      */
 
-
     // ------------------------------------------------------------------
     // Polycrystalline diamond trapping model based on the charge
     // collection distance (CCD).
@@ -236,7 +231,7 @@ namespace allpix {
                 return;
             }
             if(ratio_ <= 0) {
-            throw ModelError("pcdiamond trapping: lambda_ratio_h_over_e must be > 0");   
+                throw ModelError("pcdiamond trapping: lambda_ratio_h_over_e must be > 0");
             }
 
             solve_lambdas_from_ccd(ccd);
@@ -283,13 +278,13 @@ namespace allpix {
 
             // Choosing initial bounds such that the solution lies between,
             // f(low) < 0 and f(high) > 0
-            double low  = 1e-15 * thickness_;
-            double high = 1e6   * thickness_;
+            double low = 1e-15 * thickness_;
+            double high = 1e6 * thickness_;
 
             // If even a very small lambda already overshoots the target CCD,
             // treat this as the extremely small-CCD limit.
             if(f(low) > 0) {
-               
+
                 lambda_electron_ = low;
                 lambda_hole_ = ratio_ * lambda_electron_;
                 return;
@@ -298,8 +293,8 @@ namespace allpix {
             while(f(high) < 0) {
                 high *= 2.0;
                 if(high > 1e18 * thickness_) {
-                // No valid solution found within a reasonable range.
-                throw ModelError("pcdiamond trapping: could not solve lambdas from CCD (check units/values)");    
+                    // No valid solution found within a reasonable range.
+                    throw ModelError("pcdiamond trapping: could not solve lambdas from CCD (check units/values)");
                 }
             }
 
@@ -317,7 +312,6 @@ namespace allpix {
             lambda_hole_ = ratio_ * lambda_electron_;
         }
     };
-
 
     /**
      * @ingroup Models
@@ -413,7 +407,8 @@ namespace allpix {
                     model_ = std::make_unique<PCDiamond>(
                         config.get<double>("pcdiamond_ccd"),
                         config.get<double>("pcdiamond_thickness"),
-                        config.get<double>("pcdiamond_lambda_ratio", 1.3)   //  the assumed ratio of h-drift distance to e-drift distance
+                        config.get<double>("pcdiamond_lambda_ratio",
+                                           1.3) //  the assumed ratio of h-drift distance to e-drift distance
                     );
                 } else if(model == "constant") {
                     model_ = std::make_unique<ConstantTrapping>(config.get<double>("trapping_time_electron"),

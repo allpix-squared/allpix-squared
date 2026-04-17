@@ -13,14 +13,14 @@
 #define ALLPIX_MOBILITY_MODELS_H
 
 #include <TFormula.h>
-#include "exceptions.h"
+#include <cmath>
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/utils/log.h"
 #include "core/utils/unit.h"
+#include "exceptions.h"
 #include "objects/SensorCharge.hpp"
 #include "tools/tabulated_pow.h"
-#include <cmath>
 
 namespace allpix {
 
@@ -49,9 +49,6 @@ namespace allpix {
          */
         virtual double operator()(const CarrierType& type, double efield_mag, double doping) const = 0;
     };
-
-
-
 
     /**
      * @ingroup Models
@@ -589,7 +586,7 @@ namespace allpix {
         };
     };
 
-       /**
+    /**
      * @ingroup Models
      * @brief Mobility model for intrinsic diamond sensors
      *
@@ -630,9 +627,9 @@ namespace allpix {
             electron_Et_ = Units::get(0.08, "V/um"); // critical electric field 1
 
             // High-field CT branch parameters (electrons)
-            electron_vs_   = Units::get(26.59e6, "cm/s"); // saturation velocity
-            electron_Ec_   = Units::get(0.56,   "V/um");  // Critical electric field 2
-            electron_beta_ = 0.41; // shaper of the curve
+            electron_vs_ = Units::get(26.59e6, "cm/s"); // saturation velocity
+            electron_Ec_ = Units::get(0.56, "V/um");    // Critical electric field 2
+            electron_beta_ = 0.41;                      // shaper of the curve
 
             // ------------------------------------------------------------------
             // Holes: Caughey-Thomas model
@@ -646,9 +643,9 @@ namespace allpix {
             //   β     = 0.88
             // ------------------------------------------------------------------
 
-            hole_vs_   = Units::get(15.09e6, "cm/s"); // saturation velocity
-            hole_Ec_   = Units::get(0.55,   "V/um");  // critical electric field
-            hole_beta_ = 0.88; // curve shaper
+            hole_vs_ = Units::get(15.09e6, "cm/s"); // saturation velocity
+            hole_Ec_ = Units::get(0.55, "V/um");    // critical electric field
+            hole_beta_ = 0.88;                      // curve shaper
         }
 
         double operator()(const CarrierType& type, double efield_mag, double doping) const override {
@@ -690,8 +687,6 @@ namespace allpix {
             return Vs / Ec / std::pow(1.0 + std::pow(ratio, beta), 1.0 / beta);
         }
     };
-
-
 
     /**
      * @brief Wrapper class and factory for mobility models.
@@ -748,7 +743,7 @@ namespace allpix {
                     model_ = std::make_unique<Custom>(config, doping);
                 } else if(model == "diamond") {
                     model_ = std::make_unique<DiamondMobility>(material, temperature);
-                }  else {
+                } else {
                     throw InvalidModelError(model);
                 }
                 LOG(INFO) << "Selected mobility model \"" << model << "\"";
