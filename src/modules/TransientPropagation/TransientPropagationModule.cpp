@@ -535,6 +535,7 @@ void TransientPropagationModule::run(Event* event) {
  * velocity at every point with help of the electric field map of the detector. A Runge-Kutta integration is applied in
  * multiple steps, adding a random diffusion to the propagating charge every step.
  */
+// NOLINTNEXTLINE(misc-no-recursion)
 std::tuple<unsigned int, unsigned int, unsigned int>
 TransientPropagationModule::propagate(Event* event,
                                       const DepositedCharge& deposit,
