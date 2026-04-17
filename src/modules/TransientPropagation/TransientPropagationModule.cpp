@@ -545,7 +545,7 @@ TransientPropagationModule::propagate(Event* event,
                                       const double initial_time_global,
                                       const unsigned int level,
                                       std::vector<PropagatedCharge>& propagated_charges,
-                                      LineGraph::OutputPlotPoints& output_plot_points) const {
+                                      LineGraph::OutputPlotPoints& output_plot_points) const { // NOLINT(misc-no-recursion)
 
     if(level > max_multiplication_level_) {
         LOG(WARNING) << "Found impact ionization shower with level larger than " << max_multiplication_level_
@@ -898,7 +898,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
-        double gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
+        double const gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
         if(level == 0) {
             gain_primary_histo_->Fill(gain, initial_charge);
             if(type == CarrierType::ELECTRON) {

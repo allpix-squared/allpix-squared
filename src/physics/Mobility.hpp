@@ -661,10 +661,9 @@ namespace allpix {
                 }
                 // High-field CT branch
                 return caughey_thomas_mobility(E, electron_vs_, electron_Ec_, electron_beta_);
-            } else {
-                // Holes: pure CT model
-                return caughey_thomas_mobility(E, hole_vs_, hole_Ec_, hole_beta_);
             }
+            // Holes: pure CT model
+            return caughey_thomas_mobility(E, hole_vs_, hole_Ec_, hole_beta_);
         }
 
     private:

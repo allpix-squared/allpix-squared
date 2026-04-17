@@ -383,9 +383,8 @@ namespace allpix {
         explicit Trapping(const Configuration& config) {
             try {
                 auto model = config.get<std::string>("trapping_model", "none");
-                std::transform(model.begin(), model.end(), model.begin(), [](unsigned char c) {
-                    return static_cast<char>(std::tolower(c));
-                });
+                std::ranges::transform(
+                    model, model.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
                 auto temperature = config.get<double>("temperature");
                 auto fluence = config.get<double>("fluence", 0);
 
