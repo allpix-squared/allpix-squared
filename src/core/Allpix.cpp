@@ -237,7 +237,7 @@ void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, 
  */
 void Allpix::run(const std::stop_token& /*unused*/) {
     Log::setReportingLevel(log_level_);
-    auto stop_token = stop_source_.get_token();
+    const auto& stop_token = stop_source_.get_token();
     if(stop_token.stop_requested()) {
         LOG(INFO) << "Skip running modules because termination is requested";
         return;
