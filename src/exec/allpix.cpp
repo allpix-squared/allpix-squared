@@ -240,8 +240,9 @@ int main(int argc, const char* argv[]) {
         // Run modules and event-loop
         apx->start();
 
-        // Wait for finalization
+        // Wait for finalization and check for exceptions
         apx->wait();
+        apx->checkException();
 
         // Finalize modules (post-run)
         apx->finalize();
