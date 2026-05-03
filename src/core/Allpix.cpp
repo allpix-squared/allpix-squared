@@ -233,18 +233,36 @@ void Allpix::initialize() {
 void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, this)); }
 
 /**
+ * Check for any exception thrown in the run thread
+ */
+void Allpix::checkException() {
+    // If exception has been thrown, propagate it
+    if(exception_ptr_) {
+        const auto exception_ptr_copy = exception_ptr_;
+        exception_ptr_ = nullptr;
+        std::rethrow_exception(exception_ptr_copy);
+    }
+}
+
+/**
  * Runs every modules Module::run() method linearly for the number of events
  */
 void Allpix::run(const std::stop_token& /*unused*/) {
-    Log::setReportingLevel(log_level_);
-    const auto& stop_token = stop_source_.get_token();
-    if(stop_token.stop_requested()) {
-        LOG(INFO) << "Skip running modules because termination is requested";
-        return;
-    }
 
-    LOG(TRACE) << "Running Allpix";
-    mod_mgr_->run(seeder_modules_, stop_token);
+    try {
+        Log::setReportingLevel(log_level_);
+        const auto& stop_token = stop_source_.get_token();
+        if(stop_token.stop_requested()) {
+            LOG(INFO) << "Skip running modules because termination is requested";
+            return;
+        }
+
+        LOG(TRACE) << "Running Allpix";
+        mod_mgr_->run(seeder_modules_, stop_token);
+    } catch(...) {
+        LOG(ERROR) << "Caught exception in run thread";
+        exception_ptr_ = std::current_exception();
+    }
 
     // Indicate that we have run and want to finalize as well
     has_run_ = true;

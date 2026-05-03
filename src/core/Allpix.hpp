@@ -68,6 +68,12 @@ namespace allpix {
         void start();
 
         /**
+         * @brief Check if the run thread has thrown an exception
+         * @throw Exception thrown by run thread, if any
+         */
+        void checkException();
+
+        /**
          * @brief Wait for the event loop to finish
          */
         void wait();
@@ -100,6 +106,9 @@ namespace allpix {
         std::atomic<bool> has_run_;
         std::jthread run_thread_;
         std::stop_source stop_source_;
+
+        // Exception pointer
+        std::exception_ptr exception_ptr_{nullptr};
 
         // Log file if specified
         std::ofstream log_file_;
