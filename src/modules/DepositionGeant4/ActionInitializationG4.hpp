@@ -21,7 +21,7 @@
 
 namespace allpix {
     /**
-     * @brief Initializer for the tracker and generator actions, required for \ref RunManager
+     * @brief Initializer for the tracker and generator actions, required for \ref MTRunManager
      */
     template <class GEN, class INIT> class ActionInitializationG4 : public G4VUserActionInitialization {
     public:
