@@ -48,7 +48,6 @@ using namespace std::chrono_literals;
 void clean();
 
 std::unique_ptr<Allpix> apx;
-std::atomic<bool> apx_ready{false};
 
 // Global variable for signal handler
 namespace {
@@ -214,7 +213,6 @@ int main(int argc, const char* argv[]) {
     try {
         // Construct main Allpix object
         apx = std::make_unique<Allpix>(config_file_name, module_options, detector_options);
-        apx_ready = true;
 
         std::jthread signal_bridge([&](const std::stop_token& stop_token) {
             while(signal_v == 0 && !stop_token.stop_requested()) {
@@ -252,7 +250,6 @@ int main(int argc, const char* argv[]) {
             signal_bridge.join();
         }
 
-        apx.reset();
     } catch(ConfigurationError& e) {
         LOG(FATAL) << "Error in the configuration:" << '\n'
                    << e.what() << '\n'
@@ -272,6 +269,8 @@ int main(int argc, const char* argv[]) {
         LOG(FATAL) << "Fatal internal error" << '\n' << e.what() << '\n' << "Cannot continue.";
         return_code = 127;
     }
+
+    apx.reset();
 
     // Finish the logging
     Log::finish();
