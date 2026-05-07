@@ -718,6 +718,10 @@ bool ModuleManager::isPaused() {
     return thread_pool_->isPaused();
 }
 
+std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> ModuleManager::getEventCounts() const {
+    return {events_total_, events_finished_, events_buffered_, events_aborted_};
+}
+
 /**
  * Initializes the thread pool and executes each event in parallel.
  */
@@ -774,7 +778,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
     // Push all events to the thread pool
     global_config.setDefault<uint64_t>("number_of_events", 1U);
-    auto number_of_events = global_config.get<uint64_t>("number_of_events");
+    events_total_ = global_config.get<uint64_t>("number_of_events");
 
     // Skip first N events and discard their event seed from the seeder engine:
     auto skip_events = global_config.get<uint64_t>("skip_events", 0);
@@ -788,7 +792,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
     std::atomic_bool stop_requested = false;
     LOG(STATUS) << "Starting event loop";
-    for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
+    for(uint64_t i = 1 + skip_events; i <= events_total_ + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(stop_token.stop_requested() || stop_requested) {
             LOG(INFO) << "Interrupting event loop after " << this->events_finished_
@@ -802,11 +806,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-        auto event_function_with_module = [this, plot, number_of_events, event_num = i, event_seed = seed, &stop_requested](
-                                              std::shared_ptr<Event> event,
-                                              ModuleList::iterator module_iter,
-                                              int64_t event_time,
-                                              auto&& self_func) mutable -> void {
+        auto event_function_with_module =
+            [this, plot, event_num = i, event_seed = seed, &stop_requested](std::shared_ptr<Event> event,
+                                                                            ModuleList::iterator module_iter,
+                                                                            int64_t event_time,
+                                                                            auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -893,9 +897,10 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func); // NOLINT
                     auto future = thread_pool_->submit(event->number, event_function, false);
                     assert(future.valid() || !thread_pool_->valid());
-                    auto buffered_events = thread_pool_->bufferedQueueSize();
-                    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished "
-                                                       << this->events_finished_ << " of " << number_of_events << " events";
+                    this->events_buffered_ = thread_pool_->bufferedQueueSize();
+                    LOG_PROGRESS(STATUS, "EVENT_LOOP")
+                        << "Buffered " << this->events_buffered_ << ", finished " << this->events_finished_ << " of "
+                        << this->events_total_ << " events";
                     return;
                 }
 
@@ -907,15 +912,15 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
             thread_pool_->markComplete(event->number);
             LOG(INFO) << "Finished event " << event_num << " with seed " << event_seed;
 
-            auto buffered_events = thread_pool_->bufferedQueueSize();
+            this->events_buffered_ = thread_pool_->bufferedQueueSize();
             if(plot) {
-                this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
+                this->buffer_fill_level_->Fill(static_cast<double>(this->events_buffered_));
                 event_time_->Fill(static_cast<double>(event_time) * 1e-9);
             }
 
             this->events_finished_++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << this->events_finished_
-                                               << " of " << number_of_events << " events";
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << this->events_buffered_ << ", finished "
+                                               << this->events_finished_ << " of " << this->events_total_ << " events";
         };
 
         auto event_function =

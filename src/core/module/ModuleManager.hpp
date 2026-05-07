@@ -120,6 +120,14 @@ namespace allpix {
         void finalize();
 
         /**
+         * @brief Retrieve current event counts
+         * @details This returns the total number of events to simulate, the number of currently finished events, the number
+         * of events in the buffer and the number of aborted events, in this order.
+         * @return Tuple with the number of total, finished, buffered and aborted events
+         */
+        std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> getEventCounts() const;
+
+        /**
          * @brief Static method to return the Allpix Squared version of this manager
          * @return Allpix Squared version
          */
@@ -191,6 +199,10 @@ namespace allpix {
 
         // The thread pool used in the run method
         std::unique_ptr<ThreadPool> thread_pool_{nullptr};
+
+        // Event counters
+        std::atomic<uint64_t> events_total_;
+        std::atomic<uint64_t> events_buffered_;
         std::atomic<uint64_t> events_finished_;
         std::atomic<uint64_t> events_aborted_;
 
