@@ -191,6 +191,8 @@ namespace allpix {
 
         // The thread pool used in the run method
         std::unique_ptr<ThreadPool> thread_pool_{nullptr};
+        std::atomic<uint64_t> events_finished_;
+        std::atomic<uint64_t> events_aborted_;
 
         // User defined multithreading flags and parameters from configuration
         bool multithreading_flag_{false};
