@@ -70,7 +70,6 @@
 #include "physics/MaterialProperties.hpp"
 #include "tools/ROOT.h"
 #include "tools/geant4/MTRunManager.hpp"
-#include "tools/geant4/RunManager.hpp"
 
 #define G4_NUM_SEEDS 10
 
@@ -143,19 +142,14 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
  * Module depends on \ref GeometryBuilderGeant4Module loaded first, because it owns the pointer to the Geant4 run manager.
  */
 void DepositionGeant4Module::initialize() {
-    MTRunManager* run_manager_mt = nullptr;
 
     number_of_particles_ = config_.get<unsigned int>("number_of_particles", 1);
     output_plots_ = config_.get<bool>("output_plots");
 
     // Load the G4 run manager (which is owned by the geometry builder)
-    if(multithreadingEnabled()) {
-        run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
-        run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
-        G4Threading::SetMultithreadedApplication(true);
-    } else {
-        run_manager_g4_ = G4RunManager::GetRunManager();
-    }
+    run_manager_g4_ = G4MTRunManager::GetMasterRunManager();
+    auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
+    G4Threading::SetMultithreadedApplication(true);
 
     if(run_manager_g4_ == nullptr) {
         throw ModuleError("Cannot deposit charges using Geant4 without a Geant4 geometry builder");
@@ -373,15 +367,9 @@ void DepositionGeant4Module::initialize() {
     initialize_g4_action();
 
     // Construct the sensitive detectors and fields.
-    if(run_manager_mt == nullptr) {
-        // Create the info track manager for the main thread before creating the Sensitive detectors.
-        track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
-        construct_sensitive_detectors_and_fields();
-    } else {
-        // In MT-mode we register a builder that will be called for each thread to construct the SD when needed.
-        auto detector_construction = std::make_unique<SDAndFieldConstruction>(this);
-        run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
-    }
+    // Register a builder that will be called for each thread to construct the SD when needed.
+    auto detector_construction = std::make_unique<SDAndFieldConstruction>(this);
+    run_manager_mt->SetSDAndFieldConstruction(std::move(detector_construction));
 
     // Flush the Geant4 stream buffer because some elements in the initialization never do:
     G4cout << G4endl;
@@ -398,17 +386,15 @@ void DepositionGeant4Module::initializeThread() {
     LOG(DEBUG) << "Initializing run manager";
 
     // Initialize the thread local G4RunManager in case of MT
-    if(multithreadingEnabled()) {
-        auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
+    auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
 
-        // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
-        // track manager for each calling thread here.
-        if(track_info_manager_ == nullptr) {
-            track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
-        }
-
-        run_manager_mt->InitializeForThread();
+    // In MT-mode the sensitive detectors will be created with the calls to BeamOn. So we construct the
+    // track manager for each calling thread here.
+    if(track_info_manager_ == nullptr) {
+        track_info_manager_ = std::make_unique<TrackInfoManager>(config_.get<bool>("record_all_tracks"));
     }
+
+    run_manager_mt->InitializeForThread();
 
     // Set selected tracking verbosity, defaulting to zero. Higher levels can be useful for tracing individual Geant4 events
     G4RunManagerKernel::GetRunManagerKernel()->GetTrackingManager()->SetVerboseLevel(
@@ -429,13 +415,8 @@ void DepositionGeant4Module::run(Event* event) {
     LOG(DEBUG) << "Seeding Geant4 event with seeds " << seed1 << " " << seed2;
 
     try {
-        if(multithreadingEnabled()) {
-            auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
-            run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
-        } else {
-            auto* run_manager = dynamic_cast<RunManager*>(run_manager_g4_);
-            run_manager->Run(static_cast<int>(number_of_particles_), seed1, seed2);
-        }
+        auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
+        run_manager_mt->Run(static_cast<int>(number_of_particles_), seed1, seed2);
 
         uint64_t last_event_num = last_event_num_.load();
         last_event_num_.compare_exchange_strong(last_event_num, event->number);
@@ -502,10 +483,8 @@ void DepositionGeant4Module::finalizeThread() {
     // Record the number of sensors and the total charges
     record_module_statistics();
 
-    if(multithreadingEnabled()) {
-        auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
-        run_manager_mt->TerminateForThread();
-    }
+    auto* run_manager_mt = dynamic_cast<MTRunManager*>(run_manager_g4_);
+    run_manager_mt->TerminateForThread();
 }
 
 void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {

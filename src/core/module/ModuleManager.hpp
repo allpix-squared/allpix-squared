@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <stop_token>
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -93,21 +94,16 @@ namespace allpix {
         /**
          * @brief Run all modules for the number of events
          * @param seeder Reference to the seeder
+         * @param stop_token Stop token to interrupt the run
          * @warning Should be called after the \ref ModuleManager::initialize "init function"
          */
-        void run(RandomNumberGenerator& seeder);
+        void run(RandomNumberGenerator& seeder, const std::stop_token& stop_token);
 
         /**
          * @brief Finalize all modules after the event sequence
          * @warning Should be called after the \ref ModuleManager::initialize "run function"
          */
         void finalize();
-
-        /**
-         * @brief Terminates as soon as the current event is finished
-         * @note This method is safe to call from any signal handler
-         */
-        void terminate();
 
     private:
         /**

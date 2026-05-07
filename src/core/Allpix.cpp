@@ -23,6 +23,7 @@
 #include <ios>
 #include <memory>
 #include <stdexcept>
+#include <stop_token>
 #include <string>
 #include <thread>
 #include <utility>
@@ -51,8 +52,9 @@ using namespace allpix;
 Allpix::Allpix(std::string config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
-    : terminate_(false), has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
-      geo_mgr_(std::make_unique<GeometryManager>()) {
+    : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
+      mod_mgr_(std::make_unique<ModuleManager>()) {
+
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
                                                 std::initializer_list<std::string>({"Allpix", ""}),
@@ -73,16 +75,14 @@ Allpix::Allpix(std::string config_file_name,
         log_level_string = global_config.get<std::string>("log_level", "WARNING");
         std::transform(log_level_string.begin(), log_level_string.end(), log_level_string.begin(), ::toupper);
         try {
-            LogLevel const log_level = Log::getLevelFromString(log_level_string);
-            Log::setReportingLevel(log_level);
+            log_level_ = Log::getLevelFromString(log_level_string);
         } catch(std::invalid_argument& e) {
             LOG(ERROR) << "Log level \"" << log_level_string
                        << "\" specified in the configuration is invalid, defaulting to WARNING instead";
-            Log::setReportingLevel(LogLevel::WARNING);
+            log_level_ = LogLevel::WARNING;
         }
-    } else {
-        log_level_string = Log::getStringFromLevel(Log::getReportingLevel());
     }
+    Log::setReportingLevel(log_level_);
 
     // Set the log format from config
     auto log_format_string = global_config.get<std::string>("log_format", "DEFAULT");
@@ -105,7 +105,7 @@ Allpix::Allpix(std::string config_file_name,
     }
 
     // Wait for the first detailed messages until level and format are properly set
-    LOG(TRACE) << "Global log level is set to " << log_level_string;
+    LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
 }
 
@@ -117,6 +117,12 @@ Allpix::Allpix(std::string config_file_name,
  * - Load the modules from the configuration
  */
 void Allpix::load() {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
+        LOG(INFO) << "Skip loading modules because termination is requested";
+        return;
+    }
+
     LOG(TRACE) << "Loading Allpix";
 
     // Fetch the global configuration
@@ -204,57 +210,85 @@ void Allpix::load() {
     geo_mgr_->load(conf_mgr_.get(), seeder_core_);
 
     // Load the modules from the configuration
-    if(!terminate_) {
-        mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
-    } else {
-        LOG(INFO) << "Skip loading modules because termination is requested";
-    }
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
 }
 
 /**
  * Runs the Module::initialize() method linearly for every module
  */
 void Allpix::initialize() {
-    if(!terminate_) {
-        LOG(TRACE) << "Initializing Allpix";
-        mod_mgr_->initialize();
-    } else {
+    Log::setReportingLevel(log_level_);
+    if(stop_source_.get_token().stop_requested()) {
         LOG(INFO) << "Skip initializing modules because termination is requested";
+        return;
+    }
+
+    LOG(TRACE) << "Initializing Allpix";
+    mod_mgr_->initialize();
+}
+
+/**
+ * Start the thread which calls the ModuleManager's run method
+ */
+void Allpix::start() { run_thread_ = std::jthread(std::bind_front(&Allpix::run, this)); }
+
+/**
+ * Check for any exception thrown in the run thread
+ */
+void Allpix::checkException() {
+    // If exception has been thrown, propagate it
+    if(exception_ptr_) {
+        const auto exception_ptr_copy = exception_ptr_;
+        exception_ptr_ = nullptr;
+        std::rethrow_exception(exception_ptr_copy);
     }
 }
+
 /**
  * Runs every modules Module::run() method linearly for the number of events
  */
-void Allpix::run() {
-    if(!terminate_) {
-        LOG(TRACE) << "Running Allpix";
-        mod_mgr_->run(seeder_modules_);
+void Allpix::run(const std::stop_token& /*unused*/) {
 
-        // Set that we have run and want to finalize as well
-        has_run_ = true;
-    } else {
-        LOG(INFO) << "Skip running modules because termination is requested";
+    try {
+        Log::setReportingLevel(log_level_);
+        const auto& stop_token = stop_source_.get_token();
+        if(stop_token.stop_requested()) {
+            LOG(INFO) << "Skip running modules because termination is requested";
+            return;
+        }
+
+        LOG(TRACE) << "Running Allpix";
+        mod_mgr_->run(seeder_modules_, stop_token);
+    } catch(...) {
+        LOG(ERROR) << "Caught exception in run thread";
+        exception_ptr_ = std::current_exception();
+    }
+
+    // Indicate that we have run and want to finalize as well
+    has_run_ = true;
+}
+
+void Allpix::interrupt() { stop_source_.request_stop(); }
+
+void Allpix::wait() {
+    if(run_thread_.joinable()) {
+        run_thread_.join();
     }
 }
+
 /**
  * Runs all modules Module::finalize() method linearly for every module
  */
 void Allpix::finalize() {
-    if(has_run_) {
-        LOG(TRACE) << "Finalizing Allpix";
-        mod_mgr_->finalize();
-    } else {
-        LOG(INFO) << "Skip finalizing modules because no module did run";
-    }
-}
+    Log::setReportingLevel(log_level_);
 
-/**
- * This function can be called safely from any signal handler. Time between the request to terminate
- * and the actual termination is not always negigible.
- */
-void Allpix::terminate() {
-    terminate_ = true;
-    mod_mgr_->terminate();
+    if(!has_run_) {
+        LOG(INFO) << "Skip finalizing modules because no module did run";
+        return;
+    }
+
+    LOG(TRACE) << "Finalizing Allpix";
+    mod_mgr_->finalize();
 }
 
 /**

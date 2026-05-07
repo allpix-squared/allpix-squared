@@ -28,6 +28,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <stop_token>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -700,7 +701,7 @@ void ModuleManager::initialize() {
 /**
  * Initializes the thread pool and executes each event in parallel.
  */
-void ModuleManager::run(RandomNumberGenerator& seeder) {
+void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& stop_token) {
     using namespace std::chrono_literals;
 
     Configuration& global_config = conf_manager_->getGlobalConfiguration();
@@ -767,10 +768,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
         thread_pool_->markComplete(n);
     }
 
+    std::atomic_bool stop_requested = false;
     LOG(STATUS) << "Starting event loop";
     for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
-        if(terminate_) {
+        if(stop_token.stop_requested() || stop_requested) {
             LOG(INFO) << "Interrupting event loop after " << finished_events << " events because of request to terminate";
             thread_pool_->destroy();
             break;
@@ -781,12 +783,17 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-        auto event_function_with_module =
-            [this, plot, number_of_events, event_num = i, event_seed = seed, &finished_events, &aborted_events](
-                std::shared_ptr<Event> event,
-                ModuleList::iterator module_iter,
-                int64_t event_time,
-                auto&& self_func) mutable -> void {
+        auto event_function_with_module = [this,
+                                           plot,
+                                           number_of_events,
+                                           event_num = i,
+                                           event_seed = seed,
+                                           &stop_requested,
+                                           &finished_events,
+                                           &aborted_events](std::shared_ptr<Event> event,
+                                                            ModuleList::iterator module_iter,
+                                                            int64_t event_time,
+                                                            auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -839,7 +846,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder) {
                 } catch(const EndOfRunException& e) {
                     // Terminate if the module threw the EndOfRun request exception:
                     LOG(WARNING) << "Request to terminate:" << '\n' << e.what();
-                    this->terminate_ = true;
+                    stop_requested = true;
                 }
 
                 // Reset logging
@@ -1075,14 +1082,5 @@ void ModuleManager::finalize() {
         auto event_processing_time = std::round(processing_time * global_config.get<unsigned int>("workers"));
         LOG(STATUS) << "This corresponds to a processing time of \x1B[1m"
                     << Units::display(event_processing_time, {"ms", "us"}) << "/event\x1B[0m per worker";
-    }
-}
-
-/**
- * All modules in the event loop continue to finish the current event
- */
-void ModuleManager::terminate() {
-    if(!terminate_.exchange(true) && thread_pool_) {
-        thread_pool_->destroy();
     }
 }
