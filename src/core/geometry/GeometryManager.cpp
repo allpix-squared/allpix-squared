@@ -53,7 +53,7 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by looping over all defined detectors
  */
-void GeometryManager::load(const std::list<Configuration>& detectors,
+void GeometryManager::load(const std::list<Configuration>& detector_configs,
                            const std::vector<std::filesystem::path>& model_paths,
                            const std::filesystem::path& config_file_path,
                            RandomNumberGenerator& seeder) {
@@ -63,7 +63,7 @@ void GeometryManager::load(const std::list<Configuration>& detectors,
     // Loop over all defined detectors
     LOG(DEBUG) << "Loading detectors";
     // Gets a list of detector configurations. The sections for each detector in the geometry config file.
-    for(auto& geometry_section : detectors) {
+    for(const auto& geometry_section : detector_configs) {
 
         // Read role of this section and default to "active" (i.e. detector)
         auto role = geometry_section.get<std::string>("role", "active");

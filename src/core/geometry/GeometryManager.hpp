@@ -78,11 +78,12 @@ namespace allpix {
 
         /**
          * @brief Loads the geometry from the global configuration
-         * @param conf_manager Configuration manager of the framework
+         * @param detector_configs Configuration of the individual detectors
+         * @param model_paths List of file paths to search for detector model files
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(const std::list<Configuration>& detectors,
+        void load(const std::list<Configuration>& detector_configs,
                   const std::vector<std::filesystem::path>& model_paths,
                   const std::filesystem::path& config_file_path,
                   RandomNumberGenerator& seeder);
