@@ -45,8 +45,6 @@
 using namespace allpix;
 using namespace std::chrono_literals;
 
-void clean();
-
 std::unique_ptr<Allpix> apx;
 
 // Global variable for signal handler
