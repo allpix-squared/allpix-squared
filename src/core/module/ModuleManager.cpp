@@ -700,6 +700,24 @@ void ModuleManager::initialize() {
         static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
 }
 
+void ModuleManager::pause(bool pause) {
+    // Without thread pool, there is no pause
+    if(thread_pool_ == nullptr) {
+        return;
+    }
+    // Set the pause status of the thread pool
+    thread_pool_->setPaused(pause);
+}
+
+bool ModuleManager::isPaused() {
+    // Without thread pool there is no pause
+    if(thread_pool_ == nullptr) {
+        return false;
+    }
+    // Check if thread pool is paused
+    return thread_pool_->isPaused();
+}
+
 /**
  * Initializes the thread pool and executes each event in parallel.
  */

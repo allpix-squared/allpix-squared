@@ -100,6 +100,20 @@ namespace allpix {
         void run(RandomNumberGenerator& seeder, const std::stop_token& stop_token);
 
         /**
+         * @brief Pause the current simulation run
+         * @details Halts the simulation after completing the current module step. Only has an effect during run.
+         *
+         * @param pause True to pause, false to resume
+         */
+        void pause(bool pause);
+
+        /**
+         * @brief Check the current pause status of the simulation
+         * @return True if the simulation is paused, false otherwise
+         */
+        bool isPaused();
+
+        /**
          * @brief Finalize all modules after the event sequence
          * @warning Should be called after the \ref ModuleManager::initialize "run function"
          */
