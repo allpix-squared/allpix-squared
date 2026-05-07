@@ -22,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "core/config/ConfigReader.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"

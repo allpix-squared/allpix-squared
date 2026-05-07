@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 
-#include "ConfigReader.hpp"
 #include "Configuration.hpp"
 #include "OptionParser.hpp"
 #include "core/module/ModuleIdentifier.hpp"
