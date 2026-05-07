@@ -105,6 +105,12 @@ namespace allpix {
          */
         void finalize();
 
+        /**
+         * @brief Static method to return the Allpix Squared version of this manager
+         * @return Allpix Squared version
+         */
+        static std::string version();
+
     private:
         /**
          * @brief Create unique modules
