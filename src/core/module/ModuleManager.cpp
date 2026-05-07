@@ -65,6 +65,8 @@ using namespace allpix;
 
 ModuleManager::ModuleManager() : terminate_(false) {}
 
+std::string ModuleManager::version() { return {ALLPIX_PROJECT_VERSION}; }
+
 /**
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
@@ -698,6 +700,28 @@ void ModuleManager::initialize() {
         static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count());
 }
 
+void ModuleManager::pause(bool pause) {
+    // Without thread pool, there is no pause
+    if(thread_pool_ == nullptr) {
+        return;
+    }
+    // Set the pause status of the thread pool
+    thread_pool_->setPaused(pause);
+}
+
+bool ModuleManager::isPaused() {
+    // Without thread pool there is no pause
+    if(thread_pool_ == nullptr) {
+        return false;
+    }
+    // Check if thread pool is paused
+    return thread_pool_->isPaused();
+}
+
+std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> ModuleManager::getEventCounts() const {
+    return {events_total_, events_finished_, events_buffered_, events_aborted_};
+}
+
 /**
  * Initializes the thread pool and executes each event in parallel.
  */
@@ -753,10 +777,8 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
     auto start_time = std::chrono::steady_clock::now();
 
     // Push all events to the thread pool
-    std::atomic<uint64_t> finished_events{0};
-    std::atomic<uint64_t> aborted_events{0};
     global_config.setDefault<uint64_t>("number_of_events", 1U);
-    auto number_of_events = global_config.get<uint64_t>("number_of_events");
+    events_total_ = global_config.get<uint64_t>("number_of_events");
 
     // Skip first N events and discard their event seed from the seeder engine:
     auto skip_events = global_config.get<uint64_t>("skip_events", 0);
@@ -770,10 +792,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
     std::atomic_bool stop_requested = false;
     LOG(STATUS) << "Starting event loop";
-    for(uint64_t i = 1 + skip_events; i <= number_of_events + skip_events; i++) {
+    for(uint64_t i = 1 + skip_events; i <= events_total_ + skip_events; i++) {
         // Check if run was aborted and stop pushing extra events to the threadpool
         if(stop_token.stop_requested() || stop_requested) {
-            LOG(INFO) << "Interrupting event loop after " << finished_events << " events because of request to terminate";
+            LOG(INFO) << "Interrupting event loop after " << this->events_finished_
+                      << " events because of request to terminate";
             thread_pool_->destroy();
             break;
         }
@@ -783,17 +806,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-        auto event_function_with_module = [this,
-                                           plot,
-                                           number_of_events,
-                                           event_num = i,
-                                           event_seed = seed,
-                                           &stop_requested,
-                                           &finished_events,
-                                           &aborted_events](std::shared_ptr<Event> event,
-                                                            ModuleList::iterator module_iter,
-                                                            int64_t event_time,
-                                                            auto&& self_func) mutable -> void {
+        auto event_function_with_module =
+            [this, plot, event_num = i, event_seed = seed, &stop_requested](std::shared_ptr<Event> event,
+                                                                            ModuleList::iterator module_iter,
+                                                                            int64_t event_time,
+                                                                            auto&& self_func) mutable -> void {
             // The RNG to be used by all events running on this thread
             static thread_local RandomNumberGenerator random_engine;
 
@@ -867,7 +884,7 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
 
                 if(abort) {
                     // Break module execution loop:
-                    aborted_events++;
+                    this->events_aborted_++;
                     break;
                 }
 
@@ -880,9 +897,10 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
                     auto event_function = std::bind(self_func, event, module_iter, event_time, self_func); // NOLINT
                     auto future = thread_pool_->submit(event->number, event_function, false);
                     assert(future.valid() || !thread_pool_->valid());
-                    auto buffered_events = thread_pool_->bufferedQueueSize();
-                    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
-                                                       << " of " << number_of_events << " events";
+                    this->events_buffered_ = thread_pool_->bufferedQueueSize();
+                    LOG_PROGRESS(STATUS, "EVENT_LOOP")
+                        << "Buffered " << this->events_buffered_ << ", finished " << this->events_finished_ << " of "
+                        << this->events_total_ << " events";
                     return;
                 }
 
@@ -894,15 +912,15 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
             thread_pool_->markComplete(event->number);
             LOG(INFO) << "Finished event " << event_num << " with seed " << event_seed;
 
-            auto buffered_events = thread_pool_->bufferedQueueSize();
+            this->events_buffered_ = thread_pool_->bufferedQueueSize();
             if(plot) {
-                this->buffer_fill_level_->Fill(static_cast<double>(buffered_events));
+                this->buffer_fill_level_->Fill(static_cast<double>(this->events_buffered_));
                 event_time_->Fill(static_cast<double>(event_time) * 1e-9);
             }
 
-            finished_events++;
-            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << buffered_events << ", finished " << finished_events
-                                               << " of " << number_of_events << " events";
+            this->events_finished_++;
+            LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Buffered " << this->events_buffered_ << ", finished "
+                                               << this->events_finished_ << " of " << this->events_total_ << " events";
         };
 
         auto event_function =
@@ -921,11 +939,11 @@ void ModuleManager::run(RandomNumberGenerator& seeder, const std::stop_token& st
     // Check exception for last events
     thread_pool_->checkException();
 
-    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << finished_events << " events";
-    global_config.set<uint64_t>("number_of_events", finished_events);
+    LOG_PROGRESS(STATUS, "EVENT_LOOP") << "Finished run of " << events_finished_ << " events";
+    global_config.set<uint64_t>("number_of_events", events_finished_);
 
-    if(aborted_events > 0) {
-        LOG(WARNING) << "Aborted " << aborted_events << " events in this run";
+    if(this->events_aborted_ > 0) {
+        LOG(WARNING) << "Aborted " << this->events_aborted_ << " events in this run";
     }
 
     auto end_time = std::chrono::steady_clock::now();

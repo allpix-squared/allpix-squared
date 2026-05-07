@@ -100,10 +100,38 @@ namespace allpix {
         void run(RandomNumberGenerator& seeder, const std::stop_token& stop_token);
 
         /**
+         * @brief Pause the current simulation run
+         * @details Halts the simulation after completing the current module step. Only has an effect during run.
+         *
+         * @param pause True to pause, false to resume
+         */
+        void pause(bool pause);
+
+        /**
+         * @brief Check the current pause status of the simulation
+         * @return True if the simulation is paused, false otherwise
+         */
+        bool isPaused();
+
+        /**
          * @brief Finalize all modules after the event sequence
          * @warning Should be called after the \ref ModuleManager::initialize "run function"
          */
         void finalize();
+
+        /**
+         * @brief Retrieve current event counts
+         * @details This returns the total number of events to simulate, the number of currently finished events, the number
+         * of events in the buffer and the number of aborted events, in this order.
+         * @return Tuple with the number of total, finished, buffered and aborted events
+         */
+        std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> getEventCounts() const;
+
+        /**
+         * @brief Static method to return the Allpix Squared version of this manager
+         * @return Allpix Squared version
+         */
+        static std::string version();
 
     private:
         /**
@@ -171,6 +199,12 @@ namespace allpix {
 
         // The thread pool used in the run method
         std::unique_ptr<ThreadPool> thread_pool_{nullptr};
+
+        // Event counters
+        std::atomic<uint64_t> events_total_;
+        std::atomic<uint64_t> events_buffered_;
+        std::atomic<uint64_t> events_finished_;
+        std::atomic<uint64_t> events_aborted_;
 
         // User defined multithreading flags and parameters from configuration
         bool multithreading_flag_{false};

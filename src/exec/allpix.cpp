@@ -45,8 +45,6 @@
 using namespace allpix;
 using namespace std::chrono_literals;
 
-void clean();
-
 std::unique_ptr<Allpix> apx;
 
 // Global variable for signal handler
@@ -220,11 +218,11 @@ int main(int argc, const char* argv[]) {
             }
 
             if(signal_v == SIGABRT || signal_v == SIGQUIT) {
-                LOG(FATAL) << "Aborting!"; // NOLINT(bugprone-lambda-function-name)
+                LOG(FATAL) << "Aborting!";
                 Log::finish();
                 std::quick_exit(134);
             } else if(signal_v != 0) {
-                LOG(STATUS) << "Interrupted! Finishing up active events..."; // NOLINT(bugprone-lambda-function-name)
+                LOG(STATUS) << "Interrupted! Finishing up active events...";
                 apx->interrupt();
             }
         });

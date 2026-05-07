@@ -234,6 +234,22 @@ namespace allpix {
         void wait();
 
         /**
+         * @brief Pause or resume all worker threads.
+         * @details When paused, workers finish their current task and then block before picking up the next one. Calling
+         *          with `pause = false` resumes all workers.
+         *
+         * @warning Calling wait() while the pool is paused will deadlock, because
+         *          workers never drain the queue. Always resume before wait().
+         * @param pause True to pause, false to resume.
+         */
+        void setPaused(bool pause);
+
+        /**
+         * @brief Returns true if the pool is currently paused, false otherwise.
+         */
+        bool isPaused() const { return paused_.load(std::memory_order_acquire); }
+
+        /**
          * @brief Invalidate all queues and joins all running threads when the pool is destroyed
          */
         void destroy();
@@ -284,6 +300,7 @@ namespace allpix {
         std::function<void()> finalize_function_;
 
         std::atomic_bool done_{false};
+        std::atomic_bool paused_{false};
 
         std::atomic<unsigned int> run_cnt_{0};
         mutable std::mutex run_mutex_;
