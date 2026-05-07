@@ -65,7 +65,7 @@ using namespace allpix;
 
 ModuleManager::ModuleManager() : terminate_(false) {}
 
-std::string ModuleManager::version() { return std::string(ALLPIX_PROJECT_VERSION); }
+std::string ModuleManager::version() { return {ALLPIX_PROJECT_VERSION}; }
 
 /**
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
