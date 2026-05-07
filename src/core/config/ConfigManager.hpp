@@ -13,6 +13,7 @@
 #define ALLPIX_CONFIG_MANAGER_H
 
 #include <filesystem>
+#include <list>
 #include <set>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ namespace allpix {
          * @param global List of sections representing the global configuration (excluding the empty header section)
          * @param ignore List of sections that should be ignored
          */
-        explicit ConfigManager(const Configuration& header,
+        explicit ConfigManager(Configuration header,
                                const std::vector<Configuration>& modules,
                                std::initializer_list<std::string> global = {},
                                std::initializer_list<std::string> ignore = {"Ignore"});

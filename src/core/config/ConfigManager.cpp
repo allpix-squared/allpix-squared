@@ -32,11 +32,11 @@ using namespace allpix;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(const Configuration& header,
+ConfigManager::ConfigManager(Configuration header,
                              const std::vector<Configuration>& modules,
                              std::initializer_list<std::string> global,
                              std::initializer_list<std::string> ignore)
-    : global_config_(header) {
+    : global_config_(std::move(header)) {
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
