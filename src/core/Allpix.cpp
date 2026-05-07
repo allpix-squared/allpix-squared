@@ -52,8 +52,8 @@ using namespace allpix;
 Allpix::Allpix(std::string config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
-    : has_run_(false), msg_(std::make_unique<Messenger>()), mod_mgr_(std::make_unique<ModuleManager>()),
-      geo_mgr_(std::make_unique<GeometryManager>()) {
+    : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
+      mod_mgr_(std::make_unique<ModuleManager>()) {
 
     // Load the global configuration
     conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
