@@ -39,11 +39,13 @@ namespace allpix {
     public:
         /**
          * @brief Construct the configuration manager
-         * @param file_name Path to the main configuration file
+         * @param header Header configuration section
+         * @param modules Vector of module configuration sections
          * @param global List of sections representing the global configuration (excluding the empty header section)
          * @param ignore List of sections that should be ignored
          */
-        explicit ConfigManager(std::filesystem::path file_name,
+        explicit ConfigManager(const Configuration& header,
+                               const std::vector<Configuration>& modules,
                                std::initializer_list<std::string> global = {},
                                std::initializer_list<std::string> ignore = {"Ignore"});
         /**

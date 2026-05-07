@@ -45,7 +45,7 @@ namespace allpix {
          * @param module_options List of extra configuration options for modules
          * @param detector_options List of extra configuration options for the geometry setup
          */
-        explicit Allpix(std::string config_file_name,
+        explicit Allpix(std::filesystem::path config_file_name,
                         const std::vector<std::string>& module_options = std::vector<std::string>(),
                         const std::vector<std::string>& detector_options = std::vector<std::string>());
 

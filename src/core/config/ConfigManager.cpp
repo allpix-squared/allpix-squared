@@ -33,32 +33,19 @@ using namespace allpix;
 /**
  * @throws ConfigFileUnavailableError If the main configuration file cannot be accessed
  */
-ConfigManager::ConfigManager(std::filesystem::path file_name,
+ConfigManager::ConfigManager(const Configuration& header,
+                             const std::vector<Configuration>& modules,
                              std::initializer_list<std::string> global,
-                             std::initializer_list<std::string> ignore) {
-    // Check if the file exists
-    std::ifstream file(file_name);
-    if(!file || !std::filesystem::is_regular_file(file_name)) {
-        throw ConfigFileUnavailableError(file_name);
-    }
-
-    // Convert main file to absolute path
-    file_name = std::filesystem::canonical(file_name);
-    LOG(TRACE) << "Reading main configuration";
-
-    // Read the file
-    ConfigReader const reader(file, std::move(file_name));
+                             std::initializer_list<std::string> ignore)
+    : global_config_(header) {
 
     // Convert all global and ignored names to lower case and store them
     auto lowercase = [](const std::string& in) { return allpix::transform(in, ::tolower); };
     std::transform(global.begin(), global.end(), std::inserter(global_names_, global_names_.end()), lowercase);
     std::transform(ignore.begin(), ignore.end(), std::inserter(ignore_names_, ignore_names_.end()), lowercase);
 
-    // Initialize global base configuration
-    global_config_ = reader.getHeaderConfiguration();
-
-    // Store all the configurations read
-    for(auto& config : reader.getConfigurations()) {
+    // Store all module configurations
+    for(const auto& config : modules) {
         // Skip all ignored sections
         std::string const config_name = allpix::transform(config.getName(), ::tolower);
         if(ignore_names_.find(config_name) != ignore_names_.end()) {

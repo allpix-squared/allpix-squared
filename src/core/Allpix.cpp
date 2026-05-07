@@ -49,14 +49,26 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name,
+Allpix::Allpix(std::filesystem::path config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
     : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
       mod_mgr_(std::make_unique<ModuleManager>()) {
 
+    // Check if the configuration file exists
+    std::ifstream file(config_file_name);
+    if(!file || !std::filesystem::is_regular_file(config_file_name)) {
+        throw ConfigFileUnavailableError(config_file_name);
+    }
+
+    // Convert main file to absolute path and read the file
+    LOG(TRACE) << "Reading main configuration";
+    config_file_name = std::filesystem::canonical(config_file_name);
+    ConfigReader const reader(file, std::move(config_file_name));
+
     // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
+    conf_mgr_ = std::make_unique<ConfigManager>(reader.getHeaderConfiguration(),
+                                                reader.getConfigurations(),
                                                 std::initializer_list<std::string>({"Allpix", ""}),
                                                 std::initializer_list<std::string>({"Ignore"}));
 
