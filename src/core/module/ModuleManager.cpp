@@ -51,6 +51,7 @@
 #include "core/utils/log.h"
 #include "core/utils/prng.h"
 #include "core/utils/unit.h"
+#include "tools/HistogramManager.h"
 #include "tools/ROOT.h"
 
 // Common prefix for all modules
@@ -103,6 +104,10 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
         throw RuntimeError("Cannot create main ROOT file " + path.string());
     }
     modules_file_->cd();
+
+    auto& hisman = HistogramManager::getInstance();
+    hisman.openFile(global_config.get<std::string>("histogram_file", "histograms"),
+                    global_config.get<bool>("deny_overwrite", false));
 
     // Loop through all non-global configurations
     for(auto& config : configs) {
@@ -1033,6 +1038,10 @@ void ModuleManager::finalize() {
             module_event_time_[module.get()]->Write();
         }
     }
+
+    // Get instance of histogram registry and finalize histograms
+    auto& hisman = HistogramManager::getInstance();
+    hisman.finalize();
 
     // Close module ROOT file
     modules_file_->Close();
