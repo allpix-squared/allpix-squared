@@ -82,7 +82,10 @@ namespace allpix {
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load(ConfigManager* conf_manager, RandomNumberGenerator& seeder);
+        void load(const std::list<Configuration>& detectors,
+                  const std::vector<std::filesystem::path>& model_paths,
+                  const std::filesystem::path& config_file_path,
+                  RandomNumberGenerator& seeder);
 
         /**
          * @brief Returns the list of standard paths where models should be searched in

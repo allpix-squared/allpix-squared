@@ -207,7 +207,11 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(conf_mgr_.get(), seeder_core_);
+    std::vector<std::filesystem::path> model_paths{};
+    if(global_config.has("model_paths")) {
+        model_paths = global_config.getPathArray("model_paths", true);
+    }
+    geo_mgr_->load(conf_mgr_->getDetectorConfigurations(), model_paths, global_config.getFilePath(), seeder_core_);
 
     // Load the modules from the configuration
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
