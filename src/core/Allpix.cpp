@@ -63,11 +63,18 @@ Allpix::Allpix(std::string config_file_name,
     // Load and apply the provided module options
     conf_mgr_->loadModuleOptions(module_options);
 
-    // Load and apply the provided detector options
-    conf_mgr_->loadDetectorOptions(detector_options);
-
     // Fetch the global configuration
     Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Read the detector file and load it to the config manager
+    const auto detector_file_name = global_config.getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+    std::ifstream detector_file(detector_file_name);
+    ConfigReader const detector_reader(detector_file, detector_file_name);
+    conf_mgr_->loadDetectors(detector_reader.getConfigurations());
+
+    // Load and apply the provided detector options
+    conf_mgr_->loadDetectorOptions(detector_options);
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;

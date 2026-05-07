@@ -75,19 +75,10 @@ ConfigManager::ConfigManager(std::filesystem::path file_name,
     }
 }
 
-void ConfigManager::parse_detectors() {
-    // If detector configurations have been parsed already, skip:
-    if(!detector_configs_.empty()) {
-        return;
-    }
-
-    // Reading detector file
-    std::string const detector_file_name = global_config_.getPath("detectors_file", true);
-    LOG(TRACE) << "Reading detector configuration";
-
-    std::ifstream detector_file(detector_file_name);
-    ConfigReader const detector_reader(detector_file, detector_file_name);
-    auto detector_configs = detector_reader.getConfigurations();
+/**
+ * Load the detector configurations
+ */
+void ConfigManager::loadDetectors(const std::vector<Configuration>& detector_configs) {
     detector_configs_ = std::list<Configuration>(detector_configs.begin(), detector_configs.end());
 }
 
@@ -131,7 +122,6 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
     }
 
     // Apply detector options
-    parse_detectors();
     for(auto& config : detector_configs_) {
         optionsApplied = detector_option_parser.applyOptions(config.getName(), config) || optionsApplied;
     }
@@ -142,10 +132,7 @@ bool ConfigManager::loadDetectorOptions(const std::vector<std::string>& options)
 /**
  * The list of detector configurations is read from the configuration defined in 'detector_file'
  */
-std::list<Configuration>& ConfigManager::getDetectorConfigurations() {
-    parse_detectors();
-    return detector_configs_;
-}
+std::list<Configuration>& ConfigManager::getDetectorConfigurations() { return detector_configs_; }
 
 /**
  * @warning A previously stored configuration is directly invalidated if the same unique name is used again

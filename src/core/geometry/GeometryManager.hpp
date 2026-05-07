@@ -80,6 +80,7 @@ namespace allpix {
          * @brief Loads the geometry from the global configuration
          * @param detector_configs Configuration of the individual detectors
          * @param model_paths List of file paths to search for detector model files
+         * @param config_file_path File path of the main configuration file
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
