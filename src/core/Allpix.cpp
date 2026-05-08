@@ -56,38 +56,11 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
       mod_mgr_(std::make_unique<ModuleManager>()) {
 
-    // Check if the configuration file exists
-    std::ifstream file(config_file_name);
-    if(!file || !std::filesystem::is_regular_file(config_file_name)) {
-        throw ConfigFileUnavailableError(config_file_name);
-    }
-
-    // Convert main file to absolute path and read the file
-    LOG(TRACE) << "Reading main configuration";
-    config_file_name = std::filesystem::canonical(config_file_name);
-    const auto stack_cfg = FileParser::getStack(file, std::move(config_file_name));
-
-    // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(stack_cfg.getHeaderConfiguration(),
-                                                stack_cfg.getConfigurations(),
-                                                std::initializer_list<std::string>({"Allpix", ""}),
-                                                std::initializer_list<std::string>({"Ignore"}));
-
-    // Load and apply the provided module options
-    conf_mgr_->loadModuleOptions(module_options);
+    // Load the configuration from file
+    load_configuration(std::move(config_file_name), module_options, detector_options);
 
     // Fetch the global configuration
-    Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
-
-    // Read the detector file and load it to the config manager
-    auto detector_file_name = global_config.getPath("detectors_file", true);
-    LOG(TRACE) << "Reading detector configuration";
-    std::ifstream detector_file(detector_file_name);
-    const auto stack_geo = FileParser::getStack(detector_file, std::move(detector_file_name));
-    conf_mgr_->loadDetectors(stack_geo.getConfigurations());
-
-    // Load and apply the provided detector options
-    conf_mgr_->loadDetectorOptions(detector_options);
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -127,6 +100,41 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     // Wait for the first detailed messages until level and format are properly set
     LOG(TRACE) << "Global log level is set to " << Log::getStringFromLevel(Log::getReportingLevel());
     LOG(TRACE) << "Global log format is set to " << log_format_string;
+}
+
+void Allpix::load_configuration(std::filesystem::path config_file_name,
+                                const std::vector<std::string>& module_options,
+                                const std::vector<std::string>& detector_options) {
+
+    // Check if the configuration file exists
+    std::ifstream file(config_file_name);
+    if(!file || !std::filesystem::is_regular_file(config_file_name)) {
+        throw ConfigFileUnavailableError(config_file_name);
+    }
+
+    // Convert main file to absolute path and read the file
+    LOG(TRACE) << "Reading main configuration";
+    config_file_name = std::filesystem::canonical(config_file_name);
+    const auto stack_cfg = FileParser::getStack(file, std::move(config_file_name));
+
+    // Load the global configuration
+    conf_mgr_ = std::make_unique<ConfigManager>(stack_cfg.getHeaderConfiguration(),
+                                                stack_cfg.getConfigurations(),
+                                                std::initializer_list<std::string>({"Allpix", ""}),
+                                                std::initializer_list<std::string>({"Ignore"}));
+
+    // Load and apply the provided module options
+    conf_mgr_->loadModuleOptions(module_options);
+
+    // Read the detector file and load it to the config manager
+    auto detector_file_name = conf_mgr_->getGlobalConfiguration().getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+    std::ifstream detector_file(detector_file_name);
+    const auto stack_geo = FileParser::getStack(detector_file, std::move(detector_file_name));
+    conf_mgr_->loadDetectors(stack_geo.getConfigurations());
+
+    // Load and apply the provided detector options
+    conf_mgr_->loadDetectorOptions(detector_options);
 }
 
 /**
@@ -227,14 +235,114 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    std::vector<std::filesystem::path> model_paths{};
-    if(global_config.has("model_paths")) {
-        model_paths = global_config.getPathArray("model_paths", true);
-    }
-    geo_mgr_->load(conf_mgr_->getDetectorConfigurations(), model_paths, global_config.getFilePath(), seeder_core_);
+    load_geometry();
 
     // Load the modules from the configuration
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+}
+
+void Allpix::load_geometry() {
+
+    // Fetch the global configuration
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
+
+    geo_mgr_->loadGeometry(conf_mgr_->getDetectorConfigurations(), seeder_core_);
+
+    // Load model files:
+    LOG(TRACE) << "Loading remaining default models";
+
+    // Get paths to read models from
+    LOG(TRACE) << "Reading model files";
+    const auto model_paths = get_model_paths(global_config.getFilePath());
+
+    // Add all the paths to the reader
+    for(const auto& path : model_paths) {
+        // Check if file or directory
+        if(std::filesystem::is_directory(path)) {
+            for(const auto& entry : std::filesystem::directory_iterator(path)) {
+                if(!entry.is_regular_file()) {
+                    continue;
+                }
+
+                // Accept only with correct model suffix
+                auto sub_path = std::filesystem::canonical(entry);
+                std::string const suffix(ALLPIX_MODEL_SUFFIX);
+                if(sub_path.extension() != suffix) {
+                    continue;
+                }
+
+                // Read model file and add model to list
+                read_model_file(sub_path);
+            }
+        } else {
+            // Always a file because paths are already checked
+            read_model_file(path);
+        }
+    }
+}
+
+std::vector<std::filesystem::path> Allpix::get_model_paths(const std::filesystem::path& config_file_path) {
+
+    std::vector<std::filesystem::path> model_paths{};
+
+    // Fetch the global configuration
+    const auto& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Load the list of standard model paths
+    if(global_config.has("model_paths")) {
+        model_paths = global_config.getPathArray("model_paths", true);
+    }
+
+    if(std::filesystem::is_directory(ALLPIX_MODEL_DIRECTORY)) {
+        model_paths.emplace_back(ALLPIX_MODEL_DIRECTORY);
+        LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
+    }
+    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS"); // NOLINT(concurrency-mt-unsafe)
+    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
+        data_dirs_env = "/usr/local/share/:/usr/share/:";
+    }
+    auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
+    for(auto data_dir : data_dirs) {
+        data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / std::string("models");
+        if(std::filesystem::is_directory(data_dir)) {
+            model_paths.emplace_back(data_dir);
+            LOG(TRACE) << "Registered global model path: " << data_dir;
+        }
+    }
+    if(!config_file_path.empty() && std::filesystem::is_directory(config_file_path.parent_path())) {
+        model_paths.emplace_back(config_file_path.parent_path());
+        LOG(TRACE) << "Registered path of configuration file as model location.";
+    }
+
+    return model_paths;
+}
+
+void Allpix::read_model_file(const std::filesystem::path& path) {
+    auto model_name = path.stem();
+    LOG(TRACE) << "Reading model " << model_name << " in path " << path;
+
+    // Check if we need to look at file at all
+    if(geo_mgr_->hasModel(model_name)) {
+        LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
+        return;
+    }
+    if(!geo_mgr_->needsModel(model_name)) {
+        LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
+        return;
+    }
+
+    try {
+        // Try to parse as config file
+        std::ifstream file(path);
+        const auto stack = FileParser::getStack(file, path);
+
+        // Parse configuration and add model to the config
+        geo_mgr_->addModel(DetectorModel::factory(model_name, stack));
+
+    } catch(const ConfigParseError& e) {
+        // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
+        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << '\n' << e.what();
+    }
 }
 
 /**

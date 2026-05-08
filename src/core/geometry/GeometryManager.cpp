@@ -54,10 +54,7 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by looping over all defined detectors
  */
-void GeometryManager::load(const std::list<Configuration>& detector_configs,
-                           const std::vector<std::filesystem::path>& model_paths,
-                           const std::filesystem::path& config_file_path,
-                           RandomNumberGenerator& seeder) {
+void GeometryManager::loadGeometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder) {
     // Set up a random number generator and seed it with the global seed:
     random_generator_.seed(seeder());
 
@@ -107,31 +104,6 @@ void GeometryManager::load(const std::list<Configuration>& detector_configs,
 
         // Add a link to the detector to add the model later
         nonresolved_models_[geometry_section.get<std::string>("type")].emplace_back(geometry_section, detector.get());
-    }
-
-    // Load the list of standard model paths
-    model_paths_.insert(model_paths_.end(), model_paths.begin(), model_paths.end());
-    LOG(TRACE) << "Registered model paths from configuration.";
-
-    if(std::filesystem::is_directory(ALLPIX_MODEL_DIRECTORY)) {
-        model_paths_.emplace_back(ALLPIX_MODEL_DIRECTORY);
-        LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
-    }
-    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
-    if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
-        data_dirs_env = "/usr/local/share/:/usr/share/:";
-    }
-    auto data_dirs = split<std::filesystem::path>(data_dirs_env, ":");
-    for(auto data_dir : data_dirs) {
-        data_dir /= std::filesystem::path(ALLPIX_PROJECT_NAME) / std::string("models");
-        if(std::filesystem::is_directory(data_dir)) {
-            model_paths_.emplace_back(data_dir);
-            LOG(TRACE) << "Registered global model path: " << data_dir;
-        }
-    }
-    if(!config_file_path.empty() && std::filesystem::is_directory(config_file_path.parent_path())) {
-        model_paths_.emplace_back(config_file_path.parent_path());
-        LOG(TRACE) << "Registered path of configuration file as model location.";
     }
 }
 
@@ -358,67 +330,6 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     return result;
 }
 
-void GeometryManager::load_models() {
-    LOG(TRACE) << "Loading remaining default models";
-
-    // Get paths to read models from
-    std::vector<std::string> const paths = getModelsPath();
-
-    LOG(TRACE) << "Reading model files";
-    // Add all the paths to the reader
-    for(auto& path : paths) {
-        // Check if file or directory
-        if(std::filesystem::is_directory(path)) {
-            for(const auto& entry : std::filesystem::directory_iterator(path)) {
-                if(!entry.is_regular_file()) {
-                    continue;
-                }
-
-                // Accept only with correct model suffix
-                auto sub_path = std::filesystem::canonical(entry);
-                std::string const suffix(ALLPIX_MODEL_SUFFIX);
-                if(sub_path.extension() != suffix) {
-                    continue;
-                }
-
-                // Read model file and add model to list
-                read_model_file(sub_path);
-            }
-        } else {
-            // Always a file because paths are already checked
-            read_model_file(path);
-        }
-    }
-}
-
-void GeometryManager::read_model_file(const std::filesystem::path& path) {
-    auto model_name = path.stem();
-    LOG(TRACE) << "Reading model " << model_name << " in path " << path;
-
-    // Check if we need to look at file at all
-    if(hasModel(model_name)) {
-        LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
-        return;
-    }
-    if(!needsModel(model_name)) {
-        LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
-        return;
-    }
-
-    try {
-        // Try to parse as config file
-        std::ifstream file(path);
-        const auto stack = FileParser::getStack(file, path);
-
-        // Parse configuration and add model to the config
-        addModel(DetectorModel::factory(model_name, stack));
-
-    } catch(const ConfigParseError& e) {
-        // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
-        LOG(ERROR) << "Skipping invalid model file \"" << path << "\":" << '\n' << e.what();
-    }
-}
-
 /**
  * After closing the geometry new parts of the geometry cannot be added anymore. All the models for the detectors in the
  * configuration are resolved to requested type (and an error is thrown if this is not possible). Also if a parameter is
@@ -426,9 +337,6 @@ void GeometryManager::read_model_file(const std::filesystem::path& path) {
  */
 void GeometryManager::close_geometry() {
     LOG(TRACE) << "Starting geometry closing procedure";
-
-    // Load all standard models
-    load_models();
 
     // Try to resolve the missing models
     for(auto& [name, config_detectors] : nonresolved_models_) {
