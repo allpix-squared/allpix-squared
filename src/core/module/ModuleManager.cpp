@@ -70,7 +70,10 @@ std::string ModuleManager::version() { return {ALLPIX_PROJECT_VERSION}; }
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
  */
-void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
+void ModuleManager::load(Messenger* messenger,
+                         ConfigManager* conf_manager,
+                         GeometryManager* geo_manager,
+                         HistogramManager* histogram_manager) {
     // Store config manager and get configurations
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
@@ -86,9 +89,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     // Store the messenger
     messenger_ = messenger;
 
-    auto& hisman = HistogramManager::getInstance();
-    hisman.openFile(global_config.get<std::string>("histogram_file", "histograms"),
-                    global_config.get<bool>("deny_overwrite", false));
+    histogram_manager_ = histogram_manager;
 
     // Loop through all non-global configurations
     for(auto& config : configs) {
@@ -623,8 +624,6 @@ void ModuleManager::initialize() {
             CreateHistogram<TH1D>("Performance", "event_time", "processing time per event;time [s];# events", 1000, 0, 10);
     }
 
-    auto& histogram_manager = HistogramManager::getInstance();
-
     auto start_time = std::chrono::steady_clock::now();
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initializing " << modules_.size() << " module instantiations";
     for(auto& module : modules_) {
@@ -633,13 +632,16 @@ void ModuleManager::initialize() {
         // Pass the config manager to this instance
         module->set_config_manager(conf_manager_);
 
+        // Pass the histogram manager to this instance
+        module->set_histogram_manager(histogram_manager_);
+
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration(), "I:");
         // Change to our ROOT directory
-        module->set_root_directory(histogram_manager.register_module_directory(module->get_configuration().getName(),
-                                                                               module->get_identifier().getIdentifier()));
+        module->set_root_directory(histogram_manager_->register_module_directory(module->get_configuration().getName(),
+                                                                                 module->get_identifier().getIdentifier()));
         // Init module
         module->initialize();
         // Reset logging
@@ -969,15 +971,15 @@ void ModuleManager::finalize() {
         module->set_root_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
+        // Remove the histogram manager
+        module->set_histogram_manager(nullptr);
         set_module_after(std::move(old_settings));
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    // Get instance of histogram registry and finalize histograms
-    auto& histogram_manager = HistogramManager::getInstance();
-    histogram_manager.finalize();
+    histogram_manager_->finalize();
 
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();

@@ -127,8 +127,7 @@ namespace allpix {
          */
         template <typename T, class... ARGS> std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
             // Get instance of histogram registry
-            auto& histogram_manager = HistogramManager::getInstance();
-            return histogram_manager.register_histogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
+            return histogram_manager_->register_histogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
         };
 
         /**
@@ -137,9 +136,8 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, ARGS&&... args) {
             // Get instance of histogram registry
-            auto& histogram_manager = HistogramManager::getInstance();
-            auto full_directory = histogram_manager.register_subdirectory(this->getROOTDirectory(), subdirectory);
-            return histogram_manager.register_histogram<T>(full_directory, std::forward<ARGS>(args)...);
+            auto full_directory = histogram_manager_->register_subdirectory(this->getROOTDirectory(), subdirectory);
+            return histogram_manager_->register_histogram<T>(full_directory, std::forward<ARGS>(args)...);
         };
 
         /**
@@ -238,6 +236,13 @@ namespace allpix {
          */
         void set_config_manager(ConfigManager* conf_manager);
         ConfigManager* conf_manager_{nullptr};
+
+        /**
+         * @brief Set the link to the histogram manager
+         * @param histogram_manager Pointer to the histogram manager holding all histograms
+         */
+        void set_histogram_manager(HistogramManager* histogram_manager);
+        HistogramManager* histogram_manager_{nullptr};
 
         /**
          * @brief Add a messenger delegate to this instantiation

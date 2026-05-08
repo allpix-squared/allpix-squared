@@ -150,6 +150,7 @@ namespace allpix {
         std::unique_ptr<ConfigManager> conf_mgr_;
         std::unique_ptr<GeometryManager> geo_mgr_{};
         std::unique_ptr<ModuleManager> mod_mgr_;
+        std::unique_ptr<HistogramManager> histo_mgr_{};
 
         // Random generators
         RandomNumberGenerator seeder_modules_;

@@ -237,8 +237,12 @@ void Allpix::load() {
     // Load the geometry
     load_geometry();
 
+    // Get a histogram manager
+    histo_mgr_ = std::make_unique<HistogramManager>(global_config.get<std::string>("histogram_file", "histograms"),
+                                                    global_config.get<bool>("deny_overwrite", false));
+
     // Load the modules from the configuration
-    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), histo_mgr_.get());
 }
 
 void Allpix::load_geometry() {

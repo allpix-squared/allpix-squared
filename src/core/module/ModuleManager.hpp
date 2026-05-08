@@ -83,7 +83,10 @@ namespace allpix {
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
          */
-        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
+        void load(Messenger* messenger,
+                  ConfigManager* conf_manager,
+                  GeometryManager* geo_manager,
+                  HistogramManager* histogram_manager);
 
         /**
          * @brief Initialize all modules before the event sequence
@@ -176,8 +179,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) {
             // Get instance of histogram registry
-            auto& histogram_manager = HistogramManager::getInstance();
-            return histogram_manager.register_histogram_with_path<T>(path, std::forward<ARGS>(args)...);
+            return histogram_manager_->register_histogram_with_path<T>(path, std::forward<ARGS>(args)...);
         };
 
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
@@ -186,6 +188,8 @@ namespace allpix {
         IdentifierToModuleMap id_to_module_;
 
         ConfigManager* conf_manager_{};
+
+        HistogramManager* histogram_manager_{};
 
         std::unique_ptr<TFile> modules_file_;
 
