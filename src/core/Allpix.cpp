@@ -49,25 +49,44 @@ using namespace allpix;
  * - Set the log level and log format as requested.
  * - Load the detector configuration and parse it
  */
-Allpix::Allpix(std::string config_file_name,
+Allpix::Allpix(std::filesystem::path config_file_name,
                const std::vector<std::string>& module_options,
                const std::vector<std::string>& detector_options)
     : has_run_(false), msg_(std::make_unique<Messenger>()), geo_mgr_(std::make_unique<GeometryManager>()),
       mod_mgr_(std::make_unique<ModuleManager>()) {
 
+    // Check if the configuration file exists
+    std::ifstream file(config_file_name);
+    if(!file || !std::filesystem::is_regular_file(config_file_name)) {
+        throw ConfigFileUnavailableError(config_file_name);
+    }
+
+    // Convert main file to absolute path and read the file
+    LOG(TRACE) << "Reading main configuration";
+    config_file_name = std::filesystem::canonical(config_file_name);
+    ConfigReader const reader(file, std::move(config_file_name));
+
     // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(std::move(config_file_name),
+    conf_mgr_ = std::make_unique<ConfigManager>(reader.getHeaderConfiguration(),
+                                                reader.getConfigurations(),
                                                 std::initializer_list<std::string>({"Allpix", ""}),
                                                 std::initializer_list<std::string>({"Ignore"}));
 
     // Load and apply the provided module options
     conf_mgr_->loadModuleOptions(module_options);
 
-    // Load and apply the provided detector options
-    conf_mgr_->loadDetectorOptions(detector_options);
-
     // Fetch the global configuration
     Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
+
+    // Read the detector file and load it to the config manager
+    const auto detector_file_name = global_config.getPath("detectors_file", true);
+    LOG(TRACE) << "Reading detector configuration";
+    std::ifstream detector_file(detector_file_name);
+    ConfigReader const detector_reader(detector_file, detector_file_name);
+    conf_mgr_->loadDetectors(detector_reader.getConfigurations());
+
+    // Load and apply the provided detector options
+    conf_mgr_->loadDetectorOptions(detector_options);
 
     // Set the log level from config if not specified earlier
     std::string log_level_string;
@@ -207,7 +226,11 @@ void Allpix::load() {
     set_style();
 
     // Load the geometry
-    geo_mgr_->load(conf_mgr_.get(), seeder_core_);
+    std::vector<std::filesystem::path> model_paths{};
+    if(global_config.has("model_paths")) {
+        model_paths = global_config.getPathArray("model_paths", true);
+    }
+    geo_mgr_->load(conf_mgr_->getDetectorConfigurations(), model_paths, global_config.getFilePath(), seeder_core_);
 
     // Load the modules from the configuration
     mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
