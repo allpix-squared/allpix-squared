@@ -67,11 +67,6 @@ namespace allpix {
          */
         void run(Event*) override;
 
-        /**
-         * @brief Finalize and write histograms
-         */
-        void finalize() override;
-
     private:
         // General module members
         GeometryManager* geo_manager_;

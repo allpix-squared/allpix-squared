@@ -848,12 +848,11 @@ void GenericPropagationModule::finalize() {
     if(output_plots_) {
         group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
     }
-}
 
-long double const average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
-                                 std::max(1U, static_cast<unsigned int>(total_propagated_charges_));
-LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
-          << " steps in average time of " << Units::display(average_time, "ns");
-LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
-          << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
+    long double const average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /
+                                     std::max(1U, static_cast<unsigned int>(total_propagated_charges_));
+    LOG(INFO) << "Propagated total of " << total_propagated_charges_ << " charges in " << total_steps_
+              << " steps in average time of " << Units::display(average_time, "ns");
+    LOG(INFO) << deposits_exceeding_max_groups_ * 100.0 / total_deposits_ << "% of deposits have charge exceeding the "
+              << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
 }
