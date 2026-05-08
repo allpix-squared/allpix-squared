@@ -155,8 +155,8 @@ void DetectorHistogrammerModule::initialize() {
 
     std::string const charge_map_title =
         "Pixel charge map (" + detector_->getName() + ");x (pixels);y (pixels); charge [ke]";
-    charge_map = CreateHistogram<TH2D>(
-        "charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
+    charge_map = CreateHistogramSubdirectory<TH2D>(
+        "charge", "charge_map", charge_map_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
 
     // Create histogram of cluster map
     std::string const cluster_map_title = "Cluster map (" + detector_->getName() + ");x (pixels);y (pixels); clusters";
@@ -166,7 +166,8 @@ void DetectorHistogrammerModule::initialize() {
     // Create histogram of cluster map
     std::string const cluster_size_map_local_title =
         "Cluster size as function of MCParticle impact position (" + detector_->getName() + ");x [mm];y [mm]";
-    cluster_size_map_local = CreateHistogram<TProfile2D>(
+    cluster_size_map_local = CreateHistogramSubdirectory<TProfile2D>(
+        "cluster_size",
         "cluster_size_map_local",
         cluster_size_map_local_title.c_str(),
         static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
@@ -178,72 +179,79 @@ void DetectorHistogrammerModule::initialize() {
 
     std::string const cluster_size_map_title =
         "Cluster size as function of in-pixel impact position (" + detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_map = CreateHistogram<TProfile2D>("cluster_size_map",
-                                                   cluster_size_map_title.c_str(),
-                                                   inpixel_bins.x(),
-                                                   -pitch_x / 2,
-                                                   pitch_x / 2,
-                                                   inpixel_bins.y(),
-                                                   -pitch_y / 2,
-                                                   pitch_y / 2);
+    cluster_size_map = CreateHistogramSubdirectory<TProfile2D>("cluster_size",
+                                                               "cluster_size_map",
+                                                               cluster_size_map_title.c_str(),
+                                                               inpixel_bins.x(),
+                                                               -pitch_x / 2,
+                                                               pitch_x / 2,
+                                                               inpixel_bins.y(),
+                                                               -pitch_y / 2,
+                                                               pitch_y / 2);
 
     std::string const cluster_size_x_map_title = "Cluster size in X as function of in-pixel impact position (" +
                                                  detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_x_map = CreateHistogram<TProfile2D>("cluster_size_x_map",
-                                                     cluster_size_x_map_title.c_str(),
-                                                     inpixel_bins.x(),
-                                                     -pitch_x / 2,
-                                                     pitch_x / 2,
-                                                     inpixel_bins.y(),
-                                                     -pitch_y / 2,
-                                                     pitch_y / 2);
+    cluster_size_x_map = CreateHistogramSubdirectory<TProfile2D>("cluster_size",
+                                                                 "cluster_size_x_map",
+                                                                 cluster_size_x_map_title.c_str(),
+                                                                 inpixel_bins.x(),
+                                                                 -pitch_x / 2,
+                                                                 pitch_x / 2,
+                                                                 inpixel_bins.y(),
+                                                                 -pitch_y / 2,
+                                                                 pitch_y / 2);
 
     std::string const cluster_size_y_map_title = "Cluster size in Y as function of in-pixel impact position (" +
                                                  detector_->getName() + ");x%pitch [#mum];y%pitch [#mum]";
-    cluster_size_y_map = CreateHistogram<TProfile2D>("cluster_size_y_map",
-                                                     cluster_size_y_map_title.c_str(),
-                                                     inpixel_bins.x(),
-                                                     -pitch_x / 2,
-                                                     pitch_x / 2,
-                                                     inpixel_bins.y(),
-                                                     -pitch_y / 2,
-                                                     pitch_y / 2);
+    cluster_size_y_map = CreateHistogramSubdirectory<TProfile2D>("cluster_size",
+                                                                 "cluster_size_y_map",
+                                                                 cluster_size_y_map_title.c_str(),
+                                                                 inpixel_bins.x(),
+                                                                 -pitch_x / 2,
+                                                                 pitch_x / 2,
+                                                                 inpixel_bins.y(),
+                                                                 -pitch_y / 2,
+                                                                 pitch_y / 2);
 
     // Charge maps:
     std::string const cluster_charge_map_title = "Cluster charge as function of in-pixel impact position (" +
                                                  detector_->getName() +
                                                  ");x%pitch [#mum];y%pitch [#mum];<cluster charge> [ke]";
-    cluster_charge_map = CreateHistogram<TProfile2D>("cluster_charge_map",
-                                                     cluster_charge_map_title.c_str(),
-                                                     inpixel_bins.x(),
-                                                     -pitch_x / 2,
-                                                     pitch_x / 2,
-                                                     inpixel_bins.y(),
-                                                     -pitch_y / 2,
-                                                     pitch_y / 2);
+    cluster_charge_map = CreateHistogramSubdirectory<TProfile2D>("charge",
+                                                                 "cluster_charge_map",
+                                                                 cluster_charge_map_title.c_str(),
+                                                                 inpixel_bins.x(),
+                                                                 -pitch_x / 2,
+                                                                 pitch_x / 2,
+                                                                 inpixel_bins.y(),
+                                                                 -pitch_y / 2,
+                                                                 pitch_y / 2);
     std::string const seed_charge_map_title = "Seed pixel charge as function of in-pixel impact position (" +
                                               detector_->getName() +
                                               ");x%pitch [#mum];y%pitch [#mum];<seed pixel charge> [ke]";
-    seed_charge_map = CreateHistogram<TProfile2D>("seed_charge_map",
-                                                  seed_charge_map_title.c_str(),
-                                                  inpixel_bins.x(),
-                                                  -pitch_x / 2,
-                                                  pitch_x / 2,
-                                                  inpixel_bins.y(),
-                                                  -pitch_y / 2,
-                                                  pitch_y / 2);
+    seed_charge_map = CreateHistogramSubdirectory<TProfile2D>("charge",
+                                                              "seed_charge_map",
+                                                              seed_charge_map_title.c_str(),
+                                                              inpixel_bins.x(),
+                                                              -pitch_x / 2,
+                                                              pitch_x / 2,
+                                                              inpixel_bins.y(),
+                                                              -pitch_y / 2,
+                                                              pitch_y / 2);
 
     // Create cluster size plots, preventing unphysically low bin numbers
     int const max_cluster_size = std::max(10, xpixels * ypixels / 10);
     std::string const cluster_size_title = "Cluster size (" + detector_->getName() + ");cluster size [px];clusters";
-    cluster_size =
-        CreateHistogram<TH1D>("cluster_size", cluster_size_title.c_str(), max_cluster_size, 0.5, max_cluster_size + 0.5);
+    cluster_size = CreateHistogramSubdirectory<TH1D>(
+        "cluster_size", "cluster_size", cluster_size_title.c_str(), max_cluster_size, 0.5, max_cluster_size + 0.5);
 
     std::string const cluster_size_x_title = "Cluster size in X (" + detector_->getName() + ");cluster size x [px];clusters";
-    cluster_size_x = CreateHistogram<TH1D>("cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
+    cluster_size_x = CreateHistogramSubdirectory<TH1D>(
+        "cluster_size", "cluster_size_x", cluster_size_x_title.c_str(), xpixels, 0.5, xpixels + 0.5);
 
     std::string const cluster_size_y_title = "Cluster size in Y (" + detector_->getName() + ");cluster size y [px];clusters";
-    cluster_size_y = CreateHistogram<TH1D>("cluster_size_y", cluster_size_y_title.c_str(), ypixels, 0.5, ypixels + 0.5);
+    cluster_size_y = CreateHistogramSubdirectory<TH1D>(
+        "cluster_size", "cluster_size_y", cluster_size_y_title.c_str(), ypixels, 0.5, ypixels + 0.5);
 
     // Create event size plot
     std::string const event_size_title = "Pixel hits per event (" + detector_->getName() + ");# pixels;events";
@@ -253,112 +261,126 @@ void DetectorHistogrammerModule::initialize() {
     // Create residual plots
     std::string const residual_x_title =
         "Residual in X (" + detector_->getName() + ");x_{track} - x_{cluster} [#mum];events";
-    residual_x = CreateHistogram<TH1D>(
-        "residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
+    residual_x = CreateHistogramSubdirectory<TH1D>(
+        "residuals", "residual_x", residual_x_title.c_str(), static_cast<int>(12 * pitch_x), -2 * pitch_x, 2 * pitch_x);
     std::string const residual_y_title =
         "Residual in Y (" + detector_->getName() + ");y_{track} - y_{cluster} [#mum];events";
-    residual_y = CreateHistogram<TH1D>(
-        "residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
+    residual_y = CreateHistogramSubdirectory<TH1D>(
+        "residuals", "residual_y", residual_y_title.c_str(), static_cast<int>(12 * pitch_y), -2 * pitch_y, 2 * pitch_y);
 
     // Residual projections
     std::string const residual_x_vs_x_title =
         "Mean absolute deviation of residual in X as function of in-pixel X position (" + detector_->getName() +
         ");x%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_vs_x = CreateHistogram<TProfile>(
-        "residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2);
+    residual_x_vs_x = CreateHistogramSubdirectory<TProfile>(
+        "residuals", "residual_x_vs_x", residual_x_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2);
     std::string const residual_y_vs_y_title =
         "Mean absolute deviation of residual in Y as function of in-pixel Y position (" + detector_->getName() +
         ");y%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_vs_y = CreateHistogram<TProfile>(
-        "residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2);
+    residual_y_vs_y = CreateHistogramSubdirectory<TProfile>(
+        "residuals", "residual_y_vs_y", residual_y_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2);
     std::string const residual_x_vs_y_title =
         "Mean absolute deviation of residual in X as function of in-pixel Y position (" + detector_->getName() +
         ");y%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_vs_y = CreateHistogram<TProfile>(
-        "residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2);
+    residual_x_vs_y = CreateHistogramSubdirectory<TProfile>(
+        "residuals", "residual_x_vs_y", residual_x_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2);
     std::string const residual_y_vs_x_title =
         "Mean absolute deviation of residual in Y as function of in-pixel X position (" + detector_->getName() +
         ");x%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_vs_x = CreateHistogram<TProfile>(
-        "residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2);
+    residual_y_vs_x = CreateHistogramSubdirectory<TProfile>(
+        "residuals", "residual_y_vs_x", residual_y_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2);
 
     // Residual maps
     std::string const residual_map_title = "Mean absolute deviation of residual as function of in-pixel impact position (" +
                                            detector_->getName() +
                                            ");x%pitch [#mum];y%pitch [#mum];MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    residual_map = CreateHistogram<TProfile2D>("residual_map",
-                                               residual_map_title.c_str(),
-                                               inpixel_bins.x(),
-                                               -pitch_x / 2,
-                                               pitch_x / 2,
-                                               inpixel_bins.y(),
-                                               -pitch_y / 2,
-                                               pitch_y / 2);
+    residual_map = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                           "residual_map",
+                                                           residual_map_title.c_str(),
+                                                           inpixel_bins.x(),
+                                                           -pitch_x / 2,
+                                                           pitch_x / 2,
+                                                           inpixel_bins.y(),
+                                                           -pitch_y / 2,
+                                                           pitch_y / 2);
     std::string const residual_detector_title = "Mean absolute deviation of residual (" + detector_->getName() +
                                                 ");x (pixels);y (pixels);MAD(#sqrt{#Deltax^{2}+#Deltay^{2}}) [#mum]";
-    residual_detector = CreateHistogram<TProfile2D>(
-        "residual_detector", residual_detector_title.c_str(), xpixels, -0.5, xpixels - 0.5, ypixels, -0.5, ypixels - 0.5);
+    residual_detector = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                                "residual_detector",
+                                                                residual_detector_title.c_str(),
+                                                                xpixels,
+                                                                -0.5,
+                                                                xpixels - 0.5,
+                                                                ypixels,
+                                                                -0.5,
+                                                                ypixels - 0.5);
 
     std::string const residual_x_map_title =
         "Mean absolute deviation of residual in X as function of in-pixel impact position (" + detector_->getName() +
         ");x%pitch [#mum];y%pitch [#mum];MAD(#Deltax) [#mum]";
-    residual_x_map = CreateHistogram<TProfile2D>("residual_x_map",
-                                                 residual_x_map_title.c_str(),
-                                                 inpixel_bins.x(),
-                                                 -pitch_x / 2,
-                                                 pitch_x / 2,
-                                                 inpixel_bins.y(),
-                                                 -pitch_y / 2,
-                                                 pitch_y / 2);
+    residual_x_map = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                             "residual_x_map",
+                                                             residual_x_map_title.c_str(),
+                                                             inpixel_bins.x(),
+                                                             -pitch_x / 2,
+                                                             pitch_x / 2,
+                                                             inpixel_bins.y(),
+                                                             -pitch_y / 2,
+                                                             pitch_y / 2);
     std::string const residual_x_detector_title =
         "Mean absolute deviation of residual in X (" + detector_->getName() + ");x (pixels);y (pixels);MAD(#Deltax) [#mum]";
-    residual_x_detector = CreateHistogram<TProfile2D>("residual_x_detector",
-                                                      residual_x_detector_title.c_str(),
-                                                      xpixels,
-                                                      -0.5,
-                                                      xpixels - 0.5,
-                                                      ypixels,
-                                                      -0.5,
-                                                      ypixels - 0.5);
+    residual_x_detector = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                                  "residual_x_detector",
+                                                                  residual_x_detector_title.c_str(),
+                                                                  xpixels,
+                                                                  -0.5,
+                                                                  xpixels - 0.5,
+                                                                  ypixels,
+                                                                  -0.5,
+                                                                  ypixels - 0.5);
 
     std::string const residual_y_map_title =
         "Mean absolute deviation of residual in Y as function of in-pixel impact position (" + detector_->getName() +
         ");x%pitch [#mum];y%pitch [#mum];MAD(#Deltay) [#mum]";
-    residual_y_map = CreateHistogram<TProfile2D>("residual_y_map",
-                                                 residual_y_map_title.c_str(),
-                                                 inpixel_bins.x(),
-                                                 -pitch_x / 2,
-                                                 pitch_x / 2,
-                                                 inpixel_bins.y(),
-                                                 -pitch_y / 2,
-                                                 pitch_y / 2);
+    residual_y_map = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                             "residual_y_map",
+                                                             residual_y_map_title.c_str(),
+                                                             inpixel_bins.x(),
+                                                             -pitch_x / 2,
+                                                             pitch_x / 2,
+                                                             inpixel_bins.y(),
+                                                             -pitch_y / 2,
+                                                             pitch_y / 2);
     std::string const residual_y_detector_title =
         "Mean absolute deviation of residual in Y (" + detector_->getName() + ");x (pixels);y (pixels);MAD(#Deltay) [#mum]";
-    residual_y_detector = CreateHistogram<TProfile2D>("residual_y_detector",
-                                                      residual_y_detector_title.c_str(),
-                                                      xpixels,
-                                                      -0.5,
-                                                      xpixels - 0.5,
-                                                      ypixels,
-                                                      -0.5,
-                                                      ypixels - 0.5);
+    residual_y_detector = CreateHistogramSubdirectory<TProfile2D>("residuals",
+                                                                  "residual_y_detector",
+                                                                  residual_y_detector_title.c_str(),
+                                                                  xpixels,
+                                                                  -0.5,
+                                                                  xpixels - 0.5,
+                                                                  ypixels,
+                                                                  -0.5,
+                                                                  ypixels - 0.5);
 
     // Efficiency maps:
     std::string const efficiency_map_title = "Efficiency as function of in-pixel impact position (" + detector_->getName() +
                                              ");x%pitch [#mum];y%pitch [#mum];efficiency";
-    efficiency_map = CreateHistogram<TProfile2D>("efficiency_map",
-                                                 efficiency_map_title.c_str(),
-                                                 inpixel_bins.x(),
-                                                 -pitch_x / 2,
-                                                 pitch_x / 2,
-                                                 inpixel_bins.y(),
-                                                 -pitch_y / 2,
-                                                 pitch_y / 2,
-                                                 0,
-                                                 1);
+    efficiency_map = CreateHistogramSubdirectory<TProfile2D>("efficiency",
+                                                             "efficiency_map",
+                                                             efficiency_map_title.c_str(),
+                                                             inpixel_bins.x(),
+                                                             -pitch_x / 2,
+                                                             pitch_x / 2,
+                                                             inpixel_bins.y(),
+                                                             -pitch_y / 2,
+                                                             pitch_y / 2,
+                                                             0,
+                                                             1);
     std::string const efficiency_local_title =
         "Efficiency (" + detector_->getName() + ") MCParticle positions, local coord.;x (mm);y (mm);efficiency";
-    efficiency_local = CreateHistogram<TProfile2D>(
+    efficiency_local = CreateHistogramSubdirectory<TProfile2D>(
+        "efficiency",
         "efficiency_local",
         efficiency_local_title.c_str(),
         static_cast<int>(model->getMatrixSize().x() / model->getPixelSize().x()) * local_inpixel_bins.x(),
@@ -372,25 +394,26 @@ void DetectorHistogrammerModule::initialize() {
 
     std::string const efficiency_detector_title =
         "Efficiency of " + detector_->getName() + ";x (pixels);y (pixels);efficiency";
-    efficiency_detector = CreateHistogram<TProfile2D>("efficiency_detector",
-                                                      efficiency_detector_title.c_str(),
-                                                      xpixels,
-                                                      -0.5,
-                                                      xpixels - 0.5,
-                                                      ypixels,
-                                                      -0.5,
-                                                      ypixels - 0.5,
-                                                      0,
-                                                      1);
+    efficiency_detector = CreateHistogramSubdirectory<TProfile2D>("efficiency",
+                                                                  "efficiency_detector",
+                                                                  efficiency_detector_title.c_str(),
+                                                                  xpixels,
+                                                                  -0.5,
+                                                                  xpixels - 0.5,
+                                                                  ypixels,
+                                                                  -0.5,
+                                                                  ypixels - 0.5,
+                                                                  0,
+                                                                  1);
     // Efficiency projections
     std::string const efficiency_vs_x_title =
         "Efficiency as function of in-pixel X position (" + detector_->getName() + ");x%pitch [#mum];efficiency";
-    efficiency_vs_x = CreateHistogram<TProfile>(
-        "efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2, 0, 1);
+    efficiency_vs_x = CreateHistogramSubdirectory<TProfile>(
+        "efficiency", "efficiency_vs_x", efficiency_vs_x_title.c_str(), inpixel_bins.x(), -pitch_x / 2, pitch_x / 2, 0, 1);
     std::string const efficiency_vs_y_title =
         "Efficiency as function of in-pixel Y position (" + detector_->getName() + ");y%pitch [#mum];efficiency";
-    efficiency_vs_y = CreateHistogram<TProfile>(
-        "efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2, 0, 1);
+    efficiency_vs_y = CreateHistogramSubdirectory<TProfile>(
+        "efficiency", "efficiency_vs_y", efficiency_vs_y_title.c_str(), inpixel_bins.y(), -pitch_y / 2, pitch_y / 2, 0, 1);
 
     // Create number of clusters plot
     std::string const n_cluster_title = "Clusters per event (" + detector_->getName() + ");# clusters;events";
@@ -400,21 +423,21 @@ void DetectorHistogrammerModule::initialize() {
     // Create cluster charge plot
     auto max_cluster_charge = Units::convert(config_.get<double>("max_cluster_charge"), "ke");
     std::string const cluster_charge_title = "Cluster charge (" + detector_->getName() + ");cluster charge [ke];clusters";
-    cluster_charge = CreateHistogram<TH1D>(
-        "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+    cluster_charge = CreateHistogramSubdirectory<TH1D>(
+        "charge", "cluster_charge", cluster_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
     std::string const cluster_seed_charge_title =
         "Seed pixel charge (" + detector_->getName() + ");seed charge [ke];clusters";
-    cluster_seed_charge = CreateHistogram<TH1D>(
-        "seed_charge", cluster_seed_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+    cluster_seed_charge = CreateHistogramSubdirectory<TH1D>(
+        "charge", "seed_charge", cluster_seed_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
     std::string const pixel_charge_title = "Pixel charge (" + detector_->getName() + ");pixel charge [ke];pixels";
-    pixel_charge =
-        CreateHistogram<TH1D>("pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
+    pixel_charge = CreateHistogramSubdirectory<TH1D>(
+        "charge", "pixel_charge", pixel_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge));
 
     std::string const total_charge_title = "Total charge per event (" + detector_->getName() + ");total charge [ke];events";
-    total_charge = CreateHistogram<TH1D>(
-        "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
+    total_charge = CreateHistogramSubdirectory<TH1D>(
+        "charge", "total_charge", total_charge_title.c_str(), 1000, 0., static_cast<double>(max_cluster_charge * 4));
 
     // Create residual plots in polar coordinates for radial_strip detectors
     auto radial_model = std::dynamic_pointer_cast<RadialStripDetectorModel>(model);
@@ -426,33 +449,36 @@ void DetectorHistogrammerModule::initialize() {
         auto row_radii = radial_model->getRowRadii();
 
         std::string const polar_hit_map_title = "Polar hitmap (" + detector_->getName() + ");#varphi (rad);r [mm];hits";
-        polar_hit_map = CreateHistogram<TH2D>("polar_hit_map",
-                                              polar_hit_map_title.c_str(),
-                                              xpixels,
-                                              -max_angle / 2 - stereo_angle,
-                                              max_angle / 2 - stereo_angle,
-                                              ypixels,
-                                              row_radii.data());
+        polar_hit_map = CreateHistogramSubdirectory<TH2D>("polar",
+                                                          "polar_hit_map",
+                                                          polar_hit_map_title.c_str(),
+                                                          xpixels,
+                                                          -max_angle / 2 - stereo_angle,
+                                                          max_angle / 2 - stereo_angle,
+                                                          ypixels,
+                                                          row_radii.data());
 
         std::string const residual_r_title =
             "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [#mum];events";
-        residual_r = CreateHistogram<TH1D>("residual_r", residual_r_title.c_str(), 1000, -2 * pitch_y, 2 * pitch_y);
+        residual_r = CreateHistogramSubdirectory<TH1D>(
+            "polar", "residual_r", residual_r_title.c_str(), 1000, -2 * pitch_y, 2 * pitch_y);
 
         std::string const residual_phi_title =
             "Residual in #varphi (" + detector_->getName() + ");#varphi_{track} - #varphi_{cluster} [mrad];events";
-        residual_phi =
-            CreateHistogram<TH1D>("residual_phi", residual_phi_title.c_str(), 1000, -2 * max_pitch, 2 * max_pitch);
+        residual_phi = CreateHistogramSubdirectory<TH1D>(
+            "polar", "residual_phi", residual_phi_title.c_str(), 1000, -2 * max_pitch, 2 * max_pitch);
     } else {
         auto max_pitch = std::max(model->getPixelSize().X(), model->getPixelSize().Y());
         max_pitch *= (model->is<HexagonalPixelDetectorModel>() ? std::numbers::sqrt3 / 2 : 1);
 
         std::string const residual_r_title =
             "Residual in r (" + detector_->getName() + ");r_{track} - r_{cluster} [#mum];events";
-        residual_r = CreateHistogram<TH1D>("residual_r",
-                                           residual_r_title.c_str(),
-                                           static_cast<int>(12 * Units::convert(max_pitch, "um")),
-                                           0,
-                                           static_cast<double>(Units::convert(max_pitch, "um")));
+        residual_r = CreateHistogramSubdirectory<TH1D>("polar",
+                                                       "residual_r",
+                                                       residual_r_title.c_str(),
+                                                       static_cast<int>(12 * Units::convert(max_pitch, "um")),
+                                                       0,
+                                                       static_cast<double>(Units::convert(max_pitch, "um")));
     }
 }
 
@@ -678,48 +704,7 @@ void DetectorHistogrammerModule::finalize() {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
 
-    // Merge histograms that were possibly filled in parallel in order to change drawing options on the final object
-    auto hit_map_histogram = hit_map->Merge();
-    auto hit_map_global_histogram = hit_map_global->Merge();
-    auto hit_map_global_mc_histogram = hit_map_global_mc->Merge();
-    auto hit_map_local_histogram = hit_map_local->Merge();
-    auto hit_map_local_mc_histogram = hit_map_local_mc->Merge();
-    auto charge_map_histogram = charge_map->Merge();
-    auto cluster_map_histogram = cluster_map->Merge();
-    auto cluster_size_map_histogram = cluster_size_map->Merge();
-    auto cluster_size_map_local_histogram = cluster_size_map_local->Merge();
-    auto cluster_size_x_map_histogram = cluster_size_x_map->Merge();
-    auto cluster_size_y_map_histogram = cluster_size_y_map->Merge();
-    auto cluster_size_histogram = cluster_size->Merge();
-    auto cluster_size_x_histogram = cluster_size_x->Merge();
-    auto cluster_size_y_histogram = cluster_size_y->Merge();
-    auto event_size_histogram = event_size->Merge();
-    auto residual_x_histogram = residual_x->Merge();
-    auto residual_y_histogram = residual_y->Merge();
-    auto residual_r_histogram = residual_r->Merge();
-    auto residual_x_vs_x_histogram = residual_x_vs_x->Merge();
-    auto residual_y_vs_y_histogram = residual_y_vs_y->Merge();
-    auto residual_x_vs_y_histogram = residual_x_vs_y->Merge();
-    auto residual_y_vs_x_histogram = residual_y_vs_x->Merge();
-    auto residual_map_histogram = residual_map->Merge();
-    auto residual_x_map_histogram = residual_x_map->Merge();
-    auto residual_y_map_histogram = residual_y_map->Merge();
-    auto residual_detector_histogram = residual_detector->Merge();
-    auto residual_x_detector_histogram = residual_x_detector->Merge();
-    auto residual_y_detector_histogram = residual_y_detector->Merge();
-    auto efficiency_vs_x_histogram = efficiency_vs_x->Merge();
-    auto efficiency_vs_y_histogram = efficiency_vs_y->Merge();
-    auto efficiency_local_histogram = efficiency_local->Merge();
-    auto efficiency_detector_histogram = efficiency_detector->Merge();
-    auto efficiency_map_histogram = efficiency_map->Merge();
-    auto n_cluster_histogram = n_cluster->Merge();
-    auto cluster_charge_histogram = cluster_charge->Merge();
-    auto cluster_seed_charge_histogram = cluster_seed_charge->Merge();
-    auto cluster_charge_map_histogram = cluster_charge_map->Merge();
-    auto seed_charge_map_histogram = seed_charge_map->Merge();
-    auto pixel_charge_histogram = pixel_charge->Merge();
-    auto total_charge_histogram = total_charge->Merge();
-
+    /*
     // FIXME Set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
     cluster_size_histogram->GetXaxis()->SetRangeUser(0, xmax);
@@ -807,68 +792,7 @@ void DetectorHistogrammerModule::finalize() {
         cluster_map_histogram->GetYaxis()->SetNdivisions(
             static_cast<int>(cluster_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
-
-    // Write histograms
-    LOG(TRACE) << "Writing histograms to file";
-    event_size_histogram->Write();
-    n_cluster_histogram->Write();
-    hit_map_histogram->Write();
-    hit_map_global_histogram->Write();
-    hit_map_global_mc_histogram->Write();
-    hit_map_local_histogram->Write();
-    hit_map_local_mc_histogram->Write();
-
-    getROOTDirectory()->mkdir("cluster_size")->cd();
-    cluster_size_histogram->Write();
-    cluster_size_x_histogram->Write();
-    cluster_size_y_histogram->Write();
-    cluster_map_histogram->Write();
-    cluster_size_map_histogram->Write();
-    cluster_size_map_local_histogram->Write();
-    cluster_size_x_map_histogram->Write();
-    cluster_size_y_map_histogram->Write();
-
-    getROOTDirectory()->mkdir("charge")->cd();
-    pixel_charge_histogram->Write();
-    cluster_charge_histogram->Write();
-    cluster_seed_charge_histogram->Write();
-    total_charge_histogram->Write();
-    charge_map_histogram->Write();
-    cluster_charge_map_histogram->Write();
-    seed_charge_map_histogram->Write();
-
-    getROOTDirectory()->mkdir("residuals")->cd();
-    residual_x_histogram->Write();
-    residual_y_histogram->Write();
-    residual_detector_histogram->Write();
-    residual_x_detector_histogram->Write();
-    residual_y_detector_histogram->Write();
-    residual_x_vs_x_histogram->Write();
-    residual_y_vs_y_histogram->Write();
-    residual_x_vs_y_histogram->Write();
-    residual_y_vs_x_histogram->Write();
-    residual_map_histogram->Write();
-    residual_x_map_histogram->Write();
-    residual_y_map_histogram->Write();
-
-    // Write additional histograms if radial_strip model is used
-    if(detector_->getModel()->is<RadialStripDetectorModel>()) {
-        getROOTDirectory()->mkdir("polar")->cd();
-        auto polar_hit_map_histogram = polar_hit_map->Merge();
-        auto residual_phi_histogram = residual_phi->Merge();
-        polar_hit_map_histogram->Write();
-        residual_r_histogram->Write();
-        residual_phi_histogram->Write();
-    } else {
-        residual_r_histogram->Write();
-    }
-
-    getROOTDirectory()->mkdir("efficiency")->cd();
-    efficiency_detector_histogram->Write();
-    efficiency_map_histogram->Write();
-    efficiency_local_histogram->Write();
-    efficiency_vs_x_histogram->Write();
-    efficiency_vs_y_histogram->Write();
+    */
 }
 
 /**
