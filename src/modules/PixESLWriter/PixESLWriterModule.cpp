@@ -153,11 +153,6 @@ void PixESLWriterModule::run(Event* event) {
 }
 
 void PixESLWriterModule::finalize() {
-
-    if(output_plots_) {
-        time_between_events_->Write();
-    }
-
     // Print statistics
     LOG(STATUS) << "Wrote " << writer_->getRecordCount() << " records in " << writer_->getEventCount()
                 << " events to file:\n"
