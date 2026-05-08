@@ -24,7 +24,6 @@
 #include "Detector.hpp"
 #include "DetectorModel.hpp"
 #include "core/config/ConfigManager.hpp"
-#include "core/config/ConfigReader.hpp"
 #include "core/utils/prng.h"
 
 namespace allpix {
