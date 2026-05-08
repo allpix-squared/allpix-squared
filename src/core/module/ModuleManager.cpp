@@ -51,8 +51,6 @@
 #include "core/utils/log.h"
 #include "core/utils/prng.h"
 #include "core/utils/unit.h"
-#include "tools/HistogramManager.h"
-#include "tools/ROOT.h"
 
 // Common prefix for all modules
 // TODO(simonspa): [doc] Should be provided by the build system

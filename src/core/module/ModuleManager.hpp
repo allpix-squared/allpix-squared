@@ -26,8 +26,8 @@
 #include "Module.hpp"
 #include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/histograms/HistogramManager.h"
 #include "core/utils/log.h"
-#include "tools/ROOT.h"
 
 namespace allpix {
 

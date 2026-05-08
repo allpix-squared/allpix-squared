@@ -24,14 +24,7 @@
 namespace allpix {
     class HistogramManager {
     public:
-        static HistogramManager& getInstance() {
-            static HistogramManager instance{};
-            return instance;
-        };
-
-        ~HistogramManager() {};
-
-        void openFile(const std::string& file_path, const bool& deny_overwrite) {
+        HistogramManager(const std::string& file_path, const bool& deny_overwrite) {
             LOG(INFO) << "Opening histogram file.";
 
             if(histogram_file_ && !histogram_file_->IsZombie()) {
@@ -58,6 +51,8 @@ namespace allpix {
 
             LOG(TRACE) << "Opened histogram file.";
         };
+
+        ~HistogramManager() {};
 
         TDirectory* register_module_directory(const std::string& module_name, const std::string& module_identifier) {
             // Create main ROOT directory for this module class if it does not exist yet
