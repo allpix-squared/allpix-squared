@@ -98,6 +98,24 @@ namespace allpix {
         void run(const std::stop_token& stop_token);
 
         /**
+         * @brief Helper function to load all configurations into the ConfigManager
+         * @details This method abstracts file parsing of the main configuration file as well as the geometry file and loads
+         *          module configuration and detectors and applied the options provided via the command line
+         *
+         * @param config_file_name File name of the main configuration file
+         * @param module_options Command-line options for modules
+         * @param detector_options Command-line options for the geometry
+         */
+        void load_configuration(std::filesystem::path config_file_name,
+                                const std::vector<std::string>& module_options,
+                                const std::vector<std::string>& detector_options);
+
+        /**
+         * @brief Helper function to load information into the GeometryManager
+         */
+        void load_geometry();
+
+        /**
          * @brief Set the default ROOT plot style
          */
         static void set_style();
