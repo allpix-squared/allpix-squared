@@ -246,7 +246,7 @@ void Allpix::load_geometry() {
     // Fetch the global configuration
     const auto& global_config = conf_mgr_->getGlobalConfiguration();
 
-    geo_mgr_->load_geometry(conf_mgr_->getDetectorConfigurations(), seeder_core_);
+    geo_mgr_->loadGeometry(conf_mgr_->getDetectorConfigurations(), seeder_core_);
 
     // Load model files:
     LOG(TRACE) << "Loading remaining default models";
@@ -256,7 +256,7 @@ void Allpix::load_geometry() {
     const auto model_paths = get_model_paths(global_config.getFilePath());
 
     // Add all the paths to the reader
-    for(auto& path : model_paths) {
+    for(const auto& path : model_paths) {
         // Check if file or directory
         if(std::filesystem::is_directory(path)) {
             for(const auto& entry : std::filesystem::directory_iterator(path)) {
@@ -297,7 +297,7 @@ std::vector<std::filesystem::path> Allpix::get_model_paths(const std::filesystem
         model_paths.emplace_back(ALLPIX_MODEL_DIRECTORY);
         LOG(TRACE) << "Registered model path: " << ALLPIX_MODEL_DIRECTORY;
     }
-    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS");
+    const char* data_dirs_env = std::getenv("XDG_DATA_DIRS"); // NOLINT(concurrency-mt-unsafe)
     if(data_dirs_env == nullptr || strlen(data_dirs_env) == 0) {
         data_dirs_env = "/usr/local/share/:/usr/share/:";
     }

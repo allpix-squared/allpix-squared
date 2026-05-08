@@ -54,7 +54,7 @@ GeometryManager::GeometryManager() : closed_{false} {}
 /**
  * Loads the geometry by looping over all defined detectors
  */
-void GeometryManager::load_geometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder) {
+void GeometryManager::loadGeometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder) {
     // Set up a random number generator and seed it with the global seed:
     random_generator_.seed(seeder());
 

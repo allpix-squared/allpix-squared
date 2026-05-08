@@ -81,7 +81,7 @@ namespace allpix {
          * @param seeder PRNG to use for generating random misalignments
          * @warning Has to be the first function called after the constructor
          */
-        void load_geometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder);
+        void loadGeometry(const std::list<Configuration>& detector_configs, RandomNumberGenerator& seeder);
 
         /**
          * @brief Returns the position and orientation for a passive element
