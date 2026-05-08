@@ -19,7 +19,7 @@
 #include <string>
 #include <utility>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/PixelDetectorModel.hpp"
@@ -29,9 +29,9 @@ using namespace allpix;
 
 StaggeredPixelDetectorModel::StaggeredPixelDetectorModel(std::string type,
                                                          const std::shared_ptr<DetectorAssembly>& assembly,
-                                                         const ConfigReader& reader,
+                                                         const ConfigStack& stack,
                                                          const Configuration& config)
-    : PixelDetectorModel(std::move(type), assembly, reader, config) {
+    : PixelDetectorModel(std::move(type), assembly, stack, config) {
 
     // Read tile offset - for now only possible along x, applied to odd rows
     offset_ = config.get<double>("pixel_offset");

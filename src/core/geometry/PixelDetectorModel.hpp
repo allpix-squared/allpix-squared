@@ -21,7 +21,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/DetectorModel.hpp"
 #include "core/utils/log.h"
@@ -39,12 +39,12 @@ namespace allpix {
          * @brief Constructs the pixel detector model
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
-         * @param reader Configuration reader with description of the model
+         * @param stack Configuration stack with description of the model
          * @param config Configuration reference holding the unnamed section of detector configuration
          */
         explicit PixelDetectorModel(std::string type,
                                     const std::shared_ptr<DetectorAssembly>& assembly,
-                                    const ConfigReader& reader,
+                                    const ConfigStack& stack,
                                     const Configuration& config);
 
         /**

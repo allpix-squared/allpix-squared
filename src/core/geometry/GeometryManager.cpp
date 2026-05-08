@@ -33,7 +33,8 @@
 #include <Math/GenVector/RotationZ.h>
 #include <Math/GenVector/RotationZYX.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/Detector.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -407,10 +408,10 @@ void GeometryManager::read_model_file(const std::filesystem::path& path) {
     try {
         // Try to parse as config file
         std::ifstream file(path);
-        const ConfigReader reader(file, path);
+        const auto stack = FileParser::getStack(file, path);
 
         // Parse configuration and add model to the config
-        addModel(DetectorModel::factory(model_name, reader));
+        addModel(DetectorModel::factory(model_name, stack));
 
     } catch(const ConfigParseError& e) {
         // Not a valid config file, see https://gitlab.cern.ch/allpix-squared/allpix-squared/-/issues/277
@@ -459,15 +460,15 @@ void GeometryManager::close_geometry() {
 
             // Create new model if needed
             if(new_config.countSettings() != 0) {
-                ConfigReader reader;
+                ConfigStack stack;
                 // Add the new configuration first to overwrite
-                reader.addConfiguration(std::move(new_config));
+                stack.addConfiguration(std::move(new_config));
                 // Then add the original configuration
                 for(auto& model_config : model_configs) {
-                    reader.addConfiguration(std::move(model_config));
+                    stack.addConfiguration(std::move(model_config));
                 }
 
-                model = DetectorModel::factory(name, reader);
+                model = DetectorModel::factory(name, stack);
             }
 
             detector->set_model(std::move(model));

@@ -27,7 +27,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/exceptions.h"
 #include "core/utils/log.h"
 #include "objects/Pixel.hpp"
@@ -74,10 +74,10 @@ namespace allpix {
         /**
          * @brief Factory to dynamically create detector model objects
          * @param name Name of the model
-         * @param reader Reader with the configuration for this model
+         * @param stack Stack with the configuration for this model
          * @return Detector model instantiated from the configuration
          */
-        static std::shared_ptr<DetectorModel> factory(const std::string& name, const ConfigReader&);
+        static std::shared_ptr<DetectorModel> factory(const std::string& name, const ConfigStack&);
 
         /**
          * @brief Helper method to determine if this detector model is of a given type
@@ -180,12 +180,12 @@ namespace allpix {
          * @brief Constructs the base detector model
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
-         * @param reader Configuration reader with description of the model
+         * @param stack Configuration stack with description of the model
          * @param config Configuration holding the empty section of the configuration file
          */
         explicit DetectorModel(std::string type,
                                std::shared_ptr<DetectorAssembly> assembly,
-                               const ConfigReader& reader,
+                               const ConfigStack& stack,
                                const Configuration& config);
 
         /**
@@ -596,7 +596,7 @@ namespace allpix {
         // Validation of the detector model
         virtual void validate();
 
-        ConfigReader reader_;
+        ConfigStack stack_;
     };
 } // namespace allpix
 
