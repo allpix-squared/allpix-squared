@@ -56,7 +56,7 @@ namespace allpix {
             }
             histogram_file_->cd();
 
-            LOG(INFO) << "Opened histogram file.";
+            LOG(TRACE) << "Opened histogram file.";
         };
 
         TDirectory* register_module_directory(const std::string& module_name, const std::string& module_identifier) {
@@ -164,7 +164,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();
-            LOG(INFO) << "Current directory: " << gDirectory->GetPath();
+            LOG(TRACE) << "Current directory: " << gDirectory->GetPath();
             auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
             LOG(DEBUG) << "Registering histogram (" << directory->GetPath() << ", " << histogram->Get()->GetName() << ")";
