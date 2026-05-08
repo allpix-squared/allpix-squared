@@ -183,6 +183,8 @@ namespace allpix {
      */
     template <typename T, typename std::enable_if_t<std::is_base_of_v<TH1, T>>* = nullptr>
     class ThreadedHistogram : public BaseHistogram {
+        friend class HistogramManager;
+
     public:
         template <class... ARGS> explicit ThreadedHistogram(ARGS&&... args) { this->init(std::forward<ARGS>(args)...); }
 
@@ -201,11 +203,6 @@ namespace allpix {
         }
 
         /**
-         * @brief An easy way to write a histogram
-         */
-        void Write() override { this->Merge()->Write(); } // NOLINT
-
-        /**
          * @brief Extract the name of the histogram
          */
         std::string GetName() override { return this->Get()->GetName(); } // NOLINT
@@ -222,21 +219,6 @@ namespace allpix {
                 object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
             }
             return object;
-        }
-
-        /**
-         * @brief Merge the threaded histograms into final object
-         *
-         * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
-         */
-        std::shared_ptr<T> Merge() { // NOLINT
-            ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
-            if(is_merged_) {
-                return objects_[0];
-            }
-            mergeFunction(objects_[0], objects_);
-            is_merged_ = true;
-            return objects_[0];
         }
 
     private:
@@ -265,6 +247,26 @@ namespace allpix {
 
             // initialize at least the base object
             objects_[0].reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[0]));
+        }
+
+        /**
+         * @brief An easy way to write a histogram
+         */
+        void Write() override { this->Merge()->Write(); } // NOLINT
+
+        /**
+         * @brief Merge the threaded histograms into final object
+         *
+         * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
+         */
+        std::shared_ptr<T> Merge() { // NOLINT
+            ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
+            if(is_merged_) {
+                return objects_[0];
+            }
+            mergeFunction(objects_[0], objects_);
+            is_merged_ = true;
+            return objects_[0];
         }
 
         std::unique_ptr<T> model_;
