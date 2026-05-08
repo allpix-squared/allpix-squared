@@ -116,6 +116,19 @@ namespace allpix {
         void load_geometry();
 
         /**
+         * @brief Returns the list of standard paths where models should be searched in
+         * @return List of absolute paths to file or directories that contain models
+         *
+         * The default list of models to search for are in the following order
+         * - The list of paths provided in the main configuration as model_paths
+         * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
+         * - The directories in XDG_DATA_DIRS attached by ALLPIX_PROJECT_NAME or /usr/share/:/usr/local/share if not defined
+         */
+        std::vector<std::filesystem::path> get_model_paths(const std::filesystem::path& config_file_path);
+
+        void read_model_file(const std::filesystem::path& path);
+
+        /**
          * @brief Set the default ROOT plot style
          */
         static void set_style();
