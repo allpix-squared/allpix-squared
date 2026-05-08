@@ -20,6 +20,8 @@ ADD_LIBRARY(
     config/Configuration.cpp
     config/ConfigReader.cpp
     config/ConfigManager.cpp
+    config/ConfigStack.cpp
+    config/FileParser.cpp
     config/OptionParser.cpp
     geometry/Detector.cpp
     geometry/DetectorModel.cpp

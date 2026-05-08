@@ -34,6 +34,7 @@
 #include <TSystem.h>
 
 #include "core/config/ConfigManager.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/geometry/GeometryManager.hpp"
 #include "core/messenger/Messenger.hpp"
@@ -64,11 +65,11 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     // Convert main file to absolute path and read the file
     LOG(TRACE) << "Reading main configuration";
     config_file_name = std::filesystem::canonical(config_file_name);
-    ConfigReader const reader(file, std::move(config_file_name));
+    const auto stack_cfg = FileParser::getStack(file, std::move(config_file_name));
 
     // Load the global configuration
-    conf_mgr_ = std::make_unique<ConfigManager>(reader.getHeaderConfiguration(),
-                                                reader.getConfigurations(),
+    conf_mgr_ = std::make_unique<ConfigManager>(stack_cfg.getHeaderConfiguration(),
+                                                stack_cfg.getConfigurations(),
                                                 std::initializer_list<std::string>({"Allpix", ""}),
                                                 std::initializer_list<std::string>({"Ignore"}));
 
@@ -82,8 +83,8 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     const auto detector_file_name = global_config.getPath("detectors_file", true);
     LOG(TRACE) << "Reading detector configuration";
     std::ifstream detector_file(detector_file_name);
-    ConfigReader const detector_reader(detector_file, detector_file_name);
-    conf_mgr_->loadDetectors(detector_reader.getConfigurations());
+    const auto stack_geo = FileParser::getStack(file, std::move(config_file_name));
+    conf_mgr_->loadDetectors(stack_geo.getConfigurations());
 
     // Load and apply the provided detector options
     conf_mgr_->loadDetectorOptions(detector_options);
