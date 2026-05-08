@@ -163,6 +163,14 @@ namespace allpix {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
 
+    class BaseHistogram {
+    public:
+        BaseHistogram() = default;
+        virtual ~BaseHistogram() = default;
+        virtual std::string GetName() = 0;
+        virtual void Write() = 0;
+    };
+
     /**
      * @brief A re-implementation of ROOT::TThreadedObject
      *
@@ -173,7 +181,8 @@ namespace allpix {
      *
      * Enables filling histograms in parallel and makes sure an empty instance will exist if not filled.
      */
-    template <typename T, typename std::enable_if_t<std::is_base_of_v<TH1, T>>* = nullptr> class ThreadedHistogram {
+    template <typename T, typename std::enable_if_t<std::is_base_of_v<TH1, T>>* = nullptr>
+    class ThreadedHistogram : public BaseHistogram {
     public:
         template <class... ARGS> explicit ThreadedHistogram(ARGS&&... args) { this->init(std::forward<ARGS>(args)...); }
 
@@ -194,7 +203,12 @@ namespace allpix {
         /**
          * @brief An easy way to write a histogram
          */
-        void Write() { this->Merge()->Write(); } // NOLINT
+        void Write() override { this->Merge()->Write(); } // NOLINT
+
+        /**
+         * @brief Extract the name of the histogram
+         */
+        std::string GetName() override { return this->Get()->GetName(); } // NOLINT
 
         /**
          * @brief Get the thread local instance of the histogram

@@ -88,23 +88,6 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     // Store the messenger
     messenger_ = messenger;
 
-    // (Re)create the main ROOT file
-    auto path = std::filesystem::path(gSystem->pwd()) / global_config.get<std::string>("root_file", "modules");
-    path.replace_extension("root");
-
-    if(std::filesystem::is_regular_file(path)) {
-        if(global_config.get<bool>("deny_overwrite", false)) {
-            throw RuntimeError("Overwriting of existing main ROOT file " + path.string() + " denied");
-        }
-        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        std::filesystem::remove(path);
-    }
-    modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
-    if(modules_file_->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + path.string());
-    }
-    modules_file_->cd();
-
     auto& hisman = HistogramManager::getInstance();
     hisman.openFile(global_config.get<std::string>("histogram_file", "histograms"),
                     global_config.get<bool>("deny_overwrite", false));
