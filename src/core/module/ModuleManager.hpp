@@ -173,6 +173,13 @@ namespace allpix {
          */
         static void set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev);
 
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) {
+            // Get instance of histogram registry
+            auto& histogram_manager = HistogramManager::getInstance();
+            return histogram_manager.register_histogram_with_path<T>(path, std::forward<ARGS>(args)...);
+        };
+
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 
         ModuleList modules_;

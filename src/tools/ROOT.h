@@ -273,17 +273,7 @@ namespace allpix {
         bool is_merged_{false};
     };
 
-    /**
-     * @brief Helper method to instantiate new objects of the type ThreadedHistogram
-     *
-     * @param args Arguments passed to histogram class
-     * @return Unique pointer to newly created object
-     */
-    template <typename T, class... ARGS> std::unique_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
-        return std::make_unique<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
-    }
-
-    template <class T> using Histogram = std::unique_ptr<ThreadedHistogram<T>>;
+    template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
 
     /**
      * @brief Lock for TProcessID simultaneous action

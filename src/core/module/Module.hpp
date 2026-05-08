@@ -29,6 +29,7 @@
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/prng.h"
+#include "tools/HistogramManager.h"
 
 namespace allpix {
     class Messenger;
@@ -54,6 +55,7 @@ namespace allpix {
         friend class ModuleManager;
         friend class Messenger;
         friend class LocalMessenger;
+        friend class HistogramManager;
 
     public:
         /**
@@ -119,6 +121,26 @@ namespace allpix {
                                      const std::string& extension = "",
                                      bool global = false,
                                      bool delete_file = false);
+
+        /**
+         * TODO Documentation
+         */
+        template <typename T, class... ARGS> std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
+            // Get instance of histogram registry
+            auto& histogram_manager = HistogramManager::getInstance();
+            return histogram_manager.register_histogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
+        };
+
+        /**
+         * TODO Documentation
+         */
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, ARGS&&... args) {
+            // Get instance of histogram registry
+            auto& histogram_manager = HistogramManager::getInstance();
+            auto full_directory = histogram_manager.register_subdirectory(this->getROOTDirectory(), subdirectory);
+            return histogram_manager.register_histogram<T>(full_directory, std::forward<ARGS>(args)...);
+        };
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
