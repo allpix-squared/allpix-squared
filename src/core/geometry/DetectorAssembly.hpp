@@ -17,7 +17,7 @@
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/Configuration.hpp"
 #include "core/config/exceptions.h"
 #include "tools/ROOT.h"
 

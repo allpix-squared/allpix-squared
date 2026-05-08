@@ -28,7 +28,7 @@
 
 #include <Math/Translation3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/HexagonalPixelDetectorModel.hpp"
@@ -41,8 +41,8 @@
 
 using namespace allpix;
 
-std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigReader& reader) {
-    Configuration const config = reader.getHeaderConfiguration();
+std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigStack& stack) {
+    const auto& config = stack.getHeaderConfiguration();
 
     // Sensor geometry
     // FIXME we might want to deprecate this default at some point?
@@ -70,13 +70,13 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     // Instantiate the correct detector model
     std::shared_ptr<DetectorModel> model;
     if(geometry == "pixel") {
-        model = std::make_shared<PixelDetectorModel>(name, assembly, reader, config);
+        model = std::make_shared<PixelDetectorModel>(name, assembly, stack, config);
     } else if(geometry == "radial_strip") {
-        model = std::make_shared<RadialStripDetectorModel>(name, assembly, reader, config);
+        model = std::make_shared<RadialStripDetectorModel>(name, assembly, stack, config);
     } else if(geometry == "hexagonal") {
-        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, reader, config);
+        model = std::make_shared<HexagonalPixelDetectorModel>(name, assembly, stack, config);
     } else if(geometry == "staggered") {
-        model = std::make_shared<StaggeredPixelDetectorModel>(name, assembly, reader, config);
+        model = std::make_shared<StaggeredPixelDetectorModel>(name, assembly, stack, config);
     } else {
         LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
@@ -101,9 +101,9 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
 
 DetectorModel::DetectorModel(std::string type,
                              std::shared_ptr<DetectorAssembly> assembly,
-                             const ConfigReader& reader, // NOLINT
+                             const ConfigStack& stack, // NOLINT
                              const Configuration& config)
-    : type_(std::move(type)), assembly_(std::move(assembly)), reader_(reader) {
+    : type_(std::move(type)), assembly_(std::move(assembly)), stack_(stack) {
     using namespace ROOT::Math;
 
     // Sensor thickness
@@ -126,7 +126,7 @@ DetectorModel::DetectorModel(std::string type,
     }
 
     // Read implants
-    for(auto& implant_config : reader_.getConfigurations("implant")) {
+    for(auto& implant_config : stack_.getConfigurations("implant")) {
         auto imtype = implant_config.get<Implant::Type>("type");
         auto shape = implant_config.get<Implant::Shape>("shape", Implant::Shape::RECTANGLE);
         auto size = implant_config.get<XYZVector>("size");
@@ -147,8 +147,8 @@ DetectorModel::DetectorModel(std::string type,
     }
 
     // Read support layers
-    LOG(DEBUG) << "Number of [support] sections: " << reader_.getConfigurations("support").size();
-    for(auto& support_config : reader_.getConfigurations("support")) {
+    LOG(DEBUG) << "Number of [support] sections: " << stack_.getConfigurations("support").size();
+    for(auto& support_config : stack_.getConfigurations("support")) {
         auto thickness = support_config.get<double>("thickness");
         auto size = support_config.get<XYVector>("size");
         auto location = support_config.get<SupportLayer::Location>("location", SupportLayer::Location::CHIP);
@@ -256,9 +256,9 @@ ROOT::Math::XYZPoint DetectorModel::getModelCenter() const {
 std::vector<Configuration> DetectorModel::getConfigurations() const {
     std::vector<Configuration> configurations;
     // Initialize global base configuration
-    auto global_config_ = reader_.getHeaderConfiguration();
+    auto global_config_ = stack_.getHeaderConfiguration();
 
-    for(auto& config : reader_.getConfigurations()) {
+    for(auto& config : stack_.getConfigurations()) {
         if(config.getName().empty()) {
             // Merge all global sections with the global config
             global_config_.merge(config);

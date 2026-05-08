@@ -31,8 +31,9 @@
 #include <Eigen/Eigen>
 #include <Math/Vector3D.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/config/FileParser.hpp"
 #include "core/config/exceptions.h"
 #include "core/module/ThreadPool.hpp"
 #include "core/utils/log.h"
@@ -170,8 +171,8 @@ int main(int argc, char** argv) {
 
     try {
         std::ifstream file(conf_file_name);
-        allpix::ConfigReader const reader(file, conf_file_name);
-        allpix::Configuration const config = reader.getHeaderConfiguration();
+        const auto stack = allpix::FileParser::getStack(file, conf_file_name);
+        const auto config = stack.getHeaderConfiguration();
 
         auto log_level = Log::getReportingLevel();
         if(log_level == allpix::LogLevel::NONE) {

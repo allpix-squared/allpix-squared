@@ -24,7 +24,7 @@
 
 #include <Math/Math.h>
 
-#include "core/config/ConfigReader.hpp"
+#include "core/config/ConfigStack.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/DetectorAssembly.hpp"
 #include "core/geometry/DetectorModel.hpp"
@@ -34,9 +34,9 @@ using namespace allpix;
 
 RadialStripDetectorModel::RadialStripDetectorModel(std::string type,
                                                    const std::shared_ptr<DetectorAssembly>& assembly,
-                                                   const ConfigReader& reader,
+                                                   const ConfigStack& stack,
                                                    const Configuration& config)
-    : DetectorModel(std::move(type), assembly, reader, config) {
+    : DetectorModel(std::move(type), assembly, stack, config) {
 
     if(std::dynamic_pointer_cast<MonolithicAssembly>(assembly) == nullptr) {
         throw InvalidCombinationError(config, {"type", "geometry"}, "this geometry only supports assembly type monolithic");
