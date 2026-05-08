@@ -41,8 +41,13 @@
 
 using namespace allpix;
 
-std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigStack& stack) {
+std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const ConfigStack& stack) {
     const auto& config = stack.getHeaderConfiguration();
+
+    // If there is a name set in the config, prefer over the file name:
+    if(config.has("name")) {
+        name = config.get<std::string>("name");
+    }
 
     // Sensor geometry
     // FIXME we might want to deprecate this default at some point?

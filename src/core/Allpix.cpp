@@ -321,20 +321,23 @@ void Allpix::read_model_file(const std::filesystem::path& path) {
     auto model_name = path.stem();
     LOG(TRACE) << "Reading model " << model_name << " in path " << path;
 
-    // Check if we need to look at file at all
-    if(geo_mgr_->hasModel(model_name)) {
-        LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
-        return;
-    }
-    if(!geo_mgr_->needsModel(model_name)) {
-        LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
-        return;
-    }
-
     try {
         // Try to parse as config file
         std::ifstream file(path);
         const auto stack = FileParser::getStack(file, path);
+
+        // Prefer in-file name field over file name:
+        model_name = stack.getHeaderConfiguration().get<std::string>("name", model_name);
+
+        // Check if we need to look at file at all
+        if(geo_mgr_->hasModel(model_name)) {
+            LOG(DEBUG) << "Skipping overwritten model " << model_name << " in path " << path;
+            return;
+        }
+        if(!geo_mgr_->needsModel(model_name)) {
+            LOG(TRACE) << "Skipping not required model " << model_name << " in path " << path;
+            return;
+        }
 
         // Parse configuration and add model to the config
         geo_mgr_->addModel(DetectorModel::factory(model_name, stack));
