@@ -308,10 +308,6 @@ void DepositionPointChargeModule::finalize() {
         deposition_position_xy->Get()->SetOption("colz");
         deposition_position_xz->Get()->SetOption("colz");
         deposition_position_yz->Get()->SetOption("colz");
-
-        deposition_position_xy->Write();
-        deposition_position_xz->Write();
-        deposition_position_yz->Write();
     }
 }
 

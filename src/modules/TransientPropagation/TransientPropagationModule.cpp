@@ -971,45 +971,5 @@ void TransientPropagationModule::finalize() {
               << max_charge_groups_ << " charge groups allowed, with a charge_per_step value of " << charge_per_step_ << ".";
     if(output_plots_) {
         group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
-
-        potential_difference_->Write();
-        step_length_histo_->Write();
-        group_size_histo_->Write();
-        drift_time_histo_->Write();
-        recombine_histo_->Write();
-        recombination_time_histo_->Write();
-        trapped_histo_->Write();
-        trapping_time_histo_->Write();
-        induced_charge_histo_->Write();
-        induced_charge_e_histo_->Write();
-        induced_charge_h_histo_->Write();
-        if(!multiplication_.is<NoImpactIonization>()) {
-            induced_charge_primary_histo_->Write();
-            induced_charge_primary_e_histo_->Write();
-            induced_charge_primary_h_histo_->Write();
-            induced_charge_secondary_histo_->Write();
-            induced_charge_secondary_e_histo_->Write();
-            induced_charge_secondary_h_histo_->Write();
-        }
-        induced_charge_vs_depth_histo_->Write();
-        induced_charge_e_vs_depth_histo_->Write();
-        induced_charge_h_vs_depth_histo_->Write();
-        induced_charge_map_->Write();
-        induced_charge_e_map_->Write();
-        induced_charge_h_map_->Write();
-        if(!multiplication_.is<NoImpactIonization>()) {
-            gain_primary_histo_->Write();
-            gain_all_histo_->Write();
-            gain_e_histo_->Write();
-            gain_h_histo_->Write();
-            multiplication_level_histo_->Write();
-            multiplication_depth_histo_->Write();
-            gain_e_vs_x_->Write();
-            gain_e_vs_y_->Write();
-            gain_e_vs_z_->Write();
-            gain_h_vs_x_->Write();
-            gain_h_vs_y_->Write();
-            gain_h_vs_z_->Write();
-        }
     }
 }

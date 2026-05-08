@@ -507,12 +507,4 @@ void ElectricFieldReaderModule::create_output_plots() {
             }
         }
     }
-
-    // Write the histograms to module file
-    histogram->Write();
-    histogram_x->Write();
-    histogram_y->Write();
-    histogram_z->Write();
-    histogram_lateral->Write();
-    histogram1D->Write();
 }

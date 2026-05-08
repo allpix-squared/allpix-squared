@@ -455,20 +455,6 @@ void DepositionGeant4Module::run(Event* event) {
 }
 
 void DepositionGeant4Module::finalize() {
-    if(output_plots_) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-        for(auto& histogram : charge_per_event_) {
-            histogram.second->Write();
-        }
-        for(auto& histogram : energy_per_event_) {
-            histogram.second->Write();
-        }
-        for(auto& histogram : incident_track_position_) {
-            histogram.second->Write();
-        }
-    }
-
     // Print summary or warns if module did not output any charges
     if(number_of_sensors_ > 0 && total_charges_ > 0 && last_event_num_ > 0) {
         size_t const average_charge = total_charges_ / number_of_sensors_ / last_event_num_;

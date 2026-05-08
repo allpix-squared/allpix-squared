@@ -453,15 +453,6 @@ void DepositionReaderModule::run(Event* event) {
     }
 }
 
-void DepositionReaderModule::finalize() {
-    if(output_plots_) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-        for(auto& plot : charge_per_event_) {
-            plot.second->Write();
-        }
-    }
-}
 bool DepositionReaderModule::read_root(uint64_t event_num,
                                        int64_t& curr_event_id,
                                        std::string& volume,

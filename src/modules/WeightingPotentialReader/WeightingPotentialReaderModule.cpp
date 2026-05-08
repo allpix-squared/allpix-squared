@@ -269,12 +269,6 @@ void WeightingPotentialReaderModule::create_output_plots() {
     histogram2Dx->SetOption("colz");
     histogram2Dy->SetOption("colz");
     histogram2Dz->SetOption("colz");
-
-    // Write the histogram to module file
-    histogram->Write();
-    histogram2Dx->Write();
-    histogram2Dy->Write();
-    histogram2Dz->Write();
 }
 
 /**
