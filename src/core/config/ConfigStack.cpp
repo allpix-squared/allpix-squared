@@ -53,12 +53,12 @@ void ConfigStack::clear() {
 }
 
 bool ConfigStack::hasConfiguration(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    std::ranges::transform(name, name.begin(), ::tolower);
     return conf_map_.find(name) != conf_map_.end();
 }
 
 unsigned int ConfigStack::countConfigurations(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    std::ranges::transform(name, name.begin(), ::tolower);
     if(!hasConfiguration(name)) {
         return 0;
     }
@@ -92,7 +92,7 @@ Configuration ConfigStack::getHeaderConfiguration() const {
 }
 
 std::vector<Configuration> ConfigStack::getConfigurations(std::string name) const {
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    std::ranges::transform(name, name.begin(), ::tolower);
     if(!hasConfiguration(name)) {
         return {};
     }

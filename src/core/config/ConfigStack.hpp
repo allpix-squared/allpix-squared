@@ -36,6 +36,7 @@ namespace allpix {
          * @brief Default constructor
          */
         ConfigStack() = default;
+        virtual ~ConfigStack() = default;
 
         /**
          * @brief Directly add a configuration object to the reader

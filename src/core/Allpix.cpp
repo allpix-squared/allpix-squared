@@ -80,10 +80,10 @@ Allpix::Allpix(std::filesystem::path config_file_name,
     Configuration const& global_config = conf_mgr_->getGlobalConfiguration();
 
     // Read the detector file and load it to the config manager
-    const auto detector_file_name = global_config.getPath("detectors_file", true);
+    auto detector_file_name = global_config.getPath("detectors_file", true);
     LOG(TRACE) << "Reading detector configuration";
     std::ifstream detector_file(detector_file_name);
-    const auto stack_geo = FileParser::getStack(file, std::move(config_file_name));
+    const auto stack_geo = FileParser::getStack(detector_file, std::move(detector_file_name));
     conf_mgr_->loadDetectors(stack_geo.getConfigurations());
 
     // Load and apply the provided detector options

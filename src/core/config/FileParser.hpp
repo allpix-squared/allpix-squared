@@ -34,6 +34,7 @@ namespace allpix {
     class FileParser {
     public:
         FileParser() = default;
+        virtual ~FileParser() = default;
 
         /**
          * @brief Parses a configuration file and returns the content as ConifgStack
