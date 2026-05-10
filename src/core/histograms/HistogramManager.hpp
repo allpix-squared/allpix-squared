@@ -153,6 +153,9 @@ namespace allpix {
             histogram_file_->Close();
         };
 
+    protected:
+        std::multimap<std::string, std::shared_ptr<BaseHistogram>> get_histogram_map() { return histogram_map_; };
+
     private:
         HistogramManager() = default;
 

@@ -26,7 +26,7 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
-#include "core/histograms/HistogramManager.h"
+#include "core/histograms/HistogramManager.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/prng.h"
