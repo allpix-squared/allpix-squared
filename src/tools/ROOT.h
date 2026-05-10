@@ -28,6 +28,7 @@
 
 #include <ROOT/TThreadedObject.hxx>
 #include <TH1.h>
+#include <TObject.h>
 
 #include "core/module/ThreadPool.hpp"
 #include "core/utils/text.h"
@@ -169,6 +170,7 @@ namespace allpix {
         virtual ~BaseHistogram() = default;
         virtual std::string GetName() = 0;
         virtual void Write() = 0;
+        virtual std::shared_ptr<TObject> GetObject() = 0;
     };
 
     /**
@@ -218,6 +220,12 @@ namespace allpix {
             if(!object) {
                 object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
             }
+            return object;
+        }
+
+        std::shared_ptr<TObject> GetObject() override {
+            auto idx = ThreadPool::threadNum();
+            auto& object = objects_[idx];
             return object;
         }
 
