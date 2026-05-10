@@ -170,7 +170,7 @@ namespace allpix {
         virtual ~BaseHistogram() = default;
         virtual std::string GetName() = 0;
         virtual void Write() = 0;
-        virtual std::shared_ptr<TObject> GetObject() = 0;
+        virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0;
     };
 
     /**
@@ -223,9 +223,15 @@ namespace allpix {
             return object;
         }
 
-        std::shared_ptr<TObject> GetObject() override {
-            auto idx = ThreadPool::threadNum();
-            auto& object = objects_[idx];
+        /**
+         * @brief Get the thread local instance of the histogram as shared_ptr<TObject>
+         */
+        std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() override {
+            if(objects_.size() < 2) {
+                LOG(WARNING) << "Thread for piping histograms is not available. Return nullptr";
+                return nullptr;
+            }
+            auto& object = objects_[1];
             return object;
         }
 
