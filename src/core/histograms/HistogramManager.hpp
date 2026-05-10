@@ -162,11 +162,15 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();
-            LOG(TRACE) << "Current directory: " << gDirectory->GetPath();
+
+            std::string abs_path_str = gDirectory->GetPath();
+            auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
+            LOG(TRACE) << "Current directory: " << local_path_str;
+
             auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
-            LOG(DEBUG) << "Registering histogram (" << directory->GetPath() << ", " << histogram->Get()->GetName() << ")";
-            histogram_map_.emplace(directory->GetPath(), histogram);
+            LOG(WARNING) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
+            histogram_map_.emplace(local_path_str, histogram);
 
             return histogram;
         };
