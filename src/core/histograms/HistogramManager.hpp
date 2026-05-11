@@ -68,7 +68,7 @@ namespace allpix {
         /**
          * @brief Class destructor
          */
-        ~HistogramManager() {};
+        ~HistogramManager() = default;
 
         /**
          * @brief
@@ -82,7 +82,7 @@ namespace allpix {
          * @param module_identifier Identifier of the module, e.g. detector name
          * @return Pointer to created ROOT TDirectory
          */
-        TDirectory* register_module_directory(const std::string& module_name, const std::string& module_identifier) {
+        TDirectory* registerModuleDirectory(const std::string& module_name, const std::string& module_identifier) {
             // Create main ROOT directory for this module class if it does not exist yet
             LOG(TRACE) << "Creating and accessing ROOT directory";
             auto* module_directory = histogram_file_->GetDirectory(module_name.c_str());
@@ -120,7 +120,8 @@ namespace allpix {
          * @param subdirectory_name Name of the directory to be created
          * @return Pointer to created ROOT TDirectory
          */
-        TDirectory* register_subdirectory(TDirectory* unique_module_directory, const std::string& subdirectory_name = "") {
+        static TDirectory* registerSubdirectory(TDirectory* unique_module_directory,
+                                                const std::string& subdirectory_name = "") {
             if(unique_module_directory == nullptr) {
                 throw RuntimeError("ROOT directory for unique module should be present but cannot be accessed.");
             }
@@ -148,7 +149,7 @@ namespace allpix {
          * @return Pointer to created ROOT TDirectory
          * @note This creates subdirectories via the syntax "path/to/directory"
          */
-        TDirectory* register_generic_path(const std::string& path) {
+        TDirectory* registerGenericPath(const std::string& path) {
             // Create ROOT directory for this path
             LOG(TRACE) << "Creating and accessing ROOT directory";
             auto* directory = histogram_file_->GetDirectory(path.c_str());
@@ -170,8 +171,8 @@ namespace allpix {
          * @return shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> register_histogram(TDirectory* directory, ARGS&&... args) {
-            return create_histogram<T>(directory, std::forward<ARGS>(args)...);
+        std::shared_ptr<ThreadedHistogram<T>> registerHistogram(TDirectory* directory, ARGS&&... args) {
+            return createHistogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
         /**
@@ -181,9 +182,9 @@ namespace allpix {
          * @return shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> register_histogram_with_path(const std::string& path, ARGS&&... args) {
-            auto directory = register_generic_path(path);
-            return create_histogram<T>(directory, std::forward<ARGS>(args)...);
+        std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string& path, ARGS&&... args) {
+            auto* directory = registerGenericPath(path);
+            return createHistogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
         /**
@@ -195,13 +196,13 @@ namespace allpix {
             // Only if file is open
             if(histogram_file_->IsZombie()) {
                 LOG(ERROR) << "Histogram file is not open. Cannot finalize.";
-                return; // TODO: throw or return?
+                return;
             }
 
-            for(auto it = histogram_map_.begin(); it != histogram_map_.end(); it++) {
-                LOG(TRACE) << "Storing histogram " + it->second->GetName() + " in path " << it->first;
-                histogram_file_->cd(it->first.c_str());
-                it->second->Write();
+            for(auto& it : histogram_map_) {
+                LOG(TRACE) << "Storing histogram " + it.second->GetName() + " in path " << it.first;
+                histogram_file_->cd(it.first.c_str());
+                it.second->Write();
             }
 
             // Close file
@@ -213,11 +214,11 @@ namespace allpix {
          * @brief Get the histogram map
          * @return multimap with directories of histograms (key) and pointers to histograms (value)
          */
-        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() const {
-            return histogram_map_;
-        };
+        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& getHistogramMap() const { return histogram_map_; };
 
     private:
+        HistogramManager() = default;
+
         /**
          * @brief Create histogram and register it in the histogram map
          * @param directory Pointer to histogram file directory the histogram should be written to
@@ -225,11 +226,11 @@ namespace allpix {
          * @return shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
+        std::shared_ptr<ThreadedHistogram<T>> createHistogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();
 
-            std::string abs_path_str = gDirectory->GetPath();
-            auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
+            const std::string abs_path_str = gDirectory->GetPath();
+            const auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
             LOG(TRACE) << "Current directory: " << local_path_str;
 
             auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);

@@ -127,7 +127,7 @@ namespace allpix {
          */
         template <typename T, class... ARGS> std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) {
             // Get instance of histogram registry
-            return histogram_manager_->register_histogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
+            return histogram_manager_->registerHistogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
         };
 
         /**
@@ -136,8 +136,8 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, ARGS&&... args) {
             // Get instance of histogram registry
-            auto full_directory = histogram_manager_->register_subdirectory(this->getROOTDirectory(), subdirectory);
-            return histogram_manager_->register_histogram<T>(full_directory, std::forward<ARGS>(args)...);
+            auto full_directory = histogram_manager_->registerSubdirectory(this->getROOTDirectory(), subdirectory);
+            return histogram_manager_->registerHistogram<T>(full_directory, std::forward<ARGS>(args)...);
         };
 
         /**
