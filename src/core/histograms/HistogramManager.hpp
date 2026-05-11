@@ -157,8 +157,6 @@ namespace allpix {
         std::multimap<std::string, std::shared_ptr<BaseHistogram>> get_histogram_map() { return histogram_map_; };
 
     private:
-        HistogramManager() = default;
-
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();
