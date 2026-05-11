@@ -82,6 +82,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
+         * @param histogram_manager Pointer to the histogram manager
          */
         void load(Messenger* messenger,
                   ConfigManager* conf_manager,
