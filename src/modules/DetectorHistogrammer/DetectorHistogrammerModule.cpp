@@ -453,8 +453,8 @@ void DetectorHistogrammerModule::initialize() {
                                                           "polar_hit_map",
                                                           polar_hit_map_title.c_str(),
                                                           xpixels,
-                                                          -max_angle / 2 - stereo_angle,
-                                                          max_angle / 2 - stereo_angle,
+                                                          (-max_angle / 2) - stereo_angle,
+                                                          (max_angle / 2) - stereo_angle,
                                                           ypixels,
                                                           row_radii.data());
 
