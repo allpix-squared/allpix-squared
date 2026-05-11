@@ -22,8 +22,21 @@
 #include "tools/ROOT.h"
 
 namespace allpix {
+
+    /**
+     * @brief The HistogramManager manages histograms - centralized for all modules and the ModuleManager
+     *
+     * This class holds all interactions with the histogram file, keeps track of all histograms registered, creates
+     * corresponding directories and writes the histograms.
+     * @note it is still possible to create TObjects without registering, as exercised e.g. via TGraphs in a few modules.
+     */
     class HistogramManager {
     public:
+        /**
+         * @brief Base constructor for histogram manager
+         * @param file_path Path to the histogram file as provided in the configuration
+         * @param deny_overwrite Prevents from overwriting files if set to true
+         */
         HistogramManager(const std::string& file_path, const bool& deny_overwrite) {
             LOG(INFO) << "Opening histogram file.";
 
@@ -52,8 +65,23 @@ namespace allpix {
             LOG(TRACE) << "Opened histogram file.";
         };
 
+        /**
+         * @brief Class destructor
+         */
         ~HistogramManager() {};
 
+        /**
+         * @brief
+         * @param
+         * @return
+         */
+
+        /**
+         * @brief Creates and registers a directory in the histogram file for each module
+         * @param module_name Name of the module
+         * @param module_identifier Identifier of the module, e.g. detector name
+         * @return Pointer to created ROOT TDirectory
+         */
         TDirectory* register_module_directory(const std::string& module_name, const std::string& module_identifier) {
             // Create main ROOT directory for this module class if it does not exist yet
             LOG(TRACE) << "Creating and accessing ROOT directory";
@@ -86,6 +114,12 @@ namespace allpix {
             return unique_module_directory;
         }
 
+        /**
+         * @brief Creates and registers a subdirectory within a modules' directory in the histogram file
+         * @param unique_module_directory Pointer to TDirectory of this unique module
+         * @param subdirectory_name Name of the directory to be created
+         * @return Pointer to created ROOT TDirectory
+         */
         TDirectory* register_subdirectory(TDirectory* unique_module_directory, const std::string& subdirectory_name = "") {
             if(unique_module_directory == nullptr) {
                 throw RuntimeError("ROOT directory for unique module should be present but cannot be accessed.");
@@ -108,6 +142,12 @@ namespace allpix {
             return subdirectory;
         };
 
+        /**
+         * @brief Creates and registers a directory with a generic path in the histogram file
+         * @param path Name of path to be created
+         * @return Pointer to created ROOT TDirectory
+         * @note This creates subdirectories via the syntax "path/to/directory"
+         */
         TDirectory* register_generic_path(const std::string& path) {
             // Create ROOT directory for this path
             LOG(TRACE) << "Creating and accessing ROOT directory";
@@ -123,17 +163,32 @@ namespace allpix {
             return directory;
         };
 
+        /**
+         * @brief Create and register histogram within a given directory of the histogram file
+         * @param directory Directory for the histogram to live in
+         * @param args Further arguments for histogram constructor
+         * @return shared pointer to generated histogram object
+         */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> register_histogram(TDirectory* directory, ARGS&&... args) {
             return create_histogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
+        /**
+         * @brief Register path in the histogram file and emplace newly generated histogram there
+         * @param path Name of the path to be created
+         * @param args Further arguments for histogram constructor
+         * @return shared pointer to generated histogram object
+         */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> register_histogram_with_path(const std::string& path, ARGS&&... args) {
             auto directory = register_generic_path(path);
             return create_histogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
+        /**
+         * @brief Writes all histograms into their corresponding directories in the histogram file
+         */
         void finalize() {
             LOG(INFO) << "Finalizing histograms ...";
 
@@ -154,9 +209,19 @@ namespace allpix {
         };
 
     protected:
-        std::multimap<std::string, std::shared_ptr<BaseHistogram>> get_histogram_map() { return histogram_map_; };
+        /**
+         * @brief Get the histogram map
+         * @return multimap with directories of histograms (key) and pointers to histograms (value)
+         */
+        std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() { return histogram_map_; };
 
     private:
+        /**
+         * @brief Create histogram and register it in the histogram map
+         * @param directory Pointer to histogram file directory the histogram should be written to
+         * @param args Further arguments for histogram constructor
+         * @return shared pointer to generated histogram object
+         */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();

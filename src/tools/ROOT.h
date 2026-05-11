@@ -164,6 +164,12 @@ namespace allpix {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
 
+    /**
+     * @brief Base class for ThreadedHistograms
+     *
+     * Main right to exist is for the HistogramManager to be able to store pointers to these objects in a container.
+     * No inherent functionality.
+     */
     class BaseHistogram {
     public:
         BaseHistogram() = default;
