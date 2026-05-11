@@ -213,7 +213,9 @@ namespace allpix {
          * @brief Get the histogram map
          * @return multimap with directories of histograms (key) and pointers to histograms (value)
          */
-        std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() { return histogram_map_; };
+        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() const {
+            return histogram_map_;
+        };
 
     private:
         /**
