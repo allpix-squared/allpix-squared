@@ -182,6 +182,7 @@ namespace allpix {
         virtual std::string GetName() = 0;                                   // NOLINT
         virtual void Write() = 0;                                            // NOLINT
         virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0; // NOLINT
+        virtual void SetOption(std::string) = 0;                             // NOLINT
     };
 
     /**
@@ -219,6 +220,12 @@ namespace allpix {
          * @brief Extract the name of the histogram
          */
         std::string GetName() override { return this->Get()->GetName(); } // NOLINT
+
+        /**
+         * @brief Store a draw option for this histogram
+         * @param option Draw option parsed as string
+         */
+        void SetOption(std::string option) override { drawing_options_.push_back(option); } // NOLINT
 
         /**
          * @brief Get the thread local instance of the histogram
@@ -291,6 +298,10 @@ namespace allpix {
             }
             mergeFunction(objects_[0], objects_);
             is_merged_ = true;
+
+            for(auto& option : drawing_options_) {
+                objects_[0]->SetOption(option.c_str());
+            }
             return objects_[0];
         }
 
@@ -298,6 +309,7 @@ namespace allpix {
         std::vector<std::shared_ptr<T>> objects_;
         std::vector<TDirectory*> directories_;
         bool is_merged_{false};
+        std::vector<std::string> drawing_options_;
     };
 
     template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
