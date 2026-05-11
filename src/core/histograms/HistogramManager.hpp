@@ -185,7 +185,7 @@ namespace allpix {
          * @brief Writes all histograms into their corresponding directories in the histogram file
          */
         void finalize() {
-            LOG(INFO) << "Finalizing histograms ...";
+            LOG(INFO) << "Finalizing histograms.";
 
             // Only if file is open
             if(histogram_file_->IsZombie()) {
@@ -194,7 +194,7 @@ namespace allpix {
             }
 
             for(auto& it : histogram_map_) {
-                LOG(TRACE) << "Storing histogram " + it.second->GetName() + " in path " << it.first;
+                LOG(TRACE) << "Writing histogram " + it.second->GetName() + " to path " << it.first;
                 histogram_file_->cd(it.first.c_str());
                 it.second->Write();
             }
@@ -227,11 +227,10 @@ namespace allpix {
 
             const std::string abs_path_str = gDirectory->GetPath();
             const auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
-            LOG(TRACE) << "Current directory: " << local_path_str;
 
             auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
-            LOG(WARNING) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
+            LOG(DEBUG) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
             histogram_map_.emplace(local_path_str, histogram);
 
             return histogram;
