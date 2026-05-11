@@ -444,7 +444,7 @@ void CapacitiveTransferModule::finalize() {
 
     if(config_.get<bool>("output_plots") && config_.has("coupling_scan_file")) {
         for(size_t i = 1; i < 10; i++) {
-            capacitances_[i - 1]->Write(Form("Pixel_%zu", i));
+            capacitances_[i - 1]->Write(TString(Form("Pixel_%zu", i)));
         }
     }
 }

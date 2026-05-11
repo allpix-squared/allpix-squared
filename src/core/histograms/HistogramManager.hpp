@@ -71,12 +71,6 @@ namespace allpix {
         ~HistogramManager() = default;
 
         /**
-         * @brief
-         * @param
-         * @return
-         */
-
-        /**
          * @brief Creates and registers a directory in the histogram file for each module
          * @param module_name Name of the module
          * @param module_identifier Identifier of the module, e.g. detector name
@@ -172,7 +166,7 @@ namespace allpix {
          */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> registerHistogram(TDirectory* directory, ARGS&&... args) {
-            return createHistogram<T>(directory, std::forward<ARGS>(args)...);
+            return create_histogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
         /**
@@ -184,7 +178,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string& path, ARGS&&... args) {
             auto* directory = registerGenericPath(path);
-            return createHistogram<T>(directory, std::forward<ARGS>(args)...);
+            return create_histogram<T>(directory, std::forward<ARGS>(args)...);
         };
 
         /**
@@ -214,7 +208,9 @@ namespace allpix {
          * @brief Get the histogram map
          * @return multimap with directories of histograms (key) and pointers to histograms (value)
          */
-        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& getHistogramMap() const { return histogram_map_; };
+        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() const {
+            return histogram_map_;
+        };
 
     private:
         HistogramManager() = default;
@@ -226,7 +222,7 @@ namespace allpix {
          * @return shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> createHistogram(TDirectory* directory, ARGS&&... args) {
+        std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args) {
             directory->cd();
 
             const std::string abs_path_str = gDirectory->GetPath();

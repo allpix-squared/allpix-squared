@@ -177,7 +177,7 @@ namespace allpix {
         static void set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev);
 
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) {
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) { // NOLINT
             // Get instance of histogram registry
             return histogram_manager_->registerHistogramWithPath<T>(path, std::forward<ARGS>(args)...);
         };
