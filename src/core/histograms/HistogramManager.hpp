@@ -66,9 +66,25 @@ namespace allpix {
         };
 
         /**
-         * @brief Class destructor
+         * @brief Default destructor
          */
         ~HistogramManager() = default;
+
+        /// @{
+        /**
+         * @brief Copying the manager is not allowed
+         */
+        HistogramManager(const HistogramManager&) = delete;
+        HistogramManager& operator=(const HistogramManager&) = delete;
+        /// @}
+
+        /// @{
+        /**
+         * @brief Use default move behaviour
+         */
+        HistogramManager(HistogramManager&&) noexcept = default;
+        HistogramManager& operator=(HistogramManager&&) noexcept = default;
+        /// @}
 
         /**
          * @brief Creates and registers a directory in the histogram file for each module

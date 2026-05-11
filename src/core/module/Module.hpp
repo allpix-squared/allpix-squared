@@ -135,10 +135,10 @@ namespace allpix {
          * TODO Documentation
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory,
-                                                                          ARGS&&... args) { // NOLINT
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, // NOLINT
+                                                                          ARGS&&... args) {
             // Get instance of histogram registry
-            auto full_directory = allpix::HistogramManager::registerSubdirectory(this->getROOTDirectory(), subdirectory);
+            auto* full_directory = allpix::HistogramManager::registerSubdirectory(this->getROOTDirectory(), subdirectory);
             return histogram_manager_->registerHistogram<T>(full_directory, std::forward<ARGS>(args)...);
         };
 

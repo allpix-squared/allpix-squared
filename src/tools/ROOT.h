@@ -175,6 +175,10 @@ namespace allpix {
         BaseHistogram() = default;
         virtual ~BaseHistogram() = default;
         BaseHistogram(const BaseHistogram&) = default;
+        BaseHistogram& operator=(const BaseHistogram&) = default;
+        BaseHistogram(BaseHistogram&&) noexcept = default;
+        BaseHistogram& operator=(BaseHistogram&&) noexcept = default;
+
         virtual std::string GetName() = 0;                                   // NOLINT
         virtual void Write() = 0;                                            // NOLINT
         virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0; // NOLINT
