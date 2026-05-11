@@ -305,9 +305,9 @@ void DepositionPointChargeModule::run(Event* event) {
 
 void DepositionPointChargeModule::finalize() {
     if(output_plots_) {
-        deposition_position_xy->Get()->SetOption("colz");
-        deposition_position_xz->Get()->SetOption("colz");
-        deposition_position_yz->Get()->SetOption("colz");
+        deposition_position_xy->SetOption("colz");
+        deposition_position_xz->SetOption("colz");
+        deposition_position_yz->SetOption("colz");
     }
 }
 

@@ -704,6 +704,21 @@ void DetectorHistogrammerModule::finalize() {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
 
+    hit_map->SetOption("lego1");
+    hit_map->SetOption("colz");
+    hit_map_global->SetOption("colz");
+    hit_map_global_mc->SetOption("colz");
+    hit_map_local->SetOption("colz");
+    hit_map_local_mc->SetOption("colz");
+
+    charge_map->SetOption("colz");
+
+    cluster_map->SetOption("colz");
+    cluster_size_map->SetOption("colz");
+    cluster_size_map_local->SetOption("colz");
+    cluster_size_x_map->SetOption("colz");
+    cluster_size_y_map->SetOption("colz");
+
     /*
     // FIXME Set more useful spacing maximum for cluster size histogram
     auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
@@ -752,11 +767,6 @@ void DetectorHistogrammerModule::finalize() {
     }
 
     // Set default drawing option histogram for hitmap
-    hit_map_histogram->SetOption("colz");
-    hit_map_global_histogram->SetOption("colz");
-    hit_map_global_mc_histogram->SetOption("colz");
-    hit_map_local_histogram->SetOption("colz");
-    hit_map_local_mc_histogram->SetOption("colz");
     // Set hit_map axis spacing
     if(static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) < 10) {
         hit_map_histogram->GetXaxis()->SetNdivisions(
@@ -767,7 +777,6 @@ void DetectorHistogrammerModule::finalize() {
             static_cast<int>(hit_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    charge_map_histogram->SetOption("colz");
     // Set hit_map axis spacing
     if(static_cast<int>(charge_map_histogram->GetXaxis()->GetXmax()) < 10) {
         charge_map_histogram->GetXaxis()->SetNdivisions(
@@ -778,11 +787,6 @@ void DetectorHistogrammerModule::finalize() {
             static_cast<int>(charge_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
     }
 
-    cluster_map_histogram->SetOption("colz");
-    cluster_size_map_histogram->SetOption("colz");
-    cluster_size_map_local_histogram->SetOption("colz");
-    cluster_size_x_map_histogram->SetOption("colz");
-    cluster_size_y_map_histogram->SetOption("colz");
     // Set cluster_map axis spacing
     if(static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) < 10) {
         cluster_map_histogram->GetXaxis()->SetNdivisions(
