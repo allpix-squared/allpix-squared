@@ -14,6 +14,7 @@
 
 #include <memory>
 
+#include <G4Box.hh>
 #include <G4PVParameterised.hh>
 #include <G4ThreeVector.hh>
 #include <G4VPVParameterisation.hh>
@@ -32,11 +33,13 @@ namespace allpix {
          * @param div_x Number of divisions in the x-direction (y is automatically inferred)
          * @param size_x Size of single element in x-direction
          * @param size_y Size of single element in y-direction
+         * @param size_z Size of single element in z-direction
          * @param offset_x Offset of grid in the x-direction
          * @param offset_y Offset of grid in the y-direction
          * @param pos_z Position of the 2D parameterization in the z-axis
          */
-        Parameterization2DG4(int div_x, double size_x, double size_y, double offset_x, double offset_y, double pos_z);
+        Parameterization2DG4(
+            int div_x, double size_x, double size_y, double size_z, double offset_x, double offset_y, double pos_z);
 
         /**
          * @brief Place the physical volume at the correct place with the copy number
@@ -45,13 +48,18 @@ namespace allpix {
          */
         void ComputeTransformation(const G4int, G4VPhysicalVolume*) const override;
 
+        G4VSolid* ComputeSolid(G4int copy_id, G4VPhysicalVolume* phys_volume) override;
+        void ComputeDimensions(G4Box& box, G4int copy_id, const G4VPhysicalVolume* phys_volume) const override;
+
     private:
         int div_x_;
         double size_x_;
         double size_y_;
+        double size_z_;
         double offset_x_;
         double offset_y_;
         double pos_z_;
+        G4Box bounding_box_;
     };
 
     /**

@@ -245,6 +245,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
             std::make_shared<Parameterization2DG4>(model->getNPixels().x(),
                                                    model->getPixelSize().x(),
                                                    model->getPixelSize().y(),
+                                                   model->getSensorSize().z(),
                                                    -model->getMatrixSize().x() / 2.0,
                                                    -model->getMatrixSize().y() / 2.0,
                                                    0);
@@ -428,6 +429,7 @@ void DetectorConstructionG4::build(const std::shared_ptr<G4LogicalVolume>& world
                 model->getNPixels().x(),
                 model->getPixelSize().x(),
                 model->getPixelSize().y(),
+                bump_height,
                 -(model->getNPixels().x() * model->getPixelSize().x()) / 2.0 + (hybrid_chip->getBumpsOffset().x()),
                 -(model->getNPixels().y() * model->getPixelSize().y()) / 2.0 + (hybrid_chip->getBumpsOffset().y()),
                 0);
