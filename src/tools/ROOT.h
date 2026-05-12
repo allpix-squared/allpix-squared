@@ -27,6 +27,7 @@
 #include <TString.h>
 
 #include <ROOT/TThreadedObject.hxx>
+#include <TAxis.h>
 #include <TH1.h>
 #include <TObject.h>
 
@@ -183,6 +184,8 @@ namespace allpix {
         virtual void Write() = 0;                                            // NOLINT
         virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0; // NOLINT
         virtual void SetOption(std::string) = 0;                             // NOLINT
+        virtual void setAdjustAxisRanges() = 0;
+        virtual void setAdjustAxisDivisions() = 0;
     };
 
     /**
@@ -226,6 +229,16 @@ namespace allpix {
          * @param option Draw option parsed as string
          */
         void SetOption(std::string option) override { drawing_options_.push_back(option); } // NOLINT
+
+        /**
+         * @brief Sets a tag that will invoke an axis range adjustment at the time of writing
+         */
+        void setAdjustAxisRanges() override { auto_adjust_axis_ranges_ = true; }
+
+        /**
+         * @brief Sets a tag that will invoke an axis divisions adjustment at the time of writing
+         */
+        void setAdjustAxisDivisions() override { auto_adjust_axis_divisions_ = true; }
 
         /**
          * @brief Get the thread local instance of the histogram
@@ -291,6 +304,45 @@ namespace allpix {
                 objects_[0]->SetOption(option.c_str());
             }
 
+            auto adjust_axis_divisions = [&](TAxis* axis) {
+                if(static_cast<int>(axis->GetXmax()) < 10) {
+                    axis->SetNdivisions(static_cast<int>(axis->GetXmax()) + 1, 0, 0, true);
+                }
+            };
+
+            if(auto_adjust_axis_ranges_) {
+                auto adjust_axis_range = [&](int axis_id, TAxis* axis) {
+                    auto xmax = std::ceil(axis->GetBinCenter(objects_[0]->FindLastBinAbove(0, axis_id)) + 1);
+                    axis->SetRangeUser(0, xmax);
+                    adjust_axis_divisions(axis);
+                };
+
+                auto ndim = objects_[0]->GetDimension();
+                if(ndim >= 1) {
+                    adjust_axis_range(1, objects_[0]->GetXaxis());
+                }
+                if(ndim >= 2) {
+                    adjust_axis_range(2, objects_[0]->GetYaxis());
+                }
+                if(ndim >= 3) {
+                    adjust_axis_range(3, objects_[0]->GetZaxis());
+                }
+            }
+
+            if(auto_adjust_axis_divisions_) {
+
+                auto ndim = objects_[0]->GetDimension();
+                if(ndim >= 1) {
+                    adjust_axis_divisions(objects_[0]->GetXaxis());
+                }
+                if(ndim >= 2) {
+                    adjust_axis_divisions(objects_[0]->GetYaxis());
+                }
+                if(ndim >= 3) {
+                    adjust_axis_divisions(objects_[0]->GetZaxis());
+                }
+            }
+
             objects_[0]->Write();
         }
 
@@ -313,6 +365,8 @@ namespace allpix {
         std::vector<TDirectory*> directories_;
         bool is_merged_{false};
         std::vector<std::string> drawing_options_;
+        bool auto_adjust_axis_ranges_{false};
+        bool auto_adjust_axis_divisions_{false};
     };
 
     template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
