@@ -211,9 +211,37 @@ void DopingProfileReaderModule::create_output_plots() {
         max2 = center.y() + size.y() / 2.0;
     }
 
+    // Determine the coordinate to use for projection and axis titles for histograms
+    double x = 0;
+    double y = 0;
+    double z = 0;
+
+    std::string x_axis_title = "";
+    std::string y_axis_title = "";
+    std::string position_str = "";
+
+    if(project == 'x') {
+        x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.x();
+        x_axis_title = "y (mm)";
+        y_axis_title = "z (mm)";
+        position_str = "x=" + std::to_string(x) + " mm";
+    } else if(project == 'y') {
+        y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.y();
+        x_axis_title = "x (mm)";
+        y_axis_title = "z (mm)";
+        position_str = "y=" + std::to_string(y) + " mm";
+    } else {
+        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.z();
+        x_axis_title = "x (mm)";
+        y_axis_title = "y (mm)";
+        position_str = "z=" + std::to_string(z) + " mm";
+    }
+
     // Create 2D doping_concentration_histograms
+    std::string const histogram_title = "Doping concentration (1/cm^{3}) at " + position_str + ";" + x_axis_title + ";" +
+                                        y_axis_title + ";Concentration (1/cm^{3})";
     auto* doping_concentration_histogram = new TH2F("doping_concentration",
-                                                    "Doping concentration (1/cm^{3})",
+                                                    histogram_title.c_str(),
                                                     static_cast<int>(steps),
                                                     min1,
                                                     max1,
@@ -229,33 +257,6 @@ void DopingProfileReaderModule::create_output_plots() {
                                                       min2,
                                                       max2);
     doping_concentration_histogram1D->SetOption("hist");
-
-    // Determine the coordinate to use for projection
-    double x = 0;
-    double y = 0;
-    double z = 0;
-    if(project == 'x') {
-        x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.x();
-        doping_concentration_histogram->GetXaxis()->SetTitle("y (mm)");
-        doping_concentration_histogram->GetYaxis()->SetTitle("z (mm)");
-        doping_concentration_histogram->SetTitle(
-            ("Doping concentration (1/cm^{3}) at x=" + std::to_string(x) + " mm").c_str());
-    } else if(project == 'y') {
-        y = center.y() - size.y() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.y();
-        doping_concentration_histogram->GetXaxis()->SetTitle("x (mm)");
-        doping_concentration_histogram->GetYaxis()->SetTitle("z (mm)");
-        doping_concentration_histogram->SetTitle(
-            ("Doping concentration (1/cm^{3}) at y=" + std::to_string(y) + " mm").c_str());
-    } else {
-        z = z_min + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.z();
-        doping_concentration_histogram->GetXaxis()->SetTitle("x (mm)");
-        doping_concentration_histogram->GetYaxis()->SetTitle("y (mm)");
-        doping_concentration_histogram->SetTitle(
-            ("Doping concentration (1/cm^{3}) at z=" + std::to_string(z) + " mm").c_str());
-    }
-
-    // set z axis tile
-    doping_concentration_histogram->GetZaxis()->SetTitle("Concentration");
 
     // Find the doping concentration at every index, scan axes in local coordinates!
     for(size_t j = 0; j < steps; ++j) {
