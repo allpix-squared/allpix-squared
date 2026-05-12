@@ -282,27 +282,30 @@ namespace allpix {
         }
 
         /**
-         * @brief An easy way to write a histogram
+         * @brief An easy way to write a histogram. Applies draw & modification options before.
          */
-        void Write() override { this->Merge()->Write(); } // NOLINT
+        void Write() override { // NOLINT
+            this->Merge();
+
+            for(auto& option : drawing_options_) {
+                objects_[0]->SetOption(option.c_str());
+            }
+
+            objects_[0]->Write();
+        }
 
         /**
          * @brief Merge the threaded histograms into final object
          *
          * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
          */
-        std::shared_ptr<T> Merge() { // NOLINT
+        void Merge() { // NOLINT
             ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
             if(is_merged_) {
-                return objects_[0];
+                return;
             }
             mergeFunction(objects_[0], objects_);
             is_merged_ = true;
-
-            for(auto& option : drawing_options_) {
-                objects_[0]->SetOption(option.c_str());
-            }
-            return objects_[0];
         }
 
         std::unique_ptr<T> model_;
