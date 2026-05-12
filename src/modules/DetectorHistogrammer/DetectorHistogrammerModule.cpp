@@ -704,7 +704,6 @@ void DetectorHistogrammerModule::finalize() {
         LOG(INFO) << "Plotted " << total_hits_ << " hits in total";
     }
 
-    hit_map->SetOption("lego1");
     hit_map->SetOption("colz");
     hit_map_global->SetOption("colz");
     hit_map_global_mc->SetOption("colz");
@@ -719,84 +718,20 @@ void DetectorHistogrammerModule::finalize() {
     cluster_size_x_map->SetOption("colz");
     cluster_size_y_map->SetOption("colz");
 
-    /*
-    // FIXME Set more useful spacing maximum for cluster size histogram
-    auto xmax = std::ceil(cluster_size_histogram->GetBinCenter(cluster_size_histogram->FindLastBinAbove()) + 1);
-    cluster_size_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set cluster size axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        cluster_size_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
+    cluster_size->setAdjustAxisRanges();
+    cluster_size_x->setAdjustAxisRanges();
+    cluster_size_y->setAdjustAxisRanges();
 
-    xmax = std::ceil(cluster_size_x_histogram->GetBinCenter(cluster_size_x_histogram->FindLastBinAbove()) + 1);
-    cluster_size_x_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set cluster size_x axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        cluster_size_x_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
+    event_size->setAdjustAxisRanges();
+    n_cluster->setAdjustAxisRanges();
 
-    xmax = std::ceil(cluster_size_y_histogram->GetBinCenter(cluster_size_y_histogram->FindLastBinAbove()) + 1);
-    cluster_size_y_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set cluster size_y axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        cluster_size_y_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
+    cluster_charge->setAdjustAxisRanges();
 
-    // FIXME Set more useful spacing maximum for event size histogram
-    xmax = std::ceil(event_size_histogram->GetBinCenter(event_size_histogram->FindLastBinAbove()) + 1);
-    event_size_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set event size axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        event_size_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
+    hit_map->setAdjustAxisDivisions();
 
-    // FIXME Set more useful spacing maximum for n_cluster histogram
-    xmax = std::ceil(n_cluster_histogram->GetBinCenter(n_cluster_histogram->FindLastBinAbove()) + 1);
-    n_cluster_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set cluster size axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        n_cluster_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
+    charge_map->setAdjustAxisDivisions();
 
-    // FIXME Set more useful spacing maximum for cluster_charge histogram
-    xmax = std::ceil(cluster_charge_histogram->GetBinCenter(cluster_charge_histogram->FindLastBinAbove()) + 1);
-    cluster_charge_histogram->GetXaxis()->SetRangeUser(0, xmax);
-    // Set cluster size axis spacing
-    if(static_cast<int>(xmax) < 10) {
-        cluster_charge_histogram->GetXaxis()->SetNdivisions(static_cast<int>(xmax) + 1, 0, 0, true);
-    }
-
-    // Set default drawing option histogram for hitmap
-    // Set hit_map axis spacing
-    if(static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) < 10) {
-        hit_map_histogram->GetXaxis()->SetNdivisions(
-            static_cast<int>(hit_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-    if(static_cast<int>(hit_map_histogram->GetYaxis()->GetXmax()) < 10) {
-        hit_map_histogram->GetYaxis()->SetNdivisions(
-            static_cast<int>(hit_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-
-    // Set hit_map axis spacing
-    if(static_cast<int>(charge_map_histogram->GetXaxis()->GetXmax()) < 10) {
-        charge_map_histogram->GetXaxis()->SetNdivisions(
-            static_cast<int>(charge_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-    if(static_cast<int>(charge_map_histogram->GetYaxis()->GetXmax()) < 10) {
-        charge_map_histogram->GetYaxis()->SetNdivisions(
-            static_cast<int>(charge_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-
-    // Set cluster_map axis spacing
-    if(static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) < 10) {
-        cluster_map_histogram->GetXaxis()->SetNdivisions(
-            static_cast<int>(cluster_map_histogram->GetXaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-    if(static_cast<int>(cluster_map_histogram->GetYaxis()->GetXmax()) < 10) {
-        cluster_map_histogram->GetYaxis()->SetNdivisions(
-            static_cast<int>(cluster_map_histogram->GetYaxis()->GetXmax()) + 1, 0, 0, true);
-    }
-    */
+    cluster_map->setAdjustAxisDivisions();
 }
 
 /**
