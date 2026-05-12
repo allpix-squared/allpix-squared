@@ -240,22 +240,23 @@ void DopingProfileReaderModule::create_output_plots() {
     // Create 2D doping_concentration_histograms
     std::string const histogram_title = "Doping concentration (1/cm^{3}) at " + position_str + ";" + x_axis_title + ";" +
                                         y_axis_title + ";Concentration (1/cm^{3})";
-    auto* doping_concentration_histogram = new TH2F("doping_concentration",
-                                                    histogram_title.c_str(),
-                                                    static_cast<int>(steps),
-                                                    min1,
-                                                    max1,
-                                                    static_cast<int>(steps),
-                                                    min2,
-                                                    max2);
+    auto doping_concentration_histogram = CreateHistogram<TH2F>("doping_concentration",
+                                                                histogram_title.c_str(),
+                                                                static_cast<int>(steps),
+                                                                min1,
+                                                                max1,
+                                                                static_cast<int>(steps),
+                                                                min2,
+                                                                max2);
     doping_concentration_histogram->SetOption("colz");
 
     // Create 1D doping_concentration_histogram
-    auto* doping_concentration_histogram1D = new TH1F("concentration1D_z",
-                                                      "Doping concentration along z;z (mm);Doping concentration (1/cm^{3})",
-                                                      static_cast<int>(steps),
-                                                      min2,
-                                                      max2);
+    auto doping_concentration_histogram1D =
+        CreateHistogram<TH1F>("concentration1D_z",
+                              "Doping concentration along z;z (mm);Doping concentration (1/cm^{3})",
+                              static_cast<int>(steps),
+                              min2,
+                              max2);
     doping_concentration_histogram1D->SetOption("hist");
 
     // Find the doping concentration at every index, scan axes in local coordinates!
@@ -295,10 +296,6 @@ void DopingProfileReaderModule::create_output_plots() {
         }
     }
 
-    // Write the doping_concentration_histograms to module file
-    doping_concentration_histogram->Write();
-    doping_concentration_histogram1D->Write();
-
-    LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
-               << " 1/cm3";
+    // LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
+    //            << " 1/cm3"; // FIXME fix this?
 }

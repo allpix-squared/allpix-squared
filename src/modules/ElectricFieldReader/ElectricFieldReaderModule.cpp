@@ -390,49 +390,49 @@ void ElectricFieldReaderModule::create_output_plots() {
     // Create 2D histograms
     std::string const histogram_title =
         "Electric field (magnitude) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field strength (V/cm)";
-    auto* histogram = new TH2F("field_magnitude",
-                               histogram_title.c_str(),
-                               static_cast<int>(steps),
-                               min1,
-                               max1,
-                               static_cast<int>(steps),
-                               min2,
-                               max2);
-    histogram->SetMinimum(-0.01);
+    auto histogram = CreateHistogram<TH2F>("field_magnitude",
+                                           histogram_title.c_str(),
+                                           static_cast<int>(steps),
+                                           min1,
+                                           max1,
+                                           static_cast<int>(steps),
+                                           min2,
+                                           max2);
+    // histogram->SetMinimum(-0.01); // FIXME - make possible?
     histogram->SetOption("colz");
 
     std::string const histogram_x_title =
         "Electric field (x-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
-    auto* histogram_x = new TH2F(
+    auto histogram_x = CreateHistogram<TH2F>(
         "field_x", histogram_x_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_x->SetOption("colz");
 
     std::string const histogram_y_title =
         "Electric field (y-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
-    auto* histogram_y = new TH2F(
+    auto histogram_y = CreateHistogram<TH2F>(
         "field_y", histogram_y_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_y->SetOption("colz");
 
     std::string const histogram_z_title =
         "Electric field (z-component) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
-    auto* histogram_z = new TH2F(
+    auto histogram_z = CreateHistogram<TH2F>(
         "field_z", histogram_z_title.c_str(), static_cast<int>(steps), min1, max1, static_cast<int>(steps), min2, max2);
     histogram_z->SetOption("colz");
 
     std::string const histogram_lateral_title =
         "Electric field (lateral) at " + position_str + ";" + x_axis_title + ";" + y_axis_title + ";field (V/cm)";
-    auto* histogram_lateral = new TH2F("field_lateral",
-                                       histogram_lateral_title.c_str(),
-                                       static_cast<int>(steps),
-                                       min1,
-                                       max1,
-                                       static_cast<int>(steps),
-                                       min2,
-                                       max2);
+    auto histogram_lateral = CreateHistogram<TH2F>("field_lateral",
+                                                   histogram_lateral_title.c_str(),
+                                                   static_cast<int>(steps),
+                                                   min1,
+                                                   max1,
+                                                   static_cast<int>(steps),
+                                                   min2,
+                                                   max2);
     histogram_lateral->SetOption("colz");
 
     // Create 1D histogram
-    auto* histogram1D = new TH1F(
+    auto histogram1D = CreateHistogram<TH1F>(
         "field1d_z", "Electric field (z-component);z (mm);field strength (V/cm)", static_cast<int>(steps), min2, max2);
     histogram1D->SetOption("hist");
 
@@ -488,11 +488,4 @@ void ElectricFieldReaderModule::create_output_plots() {
             }
         }
     }
-
-    histogram->Write();
-    histogram_x->Write();
-    histogram_y->Write();
-    histogram_z->Write();
-    histogram_lateral->Write();
-    histogram1D->Write();
 }
