@@ -13,6 +13,7 @@
 
 #include <climits>
 
+#include <G4GeometryManager.hh>
 #include <G4MTRunManager.hh>
 #include <G4StateManager.hh>
 #include <G4UImanager.hh>
@@ -47,6 +48,13 @@ void MTRunManager::Run(G4int n_event, uint64_t seed1, uint64_t seed2) { // NOLIN
 }
 
 void MTRunManager::Initialize() {
+    // Parallel voxelization is enabled by default in Geant4 11.4 but requires workers to be managed by G4MTRunManager's
+    // thread lifecycle. We use our own thread pool and therefore disable it explicitly and fall back to serial voxelisation
+    // on the main thread
+#if G4VERSION_NUMBER >= 1140
+    G4GeometryManager::GetInstance()->RequestParallelOptimisation(false);
+#endif
+
     G4MTRunManager::Initialize();
 
     G4bool const cond = ConfirmBeamOnCondition();

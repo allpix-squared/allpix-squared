@@ -40,7 +40,7 @@ G4VSolid* Parameterization2DG4::ComputeSolid(G4int /*copy_id*/, G4VPhysicalVolum
     return &bounding_box_;
 }
 
-void Parameterization2DG4::ComputeDimensions(G4Box& box, G4int, const G4VPhysicalVolume*) const {
+void Parameterization2DG4::ComputeDimensions(G4Box& box, G4int /*unused*/, const G4VPhysicalVolume* /*unused*/) const {
     box.SetXHalfLength(size_x_ / 2.0);
     box.SetYHalfLength(size_y_ / 2.0);
     box.SetZHalfLength(size_z_ / 2.0);
