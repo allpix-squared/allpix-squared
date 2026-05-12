@@ -294,6 +294,10 @@ void DopingProfileReaderModule::create_output_plots() {
         }
     }
 
+    // Write the doping_concentration_histograms to module file
+    doping_concentration_histogram->Write();
+    doping_concentration_histogram1D->Write();
+
     LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
                << " 1/cm3";
 }
