@@ -41,19 +41,28 @@
 
 using namespace allpix;
 
-std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, const ConfigStack& stack) {
+std::shared_ptr<DetectorModel> DetectorModel::factory(std::string name, const ConfigStack& stack) {
     const auto& config = stack.getHeaderConfiguration();
+
+    // If there is a name set in the config, prefer over the file name:
+    if(config.has("name")) {
+        name = config.get<std::string>("name");
+    }
+    std::string pathinfo;
+    if(!config.getFilePath().empty()) {
+        pathinfo += std::string(" from file ") + config.getFilePath().string();
+    }
 
     // Sensor geometry
     // FIXME we might want to deprecate this default at some point?
     if(!config.has("geometry")) {
-        LOG(WARNING) << "Model file " << config.getFilePath() << " does not provide a geometry parameter, using default";
+        LOG(WARNING) << "Model " << name << pathinfo << " does not provide a geometry parameter, using default";
     }
     auto geometry = config.get<std::string>("geometry", "pixel");
 
     // Assembly type
     if(!config.has("type")) {
-        LOG(FATAL) << "Model file " << config.getFilePath() << " does not provide a type parameter";
+        LOG(FATAL) << "Model " << name << pathinfo << " does not provide a type parameter";
     }
     auto type = config.get<std::string>("type");
 
@@ -63,7 +72,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     } else if(type == "monolithic") {
         assembly = std::make_shared<MonolithicAssembly>(config);
     } else {
-        LOG(FATAL) << "Model file " << config.getFilePath() << " type parameter is not valid";
+        LOG(FATAL) << "Model " << name << pathinfo << " type parameter is not valid";
         throw InvalidValueError(config, "type", "model type is not supported");
     }
 
@@ -78,7 +87,7 @@ std::shared_ptr<DetectorModel> DetectorModel::factory(const std::string& name, c
     } else if(geometry == "staggered") {
         model = std::make_shared<StaggeredPixelDetectorModel>(name, assembly, stack, config);
     } else {
-        LOG(FATAL) << "Model file " << config.getFilePath() << " geometry parameter is not valid";
+        LOG(FATAL) << "Model " << name << pathinfo << " geometry parameter is not valid";
         // FIXME: The model can probably be silently ignored if we have more model readers later
         throw InvalidValueError(config, "geometry", "model geometry is not supported");
     }
