@@ -185,7 +185,7 @@ void WeightingPotentialReaderModule::create_output_plots() {
 
     // Create 1D histograms
     std::string const title = "#phi_{w}/V_{w} at " + Units::display(position, {"um"}) + ";z (mm);unit potential";
-    auto histogram = new TH1F("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
+    auto histogram = CreateHistogram<TH1F>("potential1d", title.c_str(), static_cast<int>(steps), z_min, z_max);
 
     // Get the weighting potential at every index
     for(size_t j = 0; j < steps; ++j) {

@@ -216,9 +216,7 @@ void DopingProfileReaderModule::create_output_plots() {
     double y = 0;
     double z = 0;
 
-    std::string x_axis_title = "";
-    std::string y_axis_title = "";
-    std::string position_str = "";
+    std::string x_axis_title, y_axis_title, position_str;
 
     if(project == 'x') {
         x = center.x() - size.x() / 2.0 + config_.get<double>("output_plots_projection_percentage", 0.5000001) * size.x();
