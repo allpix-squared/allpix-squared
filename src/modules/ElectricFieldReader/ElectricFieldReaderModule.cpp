@@ -398,7 +398,7 @@ void ElectricFieldReaderModule::create_output_plots() {
                                            static_cast<int>(steps),
                                            min2,
                                            max2);
-    // histogram->SetMinimum(-0.01); // FIXME - make possible?
+    histogram->SetMinimum(-0.01);
     histogram->SetOption("colz");
 
     std::string const histogram_x_title =

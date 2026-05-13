@@ -296,6 +296,6 @@ void DopingProfileReaderModule::create_output_plots() {
         }
     }
 
-    // LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
-    //            << " 1/cm3"; // FIXME fix this?
+    LOG(DEBUG) << "Maximum doping concentration within plotted cut: " << doping_concentration_histogram->GetMaximum()
+               << " 1/cm3";
 }
