@@ -123,7 +123,9 @@ namespace allpix {
                                      bool delete_file = false);
 
         /**
-         * TODO Documentation
+         * @brief Creates a ThreadedHistogram object through the histogram manager
+         * @param args Arguments for histogram constructor
+         * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) { // NOLINT
@@ -132,7 +134,11 @@ namespace allpix {
         };
 
         /**
-         * TODO Documentation
+         * @brief Creates a ThreadedHistogram object through the histogram manager, as well as a subdirectory for this to be
+         * stored in if necessary
+         * @param subdirectory Name of the subdirectory the histogram should be stored in
+         * @param args Arguments for histogram constructor
+         * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, // NOLINT

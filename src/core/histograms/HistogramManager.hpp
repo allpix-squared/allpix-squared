@@ -178,7 +178,7 @@ namespace allpix {
          * @brief Create and register histogram within a given directory of the histogram file
          * @param directory Directory for the histogram to live in
          * @param args Further arguments for histogram constructor
-         * @return shared pointer to generated histogram object
+         * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> registerHistogram(TDirectory* directory, ARGS&&... args) {
@@ -189,7 +189,7 @@ namespace allpix {
          * @brief Register path in the histogram file and emplace newly generated histogram there
          * @param path Name of the path to be created
          * @param args Further arguments for histogram constructor
-         * @return shared pointer to generated histogram object
+         * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string& path, ARGS&&... args) {
