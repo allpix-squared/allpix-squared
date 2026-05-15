@@ -182,8 +182,7 @@ namespace allpix {
 
         virtual std::string GetName() = 0; // NOLINT
         virtual void write() = 0;
-        virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0; // NOLINT
-        virtual void SetOption(std::string) = 0;                             // NOLINT
+        virtual void SetOption(std::string) = 0; // NOLINT
         virtual void setAdjustAxisRanges() = 0;
         virtual void setAdjustAxisDivisions() = 0;
         virtual void SetMinimum(double) = 0;   // NOLINT
@@ -277,18 +276,6 @@ namespace allpix {
             if(!object) {
                 object.reset(ROOT::Internal::TThreadedObjectUtils::Cloner<T>::Clone(model_.get(), directories_[idx]));
             }
-            return object;
-        }
-
-        /**
-         * @brief Get the thread local instance of the histogram as shared_ptr<TObject>
-         */
-        std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() override {
-            if(objects_.size() < 2) {
-                LOG(WARNING) << "Thread for piping histograms is not available. Return nullptr";
-                return nullptr;
-            }
-            auto& object = objects_[1];
             return object;
         }
 
