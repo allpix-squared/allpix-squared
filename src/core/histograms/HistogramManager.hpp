@@ -212,7 +212,7 @@ namespace allpix {
             for(auto& it : histogram_map_) {
                 LOG(TRACE) << "Writing histogram " + it.second->GetName() + " to path " << it.first;
                 histogram_file_->cd(it.first.c_str());
-                it.second->Write();
+                it.second->write();
             }
 
             // Close file

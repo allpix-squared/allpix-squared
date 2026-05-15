@@ -180,8 +180,8 @@ namespace allpix {
         BaseHistogram(BaseHistogram&&) noexcept = default;
         BaseHistogram& operator=(BaseHistogram&&) noexcept = default;
 
-        virtual std::string GetName() = 0;                                   // NOLINT
-        virtual void Write() = 0;                                            // NOLINT
+        virtual std::string GetName() = 0; // NOLINT
+        virtual void write() = 0;
         virtual std::shared_ptr<TObject> GetObjectAtFirstWorkerThread() = 0; // NOLINT
         virtual void SetOption(std::string) = 0;                             // NOLINT
         virtual void setAdjustAxisRanges() = 0;
@@ -323,8 +323,8 @@ namespace allpix {
         /**
          * @brief An easy way to write a histogram. Applies draw & modification options before.
          */
-        void Write() override { // NOLINT
-            this->Merge();
+        void write() override {
+            this->merge();
 
             if(draw_minimum_.first) {
                 objects_[0]->SetMinimum(draw_minimum_.second);
@@ -385,7 +385,7 @@ namespace allpix {
          *
          * Based on merging in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html.
          */
-        void Merge() { // NOLINT
+        void merge() {
             ROOT::TThreadedObjectUtils::MergeFunctionType<T> mergeFunction = ROOT::TThreadedObjectUtils::MergeTObjects<T>;
             if(is_merged_) {
                 return;
