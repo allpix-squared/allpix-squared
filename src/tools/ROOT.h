@@ -248,13 +248,13 @@ namespace allpix {
          * @brief Set minimum value for plotting range
          * @param minimum Minimum value for plotting range
          */
-        void SetMinimum(double minimum) override { objects_[0]->SetMinimum(minimum); } // NOLINT
+        void SetMinimum(double minimum) override { draw_minimum_ = std::make_pair(true, minimum); } // NOLINT
 
         /**
          * @brief Set maximum value for plotting range
          * @param maximum Maximum value for plotting range
          */
-        void SetMaximum(double maximum) override { objects_[0]->SetMaximum(maximum); } // NOLINT
+        void SetMaximum(double maximum) override { draw_maximum_ = std::make_pair(true, maximum); } // NOLINT
 
         /**
          * @brief Get minimum value for plotting range
@@ -326,6 +326,14 @@ namespace allpix {
         void Write() override { // NOLINT
             this->Merge();
 
+            if(draw_minimum_.first) {
+                objects_[0]->SetMinimum(draw_minimum_.second);
+            }
+
+            if(draw_maximum_.first) {
+                objects_[0]->SetMaximum(draw_maximum_.second);
+            }
+
             for(auto& option : drawing_options_) {
                 objects_[0]->SetOption(option.c_str());
             }
@@ -393,6 +401,8 @@ namespace allpix {
         std::vector<std::string> drawing_options_;
         bool auto_adjust_axis_ranges_{false};
         bool auto_adjust_axis_divisions_{false};
+        std::pair<bool, double> draw_minimum_{std::make_pair(false, 0)};
+        std::pair<bool, double> draw_maximum_{std::make_pair(false, 0)};
     };
 
     template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
