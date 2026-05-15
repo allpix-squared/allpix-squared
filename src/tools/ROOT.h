@@ -186,10 +186,10 @@ namespace allpix {
         virtual void SetOption(std::string) = 0;                             // NOLINT
         virtual void setAdjustAxisRanges() = 0;
         virtual void setAdjustAxisDivisions() = 0;
-        virtual void SetMinimum(double) = 0; // NOLINT
-        virtual void SetMaximum(double) = 0; // NOLINT
-        virtual double GetMinimum() = 0;     // NOLINT
-        virtual double GetMaximum() = 0;     // NOLINT
+        virtual void SetMinimum(double) = 0;   // NOLINT
+        virtual double GetMinimum() const = 0; // NOLINT
+        virtual void SetMaximum(double) = 0;   // NOLINT
+        virtual double GetMaximum() const = 0; // NOLINT
     };
 
     /**
@@ -259,12 +259,12 @@ namespace allpix {
         /**
          * @brief Get minimum value for plotting range
          */
-        double GetMinimum() override { return objects_[0]->GetMinimum(); } // NOLINT
+        double GetMinimum() const override { return objects_[0]->GetMinimum(); } // NOLINT
 
         /**
          * @brief Get maximum value for plotting range
          */
-        double GetMaximum() override { return objects_[0]->GetMaximum(); } // NOLINT
+        double GetMaximum() const override { return objects_[0]->GetMaximum(); } // NOLINT
 
         /**
          * @brief Get the thread local instance of the histogram
