@@ -171,7 +171,14 @@ ConfigManager* Module::getConfigManager() const {
 }
 void Module::set_config_manager(ConfigManager* conf_manager) { conf_manager_ = conf_manager; }
 
-void Module::set_histogram_manager(HistogramManager* histogram_manager) { histogram_manager_ = histogram_manager; }
+void Module::set_histogram_manager(HistogramManager* histogram_manager) {
+    histogram_manager_ = histogram_manager;
+    if(histogram_manager_ != nullptr) {
+        // Change to our ROOT directory
+        set_root_directory(
+            histogram_manager_->registerModuleDirectory(get_configuration().getName(), get_identifier().getIdentifier()));
+    }
+}
 
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) { delegates_.emplace_back(messenger, delegate); }
 bool Module::check_delegates(Messenger* messenger, Event* event) {

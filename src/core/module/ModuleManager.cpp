@@ -639,9 +639,6 @@ void ModuleManager::initialize() {
         auto start = std::chrono::steady_clock::now();
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration(), "I:");
-        // Change to our ROOT directory
-        module->set_root_directory(histogram_manager_->registerModuleDirectory(module->get_configuration().getName(),
-                                                                               module->get_identifier().getIdentifier()));
         // Init module
         module->initialize();
         // Reset logging
