@@ -656,7 +656,7 @@ void ModuleManager::initialize() {
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
             module_event_time_.emplace(
                 module.get(),
-                CreateHistogram<TH1D>(compile_histogram_path(module).c_str(), name.c_str(), title.c_str(), 1000, 0, 1));
+                CreateHistogram<TH1D>(compile_histogram_path(module), name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
