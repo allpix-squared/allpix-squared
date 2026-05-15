@@ -194,7 +194,7 @@ namespace allpix {
          * @param module Shared pointer to module instance
          * @return Path string for performance histograms
          */
-        const std::string compile_histogram_path(std::shared_ptr<Module> module) const {
+        static std::string compile_histogram_path(const std::shared_ptr<Module>& module) {
             return "Performance/" + module->get_configuration().getName() +
                    (module->get_identifier().getIdentifier().empty() ? "" : "/" + module->get_identifier().getIdentifier());
         };

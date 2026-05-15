@@ -16,7 +16,8 @@ namespace allpix {
     };
 
     template <typename T, class... ARGS>
-    std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogramWithPath(const std::string& path, ARGS&&... args) {
+    std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogramWithPath(const std::string& path,
+                                                                                      ARGS&&... args) {
         auto* directory = registerGenericPath(path);
         return create_histogram<T>(directory, std::forward<ARGS>(args)...);
     }

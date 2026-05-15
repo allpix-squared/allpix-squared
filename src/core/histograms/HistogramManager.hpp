@@ -37,7 +37,7 @@ namespace allpix {
          * @param file_path Path to the histogram file as provided in the configuration
          * @param deny_overwrite Prevents from overwriting files if set to true
          */
-        HistogramManager(const std::string&, bool);
+        HistogramManager(const std::string& file_path, bool deny_overwrite);
 
         /**
          * @brief Default destructor
@@ -66,7 +66,7 @@ namespace allpix {
          * @param module_identifier Identifier of the module, e.g. detector name
          * @return Pointer to created ROOT TDirectory
          */
-        TDirectory* registerModuleDirectory(const std::string&, const std::string&);
+        TDirectory* registerModuleDirectory(const std::string& module_name, const std::string& module_identifier);
 
         /**
          * @brief Creates and registers a subdirectory within a modules' directory in the histogram file
@@ -74,7 +74,7 @@ namespace allpix {
          * @param subdirectory_name Name of the directory to be created
          * @return Pointer to created ROOT TDirectory
          */
-        static TDirectory* registerSubdirectory(TDirectory*, const std::string&);
+        static TDirectory* registerSubdirectory(TDirectory* unique_module_directory, const std::string& subdirectory_name);
 
         /**
          * @brief Creates and registers a directory with a generic path in the histogram file
@@ -82,7 +82,7 @@ namespace allpix {
          * @return Pointer to created ROOT TDirectory
          * @note This creates subdirectories via the syntax "path/to/directory"
          */
-        TDirectory* registerGenericPath(const std::string&);
+        TDirectory* registerGenericPath(const std::string& path);
 
         /**
          * @brief Create and register histogram within a given directory of the histogram file
@@ -90,7 +90,8 @@ namespace allpix {
          * @param args Further arguments for histogram constructor
          * @return Shared pointer to generated histogram object
          */
-        template <typename T, class... ARGS> std::shared_ptr<ThreadedHistogram<T>> registerHistogram(TDirectory*, ARGS&&...);
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> registerHistogram(TDirectory* directory, ARGS&&... args);
 
         /**
          * @brief Register path in the histogram file and emplace newly generated histogram there
@@ -99,7 +100,7 @@ namespace allpix {
          * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string&, ARGS&&...);
+        std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string& path, ARGS&&... args);
 
         /**
          * @brief Writes all histograms into their corresponding directories in the histogram file
@@ -124,7 +125,8 @@ namespace allpix {
          * @param args Further arguments for histogram constructor
          * @return shared pointer to generated histogram object
          */
-        template <typename T, class... ARGS> std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory*, ARGS&&...);
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args);
 
         std::multimap<std::string, std::shared_ptr<BaseHistogram>> histogram_map_;
         std::unique_ptr<TFile> histogram_file_;
