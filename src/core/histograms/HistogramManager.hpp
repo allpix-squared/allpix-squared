@@ -37,7 +37,7 @@ namespace allpix {
          * @param file_path Path to the histogram file as provided in the configuration
          * @param deny_overwrite Prevents from overwriting files if set to true
          */
-        HistogramManager(const std::string& file_path, const bool& deny_overwrite) {
+        HistogramManager(const std::string& file_path, bool deny_overwrite) {
             LOG(INFO) << "Opening histogram file.";
 
             if(histogram_file_ && !histogram_file_->IsZombie()) {
