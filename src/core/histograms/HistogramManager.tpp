@@ -9,32 +9,30 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "HistogramManager.hpp"
+namespace allpix {
+    template <typename T, class... ARGS>
+    std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogram(TDirectory* directory, ARGS&&... args) {
+        return create_histogram<T>(directory, std::forward<ARGS>(args)...);
+    };
 
-using namespace allpix;
+    template <typename T, class... ARGS>
+    std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogramWithPath(const std::string& path, ARGS&&... args) {
+        auto* directory = registerGenericPath(path);
+        return create_histogram<T>(directory, std::forward<ARGS>(args)...);
+    }
 
-template <typename T, class... ARGS>
-std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogram(TDirectory* directory, ARGS&&... args) {
-    return create_histogram<T>(directory, std::forward<ARGS>(args)...);
-};
+    template <typename T, class... ARGS>
+    std::shared_ptr<ThreadedHistogram<T>> HistogramManager::create_histogram(TDirectory* directory, ARGS&&... args) {
+        directory->cd();
 
-template <typename T, class... ARGS>
-std::shared_ptr<ThreadedHistogram<T>> HistogramManager::registerHistogramWithPath(const std::string& path, ARGS&&... args) {
-    auto* directory = registerGenericPath(path);
-    return create_histogram<T>(directory, std::forward<ARGS>(args)...);
-}
+        const std::string abs_path_str = gDirectory->GetPath();
+        const auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
 
-template <typename T, class... ARGS>
-std::shared_ptr<ThreadedHistogram<T>> HistogramManager::create_histogram(TDirectory* directory, ARGS&&... args) {
-    directory->cd();
+        auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
-    const std::string abs_path_str = gDirectory->GetPath();
-    const auto local_path_str = abs_path_str.substr(abs_path_str.find_last_of(':') + 1);
+        LOG(DEBUG) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
+        histogram_map_.emplace(local_path_str, histogram);
 
-    auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
-
-    LOG(DEBUG) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
-    histogram_map_.emplace(local_path_str, histogram);
-
-    return histogram;
-}
+        return histogram;
+    }
+} // namespace allpix
