@@ -100,7 +100,7 @@ namespace allpix {
          * @return Shared pointer to generated histogram object
          */
         template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> registerHistogramWithPath(const std::string& path, ARGS&&... args);
+        std::shared_ptr<ThreadedHistogram<T>> registerHistogram(const std::string& path, ARGS&&... args);
 
         /**
          * @brief Writes all histograms into their corresponding directories in the histogram file

@@ -186,7 +186,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) { // NOLINT
             // Get instance of histogram registry
-            return histogram_manager_->registerHistogramWithPath<T>(path, std::forward<ARGS>(args)...);
+            return histogram_manager_->registerHistogram<T>(path, std::forward<ARGS>(args)...);
         };
 
         /**
