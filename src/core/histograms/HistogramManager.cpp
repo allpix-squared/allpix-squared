@@ -25,6 +25,8 @@ HistogramManager::HistogramManager(const std::string& file_path, bool deny_overw
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
         std::filesystem::remove(path);
+    } else {
+        LOG(INFO) << "Creating main ROOT file: " << path;
     }
 
     histogram_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
@@ -33,7 +35,7 @@ HistogramManager::HistogramManager(const std::string& file_path, bool deny_overw
     }
     histogram_file_->cd();
 
-    LOG(TRACE) << "Opened histogram file.";
+    LOG(TRACE) << "Opened main ROOT file.";
 }
 
 TDirectory* HistogramManager::registerModuleDirectory(const std::string& module_name, const std::string& module_identifier) {
@@ -95,7 +97,8 @@ TDirectory* HistogramManager::registerSubdirectory(TDirectory* unique_module_dir
 
 TDirectory* HistogramManager::registerGenericPath(const std::string& path) {
     // Create ROOT directory for this path
-    LOG(TRACE) << "Creating and accessing ROOT directory";
+    LOG(TRACE) << "Creating or accessing ROOT directory: " << path;
+
     auto* directory = histogram_file_->GetDirectory(path.c_str());
     if(directory == nullptr) {
         directory = histogram_file_->mkdir(path.c_str());
