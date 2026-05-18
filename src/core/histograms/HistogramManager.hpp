@@ -42,7 +42,7 @@ namespace allpix {
         /**
          * @brief Default destructor
          */
-        ~HistogramManager() = default;
+        virtual ~HistogramManager() = default;
 
         /// @{
         /**
