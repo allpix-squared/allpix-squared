@@ -14,11 +14,6 @@
 using namespace allpix;
 
 HistogramManager::HistogramManager(const std::string& file_path, bool deny_overwrite) {
-    LOG(INFO) << "Opening histogram file.";
-
-    if(histogram_file_ && !histogram_file_->IsZombie()) {
-        throw RuntimeError("Histogram Manager had already been started.");
-    }
 
     // (Re-)create histogram ROOT file
     auto path = std::filesystem::path(gSystem->pwd()) / file_path;
@@ -48,7 +43,7 @@ TDirectory* HistogramManager::registerModuleDirectory(const std::string& module_
     if(module_directory == nullptr) {
         module_directory = histogram_file_->mkdir(module_name.c_str());
         if(module_directory == nullptr) {
-            throw RuntimeError("Cannot create or access overall ROOT directory for module " + module_name);
+            throw LogicError("Cannot create or access overall ROOT directory for module " + module_name);
         }
     }
     module_directory->cd();
@@ -62,9 +57,10 @@ TDirectory* HistogramManager::registerModuleDirectory(const std::string& module_
         if(unique_module_directory == nullptr) {
             unique_module_directory = module_directory->mkdir(module_identifier.c_str());
         }
-        if(unique_module_directory == nullptr) {
-            throw RuntimeError("Cannot create or access local ROOT directory for module " + module_name);
-        }
+    }
+
+    if(unique_module_directory == nullptr) {
+        throw RuntimeError("Cannot create or access local ROOT directory for module " + module_name);
     }
 
     // Change to the directory
@@ -76,7 +72,7 @@ TDirectory* HistogramManager::registerModuleDirectory(const std::string& module_
 TDirectory* HistogramManager::registerSubdirectory(TDirectory* unique_module_directory,
                                                    const std::string& subdirectory_name = "") {
     if(unique_module_directory == nullptr) {
-        throw RuntimeError("ROOT directory for unique module should be present but cannot be accessed.");
+        throw LogicError("ROOT directory for unique module should be present but cannot be accessed.");
     }
 
     // Create subdirectory if requested
@@ -88,9 +84,10 @@ TDirectory* HistogramManager::registerSubdirectory(TDirectory* unique_module_dir
         if(subdirectory == nullptr) {
             subdirectory = unique_module_directory->mkdir(subdirectory_name.c_str());
         }
-        if(subdirectory == nullptr) {
-            throw RuntimeError("Cannot create or access ROOT subdirectory: " + subdirectory_name);
-        }
+    }
+
+    if(subdirectory == nullptr) {
+        throw RuntimeError("Cannot create or access ROOT subdirectory: " + subdirectory_name);
     }
 
     return subdirectory;
@@ -102,10 +99,12 @@ TDirectory* HistogramManager::registerGenericPath(const std::string& path) {
     auto* directory = histogram_file_->GetDirectory(path.c_str());
     if(directory == nullptr) {
         directory = histogram_file_->mkdir(path.c_str());
-        if(directory == nullptr) {
-            throw RuntimeError("Cannot create or access overall ROOT directory: " + path);
-        }
     }
+
+    if(directory == nullptr) {
+        throw RuntimeError("Cannot create or access ROOT directory: " + path);
+    }
+
     directory->cd();
 
     return directory;
@@ -121,6 +120,9 @@ void HistogramManager::finalize() {
     }
 
     for(auto& it : histogram_map_) {
+        if(!(it.second)) {
+            throw LogicError("A histogram in the local directory " + it.first + " can no longer be accessed.");
+        }
         LOG(TRACE) << "Writing histogram " + it.second->GetName() + " to path " << it.first;
         histogram_file_->cd(it.first.c_str());
         it.second->write();
