@@ -247,13 +247,13 @@ namespace allpix {
          * @brief Set minimum value for plotting range
          * @param minimum Minimum value for plotting range
          */
-        void SetMinimum(double minimum) override { draw_minimum_ = std::make_pair(true, minimum); } // NOLINT
+        void SetMinimum(double minimum) override { draw_minimum_ = minimum; } // NOLINT
 
         /**
          * @brief Set maximum value for plotting range
          * @param maximum Maximum value for plotting range
          */
-        void SetMaximum(double maximum) override { draw_maximum_ = std::make_pair(true, maximum); } // NOLINT
+        void SetMaximum(double maximum) override { draw_maximum_ = maximum; } // NOLINT
 
         /**
          * @brief Get minimum value for plotting range
@@ -313,12 +313,12 @@ namespace allpix {
         void write() override {
             this->merge();
 
-            if(draw_minimum_.first) {
-                objects_[0]->SetMinimum(draw_minimum_.second);
+            if(draw_minimum_) {
+                objects_[0]->SetMinimum(draw_minimum_.value());
             }
 
-            if(draw_maximum_.first) {
-                objects_[0]->SetMaximum(draw_maximum_.second);
+            if(draw_maximum_) {
+                objects_[0]->SetMaximum(draw_maximum_.value());
             }
 
             for(auto& option : drawing_options_) {
@@ -388,8 +388,8 @@ namespace allpix {
         std::unordered_set<std::string> drawing_options_;
         bool auto_adjust_axis_ranges_{false};
         bool auto_adjust_axis_divisions_{false};
-        std::pair<bool, double> draw_minimum_{std::make_pair(false, 0)};
-        std::pair<bool, double> draw_maximum_{std::make_pair(false, 0)};
+        std::optional<double> draw_minimum_;
+        std::optional<double> draw_maximum_;
     };
 
     template <class T> using Histogram = std::shared_ptr<ThreadedHistogram<T>>;
