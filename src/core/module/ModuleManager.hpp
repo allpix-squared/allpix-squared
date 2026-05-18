@@ -177,16 +177,6 @@ namespace allpix {
          */
         static void set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev);
 
-        /**
-         * @brief Generates a string as path for performance histograms.
-         * @param module Shared pointer to module instance
-         * @return Path string for performance histograms
-         */
-        static std::string compile_histogram_path(const std::shared_ptr<Module>& module) {
-            return "Performance/" + module->get_configuration().getName() +
-                   (module->get_identifier().getIdentifier().empty() ? "" : "/" + module->get_identifier().getIdentifier());
-        };
-
         using IdentifierToModuleMap = std::map<ModuleIdentifier, ModuleList::iterator>;
 
         ModuleList modules_;

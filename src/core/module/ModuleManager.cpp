@@ -654,9 +654,16 @@ void ModuleManager::initialize() {
             const auto& name = (identifier.empty() ? module->get_configuration().getName() : identifier);
             auto title = module->get_configuration().getName() + " event processing time " +
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
+
+            auto compile_histogram_path = [&]() {
+                return "Performance/" + module->get_configuration().getName() +
+                       (module->get_identifier().getIdentifier().empty() ? ""
+                                                                         : "/" + module->get_identifier().getIdentifier());
+            };
+
             module_event_time_.emplace(module.get(),
                                        histogram_manager_->registerHistogram<TH1D>(
-                                           compile_histogram_path(module), name.c_str(), title.c_str(), 1000, 0, 1));
+                                           compile_histogram_path(), name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
