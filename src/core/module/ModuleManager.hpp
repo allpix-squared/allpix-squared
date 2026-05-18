@@ -178,18 +178,6 @@ namespace allpix {
         static void set_module_after(std::tuple<LogLevel, LogFormat, std::string, uint64_t> prev);
 
         /**
-         * @brief Creates a ThreadedHistogram object through the histogram manager
-         * @param path Dedicated path in the histogram file
-         * @param args Arguments for histogram constructor
-         * @return Shared pointer to generated histogram object
-         */
-        template <typename T, class... ARGS>
-        std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(const std::string& path, ARGS&&... args) { // NOLINT
-            // Get instance of histogram registry
-            return histogram_manager_->registerHistogram<T>(path, std::forward<ARGS>(args)...);
-        };
-
-        /**
          * @brief Generates a string as path for performance histograms.
          * @param module Shared pointer to module instance
          * @return Path string for performance histograms

@@ -614,14 +614,14 @@ void ModuleManager::initialize() {
 
     // Book global performance histograms
     if(global_config.get<bool>("performance_plots")) {
-        buffer_fill_level_ = CreateHistogram<TH1D>("Performance",
-                                                   "buffer_fill_level",
-                                                   "Buffer fill level;# buffered events;# events",
-                                                   static_cast<int>(max_buffer_size_),
-                                                   0,
-                                                   static_cast<double>(max_buffer_size_));
-        event_time_ =
-            CreateHistogram<TH1D>("Performance", "event_time", "processing time per event;time [s];# events", 1000, 0, 10);
+        buffer_fill_level_ = histogram_manager_->registerHistogram<TH1D>("Performance",
+                                                                         "buffer_fill_level",
+                                                                         "Buffer fill level;# buffered events;# events",
+                                                                         static_cast<int>(max_buffer_size_),
+                                                                         0,
+                                                                         static_cast<double>(max_buffer_size_));
+        event_time_ = histogram_manager_->registerHistogram<TH1D>(
+            "Performance", "event_time", "processing time per event;time [s];# events", 1000, 0, 10);
     }
 
     auto start_time = std::chrono::steady_clock::now();
@@ -654,9 +654,9 @@ void ModuleManager::initialize() {
             const auto& name = (identifier.empty() ? module->get_configuration().getName() : identifier);
             auto title = module->get_configuration().getName() + " event processing time " +
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
-            module_event_time_.emplace(
-                module.get(),
-                CreateHistogram<TH1D>(compile_histogram_path(module), name.c_str(), title.c_str(), 1000, 0, 1));
+            module_event_time_.emplace(module.get(),
+                                       histogram_manager_->registerHistogram<TH1D>(
+                                           compile_histogram_path(module), name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
