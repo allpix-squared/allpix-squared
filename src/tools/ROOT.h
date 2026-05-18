@@ -231,7 +231,7 @@ namespace allpix {
          * @brief Store a draw option for this histogram
          * @param option Draw option parsed as string
          */
-        void SetOption(std::string option) override { drawing_options_.push_back(option); } // NOLINT
+        void SetOption(std::string option) override { drawing_options_.emplace(option); } // NOLINT
 
         /**
          * @brief Sets a tag that will invoke an axis range adjustment at the time of writing
@@ -385,7 +385,7 @@ namespace allpix {
         std::vector<std::shared_ptr<T>> objects_;
         std::vector<TDirectory*> directories_;
         bool is_merged_{false};
-        std::vector<std::string> drawing_options_;
+        std::unordered_set<std::string> drawing_options_;
         bool auto_adjust_axis_ranges_{false};
         bool auto_adjust_axis_divisions_{false};
         std::pair<bool, double> draw_minimum_{std::make_pair(false, 0)};
