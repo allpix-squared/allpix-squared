@@ -165,6 +165,8 @@ namespace allpix {
         return os << "(" << vec.x() << "," << vec.y() << ")";
     }
 
+    // NOLINTBEGIN(readability-identifier-naming)
+
     /**
      * @brief Base class for ThreadedHistograms
      *
@@ -180,15 +182,15 @@ namespace allpix {
         BaseHistogram(BaseHistogram&&) noexcept = default;
         BaseHistogram& operator=(BaseHistogram&&) noexcept = default;
 
-        virtual std::string GetName() = 0; // NOLINT
+        virtual std::string GetName() = 0;
         virtual void write() = 0;
-        virtual void SetOption(std::string) = 0; // NOLINT
+        virtual void SetOption(std::string) = 0;
         virtual void setAdjustAxisRanges() = 0;
         virtual void setAdjustAxisDivisions() = 0;
-        virtual void SetMinimum(double) = 0;   // NOLINT
-        virtual double GetMinimum() const = 0; // NOLINT
-        virtual void SetMaximum(double) = 0;   // NOLINT
-        virtual double GetMaximum() const = 0; // NOLINT
+        virtual void SetMinimum(double) = 0;
+        virtual double GetMinimum() const = 0;
+        virtual void SetMaximum(double) = 0;
+        virtual double GetMaximum() const = 0;
     };
 
     /**
@@ -211,27 +213,25 @@ namespace allpix {
         /**
          * @brief An easy way to fill a histogram
          */
-        template <class... ARGS> Int_t Fill(ARGS&&... args) { // NOLINT
-            return this->Get()->Fill(std::forward<ARGS>(args)...);
-        }
+        template <class... ARGS> Int_t Fill(ARGS&&... args) { return this->Get()->Fill(std::forward<ARGS>(args)...); }
 
         /**
          * @brief An easy way to set bin contents
          */
-        template <class... ARGS> void SetBinContent(ARGS&&... args) { // NOLINT
+        template <class... ARGS> void SetBinContent(ARGS&&... args) {
             this->Get()->SetBinContent(std::forward<ARGS>(args)...);
         }
 
         /**
          * @brief Extract the name of the histogram
          */
-        std::string GetName() override { return this->Get()->GetName(); } // NOLINT
+        std::string GetName() override { return this->Get()->GetName(); }
 
         /**
          * @brief Store a draw option for this histogram
          * @param option Draw option parsed as string
          */
-        void SetOption(std::string option) override { drawing_options_.emplace(option); } // NOLINT
+        void SetOption(std::string option) override { drawing_options_.emplace(option); }
 
         /**
          * @brief Sets a tag that will invoke an axis range adjustment at the time of writing
@@ -247,30 +247,30 @@ namespace allpix {
          * @brief Set minimum value for plotting range
          * @param minimum Minimum value for plotting range
          */
-        void SetMinimum(double minimum) override { draw_minimum_ = minimum; } // NOLINT
+        void SetMinimum(double minimum) override { draw_minimum_ = minimum; }
 
         /**
          * @brief Set maximum value for plotting range
          * @param maximum Maximum value for plotting range
          */
-        void SetMaximum(double maximum) override { draw_maximum_ = maximum; } // NOLINT
+        void SetMaximum(double maximum) override { draw_maximum_ = maximum; }
 
         /**
          * @brief Get minimum value for plotting range
          */
-        double GetMinimum() const override { return objects_[0]->GetMinimum(); } // NOLINT
+        double GetMinimum() const override { return objects_[0]->GetMinimum(); }
 
         /**
          * @brief Get maximum value for plotting range
          */
-        double GetMaximum() const override { return objects_[0]->GetMaximum(); } // NOLINT
+        double GetMaximum() const override { return objects_[0]->GetMaximum(); }
 
         /**
          * @brief Get the thread local instance of the histogram
          *
          * Based on get in https://root.cern/doc/master/classROOT_1_1TThreadedObject.html, optimized for faster retrieval.
          */
-        std::shared_ptr<T> Get() { // NOLINT
+        std::shared_ptr<T> Get() {
             auto idx = ThreadPool::threadNum();
             auto& object = objects_[idx];
             if(!object) {
@@ -366,6 +366,7 @@ namespace allpix {
 
             objects_[0]->Write();
         }
+        // NOLINTEND(readability-identifier-naming)
 
         /**
          * @brief Merge the threaded histograms into final object
