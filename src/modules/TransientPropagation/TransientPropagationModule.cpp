@@ -727,7 +727,6 @@ TransientPropagationModule::propagate(Event* event,
             if(output_plots_) {
                 trapping_time_histo_->Fill(runge_kutta.getTime(), charge);
             }
-            // dx_drift = step.value.norm() is drift-only because diffusion is applied later.
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
             if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {
@@ -899,7 +898,7 @@ TransientPropagationModule::propagate(Event* event,
     }
 
     if(output_plots_ && !multiplication_.is<NoImpactIonization>()) {
-        double const gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
+        const auto gain = static_cast<double>(charge) / static_cast<double>(initial_charge);
         if(level == 0) {
             gain_primary_histo_->Fill(gain, initial_charge);
             if(type == CarrierType::ELECTRON) {
@@ -924,8 +923,7 @@ TransientPropagationModule::propagate(Event* event,
 
     // Set final state of charge carrier for plotting:
     if(output_linegraphs_) {
-        // If drift time is larger than integration time or the charge carriers have been collected at the backside,
-        // reset:
+        // If drift time is larger than integration time or the charge carriers have been collected at the backside, reset:
         if(runge_kutta.getTime() >= integration_time_ || last_position.z() < -model_->getSensorSize().z() * 0.45) {
             std::get<3>(output_plot_points.at(output_plot_index).first) = CarrierState::UNKNOWN;
         } else {

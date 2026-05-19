@@ -632,6 +632,7 @@ GenericPropagationModule::propagate(Event* event,
 
             auto detrap_time = detrapping_(type, uniform_distribution(event->getRandomEngine()), std::sqrt(efield.Mag2()));
             if((initial_time_local + runge_kutta.getTime() + detrap_time) < integration_time_) {
+                // De-trap and advance in time if still below integration time
                 LOG(DEBUG) << "De-trapping charge carrier after " << Units::display(detrap_time, {"ns", "us"});
                 runge_kutta.advanceTime(detrap_time);
 
