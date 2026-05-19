@@ -38,6 +38,11 @@ HistogramManager::HistogramManager(const std::string& file_path, bool deny_overw
     LOG(TRACE) << "Opened main ROOT file.";
 }
 
+HistogramManager::~HistogramManager() {
+    // Close file
+    histogram_file_->Close();
+}
+
 TDirectory* HistogramManager::registerModuleDirectory(const std::string& module_name, const std::string& module_identifier) {
     // Create main ROOT directory for this module class if it does not exist yet
     LOG(TRACE) << "Creating and accessing ROOT directory";
@@ -130,7 +135,4 @@ void HistogramManager::finalize() {
         histogram_file_->cd(it.first.c_str());
         it.second->write();
     }
-
-    // Close file
-    histogram_file_->Close();
 }

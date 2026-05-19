@@ -40,9 +40,9 @@ namespace allpix {
         HistogramManager(const std::string& file_path, bool deny_overwrite);
 
         /**
-         * @brief Default destructor
+         * @brief Destructor: closes ROOT file
          */
-        virtual ~HistogramManager() = default;
+        ~HistogramManager();
 
         /// @{
         /**
