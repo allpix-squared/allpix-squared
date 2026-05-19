@@ -418,6 +418,8 @@ void Allpix::wait() {
 void Allpix::finalize() {
     Log::setReportingLevel(log_level_);
 
+    histo_mgr_->finalize();
+
     if(!has_run_) {
         LOG(INFO) << "Skip finalizing modules because no module did run";
         return;

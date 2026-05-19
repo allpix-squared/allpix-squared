@@ -978,8 +978,6 @@ void ModuleManager::finalize() {
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    histogram_manager_->finalize();
-
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();
     finalize_time_ =
