@@ -189,8 +189,4 @@ void SimpleTransferModule::run(Event* event) {
 void SimpleTransferModule::finalize() {
     // Print statistics
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges";
-
-    if(output_plots_) {
-        drift_time_histo->Write();
-    }
 }

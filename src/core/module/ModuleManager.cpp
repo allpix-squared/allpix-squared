@@ -51,7 +51,6 @@
 #include "core/utils/log.h"
 #include "core/utils/prng.h"
 #include "core/utils/unit.h"
-#include "tools/ROOT.h"
 
 // Common prefix for all modules
 // TODO(simonspa): [doc] Should be provided by the build system
@@ -71,7 +70,10 @@ std::string ModuleManager::version() { return {ALLPIX_PROJECT_VERSION}; }
  * Loads the modules specified in the configuration file. Each module is contained within its own library which is loaded
  * automatically. After that the required modules are created from the configuration.
  */
-void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager) {
+void ModuleManager::load(Messenger* messenger,
+                         ConfigManager* conf_manager,
+                         GeometryManager* geo_manager,
+                         HistogramManager* histogram_manager) {
     // Store config manager and get configurations
     conf_manager_ = conf_manager;
     auto& configs = conf_manager_->getModuleConfigurations();
@@ -87,22 +89,7 @@ void ModuleManager::load(Messenger* messenger, ConfigManager* conf_manager, Geom
     // Store the messenger
     messenger_ = messenger;
 
-    // (Re)create the main ROOT file
-    auto path = std::filesystem::path(gSystem->pwd()) / global_config.get<std::string>("root_file", "modules");
-    path.replace_extension("root");
-
-    if(std::filesystem::is_regular_file(path)) {
-        if(global_config.get<bool>("deny_overwrite", false)) {
-            throw RuntimeError("Overwriting of existing main ROOT file " + path.string() + " denied");
-        }
-        LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
-        std::filesystem::remove(path);
-    }
-    modules_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
-    if(modules_file_->IsZombie()) {
-        throw RuntimeError("Cannot create main ROOT file " + path.string());
-    }
-    modules_file_->cd();
+    histogram_manager_ = histogram_manager;
 
     // Loop through all non-global configurations
     for(auto& config : configs) {
@@ -627,12 +614,14 @@ void ModuleManager::initialize() {
 
     // Book global performance histograms
     if(global_config.get<bool>("performance_plots")) {
-        buffer_fill_level_ = CreateHistogram<TH1D>("buffer_fill_level",
-                                                   "Buffer fill level;# buffered events;# events",
-                                                   static_cast<int>(max_buffer_size_),
-                                                   0,
-                                                   static_cast<double>(max_buffer_size_));
-        event_time_ = CreateHistogram<TH1D>("event_time", "processing time per event;time [s];# events", 1000, 0, 10);
+        buffer_fill_level_ = histogram_manager_->registerHistogram<TH1D>("Performance",
+                                                                         "buffer_fill_level",
+                                                                         "Buffer fill level;# buffered events;# events",
+                                                                         static_cast<int>(max_buffer_size_),
+                                                                         0,
+                                                                         static_cast<double>(max_buffer_size_));
+        event_time_ = histogram_manager_->registerHistogram<TH1D>(
+            "Performance", "event_time", "processing time per event;time [s];# events", 1000, 0, 10);
     }
 
     auto start_time = std::chrono::steady_clock::now();
@@ -643,39 +632,13 @@ void ModuleManager::initialize() {
         // Pass the config manager to this instance
         module->set_config_manager(conf_manager_);
 
-        // Create main ROOT directory for this module class if it does not exists yet
-        LOG(TRACE) << "Creating and accessing ROOT directory";
-        std::string const module_name = module->get_configuration().getName();
-        auto* directory = modules_file_->GetDirectory(module_name.c_str());
-        if(directory == nullptr) {
-            directory = modules_file_->mkdir(module_name.c_str());
-            if(directory == nullptr) {
-                throw RuntimeError("Cannot create or access overall ROOT directory for module " + module_name);
-            }
-        }
-        directory->cd();
-
-        // Create local directory for this instance
-        TDirectory* local_directory = nullptr;
-        if(module->get_identifier().getIdentifier().empty()) {
-            local_directory = directory;
-        } else {
-            local_directory = directory->mkdir(module->get_identifier().getIdentifier().c_str());
-            if(local_directory == nullptr) {
-                throw RuntimeError("Cannot create or access local ROOT directory for module " + module->getUniqueName());
-            }
-        }
-
-        // Change to the directory and save it in the module
-        local_directory->cd();
-        module->set_root_directory(local_directory);
+        // Pass the histogram manager to this instance
+        module->set_histogram_manager(histogram_manager_);
 
         // Get current time
         auto start = std::chrono::steady_clock::now();
         // Set module specific settings
         auto old_settings = set_module_before(module->get_identifier().getUniqueName(), module->get_configuration(), "I:");
-        // Change to our ROOT directory
-        module->getROOTDirectory()->cd();
         // Init module
         module->initialize();
         // Reset logging
@@ -691,7 +654,16 @@ void ModuleManager::initialize() {
             const auto& name = (identifier.empty() ? module->get_configuration().getName() : identifier);
             auto title = module->get_configuration().getName() + " event processing time " +
                          (!identifier.empty() ? "for " + identifier : "") + ";time [s];# events";
-            module_event_time_.emplace(module.get(), CreateHistogram<TH1D>(name.c_str(), title.c_str(), 1000, 0, 1));
+
+            auto compile_histogram_path = [&]() {
+                return "Performance/" + module->get_configuration().getName() +
+                       (module->get_identifier().getIdentifier().empty() ? ""
+                                                                         : "/" + module->get_identifier().getIdentifier());
+            };
+
+            module_event_time_.emplace(module.get(),
+                                       histogram_manager_->registerHistogram<TH1D>(
+                                           compile_histogram_path(), name.c_str(), title.c_str(), 1000, 0, 1));
         }
     }
     LOG_PROGRESS(STATUS, "INIT_LOOP") << "Initialized " << modules_.size() << " module instantiations";
@@ -998,44 +970,14 @@ void ModuleManager::finalize() {
         module->set_root_directory(nullptr);
         // Remove the config manager
         module->set_config_manager(nullptr);
+        // Remove the histogram manager
+        module->set_histogram_manager(nullptr);
         set_module_after(std::move(old_settings));
         // Update execution time
         auto end = std::chrono::steady_clock::now();
         module_execution_time_[module.get()] += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    // Store performance plots
-    Configuration const& global_config = conf_manager_->getGlobalConfiguration();
-    if(global_config.get<bool>("performance_plots")) {
-
-        auto* perf_dir = modules_file_->mkdir("performance");
-        if(perf_dir == nullptr) {
-            throw RuntimeError("Cannot create or access ROOT directory for performance plots");
-        }
-        perf_dir->cd();
-
-        event_time_->Write();
-        buffer_fill_level_->Write();
-
-        for(auto& module : modules_) {
-            const auto& module_name = module->get_configuration().getName();
-            auto* mod_dir = perf_dir->GetDirectory(module_name.c_str());
-            if(mod_dir == nullptr) {
-                mod_dir = perf_dir->mkdir(module_name.c_str());
-                if(mod_dir == nullptr) {
-                    throw RuntimeError("Cannot create or access ROOT directory for performance plots of module " +
-                                       module_name);
-                }
-            }
-            mod_dir->cd();
-
-            // Write the histogram
-            module_event_time_[module.get()]->Write();
-        }
-    }
-
-    // Close module ROOT file
-    modules_file_->Close();
     LOG_PROGRESS(STATUS, "FINALIZE_LOOP") << "Finalization completed";
     auto end_time = std::chrono::steady_clock::now();
     finalize_time_ =
@@ -1043,6 +985,7 @@ void ModuleManager::finalize() {
     auto total_time = initialize_time_ + run_time_ + finalize_time_;
 
     // Check for unused configuration keys:
+    Configuration const& global_config = conf_manager_->getGlobalConfiguration();
     auto unused_keys = global_config.getUnusedKeys();
     if(!unused_keys.empty()) {
         std::stringstream st;

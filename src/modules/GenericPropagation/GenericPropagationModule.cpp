@@ -847,30 +847,6 @@ GenericPropagationModule::propagate(Event* event,
 void GenericPropagationModule::finalize() {
     if(output_plots_) {
         group_size_histo_->Get()->GetXaxis()->SetRange(1, group_size_histo_->Get()->GetNbinsX() + 1);
-
-        step_length_histo_->Write();
-        drift_time_histo_->Write();
-        uncertainty_histo_->Write();
-        group_size_histo_->Write();
-        recombine_histo_->Write();
-        trapped_histo_->Write();
-        recombination_time_histo_->Write();
-        trapping_time_histo_->Write();
-        detrapping_time_histo_->Write();
-        if(!multiplication_.is<NoImpactIonization>()) {
-            gain_primary_histo_->Write();
-            gain_all_histo_->Write();
-            gain_e_histo_->Write();
-            gain_h_histo_->Write();
-            multiplication_level_histo_->Write();
-            multiplication_depth_histo_->Write();
-            gain_e_vs_x_->Write();
-            gain_e_vs_y_->Write();
-            gain_e_vs_z_->Write();
-            gain_h_vs_x_->Write();
-            gain_h_vs_y_->Write();
-            gain_h_vs_z_->Write();
-        }
     }
 
     long double const average_time = static_cast<long double>(total_time_picoseconds_) / 1e3 /

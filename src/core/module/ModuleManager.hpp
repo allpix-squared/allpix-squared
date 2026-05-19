@@ -26,8 +26,8 @@
 #include "Module.hpp"
 #include "ThreadPool.hpp"
 #include "core/config/Configuration.hpp"
+#include "core/histograms/HistogramManager.hpp"
 #include "core/utils/log.h"
-#include "tools/ROOT.h"
 
 namespace allpix {
 
@@ -82,8 +82,12 @@ namespace allpix {
          * @param messenger Pointer to the messenger
          * @param conf_manager Pointer to the configuration manager
          * @param geo_manager Pointer to the manager holding the geometry
+         * @param histogram_manager Pointer to the histogram manager
          */
-        void load(Messenger* messenger, ConfigManager* conf_manager, GeometryManager* geo_manager);
+        void load(Messenger* messenger,
+                  ConfigManager* conf_manager,
+                  GeometryManager* geo_manager,
+                  HistogramManager* histogram_manager);
 
         /**
          * @brief Initialize all modules before the event sequence
@@ -180,7 +184,7 @@ namespace allpix {
 
         ConfigManager* conf_manager_{};
 
-        std::unique_ptr<TFile> modules_file_;
+        HistogramManager* histogram_manager_{};
 
         // Duration in ns
         std::map<Module*, std::atomic_int64_t> module_execution_time_;

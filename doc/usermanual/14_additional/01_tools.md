@@ -15,7 +15,7 @@ extension of the custom conversion `to_string` and `from_string` methods from th
 [Section 4.8](../04_framework/08_logging.md#internal-utilities)) to support internal ROOT and Geant4 classes. This allows to
 directly read configuration parameters to these types, making the code in the modules both shorter and cleaner. In addition,
 more conversions functions are provided together with other useful utilities such as the possibility to display a ROOT vector
-with units and a thin wrapper for thread-safe ROOT histograms.
+with units as well as a manager and a thin wrapper for thread-safe ROOT histograms.
 
 ## Geant4 Interface
 

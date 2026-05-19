@@ -286,20 +286,6 @@ void PulseTransferModule::run(Event* event) {
     LOG(INFO) << "Total charge induced on all pixels: " << Units::display(total_pulse.getCharge(), "e");
 }
 
-void PulseTransferModule::finalize() {
-
-    if(output_plots_) {
-        // Write histograms
-        LOG(TRACE) << "Writing output plots to file";
-        h_induced_pixel_charge_->Write();
-        h_total_induced_charge_->Write();
-        h_induced_pulses_->Write();
-        h_integrated_pulses_->Write();
-        p_induced_pulses_->Write();
-        p_integrated_pulses_->Write();
-    }
-}
-
 void PulseTransferModule::create_pulsegraphs(uint64_t event_num, const Pixel::Index& index, const Pulse& pulse) const {
     auto step = pulse.getBinning();
     LOG(TRACE) << "Preparing pulse for pixel " << index << ", " << pulse.size() << " bins of "

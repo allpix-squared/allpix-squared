@@ -237,8 +237,12 @@ void Allpix::load() {
     // Load the geometry
     load_geometry();
 
+    // Get a histogram manager
+    histo_mgr_ = std::make_unique<HistogramManager>(global_config.get<std::string>("root_file", "histograms"),
+                                                    global_config.get<bool>("deny_overwrite", false));
+
     // Load the modules from the configuration
-    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get());
+    mod_mgr_->load(msg_.get(), conf_mgr_.get(), geo_mgr_.get(), histo_mgr_.get());
 }
 
 void Allpix::load_geometry() {
@@ -416,14 +420,15 @@ void Allpix::wait() {
  */
 void Allpix::finalize() {
     Log::setReportingLevel(log_level_);
+    LOG(TRACE) << "Finalizing Allpix";
 
-    if(!has_run_) {
+    if(has_run_) {
+        mod_mgr_->finalize();
+    } else {
         LOG(INFO) << "Skip finalizing modules because no module did run";
-        return;
     }
 
-    LOG(TRACE) << "Finalizing Allpix";
-    mod_mgr_->finalize();
+    histo_mgr_->finalize();
 }
 
 /**

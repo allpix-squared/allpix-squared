@@ -26,6 +26,7 @@
 #include "core/config/ConfigManager.hpp"
 #include "core/config/Configuration.hpp"
 #include "core/geometry/Detector.hpp"
+#include "core/histograms/HistogramManager.hpp"
 #include "core/messenger/delegates.h"
 #include "core/module/exceptions.h"
 #include "core/utils/prng.h"
@@ -54,6 +55,7 @@ namespace allpix {
         friend class ModuleManager;
         friend class Messenger;
         friend class LocalMessenger;
+        friend class HistogramManager;
 
     public:
         /**
@@ -119,6 +121,32 @@ namespace allpix {
                                      const std::string& extension = "",
                                      bool global = false,
                                      bool delete_file = false);
+
+        /**
+         * @brief Creates a ThreadedHistogram object through the histogram manager
+         * @param args Arguments for histogram constructor
+         * @return Shared pointer to generated histogram object
+         */
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogram(ARGS&&... args) { // NOLINT
+            // Get instance of histogram registry
+            return histogram_manager_->registerHistogram<T>(this->getROOTDirectory(), std::forward<ARGS>(args)...);
+        };
+
+        /**
+         * @brief Creates a ThreadedHistogram object through the histogram manager, as well as a subdirectory for this to be
+         * stored in if necessary
+         * @param subdirectory Name of the subdirectory the histogram should be stored in
+         * @param args Arguments for histogram constructor
+         * @return Shared pointer to generated histogram object
+         */
+        template <typename T, class... ARGS>
+        std::shared_ptr<ThreadedHistogram<T>> CreateHistogramSubdirectory(const std::string& subdirectory, // NOLINT
+                                                                          ARGS&&... args) {
+            // Get instance of histogram registry
+            auto* full_directory = allpix::HistogramManager::registerSubdirectory(this->getROOTDirectory(), subdirectory);
+            return histogram_manager_->registerHistogram<T>(full_directory, std::forward<ARGS>(args)...);
+        };
 
         /**
          * @brief Get ROOT directory which should be used to output histograms et cetera
@@ -216,6 +244,13 @@ namespace allpix {
          */
         void set_config_manager(ConfigManager* conf_manager);
         ConfigManager* conf_manager_{nullptr};
+
+        /**
+         * @brief Set the link to the histogram manager
+         * @param histogram_manager Pointer to the histogram manager holding all histograms
+         */
+        void set_histogram_manager(HistogramManager* histogram_manager);
+        HistogramManager* histogram_manager_{nullptr};
 
         /**
          * @brief Add a messenger delegate to this instantiation

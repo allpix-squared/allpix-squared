@@ -442,16 +442,9 @@ void CapacitiveTransferModule::finalize() {
     // Print statistics
     LOG(INFO) << "Transferred total of " << total_transferred_charges_ << " charges";
 
-    if(config_.get<bool>("output_plots")) {
-        if(config_.has("coupling_scan_file")) {
-            gap_map->Write();
-            capacitance_map->Write();
-            relative_capacitance_map->Write();
-            for(size_t i = 1; i < 10; i++) {
-                capacitances_[i - 1]->Write(Form("Pixel_%zu", i));
-            }
-        } else {
-            coupling_map->Write();
+    if(config_.get<bool>("output_plots") && config_.has("coupling_scan_file")) {
+        for(size_t i = 1; i < 10; i++) {
+            capacitances_[i - 1]->Write(Form("Pixel_%zu", i)); // NOLINT
         }
     }
 }

@@ -29,6 +29,7 @@ ADD_LIBRARY(
     geometry/HexagonalPixelDetectorModel.cpp
     geometry/RadialStripDetectorModel.cpp
     geometry/StaggeredPixelDetectorModel.cpp
+    histograms/HistogramManager.cpp
     Allpix.cpp)
 
 # Set compiler options

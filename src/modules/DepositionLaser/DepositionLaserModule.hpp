@@ -71,11 +71,6 @@ namespace allpix {
          */
         void run(Event* event) override;
 
-        /**
-         * @brief Finalize and write optional histograms
-         */
-        void finalize() override;
-
     private:
         /**
          * @brief Check intersection of the given track with the given detector
