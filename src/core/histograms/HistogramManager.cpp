@@ -127,7 +127,7 @@ void HistogramManager::finalize() {
         return;
     }
 
-    for(auto& it : histogram_map_) {
+    for(auto& it : histogram_list_) {
         if(!(it.second)) {
             throw LogicError("A histogram in the local directory " + it.first + " can no longer be accessed.");
         }

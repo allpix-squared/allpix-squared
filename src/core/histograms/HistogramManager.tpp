@@ -31,7 +31,7 @@ namespace allpix {
         auto histogram = std::make_shared<ThreadedHistogram<T>>(std::forward<ARGS>(args)...);
 
         LOG(DEBUG) << "Registering histogram (" << local_path_str << ", " << histogram->Get()->GetName() << ")";
-        histogram_map_.emplace(local_path_str, histogram);
+        histogram_list_.push_back({local_path_str, histogram});
 
         return histogram;
     }

@@ -16,7 +16,6 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <filesystem>
-#include <map>
 
 #include "core/config/exceptions.h"
 #include "tools/ROOT.h"
@@ -109,18 +108,18 @@ namespace allpix {
 
     protected:
         /**
-         * @brief Get the histogram map
-         * @return multimap with directories of histograms (key) and pointers to histograms (value)
+         * @brief Get the histogram list
+         * @return vector with directories of histograms (key) and pointers to histograms (value)
          */
-        const std::multimap<std::string, std::shared_ptr<BaseHistogram>>& get_histogram_map() const {
-            return histogram_map_;
+        const std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>>& get_histogram_list() const {
+            return histogram_list_;
         };
 
     private:
         HistogramManager() = default;
 
         /**
-         * @brief Create histogram and register it in the histogram map
+         * @brief Create histogram and register it in the histogram list
          * @param directory Pointer to histogram file directory the histogram should be written to
          * @param args Further arguments for histogram constructor
          * @return shared pointer to generated histogram object
@@ -128,7 +127,7 @@ namespace allpix {
         template <typename T, class... ARGS>
         std::shared_ptr<ThreadedHistogram<T>> create_histogram(TDirectory* directory, ARGS&&... args);
 
-        std::multimap<std::string, std::shared_ptr<BaseHistogram>> histogram_map_;
+        std::vector<std::pair<std::string, std::shared_ptr<BaseHistogram>>> histogram_list_;
         std::unique_ptr<TFile> histogram_file_;
     };
 } // namespace allpix
