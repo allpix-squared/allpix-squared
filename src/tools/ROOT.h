@@ -321,7 +321,7 @@ namespace allpix {
                 objects_[0]->SetMaximum(draw_maximum_.value());
             }
 
-            for(auto& option : drawing_options_) {
+            for(const auto& option : drawing_options_) {
                 objects_[0]->SetOption(option.c_str());
             }
 
