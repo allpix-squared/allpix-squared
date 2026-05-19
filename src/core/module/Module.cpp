@@ -175,7 +175,8 @@ void Module::set_histogram_manager(HistogramManager* histogram_manager) {
     histogram_manager_ = histogram_manager;
     if(histogram_manager_ != nullptr) {
         // Change to our ROOT directory
-        auto* module_dir = histogram_manager_->registerModuleDirectory(get_configuration().getName(), get_identifier().getIdentifier())
+        auto* module_dir =
+            histogram_manager_->registerModuleDirectory(get_configuration().getName(), get_identifier().getIdentifier());
         set_root_directory(module_dir);
     }
 }
