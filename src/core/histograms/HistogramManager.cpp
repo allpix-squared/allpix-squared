@@ -25,9 +25,9 @@ HistogramManager::HistogramManager(const std::string& file_path, bool deny_overw
         }
         LOG(WARNING) << "Main ROOT file " << path << " exists and will be overwritten.";
         std::filesystem::remove(path);
-    } else {
-        LOG(INFO) << "Creating main ROOT file: " << path;
     }
+
+    LOG(INFO) << "Creating main ROOT file: " << path;
 
     histogram_file_ = std::make_unique<TFile>(path.c_str(), "RECREATE");
     if(histogram_file_->IsZombie()) {
