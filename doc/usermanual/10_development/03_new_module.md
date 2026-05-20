@@ -181,7 +181,7 @@ For unique modules, the constructor for a `TestModule` should be:
 
 ```cpp
 TestModule(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config, messenger) {}
+    : Module(config, messenger, geo_manager) {}
 ```
 
 For detector modules, the first two arguments are the same, but the last argument is a `std::shared_ptr` to the linked
@@ -198,8 +198,8 @@ The pointer to a Messenger can be used to bind variables to either receive or di
 defaults and to throw exceptions in case of failures. Unique modules can access the GeometryManager to fetch all detector
 descriptions, while detector modules directly receive a link to their respective detector.
 
-In case the messenger or detector are not required by a module, they can be omitted in the module constructor if in the last
-position, or tagged as in the following example:
+In case the Messenger, the GeometryManager or the pointer to the corresponding detector are not required by a module, they
+can be tagged as in the following example:
 
 ```cpp
 TestModule(Configuration& config, Messenger* /*unused*/, std::shared_ptr<Detector> detector)
